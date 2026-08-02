@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref, useAttrs, watch} from 'vue';
   import type {ReorderDirection} from '@craftcms/ui';
-  import type {FormElementBinding, JsonValue} from '../types';
+  import type {JsonValue} from '../types';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
   import '@craftcms/ui/components/icon/icon';
@@ -16,34 +16,53 @@
     disabled?: boolean;
   };
 
+  defineOptions({inheritAttrs: false});
+
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    options?: Option[];
+    sortable?: boolean;
+    allOption?: OptionValue;
+    modelValue?: unknown;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: OptionValue | OptionValue[]];
+    'update:modelValue': [value: OptionValue | OptionValue[]];
   }>();
 
-  const options = ref<Option[]>([]);
-
-  watch(
-    () => props.config.options,
-    (value) => {
-      options.value = Array.isArray(value) ? (value as Option[]) : [];
-    },
-    {immediate: true}
-  );
-  const groupName = computed(() => `${String(props.attributes.name)}[]`);
-  const sortable = computed(() => props.config.sortable === true);
+  const attributes = useAttrs();
+  const orderedOptions = ref<Option[]>([]);
+  const noEmittedValue = Symbol();
+  let emittedValue: unknown = noEmittedValue;
+  const sortable = computed(() => props.sortable === true);
   const allOption = computed<OptionValue | undefined>(() => {
-    const value = props.config.allOption;
+    const value = props.allOption;
 
     return isOptionValue(value) ? value : undefined;
   });
+
+  watch(
+    [() => props.options, sortable, allOption],
+    ([options]) => {
+      orderedOptions.value = orderOptions(options ?? []);
+    },
+    {immediate: true}
+  );
+  watch(
+    () => props.modelValue,
+    (value) => {
+      if (sameValue(value, emittedValue)) {
+        emittedValue = noEmittedValue;
+
+        return;
+      }
+
+      emittedValue = noEmittedValue;
+      orderedOptions.value = orderOptions(props.options ?? []);
+    }
+  );
   const selectedValues = computed<OptionValue[]>(() => {
-    const value = props.binding?.value;
+    const value = props.modelValue;
 
     if (value == null && allOption.value !== undefined) {
       return [allOption.value];
@@ -54,7 +73,7 @@
       : [value as OptionValue];
   });
   const selectedOptions = computed(() =>
-    options.value.filter(
+    orderedOptions.value.filter(
       (option) => option.value !== allOption.value && checked(option.value)
     )
   );
@@ -73,17 +92,21 @@
 
   function disabled(option: Option): boolean {
     return Boolean(
-      props.binding?.readOnly ||
+      props.readonly ||
       option.disabled ||
       (allSelected.value && option.value !== allOption.value)
     );
   }
 
   function updateValue(option: Option, event: Event): void {
+    if (disabled(option)) {
+      return;
+    }
+
     const input = event.target as HTMLInputElement;
 
     if (option.value === allOption.value) {
-      emit('update:value', input.checked ? option.value : []);
+      updateModelValue(input.checked ? option.value : []);
 
       return;
     }
@@ -98,9 +121,8 @@
       values.delete(option.value);
     }
 
-    emit(
-      'update:value',
-      options.value
+    updateModelValue(
+      orderedOptions.value
         .filter(({value}) => value !== allOption.value && values.has(value))
         .map(({value}) => value)
     );
@@ -110,6 +132,10 @@
     option: Option,
     event: CustomEvent<{direction: ReorderDirection}>
   ) {
+    if (disabled(option) || !checked(option.value)) {
+      return;
+    }
+
     const selectedIndex = selectedOptions.value.indexOf(option);
     const target =
       event.detail.direction === 'down'
@@ -120,7 +146,7 @@
       return;
     }
 
-    const reordered = options.value.slice();
+    const reordered = orderedOptions.value.slice();
     reordered.splice(reordered.indexOf(option), 1);
     const targetIndex = reordered.indexOf(target);
     reordered.splice(
@@ -128,9 +154,8 @@
       0,
       option
     );
-    options.value = reordered;
-    emit(
-      'update:value',
+    orderedOptions.value = reordered;
+    updateModelValue(
       reordered
         .filter(
           (candidate) =>
@@ -151,23 +176,71 @@
   }
 
   function inputAttributes(option: Option, index: number) {
-    const attributes = {...props.attributes};
-    const id = typeof attributes.id === 'string' ? attributes.id : '';
+    const inputAttributes = {...attributes};
+    const id = typeof inputAttributes.id === 'string' ? inputAttributes.id : '';
 
-    delete attributes.id;
-    delete attributes.name;
-    delete attributes.readonly;
+    delete inputAttributes.id;
+    delete inputAttributes.name;
 
     return {
-      ...attributes,
+      ...inputAttributes,
       id: index === 0 ? id : `${id}-${index}`,
-      name: groupName.value,
+      name: groupName(),
       value: String(option.value ?? ''),
       disabled: disabled(option),
     };
   }
 
-  function isOptionValue(value: JsonValue | undefined): value is OptionValue {
+  function groupName(): string {
+    return `${String(attributes.name)}[]`;
+  }
+
+  function updateModelValue(value: OptionValue | OptionValue[]): void {
+    emittedValue = value;
+    emit('update:modelValue', value);
+  }
+
+  function sameValue(first: unknown, second: unknown): boolean {
+    if (!Array.isArray(first) || !Array.isArray(second)) {
+      return first === second;
+    }
+
+    return (
+      first.length === second.length &&
+      first.every((value, index) => value === second[index])
+    );
+  }
+
+  function orderOptions(options: Option[]): Option[] {
+    if (!sortable.value || !Array.isArray(props.modelValue)) {
+      return options;
+    }
+
+    const selectedOrder = new Map(
+      props.modelValue.map((value, index) => [value, index])
+    );
+
+    return options.slice().sort((first, second) => {
+      if (first.value === allOption.value) {
+        return -1;
+      }
+
+      if (second.value === allOption.value) {
+        return 1;
+      }
+
+      const firstIndex = selectedOrder.get(first.value);
+      const secondIndex = selectedOrder.get(second.value);
+
+      if (firstIndex === undefined) {
+        return secondIndex === undefined ? 0 : 1;
+      }
+
+      return secondIndex === undefined ? -1 : firstIndex - secondIndex;
+    });
+  }
+
+  function isOptionValue(value: unknown): value is OptionValue {
     return (
       value === null ||
       typeof value === 'string' ||
@@ -178,9 +251,9 @@
 </script>
 
 <template>
-  <craft-checkbox-group v-bind="attributes" :name="groupName">
+  <craft-checkbox-group v-bind="attributes" :name="groupName()">
     <div
-      v-for="(option, index) in options"
+      v-for="(option, index) in orderedOptions"
       :key="String(option.value)"
       class="checkbox-select-option"
       :class="{'checkbox-select-option--sortable': sortable}"
@@ -188,8 +261,7 @@
       <craft-reorder-button
         v-if="sortable && option.value !== allOption"
         :disabled="
-          binding?.readOnly ||
-          allSelected ||
+          disabled(option) ||
           !checked(option.value) ||
           selectedOptions.length < 2
         "

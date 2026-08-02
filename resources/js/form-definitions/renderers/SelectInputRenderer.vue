@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import type {FormElementBinding, JsonValue} from '../types';
+  import type {JsonValue} from '../types';
   import '@craftcms/ui/components/select/select';
 
   type Option = {
@@ -19,40 +19,34 @@
   type Choice = Option | Optgroup;
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    options?: Choice[];
+    modelValue?: unknown;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: Option['value']];
+    'update:modelValue': [value: Option['value']];
   }>();
 
-  const options = computed<Choice[]>(() =>
-    Array.isArray(props.config.options)
-      ? (props.config.options as Choice[])
-      : []
-  );
   const flatOptions = computed<Option[]>(() =>
-    options.value.flatMap((option) =>
+    (props.options ?? []).flatMap((option) =>
       isOptgroup(option) ? option.options : [option]
     )
   );
-  const value = computed(() => String(props.binding?.value ?? ''));
+  const value = computed(() => String(props.modelValue ?? ''));
 
   function updateValue(event: Event): void {
-    const selectedValue =
-      event.target instanceof HTMLSelectElement
-        ? event.target.value
-        : String(
-            (event.currentTarget as HTMLElementTagNameMap['craft-select'])
-              .modelValue ?? ''
-          );
-    const option = flatOptions.value.find(
-      ({value}) => String(value ?? '') === selectedValue
-    );
+    if (props.readonly) {
+      return;
+    }
 
-    emit('update:value', option?.value ?? null);
+    const select =
+      event.target instanceof HTMLSelectElement
+        ? event.target
+        : (event.currentTarget as HTMLElement).querySelector('select');
+    const option = select ? flatOptions.value[select.selectedIndex] : undefined;
+
+    emit('update:modelValue', option?.value ?? null);
   }
 
   function isOptgroup(option: Choice): option is Optgroup {
@@ -70,14 +64,9 @@
 </script>
 
 <template>
-  <craft-select
-    v-bind="attributes"
-    :model-value="value"
-    :disabled="binding?.readOnly"
-    @change="updateValue"
-  >
-    <select slot="input" :value="value" :disabled="binding?.readOnly">
-      <template v-for="option in options" :key="option.label">
+  <craft-select :model-value="value" :disabled="readonly" @change="updateValue">
+    <select slot="input" :value="value" :disabled="readonly">
+      <template v-for="option in options ?? []" :key="option.label">
         <optgroup
           v-if="isOptgroup(option)"
           :label="option.label"

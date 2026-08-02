@@ -272,6 +272,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return FormDefinition::make([
             FieldComponent::make(EditableTable::make()
                 ->name('columns')
+                ->sourceName('columns')
                 ->columns([
                     [
                         'key' => 'heading',
@@ -318,6 +319,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->readOnly($readOnly),
             FieldComponent::make(EditableTable::make()
                 ->name('defaults')
+                ->sourceName('defaults')
                 ->columns($this->defaultValueColumns())
                 ->addRowLabel(t('Add a row'))
                 ->includeRowId()

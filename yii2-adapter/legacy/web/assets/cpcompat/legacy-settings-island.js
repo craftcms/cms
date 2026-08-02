@@ -12,18 +12,7 @@
     #mounted = false;
     #mounting = false;
 
-    get attributes() {
-      return super.attributes;
-    }
-
-    // The generic Vue renderer passes these props. `attributes` is otherwise
-    // a read-only HTMLElement property, and legacy islands bind through DOM.
-    set attributes(_attributes) {}
-
-    set binding(_binding) {}
-
-    set config(config) {
-      const fragment = config?.fragment ?? null;
+    set fragment(fragment) {
       const key = fragmentKey(fragment);
 
       if (key === this.#fragmentKey) {

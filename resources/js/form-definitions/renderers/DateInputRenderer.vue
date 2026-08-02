@@ -1,34 +1,33 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import type {FormElementBinding, JsonValue} from '../types';
-  import CraftInputRenderer from './CraftInputRenderer.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    modelValue?: string | null;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: string | null];
+    'update:modelValue': [value: string | null];
   }>();
 
   const value = computed(() =>
-    typeof props.binding?.value === 'string'
-      ? props.binding.value.slice(0, 10)
-      : ''
+    typeof props.modelValue === 'string' ? props.modelValue.slice(0, 10) : ''
   );
 
-  function updateValue(value: string): void {
-    emit('update:value', value || null);
+  function updateValue(value: string | number | undefined): void {
+    emit(
+      'update:modelValue',
+      value === '' || value === undefined ? null : String(value)
+    );
   }
 </script>
 
 <template>
-  <CraftInputRenderer
-    :attributes="attributes"
+  <CraftInput
     type="date"
-    :value="value"
-    @update:value="updateValue"
+    :model-value="value"
+    :readonly="readonly"
+    @update:model-value="updateValue"
   />
 </template>

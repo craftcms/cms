@@ -77,6 +77,7 @@ it('renders an empty keyed table value as a JSON object', function () {
 it('registers and deterministically projects both table contracts without host state', function () {
     $editable = EditableTable::make()
         ->name('columns')
+        ->sourceName('columnDefinitions')
         ->columns([['key' => 'heading', 'label' => 'Heading', 'type' => 'text']])
         ->addRowLabel('Add a column')
         ->defaultRow(['heading' => ''])
@@ -98,6 +99,7 @@ it('registers and deterministically projects both table contracts without host s
                 'type' => 'craft:editable-table-input',
                 'name' => 'columns',
                 'props' => [
+                    'sourceName' => 'columnDefinitions',
                     'columns' => [['key' => 'heading', 'label' => 'Heading', 'type' => 'text']],
                     'addRowLabel' => 'Add a column',
                     'defaultRow' => ['heading' => ''],
@@ -176,12 +178,13 @@ it('rejects invalid portable table configuration before projection', function (E
     ],
 ]);
 
-it('rejects non-serializable HTML table values before rendering', function (EditableTable|KeyedTable $component, string $option) {
+it('rejects unsupported HTML table configuration before rendering', function (EditableTable|KeyedTable $component, string $option) {
     expect(fn () => $component->toHtml())->toThrow(
         InvalidArgumentException::class,
         sprintf('%s option "%s" is not supported for HTML output.', $component::class, $option),
     );
 })->with([
+    'editable source name' => [fn () => EditableTable::make()->sourceName('rows'), 'sourceName'],
     'editable value' => [
         fn () => EditableTable::make()->value([['value' => fn () => 'value']]),
         'value[0][value]',

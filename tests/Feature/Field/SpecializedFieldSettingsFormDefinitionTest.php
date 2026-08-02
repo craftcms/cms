@@ -182,6 +182,7 @@ it('projects ordered table columns and type-specific default inputs', function (
         'maxRows',
         'addRowLabel',
     ])->and($inputs['columns']['type'])->toBe('craft:editable-table-input')
+        ->and($inputs['columns']['props']['sourceName'])->toBe('columns')
         ->and($inputs['columns']['props']['keyed'])->toBeTrue()
         ->and($inputs['columns']['props']['addRowLabel'])->toBe('Add a column')
         ->and(array_column($inputs['columns']['props']['columns'], 'key'))->toBe([
@@ -193,6 +194,7 @@ it('projects ordered table columns and type-specific default inputs', function (
             'label' => 'Dropdown',
             'value' => 'select',
         ])->and($inputs['defaults']['type'])->toBe('craft:editable-table-input')
+        ->and($inputs['defaults']['props']['sourceName'])->toBe('defaults')
         ->and($inputs['defaults']['props']['includeRowId'])->toBeTrue()
         ->and($inputs['defaults']['props']['columns'])->toBe([
             ['key' => 'headline', 'label' => 'Headline', 'type' => 'text', 'width' => '40%'],

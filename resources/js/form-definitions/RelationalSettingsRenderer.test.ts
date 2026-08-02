@@ -1,11 +1,11 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
 import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
 import ElementConditionInputRenderer from './renderers/ElementConditionInputRenderer.vue';
-import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
-import TextInputRenderer from './renderers/TextInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 type CheckboxGroupElement = HTMLElement & {
@@ -253,11 +253,8 @@ function mount(
     'form-element:craft:element-condition-input',
     ElementConditionInputRenderer
   );
-  registry.register(
-    'form-element:craft:lightswitch-input',
-    LightswitchInputRenderer
-  );
-  registry.register('form-element:craft:text-input', TextInputRenderer);
+  registry.register('form-element:craft:lightswitch-input', CraftSwitch);
+  registry.register('form-element:craft:text-input', CraftInput);
   (window as any).Cp = {$components: registry};
   hostForm.appendChild(container);
   document.body.appendChild(hostForm);

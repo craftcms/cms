@@ -1,8 +1,8 @@
 import {nextTick} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import TextInputRenderer from './renderers/TextInputRenderer.vue';
 import {
   FormDefinitionHost,
   type FormDefinitionHostContext,
@@ -39,7 +39,7 @@ describe('Form Definition host', () => {
     const form = document.createElement('form');
     const host = new FormDefinitionHost();
 
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     (window as any).Cp = {$components: registry};
     host.context = context;
     form.appendChild(host);

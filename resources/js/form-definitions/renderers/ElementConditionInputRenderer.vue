@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {
-    computed,
     nextTick,
     onBeforeUnmount,
     onMounted,
@@ -12,7 +11,7 @@
   import ConditionsController from '@actions/ConditionsController';
   import {expandFormData} from '@/common/utils/forms';
   import {valueAt} from '../binding';
-  import type {FormElementBinding, FormValues, JsonValue} from '../types';
+  import type {FormValues, JsonValue} from '../types';
   import '@craftcms/ui/components/element-condition/element-condition';
   import '@craftcms/ui/components/spinner/spinner';
 
@@ -23,18 +22,23 @@
 
   defineOptions({inheritAttrs: false});
 
-  const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      builderConfig?: Record<string, JsonValue>;
+      conditionClass: string;
+      sortable?: boolean;
+      addRuleLabel?: string;
+      modelValue?: unknown;
+      readonly?: boolean;
+    }>(),
+    {sortable: true}
+  );
 
   const emit = defineEmits<{
-    'update:value': [value: ConditionConfig | null];
+    'update:modelValue': [value: ConditionConfig | null];
   }>();
 
   const attrs = useAttrs();
-  const hostProperties = computed(() => ({...props.attributes, ...attrs}));
   const container =
     useTemplateRef<HTMLElementTagNameMap['craft-element-condition']>(
       'container'
@@ -99,10 +103,10 @@
 
   function builderRequest(): FormData {
     const request = new FormData();
-    const name = String(props.attributes.name);
-    const builderConfig = objectConfig(props.config.builderConfig);
-    const conditionClass = String(props.config.conditionClass);
-    const condition = objectConfig(props.binding?.value);
+    const name = String(attrs.name);
+    const builderConfig = objectConfig(props.builderConfig);
+    const conditionClass = props.conditionClass;
+    const condition = objectConfig(props.modelValue);
     const conditionRules = Array.isArray(condition.conditionRules)
       ? condition.conditionRules
       : [];
@@ -112,12 +116,12 @@
       JSON.stringify({
         ...builderConfig,
         class: conditionClass,
-        id: String(props.attributes.id),
+        id: String(attrs.id),
         name,
         mainTag: 'div',
-        sortable: props.config.sortable !== false,
+        sortable: props.sortable !== false,
         forProjectConfig: true,
-        addRuleLabel: props.config.addRuleLabel,
+        addRuleLabel: props.addRuleLabel,
       })
     );
     request.append(`${name}[class]`, String(condition.class ?? conditionClass));
@@ -141,7 +145,7 @@
   }
 
   function syncValue(): void {
-    if (!container.value || props.binding?.readOnly) {
+    if (!container.value || props.readonly) {
       return;
     }
 
@@ -161,11 +165,11 @@
       const values = expandFormData(new FormData(hostForm));
       const condition = valueAt(
         values as FormValues,
-        htmlNameToPath(String(props.attributes.name))
+        htmlNameToPath(String(attrs.name))
       );
 
       if (!isConditionConfig(condition)) {
-        emit('update:value', null);
+        emit('update:modelValue', null);
 
         return;
       }
@@ -177,7 +181,10 @@
         );
       }
 
-      emit('update:value', condition.conditionRules?.length ? condition : null);
+      emit(
+        'update:modelValue',
+        condition.conditionRules?.length ? condition : null
+      );
     });
   }
 
@@ -223,9 +230,9 @@
 <template>
   <craft-element-condition
     ref="container"
-    v-bind="hostProperties"
+    v-bind="attrs"
     class="condition-container"
-    :readonly="binding?.readOnly ?? false"
+    :readonly="readonly ?? false"
     @input="syncValue"
     @change="syncValue"
   >

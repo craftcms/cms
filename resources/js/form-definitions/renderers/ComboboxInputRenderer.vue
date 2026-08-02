@@ -2,49 +2,40 @@
   import {t} from '@craftcms/ui';
   import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
   import {computed} from 'vue';
-  import type {FormElementBinding, JsonValue} from '../types';
   import type {SelectItem} from '@/common/types';
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    options?: SelectItem[];
+    placeholder?: string;
+    allowAliases?: boolean;
+    limit?: number;
+    clearable?: boolean;
+    modelValue?: unknown;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: string];
+    'update:modelValue': [value: string];
   }>();
 
   const value = computed({
-    get: () => String(props.binding?.value ?? ''),
-    set: (value) => emit('update:value', value),
+    get: () => String(props.modelValue ?? ''),
+    set: (value) => {
+      if (!props.readonly) {
+        emit('update:modelValue', value);
+      }
+    },
   });
-  const options = computed<SelectItem[]>(() =>
-    Array.isArray(props.config.options)
-      ? (props.config.options as unknown as SelectItem[])
-      : []
-  );
-  const placeholder = computed(() =>
-    typeof props.config.placeholder === 'string'
-      ? props.config.placeholder
-      : undefined
-  );
-  const allowAliases = computed(() => props.config.allowAliases === true);
-  const limit = computed(() =>
-    typeof props.config.limit === 'number' ? props.config.limit : undefined
-  );
-  const clearable = computed(() => props.config.clearable === true);
 </script>
 
 <template>
   <CraftCombobox
-    v-bind="attributes"
     v-model="value"
-    :options="options"
+    :options="options ?? []"
     :placeholder="placeholder"
     :limit="limit"
     :clearable="clearable"
-    :disabled="binding?.readOnly"
+    :disabled="readonly"
   >
     <craft-callout
       v-if="allowAliases"

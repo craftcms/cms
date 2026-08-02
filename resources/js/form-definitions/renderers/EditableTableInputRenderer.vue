@@ -7,18 +7,24 @@
   } from '@craftcms/ui';
   import '@craftcms/ui/components/editable-table/editable-table';
   import {editableTableCoordinationScope} from '../editable-table-columns';
-  import type {FormElementBinding, JsonValue} from '../types';
 
   defineOptions({inheritAttrs: false});
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    sourceName?: string;
+    columns?: EditableTableColumn[];
+    defaultRow?: EditableTableRow;
+    keyed?: boolean;
+    addRowLabel?: string;
+    includeRowId?: boolean;
+    definesColumns?: boolean;
+    columnsFrom?: string;
+    modelValue?: unknown;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: EditableTableValue];
+    'update:modelValue': [value: EditableTableValue];
   }>();
   const coordinationScope = inject(editableTableCoordinationScope);
 
@@ -27,28 +33,10 @@
   }
 
   const attrs = useAttrs();
-  const hostProperties = computed(() => ({
-    ...props.attributes,
-    ...attrs,
-    coordinationScope,
-    sourceName: props.binding?.name,
-  }));
-  const columns = computed<EditableTableColumn[]>(() =>
-    Array.isArray(props.config.columns)
-      ? (props.config.columns as EditableTableColumn[])
-      : []
-  );
-  const defaultRow = computed<EditableTableRow>(() => {
-    const value = props.config.defaultRow;
-
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as EditableTableRow)
-      : {};
-  });
   const value = computed<EditableTableValue>(() => {
-    const value = props.binding?.value;
+    const value = props.modelValue;
 
-    if (props.config.keyed === true) {
+    if (props.keyed === true) {
       return value && typeof value === 'object' && !Array.isArray(value)
         ? (value as Record<string, EditableTableRow>)
         : {};
@@ -56,20 +44,10 @@
 
     return Array.isArray(value) ? (value as EditableTableRow[]) : [];
   });
-  const addRowLabel = computed(() =>
-    typeof props.config.addRowLabel === 'string'
-      ? props.config.addRowLabel
-      : undefined
-  );
-  const columnsFrom = computed(() =>
-    typeof props.config.columnsFrom === 'string'
-      ? props.config.columnsFrom
-      : undefined
-  );
 
   function updateValue(event: Event): void {
     emit(
-      'update:value',
+      'update:modelValue',
       (event.target as HTMLElementTagNameMap['craft-editable-table']).value
     );
   }
@@ -77,17 +55,17 @@
 
 <template>
   <craft-editable-table
-    v-bind="hostProperties"
-    :data-editable-table="binding?.name"
+    v-bind="{...attrs, coordinationScope, sourceName}"
+    :data-editable-table="sourceName"
     .value="value"
-    .columns="columns"
-    .defaultRow="defaultRow"
-    :add-row-label="addRowLabel"
-    :keyed="config.keyed === true"
-    :include-row-id="config.includeRowId === true"
-    :defines-columns="config.definesColumns === true"
-    :columns-from="columnsFrom"
-    :readonly="binding?.readOnly ?? false"
+    .columns="columns ?? []"
+    .defaultRow="defaultRow ?? {}"
+    .addRowLabel="addRowLabel"
+    .keyed="keyed === true"
+    .includeRowId="includeRowId === true"
+    .definesColumns="definesColumns === true"
+    .columnsFrom="columnsFrom"
+    :readonly="readonly ?? false"
     @input="updateValue"
   ></craft-editable-table>
 </template>

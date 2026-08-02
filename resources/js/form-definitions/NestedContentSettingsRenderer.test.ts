@@ -8,13 +8,13 @@ import {
   toRaw,
 } from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
+import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
+import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
 import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
-import FieldLayoutInputRenderer from './renderers/FieldLayoutInputRenderer.vue';
-import KeyedTableInputRenderer from './renderers/KeyedTableInputRenderer.vue';
-import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
-import ObjectSelectInputRenderer from './renderers/ObjectSelectInputRenderer.vue';
 import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
@@ -226,7 +226,7 @@ describe('nested content settings renderers', () => {
 
     registry.register(
       'form-element:craft:field-layout-input',
-      FieldLayoutInputRenderer
+      CraftFieldLayout
     );
     (window as any).Cp = {$components: registry};
     document.body.append(container);
@@ -579,19 +579,16 @@ function mount(
   );
   registry.register(
     'form-element:craft:field-layout-input',
-    FieldLayoutInputRenderer
+    CraftFieldLayout
   );
   registry.register(
     'form-element:craft:keyed-table-input',
-    KeyedTableInputRenderer
+    CraftKeyedTable
   );
-  registry.register(
-    'form-element:craft:lightswitch-input',
-    LightswitchInputRenderer
-  );
+  registry.register('form-element:craft:lightswitch-input', CraftSwitch);
   registry.register(
     'form-element:craft:object-select-input',
-    ObjectSelectInputRenderer
+    CraftObjectSelect
   );
   registry.register('form-element:craft:select-input', SelectInputRenderer);
   (window as any).Cp = {$components: registry};

@@ -1,4 +1,9 @@
 import {expect, it} from 'vite-plus/test';
+import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
+import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
+import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
+import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
+import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import catalog from './native-form-element-catalog.json';
 import {
@@ -28,4 +33,18 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
       .map(({type}) => type)
       .sort()
   );
+});
+
+it.each([
+  ['craft:color-palette-input', CraftColorPalette],
+  ['craft:keyed-table-input', CraftKeyedTable],
+  ['craft:object-select-input', CraftObjectSelect],
+  ['craft:field-layout-input', CraftFieldLayout],
+  ['craft:option-rows', CraftOptionRows],
+])('registers %s through its generated Vue wrapper', (type, wrapper) => {
+  const registry = createCpComponentRegistry();
+
+  registerNativeFormElementRenderers(registry);
+
+  expect(registry.resolve(`form-element:${type}`)).toBe(wrapper);
 });

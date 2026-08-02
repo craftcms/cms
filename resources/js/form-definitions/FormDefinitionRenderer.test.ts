@@ -1,14 +1,17 @@
 import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import CraftColorPalette from '@craftcms/ui/vue/CraftColorPalette.vue';
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
+import '@craftcms/ui/components/color-palette/color-palette';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
 import DateInputRenderer from './renderers/DateInputRenderer.vue';
-import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
+import EditableTableInputRenderer from './renderers/EditableTableInputRenderer.vue';
 import MoneyInputRenderer from './renderers/MoneyInputRenderer.vue';
 import NumberInputRenderer from './renderers/NumberInputRenderer.vue';
 import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
-import TextInputRenderer from './renderers/TextInputRenderer.vue';
 import TimeInputRenderer from './renderers/TimeInputRenderer.vue';
 
 const definition = {
@@ -60,12 +63,9 @@ describe('Form Definition renderer', () => {
     const container = document.createElement('div');
 
     registry.register('form-element:craft:select-input', SelectInputRenderer);
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     registry.register('form-element:craft:number-input', NumberInputRenderer);
-    registry.register(
-      'form-element:craft:lightswitch-input',
-      LightswitchInputRenderer
-    );
+    registry.register('form-element:craft:lightswitch-input', CraftSwitch);
     registry.register('form-element:craft:date-input', DateInputRenderer);
     registry.register('form-element:craft:time-input', TimeInputRenderer);
     registry.register('form-element:craft:money-input', MoneyInputRenderer);
@@ -171,18 +171,20 @@ describe('Form Definition renderer', () => {
       container.querySelector('[data-form-element-tip]')?.textContent
     ).toBe('Dates use the project time zone.');
 
-    text.value = 'Craft CMS';
-    text.dispatchEvent(new Event('input', {bubbles: true}));
-    number.value = '120';
-    number.dispatchEvent(new Event('input', {bubbles: true}));
+    text.modelValue = 'Craft CMS';
+    text.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
+    number.modelValue = '120';
+    number.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     lightswitch.checked = false;
-    lightswitch.dispatchEvent(new Event('change', {bubbles: true}));
+    lightswitch.dispatchEvent(
+      new Event('model-value-changed', {bubbles: true})
+    );
     money.value = '56.78';
     money.dispatchEvent(new Event('input', {bubbles: true}));
-    date.value = '2027-03-04';
-    date.dispatchEvent(new Event('input', {bubbles: true}));
-    time.value = '09:45';
-    time.dispatchEvent(new Event('input', {bubbles: true}));
+    date.modelValue = '2027-03-04';
+    date.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
+    time.modelValue = '09:45';
+    time.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     const nativeNumericSelect = numericSelect.querySelector('select')!;
     nativeNumericSelect.value = '30';
     nativeNumericSelect.dispatchEvent(new Event('change', {bubbles: true}));
@@ -196,14 +198,14 @@ describe('Form Definition renderer', () => {
     expect(values.settings.minDate).toBe('2027-03-04');
     expect(values.settings.minTime).toBe('09:45');
 
-    number.value = '';
-    number.dispatchEvent(new Event('input', {bubbles: true}));
+    number.modelValue = '';
+    number.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     money.value = '';
     money.dispatchEvent(new Event('input', {bubbles: true}));
-    date.value = '';
-    date.dispatchEvent(new Event('input', {bubbles: true}));
-    time.value = '';
-    time.dispatchEvent(new Event('input', {bubbles: true}));
+    date.modelValue = '';
+    date.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
+    time.modelValue = '';
+    time.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
 
     expect(values.settings.charLimit).toBeNull();
@@ -271,18 +273,24 @@ describe('Form Definition renderer', () => {
       const values = reactive({settings: {palette: 'sunset'}});
       const container = document.createElement('div');
       const pluginRenderer = defineComponent({
-        props: ['config', 'attributes', 'binding'],
-        emits: ['update:value'],
-        setup(props, {emit}) {
+        inheritAttrs: false,
+        props: {
+          colors: {type: Array, required: true},
+          modelValue: {type: String, required: true},
+          readonly: Boolean,
+        },
+        emits: ['update:modelValue'],
+        setup(props, {attrs, emit}) {
           return () =>
             h(
               'button',
               {
-                ...props.attributes,
+                ...attrs,
                 'data-plugin-renderer': '',
-                onClick: () => emit('update:value', 'ocean'),
+                'data-readonly': String(props.readonly),
+                onClick: () => emit('update:modelValue', 'ocean'),
               },
-              `${props.config.colors.join(',')}:${props.binding.value}`
+              `${props.colors.join(',')}:${props.modelValue}`
             );
         },
       });
@@ -290,6 +298,7 @@ describe('Form Definition renderer', () => {
         elements: [
           {
             type: 'craft:field',
+            props: {required: true},
             children: [
               {
                 type: 'color-tools:color-map',
@@ -334,6 +343,13 @@ describe('Form Definition renderer', () => {
       )!;
       expect(renderer.textContent).toBe('red,blue:sunset');
       expect(renderer.dataset.setting).toBe('palette');
+      expect(renderer.dataset.readonly).toBe('false');
+      expect(renderer.name).toBe('settings[palette]');
+      expect(renderer.id).toBe('form-element-settings--palette');
+      expect(renderer.getAttribute('aria-required')).toBe('true');
+      expect(renderer.hasAttribute('required')).toBe(true);
+      expect(renderer.hasAttribute('config')).toBe(false);
+      expect(renderer.hasAttribute('binding')).toBe(false);
 
       renderer.click();
       await nextTick();
@@ -343,6 +359,131 @@ describe('Form Definition renderer', () => {
       mountedApps.pop();
       container.remove();
     }
+  });
+
+  it('runs a generated wrapper through the registry without setup events changing host state', async () => {
+    const registry = createCpComponentRegistry();
+    const initial = [{color: '#ff0000', label: 'Red', default: true}];
+    const values = reactive({settings: {palette: initial}});
+    const container = document.createElement('div');
+
+    registry.register('form-element:color-tools:color-map', CraftColorPalette);
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(FormDefinitionRenderer, {
+      definition: {
+        elements: [
+          {
+            type: 'craft:field',
+            children: [
+              {
+                type: 'color-tools:color-map',
+                name: 'palette',
+                plugin: {
+                  handle: 'color-tools',
+                  name: 'Color Tools',
+                  packageName: 'vendor/color-tools',
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bindingScope: 'settings',
+      values,
+      errors: {},
+    });
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const palette = container.querySelector<
+      HTMLElementTagNameMap['craft-color-palette']
+    >('craft-color-palette')!;
+
+    expect(palette.value).toEqual(initial);
+
+    palette.value = [];
+    palette.dispatchEvent(
+      new CustomEvent('input', {
+        bubbles: true,
+        detail: {initialize: true},
+      })
+    );
+    await nextTick();
+
+    expect(values.settings.palette).toEqual(initial);
+
+    const edited = [{color: '#00ff00', label: 'Green', default: false}];
+    palette.value = edited;
+    palette.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(values.settings.palette).toEqual(edited);
+  });
+
+  it('updates final attributes on a preserved adapter during reconciliation', async () => {
+    const registry = createCpComponentRegistry();
+    const inputName = ref('primaryRows');
+    const values = reactive({
+      settings: {
+        primaryRows: [{label: 'Primary'}],
+        secondaryRows: [{label: 'Secondary'}],
+      },
+    });
+    const container = document.createElement('div');
+    const host = defineComponent({
+      setup() {
+        return () =>
+          h(FormDefinitionRenderer, {
+            definition: {
+              elements: [
+                {
+                  type: 'craft:field',
+                  key: 'rows-field',
+                  children: [
+                    {
+                      type: 'craft:editable-table-input',
+                      key: 'rows-input',
+                      name: inputName.value,
+                      props: {sourceName: 'rows'},
+                    },
+                  ],
+                },
+              ],
+            },
+            bindingScope: 'settings',
+            values,
+            errors: {},
+          });
+      },
+    });
+
+    registry.register(
+      'form-element:craft:editable-table-input',
+      EditableTableInputRenderer
+    );
+    (window as any).Cp = {$components: registry};
+    document.body.appendChild(container);
+    const app = createApp(host);
+
+    mountedApps.push(app);
+    app.mount(container);
+
+    const table = container.querySelector<
+      HTMLElementTagNameMap['craft-editable-table']
+    >('craft-editable-table')!;
+
+    expect(table.name).toBe('settings[primaryRows]');
+    expect(table.value).toEqual([{label: 'Primary'}]);
+
+    inputName.value = 'secondaryRows';
+    await nextTick();
+
+    expect(container.querySelector('craft-editable-table')).toBe(table);
+    expect(table.name).toBe('settings[secondaryRows]');
+    expect(table.id).toBe('form-element-settings--secondaryRows');
+    expect(table.value).toEqual([{label: 'Secondary'}]);
   });
 
   it('shows plugin ownership when its renderer is unavailable', () => {
@@ -403,7 +544,7 @@ describe('Form Definition renderer', () => {
       'form-element:color-tools:palette-group',
       pluginContainer
     );
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -455,13 +596,20 @@ describe('Form Definition renderer', () => {
     const values = reactive({settings: {slug: 'article', subtitle: ''}});
     const currentDefinition = ref(tabbedDefinition(false));
     const nativeInputRenderer = defineComponent({
-      props: ['attributes', 'binding'],
-      setup(props) {
+      inheritAttrs: false,
+      props: ['modelValue'],
+      emits: ['update:modelValue'],
+      setup(props, {attrs, emit}) {
         return () =>
           h('input', {
-            ...props.attributes,
-            value: props.binding.value,
-            'data-native-input': props.binding.name,
+            ...attrs,
+            value: props.modelValue,
+            'data-native-input': attrs.name,
+            onInput: (event) =>
+              emit(
+                'update:modelValue',
+                (event.target as HTMLInputElement).value
+              ),
           });
       },
     });
@@ -507,7 +655,7 @@ describe('Form Definition renderer', () => {
     )!;
     expect(metadataPanel.tagName).toBe('CRAFT-FIELD-GROUP');
     const slugInput = container.querySelector<HTMLInputElement>(
-      '[data-native-input="slug"]'
+      '[data-native-input="settings[slug]"]'
     )!;
     slugInput.focus();
     slugInput.setSelectionRange(2, 5);
@@ -540,14 +688,14 @@ describe('Form Definition renderer', () => {
     expect(container.querySelector('[data-form-tab-panel="metadata"]')).toBe(
       metadataPanel
     );
-    expect(container.querySelector('[data-native-input="slug"]')).toBe(
-      slugInput
-    );
+    expect(
+      container.querySelector('[data-native-input="settings[slug]"]')
+    ).toBe(slugInput);
     expect(document.activeElement).toBe(slugInput);
     expect(slugInput.selectionStart).toBe(2);
     expect(slugInput.selectionEnd).toBe(5);
     expect(
-      container.querySelector('[data-native-input="subtitle"]')
+      container.querySelector('[data-native-input="settings[subtitle]"]')
     ).not.toBeNull();
     expect(slugInput.name).toBe('settings[slug]');
 
@@ -567,7 +715,7 @@ describe('Form Definition renderer', () => {
     const registry = createCpComponentRegistry();
     const container = document.createElement('div');
 
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -821,7 +969,7 @@ describe('Form Definition renderer', () => {
         ],
       };
 
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -842,8 +990,8 @@ describe('Form Definition renderer', () => {
       '[data-form-element="craft:field"]'
     )!;
     input.dataset.transientState = 'preserved';
-    input.value = 'articles';
-    input.dispatchEvent(new Event('input', {bubbles: true}));
+    input.modelValue = 'articles';
+    input.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
 
     values.settings.enabled = false;
@@ -875,7 +1023,7 @@ describe('Form Definition renderer', () => {
     });
     const container = document.createElement('div');
 
-    registry.register('form-element:craft:text-input', TextInputRenderer);
+    registry.register('form-element:craft:text-input', CraftInput);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const app = createApp(FormDefinitionRenderer, {
@@ -928,8 +1076,8 @@ describe('Form Definition renderer', () => {
     expect(input.slot).toBe('input');
     expect(feedback.slot).toBe('feedback');
 
-    input.value = 'articles';
-    input.dispatchEvent(new Event('input', {bubbles: true}));
+    input.modelValue = 'articles';
+    input.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
 
     expect(values.settings.handle).toBe('articles');
@@ -955,10 +1103,7 @@ describe('Form Definition renderer', () => {
     const values = reactive({settings: {enabled: true}});
     const container = document.createElement('div');
 
-    registry.register(
-      'form-element:craft:lightswitch-input',
-      LightswitchInputRenderer
-    );
+    registry.register('form-element:craft:lightswitch-input', CraftSwitch);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
     const vueApp = createApp(FormDefinitionRenderer, {
@@ -1055,7 +1200,7 @@ describe('Form Definition renderer', () => {
           })),
         };
 
-      registry.register('form-element:craft:text-input', TextInputRenderer);
+      registry.register('form-element:craft:text-input', CraftInput);
       (window as any).Cp = {$components: registry};
       document.body.appendChild(container);
       const app = createApp(FormDefinitionRenderer, {

@@ -6,7 +6,6 @@
   import '@craftcms/ui/components/tab/tab';
   import '@craftcms/ui/components/tabs/tabs';
   import {t} from '@craftcms/ui/utilities/translate';
-  import type {FormElementBinding} from '@craftcms/ui';
   import {
     htmlInputName,
     inputId,
@@ -128,34 +127,27 @@
     required: required.value,
   }));
 
-  const binding = computed<FormElementBinding | undefined>(() => {
-    if (!props.element.name) {
-      return undefined;
-    }
-
-    const path = scopedPath(props.context.bindingScope, props.element.name);
-
-    return {
-      name: props.element.name,
-      value: valueAt(props.context.values, path),
-      readOnly:
-        props.context.readOnly || (props.fieldContext?.readOnly ?? false),
-    };
-  });
+  const bindingPath = computed(() =>
+    props.element.name
+      ? scopedPath(props.context.bindingScope, props.element.name)
+      : undefined
+  );
+  const readOnly = computed(
+    () => props.context.readOnly || (props.fieldContext?.readOnly ?? false)
+  );
 
   const attributes = computed<Record<string, JsonValue>>(() => {
     const elementAttributes = htmlAttributes(props.element.attributes);
 
-    if (!binding.value) {
+    if (!bindingPath.value) {
       return elementAttributes;
     }
 
-    const path = scopedPath(props.context.bindingScope, binding.value.name);
     const attributes: Record<string, JsonValue> = {
       ...elementAttributes,
-      id: props.fieldContext?.inputId ?? inputId(path),
-      name: htmlInputName(path),
-      readonly: binding.value.readOnly,
+      id: props.fieldContext?.inputId ?? inputId(bindingPath.value),
+      name: htmlInputName(bindingPath.value),
+      readonly: readOnly.value,
     };
 
     if (props.fieldContext?.required) {
@@ -165,6 +157,14 @@
 
     return attributes;
   });
+  const rendererProps = computed(() => ({
+    ...props.element.props,
+    ...attributes.value,
+    ...(bindingPath.value
+      ? {modelValue: valueAt(props.context.values, bindingPath.value)}
+      : {}),
+    readonly: readOnly.value,
+  }));
 
   const width = computed(() => elementWidth(props.element));
   const visible = computed(() => elementVisible(props.element));
@@ -366,10 +366,8 @@
       v-show="visible"
       :slot="hostSlot"
       :style="{width}"
-      :config="(element.props ?? {}) as Record<string, JsonValue>"
-      :attributes="attributes"
-      :binding="binding"
-      @update:value="updateValue"
+      v-bind="rendererProps"
+      @update:model-value="updateValue"
     >
       <FormElementRenderer
         v-for="(child, index) in element.children"
@@ -388,10 +386,8 @@
       <component
         :is="renderer"
         v-else-if="renderer"
-        :config="(element.props ?? {}) as Record<string, JsonValue>"
-        :attributes="attributes"
-        :binding="binding"
-        @update:value="updateValue"
+        v-bind="rendererProps"
+        @update:model-value="updateValue"
       >
         <FormElementRenderer
           v-for="(child, index) in element.children"

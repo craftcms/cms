@@ -1,8 +1,8 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import FormDefinitionRenderer from '../FormDefinitionRenderer.vue';
-import ColorPaletteInputRenderer from './ColorPaletteInputRenderer.vue';
+import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
+import {registerNativeFormElementRenderers} from './form-element-types';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -133,10 +133,7 @@ function mount(
   const registry = createCpComponentRegistry();
   const container = document.createElement('div');
 
-  registry.register(
-    'form-element:craft:color-palette-input',
-    ColorPaletteInputRenderer
-  );
+  registerNativeFormElementRenderers(registry);
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
   const app = createApp(FormDefinitionRenderer, {

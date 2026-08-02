@@ -9,10 +9,10 @@ import {
   shallowRef,
 } from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
-import TextInputRenderer from './renderers/TextInputRenderer.vue';
 import type {FormDefinitionData} from './types';
 import architectureFixture from './fixtures/architecture-acceptance.json';
 
@@ -60,23 +60,25 @@ it('type-checks and renders the shared architecture fixture', async () => {
   );
   let legacyMounts = 0;
   const pluginRenderer = defineComponent({
-    props: ['config', 'binding', 'attributes'],
-    emits: ['update:value'],
+    props: {
+      colors: {type: Array, required: true},
+      modelValue: {type: String, required: true},
+    },
+    emits: ['update:modelValue'],
     setup(props, {emit}) {
       return () =>
         h(
           'button',
           {
             'data-plugin-renderer': '',
-            onClick: () => emit('update:value', 'ocean'),
+            onClick: () => emit('update:modelValue', 'ocean'),
           },
-          `${props.config.colors.join(',')}:${props.binding.value}`
+          `${props.colors.join(',')}:${props.modelValue}`
         );
     },
   });
   const legacyRenderer = defineComponent({
     inheritAttrs: false,
-    props: ['attributes', 'config'],
     setup() {
       onMounted(() => legacyMounts++);
 
@@ -112,7 +114,7 @@ it('type-checks and renders the shared architecture fixture', async () => {
     },
   });
 
-  registry.register('form-element:craft:text-input', TextInputRenderer);
+  registry.register('form-element:craft:text-input', CraftInput);
   registry.register('form-element:color-tools:color-map', async () => ({
     default: pluginRenderer,
   }));
@@ -127,8 +129,8 @@ it('type-checks and renders the shared architecture fixture', async () => {
   const ordinary = container.querySelector<
     HTMLElementTagNameMap['craft-input']
   >('[data-acceptance-case="ordinary"] craft-input')!;
-  ordinary.value = 'Updated architecture';
-  ordinary.dispatchEvent(new Event('input', {bubbles: true}));
+  ordinary.modelValue = 'Updated architecture';
+  ordinary.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
   await nextTick();
 
   expect(values.settings.title).toBe('Updated architecture');

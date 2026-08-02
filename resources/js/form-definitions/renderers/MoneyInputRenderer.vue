@@ -1,46 +1,35 @@
 <script setup lang="ts">
-  import {computed, useAttrs} from 'vue';
+  import {computed} from 'vue';
   import '@craftcms/ui/components/input-money/input-money';
-  import type {FormElementBinding, JsonValue} from '../types';
-
-  defineOptions({inheritAttrs: false});
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    currency?: string;
+    fractionDigits?: number;
+    placeholder?: string;
+    modelValue?: unknown;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: number | string | null];
+    'update:modelValue': [value: number | string | null];
   }>();
-  const attrs = useAttrs();
-  const hostAttributes = computed(() => ({...props.attributes, ...attrs}));
-  const fractionDigits = computed(() =>
-    typeof props.config.fractionDigits === 'number'
-      ? props.config.fractionDigits
-      : 2
-  );
+  const resolvedFractionDigits = computed(() => props.fractionDigits ?? 2);
   const value = computed(() =>
-    formatMinorUnits(props.binding?.value, fractionDigits.value)
+    formatMinorUnits(props.modelValue, resolvedFractionDigits.value)
   );
-  const currency = computed(() => stringConfig('currency'));
-  const placeholder = computed(() => stringConfig('placeholder'));
 
   function updateValue(event: Event): void {
+    if (props.readonly) {
+      return;
+    }
+
     emit(
-      'update:value',
+      'update:modelValue',
       parseMinorUnits(
         (event.target as HTMLElementTagNameMap['craft-input-money']).value,
-        fractionDigits.value
+        resolvedFractionDigits.value
       )
     );
-  }
-
-  function stringConfig(name: string): string | undefined {
-    const value = props.config[name];
-
-    return typeof value === 'string' ? value : undefined;
   }
 
   function formatMinorUnits(value: unknown, digits: number): string {
@@ -83,11 +72,11 @@
 
 <template>
   <craft-input-money
-    v-bind="hostAttributes"
     :value="value"
     :currency="currency"
-    :fraction-digits="fractionDigits"
+    :fraction-digits="resolvedFractionDigits"
     :placeholder="placeholder"
+    :readonly="readonly"
     @input="updateValue"
   ></craft-input-money>
 </template>

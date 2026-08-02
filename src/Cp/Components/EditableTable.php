@@ -46,6 +46,8 @@ class EditableTable extends ViewComponent implements FormElement
 
     protected string|Closure|null $name = null;
 
+    protected string|Closure|null $sourceName = null;
+
     /** @var array<array-key, mixed>|Closure */
     protected array|Closure $value = [];
 
@@ -90,6 +92,14 @@ class EditableTable extends ViewComponent implements FormElement
     {
         $this->trackConfiguration('name');
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function sourceName(string|Closure|null $sourceName): static
+    {
+        $this->trackConfiguration('sourceName');
+        $this->sourceName = $sourceName;
 
         return $this;
     }
@@ -197,6 +207,7 @@ class EditableTable extends ViewComponent implements FormElement
         $this->validateAttributes();
 
         $props = array_filter([
+            'sourceName' => $this->portableText('sourceName', $this->sourceName),
             'columns' => $columns,
             'addRowLabel' => $this->portableText('addRowLabel', $this->addRowLabel),
             'defaultRow' => $defaultRow === [] ? null : $defaultRow,
@@ -217,6 +228,8 @@ class EditableTable extends ViewComponent implements FormElement
     #[Override]
     protected function hostAttributes(): array
     {
+        $this->rejectConfiguredOptions(['sourceName'], 'HTML');
+
         $columns = $this->resolvedColumns('HTML');
         $defaultRow = $this->resolvedDefaultRow('HTML');
         $keyed = $this->resolvedBool('keyed', $this->keyed, 'HTML');

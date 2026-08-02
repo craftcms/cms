@@ -2,10 +2,10 @@ import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import type CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
 import CheckboxSelectInputRenderer from './renderers/CheckboxSelectInputRenderer.vue';
 import EditableTableInputRenderer from './renderers/EditableTableInputRenderer.vue';
-import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
 import SelectInputRenderer from './renderers/SelectInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
@@ -116,15 +116,19 @@ describe('specialized field settings renderer', () => {
     const container = mount(tableDefinition, values);
     const columnsTable = container.querySelector<
       HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="columns"]')!;
+    >('[data-editable-table="columnDefinitions"]')!;
     const defaultsTable = container.querySelector<
       HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="defaults"]')!;
+    >('[data-editable-table="defaultRows"]')!;
 
     await settleTables(columnsTable, defaultsTable);
     const columnsRoot = columnsTable.shadowRoot!;
     const defaultsRoot = defaultsTable.shadowRoot!;
 
+    expect(columnsTable.name).toBe('settings[columns]');
+    expect(columnsTable.sourceName).toBe('columnDefinitions');
+    expect(defaultsTable.name).toBe('settings[defaults]');
+    expect(defaultsTable.sourceName).toBe('defaultRows');
     expect(
       Array.from(
         columnsRoot.querySelectorAll<HTMLElement>('[data-editable-table-row]'),
@@ -284,7 +288,7 @@ describe('specialized field settings renderer', () => {
     const container = mount(tableDefinition, values);
     const defaultsTable = container.querySelector<
       HTMLElementTagNameMap['craft-editable-table']
-    >('[data-editable-table="defaults"]')!;
+    >('[data-editable-table="defaultRows"]')!;
 
     await settleTables(defaultsTable);
     const row = defaultsTable.shadowRoot!.querySelector<HTMLElement>(
@@ -408,10 +412,7 @@ function mount(
     'form-element:craft:editable-table-input',
     EditableTableInputRenderer
   );
-  registry.register(
-    'form-element:craft:lightswitch-input',
-    LightswitchInputRenderer
-  );
+  registry.register('form-element:craft:lightswitch-input', CraftSwitch);
   registry.register('form-element:craft:select-input', SelectInputRenderer);
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
@@ -489,6 +490,7 @@ const tableDefinition = {
       defaultRow: {heading: '', handle: '', width: '', type: 'singleline'},
       keyed: true,
       definesColumns: true,
+      sourceName: 'columnDefinitions',
     }),
     field('craft:editable-table-input', 'defaults', {
       columns: [
@@ -512,7 +514,8 @@ const tableDefinition = {
       ],
       addRowLabel: 'Add a row',
       includeRowId: true,
-      columnsFrom: 'columns',
+      columnsFrom: 'columnDefinitions',
+      sourceName: 'defaultRows',
     }),
   ],
 } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;

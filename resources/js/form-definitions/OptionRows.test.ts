@@ -2,9 +2,8 @@ import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import type CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
-import FormDefinitionRenderer from '../FormDefinitionRenderer.vue';
-import LightswitchInputRenderer from './LightswitchInputRenderer.vue';
-import OptionRowsRenderer from './OptionRowsRenderer.vue';
+import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
+import {registerNativeFormElementRenderers} from './form-element-types';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -415,11 +414,7 @@ function mount(
   const registry = createCpComponentRegistry();
   const container = document.createElement('div');
 
-  registry.register('form-element:craft:option-rows', OptionRowsRenderer);
-  registry.register(
-    'form-element:craft:lightswitch-input',
-    LightswitchInputRenderer
-  );
+  registerNativeFormElementRenderers(registry);
   (window as any).Cp = {$components: registry};
   document.body.appendChild(container);
   const app = createApp(FormDefinitionRenderer, {

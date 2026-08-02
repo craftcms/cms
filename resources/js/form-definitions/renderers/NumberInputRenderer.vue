@@ -1,39 +1,37 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import type {FormElementBinding, JsonValue} from '../types';
-  import CraftInputRenderer from './CraftInputRenderer.vue';
+  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 
   const props = defineProps<{
-    config: Record<string, JsonValue>;
-    attributes: Record<string, JsonValue>;
-    binding?: FormElementBinding;
+    min?: number;
+    max?: number;
+    step?: number;
+    modelValue?: number | null;
+    readonly?: boolean;
   }>();
 
   const emit = defineEmits<{
-    'update:value': [value: number | null];
+    'update:modelValue': [value: number | null];
   }>();
 
-  const value = computed(() => String(props.binding?.value ?? ''));
+  const value = computed(() => String(props.modelValue ?? ''));
 
-  function numericProp(name: string): number | undefined {
-    const value = props.config[name];
-
-    return typeof value === 'number' ? value : undefined;
-  }
-
-  function updateValue(value: string): void {
-    emit('update:value', value === '' ? null : Number(value));
+  function updateValue(value: string | number | undefined): void {
+    emit(
+      'update:modelValue',
+      value === '' || value === undefined ? null : Number(value)
+    );
   }
 </script>
 
 <template>
-  <CraftInputRenderer
-    :attributes="attributes"
+  <CraftInput
     type="number"
-    :value="value"
-    :min="numericProp('min')"
-    :max="numericProp('max')"
-    :step="numericProp('step')"
-    @update:value="updateValue"
+    :model-value="value"
+    :min="min"
+    :max="max"
+    :step="step"
+    :readonly="readonly"
+    @update:model-value="updateValue"
   />
 </template>

@@ -258,15 +258,16 @@ describe('Legacy Settings Island', () => {
     const registry = createCpComponentRegistry();
     const mountedNativeInputs: string[] = [];
     const nativeInputRenderer = defineComponent({
-      props: ['attributes', 'binding'],
-      setup(props) {
-        onMounted(() => mountedNativeInputs.push(props.binding.name));
+      inheritAttrs: false,
+      props: ['modelValue'],
+      setup(props, {attrs}) {
+        onMounted(() => mountedNativeInputs.push(String(attrs.name)));
 
         return () =>
           h('input', {
-            ...props.attributes,
-            value: props.binding.value,
-            'data-mixed-native-input': props.binding.name,
+            ...attrs,
+            value: props.modelValue,
+            'data-mixed-native-input': attrs.name,
           });
       },
     });
@@ -305,7 +306,7 @@ describe('Legacy Settings Island', () => {
     });
 
     const bodyInput = container.querySelector(
-      '[data-mixed-native-input="fields.body"]'
+      '[data-mixed-native-input="entry[fields][body]"]'
     );
     const island = container.querySelector('craft-legacy-settings-island');
     const legacyInput = container.querySelector('[name="entry[legacyRating]"]');
@@ -317,7 +318,9 @@ describe('Legacy Settings Island', () => {
       container.querySelector('[role="tab"][aria-selected="true"]')?.textContent
     ).toContain('Content');
     expect(
-      container.querySelector('[data-mixed-native-input="fields.body"]')
+      container.querySelector(
+        '[data-mixed-native-input="entry[fields][body]"]'
+      )
     ).toBe(bodyInput);
     expect(container.querySelector('craft-legacy-settings-island')).toBe(
       island
@@ -325,7 +328,10 @@ describe('Legacy Settings Island', () => {
     expect(container.querySelector('[name="entry[legacyRating]"]')).toBe(
       legacyInput
     );
-    expect(mountedNativeInputs).toEqual(['fields.body', 'fields.summary']);
+    expect(mountedNativeInputs).toEqual([
+      'entry[fields][body]',
+      'entry[fields][summary]',
+    ]);
   });
 });
 

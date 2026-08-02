@@ -1,9 +1,9 @@
 import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormDefinitionRenderer from './FormDefinitionRenderer.vue';
 import ComboboxInputRenderer from './renderers/ComboboxInputRenderer.vue';
-import LightswitchInputRenderer from './renderers/LightswitchInputRenderer.vue';
 
 const mountedApps: Array<ReturnType<typeof createApp>> = [];
 
@@ -30,10 +30,7 @@ describe('filesystem settings renderer', () => {
       'form-element:craft:combobox-input',
       ComboboxInputRenderer
     );
-    registry.register(
-      'form-element:craft:lightswitch-input',
-      LightswitchInputRenderer
-    );
+    registry.register('form-element:craft:lightswitch-input', CraftSwitch);
     (window as any).Cp = {$components: registry};
     document.body.appendChild(container);
 

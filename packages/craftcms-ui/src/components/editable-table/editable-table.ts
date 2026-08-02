@@ -1020,7 +1020,7 @@ export default class CraftEditableTable extends LitElement {
   }
 
   private _syncRowsToColumns(columns: EditableTableColumn[]) {
-    if (this.keyed || this._renderedRows.length === 0) {
+    if (this.readOnly || this.keyed || this._renderedRows.length === 0) {
       return;
     }
 
