@@ -36,6 +36,13 @@ export abstract class ControllerElement<
     return this.#instance;
   }
 
+  protected restart(update: () => void): void {
+    this.#instance?.destroy();
+    this.#instance = null;
+    update();
+    this.#boot();
+  }
+
   connectedCallback(): void {
     this.#boot();
   }

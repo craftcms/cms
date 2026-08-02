@@ -412,6 +412,8 @@ it('projects the complete Color settings surface', function () {
     ]);
 
     $inputs = projectedInputs($field->getSettingsForm(true)?->toArray());
+    $tableHtml = $inputs['palette']['props']['tableHtml'];
+    unset($inputs['palette']['props']['tableHtml']);
 
     expect($field->getSettings())->toMatchArray([
         'palette' => [
@@ -419,27 +421,28 @@ it('projects the complete Color settings surface', function () {
             ['color' => '#0000ff', 'label' => null, 'default' => false],
         ],
         'allowCustomColors' => true,
-    ])->and($inputs)->toBe([
-        'palette' => [
-            'type' => 'craft:editable-table-input',
-            'label' => 'Palette',
-            'instructions' => 'Define the available colors to choose from.',
-            'readOnly' => true,
-            'props' => [
-                'columns' => [
-                    ['key' => 'color', 'label' => 'Color', 'type' => 'color'],
-                    ['key' => 'label', 'label' => 'Label', 'type' => 'text'],
-                    ['key' => 'default', 'label' => 'Default', 'type' => 'checkbox', 'radioMode' => true],
+    ])->and($tableHtml)->toContainTag('craft-editable-table', ['name' => 'palette'])
+        ->and($inputs)->toBe([
+            'palette' => [
+                'type' => 'craft:editable-table-input',
+                'label' => 'Palette',
+                'instructions' => 'Define the available colors to choose from.',
+                'readOnly' => true,
+                'props' => [
+                    'columns' => [
+                        ['key' => 'color', 'label' => 'Color', 'type' => 'color'],
+                        ['key' => 'label', 'label' => 'Label', 'type' => 'text'],
+                        ['key' => 'default', 'label' => 'Default', 'type' => 'checkbox', 'radioMode' => true],
+                    ],
+                    'addRowLabel' => 'Add a color',
                 ],
-                'addRowLabel' => 'Add a color',
             ],
-        ],
-        'allowCustomColors' => [
-            'type' => 'craft:lightswitch-input',
-            'label' => 'Allow custom colors',
-            'readOnly' => true,
-        ],
-    ]);
+            'allowCustomColors' => [
+                'type' => 'craft:lightswitch-input',
+                'label' => 'Allow custom colors',
+                'readOnly' => true,
+            ],
+        ]);
 });
 
 it('projects the complete Money settings surface with currency subunits', function () {

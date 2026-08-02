@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Override;
 
@@ -98,7 +101,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function name(string|Closure|null $name): static
     {
-        $this->trackConfiguration('name');
         $this->name = $name;
 
         return $this;
@@ -106,7 +108,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function sourceName(string|Closure|null $sourceName): static
     {
-        $this->trackConfiguration('sourceName');
         $this->sourceName = $sourceName;
 
         return $this;
@@ -115,7 +116,6 @@ class EditableTable extends ViewComponent implements FormElement
     /** @param array<array-key, mixed>|Closure $value */
     public function value(array|Closure $value): static
     {
-        $this->trackConfiguration('value');
         $this->value = $value;
 
         return $this;
@@ -124,7 +124,6 @@ class EditableTable extends ViewComponent implements FormElement
     /** @param list<EditableTableColumn>|Closure $columns */
     public function columns(array|Closure $columns): static
     {
-        $this->trackConfiguration('columns');
         $this->columns = $columns;
 
         return $this;
@@ -133,7 +132,6 @@ class EditableTable extends ViewComponent implements FormElement
     /** @param list<EditableTableFixedRow>|Closure $fixedRows */
     public function fixedRows(array|Closure $fixedRows): static
     {
-        $this->trackConfiguration('fixedRows');
         $this->fixedRows = $fixedRows;
 
         return $this;
@@ -141,7 +139,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function addRowLabel(string|Closure|null $addRowLabel): static
     {
-        $this->trackConfiguration('addRowLabel');
         $this->addRowLabel = $addRowLabel;
 
         return $this;
@@ -150,7 +147,6 @@ class EditableTable extends ViewComponent implements FormElement
     /** @param array<string, mixed>|Closure $defaultRow */
     public function defaultRow(array|Closure $defaultRow): static
     {
-        $this->trackConfiguration('defaultRow');
         $this->defaultRow = $defaultRow;
 
         return $this;
@@ -158,7 +154,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function keyed(bool|Closure $keyed = true): static
     {
-        $this->trackConfiguration('keyed');
         $this->keyed = $keyed;
 
         return $this;
@@ -166,7 +161,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function includeRowId(bool|Closure $includeRowId = true): static
     {
-        $this->trackConfiguration('includeRowId');
         $this->includeRowId = $includeRowId;
 
         return $this;
@@ -174,7 +168,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function definesColumns(bool|Closure $definesColumns = true): static
     {
-        $this->trackConfiguration('definesColumns');
         $this->definesColumns = $definesColumns;
 
         return $this;
@@ -182,7 +175,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function columnsFrom(string|Closure|null $columnsFrom): static
     {
-        $this->trackConfiguration('columnsFrom');
         $this->columnsFrom = $columnsFrom;
 
         return $this;
@@ -190,7 +182,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function readOnly(bool|Closure $readOnly = true): static
     {
-        $this->trackConfiguration('readOnly');
         $this->readOnly = $readOnly;
 
         return $this;
@@ -207,8 +198,6 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $this->rejectConfiguredOptions(['value', 'readOnly', 'slot'], 'Form');
-
         $name = $this->portableText('name', $this->name);
 
         if ($name === null) {
@@ -221,31 +210,46 @@ class EditableTable extends ViewComponent implements FormElement
         $keyed = $this->resolvedBool('keyed', $this->keyed, 'Form');
         $includeRowId = $this->resolvedBool('includeRowId', $this->includeRowId, 'Form');
         $definesColumns = $this->resolvedBool('definesColumns', $this->definesColumns, 'Form');
+        $readOnly = $this->resolvedBool('readOnly', $this->readOnly, 'Form');
+        $addRowLabel = $this->portableText('addRowLabel', $this->addRowLabel);
+        $value = $this->evaluate($this->value);
 
-        $this->validateAttributes();
+        $this->validateValue($value, $keyed, 'Form');
 
         $props = array_filter([
+            'tableHtml' => $this->tableHtml(
+                $name,
+                $value,
+                $columns,
+                $fixedRows,
+                $defaultRow,
+                $keyed,
+                $includeRowId,
+                $readOnly,
+                $addRowLabel,
+            ),
             'sourceName' => $this->portableText('sourceName', $this->sourceName),
             'columns' => $columns,
             'fixedRows' => $fixedRows === [] ? null : $fixedRows,
-            'addRowLabel' => $this->portableText('addRowLabel', $this->addRowLabel),
+            'addRowLabel' => $addRowLabel,
             'defaultRow' => $defaultRow === [] ? null : $defaultRow,
             'keyed' => $keyed ?: null,
             'includeRowId' => $includeRowId ?: null,
             'definesColumns' => $definesColumns ?: null,
             'columnsFrom' => $this->portableText('columnsFrom', $this->columnsFrom),
         ], fn (mixed $value): bool => $value !== null);
+        $attributes = $this->formElementAttributes();
 
         return new FormElementData(
             type: static::formElementType(),
             name: $name,
             props: $props,
-            attributes: $this->formElementAttributes === [] ? null : $this->formElementAttributes,
+            attributes: $attributes === [] ? null : $attributes,
         );
     }
 
     #[Override]
-    protected function hostAttributes(): array
+    protected function renderMarkup(): string
     {
         $columns = $this->resolvedColumns('HTML');
         $fixedRows = $this->resolvedFixedRows('HTML');
@@ -255,20 +259,106 @@ class EditableTable extends ViewComponent implements FormElement
 
         $this->validateValue($value, $keyed, 'HTML');
 
-        return [
-            'name' => $this->resolvedText('name', $this->name, 'HTML'),
-            'source-name' => $this->resolvedText('sourceName', $this->sourceName, 'HTML'),
-            'value' => Json::encode($value, JSON_THROW_ON_ERROR),
-            'columns' => Json::encode($columns, JSON_THROW_ON_ERROR),
-            'fixed-rows' => Json::encode($fixedRows, JSON_THROW_ON_ERROR),
-            'add-row-label' => $this->resolvedText('addRowLabel', $this->addRowLabel, 'HTML'),
-            'default-row' => $defaultRow === [] ? '{}' : Json::encode($defaultRow, JSON_THROW_ON_ERROR),
+        return $this->tableHtml(
+            $this->resolvedText('name', $this->name, 'HTML') ?? 'editableTable',
+            $value,
+            $columns,
+            $fixedRows,
+            $defaultRow,
+            $keyed,
+            $this->resolvedBool('includeRowId', $this->includeRowId, 'HTML'),
+            $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
+            $this->resolvedText('addRowLabel', $this->addRowLabel, 'HTML'),
+            $this->attributes,
+        );
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $value
+     * @param  list<EditableTableColumn>  $columns
+     * @param  list<EditableTableFixedRow>  $fixedRows
+     * @param  array<string, mixed>  $defaultRow
+     */
+    private function tableHtml(
+        string $name,
+        array $value,
+        array $columns,
+        array $fixedRows,
+        array $defaultRow,
+        bool $keyed,
+        bool $includeRowId,
+        bool $readOnly,
+        ?string $addRowLabel,
+        array $attributes = [],
+    ): string {
+        $legacyColumns = $this->legacyColumns($columns);
+        $rows = $value;
+
+        if ($fixedRows !== []) {
+            $legacyColumns = [
+                '__rowLabel' => ['type' => 'heading', 'heading' => ''],
+                ...$legacyColumns,
+            ];
+            $rows = [];
+
+            foreach ($fixedRows as $fixedRow) {
+                $rows[$fixedRow['key']] = [
+                    '__rowLabel' => $fixedRow['label'],
+                    ...($value[$fixedRow['key']] ?? []),
+                ];
+            }
+        }
+
+        $mutable = ! $readOnly && $fixedRows === [];
+        $id = Html::id("editable-table-{$name}-".spl_object_id($this));
+        $table = FormFields::editableTableHtml([
+            'id' => $id,
+            'name' => $name,
+            'cols' => $legacyColumns,
+            'rows' => $rows,
+            'defaultValues' => $defaultRow,
+            'addRowLabel' => $addRowLabel,
+            'allowAdd' => $mutable,
+            'allowReorder' => $mutable,
+            'allowDelete' => $mutable,
+            'static' => $readOnly,
+            'includeRowId' => $includeRowId,
+            'initJs' => false,
+        ]);
+
+        return Html::tag('craft-editable-table', $table, [
+            ...$attributes,
+            'name' => InputNamespace::namespaceInputName($name),
+            'cols' => Json::encode($legacyColumns, JSON_THROW_ON_ERROR),
+            'settings' => Json::encode([
+                'rowIdPrefix' => $keyed ? 'new' : '',
+                'defaultValues' => $defaultRow,
+                'allowAdd' => $mutable,
+                'allowReorder' => $mutable,
+                'allowDelete' => $mutable,
+                'staticRows' => $readOnly,
+                'includeRowId' => $includeRowId,
+                'values' => $value,
+            ], JSON_THROW_ON_ERROR),
             'keyed' => $keyed,
-            'include-row-id' => $this->resolvedBool('includeRowId', $this->includeRowId, 'HTML'),
-            'defines-columns' => $this->resolvedBool('definesColumns', $this->definesColumns, 'HTML'),
-            'columns-from' => $this->resolvedText('columnsFrom', $this->columnsFrom, 'HTML'),
-            'readonly' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
-        ];
+        ]);
+    }
+
+    /**
+     * @param  list<EditableTableColumn>  $columns
+     * @return array<string, array<string, mixed>>
+     */
+    private function legacyColumns(array $columns): array
+    {
+        return array_column(array_map(static fn (array $column): array => [
+            'key' => $column['key'],
+            'column' => [
+                ...$column,
+                'heading' => $column['label'],
+                'type' => $column['type'] === 'text' ? 'singleline' : $column['type'],
+                ...(isset($column['autoPopulate']) ? ['autopopulate' => $column['autoPopulate']] : []),
+            ],
+        ], $columns), 'column', 'key');
     }
 
     /** @return list<EditableTableColumn> */
@@ -474,29 +564,26 @@ class EditableTable extends ViewComponent implements FormElement
         return $value;
     }
 
-    private function validateAttributes(): void
+    /** @return array<string, mixed> */
+    private function formElementAttributes(): array
     {
-        foreach (array_keys($this->formElementAttributes) as $attribute) {
-            if (in_array(strtolower((string) $attribute), [
-                'add-row-label',
-                'aria-describedby',
-                'aria-labelledby',
-                'columns',
-                'columns-from',
-                'default-row',
-                'defines-columns',
-                'fixed-rows',
-                'id',
-                'include-row-id',
-                'keyed',
-                'name',
-                'readonly',
-                'slot',
-                'source-name',
-                'value',
-            ], true)) {
-                $this->unsupportedOutputOption("attributes.{$attribute}", 'Form');
-            }
-        }
+        return $this->withoutAttributes($this->formElementAttributes, [
+            'add-row-label',
+            'aria-describedby',
+            'aria-labelledby',
+            'columns',
+            'columns-from',
+            'default-row',
+            'defines-columns',
+            'fixed-rows',
+            'id',
+            'include-row-id',
+            'keyed',
+            'name',
+            'readonly',
+            'slot',
+            'source-name',
+            'value',
+        ]);
     }
 }

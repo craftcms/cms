@@ -1,5 +1,7 @@
 import {EditableTable, Row} from './editable-table';
+import CraftEditableTable from './editable-table.ce';
 import {compatify} from '@craftcms/garnish/compat';
+import {defineElement} from '@/common/web-components';
 import {registerCraftGlobals} from '@/common/craft-global';
 
 // Wrap the modern classes with the Garnish compat shim so the still-legacy
@@ -13,4 +15,6 @@ EditableTableCompat.Row = compatify(Row);
 // `new Craft.EditableTable(...)` and `TableFieldSettings` subclasses keep working.
 registerCraftGlobals({EditableTable: EditableTableCompat});
 
-export {EditableTable, Row};
+defineElement('craft-editable-table', CraftEditableTable);
+
+export {CraftEditableTable, EditableTable, Row};

@@ -8,6 +8,7 @@ import {
 } from './form-element-types';
 import FieldLayoutDesignerValueAdapter from './FieldLayoutDesignerValueAdapter.vue';
 import EntryTypeSelectRenderer from './EntryTypeSelectRenderer.vue';
+import EditableTableValueAdapter from './EditableTableValueAdapter.vue';
 
 it('pairs every native Form Element Type with its declared Vue rendering path', () => {
   const registry = createCpComponentRegistry();
@@ -31,6 +32,7 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
 });
 
 it.each([
+  ['craft:editable-table-input', EditableTableValueAdapter],
   ['craft:entry-type-select-input', EntryTypeSelectRenderer],
   ['craft:field-layout-designer', FieldLayoutDesignerValueAdapter],
 ])('registers the %s renderer', (type, wrapper) => {

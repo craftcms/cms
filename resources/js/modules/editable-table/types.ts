@@ -56,4 +56,9 @@ export interface EditableTableSettings extends GarnishBaseSettings {
   /** Include a hidden `rowId` input per row. */
   includeRowId: boolean;
   maxRowId: number | null;
+  values?: EditableTableRowValues;
 }
+
+export type EditableTableRowValues =
+  | Record<string, Record<string, any>>
+  | Record<string, any>[];

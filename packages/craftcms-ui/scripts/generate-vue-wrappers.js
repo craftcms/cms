@@ -216,41 +216,6 @@ const VALUE_COMPONENTS = [
     importPath: '../components/select-color/select-color',
     slots: ['feedback'],
   },
-  {
-    tagName: 'craft-editable-table',
-    className: 'CraftEditableTable',
-    fileName: 'CraftEditableTable',
-    modelType: 'EditableTableValue',
-    modelTypeImports: [
-      'EditableTableColumn',
-      'EditableTableFixedRow',
-      'EditableTableRow',
-      'EditableTableValue',
-    ],
-    modelDefault: '[]',
-    importPath: '../components/editable-table/editable-table',
-    properties: [
-      {name: 'sourceName', type: 'string', defaultValue: 'undefined'},
-      {name: 'columns', type: 'EditableTableColumn[]', defaultValue: '[]'},
-      {
-        name: 'fixedRows',
-        type: 'EditableTableFixedRow[]',
-        defaultValue: '[]',
-      },
-      {name: 'defaultRow', type: 'EditableTableRow', defaultValue: '{}'},
-      {name: 'addRowLabel', type: 'string', defaultValue: 'undefined'},
-      {name: 'keyed', type: 'boolean', defaultValue: 'false'},
-      {name: 'includeRowId', type: 'boolean', defaultValue: 'false'},
-      {name: 'definesColumns', type: 'boolean', defaultValue: 'false'},
-      {name: 'columnsFrom', type: 'string', defaultValue: 'undefined'},
-      {
-        name: 'readonly',
-        target: 'readOnly',
-        type: 'boolean',
-        defaultValue: 'false',
-      },
-    ],
-  },
 ];
 
 /**

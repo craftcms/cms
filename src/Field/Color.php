@@ -162,6 +162,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return Form::make([
             FieldComponent::make(EditableTable::make()
                 ->name('palette')
+                ->value($this->palette)
                 ->columns([
                     [
                         'key' => 'color',
@@ -180,7 +181,8 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         'radioMode' => true,
                     ],
                 ])
-                ->addRowLabel(t('Add a color')))
+                ->addRowLabel(t('Add a color'))
+                ->readOnly($readOnly))
                 ->label(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
                 ->readOnly($readOnly),

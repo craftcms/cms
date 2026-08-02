@@ -337,8 +337,20 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $elements = [
             FieldComponent::make(EditableTable::make()
                 ->name('options')
+                ->value(array_map(static function (array $option): array {
+                    if (! isset($option['optgroup'])) {
+                        return $option;
+                    }
+
+                    $option['isOptgroup'] = true;
+                    $option['label'] = $option['optgroup'];
+                    unset($option['optgroup']);
+
+                    return $option;
+                }, $this->options))
                 ->columns($columns)
-                ->addRowLabel(t('Add an option')))
+                ->addRowLabel(t('Add an option'))
+                ->readOnly($readOnly))
                 ->label($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
                 ->readOnly($readOnly),

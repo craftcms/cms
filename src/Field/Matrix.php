@@ -613,6 +613,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $elements,
             FieldComponent::make(EditableTable::make()
                 ->name('siteSettings')
+                ->value($this->siteSettings)
                 ->columns($columns)
                 ->fixedRows(Collection::make(Sites::getAllSites())->map(
                     fn ($site): array => [
@@ -620,7 +621,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         'label' => t($site->name, category: 'site'),
                     ],
                 )->values()->all())
-                ->keyed())
+                ->keyed()
+                ->readOnly($readOnly))
                 ->label(t('Site Settings'))
                 ->instructions(t('Choose the site-specific settings for nested entries.'))
                 ->readOnly($readOnly),

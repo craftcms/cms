@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 
-it('renders editable table configuration and host values through the shared primitive', function () {
+it('renders editable table values through the existing controller element', function () {
     $columns = [
         ['key' => 'title', 'label' => 'Title', 'type' => 'text'],
         ['key' => 'icon', 'label' => 'Icon', 'type' => 'icon'],
@@ -30,20 +30,17 @@ it('renders editable table configuration and host values through the shared prim
 
     expect($html)->toContainTag('craft-editable-table', [
         'name' => 'rows',
-        'source-name' => 'storyRows',
-        'value' => json_encode($value, JSON_THROW_ON_ERROR),
-        'columns' => json_encode($columns, JSON_THROW_ON_ERROR),
-        'add-row-label' => 'Add story',
-        'default-row' => json_encode(['published' => false], JSON_THROW_ON_ERROR),
-        'include-row-id' => true,
-        'readonly' => true,
-    ]);
+    ])->toContainTag('tr', ['data-id' => '0'])
+        ->toContainTag('input', [
+            'name' => 'rows[0][rowId]',
+            'value' => 'story-row',
+        ]);
 });
 
-it('renders an empty editable table default row as a JSON object', function () {
+it('renders an empty editable table through the existing controller element', function () {
     expect(EditableTable::make()->toHtml())->toContainTag('craft-editable-table', [
-        'default-row' => '{}',
-    ]);
+        'name' => 'editableTable',
+    ])->toContainTag('table');
 });
 
 it('renders fixed keyed rows through the editable table', function () {
@@ -64,15 +61,11 @@ it('renders fixed keyed rows through the editable table', function () {
 
     expect($html)->toContainTag('craft-editable-table', [
         'name' => 'siteSettings',
-        'value' => json_encode($value, JSON_THROW_ON_ERROR),
-        'columns' => json_encode($columns, JSON_THROW_ON_ERROR),
-        'fixed-rows' => json_encode($rows, JSON_THROW_ON_ERROR),
         'keyed' => true,
-        'readonly' => true,
-    ]);
+    ])->toContainTag('tr', ['data-id' => 'english']);
 });
 
-it('registers and deterministically projects the editable table contract without host state', function () {
+it('registers and deterministically projects the existing editable table markup', function () {
     $editable = EditableTable::make()
         ->name('columns')
         ->sourceName('columnForms')
@@ -85,6 +78,10 @@ it('registers and deterministically projects the editable table contract without
     $form = Form::make([
         Field::make($editable),
     ]);
+    $firstProjection = $form->toArray();
+    $tableHtml = $firstProjection['elements'][0]['children'][0]['props']['tableHtml'];
+    unset($firstProjection['elements'][0]['children'][0]['props']['tableHtml']);
+
     $expected = [
         'elements' => [[
             'type' => 'craft:field',
@@ -103,25 +100,12 @@ it('registers and deterministically projects the editable table contract without
             ]],
         ]],
     ];
-    $firstProjection = $form->toArray();
-
     expect(app(ComponentRegistry::class)->make('editable-table'))->toBeInstanceOf(EditableTable::class)
         ->and(app(FormElementTypes::class)->isRegistered(EditableTable::formElementType()))->toBeTrue()
+        ->and($tableHtml)->toContainTag('craft-editable-table', ['name' => 'columns'])
         ->and($firstProjection)->toBe($expected)
-        ->and($form->toArray())->toBe($firstProjection);
+        ->and($form->toArray()['elements'][0]['children'][0]['props']['tableHtml'])->toBe($tableHtml);
 });
-
-it('rejects host-owned table state during projection', function (EditableTable $component, string $option) {
-    expect(fn () => Form::make([
-        Field::make($component),
-    ])->toArray())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
-    );
-})->with([
-    'editable values' => [fn () => EditableTable::make()->name('rows')->value([]), 'value'],
-    'editable read-only state' => [fn () => EditableTable::make()->name('rows')->readOnly(false), 'readOnly'],
-]);
 
 it('rejects invalid portable table configuration before projection', function (EditableTable $component, string $option) {
     expect(fn () => Form::make([

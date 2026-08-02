@@ -1,8 +1,6 @@
 import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-import '@craftcms/ui/components/editable-table/editable-table';
 import '@craftcms/ui/components/input/input';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormRenderer from './FormRenderer.vue';
@@ -135,11 +133,11 @@ describe('Form renderer', () => {
 
   it('runs a generated wrapper through the registry without setup events changing host state', async () => {
     const registry = createCpComponentRegistry();
-    const initial = [{label: 'Red'}];
+    const initial = 'Red';
     const values = reactive({settings: {palette: initial}});
     const container = document.createElement('div');
 
-    registry.register('color-tools:color-map', CraftEditableTable);
+    registry.register('color-tools:color-map', CraftInput);
     (window as any).Cp = {$formElements: registry};
     document.body.appendChild(container);
     const app = createApp(FormRenderer, {
@@ -169,13 +167,14 @@ describe('Form renderer', () => {
     mountedApps.push(app);
     app.mount(container);
 
-    const palette = container.querySelector<
-      HTMLElementTagNameMap['craft-editable-table']
-    >('craft-editable-table')!;
+    const palette =
+      container.querySelector<HTMLElementTagNameMap['craft-input']>(
+        'craft-input'
+      )!;
 
     expect(palette.modelValue).toEqual(initial);
 
-    palette.modelValue = [];
+    palette.modelValue = '';
     palette.dispatchEvent(
       new CustomEvent('model-value-changed', {
         bubbles: true,
@@ -186,7 +185,7 @@ describe('Form renderer', () => {
 
     expect(values.settings.palette).toEqual(initial);
 
-    const edited = [{label: 'Green'}];
+    const edited = 'Green';
     palette.modelValue = edited;
     palette.dispatchEvent(new Event('model-value-changed', {bubbles: true}));
     await nextTick();
@@ -199,8 +198,8 @@ describe('Form renderer', () => {
     const inputName = ref('primaryRows');
     const values = reactive({
       settings: {
-        primaryRows: [{label: 'Primary'}],
-        secondaryRows: [{label: 'Secondary'}],
+        primaryRows: 'Primary',
+        secondaryRows: 'Secondary',
       },
     });
     const container = document.createElement('div');
@@ -215,10 +214,9 @@ describe('Form renderer', () => {
                   key: 'rows-field',
                   children: [
                     {
-                      type: 'craft:editable-table-input',
+                      type: 'craft:text-input',
                       key: 'rows-input',
                       name: inputName.value,
-                      props: {sourceName: 'rows'},
                     },
                   ],
                 },
@@ -231,7 +229,7 @@ describe('Form renderer', () => {
       },
     });
 
-    registry.register('craft:editable-table-input', CraftEditableTable);
+    registry.register('craft:text-input', CraftInput);
     (window as any).Cp = {$formElements: registry};
     document.body.appendChild(container);
     const app = createApp(host);
@@ -239,20 +237,21 @@ describe('Form renderer', () => {
     mountedApps.push(app);
     app.mount(container);
 
-    const table = container.querySelector<
-      HTMLElementTagNameMap['craft-editable-table']
-    >('craft-editable-table')!;
+    const table =
+      container.querySelector<HTMLElementTagNameMap['craft-input']>(
+        'craft-input'
+      )!;
 
     expect(table.name).toBe('settings[primaryRows]');
-    expect(table.modelValue).toEqual([{label: 'Primary'}]);
+    expect(table.modelValue).toBe('Primary');
 
     inputName.value = 'secondaryRows';
     await nextTick();
 
-    expect(container.querySelector('craft-editable-table')).toBe(table);
+    expect(container.querySelector('craft-input')).toBe(table);
     expect(table.name).toBe('settings[secondaryRows]');
     expect(table.id).toBe('form-element-settings--secondaryRows');
-    expect(table.modelValue).toEqual([{label: 'Secondary'}]);
+    expect(table.modelValue).toBe('Secondary');
   });
 
   it('shows plugin ownership when its renderer is unavailable', () => {
