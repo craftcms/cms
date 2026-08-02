@@ -22,22 +22,7 @@ import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
 import {configureIcons} from './icons.js';
-import CheckboxSelectInputRenderer from '@/form-definitions/renderers/CheckboxSelectInputRenderer.vue';
-import ComboboxInputRenderer from '@/form-definitions/renderers/ComboboxInputRenderer.vue';
-import ElementConditionInputRenderer from '@/form-definitions/renderers/ElementConditionInputRenderer.vue';
-import EditableTableInputRenderer from '@/form-definitions/renderers/EditableTableInputRenderer.vue';
-import TextInputRenderer from '@/form-definitions/renderers/TextInputRenderer.vue';
-import DateInputRenderer from '@/form-definitions/renderers/DateInputRenderer.vue';
-import LightswitchInputRenderer from '@/form-definitions/renderers/LightswitchInputRenderer.vue';
-import NumberInputRenderer from '@/form-definitions/renderers/NumberInputRenderer.vue';
-import OptionRowsRenderer from '@/form-definitions/renderers/OptionRowsRenderer.vue';
-import SelectInputRenderer from '@/form-definitions/renderers/SelectInputRenderer.vue';
-import TimeInputRenderer from '@/form-definitions/renderers/TimeInputRenderer.vue';
-import ColorPaletteInputRenderer from '@/form-definitions/renderers/ColorPaletteInputRenderer.vue';
-import MoneyInputRenderer from '@/form-definitions/renderers/MoneyInputRenderer.vue';
-import FieldLayoutInputRenderer from '@/form-definitions/renderers/FieldLayoutInputRenderer.vue';
-import KeyedTableInputRenderer from '@/form-definitions/renderers/KeyedTableInputRenderer.vue';
-import ObjectSelectInputRenderer from '@/form-definitions/renderers/ObjectSelectInputRenderer.vue';
+import {registerNativeFormElementRenderers} from '@/form-definitions/form-element-types';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -64,46 +49,7 @@ function defaultPageLayout(name: string) {
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
-components.register(
-  'form-element:craft:checkbox-select-input',
-  CheckboxSelectInputRenderer
-);
-components.register(
-  'form-element:craft:element-condition-input',
-  ElementConditionInputRenderer
-);
-components.register(
-  'form-element:craft:editable-table-input',
-  EditableTableInputRenderer
-);
-components.register('form-element:craft:text-input', TextInputRenderer);
-components.register('form-element:craft:combobox-input', ComboboxInputRenderer);
-components.register('form-element:craft:number-input', NumberInputRenderer);
-components.register('form-element:craft:option-rows', OptionRowsRenderer);
-components.register('form-element:craft:select-input', SelectInputRenderer);
-components.register(
-  'form-element:craft:lightswitch-input',
-  LightswitchInputRenderer
-);
-components.register('form-element:craft:date-input', DateInputRenderer);
-components.register('form-element:craft:time-input', TimeInputRenderer);
-components.register(
-  'form-element:craft:color-palette-input',
-  ColorPaletteInputRenderer
-);
-components.register('form-element:craft:money-input', MoneyInputRenderer);
-components.register(
-  'form-element:craft:field-layout-input',
-  FieldLayoutInputRenderer
-);
-components.register(
-  'form-element:craft:keyed-table-input',
-  KeyedTableInputRenderer
-);
-components.register(
-  'form-element:craft:object-select-input',
-  ObjectSelectInputRenderer
-);
+registerNativeFormElementRenderers(components);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {

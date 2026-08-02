@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cp\Components\EditableTable;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -331,10 +331,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->includeRowId()
                         ->columnsFrom('columns'),
                 ),
-            LightswitchInput::make('staticRows')
+            FieldComponent::make()
                 ->label(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('staticRows')),
             FieldComponent::make()
                 ->label(t('Min Rows'))
                 ->instructions(t('The minimum number of rows the field is allowed to have.'))

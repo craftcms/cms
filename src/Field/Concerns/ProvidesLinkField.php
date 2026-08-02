@@ -9,9 +9,9 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Group;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
@@ -186,7 +186,7 @@ trait ProvidesLinkField
             ->all();
     }
 
-    /** @return list<FormElement> */
+    /** @return list<ProjectableFormElement> */
     protected function linkSettingsFormElements(bool $readOnly): array
     {
         $types = $this->orderedLinkSettingsTypes();
@@ -234,9 +234,10 @@ trait ProvidesLinkField
                         ->sortable(),
                 ),
             ...$elements,
-            LightswitchInput::make('showLabelField')
+            Field::make()
                 ->label(t('Show the “Label” field'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showLabelField')),
             Field::make()
                 ->label(t('Advanced Fields'))
                 ->instructions(t('Choose which advanced fields should be available when inserting links.'))

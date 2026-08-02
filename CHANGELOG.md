@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\FormDefinitions\Elements\TextInput`.
+- Added native Form Definition rendering for text settings via `CraftCms\Cms\Cp\FormDefinitions\FormDefinition` and `CraftCms\Cms\Cp\Components\TextInput`.
 - Added native Form Definitions for core scalar field settings, with typed Craft controls for numbers, selections, lightswitches, dates, times, color palettes, and money values.
 - Added native Form Definitions for core option field settings, including ordered option authoring via `CraftCms\Cms\Cp\Components\OptionRows` and `<craft-option-rows>`.
 - Added native Form Definitions for relational field settings, with typed Craft controls for sources, limits, view modes, and relation behavior, including element condition editing via `CraftCms\Cms\Cp\Components\ElementCondition` and `<craft-element-condition>`.
@@ -13,6 +13,7 @@
 - Added plugin-defined Form Elements through projectable CP UI Components registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and paired exact `form-element:<type>` control-panel renderer registrations.
 - Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `Tabs`, and `Tab`.
 - Moved Yii 2 adapter legacy settings islands to the projectable `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
+- Made projectable CP UI Components the sole PHP Form Element authoring interface while retaining immutable Form Element data as the serialized Vue transport contract.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.

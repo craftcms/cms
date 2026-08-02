@@ -12,7 +12,6 @@ use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 
@@ -160,7 +159,7 @@ it('identifies containers and invalid descendants during projection', function (
             '%s child at index 0 (%s) must be %s for Form Definition output.',
             Group::class,
             Button::class,
-            ProjectableFormElement::class.' or '.FormElement::class,
+            ProjectableFormElement::class,
         ),
     ],
     'tab non-projectable child' => [
@@ -171,7 +170,7 @@ it('identifies containers and invalid descendants during projection', function (
             '%s child at index 0 (%s) must be %s for Form Definition output.',
             Tab::class,
             Button::class,
-            ProjectableFormElement::class.' or '.FormElement::class,
+            ProjectableFormElement::class,
         ),
     ],
     'tabs non-tab child' => [

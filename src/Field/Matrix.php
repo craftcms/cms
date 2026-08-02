@@ -9,12 +9,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\KeyedTable;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\ObjectSelect;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -639,9 +639,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->readOnly($readOnly)
                 ->input(NumberInput::make()->name('maxEntries')->min(0)),
-            LightswitchInput::make('enableVersioning')
+            FieldComponent::make()
                 ->label(t('Enable versioning for entries in this field'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('enableVersioning')),
             FieldComponent::make()
                 ->label(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
@@ -656,11 +657,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                             ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
                         ]),
                 ),
-            LightswitchInput::make('includeTableView')
+            FieldComponent::make()
                 ->label(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
                 ->visibleWhen($indexMode)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('includeTableView')),
             FieldComponent::make()
                 ->label(t('Default Table Columns'))
                 ->instructions(t('Choose which table columns should be visible by default.'))

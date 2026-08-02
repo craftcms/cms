@@ -16,7 +16,7 @@ use InvalidArgumentException;
 class ComponentRegistry
 {
     /** @var array<string, class-string<ViewComponent>> */
-    private array $components = [
+    private const array NATIVE_COMPONENTS = [
         'button' => Button::class,
         'button-group' => ButtonGroup::class,
         'callout' => Callout::class,
@@ -51,6 +51,24 @@ class ComponentRegistry
         'textarea' => Textarea::class,
         'time-input' => TimeInput::class,
     ];
+
+    /** @var array<string, class-string<ViewComponent>> */
+    private array $components;
+
+    public function __construct()
+    {
+        $this->components = self::NATIVE_COMPONENTS;
+    }
+
+    /**
+     * @internal
+     *
+     * @return array<string, class-string<ViewComponent>>
+     */
+    public function nativeComponents(): array
+    {
+        return self::NATIVE_COMPONENTS;
+    }
 
     /**
      * @param  class-string<ViewComponent>  $class

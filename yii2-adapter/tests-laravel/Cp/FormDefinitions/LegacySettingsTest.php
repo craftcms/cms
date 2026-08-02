@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\Cp\FormDefinitions;
 
+use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\FormContainer;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -52,7 +53,7 @@ class LegacySettingsTest extends TestCase
             bodyHtml: '<script>window.legacySettings = true;</script>',
         ))->key('legacy-settings')->toHtml();
 
-        $document = new DOMDocument();
+        $document = new DOMDocument;
         $document->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR);
         $island = $document->documentElement;
 
@@ -68,7 +69,7 @@ class LegacySettingsTest extends TestCase
 
     public function test_it_fails_when_the_adapter_component_type_is_not_registered(): void
     {
-        $types = new FormElementTypes();
+        $types = new FormElementTypes(new ComponentRegistry);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('unknown or unregistered Form Element Type "yii2-adapter:legacy-settings"');

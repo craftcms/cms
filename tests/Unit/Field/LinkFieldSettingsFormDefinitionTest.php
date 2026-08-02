@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes;
@@ -188,11 +189,13 @@ class PublicDefinitionLinkType extends Url
     public function getSettingsFormDefinition(bool $readOnly): ?FormDefinition
     {
         return FormDefinition::make([
-            LightswitchInput::make('customSetting')
-                ->readOnly($readOnly),
-            LightswitchInput::make('dependentSetting')
+            Field::make()
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('customSetting')),
+            Field::make()
                 ->visibleWhen(Condition::equals('customSetting', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('dependentSetting')),
         ]);
     }
 }

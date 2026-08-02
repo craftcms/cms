@@ -8,18 +8,17 @@ use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormDefinitionData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use InvalidArgumentException;
 use JsonSerializable;
 
 readonly class FormDefinition implements JsonSerializable
 {
-    /** @param list<FormElement|ProjectableFormElement> $elements */
+    /** @param list<ProjectableFormElement> $elements */
     private function __construct(
         private array $elements,
     ) {}
 
-    /** @param list<FormElement|ProjectableFormElement> $elements */
+    /** @param list<ProjectableFormElement> $elements */
     public static function make(array $elements): self
     {
         return new self($elements);
@@ -29,11 +28,9 @@ readonly class FormDefinition implements JsonSerializable
     {
         $types = app(FormElementTypes::class);
         $data = new FormDefinitionData(array_map(
-            fn (FormElement|ProjectableFormElement $element): FormElementData => (
-                $element instanceof ProjectableFormElement
-                    ? $types->project($element)
-                    : $element->toData()
-            )->withPluginOwnership($types->ownership(...)),
+            fn (ProjectableFormElement $element): FormElementData => $types
+                ->project($element)
+                ->withPluginOwnership($types->ownership(...)),
             $this->elements,
         ));
 

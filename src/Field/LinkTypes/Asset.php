@@ -9,9 +9,8 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -57,7 +56,7 @@ class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
-    /** @return list<FormElement|ProjectableFormElement> */
+    /** @return list<ProjectableFormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {
@@ -81,14 +80,16 @@ class Asset extends BaseElementLinkType
                         ->options($allowedKinds)
                         ->allOption('*'),
                 ),
-            LightswitchInput::make('showUnpermittedVolumes')
+            Field::make()
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showUnpermittedFiles')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
+            Field::make()
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
         ];
     }
 

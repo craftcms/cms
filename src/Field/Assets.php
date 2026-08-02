@@ -14,10 +14,10 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -291,9 +291,10 @@ class Assets extends BaseRelationField
         $selectionCondition = $this->selectionConditionFormElement($readOnly);
 
         return FormDefinition::make([
-            LightswitchInput::make('restrictLocation')
+            FieldComponent::make()
                 ->label(t('Restrict assets to a single location'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('restrictLocation')),
             FieldComponent::make()
                 ->label(t('Asset Location Source'))
                 ->instructions(t('The source where assets can be selected from.'))
@@ -311,10 +312,11 @@ class Assets extends BaseRelationField
                         ->name('restrictedLocationSubpath')
                         ->placeholder(t('path/to/subfolder')),
                 ),
-            LightswitchInput::make('allowSubfolders')
+            FieldComponent::make()
                 ->label(t('Allow subfolders'))
                 ->visibleWhen($restricted)
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowSubfolders')),
             FieldComponent::make()
                 ->label(t('Default Upload Location'))
                 ->instructions(t('Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'))
@@ -349,17 +351,20 @@ class Assets extends BaseRelationField
                         ->placeholder(t('path/to/subfolder')),
                 ),
             ...($selectionCondition === null ? [] : [$selectionCondition]),
-            LightswitchInput::make('showUnpermittedVolumes')
+            FieldComponent::make()
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showUnpermittedFiles')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
+            FieldComponent::make()
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('restrictFiles')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
+            FieldComponent::make()
                 ->label(t('Restrict allowed file types'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('restrictFiles')),
             FieldComponent::make()
                 ->label(t('Allowed Kinds'))
                 ->visibleWhen(Condition::equals('restrictFiles', true))
@@ -369,10 +374,11 @@ class Assets extends BaseRelationField
                         ->name('allowedKinds')
                         ->options($this->formDefinitionOptions($this->getFileKindOptions())),
                 ),
-            LightswitchInput::make('allowUploads')
+            FieldComponent::make()
                 ->label(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowUploads')),
             ...$this->relationBehaviorFormElements(
                 $readOnly,
                 showSearchCondition: $showSearchCondition,

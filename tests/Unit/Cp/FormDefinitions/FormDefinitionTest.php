@@ -2,29 +2,40 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Group;
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
+use CraftCms\Cms\Cp\Components\TextInput;
+use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\FormElementData;
 use CraftCms\Cms\Cp\FormDefinitions\Data\VisibilityConditionData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\InputElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
+use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
+
+beforeEach(function () {
+    app()->forgetInstance(FormElementTypes::class);
+    app(FormElementTypes::class)->register(TestProjectableContainer::class);
+});
 
 it('projects a native text setting through an explicit field container', function () {
     $definition = FormDefinition::make([
-        TextInput::make('handle')
+        Field::make()
             ->label(fn (): string => 'Handle')
             ->instructions('How templates refer to this component.')
-            ->placeholder('myComponent')
-            ->width(50)
+            ->columnWidth(50)
             ->readOnly()
-            ->attributes([
-                'autocomplete' => 'off',
-                'data-setting' => 'handle',
-            ]),
+            ->input(
+                TextInput::make()
+                    ->name('handle')
+                    ->placeholder('myComponent')
+                    ->attributes([
+                        'autocomplete' => 'off',
+                        'data-setting' => 'handle',
+                    ]),
+            ),
     ]);
 
     expect($definition->toArray())->toBe([
@@ -56,10 +67,10 @@ it('projects visual groups and tabs with resolved labels and stable keys', funct
         Group::make([
             Tabs::make([
                 Tab::make('content', fn (): string => 'Content', [
-                    TextInput::make('title'),
+                    Field::make()->input(TextInput::make()->name('title')),
                 ]),
                 Tab::make('metadata', 'Metadata', [
-                    TextInput::make('slug'),
+                    Field::make()->input(TextInput::make()->name('slug')),
                 ])->hasErrors(),
             ])->key('settings-tabs'),
         ])->key('settings'),
@@ -105,8 +116,8 @@ it('projects visual groups and tabs with resolved labels and stable keys', funct
 
 it('rejects duplicate sibling keys', function () {
     $definition = FormDefinition::make([
-        Group::make([TextInput::make('title')])->key('settings'),
-        Group::make([TextInput::make('slug')])->key('settings'),
+        Group::make([Field::make()->input(TextInput::make()->name('title'))])->key('settings'),
+        Group::make([Field::make()->input(TextInput::make()->name('slug'))])->key('settings'),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -116,7 +127,7 @@ it('rejects duplicate sibling keys', function () {
         );
 });
 
-it('rejects malformed container structures', function (FormElement|ProjectableFormElement $element, string $message) {
+it('rejects malformed container structures', function (ProjectableFormElement $element, string $message) {
     expect(fn () => FormDefinition::make([$element])->toArray())
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
@@ -144,17 +155,15 @@ it('rejects malformed container structures', function (FormElement|ProjectableFo
         fn () => Tabs::make([Tab::make('content', '', [])]),
         'Form Element Type "craft:tab" at elements[0].children[0]: a Tab must define a resolved label.',
     ],
-    'container inside field' => [
-        fn () => TestFormElement::make('craft:field', children: [
-            TestFormElement::make('craft:group', children: [TextInput::make('title')]),
-        ]),
-        'Form Element Type "craft:field" at elements[0]: a Field Container must contain exactly one input.',
-    ],
 ]);
 
 it('keeps host workflow data outside the serialized definition', function () {
     $json = json_encode(
-        FormDefinition::make([TextInput::make('handle')->label('Handle')]),
+        FormDefinition::make([
+            Field::make()
+                ->label('Handle')
+                ->input(TextInput::make()->name('handle')),
+        ]),
         JSON_THROW_ON_ERROR,
     );
 
@@ -168,15 +177,17 @@ it('keeps host workflow data outside the serialized definition', function () {
 
 it('projects nested visibility comparisons and groups', function () {
     $definition = FormDefinition::make([
-        TextInput::make('enabled'),
-        TextInput::make('mode'),
-        TextInput::make('label')->visibleWhen(Condition::all(
-            Condition::equals('enabled', true),
-            Condition::any(
-                Condition::equals('mode', 'manual'),
-                Condition::notEquals('mode', 'automatic'),
-            ),
-        )),
+        Field::make()->input(TextInput::make()->name('enabled')),
+        Field::make()->input(TextInput::make()->name('mode')),
+        Field::make()
+            ->visibleWhen(Condition::all(
+                Condition::equals('enabled', true),
+                Condition::any(
+                    Condition::equals('mode', 'manual'),
+                    Condition::notEquals('mode', 'automatic'),
+                ),
+            ))
+            ->input(TextInput::make()->name('label')),
     ]);
 
     expect($definition->toArray()['elements'][2]['visibleWhen'])->toBe([
@@ -192,8 +203,10 @@ it('projects nested visibility comparisons and groups', function () {
 
 it('keeps callable-looking strings as visibility data', function () {
     $definition = FormDefinition::make([
-        TextInput::make('source'),
-        TextInput::make('target')->visibleWhen(Condition::equals('source', 'trim')),
+        Field::make()->input(TextInput::make()->name('source')),
+        Field::make()
+            ->visibleWhen(Condition::equals('source', 'trim'))
+            ->input(TextInput::make()->name('target')),
     ]);
 
     expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe([
@@ -205,8 +218,10 @@ it('keeps callable-looking strings as visibility data', function () {
 
 it('projects every visibility comparison operator', function (Condition $condition, array $expected) {
     $definition = FormDefinition::make([
-        TextInput::make('source'),
-        TextInput::make('target')->visibleWhen($condition),
+        Field::make()->input(TextInput::make()->name('source')),
+        Field::make()
+            ->visibleWhen($condition)
+            ->input(TextInput::make()->name('target')),
     ]);
 
     expect($definition->toArray()['elements'][1]['visibleWhen'])->toBe($expected);
@@ -231,9 +246,11 @@ it('rejects malformed visibility conditions with type and tree location context'
     string $message,
 ) {
     $definition = FormDefinition::make([
-        TestFormElement::make('craft:field', children: [
-            TestFormElement::make('craft:text-input', name: 'target'),
-        ], visibleWhen: new VisibilityConditionData($condition)),
+        TestProjectableContainer::make()
+            ->children([
+                Field::make()->input(TextInput::make()->name('target'))->toFormElementData(),
+            ])
+            ->visibility(new VisibilityConditionData($condition)),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -241,37 +258,39 @@ it('rejects malformed visibility conditions with type and tree location context'
 })->with([
     'empty all group' => [
         ['all' => []],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: all groups cannot be empty.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: all groups cannot be empty.',
     ],
     'unsupported operator' => [
         ['name' => 'target', 'operator' => 'matches', 'value' => 'x'],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: unsupported operator "matches".',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: unsupported operator "matches".',
     ],
     'executable value' => [
         ['name' => 'target', 'operator' => 'equals', 'value' => fn () => true],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: value cannot be executable.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: value cannot be executable.',
     ],
     'numeric operator with string value' => [
         ['name' => 'target', 'operator' => 'lessThan', 'value' => '1'],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: lessThan requires a numeric value.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: lessThan requires a numeric value.',
     ],
     'text operator with array value' => [
         ['name' => 'target', 'operator' => 'beginsWith', 'value' => ['a']],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: beginsWith requires a string value.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: beginsWith requires a string value.',
     ],
     'membership operator with scalar value' => [
         ['name' => 'target', 'operator' => 'in', 'value' => 'a'],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: in requires a list of scalar values.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: in requires a list of scalar values.',
     ],
     'emptiness operator with value' => [
         ['name' => 'target', 'operator' => 'empty', 'value' => null],
-        'Form Element Type "craft:field" at elements[0].visibleWhen: empty does not accept a value.',
+        'Form Element Type "application:test-container" at elements[0].visibleWhen: empty does not accept a value.',
     ],
 ]);
 
 it('rejects unresolved visibility input names with type and tree location context', function () {
     $definition = FormDefinition::make([
-        TextInput::make('target')->visibleWhen(Condition::equals('missing', true)),
+        Field::make()
+            ->visibleWhen(Condition::equals('missing', true))
+            ->input(TextInput::make()->name('target')),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -283,8 +302,8 @@ it('rejects unresolved visibility input names with type and tree location contex
 
 it('rejects duplicate input names with type and tree location context', function () {
     $definition = FormDefinition::make([
-        TextInput::make('handle'),
-        TextInput::make('handle'),
+        Field::make()->input(TextInput::make()->name('handle')),
+        Field::make()->input(TextInput::make()->name('handle')),
     ]);
 
     expect(fn () => $definition->toArray())
@@ -294,157 +313,85 @@ it('rejects duplicate input names with type and tree location context', function
         );
 });
 
-it('rejects malformed elements with type and tree location context', function (
-    FormElement $element,
+it('rejects invalid widths and non-serializable portable data', function (
+    ProjectableFormElement $element,
     string $message,
 ) {
     expect(fn () => FormDefinition::make([$element])->toArray())
         ->toThrow(InvalidArgumentException::class, $message);
 })->with([
-    'unknown type' => [
-        fn () => TestFormElement::make('plugin:unknown'),
-        'Form Element Type "plugin:unknown" at elements[0]: unknown or unregistered Form Element Type.',
-    ],
-    'nested unknown type' => [
-        fn () => TestFormElement::make('craft:field', children: [
-            TestFormElement::make('plugin:unknown', name: 'title'),
-        ]),
-        'Form Element Type "plugin:unknown" at elements[0].children[0]: unknown or unregistered Form Element Type.',
-    ],
     'invalid width' => [
-        fn () => TextInput::make('title')->width(0),
+        fn () => Field::make()
+            ->columnWidth(0)
+            ->input(TextInput::make()->name('title')),
         'Form Element Type "craft:field" at elements[0]: width must be between 1 and 100.',
     ],
-    'input with children' => [
-        fn () => TestFormElement::make('craft:field', children: [
-            TestFormElement::make(
-                'craft:text-input',
-                name: 'title',
-                children: [TestFormElement::make('craft:text-input', name: 'nested')],
-            ),
-        ]),
-        'Form Element Type "craft:text-input" at elements[0].children[0]: this type cannot contain children.',
-    ],
-    'nested field instead of input' => [
-        fn () => TestFormElement::make('craft:field', children: [
-            TestFormElement::make('craft:field', name: 'title', children: [
-                TestFormElement::make('craft:text-input', name: 'nested'),
-            ]),
-        ]),
-        'Form Element Type "craft:field" at elements[0].children[0]: a Field Container must contain exactly one input.',
-    ],
-    'unwrapped input' => [
-        fn () => TestFormElement::make('craft:text-input', name: 'title'),
-        'Form Element Type "craft:text-input" at elements[0]: an input must be wrapped in a Field Container.',
-    ],
-    'field without one input child' => [
-        fn () => TestFormElement::make('craft:field'),
-        'Form Element Type "craft:field" at elements[0]: a Field Container must contain exactly one input.',
-    ],
     'non-serializable props' => [
-        fn () => TestFormElement::make('craft:field', children: [
-            TestFormElement::make('craft:text-input', name: 'title', props: ['bad' => new stdClass]),
-        ]),
-        'Form Element Type "craft:text-input" at elements[0].children[0]: props.bad is not serializable.',
+        fn () => TestProjectableContainer::make()->props(['bad' => new stdClass]),
+        'Form Element Type "application:test-container" at elements[0]: props.bad is not serializable.',
     ],
     'non-serializable attributes' => [
-        fn () => TextInput::make('title')->attributes(['bad' => fn () => null]),
+        fn () => Field::make()->input(
+            TextInput::make()
+                ->name('title')
+                ->attributes(['bad' => fn () => null]),
+        ),
         'Form Element Type "craft:text-input" at elements[0].children[0]: attributes.bad is not serializable.',
     ],
 ]);
 
-class TestFormElement extends FormElement
+class TestProjectableContainer extends ViewComponent implements ProjectableFormElement
 {
-    /**
-     * @param  string  $elementType  Test Form Element Type.
-     * @param  ?string  $name  Test Input Name.
-     * @param  array<string, mixed>  $elementProps  Test renderer props.
-     * @param  list<FormElement>  $elementChildren  Test child elements.
-     */
-    private function __construct(
-        private readonly string $elementType,
-        ?string $name,
-        private readonly array $elementProps,
-        private readonly array $elementChildren,
-        private readonly ?VisibilityConditionData $elementVisibleWhen,
-    ) {
-        parent::__construct($name);
-    }
+    private ?array $elementProps = null;
 
-    /**
-     * @param  string  $type  Test Form Element Type.
-     * @param  ?string  $name  Test Input Name.
-     * @param  array<string, mixed>  $props  Test renderer props.
-     * @param  list<FormElement>  $children  Test child elements.
-     */
-    public static function make(
-        string $type,
-        ?string $name = null,
-        array $props = [],
-        array $children = [],
-        ?VisibilityConditionData $visibleWhen = null,
-    ): self {
-        return new self($type, $name, $props, $children, $visibleWhen);
-    }
+    private ?array $elementChildren = null;
 
-    public static function type(): string
+    private ?VisibilityConditionData $elementVisibility = null;
+
+    public static function formElementType(): string
     {
-        return 'test:element';
+        return 'application:test-container';
     }
 
-    #[Override]
-    protected function props(): array
+    public static function isFormElementContainer(): bool
     {
-        return $this->elementProps;
+        return true;
     }
 
-    #[Override]
-    protected function children(): array
+    public function props(array $props): static
     {
-        return $this->elementChildren;
-    }
-
-    #[Override]
-    public function toData(): FormElementData
-    {
-        return new FormElementData(
-            type: $this->elementType,
-            name: $this->name,
-            width: $this->width,
-            props: $this->elementProps === [] ? null : $this->elementProps,
-            attributes: $this->elementAttributes === [] ? null : $this->elementAttributes,
-            children: $this->elementChildren === []
-                ? null
-                : array_map(
-                    fn (FormElement $element): FormElementData => $element->toData(),
-                    $this->elementChildren,
-                ),
-            visibleWhen: $this->elementVisibleWhen,
-        );
-    }
-}
-
-class TextInput extends InputElement
-{
-    private ?string $placeholder = null;
-
-    public static function type(): string
-    {
-        return 'craft:text-input';
-    }
-
-    public function placeholder(?string $placeholder): static
-    {
-        $this->placeholder = $placeholder;
+        $this->elementProps = $props;
 
         return $this;
     }
 
-    #[Override]
-    protected function props(): array
+    public function children(array $children): static
     {
-        return array_filter([
-            'placeholder' => $this->placeholder,
-        ], fn (mixed $value): bool => $value !== null);
+        $this->elementChildren = $children;
+
+        return $this;
+    }
+
+    public function visibility(VisibilityConditionData $visibility): static
+    {
+        $this->elementVisibility = $visibility;
+
+        return $this;
+    }
+
+    public function toFormElementData(): FormElementData
+    {
+        return new FormElementData(
+            type: self::formElementType(),
+            props: $this->elementProps,
+            children: $this->elementChildren,
+            visibleWhen: $this->elementVisibility,
+        );
+    }
+
+    #[Override]
+    protected function tagName(): string
+    {
+        return 'test-projectable-container';
     }
 }

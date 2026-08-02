@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
 use CraftCms\Cms\Cp\Components\TextInput;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -113,9 +113,10 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         return FormDefinition::make([
-            LightswitchInput::make('default')
+            FieldComponent::make()
                 ->label(t('Default Value'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(LightswitchComponent::make()->name('default')),
             FieldComponent::make()
                 ->label(t('OFF Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s disabled state.'))
@@ -126,10 +127,11 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
                 ->instructions(t('The label text to display beside the lightswitch’s enabled state.'))
                 ->readOnly($readOnly)
                 ->input(TextInput::make()->name('onLabel')),
-            LightswitchInput::make('showLabelsInCards')
+            FieldComponent::make()
                 ->label(t('Show ON/OFF labels in cards'))
                 ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(LightswitchComponent::make()->name('showLabelsInCards')),
         ]);
     }
 

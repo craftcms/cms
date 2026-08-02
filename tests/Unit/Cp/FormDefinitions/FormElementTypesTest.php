@@ -92,6 +92,19 @@ it('supports ownerless application component registrations', function () {
     ]);
 });
 
+it('rejects ownerless registrations outside the CP UI Component catalog', function () {
+    expect(fn () => app(FormElementTypes::class)->register(NonComponentProjectable::class))
+        ->toThrow(
+            InvalidArgumentException::class,
+            sprintf(
+                '%s must extend %s and implement %s.',
+                NonComponentProjectable::class,
+                ViewComponent::class,
+                ProjectableFormElement::class,
+            ),
+        );
+});
+
 it('allows an identical registration and rejects a different claimant', function () {
     $plugin = TestPlugin::create([
         'handle' => 'color-tools',

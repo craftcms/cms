@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -52,20 +53,22 @@ class Entry extends BaseElementLinkType
         parent::__construct($config);
     }
 
-    /** @return list<FormElement> */
+    /** @return list<ProjectableFormElement> */
     #[Override]
     protected function settingsFormElements(bool $readOnly): array
     {
         return [
             ...parent::settingsFormElements($readOnly),
-            LightswitchInput::make('showUnpermittedSections')
+            Field::make()
                 ->label(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showUnpermittedEntries')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedSections')),
+            Field::make()
                 ->label(t('Show unpermitted entries'))
                 ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedEntries')),
         ];
     }
 

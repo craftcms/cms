@@ -9,7 +9,6 @@ use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\FormContainer;
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -22,10 +21,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class FieldLayoutFormDefinitionProjector
 {
-    /** @var (Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|FormElement|null))|null */
+    /** @var (Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|null))|null */
     private ?Closure $unsupportedElementHandler = null;
 
-    /** @param Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|FormElement|null) $handler */
+    /** @param Closure(FieldLayoutElement, FieldLayoutFormElementContext): (FormContainer|null) $handler */
     public function handleUnsupportedElementsUsing(Closure $handler): void
     {
         $this->unsupportedElementHandler = $handler;
@@ -93,7 +92,7 @@ class FieldLayoutFormDefinitionProjector
     private function projectElement(
         FieldLayoutElement $layoutElement,
         FieldLayoutFormDefinitionContext $context,
-    ): FieldComponent|FormContainer|FormElement|null {
+    ): FieldComponent|FormContainer|null {
         $readOnly = $context->readOnly
             || ($layoutElement instanceof CustomField && ! $layoutElement->editable($context->element));
         $inputName = $layoutElement instanceof BaseField ? $layoutElement->attribute() : null;
@@ -145,11 +144,7 @@ class FieldLayoutFormDefinitionProjector
         $formElement->key($layoutElement->uid);
 
         if ($layoutElement->hasCustomWidth()) {
-            if ($formElement instanceof FormElement) {
-                $formElement->width($layoutElement->width);
-            } else {
-                $formElement->columnWidth($layoutElement->width);
-            }
+            $formElement->columnWidth($layoutElement->width);
         }
 
         return $formElement;
@@ -158,7 +153,7 @@ class FieldLayoutFormDefinitionProjector
     private function unsupportedElement(
         FieldLayoutElement $layoutElement,
         FieldLayoutFormElementContext $context,
-    ): FormContainer|FormElement|null {
+    ): ?FormContainer {
         if ($this->unsupportedElementHandler !== null) {
             return ($this->unsupportedElementHandler)($layoutElement, $context);
         }

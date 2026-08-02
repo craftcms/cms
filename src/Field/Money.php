@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\MoneyInput;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -181,9 +181,10 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->label(t('Max Value'))
                 ->readOnly($readOnly)
                 ->input(MoneyInput::make()->name('max')->fractionDigits($fractionDigits)),
-            LightswitchInput::make('showCurrency')
+            FieldComponent::make()
                 ->label(t('Show Currency'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showCurrency')),
             FieldComponent::make()
                 ->label(t('Size'))
                 ->readOnly($readOnly)

@@ -9,11 +9,11 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Group;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -384,24 +384,27 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->visibleWhen(Condition::equals('encode', false))
                 ->readOnly($readOnly)
                 ->input(Select::make()->name('flavor')->options(self::flavorOptions())),
-            LightswitchInput::make('inlineOnly')
+            FieldComponent::make()
                 ->label(t('Inline Only'))
                 ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showToolbar')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('inlineOnly')),
+            FieldComponent::make()
                 ->label(t('Show Toolbar'))
                 ->instructions(t('Whether the editor toolbar should be visible.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showToolbar')),
             FieldComponent::make()
                 ->label(t('Toolbar Buttons'))
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
                 ->visibleWhen(Condition::equals('showToolbar', true))
                 ->readOnly($readOnly)
                 ->input(CheckboxSelect::make()->name('toolbarButtons')->options(self::toolbarButtonOptions())),
-            LightswitchInput::make('showStats')
+            FieldComponent::make()
                 ->label(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showStats')),
             FieldComponent::make()
                 ->label(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
@@ -426,14 +429,16 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 'linkSettings',
             )->key('link-settings'),
             $availableVolumes,
-            LightswitchInput::make('showUnpermittedVolumes')
+            FieldComponent::make()
                 ->label(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showUnpermittedFiles')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedVolumes')),
+            FieldComponent::make()
                 ->label(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showUnpermittedFiles')),
             ...($volumeOptions === [] ? [] : [
                 FieldComponent::make()
                     ->label(t('Upload Volume'))
@@ -448,16 +453,18 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                             ]),
                     ),
             ]),
-            LightswitchInput::make('encode')
+            FieldComponent::make()
                 ->label(t('Encode HTML'))
                 ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
                 ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('sanitizeHtml')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('encode')),
+            FieldComponent::make()
                 ->label(t('Sanitize HTML'))
                 ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
                 ->warning(t('Disable this at your own risk!'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('sanitizeHtml')),
             FieldComponent::make()
                 ->label(t('HTML Sanitizer'))
                 ->instructions(t('You can register custom HTML sanitizers as {ext} files in {path}.', [

@@ -9,9 +9,8 @@ use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Cp\Components\Combobox;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -114,15 +113,16 @@ abstract class Filesystem extends Component implements FsInterface
         return $elements === [] ? null : FormDefinition::make($elements);
     }
 
-    /** @return list<FormElement|FieldComponent> */
+    /** @return list<FieldComponent> */
     protected function settingsFormElements(bool $readOnly): array
     {
         $elements = [];
 
         if ($this->getShowHasUrlSetting()) {
-            $elements[] = LightswitchInput::make('hasUrls')
+            $elements[] = FieldComponent::make()
                 ->label(t('Files in this filesystem have public URLs'))
-                ->readOnly($readOnly);
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('hasUrls'));
         }
 
         if ($this->getShowUrlSetting()) {

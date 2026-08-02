@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\ColorPalette;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -165,9 +165,10 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 ->instructions(t('Define the available colors to choose from.'))
                 ->readOnly($readOnly)
                 ->input(ColorPalette::make()->name('palette')),
-            LightswitchInput::make('allowCustomColors')
+            FieldComponent::make()
                 ->label(t('Allow custom colors'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowCustomColors')),
         ]);
     }
 

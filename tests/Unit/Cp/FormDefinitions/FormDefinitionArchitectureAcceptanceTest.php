@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\FormContainer;
 use CraftCms\Cms\Cp\Components\ScalarInput;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormDefinitions\FormElementTypes;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -66,7 +66,7 @@ it('matches the shared architecture fixture through public registration and proj
     ]);
     $projector = new FieldLayoutFormDefinitionProjector;
     $projector->handleUnsupportedElementsUsing(
-        fn (): FormElement => ArchitectureAcceptanceLegacyIsland::make(),
+        fn (): FormContainer => ArchitectureAcceptanceLegacyIsland::make(),
     );
 
     $actual = [
@@ -145,20 +145,21 @@ class ArchitectureAcceptanceField extends Field implements FieldLayoutFormElemen
     }
 }
 
-class ArchitectureAcceptanceLegacyIsland extends FormElement
+class ArchitectureAcceptanceLegacyIsland extends FormContainer
 {
-    public static function make(): self
-    {
-        return new self;
-    }
-
-    public static function type(): string
+    public static function formElementType(): string
     {
         return 'application:legacy-island';
     }
 
     #[Override]
-    protected function props(): array
+    protected function tagName(): string
+    {
+        return 'architecture-acceptance-legacy-island';
+    }
+
+    #[Override]
+    protected function formElementProps(): array
     {
         return ['label' => 'Legacy rating'];
     }

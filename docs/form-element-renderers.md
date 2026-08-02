@@ -1,6 +1,6 @@
-# Form Element renderer extensions
+# Form Definition authoring and renderer extensions
 
-Plugins can add native Form Elements by pairing a projectable PHP CP UI Component with a Vue renderer under the same stable Form Element Type.
+CP UI Components are the sole PHP authoring interface for native Form Definitions. `FormDefinition` projects configured components to immutable `FormElementData`; Vue renderers adapt that transport data to the browser runtime. Plugins extend the same model by pairing a projectable PHP CP UI Component with a Vue renderer under one stable Form Element Type.
 
 Types must be lowercase namespaced identifiers, such as `color-tools:color-map`. The `craft` namespace is reserved. Treat a published type as a public API: do not rename it within a compatible release. The type is independent of the PHP class name, PHP component-registry name, custom-element tag, and Vue renderer name.
 
@@ -86,7 +86,9 @@ FormDefinition::make([
 
 Container components extend `FormContainer`, declare `formElementType()`, implement an HTML `tagName()`, and receive ordered projectable descendants through `children()`. Their container metadata is derived from the component contract. The generic Vue renderer traverses those children and passes their rendered output to the registered container renderer's default slot.
 
-To migrate an existing plugin Form Element, replace its `FormElement` or `InputElement` base with an appropriate projectable CP component base, rename `type()` to `formElementType()`, move transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
+The former native `FormElement`, `InputElement`, and Form Definition `FormContainer` authoring bases no longer exist. To migrate an existing plugin, replace that base with an appropriate projectable CP component base, rename `type()` to `formElementType()`, move portable transport properties from `props()` to `formElementProps()`, add the component's honest HTML rendering path, and compose field presentation with `Field`. Continue using the same stable type and renderer key.
+
+`FormElementData` is projection output, not a control to configure or subclass. It keeps the serialized graph and generated TypeScript declaration stable while component classes own PHP configuration and HTML rendering.
 
 Applications can register ownerless projectable components through the `FormElementTypes` singleton. Ownerless elements must always have an available renderer because Missing Component UI is limited to plugin-owned types.
 

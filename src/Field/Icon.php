@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
@@ -112,11 +112,12 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getSettingsFormDefinition(bool $readOnly): FormDefinition
     {
         $elements = [
-            LightswitchInput::make('includeProIcons')
+            FieldComponent::make()
                 ->label(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
                 ->tip(t('View Font Awesome Pro pricing: https://fontawesome.com/plans'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('includeProIcons')),
         ];
 
         if (Cms::config()->enableGql) {

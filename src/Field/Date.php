@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\DateInput;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -182,24 +182,27 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         );
 
         return FormDefinition::make([
-            LightswitchInput::make('showDate')
+            FieldComponent::make()
                 ->label(t('Show date'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('showTime')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showDate')),
+            FieldComponent::make()
                 ->label(t('Show time'))
                 ->tip(t('Time fields are better suited for managing Time-only values.'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showTime')),
             FieldComponent::make()
                 ->label(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->visibleWhen(Condition::equals('showTime', true))
                 ->readOnly($readOnly)
                 ->input(Select::make()->name('minuteIncrement')->options($minuteIncrementOptions)),
-            LightswitchInput::make('showTimeZone')
+            FieldComponent::make()
                 ->label(t('Show Time Zone'))
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->visibleWhen(Condition::equals('showTime', true))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('showTimeZone')),
             FieldComponent::make()
                 ->label(t('Min Date'))
                 ->visibleWhen(Condition::equals('showDate', true))

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
+use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\Lightswitch;
+use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use Exception;
 use League\Uri\Uri;
 
@@ -74,20 +75,23 @@ class Url extends BaseTextLinkType
         return ['https://', 'http://'];
     }
 
-    /** @return list<FormElement> */
+    /** @return list<ProjectableFormElement> */
     #[\Override]
     protected function settingsFormElements(bool $readOnly): array
     {
         return [
-            LightswitchInput::make('allowRootRelativeUrls')
+            Field::make()
                 ->label(t('Allow root-relative URLs'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('allowAnchors')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowRootRelativeUrls')),
+            Field::make()
                 ->label(t('Allow anchors'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('allowCustomSchemes')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowAnchors')),
+            Field::make()
                 ->label(t('Allow custom URL schemes'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('allowCustomSchemes')),
         ];
     }
 

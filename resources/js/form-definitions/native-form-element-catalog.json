@@ -1,0 +1,22 @@
+[
+  {"type": "craft:checkbox-select-input", "container": false},
+  {"type": "craft:color-palette-input", "container": false},
+  {"type": "craft:combobox-input", "container": false},
+  {"type": "craft:date-input", "container": false},
+  {"type": "craft:editable-table-input", "container": false},
+  {"type": "craft:element-condition-input", "container": false},
+  {"type": "craft:field", "container": true},
+  {"type": "craft:field-layout-input", "container": false},
+  {"type": "craft:group", "container": true},
+  {"type": "craft:keyed-table-input", "container": false},
+  {"type": "craft:lightswitch-input", "container": false},
+  {"type": "craft:money-input", "container": false},
+  {"type": "craft:number-input", "container": false},
+  {"type": "craft:object-select-input", "container": false},
+  {"type": "craft:option-rows", "container": false},
+  {"type": "craft:select-input", "container": false},
+  {"type": "craft:tab", "container": true},
+  {"type": "craft:tabs", "container": true},
+  {"type": "craft:text-input", "container": false},
+  {"type": "craft:time-input", "container": false}
+]

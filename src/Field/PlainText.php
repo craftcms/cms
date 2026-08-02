@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
+use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -158,12 +158,14 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 ->instructions(t('The maximum number of bytes the field is allowed to have.'))
                 ->readOnly($readOnly)
                 ->input(NumberInput::make()->name('byteLimit')->min(1)),
-            LightswitchInput::make('code')
+            FieldComponent::make()
                 ->label(t('Use a monospaced font'))
-                ->readOnly($readOnly),
-            LightswitchInput::make('multiline')
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('code')),
+            FieldComponent::make()
                 ->label(t('Allow line breaks'))
-                ->readOnly($readOnly),
+                ->readOnly($readOnly)
+                ->input(Lightswitch::make()->name('multiline')),
             FieldComponent::make()
                 ->label(t('Initial Rows'))
                 ->visibleWhen(Condition::equals('multiline', true))
