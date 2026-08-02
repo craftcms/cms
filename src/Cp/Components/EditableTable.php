@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -568,19 +569,15 @@ class EditableTable extends ViewComponent implements FormElement
     private function formElementAttributes(): array
     {
         return $this->withoutAttributes($this->formElementAttributes, [
+            ...Form::HostOwnedRendererAttributes,
             'add-row-label',
-            'aria-describedby',
-            'aria-labelledby',
             'columns',
             'columns-from',
             'default-row',
             'defines-columns',
             'fixed-rows',
-            'id',
             'include-row-id',
             'keyed',
-            'name',
-            'readonly',
             'slot',
             'source-name',
             'value',

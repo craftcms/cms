@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use Override;
 
 abstract class ScalarInput extends Input implements FormElement
@@ -44,14 +45,8 @@ abstract class ScalarInput extends Input implements FormElement
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
-            'aria-describedby',
-            'aria-labelledby',
-            'aria-required',
+            ...Form::HostOwnedRendererAttributes,
             'disabled',
-            'id',
-            'name',
-            'readonly',
-            'required',
             'slot',
             'type',
             'value',

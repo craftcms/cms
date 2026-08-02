@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 
@@ -147,12 +148,8 @@ class Select extends ViewComponent implements FormElement
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
-            'aria-describedby',
-            'aria-labelledby',
+            ...Form::HostOwnedRendererAttributes,
             'disabled',
-            'id',
-            'name',
-            'readonly',
             'slot',
             'value',
         ]);

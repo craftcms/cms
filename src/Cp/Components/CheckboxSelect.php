@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -144,12 +145,8 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
-            'aria-describedby',
-            'aria-labelledby',
+            ...Form::HostOwnedRendererAttributes,
             'disabled',
-            'id',
-            'name',
-            'readonly',
             'slot',
             'value',
         ]);

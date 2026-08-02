@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -308,17 +309,11 @@ class Lightswitch extends ViewComponent implements FormElement
         }
 
         $attributes = $this->withoutAttributes(Html::normalizeTagAttributes($this->attributes), [
-            'aria-describedby',
-            'aria-labelledby',
-            'aria-required',
+            ...Form::HostOwnedRendererAttributes,
             'checked',
             'disabled',
-            'id',
             'indeterminate',
             'indeterminate-value',
-            'name',
-            'readonly',
-            'required',
             'slot',
             'value',
         ]);

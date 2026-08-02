@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -250,14 +251,9 @@ class ElementCondition extends ViewComponent implements FormElement
     private function formElementAttributes(): array
     {
         return $this->withoutAttributes($this->formElementAttributes, [
-            'aria-describedby',
+            ...Form::HostOwnedRendererAttributes,
             'aria-disabled',
-            'aria-labelledby',
             'disabled',
-            'id',
-            'name',
-            'readonly',
-            'required',
             'slot',
             'value',
         ]);

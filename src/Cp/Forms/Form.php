@@ -13,26 +13,26 @@ use JsonSerializable;
 
 readonly class Form implements JsonSerializable
 {
-    private const array HOST_OWNED_RENDERER_PROPS = [
-        'modelValue',
-        'model-value',
-        'readonly',
-        'name',
-        'id',
-        'required',
+    public const array HostOwnedRendererProps = [
         'aria-describedby',
         'aria-labelledby',
         'aria-required',
+        'id',
+        'model-value',
+        'modelValue',
+        'name',
+        'readonly',
+        'required',
     ];
 
-    private const array HOST_OWNED_RENDERER_ATTRIBUTES = [
-        'readonly',
-        'name',
-        'id',
-        'required',
+    public const array HostOwnedRendererAttributes = [
         'aria-describedby',
         'aria-labelledby',
         'aria-required',
+        'id',
+        'name',
+        'readonly',
+        'required',
     ];
 
     /** @param list<FormElement> $elements */
@@ -365,7 +365,7 @@ readonly class Form implements JsonSerializable
                 continue;
             }
 
-            if (in_array($prop, self::HOST_OWNED_RENDERER_PROPS, true)) {
+            if (in_array($prop, self::HostOwnedRendererProps, true)) {
                 $this->fail($element, $path, "renderer prop \"{$prop}\" is owned by the Form host.");
             }
         }
@@ -378,7 +378,7 @@ readonly class Form implements JsonSerializable
             foreach ($attributes as $rendererAttribute) {
                 $rendererAttribute = strtolower($rendererAttribute);
 
-                if (in_array($rendererAttribute, self::HOST_OWNED_RENDERER_ATTRIBUTES, true)) {
+                if (in_array($rendererAttribute, self::HostOwnedRendererAttributes, true)) {
                     $this->fail($element, $path, "renderer attribute \"{$rendererAttribute}\" is owned by the Form host.");
                 }
             }

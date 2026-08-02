@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Cp\Forms\Condition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
+use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use InvalidArgumentException;
 use Override;
@@ -67,7 +68,10 @@ abstract class FormContainer extends ViewComponent implements FormElement
         $condition = $this->resolvedVisibilityCondition('Form');
 
         $props = $this->formElementProps();
-        $attributes = $this->withoutAttributes($this->attributes, $this->hostOwnedFormElementAttributes());
+        $attributes = $this->withoutAttributes($this->attributes, [
+            ...Form::HostOwnedRendererAttributes,
+            ...$this->hostOwnedFormElementAttributes(),
+        ]);
         $children = $this->formElementChildren();
 
         return new FormElementData(
