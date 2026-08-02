@@ -17,7 +17,7 @@ class TestElementCondition extends BaseCondition
         return [];
     }
 
-    #[\Override]
+    #[Override]
     protected function config(): array
     {
         return ['scope' => 'entries'];
