@@ -109,22 +109,47 @@ Cp.$components.register(
 
 PHP component or Form Element Type registration never performs this Vue registration. The plugin's control-panel assets must execute one of these explicit registrations. Registering only the PHP component, its template-facing name, or its custom-element tag leaves the Vue renderer unavailable.
 
-The renderer receives the exported `FormElementRendererProps<TConfig, TValue>` contract: its typed `config`, trusted `attributes`, and an optional binding containing the local Input Name, current value, and effective read-only state. It emits `update:value` to update host-owned state.
+The renderer is an ordinary Vue component. Craft passes the Form Element's type-specific props as flattened Vue props and its resolved HTML attributes as ordinary attributes. A value-bound renderer also receives the host-owned `modelValue`, and every renderer receives the effective `readonly` state. It emits `update:modelValue` to update host-owned state.
 
 ```vue
 <script setup lang="ts">
-  import type {FormElementRendererProps} from '@craftcms/ui'
+  defineProps<{
+    colors?: string[]
+    modelValue?: string
+    readonly?: boolean
+  }>()
 
-  type Config = {colors: string[]}
-
-  defineProps<FormElementRendererProps<Config, string>>()
-  defineEmits<{ 'update:value': [value: string] }>()
+  defineEmits<{ 'update:modelValue': [value: string] }>()
 </script>
 ```
 
-Renderers do not receive the complete definition, Binding Scope, validation collection, routes, submission, or persistence workflow. Plugins deliver PHP and JavaScript together and declare compatible Craft versions through Composer. Optional contract additions may ship in minor Craft releases; required properties or semantic changes require a major release.
+Final `name`, `id`, required state, accessibility state, and other resolved HTML attributes arrive through the ordinary Vue attribute channel. A renderer must forward applicable attributes to its actual form control. Craft gives host-owned values and attributes final precedence over type-specific props.
+
+The host remains responsible for Binding Scope resolution, final names and IDs, runtime values, validation errors, effective read-only state, visibility, Field Container presentation, traversal, reconciliation, and renderer diagnostics. Renderers do not receive the complete definition, Binding Scope, validation collection, routes, submission, or persistence workflow. Runtime values remain in host state and do not enter the serialized Form Definition.
+
+Use a generated `@craftcms/ui` Vue wrapper directly when its props and transport value already match the Form Element. Keep a custom renderer only when it performs observable semantic work that an ordinary generated wrapper cannot represent. A custom renderer uses the same `modelValue` contract; there is no alternate adapter registration mode or compatibility API.
+
+Plugins deliver PHP and JavaScript together and declare compatible Craft versions through Composer. Optional contract additions may ship in minor Craft releases; required properties or semantic changes require a major release.
 
 If a plugin-owned renderer is unavailable, Craft shows the type and derived plugin ownership. Missing core or application renderers throw. Exceptions from registered renderers produce a separate failed-renderer diagnostic.
+
+## Retained core semantic adapters
+
+Core registers generated wrappers directly unless one of these Form Element Renderers owns additional semantics:
+
+| Form Element Type | Retained responsibility |
+| --- | --- |
+| `craft:checkbox-select-input` | Restores typed option values, authored and sortable selection order, per-option disabled state, and the special “all” selection. |
+| `craft:combobox-input` | Preserves string editing and adds the alias-specific explanatory callout. |
+| `craft:date-input` | Truncates date-time input to `YYYY-MM-DD` and converts an empty value to `null`. |
+| `craft:editable-table-input` | Connects the explicit source name and column coordination scope while preserving keyed or unkeyed row values. |
+| `craft:element-condition-input` | Requests and initializes server-rendered condition UI, applies returned assets, and synchronizes later DOM changes to the host value. |
+| `craft:money-input` | Converts between displayed major units and transport minor units at the configured precision without losing large integer values. |
+| `craft:number-input` | Converts the browser string value to a numeric or `null` transport value. |
+| `craft:select-input` | Renders authored options and restores their original string, number, boolean, or `null` value after DOM selection. |
+| `craft:time-input` | Truncates time input to `HH:mm` and converts an empty value to `null`. |
+
+An adapter without a responsibility in this inventory should be replaced by its generated wrapper.
 
 ## Legacy Settings Islands
 
