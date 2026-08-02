@@ -14,7 +14,6 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
 use GraphQL\Type\Definition\Type;
+use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -102,10 +102,17 @@ class Tags extends BaseRelationField
     {
         return FormDefinition::make(array_values(array_filter(
             $this->relationSettingsFormElements($readOnly),
-            function (FormElement|ProjectableFormElement $element): bool {
-                $children = $element instanceof ProjectableFormElement
-                    ? $element->toFormElementData()->children
-                    : $element->toData()->children;
+            function (object $element): bool {
+                if ($element instanceof ProjectableFormElement) {
+                    $children = $element->toFormElementData()->children;
+                } elseif (method_exists($element, 'toData')) {
+                    $children = $element->toData()->children;
+                } else {
+                    throw new LogicException(sprintf(
+                        '%s cannot be projected as a Tags settings Form Element.',
+                        $element::class,
+                    ));
+                }
 
                 return $children === null || $children[0]->name !== 'showSearchInput';
             },

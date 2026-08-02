@@ -34,6 +34,41 @@ describe('Legacy Settings Island', () => {
     );
   });
 
+  it('fails loudly when the adapter renderer is unavailable', () => {
+    (window as any).Cp = {$components: createCpComponentRegistry()};
+
+    const container = document.createElement('div');
+    const app = createApp(FormDefinitionRenderer, {
+      definition: islandDefinition(fragment('Unavailable')),
+      bindingScope: 'settings',
+      values: {},
+      errors: {},
+    });
+
+    expect(() => app.mount(container)).toThrow(
+      'Missing Form Element Renderer for yii2-adapter:legacy-settings.'
+    );
+  });
+
+  it('mounts a fragment configured by server-rendered component HTML', async () => {
+    (window as any).Cp = {$components: createCpComponentRegistry()};
+    (window as any).Craft = {initUiElements: vi.fn()};
+    vi.resetModules();
+    await import('../../legacy/web/assets/cpcompat/legacy-settings-island.js');
+
+    const island = document.createElement('craft-legacy-settings-island');
+    island.dataset.fragment = JSON.stringify(fragment('Server rendered'));
+    document.body.appendChild(island);
+
+    await vi.waitFor(() => {
+      expect(
+        island.querySelector<HTMLInputElement>('[name="settings[label]"]')
+          ?.value
+      ).toBe('Server rendered');
+    });
+    expect((window as any).Craft.initUiElements).toHaveBeenCalledWith(island);
+  });
+
   it('mounts assets and the fragment in order before initializing legacy UI', async () => {
     const appendChild = Node.prototype.appendChild;
 
@@ -264,7 +299,9 @@ describe('Legacy Settings Island', () => {
     app.mount(container);
 
     await vi.waitFor(() => {
-      expect(container.querySelector('[name="entry[legacyRating]"]')).not.toBeNull();
+      expect(
+        container.querySelector('[name="entry[legacyRating]"]')
+      ).not.toBeNull();
     });
 
     const bodyInput = container.querySelector(

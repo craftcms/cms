@@ -24,17 +24,15 @@
 
     set config(config) {
       const fragment = config?.fragment ?? null;
-      const fragmentKey = fragment
-        ? `${fragment.headHtml ?? ''}\u0000${fragment.html ?? ''}\u0000${fragment.bodyHtml ?? ''}`
-        : '';
+      const key = fragmentKey(fragment);
 
-      if (fragmentKey === this.#fragmentKey) {
+      if (key === this.#fragmentKey) {
         return;
       }
 
       const state = this.#mounted || this.#mounting ? this.#serialize() : null;
       this.#fragment = fragment;
-      this.#fragmentKey = fragmentKey;
+      this.#fragmentKey = key;
 
       if (this.isConnected) {
         void this.#mount(state);
@@ -42,6 +40,11 @@
     }
 
     connectedCallback() {
+      if (!this.#fragment && this.hasAttribute('data-fragment')) {
+        this.#fragment = JSON.parse(this.dataset.fragment);
+        this.#fragmentKey = fragmentKey(this.#fragment);
+      }
+
       this.#form = this.closest('form');
       this.#form?.addEventListener('submit', this.#handleSubmit, true);
 
@@ -136,6 +139,12 @@
         this.#disposers.pop()?.();
       }
     }
+  }
+
+  function fragmentKey(fragment) {
+    return fragment
+      ? `${fragment.headHtml ?? ''}\u0000${fragment.html ?? ''}\u0000${fragment.bodyHtml ?? ''}`
+      : '';
   }
 
   async function appendHtml(html, parent) {

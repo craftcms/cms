@@ -12,6 +12,7 @@
 - Added reactive Form Definition visibility conditions via `CraftCms\Cms\Cp\FormDefinitions\Condition`.
 - Added plugin-defined Form Elements through projectable CP UI Components registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()` and paired exact `form-element:<type>` control-panel renderer registrations.
 - Added keyed Form Definition groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `Tabs`, and `Tab`.
+- Moved Yii 2 adapter legacy settings islands to the projectable `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.

@@ -36,7 +36,10 @@ class MixedFieldLayoutProjectionTest extends TestCase
                 'elements' => [
                     new AdapterNonEditableCustomField($field, ['uid' => 'body-layout-element']),
                     new AdapterInapplicableLayoutElement(['uid' => 'hidden-layout-element']),
-                    new LegacyLayoutElement(['uid' => 'legacy-layout-element']),
+                    new LegacyLayoutElement([
+                        'uid' => 'legacy-layout-element',
+                        'width' => 50,
+                    ]),
                 ],
             ]),
             new FieldLayoutTab([
@@ -70,6 +73,7 @@ class MixedFieldLayoutProjectionTest extends TestCase
         self::assertSame('fields.body', $elements[0]['children'][0]['name']);
         self::assertTrue($elements[0]['props']['readOnly']);
         self::assertSame('yii2-adapter:legacy-settings', $elements[1]['type']);
+        self::assertSame(50, $elements[1]['width']);
         self::assertSame('title-layout-element', $tabs[1]['children'][0]['key']);
         self::assertSame('title', $tabs[1]['children'][0]['children'][0]['name']);
         self::assertStringContainsString(
@@ -132,6 +136,11 @@ class AdapterInapplicableFieldLayoutTab extends FieldLayoutTab
 
 class LegacyLayoutElement extends FieldLayoutElement
 {
+    public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
     public function selectorHtml(): string
     {
         return '';

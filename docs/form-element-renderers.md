@@ -126,7 +126,7 @@ If a plugin-owned renderer is unavailable, Craft shows the type and derived plug
 
 ## Legacy Settings Islands
 
-The Yii 2 adapter can wrap conventional legacy settings HTML in its internal `yii2-adapter:legacy-settings` Form Element. This compatibility element is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
+The Yii 2 adapter wraps conventional legacy settings HTML with its projectable `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component, which owns the internal `yii2-adapter:legacy-settings` Form Element Type. This compatibility component is not a native plugin authoring API or a general raw-HTML fallback. Plugins should implement a native Form Definition instead.
 
 The island mounts captured head assets, fragment HTML, and body assets in that order, then initializes legacy UI elements. Its live light DOM is serialized before replacement and form submission, and an unchanged keyed island keeps its actual DOM across a complete definition refresh.
 

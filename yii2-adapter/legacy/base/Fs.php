@@ -16,7 +16,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Yii2Adapter\Cp\FormDefinitions\Elements\LegacySettings;
+use CraftCms\Yii2Adapter\Cp\Components\LegacySettings;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use yii\base\InvalidConfigException;

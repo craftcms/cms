@@ -43,7 +43,7 @@ use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
-use CraftCms\Yii2Adapter\Cp\FormDefinitions\Elements\LegacySettings as LegacySettingsElement;
+use CraftCms\Yii2Adapter\Cp\Components\LegacySettings as LegacySettingsComponent;
 use CraftCms\Yii2Adapter\Cp\FormDefinitions\LegacyFieldLayoutElementProjector;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
@@ -111,7 +111,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
-        $this->app->make(FormElementTypes::class)->register(LegacySettingsElement::class);
+        $this->app->make(FormElementTypes::class)->register(LegacySettingsComponent::class);
         $this->app->make(FieldLayoutFormDefinitionProjector::class)->handleUnsupportedElementsUsing(
             $this->app->make(LegacyFieldLayoutElementProjector::class)->project(...),
         );
