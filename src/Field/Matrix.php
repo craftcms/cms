@@ -8,10 +8,10 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\EditableTable;
+use CraftCms\Cms\Cp\Components\EntryTypeSelect;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\NumberInput;
-use CraftCms\Cms\Cp\Components\ObjectSelect;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Forms\Condition;
@@ -556,10 +556,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $indexMode = Condition::equals('viewMode', self::VIEW_MODE_INDEX);
         $tableView = Condition::all($indexMode, Condition::equals('includeTableView', true));
         $elements = [
-            FieldComponent::make(ObjectSelect::make()
+            FieldComponent::make(EntryTypeSelect::make()
                 ->name('entryTypes')
-                ->options($this->entryTypeOptions())
-                ->identityKey('uid'))
+                ->values($this->_entryTypes)
+                ->options(app(EntryTypes::class)->getAllEntryTypes()->all())
+                ->allowOverrides()
+                ->includeGroupInValues()
+                ->create()
+                ->readOnly($readOnly))
                 ->label(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->required()
@@ -695,36 +699,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         );
 
         return Form::make($elements);
-    }
-
-    /**
-     * @return list<array{
-     *     key: string,
-     *     label: string,
-     *     value: array<string, mixed>,
-     * }>
-     */
-    private function entryTypeOptions(): array
-    {
-        $configured = [];
-
-        foreach ($this->_entryTypes as $entryType) {
-            $configured[(string) $entryType->uid] = $entryType;
-        }
-
-        $options = [];
-
-        foreach (app(EntryTypes::class)->getAllEntryTypes() as $entryType) {
-            $uid = (string) $entryType->uid;
-            $entryType = $configured[$uid] ?? $entryType;
-            $options[$uid] = [
-                'key' => $uid,
-                'label' => $entryType->getUiLabel(),
-                'value' => $entryType->getUsageConfig(),
-            ];
-        }
-
-        return array_values($options);
     }
 
     #[Override]

@@ -217,14 +217,6 @@ const VALUE_COMPONENTS = [
     slots: ['feedback'],
   },
   {
-    tagName: 'craft-object-select',
-    className: 'CraftObjectSelect',
-    fileName: 'CraftObjectSelect',
-    modelType: 'unknown[]',
-    modelDefault: '[]',
-    importPath: '../components/object-select/object-select',
-  },
-  {
     tagName: 'craft-editable-table',
     className: 'CraftEditableTable',
     fileName: 'CraftEditableTable',

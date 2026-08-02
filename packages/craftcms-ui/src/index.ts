@@ -49,10 +49,6 @@ export {default as CraftInputPassword} from './components/input-password/input-p
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
-export {
-  default as CraftObjectSelect,
-  type ObjectSelectOption,
-} from './components/object-select/object-select.js';
 export {default as CraftOption} from './components/option/option.js';
 export {default as CraftPane} from './components/pane/pane.js';
 export {default as CraftPopover} from './components/popover/popover.js';
