@@ -5,6 +5,7 @@
   import '@craftcms/ui/components/indicator/indicator';
   import '@craftcms/ui/components/tab/tab';
   import '@craftcms/ui/components/tabs/tabs';
+  import {attrs} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {
     htmlInputName,
@@ -13,12 +14,7 @@
     setValueAt,
     valueAt,
   } from './binding';
-  import type {
-    FieldContext,
-    FormElementData,
-    JsonValue,
-    RenderContext,
-  } from './types';
+  import type {FieldContext, FormElementData, RenderContext} from './types';
   import {isSharedContainer} from './form-element-types';
   import {reconciliationKey} from './reconciliation';
   import {evaluateVisibilityCondition} from './visibility';
@@ -136,14 +132,14 @@
     () => props.context.readOnly || (props.fieldContext?.readOnly ?? false)
   );
 
-  const attributes = computed<Record<string, JsonValue>>(() => {
-    const elementAttributes = htmlAttributes(props.element.attributes);
+  const attributes = computed<Record<string, unknown>>(() => {
+    const elementAttributes = attrs(props.element.attributes);
 
     if (!bindingPath.value) {
       return elementAttributes;
     }
 
-    const attributes: Record<string, JsonValue> = {
+    const attributes: Record<string, unknown> = {
       ...elementAttributes,
       id: props.fieldContext?.inputId ?? inputId(bindingPath.value),
       name: htmlInputName(bindingPath.value),
@@ -206,39 +202,6 @@
           props.context.bindingScope
         )
       : true;
-  }
-
-  function htmlAttributes(
-    attributes: FormElementData['attributes']
-  ): Record<string, JsonValue> {
-    const normalized: Record<string, JsonValue> = {};
-    const groupedAttributes = [
-      'aria',
-      'data',
-      'data-hx',
-      'data-ng',
-      'hx',
-      'ng',
-    ];
-
-    for (const [name, value] of Object.entries(attributes ?? {})) {
-      if (
-        groupedAttributes.includes(name) &&
-        typeof value === 'object' &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        for (const [nestedName, nestedValue] of Object.entries(value)) {
-          normalized[`${name}-${nestedName}`] = nestedValue;
-        }
-
-        continue;
-      }
-
-      normalized[name] = value;
-    }
-
-    return normalized;
   }
 
   function updateValue(value: unknown): void {
@@ -329,7 +292,7 @@
   >
     <craft-tab
       v-for="tab in tabs"
-      v-bind="htmlAttributes(tab.attributes)"
+      v-bind="attrs(tab.attributes)"
       v-show="visibleTabs.length > 1 && elementVisible(tab)"
       :key="`tab:${tab.key}`"
       slot="tab"

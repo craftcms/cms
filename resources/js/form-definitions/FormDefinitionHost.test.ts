@@ -31,7 +31,6 @@ describe('Form Definition host', () => {
         ],
       },
       bindingScope: 'widget7-settings',
-      inputNamespace: 'widget7-settings',
       values,
       errors: {'widget7-settings.title': ['Title is required.']},
       readOnly: false,
@@ -50,7 +49,6 @@ describe('Form Definition host', () => {
       host.querySelector<HTMLElementTagNameMap['craft-input']>('craft-input');
 
     expect(input?.getAttribute('name')).toBe('widget7-settings[title]');
-    expect(host.dataset.inputNamespace).toBe('widget7-settings');
     expect(input?.value).toBe('Craft News');
     expect(input?.readOnly).toBe(true);
     expect(host.textContent).toContain('Title is required.');

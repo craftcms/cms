@@ -5,7 +5,6 @@ import type {FormDefinitionData, FormErrors, FormValues} from './types';
 export interface FormDefinitionHostContext {
   definition: FormDefinitionData;
   bindingScope: string;
-  inputNamespace: string;
   values: FormValues;
   errors: FormErrors;
   readOnly: boolean;
@@ -21,8 +20,6 @@ export class FormDefinitionHost extends HTMLElement {
       values: reactive(context.values),
       errors: reactive(context.errors),
     };
-    this.dataset.inputNamespace = context.inputNamespace;
-
     if (this.isConnected) {
       this.#mount();
     }
