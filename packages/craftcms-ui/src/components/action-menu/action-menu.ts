@@ -574,8 +574,11 @@ export default class CraftActionMenu extends CraftPopover {
     // Once Lion's overlay controller is set up, the slotted content node is
     // moved inside its content wrapper (a <dialog>) and loses its `slot`
     // attribute — so prefer the node Lion has already resolved and cached.
-    if (this._cachedOverlayContentNode) {
-      return this._cachedOverlayContentNode;
+    const overlayContentNode = (
+      this as unknown as {_cachedOverlayContentNode?: HTMLElement}
+    )._cachedOverlayContentNode;
+    if (overlayContentNode) {
+      return overlayContentNode;
     }
     return (
       (Array.from(this.children).find((child) => child.slot === 'content') as

@@ -56,7 +56,7 @@ export default class CraftDisclosure extends LionCollapsible {
     return targetSelector ? document.getElementById(targetSelector) : null;
   }
 
-  protected override render() {
+  override render() {
     return html`
       <slot name="invoker"></slot>
       <slot name="content"></slot>

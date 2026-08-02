@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import type CraftCheckbox from '../checkbox/checkbox.js';
 import type CraftEditableTable from './editable-table.js';
 import './editable-table.js';
 
@@ -44,9 +45,9 @@ describe('craft-editable-table', () => {
     const title = root.querySelector<HTMLElementTagNameMap['craft-input']>(
       '[data-table-cell="story-row:title"]'
     )!;
-    const published = root.querySelector<
-      HTMLElementTagNameMap['craft-checkbox']
-    >('[data-table-cell="story-row:published"]')!;
+    const published = root.querySelector<CraftCheckbox>(
+      '[data-table-cell="story-row:published"]'
+    )!;
     const category = root.querySelector<HTMLSelectElement>(
       '[data-table-cell="story-row:category"] select'
     )!;

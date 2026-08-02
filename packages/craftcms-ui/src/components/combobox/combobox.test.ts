@@ -27,12 +27,19 @@ async function createFixture(
 }
 
 function optionEls(combobox: CraftCombobox): HTMLElement[] {
-  const node = combobox._listboxNode as HTMLElement;
-  return Array.from(node.querySelectorAll('craft-option'));
+  return Array.from(listboxNode(combobox).querySelectorAll('craft-option'));
+}
+
+function listboxNode(combobox: CraftCombobox): HTMLElement {
+  return (combobox as unknown as {_listboxNode: HTMLElement})._listboxNode;
+}
+
+function inputNode(combobox: CraftCombobox): HTMLInputElement {
+  return (combobox as unknown as {_inputNode: HTMLInputElement})._inputNode;
 }
 
 async function typeQuery(combobox: CraftCombobox, value: string) {
-  const input = combobox._inputNode as HTMLInputElement;
+  const input = inputNode(combobox);
   input.value = value;
   input.dispatchEvent(new Event('input', {bubbles: true}));
   await combobox.updateComplete;
@@ -111,7 +118,7 @@ describe('craft-combobox', () => {
         },
       ];
     });
-    const node = combobox._listboxNode as HTMLElement;
+    const node = listboxNode(combobox);
     expect(node.querySelector('.combobox__optgroup')?.textContent?.trim()).toBe(
       'North America'
     );
@@ -208,7 +215,7 @@ describe('craft-combobox', () => {
       fired.push(combobox.modelValue);
     });
 
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = inputNode(combobox);
     input.focus();
     input.value = '$MY_ENV';
     input.dispatchEvent(new Event('input', {bubbles: true}));
@@ -227,7 +234,7 @@ describe('craft-combobox', () => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = inputNode(combobox);
     // Simulate the Vue two-way binding writing the value back on each event.
     combobox.addEventListener('model-value-changed', () => {
       const v = combobox.modelValue;
@@ -253,7 +260,7 @@ describe('craft-combobox', () => {
         {label: 'Canada', value: 'ca'},
       ];
     });
-    const input = combobox._inputNode as HTMLInputElement;
+    const input = inputNode(combobox);
     input.focus();
     expect(combobox.opened).toBe(false);
 
@@ -272,7 +279,7 @@ describe('craft-combobox', () => {
       c.limit = 10;
       c.options = makeOptions(50);
     });
-    const node = combobox._listboxNode as HTMLElement;
+    const node = listboxNode(combobox);
     expect(node.querySelector('.combobox__footer')).not.toBeNull();
   });
 });

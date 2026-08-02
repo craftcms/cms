@@ -395,7 +395,6 @@ export default class CraftCombobox extends LionCombobox {
       return option.textContent?.trim() || '';
     }
 
-    // @ts-expect-error Lion handles `null` but the types don't account for it
     return super._getTextboxValueFromOption(option);
   }
 }
