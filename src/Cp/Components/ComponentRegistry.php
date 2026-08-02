@@ -27,6 +27,7 @@ class ComponentRegistry
         'combobox' => Combobox::class,
         'date-input' => DateInput::class,
         'editable-table' => EditableTable::class,
+        'element-condition' => ElementCondition::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'icon' => Icon::class,

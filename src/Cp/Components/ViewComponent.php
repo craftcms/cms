@@ -286,6 +286,11 @@ abstract class ViewComponent implements Htmlable, Stringable
         $this->configuredOptions[$option] = true;
     }
 
+    protected function optionWasConfigured(string $option): bool
+    {
+        return isset($this->configuredOptions[$option]);
+    }
+
     /**
      * @param  list<string>  $options
      */

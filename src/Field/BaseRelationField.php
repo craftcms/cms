@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\ElementCondition as ElementConditionComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\NumberInput;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\FormDefinitions\Condition;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\LightswitchInput;
 use CraftCms\Cms\Cp\FormDefinitions\FormDefinition;
@@ -615,7 +615,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             : $element;
     }
 
-    protected function selectionConditionFormElement(bool $readOnly): ?ElementConditionInput
+    protected function selectionConditionFormElement(bool $readOnly): ?FieldComponent
     {
         $elementType = static::elementType();
         $condition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
@@ -624,18 +624,22 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             return null;
         }
 
-        return ElementConditionInput::make('selectionCondition')
+        return FieldComponent::make()
             ->label(t('Selectable {type} Condition', [
                 'type' => $elementType::pluralDisplayName(),
             ]))
             ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ])))
-            ->conditionClass($condition::class)
-            ->builderConfig($condition->getBuilderConfig())
-            ->sortable($condition->sortable)
-            ->addRuleLabel($condition->addRuleLabel)
-            ->readOnly($readOnly);
+            ->readOnly($readOnly)
+            ->input(
+                ElementConditionComponent::make()
+                    ->name('selectionCondition')
+                    ->conditionClass($condition::class)
+                    ->builderConfig($condition->getBuilderConfig())
+                    ->sortable($condition->sortable)
+                    ->addRuleLabel($condition->addRuleLabel),
+            );
     }
 
     /**

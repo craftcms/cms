@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Components\ColorPalette as ColorPaletteComponent;
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
 use CraftCms\Cms\Cp\Components\DateInput as DateInputComponent;
 use CraftCms\Cms\Cp\Components\EditableTable as EditableTableComponent;
+use CraftCms\Cms\Cp\Components\ElementCondition as ElementConditionComponent;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\KeyedTable as KeyedTableComponent;
 use CraftCms\Cms\Cp\Components\Lightswitch as LightswitchComponent;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Cp\Components\TextInput as TextInputComponent;
 use CraftCms\Cms\Cp\Components\TimeInput as TimeInputComponent;
 use CraftCms\Cms\Cp\FormDefinitions\Contracts\ProjectableFormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Data\PluginData;
-use CraftCms\Cms\Cp\FormDefinitions\Elements\ElementConditionInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FieldLayoutInput;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\FormElement;
 use CraftCms\Cms\Cp\FormDefinitions\Elements\Group;
@@ -69,7 +69,11 @@ class FormElementTypes
                 'container' => CheckboxSelectComponent::isFormElementContainer(),
                 'plugin' => null,
             ],
-            ElementConditionInput::type() => ['class' => ElementConditionInput::class, 'container' => false, 'plugin' => null],
+            ElementConditionComponent::formElementType() => [
+                'class' => ElementConditionComponent::class,
+                'container' => ElementConditionComponent::isFormElementContainer(),
+                'plugin' => null,
+            ],
             EditableTableComponent::formElementType() => [
                 'class' => EditableTableComponent::class,
                 'container' => EditableTableComponent::isFormElementContainer(),

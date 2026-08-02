@@ -74,6 +74,7 @@ describe('relational settings renderers', () => {
     expect(container.querySelectorAll('craft-checkbox')).toHaveLength(3);
     expect(container.querySelector('craft-action-menu')).not.toBeNull();
     expect(container.querySelector('craft-button')).not.toBeNull();
+    expect(container.querySelector('craft-element-condition')).not.toBeNull();
     expect(condition.form).toBe(hostForm);
     const request = vi.mocked(fetch).mock.calls[0]![1]!.body as FormData;
     const postedConfig = request.get('config');
@@ -171,6 +172,11 @@ describe('relational settings renderers', () => {
     expect(condition.disabled).toBe(true);
     expect(condition.value).toBe('Inspect me');
     expect(
+      container
+        .querySelector('craft-element-condition')!
+        .hasAttribute('readonly')
+    ).toBe(true);
+    expect(
       container.querySelector<HTMLElement & {disabled: boolean}>(
         'craft-button'
       )!.disabled
@@ -181,9 +187,60 @@ describe('relational settings renderers', () => {
       )!.disabled
     ).toBe(true);
   });
+
+  it('reports condition builder failures and preserves field accessibility', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response('', {status: 422}));
+    const values = reactive({
+      settings: {
+        restrictLocation: false,
+        sources: '*',
+        restrictedLocationSubpath: '',
+        selectionCondition: null,
+      },
+    });
+    const {container} = mount(values, false, {
+      'settings.selectionCondition': ['Add at least one condition rule.'],
+    });
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    });
+    const condition = container.querySelector<
+      HTMLElementTagNameMap['craft-element-condition']
+    >('craft-element-condition')!;
+    const field =
+      condition.closest<HTMLElementTagNameMap['craft-field']>('craft-field')!;
+    await field.updateComplete;
+    await field.updateComplete;
+    const label = field.querySelector<HTMLElement>('[slot="label"]')!;
+    const instructions = field.querySelector<HTMLElement>(
+      '[data-form-element-instructions]'
+    )!;
+    const feedback = field.querySelector<HTMLElement>(
+      '[data-form-element-errors]'
+    )!;
+    const error = condition.querySelector<HTMLElement>('[role="alert"]')!;
+
+    expect(error.textContent).toContain('Element Condition');
+    expect(error.textContent).toContain('conditionRules');
+    expect(error.textContent).toContain('Form Definition');
+    expect(error.textContent).toContain('422');
+    expect(feedback.textContent).toContain('Add at least one condition rule.');
+    expect(condition.getAttribute('role')).toBe('group');
+    expect(condition.getAttribute('aria-required')).toBe('true');
+    expect(condition.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(condition.getAttribute('aria-describedby')?.split(' ')).toEqual([
+      instructions.id,
+      feedback.id,
+    ]);
+  });
 });
 
-function mount(values: Record<string, unknown>, readOnly = false) {
+function mount(
+  values: Record<string, unknown>,
+  readOnly = false,
+  errors: Record<string, string[]> = {}
+) {
   const registry = createCpComponentRegistry();
   const hostForm = document.createElement('form');
   const container = document.createElement('div');
@@ -208,7 +265,7 @@ function mount(values: Record<string, unknown>, readOnly = false) {
     definition,
     bindingScope: 'settings',
     values,
-    errors: {},
+    errors,
     readOnly,
   });
 
@@ -234,12 +291,22 @@ const definition = {
       ],
       allOption: '*',
     }),
-    field('craft:element-condition-input', 'selectionCondition', {
-      conditionClass: 'AssetCondition',
-      builderConfig: {},
-      sortable: true,
-      addRuleLabel: 'Add a rule',
-    }),
+    field(
+      'craft:element-condition-input',
+      'selectionCondition',
+      {
+        conditionClass: 'AssetCondition',
+        builderConfig: {},
+        sortable: true,
+        addRuleLabel: 'Add a rule',
+      },
+      undefined,
+      {
+        label: 'Selectable Asset Condition',
+        instructions: 'Only allow assets that match these rules.',
+        required: true,
+      }
+    ),
   ],
 } satisfies CraftCms.Cms.Cp.FormDefinitions.Data.FormDefinitionData;
 
@@ -247,10 +314,12 @@ function field(
   type: string,
   name: string,
   props?: Record<string, CraftCms.Cms.Cp.FormDefinitions.Data.JsonValue>,
-  visibleWhen?: CraftCms.Cms.Cp.FormDefinitions.Data.VisibilityConditionData
+  visibleWhen?: CraftCms.Cms.Cp.FormDefinitions.Data.VisibilityConditionData,
+  fieldProps?: Record<string, CraftCms.Cms.Cp.FormDefinitions.Data.JsonValue>
 ) {
   return {
     type: 'craft:field',
+    props: fieldProps,
     children: [{type, name, props}],
     visibleWhen,
   };

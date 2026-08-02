@@ -1,16 +1,27 @@
 <script setup lang="ts">
-  import {nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef} from 'vue';
+  import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    useAttrs,
+    useTemplateRef,
+  } from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
   import ConditionsController from '@actions/ConditionsController';
   import {expandFormData} from '@/common/utils/forms';
   import {valueAt} from '../binding';
   import type {FormElementBinding, FormValues, JsonValue} from '../types';
+  import '@craftcms/ui/components/element-condition/element-condition';
   import '@craftcms/ui/components/spinner/spinner';
 
   type ConditionConfig = Record<string, JsonValue> & {
     class: string;
     conditionRules?: Array<Record<string, JsonValue>>;
   };
+
+  defineOptions({inheritAttrs: false});
 
   const props = defineProps<{
     config: Record<string, JsonValue>;
@@ -22,7 +33,12 @@
     'update:value': [value: ConditionConfig | null];
   }>();
 
-  const container = useTemplateRef<HTMLElement>('container');
+  const attrs = useAttrs();
+  const hostProperties = computed(() => ({...props.attributes, ...attrs}));
+  const container =
+    useTemplateRef<HTMLElementTagNameMap['craft-element-condition']>(
+      'container'
+    );
   const builderHtml = ref('');
   const error = ref('');
   let observer: MutationObserver | undefined;
@@ -68,8 +84,16 @@
       builderHtml.value = template.innerHTML;
       await nextTick();
       initializeBuilder();
-    } catch {
-      error.value = t('The selectable condition could not be loaded.');
+    } catch (exception) {
+      const reason =
+        exception instanceof Error
+          ? exception.message
+          : t('Unknown condition builder error.');
+
+      error.value = t(
+        'Element Condition option “conditionRules” could not be rendered for Form Definition output: {reason}',
+        {reason}
+      );
     }
   }
 
@@ -108,37 +132,12 @@
       return;
     }
 
-    applyReadOnly();
-    (window as any).htmx?.process(container.value);
-    (window as any).Craft?.initUiElements?.(container.value);
+    container.value.initialize();
 
     observer = new MutationObserver(() => {
-      applyReadOnly();
       syncValue();
     });
     observer.observe(container.value, {childList: true, subtree: true});
-  }
-
-  function applyReadOnly(): void {
-    if (!props.binding?.readOnly || !container.value) {
-      return;
-    }
-
-    for (const control of container.value.querySelectorAll<HTMLElement>(
-      'button, input, select, textarea, craft-action-menu, craft-button'
-    )) {
-      (control as HTMLElement & {disabled: boolean}).disabled = true;
-      control.setAttribute('disabled', '');
-    }
-  }
-
-  function preventReadOnly(event: Event): void {
-    if (!props.binding?.readOnly) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
   }
 
   function syncValue(): void {
@@ -222,17 +221,16 @@
 </script>
 
 <template>
-  <div
+  <craft-element-condition
     ref="container"
-    :id="String(attributes.id)"
+    v-bind="hostProperties"
     class="condition-container"
-    :aria-disabled="binding?.readOnly"
+    :readonly="binding?.readOnly ?? false"
     @input="syncValue"
     @change="syncValue"
-    @click.capture="preventReadOnly"
   >
     <craft-spinner v-if="!builderHtml && !error"></craft-spinner>
     <p v-else-if="error" class="error" role="alert">{{ error }}</p>
     <div v-else v-html="builderHtml"></div>
-  </div>
+  </craft-element-condition>
 </template>

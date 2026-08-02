@@ -32,6 +32,7 @@ export {default as CraftCopyButton} from './components/copy-button/copy-button.j
 export {default as CraftDialog} from './components/dialog/dialog.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftEmpty} from './components/empty/empty.js';
+export {default as CraftElementCondition} from './components/element-condition/element-condition.js';
 export {
   default as CraftEditableTable,
   type EditableTableColumn,
