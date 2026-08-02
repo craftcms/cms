@@ -1,5 +1,4 @@
 import {expect, it} from 'vite-plus/test';
-import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
 import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
 import CraftObjectSelect from '@craftcms/ui/vue/CraftObjectSelect.vue';
 import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
@@ -10,6 +9,7 @@ import {
   nativeFormElementRenderers,
   registerNativeFormElementRenderers,
 } from './form-element-types';
+import FieldLayoutDesignerValueAdapter from './FieldLayoutDesignerValueAdapter.vue';
 
 it('pairs every native Form Element Type with its declared Vue rendering path', () => {
   const registry = createCpComponentRegistry();
@@ -35,9 +35,9 @@ it('pairs every native Form Element Type with its declared Vue rendering path', 
 it.each([
   ['craft:keyed-table-input', CraftKeyedTable],
   ['craft:object-select-input', CraftObjectSelect],
-  ['craft:field-layout-input', CraftFieldLayout],
+  ['craft:field-layout-designer', FieldLayoutDesignerValueAdapter],
   ['craft:option-rows', CraftOptionRows],
-])('registers %s through its generated Vue wrapper', (type, wrapper) => {
+])('registers the %s renderer', (type, wrapper) => {
   const registry = createCpComponentRegistry();
 
   registerNativeFormElementRenderers(registry);

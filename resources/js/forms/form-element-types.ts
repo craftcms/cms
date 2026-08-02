@@ -1,7 +1,6 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import CraftEditableTable from '@craftcms/ui/vue/CraftEditableTable.vue';
-import CraftFieldLayout from '@craftcms/ui/vue/CraftFieldLayout.vue';
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 import CraftInputMoney from '@craftcms/ui/vue/CraftInputMoney.vue';
 import CraftKeyedTable from '@craftcms/ui/vue/CraftKeyedTable.vue';
@@ -10,7 +9,6 @@ import CraftOptionRows from '@craftcms/ui/vue/CraftOptionRows.vue';
 import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import '@craftcms/ui/components/editable-table/editable-table';
-import '@craftcms/ui/components/field-layout/field-layout';
 import '@craftcms/ui/components/input/input';
 import '@craftcms/ui/components/keyed-table/keyed-table';
 import '@craftcms/ui/components/object-select/object-select';
@@ -20,6 +18,7 @@ import '@craftcms/ui/components/switch/switch';
 import '@/modules/icon-picker';
 import CheckboxSelectValueAdapter from './CheckboxSelectValueAdapter.vue';
 import ElementConditionRenderer from './ElementConditionRenderer.vue';
+import FieldLayoutDesignerValueAdapter from './FieldLayoutDesignerValueAdapter.vue';
 
 const sharedContainerTypes = new Set<string>([
   'craft:field',
@@ -34,7 +33,7 @@ export const nativeFormElementRenderers = {
   'craft:date-input': CraftInput,
   'craft:editable-table-input': CraftEditableTable,
   'craft:element-condition-input': ElementConditionRenderer,
-  'craft:field-layout-input': CraftFieldLayout,
+  'craft:field-layout-designer': FieldLayoutDesignerValueAdapter,
   'craft:keyed-table-input': CraftKeyedTable,
   'craft:lightswitch-input': CraftSwitch,
   'craft:money-input': CraftInputMoney,

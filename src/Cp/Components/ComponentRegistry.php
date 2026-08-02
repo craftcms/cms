@@ -28,7 +28,7 @@ class ComponentRegistry
         'editable-table' => EditableTable::class,
         'element-condition' => ElementCondition::class,
         'field' => Field::class,
-        'field-layout' => FieldLayout::class,
+        'field-layout-designer' => FieldLayoutDesigner::class,
         'field-group' => FieldGroup::class,
         'group' => Group::class,
         'icon' => Icon::class,

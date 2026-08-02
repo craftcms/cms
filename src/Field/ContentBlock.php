@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
-use CraftCms\Cms\Cp\Components\FieldLayout as FieldLayoutComponent;
+use CraftCms\Cms\Cp\Components\FieldLayoutDesigner as FieldLayoutDesignerComponent;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -26,8 +26,6 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
@@ -361,10 +359,11 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $fieldLayout = $this->getFieldLayout();
 
         return Form::make([
-            FieldComponent::make(FieldLayoutComponent::make()
+            FieldComponent::make(FieldLayoutDesignerComponent::make()
                 ->name("fieldLayouts.{$fieldLayout->uid}")
-                ->availableElements($this->fieldLayoutElementOptions())
-                ->withGeneratedFields())
+                ->fieldLayout($fieldLayout)
+                ->withGeneratedFields()
+                ->readOnly($readOnly))
                 ->label(t('Field Layout')),
             FieldComponent::make(Select::make()
                 ->name('viewMode')
@@ -375,40 +374,6 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                 ]))
                 ->label(t('View Mode')),
         ]);
-    }
-
-    /**
-     * @return list<array{
-     *     key: string,
-     *     label: string,
-     *     value: array<string, mixed>,
-     *     multiple: bool,
-     * }>
-     */
-    private function fieldLayoutElementOptions(): array
-    {
-        $fieldLayout = $this->getFieldLayout();
-        $customFields = array_merge(...array_values($fieldLayout->getAvailableCustomFields()));
-        $elements = [
-            ...$fieldLayout->getAvailableNativeFields(),
-            ...$customFields,
-            ...$fieldLayout->getAvailableUiElements(),
-        ];
-
-        return array_map(function (FieldLayoutElement $element): array {
-            $label = html_entity_decode(strip_tags($element->selectorHtml()), ENT_QUOTES | ENT_HTML5);
-            $label = trim((string) preg_replace('/\s+/u', ' ', $label));
-            $key = $element instanceof CustomFieldElement
-                ? "field:{$element->getFieldUid()}"
-                : sprintf('%s:%s', $element::class, $element instanceof BaseField ? $element->attribute() : '');
-
-            return [
-                'key' => $key,
-                'label' => $label,
-                'value' => ['type' => $element::class] + $element->toArray(),
-                'multiple' => $element->isMultiInstance(),
-            ];
-        }, $elements);
     }
 
     #[Override]

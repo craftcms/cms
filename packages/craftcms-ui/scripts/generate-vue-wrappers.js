@@ -234,15 +234,6 @@ const VALUE_COMPONENTS = [
     importPath: '../components/object-select/object-select',
   },
   {
-    tagName: 'craft-field-layout',
-    className: 'CraftFieldLayout',
-    fileName: 'CraftFieldLayout',
-    modelType: 'FieldLayoutValue',
-    modelTypeImports: ['FieldLayoutValue'],
-    modelDefault: '{}',
-    importPath: '../components/field-layout/field-layout',
-  },
-  {
     tagName: 'craft-option-rows',
     className: 'CraftOptionRows',
     fileName: 'CraftOptionRows',

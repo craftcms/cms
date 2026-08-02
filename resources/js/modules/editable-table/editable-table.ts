@@ -129,6 +129,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         copyDraggeeInputValuesToHelper: true,
         onSortChange: () => {
           this.updateAllRows();
+          this.trigger('sortChange');
         },
       });
     } else {

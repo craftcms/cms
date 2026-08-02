@@ -5,7 +5,7 @@
   {"type": "craft:editable-table-input", "container": false},
   {"type": "craft:element-condition-input", "container": false},
   {"type": "craft:field", "container": true},
-  {"type": "craft:field-layout-input", "container": false},
+  {"type": "craft:field-layout-designer", "container": false},
   {"type": "craft:group", "container": true},
   {"type": "craft:keyed-table-input", "container": false},
   {"type": "craft:lightswitch-input", "container": false},

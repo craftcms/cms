@@ -396,6 +396,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   set config(config: FieldLayoutConfig) {
     this._config = config;
     this.$configInput.value = JSON.stringify(config);
+    this.$configInput.dispatchEvent(new Event('input', {bubbles: true}));
   }
 
   updateConfig(

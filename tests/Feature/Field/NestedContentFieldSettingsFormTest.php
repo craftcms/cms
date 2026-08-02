@@ -11,7 +11,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\Site\Models\Site;
 
-it('projects content block settings without serializing the field layout value', function () {
+it('projects content block settings through the existing field layout designer', function () {
     $layout = new FieldLayout([
         'uid' => 'content-layout',
         'type' => CraftCms\Cms\Field\Elements\ContentBlock::class,
@@ -35,19 +35,20 @@ it('projects content block settings without serializing the field layout value',
     expect(array_keys($inputs))->toBe([
         'fieldLayouts.content-layout',
         'viewMode',
-    ])->and($inputs['fieldLayouts.content-layout']['type'])->toBe('craft:field-layout-input')
-        ->and($inputs['fieldLayouts.content-layout']['props'])->toMatchArray([
-            'withGeneratedFields' => true,
-        ])->and($inputs['fieldLayouts.content-layout']['props']['availableElements'])->toBeArray()
+    ])->and($inputs['fieldLayouts.content-layout']['type'])->toBe('craft:field-layout-designer')
+        ->and($inputs['fieldLayouts.content-layout']['props']['designerHtml'])->toContain(
+            '<craft-field-layout-designer',
+            'content-tab',
+            'divider',
+        )->and($inputs['fieldLayouts.content-layout']['props']['generatedFieldsHtml'])->toContain(
+            '<craft-generated-fields-table',
+        )
         ->and($inputs['viewMode']['props']['options'])->toBe([
             ['label' => 'Grouped', 'value' => 'grouped'],
             ['label' => 'In a pane', 'value' => 'pane'],
             ['label' => 'Inline', 'value' => 'inline'],
         ])
-        ->and($definition)->not->toHaveKey('fieldLayout')
-        ->and(json_encode($definition, JSON_THROW_ON_ERROR))->not->toContain('content-tab', 'divider');
-
-    expect($definition)->not->toContain('readOnly');
+        ->and($definition)->not->toHaveKey('fieldLayout');
 });
 
 it('projects the complete matrix settings surface with complex values kept outside the definition', function () {
