@@ -46,7 +46,7 @@ class Group extends FormContainer
     public function toHtml(): string
     {
         if ($this->form !== null) {
-            $this->unsupportedOutputOption('form', 'HTML');
+            $this->invalidOutputOption('form', 'HTML');
         }
 
         return parent::toHtml();

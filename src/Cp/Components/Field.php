@@ -294,32 +294,20 @@ class Field extends ViewComponent implements PositionableFormElement
         $input = $this->evaluate($this->input);
 
         if (! $input instanceof FormElement || $input::isFormElementContainer()) {
-            $this->unsupportedOutputOption('input', 'Form');
+            $this->invalidOutputOption('input', 'Form');
         }
 
         $props = array_filter([
-            'label' => $this->portableText('label', $this->label),
-            'instructions' => $this->portableText('instructions', $this->instructions),
-            'tip' => $this->portableText('tip', $this->tip),
-            'warning' => $this->portableText('warning', $this->warning),
-            'required' => $this->portableBoolean('required', $this->required) ?: null,
-            'readOnly' => $this->portableBoolean('readOnly', $this->readOnly) ?: null,
+            'label' => $this->resolvedText($this->label),
+            'instructions' => $this->resolvedText($this->instructions),
+            'tip' => $this->resolvedText($this->tip),
+            'warning' => $this->resolvedText($this->warning),
+            'required' => $this->resolvedBool($this->required) ?: null,
+            'readOnly' => $this->resolvedBool($this->readOnly) ?: null,
         ], fn (mixed $value): bool => $value !== null);
         $key = $this->evaluate($this->elementKey);
         $columnWidth = $this->evaluate($this->columnWidth);
         $condition = $this->evaluate($this->visibilityCondition);
-
-        if ($key !== null && ! is_string($key)) {
-            $this->unsupportedOutputOption('key', 'Form');
-        }
-
-        if ($columnWidth !== null && ! is_int($columnWidth)) {
-            $this->unsupportedOutputOption('columnWidth', 'Form');
-        }
-
-        if ($condition !== null && ! $condition instanceof Condition) {
-            $this->unsupportedOutputOption('visibleWhen', 'Form');
-        }
 
         return new FormElementData(
             type: static::formElementType(),
@@ -426,17 +414,6 @@ class Field extends ViewComponent implements PositionableFormElement
     {
         if (is_string($value) || ($value instanceof Stringable && ! $value instanceof Htmlable && ! $value instanceof ViewComponent)) {
             return new HtmlString((string) $value);
-        }
-
-        return $value;
-    }
-
-    private function portableBoolean(string $option, mixed $value): bool
-    {
-        $value = $this->evaluate($value);
-
-        if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, 'Form');
         }
 
         return $value;

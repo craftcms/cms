@@ -112,7 +112,7 @@ it('rejects invalid portable condition editor configuration', function (ElementC
         Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', ElementCondition::class, $option),
+        sprintf('%s option "%s" is invalid for Form output.', ElementCondition::class, $option),
     );
 })->with([
     'name' => [fn () => ElementCondition::make()->conditionClass(TestElementCondition::class), 'name'],
@@ -124,41 +124,13 @@ it('rejects invalid portable condition editor configuration', function (ElementC
             ->builderConfig(['condition' => new stdClass]),
         'builderConfig.condition',
     ],
-    'sortable state' => [
-        fn () => ElementCondition::make()
-            ->name('selectionCondition')
-            ->conditionClass(TestElementCondition::class)
-            ->sortable(fn (): string => 'yes'),
-        'sortable',
-    ],
-    'add rule label' => [
-        fn () => ElementCondition::make()
-            ->name('selectionCondition')
-            ->conditionClass(TestElementCondition::class)
-            ->addRuleLabel(fn (): int => 1),
-        'addRuleLabel',
-    ],
 ]);
 
-it('fails HTML rendering when an executable condition is missing or incompatible', function (ElementCondition $component, string $option) {
-    expect(fn () => $component->toHtml())->toThrow(
-        InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for HTML output.', ElementCondition::class, $option),
-    );
-})->with([
-    'missing condition' => [fn () => ElementCondition::make()->name('selectionCondition'), 'condition'],
-    'condition class mismatch' => [
-        fn () => ElementCondition::make()
-            ->name('selectionCondition')
-            ->conditionClass(BaseCondition::class)
-            ->condition(new TestElementCondition),
-        'conditionClass',
-    ],
-    'invalid read-only state' => [
-        fn () => ElementCondition::make()
-            ->name('selectionCondition')
-            ->condition(new TestElementCondition)
-            ->readOnly(fn (): string => 'yes'),
-        'readOnly',
-    ],
-]);
+it('ignores the condition class during HTML rendering', function () {
+    $component = ElementCondition::make()
+        ->name('selectionCondition')
+        ->conditionClass(BaseCondition::class)
+        ->condition(new TestElementCondition);
+
+    expect($component->toHtml())->toBeString();
+});

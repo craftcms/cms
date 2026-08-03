@@ -54,7 +54,7 @@ class ElementCondition extends ViewComponent implements FormElement
     protected function hostAttributes(): array
     {
         return [
-            'disabled' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
+            'disabled' => $this->resolvedBool($this->readOnly),
         ];
     }
 
@@ -120,15 +120,15 @@ class ElementCondition extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
-        $conditionClass = $this->portableText('conditionClass', $this->conditionClass);
+        $name = $this->resolvedText($this->name);
+        $conditionClass = $this->resolvedText($this->conditionClass);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
         if ($conditionClass === null || ! is_subclass_of($conditionClass, ConditionInterface::class)) {
-            $this->unsupportedOutputOption('conditionClass', 'Form');
+            $this->invalidOutputOption('conditionClass', 'Form');
         }
 
         $builderConfig = $this->resolvedBuilderConfig('Form');
@@ -136,8 +136,8 @@ class ElementCondition extends ViewComponent implements FormElement
             'conditionClass' => $conditionClass,
             'builderConfig' => $builderConfig,
             'renderUrl' => action([ConditionsController::class, 'show']),
-            'sortable' => $this->resolvedBool('sortable', $this->sortable, 'Form'),
-            'addRuleLabel' => $this->resolvedText('addRuleLabel', $this->addRuleLabel, 'Form'),
+            'sortable' => $this->resolvedBool($this->sortable),
+            'addRuleLabel' => $this->resolvedText($this->addRuleLabel),
         ], fn (mixed $value): bool => $value !== null);
         $attributes = $this->formElementAttributes();
 
@@ -154,21 +154,11 @@ class ElementCondition extends ViewComponent implements FormElement
     {
         $condition = $this->evaluate($this->condition);
 
-        if (! $condition instanceof ConditionInterface) {
-            $this->unsupportedOutputOption('condition', 'HTML');
-        }
-
         $condition = clone $condition;
-        $name = $this->resolvedText('name', $this->name, 'HTML');
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'HTML');
-        }
-
-        $conditionClass = $this->resolvedText('conditionClass', $this->conditionClass, 'HTML');
-
-        if ($conditionClass !== null && $conditionClass !== $condition::class) {
-            $this->unsupportedOutputOption('conditionClass', 'HTML');
+            $this->invalidOutputOption('name', 'HTML');
         }
 
         $condition->name = $name;
@@ -191,8 +181,8 @@ class ElementCondition extends ViewComponent implements FormElement
     {
         $config = $this->evaluate($this->builderConfig) ?? [];
 
-        if (! is_array($config) || array_is_list($config) && $config !== []) {
-            $this->unsupportedOutputOption('builderConfig', $output);
+        if (array_is_list($config) && $config !== []) {
+            $this->invalidOutputOption('builderConfig', $output);
         }
 
         foreach ($config as $key => $value) {
@@ -210,41 +200,19 @@ class ElementCondition extends ViewComponent implements FormElement
 
         if (is_float($value)) {
             if (! is_finite($value)) {
-                $this->unsupportedOutputOption($option, $output);
+                $this->invalidOutputOption($option, $output);
             }
 
             return;
         }
 
         if (! is_array($value)) {
-            $this->unsupportedOutputOption($option, $output);
+            $this->invalidOutputOption($option, $output);
         }
 
         foreach ($value as $key => $item) {
             $this->validateJsonValue($item, "{$option}.{$key}", $output);
         }
-    }
-
-    private function resolvedText(string $option, string|Closure|null $value, string $output): ?string
-    {
-        $value = $this->evaluate($value);
-
-        if ($value !== null && ! is_string($value)) {
-            $this->unsupportedOutputOption($option, $output);
-        }
-
-        return $value;
-    }
-
-    private function resolvedBool(string $option, bool|Closure $value, string $output): bool
-    {
-        $value = $this->evaluate($value);
-
-        if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, $output);
-        }
-
-        return $value;
     }
 
     /** @return array<string, mixed> */

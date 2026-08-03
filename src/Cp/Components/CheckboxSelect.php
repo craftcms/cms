@@ -110,23 +110,19 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
         $options = $this->evaluate($this->options);
 
-        if (! is_array($options) || ! array_is_list($options) || array_any($options, fn (mixed $option): bool => ! is_array($option))) {
-            $this->unsupportedOutputOption('options', 'Form');
+        if (! array_is_list($options) || array_any($options, fn (mixed $option): bool => ! is_array($option))) {
+            $this->invalidOutputOption('options', 'Form');
         }
 
-        $sortable = $this->evaluate($this->sortable);
-
-        if (! is_bool($sortable)) {
-            $this->unsupportedOutputOption('sortable', 'Form');
-        }
+        $sortable = $this->resolvedBool($this->sortable);
 
         $props = ['options' => $options];
 
@@ -134,7 +130,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
             $allOption = $this->evaluate($this->allOption);
 
             if (! $this->isOptionValue($allOption)) {
-                $this->unsupportedOutputOption('allOption', 'Form');
+                $this->invalidOutputOption('allOption', 'Form');
             }
 
             $props['allOption'] = $allOption;
@@ -200,10 +196,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
         $options = $this->evaluate($this->options);
         $this->resolvedAllCheckbox = $this->evaluate($this->allCheckbox);
 
-        if (! is_iterable($options)) {
-            $this->unsupportedOutputOption('options', 'HTML');
-        }
-
         $options = is_array($options) ? $options : iterator_to_array($options);
 
         if (array_all($options, fn (mixed $option): bool => $option instanceof ViewComponent)) {
@@ -211,7 +203,7 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
         }
 
         if (array_any($options, fn (mixed $option): bool => ! is_array($option))) {
-            $this->unsupportedOutputOption('options', 'HTML');
+            $this->invalidOutputOption('options', 'HTML');
         }
 
         $values = $this->evaluate($this->values);
@@ -299,10 +291,6 @@ class CheckboxSelect extends ChoiceGroup implements FormElement
     {
         if ($value === null || is_bool($value)) {
             return (string) $value;
-        }
-
-        if (! is_string($value) && ! is_int($value) && ! is_float($value)) {
-            $this->unsupportedOutputOption('options', 'HTML');
         }
 
         return $value;

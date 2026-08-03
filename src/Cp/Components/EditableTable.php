@@ -199,20 +199,20 @@ class EditableTable extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
         $columns = $this->resolvedColumns('Form');
         $fixedRows = $this->resolvedFixedRows('Form');
         $defaultRow = $this->resolvedDefaultRow('Form');
-        $keyed = $this->resolvedBool('keyed', $this->keyed, 'Form');
-        $includeRowId = $this->resolvedBool('includeRowId', $this->includeRowId, 'Form');
-        $definesColumns = $this->resolvedBool('definesColumns', $this->definesColumns, 'Form');
-        $readOnly = $this->resolvedBool('readOnly', $this->readOnly, 'Form');
-        $addRowLabel = $this->portableText('addRowLabel', $this->addRowLabel);
+        $keyed = $this->resolvedBool($this->keyed);
+        $includeRowId = $this->resolvedBool($this->includeRowId);
+        $definesColumns = $this->resolvedBool($this->definesColumns);
+        $readOnly = $this->resolvedBool($this->readOnly);
+        $addRowLabel = $this->resolvedText($this->addRowLabel);
         $value = $this->evaluate($this->value);
 
         $this->validateValue($value, $keyed, 'Form');
@@ -229,7 +229,7 @@ class EditableTable extends ViewComponent implements FormElement
                 $readOnly,
                 $addRowLabel,
             ),
-            'sourceName' => $this->portableText('sourceName', $this->sourceName),
+            'sourceName' => $this->resolvedText($this->sourceName),
             'columns' => $columns,
             'fixedRows' => $fixedRows === [] ? null : $fixedRows,
             'addRowLabel' => $addRowLabel,
@@ -237,7 +237,7 @@ class EditableTable extends ViewComponent implements FormElement
             'keyed' => $keyed ?: null,
             'includeRowId' => $includeRowId ?: null,
             'definesColumns' => $definesColumns ?: null,
-            'columnsFrom' => $this->portableText('columnsFrom', $this->columnsFrom),
+            'columnsFrom' => $this->resolvedText($this->columnsFrom),
         ], fn (mixed $value): bool => $value !== null);
         $attributes = $this->formElementAttributes();
 
@@ -255,21 +255,21 @@ class EditableTable extends ViewComponent implements FormElement
         $columns = $this->resolvedColumns('HTML');
         $fixedRows = $this->resolvedFixedRows('HTML');
         $defaultRow = $this->resolvedDefaultRow('HTML');
-        $keyed = $this->resolvedBool('keyed', $this->keyed, 'HTML');
+        $keyed = $this->resolvedBool($this->keyed);
         $value = $this->evaluate($this->value);
 
         $this->validateValue($value, $keyed, 'HTML');
 
         return $this->tableHtml(
-            $this->resolvedText('name', $this->name, 'HTML') ?? 'editableTable',
+            $this->resolvedText($this->name) ?? 'editableTable',
             $value,
             $columns,
             $fixedRows,
             $defaultRow,
             $keyed,
-            $this->resolvedBool('includeRowId', $this->includeRowId, 'HTML'),
-            $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
-            $this->resolvedText('addRowLabel', $this->addRowLabel, 'HTML'),
+            $this->resolvedBool($this->includeRowId),
+            $this->resolvedBool($this->readOnly),
+            $this->resolvedText($this->addRowLabel),
             $this->attributes,
         );
     }
@@ -367,8 +367,8 @@ class EditableTable extends ViewComponent implements FormElement
     {
         $columns = $this->evaluate($this->columns);
 
-        if (! is_array($columns) || ! array_is_list($columns)) {
-            $this->unsupportedOutputOption('columns', $output);
+        if (! array_is_list($columns)) {
+            $this->invalidOutputOption('columns', $output);
         }
 
         foreach ($columns as $index => $column) {
@@ -383,18 +383,17 @@ class EditableTable extends ViewComponent implements FormElement
     {
         $fixedRows = $this->evaluate($this->fixedRows);
 
-        if (! is_array($fixedRows) || ! array_is_list($fixedRows)) {
-            $this->unsupportedOutputOption('fixedRows', $output);
+        if (! array_is_list($fixedRows)) {
+            $this->invalidOutputOption('fixedRows', $output);
         }
 
         foreach ($fixedRows as $index => $row) {
             if (
-                ! is_array($row)
-                || array_diff(array_keys($row), ['key', 'label']) !== []
+                array_diff(array_keys($row), ['key', 'label']) !== []
                 || ! is_string($row['key'] ?? null)
                 || ! is_string($row['label'] ?? null)
             ) {
-                $this->unsupportedOutputOption("fixedRows[{$index}]", $output);
+                $this->invalidOutputOption("fixedRows[{$index}]", $output);
             }
         }
 
@@ -406,8 +405,8 @@ class EditableTable extends ViewComponent implements FormElement
     {
         $defaultRow = $this->evaluate($this->defaultRow);
 
-        if (! is_array($defaultRow) || ($defaultRow !== [] && array_is_list($defaultRow))) {
-            $this->unsupportedOutputOption('defaultRow', $output);
+        if ($defaultRow !== [] && array_is_list($defaultRow)) {
+            $this->invalidOutputOption('defaultRow', $output);
         }
 
         $this->validateJsonValue($defaultRow, 'defaultRow', $output);
@@ -417,46 +416,42 @@ class EditableTable extends ViewComponent implements FormElement
 
     private function validateColumn(mixed $column, int $index, string $output): void
     {
-        if (! is_array($column)) {
-            $this->unsupportedOutputOption("columns[{$index}]", $output);
-        }
-
         $supported = ['key', 'label', 'type', 'width', 'class', 'code', 'placeholder', 'autoPopulate', 'nestedOptions', 'radioMode', 'toggle', 'options'];
 
         foreach (array_keys($column) as $property) {
             if (! in_array($property, $supported, true)) {
-                $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
+                $this->invalidOutputOption("columns[{$index}].{$property}", $output);
             }
         }
 
         foreach (['key', 'label', 'type'] as $property) {
             if (! isset($column[$property]) || ! is_string($column[$property])) {
-                $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
+                $this->invalidOutputOption("columns[{$index}].{$property}", $output);
             }
         }
 
         if (! in_array($column['type'], self::COLUMN_TYPES, true)) {
-            $this->unsupportedOutputOption("columns[{$index}].type", $output);
+            $this->invalidOutputOption("columns[{$index}].type", $output);
         }
 
         if (array_key_exists('width', $column) && ! is_string($column['width']) && ! is_int($column['width'])) {
-            $this->unsupportedOutputOption("columns[{$index}].width", $output);
+            $this->invalidOutputOption("columns[{$index}].width", $output);
         }
 
         foreach (['class', 'placeholder', 'autoPopulate'] as $property) {
             if (array_key_exists($property, $column) && ! is_string($column[$property])) {
-                $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
+                $this->invalidOutputOption("columns[{$index}].{$property}", $output);
             }
         }
 
         foreach (['code', 'nestedOptions', 'radioMode'] as $property) {
             if (array_key_exists($property, $column) && ! is_bool($column[$property])) {
-                $this->unsupportedOutputOption("columns[{$index}].{$property}", $output);
+                $this->invalidOutputOption("columns[{$index}].{$property}", $output);
             }
         }
 
         if (array_key_exists('toggle', $column) && (! is_array($column['toggle']) || ! array_is_list($column['toggle']) || ! array_all($column['toggle'], fn (mixed $target): bool => is_string($target)))) {
-            $this->unsupportedOutputOption("columns[{$index}].toggle", $output);
+            $this->invalidOutputOption("columns[{$index}].toggle", $output);
         }
 
         if (array_key_exists('options', $column)) {
@@ -467,36 +462,36 @@ class EditableTable extends ViewComponent implements FormElement
     private function validateOptions(mixed $options, int $columnIndex, string $output): void
     {
         if (! is_array($options) || ! array_is_list($options)) {
-            $this->unsupportedOutputOption("columns[{$columnIndex}].options", $output);
+            $this->invalidOutputOption("columns[{$columnIndex}].options", $output);
         }
 
         foreach ($options as $index => $option) {
             if (! is_array($option)) {
-                $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}]", $output);
+                $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}]", $output);
             }
 
             foreach (array_keys($option) as $property) {
                 if (! in_array($property, ['label', 'value', 'default'], true)) {
-                    $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}].{$property}", $output);
+                    $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}].{$property}", $output);
                 }
             }
 
             if (! isset($option['label']) || ! is_string($option['label']) || ! array_key_exists('value', $option)) {
-                $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}]", $output);
+                $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}]", $output);
             }
 
             if (array_key_exists('default', $option) && ! is_bool($option['default'])) {
-                $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}].default", $output);
+                $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}].default", $output);
             }
 
             $value = $option['value'];
 
             if (! is_scalar($value) && $value !== null) {
-                $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}].value", $output);
+                $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}].value", $output);
             }
 
             if (is_float($value) && ! is_finite($value)) {
-                $this->unsupportedOutputOption("columns[{$columnIndex}].options[{$index}].value", $output);
+                $this->invalidOutputOption("columns[{$columnIndex}].options[{$index}].value", $output);
             }
         }
     }
@@ -508,12 +503,12 @@ class EditableTable extends ViewComponent implements FormElement
             || (! $keyed && ! array_is_list($value))
             || ($keyed && $value !== [] && array_is_list($value))
         ) {
-            $this->unsupportedOutputOption('value', $output);
+            $this->invalidOutputOption('value', $output);
         }
 
         foreach ($value as $key => $row) {
             if (! is_array($row)) {
-                $this->unsupportedOutputOption("value[{$key}]", $output);
+                $this->invalidOutputOption("value[{$key}]", $output);
             }
 
             $this->validateJsonValue($row, "value[{$key}]", $output);
@@ -528,41 +523,19 @@ class EditableTable extends ViewComponent implements FormElement
 
         if (is_float($value)) {
             if (! is_finite($value)) {
-                $this->unsupportedOutputOption($option, $output);
+                $this->invalidOutputOption($option, $output);
             }
 
             return;
         }
 
         if (! is_array($value)) {
-            $this->unsupportedOutputOption($option, $output);
+            $this->invalidOutputOption($option, $output);
         }
 
         foreach ($value as $key => $item) {
             $this->validateJsonValue($item, "{$option}[{$key}]", $output);
         }
-    }
-
-    private function resolvedBool(string $option, bool|Closure $value, string $output): bool
-    {
-        $value = $this->evaluate($value);
-
-        if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, $output);
-        }
-
-        return $value;
-    }
-
-    private function resolvedText(string $option, string|Closure|null $value, string $output): ?string
-    {
-        $value = $this->evaluate($value);
-
-        if ($value !== null && ! is_string($value)) {
-            $this->unsupportedOutputOption($option, $output);
-        }
-
-        return $value;
     }
 
     /** @return array<string, mixed> */

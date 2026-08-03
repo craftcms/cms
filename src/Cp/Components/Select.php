@@ -135,16 +135,16 @@ class Select extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
-        $options = $this->evaluate($this->options);
+        $options = $this->resolvedOptions($this->options);
 
-        if (! is_array($options) || ! array_is_list($options)) {
-            $this->unsupportedOutputOption('options', 'Form');
+        if (! array_is_list($options)) {
+            $this->invalidOutputOption('options', 'Form');
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
@@ -179,11 +179,7 @@ class Select extends ViewComponent implements FormElement
     #[\Override]
     protected function renderSlots(): string
     {
-        $options = $this->evaluate($this->options);
-
-        if (! is_array($options)) {
-            $this->unsupportedOutputOption('options', 'HTML');
-        }
+        $options = $this->resolvedOptions($this->options);
 
         $attributes = Arr::merge([
             'slot' => 'input',
@@ -209,11 +205,7 @@ class Select extends ViewComponent implements FormElement
 
         foreach ($options as $key => $option) {
             if (is_array($option) && ($option['type'] ?? null) === 'optgroup') {
-                $children = $option['options'] ?? [];
-
-                if (! is_array($children)) {
-                    $this->unsupportedOutputOption('options', 'HTML');
-                }
+                $children = $this->resolvedOptions($option['options'] ?? []);
 
                 $html .= Html::tag('optgroup', $this->optionsHtml($children), [
                     'label' => $option['label'] ?? '',
@@ -253,5 +245,11 @@ class Select extends ViewComponent implements FormElement
         }
 
         return $autocomplete;
+    }
+
+    /** @return array<array-key, mixed> */
+    private function resolvedOptions(mixed $options): array
+    {
+        return $this->evaluate($options);
     }
 }

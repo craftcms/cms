@@ -64,9 +64,9 @@ abstract class FormContainer extends ViewComponent implements PositionableFormEl
 
     public function toFormElementData(): FormElementData
     {
-        $key = $this->resolvedElementKey('Form');
-        $width = $this->resolvedColumnWidth('Form');
-        $condition = $this->resolvedVisibilityCondition('Form');
+        $key = $this->resolvedElementKey();
+        $width = $this->resolvedColumnWidth();
+        $condition = $this->resolvedVisibilityCondition();
 
         $props = $this->formElementProps();
         $attributes = $this->withoutAttributes($this->attributes, [
@@ -103,7 +103,7 @@ abstract class FormContainer extends ViewComponent implements PositionableFormEl
     {
         $children = [];
 
-        foreach ($this->resolvedChildren('Form') as $index => $child) {
+        foreach ($this->resolvedChildren() as $index => $child) {
             if ($child instanceof Tab) {
                 $this->invalidChild($index, $child, 'a non-Tab form element', 'Form');
             }
@@ -126,15 +126,9 @@ abstract class FormContainer extends ViewComponent implements PositionableFormEl
     }
 
     /** @return iterable<array-key, mixed> */
-    protected function resolvedChildren(string $output): iterable
+    protected function resolvedChildren(): iterable
     {
-        $children = $this->evaluate($this->children);
-
-        if (! is_iterable($children)) {
-            $this->unsupportedOutputOption('children', $output);
-        }
-
-        return $children;
+        return $this->evaluate($this->children);
     }
 
     protected function invalidChild(int|string $index, mixed $child, string $expected, string $output): never
@@ -149,44 +143,26 @@ abstract class FormContainer extends ViewComponent implements PositionableFormEl
         ));
     }
 
-    protected function resolvedElementKey(string $output): ?string
+    protected function resolvedElementKey(): ?string
     {
-        $key = $this->evaluate($this->elementKey);
-
-        if ($key !== null && ! is_string($key)) {
-            $this->unsupportedOutputOption('key', $output);
-        }
-
-        return $key;
+        return $this->evaluate($this->elementKey);
     }
 
-    protected function resolvedColumnWidth(string $output): ?int
+    protected function resolvedColumnWidth(): ?int
     {
-        $width = $this->evaluate($this->columnWidth);
-
-        if ($width !== null && ! is_int($width)) {
-            $this->unsupportedOutputOption('columnWidth', $output);
-        }
-
-        return $width;
+        return $this->evaluate($this->columnWidth);
     }
 
-    protected function resolvedVisibilityCondition(string $output): ?Condition
+    protected function resolvedVisibilityCondition(): ?Condition
     {
-        $condition = $this->evaluate($this->visibilityCondition);
-
-        if ($condition !== null && ! $condition instanceof Condition) {
-            $this->unsupportedOutputOption('visibleWhen', $output);
-        }
-
-        return $condition;
+        return $this->evaluate($this->visibilityCondition);
     }
 
     #[Override]
     protected function hostAttributes(): array
     {
-        $key = $this->resolvedElementKey('HTML');
-        $width = $this->resolvedColumnWidth('HTML');
+        $key = $this->resolvedElementKey();
+        $width = $this->resolvedColumnWidth();
 
         return [
             'data-form-element-key' => $key,

@@ -38,10 +38,10 @@ abstract class ScalarInput extends Input implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
@@ -76,7 +76,7 @@ abstract class ScalarInput extends Input implements FormElement
         $value = $this->evaluate($value);
 
         if ($value !== null && ! is_int($value) && ! is_float($value)) {
-            $this->unsupportedOutputOption($option, 'Form');
+            $this->invalidOutputOption($option, 'Form');
         }
 
         return $value;
@@ -86,7 +86,7 @@ abstract class ScalarInput extends Input implements FormElement
     {
         foreach (array_keys($this->inputAttributes) as $attribute) {
             if (strtolower((string) $attribute) === 'type') {
-                $this->unsupportedOutputOption("inputAttributes.{$attribute}", 'HTML');
+                $this->invalidOutputOption("inputAttributes.{$attribute}", 'HTML');
             }
         }
     }

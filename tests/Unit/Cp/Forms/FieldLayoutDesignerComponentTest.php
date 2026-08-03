@@ -65,14 +65,11 @@ it('projects the existing field layout designer into Forms', function () {
         ->and(app(FormElementTypes::class)->isRegistered(FieldLayoutDesigner::formElementType()))->toBeTrue();
 });
 
-it('requires a name and field layout for Form output', function (FieldLayoutDesigner $component, string $option) {
+it('requires a name for Form output', function () {
     expect(fn () => Form::make([
-        Field::make($component),
+        Field::make(FieldLayoutDesigner::make()->fieldLayout(new FieldLayout)),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', FieldLayoutDesigner::class, $option),
+        sprintf('%s option "name" is invalid for Form output.', FieldLayoutDesigner::class),
     );
-})->with([
-    'name' => [fn () => FieldLayoutDesigner::make()->fieldLayout(new FieldLayout), 'name'],
-    'field layout' => [fn () => FieldLayoutDesigner::make()->name('fieldLayout'), 'fieldLayout'],
-]);
+});

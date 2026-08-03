@@ -86,28 +86,28 @@ class MoneyInput extends ScalarInput
     #[Override]
     protected function formElementProps(): array
     {
-        $fractionDigits = $this->evaluate($this->fractionDigits);
+        $fractionDigits = $this->resolvedInt($this->fractionDigits);
 
-        if (! is_int($fractionDigits) || $fractionDigits < 0) {
-            $this->unsupportedOutputOption('fractionDigits', 'Form');
+        if ($fractionDigits < 0) {
+            $this->invalidOutputOption('fractionDigits', 'Form');
         }
 
         return [
-            'currency' => $this->portableText('currency', $this->currency),
+            'currency' => $this->resolvedText($this->currency),
             'fractionDigits' => $fractionDigits,
             'minorUnits' => true,
-            'placeholder' => $this->portableText('placeholder', $this->placeholder),
+            'placeholder' => $this->resolvedText($this->placeholder),
         ];
     }
 
     #[Override]
     protected function hostAttributes(): array
     {
-        $fractionDigits = $this->evaluate($this->fractionDigits);
+        $fractionDigits = $this->resolvedInt($this->fractionDigits);
         $locale = I18N::getFormattingLocale();
 
-        if (! is_int($fractionDigits) || $fractionDigits < 0) {
-            $this->unsupportedOutputOption('fractionDigits', 'HTML');
+        if ($fractionDigits < 0) {
+            $this->invalidOutputOption('fractionDigits', 'HTML');
         }
 
         return [

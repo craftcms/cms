@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Forms\Data;
 
+use CraftCms\Cms\Support\Arr;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
@@ -29,16 +30,10 @@ readonly class FormElementData implements JsonSerializable
         #[Optional]
         public ?int $width = null,
         #[Optional]
-        #[LiteralTypeScriptType(
-            'Record<string, %JsonValue%>',
-            references: ['JsonValue' => JsonValue::class],
-        )]
+        #[LiteralTypeScriptType('Record<string, unknown>')]
         public ?array $props = null,
         #[Optional]
-        #[LiteralTypeScriptType(
-            'Record<string, %JsonValue%>',
-            references: ['JsonValue' => JsonValue::class],
-        )]
+        #[LiteralTypeScriptType('Record<string, unknown>')]
         public ?array $attributes = null,
         #[Optional]
         public ?array $children = null,
@@ -49,7 +44,7 @@ readonly class FormElementData implements JsonSerializable
     /** @return array<string, mixed> */
     public function jsonSerialize(): array
     {
-        return array_filter([
+        return Arr::whereNotNull([
             'type' => $this->type,
             'key' => $this->key,
             'name' => $this->name,
@@ -63,7 +58,7 @@ readonly class FormElementData implements JsonSerializable
                     $this->children,
                 ),
             'visibleWhen' => $this->visibleWhen?->jsonSerialize(),
-        ], fn (mixed $value): bool => $value !== null);
+        ]);
     }
 
     public function withInputNamePrefix(string $prefix): self

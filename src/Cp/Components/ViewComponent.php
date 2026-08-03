@@ -309,24 +309,28 @@ abstract class ViewComponent implements Htmlable, Stringable
         return $attributes;
     }
 
-    protected function unsupportedOutputOption(string $option, string $output): never
+    protected function invalidOutputOption(string $option, string $output): never
     {
         throw new InvalidArgumentException(sprintf(
-            '%s option "%s" is not supported for %s output.',
+            '%s option "%s" is invalid for %s output.',
             static::class,
             $option,
             $output,
         ));
     }
 
-    protected function portableText(string $option, mixed $value): ?string
+    protected function resolvedText(mixed $value): ?string
     {
-        $value = $this->evaluate($value);
+        return $this->evaluate($value);
+    }
 
-        if ($value !== null && ! is_string($value)) {
-            $this->unsupportedOutputOption($option, 'Form');
-        }
+    protected function resolvedBool(mixed $value): bool
+    {
+        return $this->evaluate($value);
+    }
 
-        return $value;
+    protected function resolvedInt(mixed $value): int
+    {
+        return $this->evaluate($value);
     }
 }

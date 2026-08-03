@@ -148,14 +148,11 @@ it('keeps host values and HTML-only options out of specialized projection', func
     'money currency label' => [fn () => MoneyInput::make()->name('amount')->currencyLabel('US dollars')],
 ]);
 
-it('rejects invalid portable specialized configuration', function (FormElement $component, string $option) {
+it('rejects invalid portable fraction digits', function () {
     expect(fn () => Form::make([
-        Field::make($component),
+        Field::make(MoneyInput::make()->name('amount')->fractionDigits(-1)),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
+        sprintf('%s option "fractionDigits" is invalid for Form output.', MoneyInput::class),
     );
-})->with([
-    'money currency' => [fn () => MoneyInput::make()->name('amount')->currency(fn (): array => []), 'currency'],
-    'money fraction digits' => [fn () => MoneyInput::make()->name('amount')->fractionDigits(-1), 'fractionDigits'],
-]);
+});

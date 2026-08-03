@@ -298,7 +298,7 @@ it('requires a local Input Name for choice projection', function (FormElement $c
     expect(fn () => Form::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "name" is not supported for Form output.', $component::class),
+            sprintf('%s option "name" is invalid for Form output.', $component::class),
         );
 })->with([
     'select' => [fn () => Select::make()->options([])],
@@ -324,6 +324,6 @@ it('rejects non-portable checkbox options during projection', function () {
 
     expect(fn () => Form::make([Field::make($component)])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "options" is not supported for Form output.', CheckboxSelect::class),
+        sprintf('%s option "options" is invalid for Form output.', CheckboxSelect::class),
     );
 });

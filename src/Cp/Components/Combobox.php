@@ -133,27 +133,23 @@ class Combobox extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
-        $options = $this->evaluate($this->options);
+        $options = $this->resolvedOptions();
 
-        if (! is_array($options) || ! array_is_list($options)) {
-            $this->unsupportedOutputOption('options', 'Form');
+        if (! array_is_list($options)) {
+            $this->invalidOutputOption('options', 'Form');
         }
 
-        $limit = $this->evaluate($this->limit);
-        $clearable = $this->evaluate($this->clearable);
+        $limit = $this->resolvedInt($this->limit);
+        $clearable = $this->resolvedBool($this->clearable);
 
-        if (! is_int($limit) || $limit < 1) {
-            $this->unsupportedOutputOption('limit', 'Form');
-        }
-
-        if (! is_bool($clearable)) {
-            $this->unsupportedOutputOption('clearable', 'Form');
+        if ($limit < 1) {
+            $this->invalidOutputOption('limit', 'Form');
         }
 
         $attributes = $this->withoutAttributes($this->formElementAttributes, [
@@ -166,7 +162,7 @@ class Combobox extends ViewComponent implements FormElement
 
         $props = array_filter([
             'options' => $options,
-            'placeholder' => $this->portableText('placeholder', $this->placeholder),
+            'placeholder' => $this->resolvedText($this->placeholder),
             'limit' => $limit === 150 ? null : $limit,
             'clearable' => $clearable ?: null,
         ], fn (mixed $value): bool => $value !== null);
@@ -182,17 +178,11 @@ class Combobox extends ViewComponent implements FormElement
     #[\Override]
     protected function hostAttributes(): array
     {
-        $options = $this->evaluate($this->options);
-
-        if (! is_array($options)) {
-            $this->unsupportedOutputOption('options', 'HTML');
-        }
-
         return [
             'id' => $this->getId(),
             'name' => $this->evaluate($this->name),
             'model-value' => $this->evaluate($this->value),
-            'options' => Json::encode($options),
+            'options' => Json::encode($this->resolvedOptions()),
             'limit' => $this->evaluate($this->limit),
             'clearable' => (bool) $this->evaluate($this->clearable),
             'placeholder' => $this->evaluate($this->placeholder),
@@ -225,5 +215,11 @@ class Combobox extends ViewComponent implements FormElement
             ->content(new HtmlString($content))
             ->toHtml()
             .parent::renderSlots();
+    }
+
+    /** @return array<array-key, mixed> */
+    private function resolvedOptions(): array
+    {
+        return $this->evaluate($this->options);
     }
 }

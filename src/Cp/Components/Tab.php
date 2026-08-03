@@ -93,14 +93,10 @@ class Tab extends FormContainer
     #[Override]
     protected function formElementProps(): array
     {
-        $hasErrors = $this->evaluate($this->hasErrors);
-
-        if (! is_bool($hasErrors)) {
-            $this->unsupportedOutputOption('hasErrors', 'Form');
-        }
+        $hasErrors = $this->resolvedBool($this->hasErrors);
 
         return array_filter([
-            'label' => $this->portableText('label', $this->label),
+            'label' => $this->resolvedText($this->label),
             'hasErrors' => $hasErrors ?: null,
         ], fn (mixed $value): bool => $value !== null);
     }
@@ -118,8 +114,8 @@ class Tab extends FormContainer
     #[Override]
     protected function renderMarkup(): string
     {
-        $key = $this->resolvedElementKey('HTML');
-        $width = $this->resolvedColumnWidth('HTML');
+        $key = $this->resolvedElementKey();
+        $width = $this->resolvedColumnWidth();
 
         return parent::renderMarkup().Html::tag(
             'craft-field-group',
@@ -135,16 +131,8 @@ class Tab extends FormContainer
     #[Override]
     protected function renderSlots(): string
     {
-        $label = $this->evaluate($this->label);
-        $hasErrors = $this->evaluate($this->hasErrors);
-
-        if (! is_string($label)) {
-            $this->unsupportedOutputOption('label', 'HTML');
-        }
-
-        if (! is_bool($hasErrors)) {
-            $this->unsupportedOutputOption('hasErrors', 'HTML');
-        }
+        $label = $this->resolvedText($this->label);
+        $hasErrors = $this->resolvedBool($this->hasErrors);
 
         return Html::encode($label).($hasErrors
             ? $this->renderContent(new HtmlString(Html::tag('craft-indicator', '', [

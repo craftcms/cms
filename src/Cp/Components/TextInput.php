@@ -17,7 +17,7 @@ class TextInput extends ScalarInput
     protected function formElementProps(): array
     {
         return [
-            'placeholder' => $this->portableText('placeholder', $this->placeholder),
+            'placeholder' => $this->resolvedText($this->placeholder),
         ];
     }
 }

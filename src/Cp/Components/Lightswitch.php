@@ -302,10 +302,10 @@ class Lightswitch extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
         $attributes = $this->withoutAttributes(Html::normalizeTagAttributes($this->attributes), [
@@ -319,9 +319,9 @@ class Lightswitch extends ViewComponent implements FormElement
         ]);
 
         $props = array_filter([
-            'label' => $this->portableText('label', $this->label),
-            'onLabel' => $this->portableText('onLabel', $this->onLabel),
-            'offLabel' => $this->portableText('offLabel', $this->offLabel),
+            'label' => $this->resolvedText($this->label),
+            'onLabel' => $this->resolvedText($this->onLabel),
+            'offLabel' => $this->resolvedText($this->offLabel),
             'size' => $this->projectedSize(),
         ], fn (mixed $value): bool => $value !== null);
 
@@ -351,10 +351,8 @@ class Lightswitch extends ViewComponent implements FormElement
             $size = $size->value;
         }
 
-        if ($size !== null && ! in_array($size, [Size::Small->value, Size::Medium->value], true)) {
-            $this->unsupportedOutputOption('size', 'Form');
-        }
+        $size = $this->resolvedText($size);
 
-        return $size;
+        return in_array($size, [Size::Small->value, Size::Medium->value], true) ? $size : null;
     }
 }

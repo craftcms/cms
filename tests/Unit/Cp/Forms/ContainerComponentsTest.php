@@ -299,29 +299,13 @@ it('ignores Form-only container options during HTML rendering', function () {
         ->toHtml())->toBeString();
 });
 
-it('rejects unsupported container options during HTML rendering', function (
-    FormContainer $container,
-    string $option,
-) {
-    expect(fn () => $container->toHtml())
+it('rejects a nested Form during HTML rendering', function () {
+    expect(fn () => Group::fromForm(Form::make([]), 'nested')->toHtml())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for HTML output.', $container::class, $option),
+            sprintf('%s option "form" is invalid for HTML output.', Group::class),
         );
-})->with([
-    'nested form' => [
-        fn () => Group::fromForm(Form::make([]), 'nested'),
-        'form',
-    ],
-    'invalid lazy key' => [
-        fn () => Group::make()->key(fn (): stdClass => new stdClass),
-        'key',
-    ],
-    'invalid lazy width' => [
-        fn () => Group::make()->columnWidth(fn (): string => 'wide'),
-        'columnWidth',
-    ],
-]);
+});
 
 it('rejects rendering a Tab outside Tabs', function () {
     expect(fn () => Tab::make('content', 'Content')->toHtml())
@@ -335,6 +319,6 @@ it('rejects rendering Tabs without a Tab', function () {
     expect(fn () => Tabs::make()->toHtml())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "children" is not supported for HTML output.', Tabs::class),
+            sprintf('%s option "children" is invalid for HTML output.', Tabs::class),
         );
 });

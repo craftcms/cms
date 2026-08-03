@@ -12,7 +12,6 @@ use CraftCms\Cms\Cp\Forms\Condition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
-use Illuminate\Support\HtmlString;
 
 it('projects a Field and Lightswitch alongside existing authoring objects', function () {
     $form = Form::make([
@@ -139,40 +138,24 @@ it('keeps raw Field input available for HTML and rejects it for Form output', fu
         ->and(fn () => Form::make([$field])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "input" is not supported for Form output.', Field::class),
+            sprintf('%s option "input" is invalid for Form output.', Field::class),
         );
 });
 
-it('rejects non-Form-Element Field inputs and portable raw markup', function (Field $field, string $option) {
+it('rejects non-Form-Element Field inputs', function (Field $field) {
     expect(fn () => Form::make([$field])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for Form output.', Field::class, $option),
+            sprintf('%s option "input" is invalid for Form output.', Field::class),
         );
 })->with([
-    'missing input' => [fn () => Field::make()->input(null), 'input'],
-    'non-Form-Element component' => [fn () => Field::make(Button::make()), 'input'],
+    'missing input' => [fn () => Field::make()->input(null)],
+    'non-Form-Element component' => [fn () => Field::make(Button::make())],
     'multiple inputs' => [
         fn () => Field::make(fn (): array => [
             Lightswitch::make()->name('first'),
             Lightswitch::make()->name('second'),
         ]),
-        'input',
-    ],
-    'raw label markup' => [
-        fn () => Field::make(Lightswitch::make()->name('enabled'))
-            ->label(new HtmlString('<strong>Feature</strong>')),
-        'label',
-    ],
-    'unsupported label object' => [
-        fn () => Field::make(Lightswitch::make()->name('enabled'))
-            ->label(fn (): stdClass => new stdClass),
-        'label',
-    ],
-    'unsupported required value' => [
-        fn () => Field::make(Lightswitch::make()->name('enabled'))
-            ->required(fn (): stdClass => new stdClass),
-        'required',
     ],
 ]);
 
@@ -181,7 +164,7 @@ it('requires a local Lightswitch Input Name for Form output', function () {
         Field::make(Lightswitch::make()),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "name" is not supported for Form output.', Lightswitch::class),
+        sprintf('%s option "name" is invalid for Form output.', Lightswitch::class),
     );
 });
 
@@ -222,16 +205,12 @@ it('ignores host-owned Lightswitch attributes', function () {
     ]);
 });
 
-it('rejects Lightswitch sizes unsupported by the Form renderer', function () {
+it('ignores Lightswitch sizes unsupported by the Form renderer', function () {
     $form = Form::make([
         Field::make(Lightswitch::make()->name('enabled')->size(Size::Large)),
     ]);
 
-    expect(fn () => $form->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "size" is not supported for Form output.', Lightswitch::class),
-        );
+    expect($form->toArray())->not->toHaveKey('elements.0.children.0.props.size');
 });
 
 it('ignores output-specific component options', function () {

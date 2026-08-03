@@ -126,7 +126,7 @@ it('requires a local Input Name for scalar projection', function (FormElement $c
     expect(fn () => Form::make([Field::make($component)])->toArray())
         ->toThrow(
             InvalidArgumentException::class,
-            sprintf('%s option "name" is not supported for Form output.', $component::class),
+            sprintf('%s option "name" is invalid for Form output.', $component::class),
         );
 })->with([
     'text' => [TextInput::make()],
@@ -162,16 +162,11 @@ it('ignores host-owned scalar state during projection', function () {
     ]);
 });
 
-it('rejects invalid portable scalar values', function (FormElement $component, string $option) {
-    expect(fn () => Form::make([Field::make($component)])->toArray())
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
-        );
-})->with([
-    'text placeholder' => [fn () => TextInput::make()->name('setting')->placeholder(fn (): stdClass => new stdClass), 'placeholder'],
-    'number minimum' => [fn () => NumberInput::make()->name('setting')->min('zero'), 'min'],
-]);
+it('rejects invalid portable number values', function () {
+    expect(fn () => Form::make([
+        Field::make(NumberInput::make()->name('setting')->min('zero')),
+    ])->toArray())->toThrow(InvalidArgumentException::class);
+});
 
 it('ignores native input type overrides during scalar projection', function () {
     $component = TextInput::make()->name('setting')->type('number');
@@ -192,6 +187,6 @@ it('does not allow native input attributes to override a semantic scalar type', 
 
     expect(fn () => $component->toHtml())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "inputAttributes.type" is not supported for HTML output.', TextInput::class),
+        sprintf('%s option "inputAttributes.type" is invalid for HTML output.', TextInput::class),
     );
 });

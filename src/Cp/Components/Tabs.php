@@ -51,7 +51,7 @@ class Tabs extends FormContainer
         $tabs = $this->resolvedTabs('HTML');
 
         if ($tabs === []) {
-            $this->unsupportedOutputOption('children', 'HTML');
+            $this->invalidOutputOption('children', 'HTML');
         }
 
         $single = count($tabs) === 1;
@@ -67,7 +67,7 @@ class Tabs extends FormContainer
     {
         $tabs = [];
 
-        foreach ($this->resolvedChildren($output) as $index => $child) {
+        foreach ($this->resolvedChildren() as $index => $child) {
             if (! $child instanceof Tab) {
                 $this->invalidChild($index, $child, Tab::class, $output);
             }

@@ -124,10 +124,10 @@ class EntryTypeSelect extends ViewComponent implements FormElement
             'name' => "{$name}[]",
             'values' => $this->resolvedEntryTypes('values', $this->values, $output),
             'options' => $this->resolvedEntryTypes('options', $this->options, $output),
-            'allowOverrides' => $this->resolvedBool('allowOverrides', $this->allowOverrides, $output),
-            'includeGroupInValues' => $this->resolvedBool('includeGroupInValues', $this->includeGroupInValues, $output),
-            'create' => $this->resolvedBool('create', $this->create, $output),
-            'disabled' => $this->resolvedBool('readOnly', $this->readOnly, $output),
+            'allowOverrides' => $this->resolvedBool($this->allowOverrides),
+            'includeGroupInValues' => $this->resolvedBool($this->includeGroupInValues),
+            'create' => $this->resolvedBool($this->create),
+            'disabled' => $this->resolvedBool($this->readOnly),
             'containerAttributes' => $output === 'HTML' ? $this->renderedAttributes() : [],
         ]);
     }
@@ -136,8 +136,8 @@ class EntryTypeSelect extends ViewComponent implements FormElement
     {
         $name = $this->evaluate($this->name);
 
-        if (! is_string($name) || $name === '') {
-            $this->unsupportedOutputOption('name', $output);
+        if ($name === '') {
+            $this->invalidOutputOption('name', $output);
         }
 
         return $name;
@@ -151,25 +151,14 @@ class EntryTypeSelect extends ViewComponent implements FormElement
     {
         $value = $this->evaluate($value);
 
-        if (! is_array($value) || ! array_is_list($value)) {
-            $this->unsupportedOutputOption($option, $output);
+        if (! array_is_list($value)) {
+            $this->invalidOutputOption($option, $output);
         }
 
         foreach ($value as $entryType) {
             if (! $entryType instanceof EntryType) {
-                $this->unsupportedOutputOption($option, $output);
+                $this->invalidOutputOption($option, $output);
             }
-        }
-
-        return $value;
-    }
-
-    private function resolvedBool(string $option, bool|Closure $value, string $output): bool
-    {
-        $value = $this->evaluate($value);
-
-        if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, $output);
         }
 
         return $value;

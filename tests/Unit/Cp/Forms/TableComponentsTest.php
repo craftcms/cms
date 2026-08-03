@@ -112,7 +112,7 @@ it('rejects invalid portable table configuration before projection', function (E
         Field::make($component),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for Form output.', $component::class, $option),
+        sprintf('%s option "%s" is invalid for Form output.', $component::class, $option),
     );
 })->with([
     'editable name' => [fn () => EditableTable::make()->name(null), 'name'],
@@ -140,10 +140,10 @@ it('rejects invalid portable table configuration before projection', function (E
     ],
 ]);
 
-it('rejects unsupported HTML table configuration before rendering', function (EditableTable $component, string $option) {
+it('rejects invalid HTML table configuration before rendering', function (EditableTable $component, string $option) {
     expect(fn () => $component->toHtml())->toThrow(
         InvalidArgumentException::class,
-        sprintf('%s option "%s" is not supported for HTML output.', $component::class, $option),
+        sprintf('%s option "%s" is invalid for HTML output.', $component::class, $option),
     );
 })->with([
     'editable value' => [

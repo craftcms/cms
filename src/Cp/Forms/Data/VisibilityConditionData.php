@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Cp\Forms\Data;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
-#[LiteralTypeScriptType("{ name: string; operator: 'equals' | 'notEquals' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'beginsWith' | 'endsWith' | 'contains' | 'in' | 'notIn'; value: JsonValue } | { name: string; operator: 'empty' | 'notEmpty' } | { all: VisibilityConditionData[] } | { any: VisibilityConditionData[] }")]
+#[LiteralTypeScriptType("{ name: string; operator: 'equals' | 'notEquals' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'beginsWith' | 'endsWith' | 'contains' | 'in' | 'notIn'; value: unknown } | { name: string; operator: 'empty' | 'notEmpty' } | { all: VisibilityConditionData[] } | { any: VisibilityConditionData[] }")]
 readonly class VisibilityConditionData implements JsonSerializable
 {
     /** @param array<string, mixed> $condition */

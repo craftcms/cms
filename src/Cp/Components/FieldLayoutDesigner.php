@@ -62,15 +62,15 @@ class FieldLayoutDesigner extends ViewComponent implements FormElement
 
     public function toFormElementData(): FormElementData
     {
-        $name = $this->portableText('name', $this->name);
+        $name = $this->resolvedText($this->name);
 
         if ($name === null) {
-            $this->unsupportedOutputOption('name', 'Form');
+            $this->invalidOutputOption('name', 'Form');
         }
 
-        $fieldLayout = $this->resolvedFieldLayout('Form');
-        $readOnly = $this->resolvedBool('readOnly', $this->readOnly, 'Form');
-        $withGeneratedFields = $this->resolvedBool('withGeneratedFields', $this->withGeneratedFields, 'Form');
+        $fieldLayout = $this->resolvedFieldLayout();
+        $readOnly = $this->resolvedBool($this->readOnly);
+        $withGeneratedFields = $this->resolvedBool($this->withGeneratedFields);
         $id = Html::id(sprintf('fld-%s', $fieldLayout->uid ?? spl_object_id($fieldLayout)));
         $designer = app(Designer::class);
 
@@ -101,31 +101,14 @@ class FieldLayoutDesigner extends ViewComponent implements FormElement
     #[Override]
     protected function renderMarkup(): string
     {
-        return app(Designer::class)->fieldHtml($this->resolvedFieldLayout('HTML'), [
-            'withGeneratedFields' => $this->resolvedBool('withGeneratedFields', $this->withGeneratedFields, 'HTML'),
-            'disabled' => $this->resolvedBool('readOnly', $this->readOnly, 'HTML'),
+        return app(Designer::class)->fieldHtml($this->resolvedFieldLayout(), [
+            'withGeneratedFields' => $this->resolvedBool($this->withGeneratedFields),
+            'disabled' => $this->resolvedBool($this->readOnly),
         ]);
     }
 
-    private function resolvedFieldLayout(string $output): FieldLayout
+    private function resolvedFieldLayout(): FieldLayout
     {
-        $fieldLayout = $this->evaluate($this->fieldLayout);
-
-        if (! $fieldLayout instanceof FieldLayout) {
-            $this->unsupportedOutputOption('fieldLayout', $output);
-        }
-
-        return $fieldLayout;
-    }
-
-    private function resolvedBool(string $option, bool|Closure $value, string $output): bool
-    {
-        $value = $this->evaluate($value);
-
-        if (! is_bool($value)) {
-            $this->unsupportedOutputOption($option, $output);
-        }
-
-        return $value;
+        return $this->evaluate($this->fieldLayout);
     }
 }
