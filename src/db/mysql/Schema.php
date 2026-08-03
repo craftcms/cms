@@ -479,15 +479,15 @@ SQL;
         // Certificates
         if (
             isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA]) ||
-            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH]) ||
+            (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) ||
             isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT]) ||
             isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY]) ||
-            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER])
+            (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER]))
         ) {
             if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
                 $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
             }
-            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) {
+            if (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) {
                 $contents .= PHP_EOL . 'ssl_capath=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH];
             }
             if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
@@ -496,7 +496,7 @@ SQL;
             if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
                 $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
             }
-            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER])) {
+            if (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER])) {
                 $contents .= PHP_EOL . 'ssl_cipher=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER];
             }
         } else {
