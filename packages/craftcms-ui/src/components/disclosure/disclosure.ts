@@ -11,7 +11,7 @@ import '../button/button.js';
  * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
  * slotted invoker, renders a default one from the `label` attribute:
  *
- *     <craft-button type="button" appearance="plain" icon="chevron-down">${label}</craft-button>
+ *     <craft-button type="button" variant="plain" icon="chevron-down">${label}</craft-button>
  *
  * **External-target mode** — wraps a bare `button[type="button"]` whose
  * `aria-controls` names an element elsewhere in the document; toggling flips

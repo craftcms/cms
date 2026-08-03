@@ -1,12 +1,12 @@
 import {t} from '@craftcms/ui';
 import {h} from 'vue';
 import {
-  type AccessorColumnDef,
-  type CellContext,
-  type ColumnDef,
-  type ColumnHelper,
-  createColumnHelper,
-  type DisplayColumnDef,
+    type AccessorColumnDef,
+    type CellContext,
+    type ColumnDef,
+    type ColumnHelper,
+    createColumnHelper,
+    type DisplayColumnDef,
 } from '@tanstack/vue-table';
 import type {AccessorParam} from '@/modules/admin-table/composables/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
@@ -14,138 +14,140 @@ import Date from '@/common/components/Date.vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
 type LinkColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
-  props: (cellContext: CellContext<T, any>) => Record<string, any>;
+    props: (cellContext: CellContext<T, any>) => Record<string, any>;
 };
 
 type HtmlColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
-  props: (cellContext: CellContext<T, any>) => Record<string, any>;
+    props: (cellContext: CellContext<T, any>) => Record<string, any>;
 };
 
 type DateColumnDef<T extends Record<string, any>> = AccessorColumnDef<T> & {
-  format?: string;
+    format?: string;
 };
 
 export type CraftColumnHelper<T extends Record<string, any>> =
-  ColumnHelper<T> & {
-    handle: (
-      accessor: AccessorParam<T>,
-      config?: Partial<AccessorColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-    html: (
-      accessor: AccessorParam<T>,
-      config?: Partial<HtmlColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-    link: (
-      accessor: AccessorParam<T>,
-      config?: Partial<LinkColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-    actions: (
-      actions: (cellContext: CellContext<T, any>) => Array<any>,
-      config?: Partial<DisplayColumnDef<T>>
-    ) => ColumnDef<T, any>;
-    date: (
-      accessor: AccessorParam<T>,
-      config?: Partial<DateColumnDef<T>>
-    ) => AccessorColumnDef<T, any>;
-  };
+    ColumnHelper<T> & {
+        handle: (
+            accessor: AccessorParam<T>,
+            config?: Partial<AccessorColumnDef<T>>
+        ) => AccessorColumnDef<T, any>;
+        html: (
+            accessor: AccessorParam<T>,
+            config?: Partial<HtmlColumnDef<T>>
+        ) => AccessorColumnDef<T, any>;
+        link: (
+            accessor: AccessorParam<T>,
+            config?: Partial<LinkColumnDef<T>>
+        ) => AccessorColumnDef<T, any>;
+        actions: (
+            actions: (cellContext: CellContext<T, any>) => Array<any>,
+            config?: Partial<DisplayColumnDef<T>>
+        ) => ColumnDef<T, any>;
+        date: (
+            accessor: AccessorParam<T>,
+            config?: Partial<DateColumnDef<T>>
+        ) => AccessorColumnDef<T, any>;
+    };
 
 export function createCraftColumnHelper<T extends Record<string, any>>() {
-  const baseHelper = createColumnHelper<T>();
+    const baseHelper = createColumnHelper<T>();
 
-  const columnHelper: CraftColumnHelper<T> = {
-    accessor: baseHelper.accessor,
-    display: baseHelper.display,
-    group: baseHelper.group,
+    const columnHelper: CraftColumnHelper<T> = {
+        accessor: baseHelper.accessor,
+        display: baseHelper.display,
+        group: baseHelper.group,
 
-    date(accessor, config = {}) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const {format, ...rest} = config;
-      return baseHelper.accessor(accessor, {
-        cell: (cellContext: CellContext<T, any>) => {
-          if (cellContext.getValue()) {
-            if (typeof cellContext.getValue() === 'string') {
-              return h(Date, {value: cellContext.getValue()});
-            } else if (
-              typeof cellContext.getValue() === 'object' &&
-              Object.keys(cellContext.getValue()).includes('date')
-            ) {
-              return h(Date, {value: cellContext.getValue().date});
-            }
-          }
+        date(accessor, config = {}) {
+            // oxlint-disable-next-line @typescript-eslint/no-unused-vars
+            const {format, ...rest} = config;
+            return baseHelper.accessor(accessor, {
+                cell: (cellContext: CellContext<T, any>) => {
+                    if (cellContext.getValue()) {
+                        if (typeof cellContext.getValue() === 'string') {
+                            return h(Date, {value: cellContext.getValue()});
+                        } else if (
+                            typeof cellContext.getValue() === 'object' &&
+                            Object.keys(cellContext.getValue()).includes('date')
+                        ) {
+                            return h(Date, {
+                                value: cellContext.getValue().date,
+                            });
+                        }
+                    }
 
-          return 'Never';
+                    return 'Never';
+                },
+                ...rest,
+            } as any);
         },
-        ...rest,
-      } as any);
-    },
 
-    actions(actions = () => [], config = {}) {
-      return baseHelper.display({
-        id: 'actions',
-        header: t('Actions'),
-        meta: {
-          headerSrOnly: true,
-          ...(config.meta || {}),
+        actions(actions = () => [], config = {}) {
+            return baseHelper.display({
+                id: 'actions',
+                header: t('Actions'),
+                meta: {
+                    headerSrOnly: true,
+                    ...config.meta,
+                },
+                cell: (cellContext) =>
+                    h(
+                        'div',
+                        {
+                            class: 'flex gap-2 items-center justify-end self-end',
+                        },
+                        actions(cellContext)
+                    ),
+            });
         },
-        cell: (cellContext) =>
-          h(
-            'div',
-            {
-              class: 'flex gap-2 items-center justify-end self-end',
-            },
-            actions(cellContext)
-          ),
-      });
-    },
 
-    link(accessor, config = {}) {
-      const {props = () => ({}), ...rest} = config;
+        link(accessor, config = {}) {
+            const {props = () => ({}), ...rest} = config;
 
-      return baseHelper.accessor(accessor, {
-        cell: (cellContext: CellContext<T, any>) =>
-          h('div', [
-            h(
-              CpLink,
-              {
-                class: 'font-bold',
-                inertia: false,
-                ...props(cellContext),
-              },
-              () => cellContext.getValue()
-            ),
-          ]),
-        ...rest,
-      } as any);
-    },
+            return baseHelper.accessor(accessor, {
+                cell: (cellContext: CellContext<T, any>) =>
+                    h('div', [
+                        h(
+                            CpLink,
+                            {
+                                class: 'font-bold',
+                                inertia: false,
+                                ...props(cellContext),
+                            },
+                            () => cellContext.getValue()
+                        ),
+                    ]),
+                ...rest,
+            } as any);
+        },
 
-    handle(accessor, config = {}) {
-      return baseHelper.accessor(accessor, {
-        header: t('Handle'),
-        cell: ({getValue}: CellContext<T, any>) =>
-          h(
-            'craft-copy-attribute',
-            {
-              value: getValue(),
-            },
-            String(getValue())
-          ),
-        ...config,
-      } as any);
-    },
+        handle(accessor, config = {}) {
+            return baseHelper.accessor(accessor, {
+                header: t('Handle'),
+                cell: ({getValue}: CellContext<T, any>) =>
+                    h(
+                        'craft-copy-attribute',
+                        {
+                            value: getValue(),
+                        },
+                        String(getValue())
+                    ),
+                ...config,
+            } as any);
+        },
 
-    html(accessor, config = {}) {
-      const {props = () => ({}), ...rest} = config;
+        html(accessor, config = {}) {
+            const {props = () => ({}), ...rest} = config;
 
-      return baseHelper.accessor(accessor, {
-        cell: (cellContext: CellContext<T, any>) =>
-          h(DynamicHtmlRenderer, {
-            html: cellContext.getValue(),
-            ...props(cellContext),
-          }),
-        ...rest,
-      } as any);
-    },
-  };
+            return baseHelper.accessor(accessor, {
+                cell: (cellContext: CellContext<T, any>) =>
+                    h(DynamicHtmlRenderer, {
+                        html: cellContext.getValue(),
+                        ...props(cellContext),
+                    }),
+                ...rest,
+            } as any);
+        },
+    };
 
-  return columnHelper;
+    return columnHelper;
 }

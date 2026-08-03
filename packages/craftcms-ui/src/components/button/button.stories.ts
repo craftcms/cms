@@ -5,10 +5,9 @@ import {html} from 'lit';
 import './button.js';
 import '../icon/icon.js';
 import '../chip/chip.js';
-import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
+import {ButtonVariant} from '@src/components/button/button';
 
 const buttonVariants = Object.values(ButtonVariant);
-const appearance = Object.values(ButtonAppearance);
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -19,76 +18,79 @@ const meta = {
   },
   args: {
     label: 'Button',
-    appearance: 'solid',
     loading: false,
-    variant: 'neutral',
-  },
-  argTypes: {
-    appearance: {
-      control: {type: 'select'},
-      options: appearance,
-    },
-    loading: {
-      control: {type: 'boolean'},
-    },
-  },
-  render: (args) => html`
-    <div class="grid gap-4">
-      ${buttonVariants.map(
-        (variant) => html`
-          <div class="flex gap-2">
-            <craft-button variant="${variant}"
-              >${variant ?? 'None'} solid</craft-button
-            >
-            <craft-button appearance="outline" variant="${variant}"
-              >${variant} outline</craft-button
-            >
-            <craft-button appearance="plain" variant="${variant}"
-              >${variant} plain</craft-button
-            >
-          </div>
-        `
-      )}
-
-      <craft-chip data-color="violet">
-        <div class="flex gap-2">
-          <craft-button variant="inherit">Chip Buttons</craft-button>
-          <craft-button appearance="outline" variant="inherit"
-            >Outline</craft-button
-          >
-          <craft-button appearance="plain" variant="inherit"
-            >Plain</craft-button
-          >
-        </div>
-      </craft-chip>
-    </div>
-  `,
-} satisfies Meta<any>;
-
-export default meta;
-type Story = StoryObj<any>;
-
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Default: Story = {
-  args: {},
-};
-
-export const Variants: Story = {
-  args: {
-    variant: 'accent',
+    variant: ButtonVariant.Fill,
   },
   argTypes: {
     variant: {
       control: {type: 'select'},
       options: buttonVariants,
     },
+    loading: {
+      control: {type: 'boolean'},
+    },
   },
-  render: () =>
-    html`${buttonVariants.map(
-      (variant) => html`
-        <craft-button variant="${variant}">${variant}</craft-button>
-      `
-    )}`,
+} satisfies Meta<any>;
+
+export default meta;
+type Story = StoryObj<any>;
+
+/**
+ * Every variant. `primary` and `danger` are solid and colored; the rest are the
+ * neutral palette in their named appearance.
+ */
+export const Default: Story = {
+  render: () => html`
+    <div class="flex gap-2 items-center flex-wrap">
+      ${buttonVariants.map(
+        (variant) => html`
+          <craft-button variant="${variant}">${variant}</craft-button>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
+ * With the `inherit` property, the neutral variants adopt the ambient colorable
+ * palette (any `[data-color]` / colorable ancestor, e.g. a callout). `primary`
+ * and `danger` keep their own colors regardless.
+ */
+export const Inherit: Story = {
+  render: () => html`
+    <div class="grid gap-4">
+      ${['accent', 'violet', 'success'].map(
+        (color) => html`
+          <div
+            data-color="${color}"
+            class="flex gap-2 items-center flex-wrap"
+            style="padding: 0.75rem; border-radius: 8px; background: var(--c-color-fill-quiet);"
+          >
+            ${[
+              ButtonVariant.Solid,
+              ButtonVariant.Fill,
+              ButtonVariant.Outline,
+              ButtonVariant.Dashed,
+              ButtonVariant.Plain,
+              ButtonVariant.Link,
+            ].map(
+              (variant) => html`
+                <craft-button variant="${variant}" inherit
+                  >${variant}</craft-button
+                >
+              `
+            )}
+            <craft-button variant="${ButtonVariant.Primary}"
+              >primary</craft-button
+            >
+            <craft-button variant="${ButtonVariant.Danger}"
+              >danger</craft-button
+            >
+          </div>
+        `
+      )}
+    </div>
+  `,
 };
 
 export const Sizes: Story = {
@@ -102,10 +104,18 @@ export const Sizes: Story = {
   `,
 };
 
-export const Icon: Story = {
-  args: {},
-  render: (args) => html`
-    <div class="flex gap-2 items-center">
+export const Icons: Story = {
+  render: () => html`
+    <div class="flex gap-2 items-center flex-wrap">
+      <craft-button icon="location">Prefix icon</craft-button>
+      <craft-button icon="chevron-down" icon-position="suffix"
+        >Suffix icon</craft-button
+      >
+      <craft-button>
+        <craft-icon slot="prefix" name="location"></craft-icon>
+        Slotted prefix
+        <craft-icon slot="suffix" name="chevron-down"></craft-icon>
+      </craft-button>
       <craft-button icon>
         <craft-icon name="location" label="Location"></craft-icon>
       </craft-button>
@@ -130,10 +140,10 @@ export const Links: Story = {
   render: () => html`
     <div class="grid gap-4">
       <div class="flex gap-2 items-center">
-        ${appearance.map(
-          (a) => html`
-            <craft-button appearance="${a}" href="#" variant="accent"
-              >${a} link</craft-button
+        ${buttonVariants.map(
+          (variant) => html`
+            <craft-button variant="${variant}" href="#"
+              >${variant} link</craft-button
             >
           `
         )}

@@ -12,6 +12,7 @@ use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
@@ -58,6 +59,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     HtmlFragment::class,
                     FieldEditViewModel::class,
                     UserAddressesViewModel::class,
+                    UserPasskeysViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserProfileViewModel::class,

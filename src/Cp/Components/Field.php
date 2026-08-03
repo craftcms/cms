@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
+use Override;
 use Stringable;
 use Twig\Markup;
 
@@ -64,9 +65,9 @@ class Field extends ViewComponent
 
     protected string|Closure|null $width = null;
 
-    protected string|Htmlable|ViewComponent|Closure|null $headingPrefix = null;
+    protected string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix = null;
 
-    protected string|Htmlable|ViewComponent|Closure|null $headingSuffix = null;
+    protected string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix = null;
 
     /** @var array<array-key, string>|Closure */
     protected array|Closure $errors = [];
@@ -75,7 +76,7 @@ class Field extends ViewComponent
 
     protected string|Stringable|Closure|null $warning = null;
 
-    protected string|Htmlable|ViewComponent|Closure|null $labelExtra = null;
+    protected string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra = null;
 
     protected function tagName(): string
     {
@@ -172,7 +173,7 @@ class Field extends ViewComponent
     }
 
     /** Heading content rendered before the label. Strings are trusted HTML. */
-    public function headingPrefix(string|Htmlable|ViewComponent|Closure|null $headingPrefix): static
+    public function headingPrefix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix): static
     {
         $this->headingPrefix = $headingPrefix;
 
@@ -180,7 +181,7 @@ class Field extends ViewComponent
     }
 
     /** Heading content rendered after the label extras. Strings are trusted HTML. */
-    public function headingSuffix(string|Htmlable|ViewComponent|Closure|null $headingSuffix): static
+    public function headingSuffix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix): static
     {
         $this->headingSuffix = $headingSuffix;
 
@@ -212,7 +213,7 @@ class Field extends ViewComponent
     }
 
     /** Extra heading content (handle-copy buttons, action menus). Strings are trusted HTML. */
-    public function labelExtra(string|Htmlable|ViewComponent|Closure|null $labelExtra): static
+    public function labelExtra(string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra): static
     {
         $this->labelExtra = $labelExtra;
 
@@ -234,7 +235,7 @@ class Field extends ViewComponent
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     protected function hostAttributes(): array
     {
         $label = $this->evaluate($this->label);
@@ -260,7 +261,7 @@ class Field extends ViewComponent
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function renderSlots(): string
     {
         $label = $this->evaluate($this->label);

@@ -15,6 +15,12 @@ enum ImageTransformFormat: string
     case PNG = 'png';
     case WEBP = 'webp';
     case AVIF = 'avif';
+    case BMP = 'bmp';
+    case HEIC = 'heic';
+    case ICO = 'ico';
+    case JP2 = 'jp2';
+    case JXL = 'jxl';
+    case TIFF = 'tiff';
 
     public function label(): string
     {
