@@ -551,7 +551,7 @@ SQL;
             }
             [$key, $value] = explode('=', substr($token, 2), 2);
             $value = trim($value, "\"'");
-            if (isset($directives[$key])) {
+            if (isset($directives[$key]) && !preg_match('/^\**$/', $value)) {
                 $contents .= PHP_EOL . $directives[$key] . '=' . $value;
             }
         }
