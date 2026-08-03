@@ -393,6 +393,9 @@ class ElementImporter extends BaseImporter
 
         $item = Import::processData($this, $data, $element);
 
+        // for existing elements, snapshot old values so we can tell after the fact whether anything actually changed
+        $isNew = $element->id === null;
+
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();
         // $fieldHandles has custom and native fields - basically all field layout elements
@@ -401,13 +404,23 @@ class ElementImporter extends BaseImporter
         // get a list of container properties
         $containerProps = ImportHelper::getImportableContainerProperties($this);
         // and deduce attributes from those
-        $containerAttributes = empty($containerProps) ? [] : array_map(fn ($prop) => $prop['name'], $containerProps);
+        $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
 
         // exclude container attributes from field handles
         $fieldHandles = empty($containerAttributes) ? $fieldHandles : array_diff($fieldHandles, $containerAttributes);
 
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
+
+        // If any container property has data present in $item, treat the element as changed
+        // (there's no cheap/reliable way to diff this,
+        // plus the container handling may depend on the parent being re-saved, like it does for User addresses)
+        $hasContainerData = collect($containerProps)->contains(fn ($prop) => isset($item[$prop['name']]));
+
+        // no need to snapshot old values when the element will be saved unconditionally anyway
+        $skipChangeDetection = $isNew || $hasContainerData;
+        $oldAttributeValues = $skipChangeDetection ? [] : $this->snapshotAttributeValues($element, array_keys($attributes));
+        $oldFieldValues = $skipChangeDetection ? [] : $this->snapshotFieldValues($element, array_keys($fields));
 
         if (! empty($attributes)) {
             $element->setAttributesForImport($attributes);
@@ -426,6 +439,14 @@ class ElementImporter extends BaseImporter
             }
         }
 
+        $hasChanges = $skipChangeDetection
+            || $this->attributeValuesChanged($element, $oldAttributeValues)
+            || $this->fieldValuesChanged($element, $oldFieldValues);
+
+        if (! $hasChanges) {
+            return;
+        }
+
         if (! Elements::saveElement($element)) {
             Importer::warning(
                 'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
@@ -433,6 +454,67 @@ class ElementImporter extends BaseImporter
                 ['data' => $item]
             );
         }
+    }
+
+    /**
+     * Snapshots the element's current values for the given attribute handles.
+     */
+    private function snapshotAttributeValues(ElementInterface $element, array $handles): array
+    {
+        $values = [];
+
+        foreach ($handles as $handle) {
+            $values[$handle] = $element->$handle;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Snapshots the element's current serialized values for the given field handles.
+     */
+    private function snapshotFieldValues(ElementInterface $element, array $handles): array
+    {
+        $fieldLayout = $element->getFieldLayout();
+        $values = [];
+
+        foreach ($handles as $handle) {
+            $field = $fieldLayout?->getFieldByHandle($handle);
+            $values[$handle] = $field
+                ? $field->serializeValue($element->getFieldValue($handle), $element)
+                : $element->getFieldValue($handle);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Compares the given old attribute values against the element's current values.
+     */
+    private function attributeValuesChanged(ElementInterface $element, array $oldValues): bool
+    {
+        return array_any($oldValues, fn ($oldValue, $handle) => $oldValue != $element->$handle);
+    }
+
+    /**
+     * Compares the given old serialized field values against the element's current values.
+     */
+    private function fieldValuesChanged(ElementInterface $element, array $oldValues): bool
+    {
+        $fieldLayout = $element->getFieldLayout();
+
+        foreach ($oldValues as $handle => $oldValue) {
+            $field = $fieldLayout?->getFieldByHandle($handle);
+            $newValue = $field
+                ? $field->serializeValue($element->getFieldValue($handle), $element)
+                : $element->getFieldValue($handle);
+
+            if ($oldValue != $newValue) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

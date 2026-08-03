@@ -30,3 +30,43 @@ it('imports into a model that is not an element', function () {
     $announcement = Announcement::where(['userId' => $this->newUser->id, 'heading' => $this->modelData['heading']])->first();
     expect($announcement?->getAttribute('body'))?->toBe($this->modelData['body']);
 });
+
+it('always saves a brand-new model', function () {
+    $saveCount = 0;
+    Announcement::saving(function () use (&$saveCount) {
+        $saveCount++;
+    });
+
+    $this->import->importItem($this->importer, $this->modelData);
+
+    expect($saveCount)->toBe(1);
+});
+
+it('does not save when re-importing identical attributes', function () {
+    $this->import->importItem($this->importer, $this->modelData);
+
+    $saveCount = 0;
+    Announcement::saving(function () use (&$saveCount) {
+        $saveCount++;
+    });
+
+    $this->import->importItem($this->importer, $this->modelData);
+
+    expect($saveCount)->toBe(0);
+});
+
+it('saves when re-importing with a changed attribute', function () {
+    $this->import->importItem($this->importer, $this->modelData);
+
+    $saveCount = 0;
+    Announcement::saving(function () use (&$saveCount) {
+        $saveCount++;
+    });
+
+    $this->import->importItem($this->importer, [...$this->modelData, 'body' => 'updated body']);
+
+    expect($saveCount)->toBe(1);
+
+    $announcement = Announcement::where(['userId' => $this->newUser->id, 'heading' => $this->modelData['heading']])->first();
+    expect($announcement?->getAttribute('body'))->toBe('updated body');
+});

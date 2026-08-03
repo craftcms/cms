@@ -55,11 +55,10 @@ class ModelImporter extends BaseImporter
     /**
      * Validates that the given class is not an element type and does extend BaseModel.
      *
-     * @param mixed $value The value of the model class being validated.
-     * @param string $attribute The name of the attribute being validated.
-     * @param Closure $fail The callback function to invoke when validation fails.
-     * @param Validator $validator The validator instance performing the validation.
-     * @return bool
+     * @param  mixed  $value  The value of the model class being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
      */
     public static function validateModel(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
@@ -92,8 +91,6 @@ class ModelImporter extends BaseImporter
 
     /**
      * Convenience factory returning a new instance.
-     *
-     * @return self
      */
     public static function create(): self
     {
@@ -138,13 +135,18 @@ class ModelImporter extends BaseImporter
     public function importItem(array $data): void
     {
         $model = $this->getModel($data);
+        $isNew = ! $model->exists;
 
         $item = Import::processData($this, $data, $model);
 
         $attributeHandles = Schema::getColumnListing($model->getTable());
         $attributes = array_filter(array_filter($item, fn ($value, $key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_BOTH));
 
-        $model->fill($attributes)->save();
+        $model->fill($attributes);
+
+        if ($isNew || $model->isDirty()) {
+            $model->save();
+        }
     }
 
     /**
