@@ -8,6 +8,9 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\db\Command;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\services\Entries;
@@ -15,6 +18,7 @@ use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\UserFixture;
 use UnitTester;
+use yii\base\Event;
 
 /**
  * Unit tests for the Entries service.
@@ -84,6 +88,101 @@ class EntriesTest extends TestCase
         /** @var Entry $untouchedEntry */
         $untouchedEntry = Entry::find()->id($this->entryB->id)->one();
         self::assertSame($this->userB->id, $untouchedEntry->getAuthorId());
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function testSaveAuthorsAvoidsDeletingMissingRows(): void
+    {
+        $entry = new Entry([
+            'sectionId' => 1000,
+            'typeId' => 1000,
+            'title' => 'Save Authors Test',
+            'authorId' => $this->userA->id,
+        ]);
+
+        $commands = $this->_captureAuthorWriteCommands(fn() => $this->tester->saveElement($entry));
+
+        self::assertSame(['INSERT'], $commands);
+        self::assertSame([
+            [$this->userA->id, 1],
+        ], $this->_savedAuthors($entry->id));
+
+        $entry->authorId = $this->userB->id;
+        $commands = $this->_captureAuthorWriteCommands(fn() => $this->tester->saveElement($entry));
+
+        self::assertSame(['DELETE', 'INSERT'], $commands);
+        self::assertSame([
+            [$this->userB->id, 1],
+        ], $this->_savedAuthors($entry->id));
+
+        $section = $entry->getSection();
+        self::assertNotNull($section);
+        $oldMinAuthors = $section->minAuthors;
+        $section->minAuthors = 0;
+        $authorlessEntry = new Entry([
+            'sectionId' => 1000,
+            'typeId' => 1000,
+            'title' => 'Save Without Authors Test',
+            'authorIds' => [],
+        ]);
+
+        try {
+            $commands = $this->_captureAuthorWriteCommands(fn() => $this->tester->saveElement($authorlessEntry));
+        } finally {
+            $section->minAuthors = $oldMinAuthors;
+        }
+
+        self::assertSame([], $commands);
+        self::assertSame([], $this->_savedAuthors($authorlessEntry->id));
+    }
+
+    /**
+     * @param callable(): mixed $callback
+     * @return string[]
+     */
+    private function _captureAuthorWriteCommands(callable $callback): array
+    {
+        $commands = [];
+        $handler = static function(Event $event) use (&$commands): void {
+            /** @var Command $command */
+            $command = $event->sender;
+            $sql = ltrim($command->getSql());
+            if (
+                str_contains($sql, 'entries_authors') &&
+                preg_match('/^(DELETE|INSERT)\b/i', $sql, $matches)
+            ) {
+                $commands[] = strtoupper($matches[1]);
+            }
+        };
+
+        Event::on(Command::class, Command::EVENT_BEFORE_EXECUTE, $handler);
+        try {
+            $callback();
+        } finally {
+            Event::off(Command::class, Command::EVENT_BEFORE_EXECUTE, $handler);
+        }
+
+        return $commands;
+    }
+
+    /**
+     * @return int[][]
+     */
+    private function _savedAuthors(int $entryId): array
+    {
+        $rows = (new Query())
+            ->select(['authorId', 'sortOrder'])
+            ->from(Table::ENTRIES_AUTHORS)
+            ->where(['entryId' => $entryId])
+            ->orderBy(['sortOrder' => SORT_ASC])
+            ->all();
+
+        return array_map(
+            fn(array $row) => [(int)$row['authorId'], (int)$row['sortOrder']],
+            $rows,
+        );
     }
 
     /**

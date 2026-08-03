@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
+
 ## 5.10.13.2 - 2026-08-05
 
 - Fixed a SQL error that could occur when viewing an element with an empty Categories field. ([#19372](https://github.com/craftcms/cms/issues/19372))
