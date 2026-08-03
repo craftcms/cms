@@ -6,6 +6,9 @@ namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -44,7 +47,7 @@ use RuntimeException;
 use function CraftCms\Cms\t;
 
 /** @phpstan-consistent-constructor */
-class FieldLayout extends Component
+class FieldLayout extends Component implements FormDefinition
 {
     use EvaluatesClosures;
     use LegacyConstants;
@@ -167,6 +170,13 @@ class FieldLayout extends Component
     public static function make(string $type): static
     {
         return new static(['type' => $type]);
+    }
+
+    /** @return list<FormElement> */
+    #[Override]
+    public function formElements(FormContext $context): array
+    {
+        return app(FieldLayoutFormProjector::class)->project($this, $context);
     }
 
     /**

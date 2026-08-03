@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
@@ -64,7 +66,13 @@ trait InteractsWithWidgets
     {
         $form = InputNamespace::with(
             $namespace,
-            fn (): ?array => $widget->getSettingsForm(false)?->toArray(),
+            function () use ($namespace, $widget): ?array {
+                $definition = $widget->getSettingsForm(false);
+
+                return $definition === null
+                    ? null
+                    : Form::fromDefinition($definition, new FormContext(inputNamespace: $namespace))->toArray();
+            },
         );
         $values = $widget instanceof QuickPost
             ? $widget->getSettingsFormValues()

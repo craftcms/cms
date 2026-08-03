@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Arr;
@@ -82,7 +84,16 @@ class FilesystemsEditViewModel extends ViewModel
     {
         return InputNamespace::with(
             $this->settingsInputNamespace(),
-            fn (): ?array => $this->filesystem->getSettingsForm($this->readOnly)?->toArray(),
+            function (): ?array {
+                $definition = $this->filesystem->getSettingsForm($this->readOnly);
+
+                return $definition === null
+                    ? null
+                    : Form::fromDefinition($definition, new FormContext(
+                        readOnly: $this->readOnly,
+                        inputNamespace: $this->settingsInputNamespace(),
+                    ))->toArray();
+            },
         );
     }
 

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Group;
 use CraftCms\Cms\Cp\Components\TextInput;
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormProjector;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -46,17 +48,17 @@ it('projects applicable field layout content through provider form elements', fu
         ]),
     ]);
 
-    $projector = new FieldLayoutFormProjector;
-    $definition = $projector->project(
+    $definition = Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext,
+        new FormContext,
     )->toArray();
-    $repeatedDefinition = $projector->project(
+    $repeatedDefinition = Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext,
+        new FormContext,
     )->toArray();
 
-    expect($definition['elements'])->toHaveCount(1);
+    expect($layout)->toBeInstanceOf(FormDefinition::class)
+        ->and($definition['elements'])->toHaveCount(1);
 
     $tabs = $definition['elements'][0];
     $tab = $tabs['children'][0];
@@ -110,9 +112,9 @@ it('accepts complete container form elements from layout elements', function () 
         ]),
     ]);
 
-    $definition = new FieldLayoutFormProjector()->project(
+    $definition = Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext,
+        new FormContext,
     )->toArray();
 
     expect($definition['elements'][0]['children'][0]['children'][0])->toMatchArray([
@@ -136,7 +138,7 @@ it('uses the compatibility fallback when a custom field has no form input provid
         ]),
     ]);
     $elementContext = null;
-    $projector = new FieldLayoutFormProjector;
+    $projector = app(FieldLayoutFormProjector::class);
     $projector->handleUnsupportedElementsUsing(function (
         FieldLayoutElement $layoutElement,
         FieldLayoutFormElementContext $context,
@@ -146,7 +148,7 @@ it('uses the compatibility fallback when a custom field has no form input provid
         return Group::make([]);
     });
 
-    $definition = $projector->project($layout, new FieldLayoutFormContext)->toArray();
+    $definition = Form::fromDefinition($layout, new FormContext)->toArray();
 
     expect($definition['elements'][0]['children'][0]['children'][0])->toMatchArray([
         'type' => 'craft:group',
@@ -168,9 +170,9 @@ it('fails loudly when an applicable layout element has no provider or adapter fa
         ]),
     ]);
 
-    expect(fn () => new FieldLayoutFormProjector()->project(
+    expect(fn () => Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext(inputNamespace: 'entry'),
+        new FormContext(inputNamespace: 'entry'),
     ))->toThrow(LogicException::class, 'UnsupportedFormElement');
 });
 
@@ -184,9 +186,9 @@ it('fails loudly when a projected tab has no stable source UID', function () {
         ]),
     ]);
 
-    expect(fn () => new FieldLayoutFormProjector()->project(
+    expect(fn () => Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext,
+        new FormContext,
     ))->toThrow(LogicException::class, 'must have a UID');
 });
 
@@ -201,9 +203,9 @@ it('fails loudly when a projected layout element has no stable source UID', func
         ]),
     ]);
 
-    expect(fn () => new FieldLayoutFormProjector()->project(
+    expect(fn () => Form::fromDefinition(
         $layout,
-        new FieldLayoutFormContext,
+        new FormContext,
     ))->toThrow(LogicException::class, 'layout element must have a UID');
 });
 

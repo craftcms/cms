@@ -9,13 +9,13 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -437,7 +437,7 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     #[Override]
-    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
+    public function formElementContext(FormContext $context): FieldLayoutFormElementContext
     {
         return new FieldLayoutFormElementContext(
             layoutElement: $this,

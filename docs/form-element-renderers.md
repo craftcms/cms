@@ -127,6 +127,20 @@ Form::make([
 ]);
 ```
 
+`Form` and `FieldLayout` both implement `FormDefinition`. Code that accepts either representation should depend on that contract and normalize it through `Form::fromDefinition()`.
+
+```php
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
+use CraftCms\Cms\Cp\Forms\Data\FormPayload;
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
+
+function formPayload(FormDefinition $definition, FormContext $context): FormPayload
+{
+    return Form::fromDefinition($definition, $context)->toData();
+}
+```
+
 Container components can extend `FormContainer`. Craft passes their rendered children to the registered Vue renderer’s default slot.
 
 ## Missing renderers

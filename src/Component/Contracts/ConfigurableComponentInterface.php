@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
-use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
 
 interface ConfigurableComponentInterface
 {
@@ -32,5 +32,5 @@ interface ConfigurableComponentInterface
      *
      * A null result means that the component has no settings.
      */
-    public function getSettingsForm(bool $readOnly): ?Form;
+    public function getSettingsForm(bool $readOnly): ?FormDefinition;
 }

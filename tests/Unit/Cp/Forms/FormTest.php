@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\Forms\Condition;
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\Data\VisibilityConditionData;
@@ -35,7 +36,9 @@ it('projects a native text setting through an explicit field container', functio
             ->readOnly(),
     ]);
 
-    expect($form->toArray())->toBe([
+    expect($form)->toBeInstanceOf(FormDefinition::class)
+        ->and(Form::fromDefinition($form))->toBe($form)
+        ->and($form->toArray())->toBe([
         'elements' => [[
             'type' => 'craft:field',
             'width' => 50,

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout;
+namespace CraftCms\Cms\Cp\Forms;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
-readonly class FieldLayoutFormContext
+readonly class FormContext
 {
     public function __construct(
         public ?ElementInterface $element = null,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Forms;
 
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\Data\FormPayload;
@@ -11,8 +12,9 @@ use CraftCms\Cms\Cp\Forms\Data\VisibilityConditionData;
 use CraftCms\Cms\Cp\Forms\Enums\ConditionOperator;
 use InvalidArgumentException;
 use JsonSerializable;
+use Override;
 
-readonly class Form implements JsonSerializable
+readonly class Form implements FormDefinition, JsonSerializable
 {
     public const array HostOwnedRendererProps = [
         'aria-describedby',
@@ -45,6 +47,24 @@ readonly class Form implements JsonSerializable
     public static function make(array $elements): self
     {
         return new self($elements);
+    }
+
+    public static function fromDefinition(
+        FormDefinition $definition,
+        FormContext $context = new FormContext,
+    ): self {
+        if ($definition instanceof self) {
+            return $definition;
+        }
+
+        return self::make($definition->formElements($context));
+    }
+
+    /** @return list<FormElement> */
+    #[Override]
+    public function formElements(FormContext $context): array
+    {
+        return $this->elements;
     }
 
     public function toData(): FormPayload

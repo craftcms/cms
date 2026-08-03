@@ -6,15 +6,15 @@ namespace CraftCms\Yii2Adapter\Tests\FieldLayout;
 
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\TextInput;
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormProjector;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Json;
@@ -58,9 +58,9 @@ class MixedFieldLayoutProjectionTest extends TestCase
             ]),
         ]);
 
-        $definition = app(FieldLayoutFormProjector::class)->project(
+        $definition = Form::fromDefinition(
             $layout,
-            new FieldLayoutFormContext(inputNamespace: 'elements[123]'),
+            new FormContext(inputNamespace: 'elements[123]'),
         )->toArray();
 
         $tabs = $definition['elements'][0]['children'];

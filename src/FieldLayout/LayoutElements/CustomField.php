@@ -10,6 +10,7 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface;
 use CraftCms\Cms\FieldLayout\Exceptions\UnsupportedFieldLayoutFormElementException;
-use CraftCms\Cms\FieldLayout\FieldLayoutFormContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutFormElementContext;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -812,7 +812,7 @@ class CustomField extends BaseField implements FieldLayoutFormElementProviderInt
     }
 
     #[Override]
-    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
+    public function formElementContext(FormContext $context): FieldLayoutFormElementContext
     {
         $elementContext = parent::formElementContext($context);
 

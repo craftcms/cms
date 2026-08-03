@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use Closure;
+use CraftCms\Cms\Cp\Forms\Contracts\FormDefinition;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
 use CraftCms\Cms\Cp\Forms\Form;
 use Override;
 
 class Group extends FormContainer
 {
-    private ?Form $form = null;
+    private ?FormDefinition $form = null;
 
     private string $inputNamePrefix = '';
 
@@ -21,7 +22,7 @@ class Group extends FormContainer
         return parent::make()->children($children);
     }
 
-    public static function fromForm(Form $form, string $inputNamePrefix): static
+    public static function fromForm(FormDefinition $form, string $inputNamePrefix): static
     {
         $group = parent::make();
         $group->form = $form;
@@ -61,7 +62,7 @@ class Group extends FormContainer
 
         return array_map(
             fn (FormElementData $element): FormElementData => $element->withInputNamePrefix($this->inputNamePrefix),
-            $this->form->toData()->elements,
+            Form::fromDefinition($this->form)->toData()->elements,
         );
     }
 }

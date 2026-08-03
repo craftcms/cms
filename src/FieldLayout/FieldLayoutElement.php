@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTimeInterface;
 use Override;
@@ -59,7 +60,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         return $this;
     }
 
-    public function formElementContext(FieldLayoutFormContext $context): FieldLayoutFormElementContext
+    public function formElementContext(FormContext $context): FieldLayoutFormElementContext
     {
         return new FieldLayoutFormElementContext(
             layoutElement: $this,

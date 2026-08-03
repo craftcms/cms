@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\Forms\Contracts\PositionableFormElement;
-use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface;
 use CraftCms\Cms\FieldLayout\Exceptions\UnsupportedFieldLayoutFormElementException;
 use Illuminate\Container\Attributes\Singleton;
@@ -17,6 +17,7 @@ use LogicException;
 
 use function CraftCms\Cms\t;
 
+/** @internal */
 #[Singleton]
 class FieldLayoutFormProjector
 {
@@ -29,10 +30,11 @@ class FieldLayoutFormProjector
         $this->unsupportedElementHandler = $handler;
     }
 
+    /** @return list<ViewComponent&PositionableFormElement> */
     public function project(
         FieldLayout $fieldLayout,
-        FieldLayoutFormContext $context,
-    ): Form {
+        FormContext $context,
+    ): array {
         $tabs = [];
 
         foreach ($fieldLayout->getTabs() as $layoutTab) {
@@ -80,17 +82,17 @@ class FieldLayoutFormProjector
         }
 
         if ($tabs === []) {
-            return Form::make([]);
+            return [];
         }
 
-        return Form::make([
+        return [
             Tabs::make($tabs)->key($fieldLayout->uid),
-        ]);
+        ];
     }
 
     private function projectElement(
         FieldLayoutElement $layoutElement,
-        FieldLayoutFormContext $context,
+        FormContext $context,
     ): (ViewComponent&PositionableFormElement)|null {
         $elementContext = $layoutElement->formElementContext($context);
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Forms\Form;
+use CraftCms\Cms\Cp\Forms\FormContext;
 use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -190,7 +192,16 @@ class FieldEditViewModel extends ViewModel
     {
         return InputNamespace::with(
             $this->settingsInputNamespace(),
-            fn (): ?array => $this->field->getSettingsForm($this->readOnly)?->toArray(),
+            function (): ?array {
+                $definition = $this->field->getSettingsForm($this->readOnly);
+
+                return $definition === null
+                    ? null
+                    : Form::fromDefinition($definition, new FormContext(
+                        readOnly: $this->readOnly,
+                        inputNamespace: $this->settingsInputNamespace(),
+                    ))->toArray();
+            },
         );
     }
 

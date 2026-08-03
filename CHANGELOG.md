@@ -12,6 +12,7 @@
 - Added reactive Form visibility conditions via `CraftCms\Cms\Cp\Forms\Condition`.
 - Added plugin-defined Form Elements through CP UI Components implementing `CraftCms\Cms\Cp\Forms\Contracts\FormElement`, registered by `CraftCms\Cms\Plugin\Plugin::registerFormElementTypes()`, with control-panel renderers registered through `Cp.$formElements`.
 - Added keyed Form groups and tabs via `CraftCms\Cms\Cp\Components\Group`, `CraftCms\Cms\Cp\Components\Tabs`, and `CraftCms\Cms\Cp\Components\Tab`.
+- Added `CraftCms\Cms\Cp\Forms\Contracts\FormDefinition` and `CraftCms\Cms\Cp\Forms\FormContext` as the shared Form definition seam implemented by `CraftCms\Cms\Cp\Forms\Form` and `CraftCms\Cms\FieldLayout\FieldLayout`, with `CraftCms\Cms\Cp\Forms\Form::fromDefinition()` for normalization.
 - Added `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormElementProviderInterface` and `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutFormInputProviderInterface` for projecting field layout elements and custom field inputs to Forms.
 - Moved Yii 2 adapter legacy settings islands to the `CraftCms\Yii2Adapter\Cp\Components\LegacySettings` CP UI Component.
 - Replaced `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getSettingsHtml()` and `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getReadOnlySettingsHtml()` with `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::getSettingsForm()`.
