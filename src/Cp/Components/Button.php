@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
@@ -33,41 +32,41 @@ class Button extends ViewComponent
     use HasId;
     use HasSize;
 
-    protected ButtonVariant|string|Closure|null $variant = null;
+    protected ButtonVariant|string|null $variant = null;
 
-    protected bool|Closure $inherit = false;
+    protected bool $inherit = false;
 
-    protected string|Closure $type = 'button';
+    protected string $type = 'button';
 
-    protected string|Closure|null $icon = null;
+    protected ?string $icon = null;
 
-    protected bool|Closure $loading = false;
+    protected bool $loading = false;
 
-    protected bool|Closure $active = false;
+    protected bool $active = false;
 
-    protected string|Closure|null $accessibleName = null;
+    protected ?string $accessibleName = null;
 
-    protected string|Closure|null $align = null;
+    protected ?string $align = null;
 
-    protected string|Closure|null $href = null;
+    protected ?string $href = null;
 
-    protected string|Closure|null $target = null;
+    protected ?string $target = null;
 
-    protected string|Closure|null $command = null;
+    protected ?string $command = null;
 
-    protected string|Closure|null $value = null;
+    protected ?string $value = null;
 
-    protected string|Closure|null $iconPosition = null;
+    protected ?string $iconPosition = null;
 
-    protected array|Closure|null $action = null;
+    protected ?array $action = null;
 
     protected function tagName(): string
     {
         return 'craft-button';
     }
 
-    /** @param 'button'|'submit'|'reset'|Closure $type */
-    public function type(string|Closure $type): static
+    /** @param 'button'|'submit'|'reset' $type */
+    public function type(string $type): static
     {
         $this->type = $type;
 
@@ -75,7 +74,7 @@ class Button extends ViewComponent
     }
 
     /** The button's visual style (the single variant axis). */
-    public function variant(ButtonVariant|string|Closure|null $variant): static
+    public function variant(ButtonVariant|string|null $variant): static
     {
         $this->variant = $variant;
 
@@ -84,15 +83,13 @@ class Button extends ViewComponent
 
     public function getVariant(): ?string
     {
-        $variant = $this->evaluate($this->variant);
-
-        if ($variant === null) {
+        if ($this->variant === null) {
             return null;
         }
 
-        return $variant instanceof ButtonVariant
-            ? $variant->value
-            : ButtonVariant::from($variant)->value;
+        return $this->variant instanceof ButtonVariant
+            ? $this->variant->value
+            : ButtonVariant::from($this->variant)->value;
     }
 
     /**
@@ -100,7 +97,7 @@ class Button extends ViewComponent
      * callout) instead of the neutral palette. Only affects the neutral
      * variants; `primary` and `danger` stay stable.
      */
-    public function inherit(bool|Closure $inherit = true): static
+    public function inherit(bool $inherit = true): static
     {
         $this->inherit = $inherit;
 
@@ -108,7 +105,7 @@ class Button extends ViewComponent
     }
 
     /** The button label (default slot). Plain strings are HTML-encoded. */
-    public function label(string|Htmlable|Stringable|ViewComponent|Closure|null $label): static
+    public function label(string|Htmlable|Stringable|ViewComponent|null $label): static
     {
         $this->slots[static::DEFAULT_SLOT] = $label;
 
@@ -116,7 +113,7 @@ class Button extends ViewComponent
     }
 
     /** Icon name, rendered by the web component before the label. */
-    public function icon(string|Closure|null $icon): static
+    public function icon(?string $icon): static
     {
         $this->icon = $icon;
 
@@ -124,22 +121,22 @@ class Button extends ViewComponent
     }
 
     /** Content before the label (typically an icon component). Strings are trusted HTML. */
-    public function prefix(string|Htmlable|Stringable|ViewComponent|Closure|null $prefix): static
+    public function prefix(string|Htmlable|Stringable|ViewComponent|null $prefix): static
     {
-        $this->slots['prefix'] = fn (): mixed => $this->trustedHtml($this->evaluate($prefix));
+        $this->slots['prefix'] = $this->trustedHtml($prefix);
 
         return $this;
     }
 
     /** Content after the label (typically an icon component). Strings are trusted HTML. */
-    public function suffix(string|Htmlable|Stringable|ViewComponent|Closure|null $suffix): static
+    public function suffix(string|Htmlable|Stringable|ViewComponent|null $suffix): static
     {
-        $this->slots['suffix'] = fn (): mixed => $this->trustedHtml($this->evaluate($suffix));
+        $this->slots['suffix'] = $this->trustedHtml($suffix);
 
         return $this;
     }
 
-    public function loading(bool|Closure $loading = true): static
+    public function loading(bool $loading = true): static
     {
         $this->loading = $loading;
 
@@ -147,7 +144,7 @@ class Button extends ViewComponent
     }
 
     /** Pressed/selected state (e.g. within a button group). */
-    public function active(bool|Closure $active = true): static
+    public function active(bool $active = true): static
     {
         $this->active = $active;
 
@@ -155,15 +152,15 @@ class Button extends ViewComponent
     }
 
     /** Accessible name override, for icon-only buttons. */
-    public function accessibleName(string|Closure|null $accessibleName): static
+    public function accessibleName(?string $accessibleName): static
     {
         $this->accessibleName = $accessibleName;
 
         return $this;
     }
 
-    /** @param 'start'|'center'|'end'|Closure|null $align */
-    public function align(string|Closure|null $align): static
+    /** @param 'start'|'center'|'end'|null $align */
+    public function align(?string $align): static
     {
         $this->align = $align;
 
@@ -171,7 +168,7 @@ class Button extends ViewComponent
     }
 
     /** Renders the button as a link. */
-    public function href(string|Closure|null $href, string|Closure|null $target = null): static
+    public function href(?string $href, ?string $target = null): static
     {
         $this->href = $href;
 
@@ -183,7 +180,7 @@ class Button extends ViewComponent
     }
 
     /** Invoker Commands API command (e.g. `--add-row`). */
-    public function command(string|Closure|null $command): static
+    public function command(?string $command): static
     {
         $this->command = $command;
 
@@ -191,15 +188,15 @@ class Button extends ViewComponent
     }
 
     /** The value submitted with the form, or used for selection within a button group. */
-    public function value(string|Closure|null $value): static
+    public function value(?string $value): static
     {
         $this->value = $value;
 
         return $this;
     }
 
-    /** @param 'prefix'|'suffix'|Closure|null $iconPosition Where the icon renders relative to the label. */
-    public function iconPosition(string|Closure|null $iconPosition): static
+    /** @param 'prefix'|'suffix'|null $iconPosition Where the icon renders relative to the label. */
+    public function iconPosition(?string $iconPosition): static
     {
         $this->iconPosition = $iconPosition;
 
@@ -211,7 +208,7 @@ class Button extends ViewComponent
      * `craft-action-item` supports (`http`/`event`/`clipboard`/`download`),
      * serialized onto the `action` attribute.
      */
-    public function action(array|Closure|null $action): static
+    public function action(?array $action): static
     {
         $this->action = $action;
 
@@ -221,27 +218,25 @@ class Button extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
-        $type = (string) $this->evaluate($this->type);
-
         return [
             'id' => $this->getId(),
-            'type' => $this->evaluate($this->href) === null ? $type : null,
+            'type' => $this->href === null ? $this->type : null,
             'variant' => $this->getVariant(),
-            'inherit' => (bool) $this->evaluate($this->inherit),
+            'inherit' => $this->inherit,
             'size' => $this->getSize(),
-            'icon' => $this->evaluate($this->icon),
-            'icon-position' => $this->evaluate($this->iconPosition),
-            'loading' => (bool) $this->evaluate($this->loading),
-            'active' => $this->evaluate($this->active) ? 'true' : null,
-            'value' => $this->evaluate($this->value),
+            'icon' => $this->icon,
+            'icon-position' => $this->iconPosition,
+            'loading' => $this->loading,
+            'active' => $this->active ? 'true' : null,
+            'value' => $this->value,
             'disabled' => $this->isDisabled(),
-            'accessible-name' => $this->evaluate($this->accessibleName),
-            'align' => $this->evaluate($this->align),
-            'href' => $this->evaluate($this->href),
-            'target' => $this->evaluate($this->target),
-            'command' => $this->evaluate($this->command),
-            'action' => ($action = $this->evaluate($this->action)) !== null
-                ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            'accessible-name' => $this->accessibleName,
+            'align' => $this->align,
+            'href' => $this->href,
+            'target' => $this->target,
+            'command' => $this->command,
+            'action' => $this->action !== null
+                ? Json::encode($this->action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
                 : null,
         ];
     }

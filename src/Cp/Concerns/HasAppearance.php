@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Concerns;
 
-use Closure;
 use CraftCms\Cms\Cp\Enums\Appearance;
 
 /**
@@ -14,9 +13,9 @@ use CraftCms\Cms\Cp\Enums\Appearance;
  */
 trait HasAppearance
 {
-    protected Appearance|string|Closure|null $appearance = null;
+    protected Appearance|string|null $appearance = null;
 
-    public function appearance(Appearance|string|Closure|null $appearance): static
+    public function appearance(Appearance|string|null $appearance): static
     {
         $this->appearance = $appearance;
 
@@ -25,12 +24,10 @@ trait HasAppearance
 
     public function getAppearance(): ?string
     {
-        $appearance = $this->evaluate($this->appearance);
-
-        if ($appearance === null) {
+        if ($this->appearance === null) {
             return null;
         }
 
-        return $appearance instanceof Appearance ? $appearance->value : Appearance::from($appearance)->value;
+        return $this->appearance instanceof Appearance ? $this->appearance->value : Appearance::from($this->appearance)->value;
     }
 }

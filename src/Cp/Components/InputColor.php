@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Support\Json;
 
 /**
@@ -25,8 +24,8 @@ use CraftCms\Cms\Support\Json;
  */
 class InputColor extends Input
 {
-    /** @var array<int, string>|Closure */
-    protected array|Closure $presets = [];
+    /** @var array<int, string> */
+    protected array $presets = [];
 
     #[\Override]
     protected function tagName(): string
@@ -38,9 +37,9 @@ class InputColor extends Input
      * Preset colors offered in the picker's datalist. Each may be `#`-prefixed
      * or bare hex; the component drops invalid entries.
      *
-     * @param  array<int, string>|Closure  $presets
+     * @param  array<int, string>  $presets
      */
-    public function presets(array|Closure $presets): static
+    public function presets(array $presets): static
     {
         $this->presets = $presets;
 
@@ -60,7 +59,7 @@ class InputColor extends Input
             unset($attributes[$key]);
         }
 
-        $presets = array_values(array_filter((array) $this->evaluate($this->presets)));
+        $presets = array_values(array_filter($this->presets));
         $attributes['presets'] = $presets !== [] ? Json::encode($presets) : null;
 
         return $attributes;

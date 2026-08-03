@@ -154,12 +154,3 @@ describe('suffix', function () {
             ->toContain('&lt;b&gt;MB&lt;/b&gt;');
     });
 });
-
-it('evaluates closures with injection', function () {
-    $html = Input::make()
-        ->id('i')
-        ->value(fn (Input $input): string => 'computed')
-        ->toHtml();
-
-    expect($html)->toContain('value="computed"');
-});

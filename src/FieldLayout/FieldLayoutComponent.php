@@ -10,7 +10,6 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -27,8 +26,6 @@ use function CraftCms\Cms\t;
  */
 abstract class FieldLayoutComponent extends Component
 {
-    use EvaluatesClosures;
-
     private static UserCondition $defaultUserCondition;
 
     /**
@@ -132,7 +129,7 @@ abstract class FieldLayoutComponent extends Component
 
     public function userCondition(mixed $userCondition): static
     {
-        $this->setUserCondition($this->evaluate($userCondition));
+        $this->setUserCondition($userCondition);
 
         return $this;
     }
@@ -167,7 +164,7 @@ abstract class FieldLayoutComponent extends Component
 
     public function elementCondition(mixed $elementCondition): static
     {
-        $this->setElementCondition($this->evaluate($elementCondition));
+        $this->setElementCondition($elementCondition);
 
         return $this;
     }

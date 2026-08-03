@@ -84,11 +84,3 @@ describe('inline svg', function () {
             ->not->toContain('<svg');
     });
 });
-
-it('evaluates closures with injection', function () {
-    $html = Icon::make()
-        ->name(fn (Icon $icon): string => 'gear')
-        ->toHtml();
-
-    expect($html)->toContain('name="gear"');
-});

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -605,10 +604,10 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns or sets the field’s label.
      */
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() !== 0) {
-            $this->label = $this->evaluate($label);
+            $this->label = $label;
 
             return $this;
         }
@@ -620,17 +619,15 @@ abstract class BaseField extends FieldLayoutElement
         return $this->defaultLabel();
     }
 
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
-        $this->instructions = $this->evaluate($instructions);
+        $this->instructions = $instructions;
 
         return $this;
     }
 
-    public function instructionsPosition(string|Closure $position): static
+    public function instructionsPosition(string $position): static
     {
-        $position = $this->evaluate($position);
-
         if (! in_array($position, ['before', 'after'], true)) {
             throw new InvalidArgumentException("Invalid instructions position: $position");
         }
@@ -640,31 +637,29 @@ abstract class BaseField extends FieldLayoutElement
         return $this;
     }
 
-    public function tip(string|Closure|null $tip): static
+    public function tip(?string $tip): static
     {
-        $this->tip = $this->evaluate($tip);
+        $this->tip = $tip;
 
         return $this;
     }
 
-    public function warning(string|Closure|null $warning): static
+    public function warning(?string $warning): static
     {
-        $this->warning = $this->evaluate($warning);
+        $this->warning = $warning;
 
         return $this;
     }
 
-    public function required(bool|Closure $required = true): static
+    public function required(bool $required = true): static
     {
-        $this->required = $this->evaluate($required);
+        $this->required = $required;
 
         return $this;
     }
 
-    public function labelHidden(bool|Closure $labelHidden = true): static
+    public function labelHidden(bool $labelHidden = true): static
     {
-        $labelHidden = $this->evaluate($labelHidden);
-
         return $this->label($labelHidden ? '__blank__' : null);
     }
 

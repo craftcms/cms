@@ -40,7 +40,7 @@ describe('configure', function () {
     it('rejects getter and rendering method names as config keys', function (string $key) {
         expect(fn () => Callout::make()->configure([$key => 'x']))
             ->toThrow(InvalidArgumentException::class, $key);
-    })->with(['getVariant', 'isDisabled', 'toHtml', 'evaluate', 'renderSlots']);
+    })->with(['getVariant', 'isDisabled', 'toHtml', 'renderSlots']);
 });
 
 describe('ui()', function () {
