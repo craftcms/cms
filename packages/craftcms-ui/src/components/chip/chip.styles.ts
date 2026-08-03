@@ -5,6 +5,10 @@ export default css`
     display: contents;
   }
 
+  ::slotted([slot='status']) {
+    display: inline-flex;
+  }
+
   .cp-chip {
     --_min-height: var(--c-chip-height, none);
     --_thumb-size: calc(24rem / 16);
@@ -72,19 +76,25 @@ export default css`
   }
 
   .cp-chip__prefix {
+    position: relative;
     padding-inline-end: var(--c-spacing-sm);
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
   }
 
   .cp-chip__suffix {
     padding-inline-start: var(--c-spacing-md);
   }
 
-  .cp-chip__indicator {
+  .cp-chip__status {
     display: inline-flex;
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-xs);
   }
 
   .cp-chip__thumbnail {
+    position: relative;
     padding: var(--c-spacing-sm);
     /*border-radius: calc(var(--_radius) - var(--c-spacing-xs));*/
   }

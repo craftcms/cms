@@ -63,7 +63,11 @@ class ViewModelTransformer extends ClassListClassTransformer
     {
         return array_filter(
             $phpClassNode->getMethods(ReflectionMethod::IS_PUBLIC),
-            fn (PhpMethodNode $method): bool => $method->getDeclaringClass()->reflection->getName() === $phpClassNode->reflection->getName()
+            // Payload methods can be declared anywhere below the ViewModel base
+            // (e.g. inherited from ContentIndexViewModel), so filter on the
+            // declaring class being a ViewModel subclass rather than the
+            // transformed class itself.
+            fn (PhpMethodNode $method): bool => is_subclass_of($method->getDeclaringClass()->reflection->getName(), ViewModel::class)
                 && count($method->getParameters()) === 0
                 && ! $method->reflection->isConstructor()
                 && ! $method->reflection->isStatic(),

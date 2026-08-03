@@ -160,3 +160,17 @@ Form controls
   min-height: 0;
   overflow: visible;
 }
+
+/**
+Drag-and-drop move targets
+
+Shared highlight for any element the asset-move drag marks as the active drop
+target — folder rows, sidebar sources, and breadcrumb crumbs alike. Garnish adds
+`.active-drop-target` while the cursor is over a valid target.
+ */
+[data-folder-drop-target].active-drop-target {
+  outline: 2px solid var(--c-color-accent-border-loud);
+  outline-offset: -2px;
+  border-radius: var(--c-radius-sm);
+  background-color: var(--c-color-accent-fill-quiet);
+}

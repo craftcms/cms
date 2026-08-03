@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {attrs, t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
   import type {Table} from '@tanstack/vue-table';
   import {usePage} from '@inertiajs/vue3';
@@ -8,12 +8,12 @@
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
-  type CardElement = Record<any, any>;
+  type ThumbElement = Record<any, any>;
 
   const props = withDefaults(
     defineProps<{
       table: Table<any>;
-      data?: Array<CardElement>;
+      data?: Array<ThumbElement>;
       selectable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
@@ -24,17 +24,12 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {
-    onToggleAllSelected,
-    selectRow,
-    selectRowFromEvent,
-    toggleRow,
-    extendSelectionTo,
-  } = useElementIndexSelection(() => props.table, {
-    selectable: () => props.selectable,
-    readOnly,
-    actions: () => [],
-  });
+  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
+    useElementIndexSelection(() => props.table, {
+      selectable: () => props.selectable,
+      readOnly,
+      actions: () => [],
+    });
 
   function rowFor(id: number | string) {
     return props.table.getRow(String(id));
@@ -47,9 +42,9 @@
 
   const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
 
-  // Folder cards (asset index) navigate into the folder on click, except when
+  // Folder tiles (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (the select checkbox, a link, …).
-  function onCardClick(element: CardElement, event: MouseEvent) {
+  function onTileClick(element: ThumbElement, event: MouseEvent) {
     if (!isFolderRow(element)) return;
     if (
       (event.target as HTMLElement).closest(
@@ -61,13 +56,13 @@
     navigateToFolder(element.folderUrl);
   }
 
-  function focusCardByIndex(index: number, el: HTMLElement) {
-    const list = el.closest('ul.card-grid');
+  function focusTileByIndex(index: number, el: HTMLElement) {
+    const list = el.closest('ul.thumbsview');
     const items = list?.querySelectorAll<HTMLElement>(':scope > li[tabindex]');
     items?.[index]?.focus();
   }
 
-  function onCardKeydown(
+  function onTileKeydown(
     id: number | string,
     index: number,
     event: KeyboardEvent
@@ -84,6 +79,10 @@
           navigateToFolder(element.folderUrl);
           break;
         }
+        if (element?.url) {
+          window.location.assign(element.url);
+          break;
+        }
         toggleRow(rowFor(id));
         break;
       }
@@ -93,7 +92,7 @@
         const nextIndex = Math.min(index + 1, last);
         const nextEl = props.data![nextIndex];
         if (event.shiftKey && nextEl) extendSelectionTo(rowFor(nextEl.id));
-        focusCardByIndex(nextIndex, target);
+        focusTileByIndex(nextIndex, target);
         break;
       }
       case 'ArrowLeft':
@@ -102,7 +101,7 @@
         const prevIndex = Math.max(index - 1, 0);
         const prevEl = props.data![prevIndex];
         if (event.shiftKey && prevEl) extendSelectionTo(rowFor(prevEl.id));
-        focusCardByIndex(prevIndex, target);
+        focusTileByIndex(prevIndex, target);
         break;
       }
     }
@@ -114,7 +113,7 @@
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data!.length > 0">
-    <div class="card-grid-header" v-if="selectable">
+    <div class="thumbsview-header" v-if="selectable">
       <craft-checkbox
         label-sr-only
         .checked="table.getIsAllRowsSelected()"
@@ -128,48 +127,53 @@
       </craft-checkbox>
     </div>
 
-    <ul class="card-grid">
+    <ul class="thumbsview">
       <li
-        v-for="(element, cardIdx) in data"
+        v-for="(element, thumbIdx) in data"
         :key="element.id"
         v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
-        @click="selectRowFromEvent(rowFor(element.id), $event)"
-        @keydown="onCardKeydown(element.id, cardIdx, $event)"
-        @click="onCardClick(element, $event)"
+        @keydown="onTileKeydown(element.id, thumbIdx, $event)"
+        @click="onTileClick(element, $event)"
         :class="{
           element: true,
           'element--folder': isFolderRow(element),
           sel: rowFor(element.id)?.getIsSelected(),
         }"
       >
-        <craft-card
-          v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
-          :active="rowFor(element.id)?.getIsSelected()"
+        <craft-checkbox
+          v-if="selectable"
+          class="thumb-check"
+          label-sr-only
+          .checked="rowFor(element.id)?.getIsSelected()"
+          .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
+          @click="rememberShift($event)"
+          @model-value-changed="
+            selectRow(rowFor(element.id), {
+              checked: ($event.target as HTMLInputElement).checked,
+              shiftKey: pendingShiftKey,
+            })
+          "
         >
-          <div slot="header">
-            <div class="flex gap-2 items-center">
-              <craft-checkbox
-                v-if="selectable"
-                label-sr-only
-                .checked="rowFor(element.id)?.getIsSelected()"
-                .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
-                @click="rememberShift($event)"
-                @model-value-changed="
-                  selectRow(rowFor(element.id), {
-                    checked: ($event.target as HTMLInputElement).checked,
-                    shiftKey: pendingShiftKey,
-                  })
-                "
-              >
-                <label slot="label">{{ t('Select') }}</label>
-              </craft-checkbox>
-              <DynamicHtmlRenderer :html="element.cardHeaderHtml" />
-            </div>
-          </div>
-          <DynamicHtmlRenderer :html="element.cardContentHtml" />
-          <DynamicHtmlRenderer :html="element.cardFooterHtml" slot="footer" />
-        </craft-card>
+          <label slot="label">{{ t('Select') }}</label>
+        </craft-checkbox>
+
+        <component
+          :is="element.url ? 'a' : 'div'"
+          :href="element.url || undefined"
+          class="thumb-tile"
+        >
+          <span class="thumb-img">
+            <DynamicHtmlRenderer
+              v-if="element.thumbHtml"
+              :html="element.thumbHtml"
+            />
+            <craft-icon v-else name="asset" class="thumb-fallback"></craft-icon>
+          </span>
+          <craft-truncate class="thumb-label">{{
+            element.label
+          }}</craft-truncate>
+        </component>
       </li>
     </ul>
   </template>
@@ -181,42 +185,98 @@
 </template>
 
 <style scoped lang="scss">
-  .card-grid-header {
+  .thumbsview-header {
     padding: var(--c-spacing-md);
     background-color: var(--c-color-neutral-fill-quiet);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
-  .card-grid {
+  .thumbsview {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--c-spacing-sm);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     padding: var(--c-spacing-md);
   }
 
-  .card-grid > li {
+  .thumbsview > li {
     position: relative;
+    border-radius: var(--c-radius-lg);
+    border: 1px solid var(--c-color-neutral-border-quiet);
   }
 
-  .card-grid > li.element--folder {
+
+  .thumbsview > li:has(a.thumb-tile) {
+    &:hover {
+      background-color: var(--c-color-neutral-fill-quiet);
+    }
+  }
+
+  .thumbsview > li.element--folder {
     cursor: pointer;
   }
 
-  // craft-thumbnail defaults its own size via :host, so the card thumbnail
-  // renders at the tiny default instead of filling its 120px column. Match the
-  // thumbnail view (and Craft 5's 120px card thumb column).
-  .card-grid :deep(craft-thumbnail) {
+  .thumb-check {
+    position: absolute;
+    inset-block-start: var(--c-spacing-sm);
+    inset-inline-start: var(--c-spacing-sm);
+    z-index: 1;
+  }
+
+  .thumb-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
+    border-radius: var(--c-radius-lg);
+    text-decoration: none;
+    color: inherit;
+    min-height: 100%;
+  }
+
+  .thumbsview > li.sel .thumb-tile {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
+  .thumb-img {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 128px;
+  }
+
+  // craft-thumbnail defaults its own size via :host, so the override has to land
+  // on the element itself (an inherited value from the parent loses to :host).
+  // 120px matches the cards view (and Craft 5's thumbnail size).
+  .thumb-img :deep(craft-thumbnail) {
     --c-thumbnail-size: 120px;
   }
 
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size;
-  // scale them up to match.
-  .card-grid :deep(.card-main .thumb) {
+  // Non-image thumbs (folder/file-kind SVGs) render at a fixed small size; scale
+  // them up to fill the tile.
+  .thumb-img :deep(.thumb) {
     width: 72px;
     height: 72px;
   }
 
-  .card-grid :deep(.card-main .thumb svg) {
+  .thumb-img :deep(.thumb svg) {
     width: 100%;
     height: 100%;
+  }
+
+  .thumb-fallback {
+    font-size: 48px;
+    color: var(--c-text-quiet);
+  }
+
+  .thumb-label {
+    // craft-truncate handles the ellipsis + overflow tooltip internally; cap the
+    // width so it truncates within the tile.
+    max-width: 100%;
+    font-weight: 500;
+    text-align: center;
+    height: 1lh;
   }
 </style>

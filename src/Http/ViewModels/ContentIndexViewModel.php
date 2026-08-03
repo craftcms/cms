@@ -8,33 +8,41 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 
 use function CraftCms\Cms\t;
+use function Termwind\render;
 
 /**
- * The Inertia payload for an element index screen (`content/Index`).
+ * The shared Inertia payload for an element index screen.
  *
  * Query building goes through the shared {@see ElementIndexes} kernel — the
  * same one the legacy XHR endpoints use — while everything page-shaped
  * (view state, pagination, bulk-action items, column/sort metadata, and
  * row/card serialization) lives here.
  *
+ * Element-type view models extend this with their own payload keys (public
+ * methods) and can supply a default source via {@see defaultSourceKey()} —
+ * e.g. entries map a section-handle URL segment, assets a volume path.
+ *
  * Public methods are payload keys (see {@see ViewModel}); shared intermediates
  * (resolved source, query, index data, paginator) are memoized privately since
  * payload methods may be invoked in any order.
  */
-class ContentIndexViewModel extends ViewModel
+abstract class ContentIndexViewModel extends ViewModel
 {
-    private const string RENDER_CONTEXT = 'index';
+    protected const string RENDER_CONTEXT = 'index';
+
+    /** The thumbnail edge length (px) requested for the thumbnail grid view. */
+    private const int THUMB_SIZE = 200;
 
     /** @var array{0: ?string, 1: ?array}|null */
     private ?array $resolvedSource = null;
@@ -50,16 +58,39 @@ class ContentIndexViewModel extends ViewModel
 
     private ?LengthAwarePaginator $paginator = null;
 
+    /** @var array{perPage: int, page: int, total: int, pageParam: string}|null */
+    private ?array $paginationState = null;
+
     /** @var string[]|null */
     private ?array $visibleColumns = null;
 
+    private ?array $resolvedSources = null;
+
     public function __construct(
         /** @var class-string<ElementInterface> */
-        private readonly string $elementType,
-        private readonly ElementIndexRequest $request,
-        private readonly ?string $sectionHandle = null,
-        private readonly array $elementStatuses = [],
+        protected readonly string $elementType,
+        protected readonly ElementIndexRequest $request,
+        protected readonly ?string $page = null,
     ) {}
+
+    /**
+     * The source key to fall back to when the request doesn't name one —
+     * how a type-specific URL (section handle, volume path, …) selects its
+     * source. `null` falls through to the “all elements” source.
+     */
+    protected function defaultSourceKey(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * The render context — index screens always render in the `index`
+     * context, and the client echoes it back on XHR element endpoints.
+     */
+    public function context(): string
+    {
+        return static::RENDER_CONTEXT;
+    }
 
     public function status(): string
     {
@@ -79,6 +110,10 @@ class ContentIndexViewModel extends ViewModel
     /** @return array{id: int, editable: bool}|null */
     public function structure(): ?array
     {
+        if ($this->sourceState()[0] === null) {
+            return null;
+        }
+
         $indexData = $this->resolveIndexData();
 
         return isset($indexData['structure'])
@@ -125,11 +160,92 @@ class ContentIndexViewModel extends ViewModel
     /** @return array<int, array{label: string, value: string}> */
     public function statusOptions(): array
     {
-        return collect($this->elementStatuses)
+        // Status filtering is a no-op for element types without statuses
+        // (QueriesStatuses ignores it), so don't offer the filter at all.
+        if (! $this->showStatusMenu()) {
+            return [];
+        }
+
+        return collect($this->elementType::statuses())
             ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
+    }
+
+    public function showStatusMenu(): bool
+    {
+        return $this->elementType::hasStatuses()
+            && count($this->elementType::statuses()) >= 2;
+    }
+
+    public function showSiteMenu(): bool
+    {
+        return Sites::isMultiSite() && $this->elementType::isLocalized();
+    }
+
+    /**
+     * The element index page title: a custom index page's own name wins,
+     * otherwise the element type's plural display name.
+     */
+    public function title(): string
+    {
+        if ($this->page !== null) {
+            $pageName = $this->sources()[0]['page'] ?? null;
+
+            if ($pageName !== null) {
+                return t($pageName, category: 'site');
+            }
+        }
+
+        return $this->elementType::pluralDisplayName();
+    }
+
+    public function sources(): array
+    {
+        return $this->resolvedSources ??= ElementSources::getSources(
+            $this->elementType,
+            withDisabled: true,
+            page: $this->page,
+        )->all();
+    }
+
+    /** @return class-string<ElementInterface> */
+    public function elementType(): string
+    {
+        return $this->elementType;
+    }
+
+    public function page(): ?string
+    {
+        return $this->page;
+    }
+
+    public function elementDisplayName(): string
+    {
+        return $this->elementType::displayName();
+    }
+
+    public function elementPluralDisplayName(): string
+    {
+        return $this->elementType::pluralDisplayName();
+    }
+
+    public function canHaveDrafts(): bool
+    {
+        return $this->elementType::hasDrafts();
+    }
+
+    public function viewModes(): array
+    {
+        return $this->elementType::indexViewModes();
+    }
+
+    public function selectedSubnavItem(): ?string
+    {
+        return $this->page !== null
+            ? ElementSources::pageNameId($this->page)
+            : null;
     }
 
     /**
@@ -233,11 +349,17 @@ class ContentIndexViewModel extends ViewModel
 
     public function data(): array
     {
+        if ($this->sourceState()[0] === null) {
+            return [];
+        }
+
         $elements = $this->resolvePaginator()->items();
 
-        return $this->mode() === 'cards'
-            ? $this->cardData($elements)
-            : $this->tableRows($elements);
+        return match ($this->mode()) {
+            ElementIndexViewMode::Cards->value => $this->cardData($elements),
+            ElementIndexViewMode::Thumbs->value => $this->thumbData($elements),
+            default => $this->tableRows($elements),
+        };
     }
 
     /** @return array<int, array<string, mixed>>|null */
@@ -278,18 +400,15 @@ class ContentIndexViewModel extends ViewModel
         $defaultSort = $this->sourceState()[1]['defaultSort'] ?? null;
 
         if (is_array($defaultSort) && isset($defaultSort[0])) {
-            return $this->resolvedSort = [[
-                'field' => $defaultSort[0],
-                'direction' => ($defaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
-            ]];
+            return $this->resolvedSort = [
+                [
+                    'field' => $defaultSort[0],
+                    'direction' => ($defaultSort[1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
+                ],
+            ];
         }
 
         return $this->resolvedSort = [['field' => 'dateCreated', 'direction' => 'desc']];
-    }
-
-    public function publishableSections(): array
-    {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
     }
 
     /**
@@ -306,6 +425,19 @@ class ContentIndexViewModel extends ViewModel
      */
     public function pagination(): array
     {
+        if ($this->sourceState()[0] === null) {
+            return [
+                'total' => 0,
+                'per_page' => max(1, $this->request->integer('per_page', 50)),
+                'current_page' => 1,
+                'last_page' => 1,
+                'next_page_url' => null,
+                'prev_page_url' => null,
+                'from' => null,
+                'to' => null,
+            ];
+        }
+
         $paginator = $this->resolvePaginator();
 
         return [
@@ -321,45 +453,43 @@ class ContentIndexViewModel extends ViewModel
     }
 
     /** @return array{0: ?string, 1: ?array} */
-    private function sourceState(): array
+    protected function sourceState(): array
     {
         if ($this->resolvedSource !== null) {
             return $this->resolvedSource;
         }
 
-        // An explicit ?source= wins; otherwise a section-handle URL (e.g.
-        // content/entries/blog, content/entries/singles) selects that source.
+        // An explicit ?source= wins; otherwise the element type's default
+        // (e.g. a section-handle or volume-path URL) selects its source.
         $requestedSource = $this->request->input('source')
-            ?? $this->sourceKeyForSectionHandle()
+            ?? $this->defaultSourceKey()
             ?? '*';
 
-        return $this->resolvedSource = app(ElementIndexes::class)
-            ->resolveSource($this->elementType, $requestedSource, self::RENDER_CONTEXT);
-    }
+        $resolved = app(ElementIndexes::class)
+            ->resolveSource($this->elementType, $requestedSource, static::RENDER_CONTEXT);
 
-    /**
-     * Maps the section-handle route segment to its source key (`singles` for
-     * Single sections, `section:{uid}` otherwise).
-     */
-    private function sourceKeyForSectionHandle(): ?string
-    {
-        if ($this->sectionHandle === null || $this->sectionHandle === '') {
-            return null;
+        // Not every element type has a `*` source (assets index per-volume,
+        // for example), so mirror the legacy index's behavior and fall back
+        // to the first available source.
+        if ($resolved[0] === null) {
+            $firstSourceKey = ElementSources::getSources($this->elementType, static::RENDER_CONTEXT)
+                ->first(fn (array $source): bool => isset($source['key']))['key'] ?? null;
+
+            if ($firstSourceKey !== null && $firstSourceKey !== $requestedSource) {
+                $resolved = app(ElementIndexes::class)
+                    ->resolveSource($this->elementType, $firstSourceKey, static::RENDER_CONTEXT);
+            }
         }
 
-        if ($this->sectionHandle === 'singles') {
-            return 'singles';
-        }
-
-        $section = Sections::getSectionByHandle($this->sectionHandle);
-
-        return $section ? "section:$section->uid" : null;
+        return $this->resolvedSource = $resolved;
     }
 
     /**
      * The view mode: sent as a string when the user switches views (see the
      * `useElementIndexViewMode` composable), falling back to the persisted
      * view state, then the default table mode.
+     *
+     * @TODO this should maybe return the ElementIndexViewMode enum?
      */
     private function mode(): string
     {
@@ -421,6 +551,11 @@ class ContentIndexViewModel extends ViewModel
         $query = $this->resolveQuery();
         $viewState = $this->viewState();
 
+        // Bound the query to the requested page before indexData() runs its
+        // element fetch, so indexElements() sees the offset/limit it needs —
+        // e.g. assets page folders and files together through that method.
+        $this->resolvePaginationState();
+
         // Reset any ordering applied while building the query so the requested
         // sort stays authoritative, then let indexData() apply it.
         if ($viewState['order'] !== null) {
@@ -434,15 +569,52 @@ class ContentIndexViewModel extends ViewModel
             disabledElementIds: $this->request->array('disabledElementIds'),
             viewState: $viewState,
             sourceKey: $sourceKey,
-            context: self::RENDER_CONTEXT,
+            context: static::RENDER_CONTEXT,
             selectable: true,
             sortable: false,
         );
     }
 
     /**
-     * Paginates a clone of the (ordered, prepared) query. Out-of-range pages
+     * Resolves the current page's bounds and total, and applies the
+     * offset/limit to the shared query so the element type's own
+     * {@see indexElements()} fetch (via {@see indexData()}) returns exactly
+     * this page. The total comes from {@see indexElementCount()}, which for
+     * assets includes the folders merged into each page. Out-of-range pages
      * clamp to the last valid page.
+     *
+     * @return array{perPage: int, page: int, total: int, pageParam: string}
+     */
+    private function resolvePaginationState(): array
+    {
+        if ($this->paginationState !== null) {
+            return $this->paginationState;
+        }
+
+        [$sourceKey] = $this->sourceState();
+        $query = $this->resolveQuery();
+
+        $perPage = max(1, $this->request->integer('per_page', 50));
+        $pageParam = Cms::config()->getPageTriggerParam();
+
+        $total = $this->elementType::indexElementCount($query, $sourceKey);
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $this->request->integer($pageParam, 1)), $lastPage);
+
+        $query->offset(($page - 1) * $perPage)->limit($perPage);
+
+        return $this->paginationState = [
+            'perPage' => $perPage,
+            'page' => $page,
+            'total' => $total,
+            'pageParam' => $pageParam,
+        ];
+    }
+
+    /**
+     * Builds the paginator from the page elements fetched through the element
+     * type's index pipeline (so assets keep their folders) and the resolved
+     * page state.
      */
     private function resolvePaginator(): LengthAwarePaginator
     {
@@ -450,29 +622,25 @@ class ContentIndexViewModel extends ViewModel
             return $this->paginator;
         }
 
-        // Ordering + attribute prep must be applied before pagination executes.
-        $this->resolveIndexData();
+        // Ordering, attribute prep, and page bounds are applied here; the
+        // resulting elements already reflect this page (folders + rows).
+        $indexData = $this->resolveIndexData();
+        $state = $this->resolvePaginationState();
 
-        $query = $this->resolveQuery();
-        $perPage = max(1, $this->request->integer('per_page', 50));
-        $page = max(1, $this->request->integer(Cms::config()->getPageTriggerParam(), 1));
-        $pageParam = Cms::config()->getPageTriggerParam();
-
-        $paginator = (clone $query)->paginate(
-            perPage: $perPage,
-            pageName: $pageParam,
-            page: $page,
+        $paginator = new IlluminatePaginator(
+            $indexData['elements'] ?? [],
+            $state['total'],
+            $state['perPage'],
+            $state['page'],
+            [
+                'path' => IlluminatePaginator::resolveCurrentPath(),
+                'pageName' => $state['pageParam'],
+            ],
         );
 
-        if ($page > $paginator->lastPage()) {
-            $paginator = (clone $query)->paginate(
-                perPage: $perPage,
-                pageName: $pageParam,
-                page: max(1, $paginator->lastPage()),
-            );
-        }
-
-        return $this->paginator = $paginator;
+        return $this->paginator = $paginator->appends(
+            $this->request->except($state['pageParam']),
+        );
     }
 
     /**
@@ -490,21 +658,38 @@ class ContentIndexViewModel extends ViewModel
         $elementHtml = app(ElementHtml::class);
 
         return array_map(fn (ElementInterface $element) => [
-            'id' => $element->id,
+            'id' => $this->rowId($element),
+            ...$this->extraRowData($element),
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
-                    $attribute => $attribute === 'title' ?
-                        Html::tag('CpLink',
-                            $elementHtml->chipHtml($element, [
-                                'context' => self::RENDER_CONTEXT,
-                                'appearance' => 'plain',
-                            ]),
-                            ['href' => $element->getCpEditUrl(), 'inertia' => false]
-                        )
+                    $attribute => $attribute === 'title'
+                        ? $this->titleCellHtml($element, $elementHtml)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
         ], $elements);
+    }
+
+    /**
+     * The title cell: an element's chip, wrapped in a CpLink to its edit screen.
+     * Elements with no edit URL (e.g. asset folders, which navigate via their
+     * own row handler) render the bare chip, so no stray anchor intercepts the
+     * row's click.
+     */
+    private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
+    {
+        $chip = $elementHtml->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+        ]);
+
+        $editUrl = $element->getCpEditUrl();
+
+        if ($editUrl === null) {
+            return $chip;
+        }
+
+        return Html::tag('CpLink', $chip, ['href' => $editUrl, 'inertia' => false]);
     }
 
     /**
@@ -523,8 +708,10 @@ class ContentIndexViewModel extends ViewModel
             // client-side, while staying unique per card.
             $cardConfig = [
                 'id' => sprintf('card-%s', mt_rand()),
-                'context' => self::RENDER_CONTEXT,
-                'hyperlink' => true,
+                'context' => static::RENDER_CONTEXT,
+                // Folders (no edit URL) navigate via their own card handler, so
+                // don't wrap them in a link that would swallow the click.
+                'hyperlink' => $element->getCpEditUrl() !== null,
                 'showEditButton' => false,
                 'autoReload' => false,
                 'selectable' => false,
@@ -532,12 +719,53 @@ class ContentIndexViewModel extends ViewModel
             ];
 
             return [
-                'id' => $element->id,
+                'id' => $this->rowId($element),
+                ...$this->extraRowData($element),
                 'cardAttributes' => $elementHtml->elementCardAttributes($element, $cardConfig),
                 'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
                 'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
                 'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
             ];
         }, $elements);
+    }
+
+    /**
+     * Serializes elements for the thumbnail grid: a large thumbnail image, the
+     * element label, and its edit URL. The client lays these out as tiles (see
+     * the `ElementThumbs` component); folders navigate via their own row data.
+     *
+     * @param  ElementInterface[]  $elements
+     */
+    private function thumbData(array $elements): array
+    {
+        return array_map(fn (ElementInterface $element) => [
+            'id' => $this->rowId($element),
+            ...$this->extraRowData($element),
+            'label' => $element->getUiLabel(),
+            'url' => $element->getCpEditUrl(),
+            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE),
+        ], $elements);
+    }
+
+    /**
+     * A stable, unique row id for the client's table/selection keying. Defaults
+     * to the element id; element types with non-element rows (e.g. asset
+     * folders, which have no element id) override this to stay collision-free.
+     */
+    protected function rowId(ElementInterface $element): string|int|null
+    {
+        return $element->id;
+    }
+
+    /**
+     * Extra per-row payload merged into every serialized row across all view
+     * modes. Empty by default; element-type view models add their own row
+     * metadata (e.g. asset folder navigation) here.
+     *
+     * @return array<string, mixed>
+     */
+    protected function extraRowData(ElementInterface $element): array
+    {
+        return [];
     }
 }

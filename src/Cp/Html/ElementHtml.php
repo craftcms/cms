@@ -95,6 +95,10 @@ readonly class ElementHtml
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
+            'show-indicators' => $config['showIndicators'],
+            'show-thumb' => $config['showThumb'],
+            'show-status' => $config['showStatus'],
+            'selectable' => $config['selectable'],
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),
@@ -122,11 +126,12 @@ readonly class ElementHtml
         if ($config['showStatus']) {
             /** @var Chippable&Statusable $component */
             $html .= Html::tag('div', $this->statusHtml->componentStatusIndicatorHtml($component) ?? '', [
-                'slot' => 'indicator',
+                'slot' => 'status',
             ]);
         }
 
         if ($config['showThumb']) {
+            $html .= Html::beginTag('div', ['slot' => 'thumbnail']);
             if ($component instanceof Thumbable) {
                 $thumbSize = $config['size'] === self::CHIP_SIZE_SMALL ? 30 : 120;
                 $html .= $component->getThumbHtml($thumbSize) ?? '';
@@ -137,10 +142,13 @@ readonly class ElementHtml
                     $html .= Icon::make()->name($icon)->slot('icon');
                 }
             }
+            $html .= Html::endTag('div');
         }
 
         if ($config['selectable']) {
+            $html .= Html::beginTag('div', ['slot' => 'prefix']);
             $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
+            $html .= Html::endTag('div');
         }
 
         if (isset($config['labelHtml'])) {
@@ -500,7 +508,7 @@ readonly class ElementHtml
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
+            ($config['showStatus'] ?? false) && $config['showStatus'] && $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft || $element->hasProvisionalChanges ? $this->statusHtml->editedStatusLabelHtml() : null,
         ]);
 
@@ -957,7 +965,7 @@ readonly class ElementHtml
             return '';
         }
 
-        return Html::tag('craft-element-label', $content, [
+        return Html::tag('craft-truncate', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);
