@@ -11,12 +11,15 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
+use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Data\Updates;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -52,8 +55,11 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     PermissionGroup::class,
                     Route::class,
                     Updates::class,
+                    UpdaterState::class,
                     HtmlFragment::class,
                     FieldEditViewModel::class,
+                    UserAddressesViewModel::class,
+                    UserPasskeysViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserProfileViewModel::class,

@@ -55,7 +55,47 @@ export interface ActionItemButton extends BaseActionItem {
 
 export type ActionItem = ActionItemButton | ActionItemHr | ActionItemLink;
 
-export async function runAction(action: BaseAction): Promise<void> {
+export interface RunActionOptions {
+  /**
+   * The element that invoked the action (e.g. the clicked button). For
+   * `event` actions it's merged into the dispatched event's `detail` as
+   * `trigger`, so listeners can manage focus or read contextual `data-*`
+   * attributes from the invoker's ancestors.
+   */
+  trigger?: Element;
+  /**
+   * The DOM event that invoked the action. For `event` actions it's merged
+   * into the dispatched event's `detail` as `sourceEvent`, so listeners can
+   * inspect modifier keys (e.g. ctrl-click opening a new window).
+   */
+  sourceEvent?: Event;
+}
+
+/**
+ * Normalizes an action property value to a `BaseAction`. Vue's in-DOM
+ * template compiler (e.g. server HTML rendered through `DynamicHtmlRenderer`)
+ * assigns attribute values directly to an upgraded element's property as a
+ * raw JSON string, bypassing Lit's attribute converter — so components accept
+ * both and normalize before running.
+ */
+export function normalizeAction(
+  action: BaseAction | string | null
+): BaseAction | null {
+  if (typeof action !== 'string') {
+    return action;
+  }
+
+  try {
+    return JSON.parse(action);
+  } catch {
+    return null;
+  }
+}
+
+export async function runAction(
+  action: BaseAction,
+  options: RunActionOptions = {}
+): Promise<void> {
   switch (action.type) {
     case 'clipboard':
       await navigator.clipboard.writeText(action.value);
@@ -101,7 +141,13 @@ export async function runAction(action: BaseAction): Promise<void> {
       }
 
       window.dispatchEvent(
-        new CustomEvent(action.name, {detail: action.detail ?? {}})
+        new CustomEvent(action.name, {
+          detail: {
+            ...(action.detail ?? {}),
+            ...(options.trigger ? {trigger: options.trigger} : {}),
+            ...(options.sourceEvent ? {sourceEvent: options.sourceEvent} : {}),
+          },
+        })
       );
       break;
 

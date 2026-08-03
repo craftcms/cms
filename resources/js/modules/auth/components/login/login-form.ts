@@ -15,7 +15,7 @@ import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
 import './login-reset-password.js';
-
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 type View = 'login' | 'reset-password' | 'challenge';
 
 /**
@@ -206,11 +206,9 @@ export default class CraftLoginForm extends LitElement {
   }
 
   #setError(message: string) {
+    const {announce} = useAnnouncer();
     this._error = message.trim();
-    const live = this.shadowRoot?.querySelector(
-      '.cp-visually-hidden[role="status"]'
-    );
-    if (live) live.textContent = message;
+    announce(this._error);
   }
 
   #handleSuccess(returnUrl: string) {
@@ -308,7 +306,7 @@ export default class CraftLoginForm extends LitElement {
                     <craft-button
                       type="button"
                       size="small"
-                      appearance="plain"
+                      variant="link"
                       @click="${this.#showResetPasswordForm}"
                       style="margin-block-start: var(--c-spacing-sm)"
                     >
@@ -358,7 +356,7 @@ export default class CraftLoginForm extends LitElement {
                 ? html`
                     <craft-button
                       type="button"
-                      appearance="filled"
+                      variant="fill"
                       ?loading="${this._passkeyBusy}"
                       @click="${this.#loginWithPasskey}"
                       style="width: 100%"

@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
@@ -47,7 +48,6 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['postJson', [FieldsController::class, 'applyLayoutTabSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutElementSettings'], true],
     ['postJson', [FieldsController::class, 'renderCardPreview'], true],
-    ['getJson', [FieldsController::class, 'tableData'], false],
 ]);
 
 it('needs authentication and admin changes to delete', function () {
@@ -154,7 +154,7 @@ it('serves the legacy screen to slideout requests', function (?callable $setUp) 
         ['X-Craft-Container-Id' => 'slideout'],
     )
         ->assertOk()
-        ->assertJsonPath('action', 'fields/save-field')
+        ->assertJsonPath('formAttributes.action', Url::cpUrl('settings/fields'))
         ->assertJson(fn (AssertableJson $json) => $json
             ->whereType('content', 'string')
             ->etc());

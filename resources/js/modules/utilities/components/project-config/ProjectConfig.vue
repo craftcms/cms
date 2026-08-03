@@ -1,11 +1,14 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
   import {t} from '@craftcms/ui';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
-  import {useProjectConfig} from '@/modules/utilities/composables/useProjectConfig';
   import Pane from '@/common/components/Pane.vue';
-  import {Form} from '@inertiajs/vue3';
-  import {discard, rebuild} from '@actions/Utilities/ProjectConfigController';
+  import {Form, router} from '@inertiajs/vue3';
+  import {
+    discard,
+    download,
+    rebuild,
+  } from '@actions/Utilities/ProjectConfigController';
   import SyncConfigButton from '@/modules/utilities/components/project-config/SyncConfigButton.vue';
   import TransitionFade from '@/common/components/TransitionFade.vue';
 
@@ -17,8 +20,30 @@
     entireConfig: string;
   }>();
 
-  const {isDownloading, isDiscarding, discardChanges, downloadConfig} =
-    useProjectConfig();
+  const isDiscarding = ref(false);
+
+  function discardChanges(): void {
+    if (
+      !confirm(
+        t(
+          'Are you sure you want to discard the pending project config YAML changes?'
+        )
+      )
+    ) {
+      return;
+    }
+
+    isDiscarding.value = true;
+    router.post(
+      discard().url,
+      {},
+      {
+        onFinish: () => {
+          isDiscarding.value = false;
+        },
+      }
+    );
+  }
 
   const sectionTitle = computed(() => {
     if (!props.yamlExists) {
@@ -197,11 +222,7 @@
         <pre><code>{{ entireConfig }}</code></pre>
       </Pane>
       <div class="buttons">
-        <craft-button
-          type="button"
-          :loading="isDownloading"
-          @click="downloadConfig"
-        >
+        <craft-button :href="download().url">
           <craft-icon name="download" slot="prefix"></craft-icon>
           {{ t('Download') }}
         </craft-button>

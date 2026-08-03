@@ -2,16 +2,31 @@
 
 ## Unreleased
 
-- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
 - Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory.
+- Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
+- Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
+- Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
 - Added support for configuring field layout field instruction positions.
+- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Changed `CraftCms\Cms\Cp\FormFields::textFromConfig()` to accept an optional `CraftCms\Cms\Cp\Components\Input` instance as a second argument, so callers can build on an existing component instead of always creating a plain `Input`. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Changed `CraftCms\Cms\Search\Events\SearchPerformed` to be a readonly, immutable event; its `$results` and `$scores` properties can no longer be overridden by listeners. `CraftCms\Cms\Search\Events\SearchScoresResolving` should be used to override scores instead. ([#19308](https://github.com/craftcms/cms/pull/19308))
 - Added `CraftCms\Cms\Asset\AssetFileKinds`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Cp\Components\Button::action()`, for declarative click actions. ([#19324](https://github.com/craftcms/cms/pull/19324))
+- Added `CraftCms\Cms\Cp\Components\Button::inherit()`. ([#19306](https://github.com/craftcms/cms/pull/19306))
+- Added `CraftCms\Cms\Cp\Components\InputColor`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Components\InputPassword`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Data\NavItem::group()`. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Added `CraftCms\Cms\Cp\Enums\ButtonVariant`. ([#19306](https://github.com/craftcms/cms/pull/19306))
+- Added `CraftCms\Cms\Cp\FormFields::colorFromConfig()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\FormFields::passwordFromConfig()`, `passwordHtml()`, and `passwordFieldHtml()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `CraftCms\Cms\Cp\Html\ElementHtml::elementCardLabelHtml()`, `elementCardActionsHtml()`, `elementCardThumbHtml()`, and `elementCardThumbAlignment()`. ([#19324](https://github.com/craftcms/cms/pull/19324))
 - Added `CraftCms\Cms\Cp\Settings::registerSetting()` and `registerReadOnlySetting()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Dashboard\WidgetTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Database\Commands\MigrateCommand::registerMigrator()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Element\ElementTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Element\NestedElementManager::getCardsData()` and `getIndexData()`. ([#19324](https://github.com/craftcms/cms/pull/19324))
 - Added `CraftCms\Cms\Field\FieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Field\LinkTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Field\NestedEntryFieldTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -23,6 +38,7 @@
 - Added `CraftCms\Cms\Gql\GqlQueries`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Gql\GqlTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Image\ImageTransformers`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Image\Raster::getInterventionImage()`.
 - Added `CraftCms\Cms\Plugin\Plugin::$filesystemTypes`. ([#19307](https://github.com/craftcms/cms/pull/19307))
 - Added `CraftCms\Cms\Plugin\Plugin::$gqlDirectives`. ([#19307](https://github.com/craftcms/cms/pull/19307))
 - Added `CraftCms\Cms\Plugin\Plugin::$gqlMutations`. ([#19307](https://github.com/craftcms/cms/pull/19307))
@@ -38,6 +54,7 @@
 - Added `CraftCms\Cms\Search\Events\SearchScoresResolving`. ([#19308](https://github.com/craftcms/cms/pull/19308))
 - Added `CraftCms\Cms\Support\Facades\AuthMethods`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\SystemMessage\SystemMessages::register()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added `CraftCms\Cms\Twig\Variables\Cp::color()` and `password()`. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Added `CraftCms\Cms\User\UserPermissions::registerPermissionGroup()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Utility\UtilityTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -45,6 +62,7 @@
 - Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
 - Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
+- Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
 - Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
 - Removed `CraftCms\Cms\Asset\Events\AssetFileKindsResolving`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Auth\Events\AuthMethodsResolving`. `CraftCms\Cms\Auth\AuthMethods::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
@@ -64,6 +82,8 @@
 - Removed `CraftCms\Cms\Gql\Events\GqlQueriesResolving`. `CraftCms\Cms\Gql\GqlQueries::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Gql\Events\GqlTypesResolving`. `CraftCms\Cms\Gql\GqlTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\Image\Events\ImageTransformersResolving`. `CraftCms\Cms\Image\ImageTransformers::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Removed `CraftCms\Cms\Image\Images::MINIMUM_IMAGICK_VERSION` and `craft\services\Images::MINIMUM_IMAGICK_VERSION`.
+- Removed `CraftCms\Cms\Image\Raster::getImagineImage()`.
 - Removed `CraftCms\Cms\Search\Events\ScoringResults` in favor of the following new events: ([#19308](https://github.com/craftcms/cms/pull/19308))
   - `CraftCms\Cms\Search\Events\SearchResultsResolving`
   - `CraftCms\Cms\Search\Events\SearchScoresResolving`
@@ -73,12 +93,30 @@
 - Removed `CraftCms\Cms\Utility\Events\UtilitiesResolving`. `CraftCms\Cms\Utility\UtilityTypes::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\View\Events\CpTemplateRootsResolving` and `CraftCms\Cms\View\Events\SiteTemplateRootsResolving`. `CraftCms\Cms\View\TemplateRoots::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Removed `CraftCms\Cms\View\Events\TemplateCacheCollectorsResolving`. `CraftCms\Cms\View\TemplateCacheCollectors::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
+- Added the `@craftcms/ui/factory` module, a jQuery-free layer of typed element factories that mirror the `src/Cp/Components` PHP builders. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added `createTextInput()` and `createCopyTextPrompt()` to the `@craftcms/ui/factory` module. ([#19333](https://github.com/craftcms/cms/pull/19333))
+- Added `turnOn()`, `turnOff()`, and `turnIndeterminate()` methods to the `<craft-switch>` web component. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Added a `group` property to the `<craft-nav-item>` web component, for rendering a subnav as a non-collapsible semantic grouping. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Added `Garnish.CustomSelect` and `Garnish.MenuBtn` to `@craftcms/garnish`, jQuery-free TypeScript ports of the legacy floating listbox menu and menu-button classes. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Moved the `Craft.ComponentSelectInput` control panel JavaScript class out of the core bundle into a `yii2-adapter` compatibility asset, since `<craft-component-select>` is now used everywhere in core; the `componentSelect.twig` `jsClass` escape hatch still works for plugin subclasses. ([#19333](https://github.com/craftcms/cms/pull/19333))
+- Moved the `Craft.AssetMover`, `Craft.AssetSelectorModal`, `Craft.BaseElementSelectInput`, `Craft.BaseElementSelectorModal`, `Craft.BaseUploader`, `Craft.Chart`, `Craft.CpModal`, `Craft.CustomizeSourcesModal`, `Craft.DataTableSorter`, `Craft.ElementActionTrigger`, `Craft.ElementDeletionManager`, `Craft.ElementTableSorter`, `Craft.EntrySelectInput`, `Craft.Grid`, `Craft.PreviewFileModal`, `Craft.Tabs`, `Craft.TagSelectInput`, `Craft.Uploader`, and `Craft.VolumeFolderSelectorModal` control panel JavaScript classes from the legacy jQuery bundle to TypeScript modules. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Changed `<craft-nav-item>` to render as a `<span>` instead of an `<a>` when it has no `href`, dropping `aria-current` in that case. ([#19350](https://github.com/craftcms/cms/pull/19350))
+- Changed element index table rows and cards so clicking anywhere on them (other than an interactive control) selects them, extending the selection range on shift-click just like clicking a row’s checkbox. ([#19351](https://github.com/craftcms/cms/pull/19351))
+- Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Removed the `Craft.DeleteUserModal` control panel JavaScript class. It was deprecated in 5.10.0 and unused. ([#19352](https://github.com/craftcms/cms/pull/19352))
+- Fixed a bug where Blade templates rendered through Craft used path-based view names, preventing named Laravel view composers from running. ([#19177](https://github.com/craftcms/cms/issues/19177))
+- Fixed a bug where the `accent` semantic color used by colorable elements (e.g. `craft-callout`, `[data-color]`) rendered red instead of blue, due to a drifted color mapping in `@craftcms/ui`. ([#19306](https://github.com/craftcms/cms/pull/19306))
 - Fixed a styling issue. ([#19296](https://github.com/craftcms/cms/pull/19296))
 - Fixed a bug where Yii adapter plugins could cause legacy Control Panel assets to be omitted. ([#19302](https://github.com/craftcms/cms/pull/19302))
 - Fixed a bug where assets’ Alternative Text values could not be cleared. ([#19310](https://github.com/craftcms/cms/issues/19310))
 - Fixed a bug where element deletion confirmation dialogs could display unresolved pluralization syntax. ([#19311](https://github.com/craftcms/cms/issues/19311))
 - Fixed a bug where replacing an asset would fail silently. ([#19312](https://github.com/craftcms/cms/issues/19312))
 - Fixed JavaScript errors that could occur throughout the control panel. ([#19313](https://github.com/craftcms/cms/issues/19313))
+- Fixed a bug where `forms.checkboxField()` and `CraftCms\Cms\Cp\FormFields::checkboxFieldHtml()` rendered an empty field. ([#19338](https://github.com/craftcms/cms/pull/19338))
+- Fixed a bug where Utility pages weren’t rendering, and were logging `$ is not defined` and `window.Cp.config is not a function` errors to the console. ([#19340](https://github.com/craftcms/cms/pull/19340))
+- Fixed a bug where `actionClient` requests for bare action paths could corrupt the `?site=` query string on multi-site installs. ([#19342](https://github.com/craftcms/cms/pull/19342))
+- `Craft.cp.announce()` now accepts live regions that are plain elements as well as jQuery collections. ([#19340](https://github.com/craftcms/cms/pull/19340))
 
 ## 6.0.0-alpha.14 - 2026-07-22
 

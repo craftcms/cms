@@ -24,6 +24,8 @@
  */
 
 import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
+import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
 
 declare const Craft: any;
@@ -86,6 +88,7 @@ export class CpScreenSlideout extends Slideout {
 
   action: string | null = null;
   namespace: string | null = null;
+  inertiaApp: App | null = null;
 
   showingLoadSpinner = false;
   hasTabs = false;
@@ -129,7 +132,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   /**
-   * @param action - The controller action to fetch the screen's content from.
+   * @param action - The controller action or URL to fetch the screen's content from.
    * @param settings - Optional settings overrides (see {@link CpScreenSlideoutSettings}).
    */
   constructor(action?: string, settings?: Partial<CpScreenSlideoutSettings>) {
@@ -311,20 +314,24 @@ export class CpScreenSlideout extends Slideout {
 
       this.cancelToken = axios.CancelToken.source();
 
-      Craft.sendActionRequest(
-        'GET',
-        this.action,
-        $.extend(
-          {
-            params: Object.assign({}, this.getParams(), this.settings!.params),
-            cancelToken: this.cancelToken.token,
-            headers: {
-              'X-Craft-Container-Id': this.$container.attr('id'),
-            },
+      const options = $.extend(
+        {
+          params: Object.assign({}, this.getParams(), this.settings!.params),
+          cancelToken: this.cancelToken.token,
+          headers: {
+            'X-Craft-Container-Id': this.$container.attr('id'),
           },
-          this.settings!.requestOptions
-        )
-      )
+        },
+        this.settings!.requestOptions
+      );
+      const request = /^(?:https?:\/\/|\/)/.test(this.action!)
+        ? axios.get(this.action!, {
+            ...options,
+            headers: {...Craft._actionHeaders(), ...options.headers},
+          })
+        : Craft.sendActionRequest('GET', this.action, options);
+
+      request
         .then((response: any) => {
           this.update(response.data)
             .then(() => {
@@ -409,6 +416,8 @@ export class CpScreenSlideout extends Slideout {
         this.$body.addClass(data.bodyClass);
       }
 
+      this.inertiaApp?.unmount();
+      this.inertiaApp = null;
       this.$content.html(data.content);
       if (this.$actionBtn) {
         this.$actionBtn.data('disclosureMenu')?.destroy();
@@ -501,6 +510,19 @@ export class CpScreenSlideout extends Slideout {
         // get instantiated before field toggles
         await Craft.appendHeadHtml(data.headHtml);
         await Craft.appendBodyHtml(data.bodyHtml);
+
+        if (data.inertiaPage) {
+          const inertiaPage = await resolveInertiaPage(data.inertiaPage);
+
+          this.inertiaApp = createApp(inertiaPage, {
+            ...data.inertiaProps,
+            slideout: true,
+          });
+          this.inertiaApp.config.compilerOptions.isCustomElement = (tag) =>
+            tag.includes('-');
+          this.inertiaApp.mount(this.$content[0]);
+        }
+
         Craft.initUiElements(this.$content);
         Craft.cp.elementThumbLoader.load($(this.$content));
 
@@ -603,7 +625,7 @@ export class CpScreenSlideout extends Slideout {
       bubble: true,
     });
     uiLayerManager().registerShortcut(ESC_KEY, (ev: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- bubble the shortcut only when the sidebar didn't just close for overlapping it.
+      // oxlint-disable-next-line @typescript-eslint/no-unused-expressions -- bubble the shortcut only when the sidebar didn't just close for overlapping it.
       this.hideSidebarIfOverlapping() || ev.bubbleShortcut();
     });
 
@@ -693,12 +715,20 @@ export class CpScreenSlideout extends Slideout {
       this.$container.data('initial-delta-values')
     );
 
-    Craft.sendActionRequest('POST', null, {
+    const action = this.$container.attr('action');
+    const options = {
       data,
       headers: {
         'X-Craft-Namespace': this.namespace,
       },
-    })
+    };
+    const request = action
+      ? axios.post(action, data, {
+          headers: {...Craft._actionHeaders(), ...options.headers},
+        })
+      : Craft.sendActionRequest('POST', null, options);
+
+    request
       .then((response: any) => {
         this.handleSubmitResponse(response);
       })
@@ -921,6 +951,9 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override close(): void {
+    this.inertiaApp?.unmount();
+    this.inertiaApp = null;
+
     if (this.showingSidebar) {
       this.hideSidebar();
     }

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -22,9 +21,7 @@ use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
-use Deprecated;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -213,37 +210,13 @@ readonly class SectionsController
         return $this->asSuccess(t('Section saved.'));
     }
 
-    public function destroy(Request $request, Sections $sections): Response
+    public function destroy(Sections $sections, SectionModel $section): Response
     {
-        $request->validate([
-            'id' => ['required', Rule::exists(Table::SECTIONS, 'id')],
-        ]);
-
-        $sectionId = $request->integer('id');
-        $section = $sections->getSectionById($sectionId);
-
         $name = $section->name;
-        $sections->deleteSectionById($sectionId);
+        $sections->deleteSectionById($section->id);
 
         return $this->asSuccess(t('Section “{name}” deleted.', [
             'name' => $name,
         ]));
-    }
-
-    #[Deprecated(message: 'in 6.0. Use `settings/sections` instead.')]
-    public function tableData(TableRequest $request, Sections $sections): Response
-    {
-        [$pagination, $tableData] = $sections->getSectionTableData(
-            page: $request->page(),
-            limit: $request->limit(),
-            searchTerm: $request->search(),
-            orderBy: $request->orderBy(),
-            sortDir: $request->sortDir(),
-        );
-
-        return $this->asSuccess(data: [
-            'pagination' => $pagination,
-            'data' => $tableData,
-        ]);
     }
 }

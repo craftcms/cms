@@ -21,7 +21,7 @@ declare module '@tanstack/vue-table' {
 
 // Set up interfaces and types
 interface ProgressBarInterface {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
+  // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (
     $element: JQuery,
     displaySteps?: boolean,
@@ -40,7 +40,7 @@ interface ProgressBarInterface {
 }
 
 interface IntervalManagerInterface {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
+  // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (settings?: object): IntervalManagerInterface;
 
   stop(): void;
@@ -168,6 +168,7 @@ interface CraftStatic {
   CpScreenSlideout: {
     new (url: string, settings?: object): SlideoutInstance;
   };
+  createElementEditor(elementType: string, settings?: object): SlideoutInstance;
   CustomizeSourcesModal: new (
     elementIndex: unknown,
     settings?: object
@@ -188,9 +189,9 @@ interface CraftStatic {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GarnishStatic {}
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line @typescript-eslint/no-empty-object-type
 interface JQueryObject {}
 
 // Declare existing variables, mock the things we'll use.

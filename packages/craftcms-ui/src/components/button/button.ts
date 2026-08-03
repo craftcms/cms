@@ -1,29 +1,29 @@
 import {LionButtonSubmit} from '@lion/ui/button.js';
 import {html, nothing} from 'lit';
-import {property, state} from 'lit/decorators.js';
+import {property, state, query} from 'lit/decorators.js';
+import {t} from '@src/utilities/translate';
 import styles from './button.styles.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
-import variantsStyles from '@src/styles/variants.styles';
+import {type BaseAction, normalizeAction, runAction} from '@src/actions';
 
-export const ButtonAppearance = {
+export const ButtonVariant = {
+  Primary: 'primary',
+  Danger: 'danger',
+  DangerPlain: 'danger-plain',
   Solid: 'solid',
   Fill: 'fill',
   Outline: 'outline',
+  Dashed: 'dashed',
   Plain: 'plain',
-} as const;
-
-export const ButtonVariant = {
-  Accent: 'accent',
-  Neutral: 'neutral',
-  Danger: 'danger',
+  Link: 'link',
+  None: 'none',
 } as const;
 
 export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
-export type ButtonAppearance =
-  (typeof ButtonAppearance)[keyof typeof ButtonAppearance];
 
 /**
  * @summary Interactive element that triggers an action or event.
@@ -44,36 +44,104 @@ export type ButtonAppearance =
  */
 export default class CraftButton extends LionButtonSubmit {
   static override get styles() {
-    return [...super.styles, variantsStyles, styles];
+    return [...super.styles, visuallyHiddenStyles, styles];
+  }
+
+  constructor() {
+    super();
+    // We extend LionButtonSubmit so `type="submit"`/`"reset"` Just Work inside
+    // forms, but a plain action button is the far more common case — and Lion
+    // gates all of its submit/reset helper wiring behind `type`, so defaulting
+    // to "button" also skips that runtime cost. (LionButtonSubmit's constructor
+    // sets this to "submit"; we override it after super().)
+    this.type = 'button';
   }
 
   override connectedCallback() {
     // Set link-appropriate host state *before* Lion runs, so it skips its
     // role="button" assignment and (via type) its submit-helper wiring.
     if (this.href && !this.disabled) {
+      this.originalType = this.type;
       this.type = 'button';
       this.setAttribute('role', 'presentation');
+      // Mark link state as applied so syncLinkHostState() below re-applies the
+      // rest (tabindex) without re-capturing the (now-overwritten) type.
+      this.linkHostStateApplied = true;
     }
     super.connectedCallback();
     this.syncLinkHostState();
+    this.addEventListener('click', this.#handleActionClick);
   }
 
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this.#handleActionClick);
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+      this.announcementTimer = null;
+    }
+  }
+
+  #handleActionClick = async (event: Event) => {
+    const action = normalizeAction(this.action);
+
+    if (!action || this.disabled) {
+      return;
+    }
+
+    event.preventDefault();
+
+    // Only show the spinner for http requests, matching craft-action-item.
+    if (action.type === 'http') {
+      this.loading = true;
+    }
+
+    try {
+      await runAction(action, {trigger: this, sourceEvent: event});
+    } finally {
+      this.loading = false;
+    }
+  };
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
       this.syncLinkHostState();
     }
+
+    if (changedProperties.has('loading')) {
+      if (this.loading) {
+        this.announceLoading();
+      }
+    }
+  }
+
+  private announceLoading() {
+    this.liveRegion.textContent = t('Loading');
+
+    if (this.announcementTimer) {
+      clearTimeout(this.announcementTimer);
+    }
+
+    this.announcementTimer = setTimeout(() => {
+      this.liveRegion.textContent = '';
+    }, 5000);
   }
 
   private syncLinkHostState() {
     if (this.isLink) {
+      if (!this.linkHostStateApplied) {
+        // Capture the caller's intended type before we force "button" for the
+        // link, so we can restore it if `href` is later removed.
+        this.originalType = this.type;
+      }
       this.setAttribute('role', 'presentation');
       this.tabIndex = -1;
       this.type = 'button';
       this.linkHostStateApplied = true;
     } else if (this.linkHostStateApplied) {
       this.setAttribute('role', 'button');
-      this.type = 'submit';
+      this.type = this.originalType ?? 'button';
       if (!this.disabled) {
         this.tabIndex = 0;
       }
@@ -108,18 +176,17 @@ export default class CraftButton extends LionButtonSubmit {
   /** The computed accessible name */
   @property({attribute: 'accessible-name'}) accessibleName: string;
 
-  /** Visual appearance of the button */
-  @property({reflect: true}) appearance: ButtonAppearance = 'solid';
+  /**
+   * The button's visual style. Defaults to "fill" (neutral fill).
+   */
+  @property({reflect: true}) variant: ButtonVariant = ButtonVariant.Fill;
 
   /**
-   * Theme variant of the button. Defaults to "neutral"
-   *
-   * Accent: The primary action on a page
-   * Neutral: Used in most cases
-   * Danger: Indicates a dangerous action, when data will be removed or deleted
-   * Inherit: Useful for colorable elements, button will reflect the parent theme
+   * Adopt the ambient colorable palette (from a `[data-color]` / colorable
+   * ancestor) instead of the neutral palette. Only
+   * affects the neutral variants; `primary` and `danger` stay stable.
    */
-  @property({reflect: true}) variant: ButtonVariant = 'neutral';
+  @property({reflect: true, type: Boolean}) inherit: boolean = false;
 
   /** Size of the button. Defaults to "medium" */
   @property({reflect: true}) size: 'zero' | 'small' | 'medium' | 'large' =
@@ -140,6 +207,15 @@ export default class CraftButton extends LionButtonSubmit {
   /** Icon to be rendered within the content. */
   @property() icon: string | null = null;
 
+  /**
+   * Declarative action to run when the button is clicked, as a JSON `action`
+   * attribute — the same primitives `craft-action-item` supports
+   * (`http`/`event`/`clipboard`/`download`, run via `runAction()`). A raw
+   * JSON string is accepted too (Vue's in-DOM compiler sets attribute
+   * values as string properties on upgraded elements).
+   */
+  @property({type: Object}) action: BaseAction | string | null = null;
+
   /** When set, the button renders as a link to this URL. */
   @property({reflect: true}) href: string | null = null;
 
@@ -156,10 +232,17 @@ export default class CraftButton extends LionButtonSubmit {
   @property({attribute: 'icon-position'}) iconPosition: 'prefix' | 'suffix' =
     'prefix';
 
+  @query('[data-live-region]') liveRegion: HTMLElement;
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
   private linkHostStateApplied = false;
+
+  /** The caller's `type` before link mode forced it to "button". */
+  private originalType: string | null = null;
+
+  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;
@@ -200,6 +283,7 @@ export default class CraftButton extends LionButtonSubmit {
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`
         : nothing}
+      <span class="cp-visually-hidden" role="status" data-live-region></span>
     `;
 
     if (this.isLink) {

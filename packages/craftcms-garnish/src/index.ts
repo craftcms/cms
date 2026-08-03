@@ -35,6 +35,8 @@ import {setUiLayerManager} from './managers/registry';
 import {Modal, type ModalSettings} from './modal';
 import {HUD, type HUDSettings} from './hud';
 import {DisclosureMenu, type DisclosureMenuSettings} from './disclosure-menu';
+import {CustomSelect, type CustomSelectSettings} from './custom-select';
+import {MenuBtn, type MenuBtnSettings} from './menu-btn';
 import {BaseDrag, type BaseDragSettings} from './drag/base-drag';
 import {Drag, type DragSettings} from './drag/drag';
 import {DragDrop, type DragDropSettings} from './drag/drag-drop';
@@ -73,6 +75,8 @@ export type {
   DisclosureMenuItem,
   DisclosureMenuItemConfig,
 } from './disclosure-menu';
+export {CustomSelect, type CustomSelectSettings};
+export {MenuBtn, type MenuBtnSettings};
 export {BaseDrag, type BaseDragSettings};
 export {Drag, type DragSettings};
 export {DragDrop, type DragDropSettings};
@@ -182,6 +186,8 @@ export const Garnish = {
   Modal,
   HUD,
   DisclosureMenu,
+  CustomSelect,
+  MenuBtn,
   BaseDrag,
   Drag,
   DragDrop,

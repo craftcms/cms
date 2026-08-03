@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import type {InertiaForm} from '@inertiajs/vue3';
   import {ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -61,7 +61,7 @@
       v-for="button in additionalButtons"
       :key="button.label"
       type="button"
-      :variant="button.variant ?? 'neutral'"
+      :variant="button.variant ?? ButtonVariant.Solid"
       :loading="isButtonProcessing(button.label)"
       :disabled="form.processing || button.disabled"
       @click="handleAdditionalButtonClick(button, $event)"
@@ -78,7 +78,7 @@
       <slot name="submit-button">
         <craft-button
           type="submit"
-          variant="accent"
+          :variant="ButtonVariant.Solid"
           :loading="isButtonProcessing(primaryButton)"
           :disabled="form.processing"
         >
@@ -87,7 +87,12 @@
       </slot>
       <ActionMenu icon="chevron-down" :actions="actionItems">
         <template #invoker="{label}">
-          <craft-button slot="invoker" variant="accent" type="button" icon>
+          <craft-button
+            slot="invoker"
+            :variant="ButtonVariant.Solid"
+            type="button"
+            icon
+          >
             <craft-icon name="chevron-down" :label="label"></craft-icon>
           </craft-button>
         </template>
@@ -97,7 +102,7 @@
     <slot v-else name="submit-button">
       <craft-button
         type="submit"
-        variant="accent"
+        :variant="ButtonVariant.Primary"
         :loading="isButtonProcessing(primaryButton)"
         :disabled="form.processing"
       >

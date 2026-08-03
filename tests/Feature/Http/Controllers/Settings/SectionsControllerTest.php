@@ -22,8 +22,9 @@ use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertSoftDeleted;
+use function Pest\Laravel\delete;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
-use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
@@ -41,9 +42,8 @@ it('requires authentication', function () {
     get(action([SectionsController::class, 'index']))->assertRedirect();
     get(action([SectionsController::class, 'create']))->assertRedirect();
     get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertRedirect();
-    get(action([SectionsController::class, 'tableData']))->assertRedirect();
     postJson(action([SectionsController::class, 'store']))->assertUnauthorized();
-    postJson(action([SectionsController::class, 'destroy']))->assertUnauthorized();
+    deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertUnauthorized();
 });
 
 it('requires admin changes', function () {
@@ -55,7 +55,7 @@ it('requires admin changes', function () {
     // Not allowed
     get(action([SectionsController::class, 'create']))->assertForbidden();
     postJson(action([SectionsController::class, 'store']))->assertForbidden();
-    postJson(action([SectionsController::class, 'destroy']))->assertForbidden();
+    deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertForbidden();
 });
 
 test('index can be loaded', function () {
@@ -185,16 +185,10 @@ it('can delete a section', function () {
 
     expect(Section::count())->toBe(2);
 
-    postJson(action([SectionsController::class, 'destroy']), [
-        'id' => $newSection->id,
-    ])->assertSuccessful();
+    delete(action([SectionsController::class, 'destroy'], [$newSection->id]))
+        ->assertRedirectBack();
 
     assertSoftDeleted(Section::class, ['id' => $newSection->id]);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();
     expect(Section::count())->toBe(1);
-});
-
-it('can get table data', function () {
-    getJson(action([SectionsController::class, 'tableData']))
-        ->assertOk();
 });

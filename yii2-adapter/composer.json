@@ -96,6 +96,7 @@
   },
   "autoload-dev": {
     "psr-4": {
+      "CraftCms\\Cms\\Database\\": "../database/",
       "CraftCms\\Cms\\Tests\\": "../tests/",
       "CraftCms\\Yii2Adapter\\Tests\\": "tests-laravel/",
       "crafttests\\": "tests/"
@@ -108,7 +109,7 @@
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=2G",
     "rector": "rector",
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
+    "tests-adapter": "./vendor/bin/pest --configuration ./phpunit.xml.dist --test-directory ./tests-laravel"
   },
   "config": {
     "sort-packages": true,
