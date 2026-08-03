@@ -33,14 +33,14 @@ export class AuthMethodSetupSlideout extends Slideout {
     this.methodName = data.methodName;
 
     const contents = `
-<div class="so-body">${data.html}</div>
-<div class="so-footer">
+<div class="slideout__body">${data.html}</div>
+<div class="slideout__footer">
   <div class="flex-grow"></div>
   <div class="flex flex-nowrap">
-    <button type="button" class="btn auth-method-close-btn">${Craft.t(
+    <craft-button type="button" class="auth-method-close-btn">${Craft.t(
       'app',
       'Cancel'
-    )}</button>
+    )}</craft-button>
   </div>
 </div>
 `;
@@ -72,7 +72,7 @@ export class AuthMethodSetupSlideout extends Slideout {
     });
     this.$container.find('.so-body').addClass('auth-method-setup-success')
       .html(`
-        <div class="auth-method-setup-success-graphic" data-icon="check" aria-hidden="true"></div>
+        <craft-icon name="check"></craft-icon>
         <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
       `);
 

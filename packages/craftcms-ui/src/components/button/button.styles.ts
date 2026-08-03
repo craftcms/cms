@@ -174,7 +174,8 @@ export default css`
     min-width: var(--c-size-control-lg);
   }
 
-  :host([loading]) {
+  :host([loading]),
+  :host([action-state='loading']) {
     position: relative;
 
     .prefix,

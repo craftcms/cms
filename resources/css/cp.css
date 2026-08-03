@@ -10,6 +10,7 @@ CP Styles
 @import './fld.css';
 @import './cvd.css';
 @import './global-sidebar.css';
+@import './slideout.css';
 
 :root {
   --global-sidebar-width: calc(226rem / 16);

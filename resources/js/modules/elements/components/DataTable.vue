@@ -38,12 +38,17 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
-    useElementIndexSelection(() => props.table, {
-      selectable: () => props.selectable ?? false,
-      readOnly,
-      actions: () => [], // actions/bulk bar live on BaseElementIndex
-    });
+  const {
+    onToggleAllSelected,
+    selectRow,
+    selectRowFromEvent,
+    toggleRow,
+    extendSelectionTo,
+  } = useElementIndexSelection(() => props.table, {
+    selectable: () => props.selectable ?? false,
+    readOnly,
+    actions: () => [], // actions/bulk bar live on BaseElementIndex
+  });
 
   // Captures modifier state from the native click, because craft-checkbox's
   // `model-value-changed` event does not carry `shiftKey`.
@@ -56,8 +61,13 @@
 
   // Folder rows (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (checkbox, a real link, …).
+  // Other rows fall through to the normal click-to-select behavior.
   function onRowClick(row: any, event: MouseEvent) {
-    if (!isFolderRow(row.original)) return;
+    if (!isFolderRow(row.original)) {
+      selectRowFromEvent(row, event);
+      return;
+    }
+
     if (
       (event.target as HTMLElement).closest(
         'a[href], button, input, craft-checkbox, craft-reorder-button'

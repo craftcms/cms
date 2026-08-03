@@ -1,6 +1,7 @@
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {LionTooltip} from '@lion/ui/tooltip.js';
+import {withTooltipConfig} from '@lion/ui/overlays.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
 
 /**
@@ -113,6 +114,16 @@ export default class CraftTooltip extends LionTooltip {
     if (this.#isClickTriggered || this.#isManual) {
       // Disable Lion's hover/focus interaction.
       delete config.visibilityTriggerFunction;
+    } else {
+      // Lion defaults both delayIn and delayOut to 300ms. delayOut is fine
+      // (prevents flicker when briefly overshooting), but delayIn makes
+      // tooltips feel sluggish. Show immediately.
+      const {visibilityTriggerFunction} = withTooltipConfig({
+        invokerRelation: this.invokerRelation,
+        delayIn: 0,
+        delayOut: 300,
+      });
+      config.visibilityTriggerFunction = visibilityTriggerFunction;
     }
 
     return {

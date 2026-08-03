@@ -28,6 +28,7 @@ class ComponentRegistry
         'icon' => Icon::class,
         'input' => Input::class,
         'input-color' => InputColor::class,
+        'input-copy' => InputCopy::class,
         'input-password' => InputPassword::class,
         'lightswitch' => Lightswitch::class,
         'radio' => Radio::class,

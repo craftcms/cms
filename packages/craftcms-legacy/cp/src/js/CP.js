@@ -885,7 +885,41 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Empty in case it was already populated and not cleared
-      this.$activeLiveRegion?.empty();
+      this.clearLiveRegion();
+    },
+
+    /**
+     * Resolves a live region reference to its underlying element.
+     *
+     * `$liveRegion` comes in two shapes as jQuery gets removed: the jQuery-era
+     * modals (`Garnish.Modal`, `Craft.PreviewFileModal`) and
+     * `$globalLiveRegion` set it to a jQuery collection, while ported
+     * components set it to a plain element — `Craft.Slideout` does today, and
+     * the ported Garnish `Modal` builds one the same way (though it isn't
+     * reachable from `handleLayerUpdates` yet, since it registers itself in a
+     * `WeakMap` rather than via `$container.data('modal')`). Accept either so
+     * both can coexist for the rest of the port.
+     *
+     * @param {jQuery|Element|null} region
+     * @returns {Element|null}
+     */
+    getLiveRegionElement: function (region) {
+      if (!region) {
+        return null;
+      }
+
+      return region instanceof Element ? region : (region[0] ?? null);
+    },
+
+    /**
+     * Empties the active live region, whichever form it takes.
+     */
+    clearLiveRegion: function () {
+      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
+
+      if (liveRegion) {
+        liveRegion.textContent = '';
+      }
     },
 
     updateResponsiveTables: function () {
@@ -1033,11 +1067,9 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} message
      */
     announce: function (message) {
-      if (
-        !message ||
-        !this.$activeLiveRegion ||
-        !document.contains(this.$activeLiveRegion[0])
-      ) {
+      const liveRegion = this.getLiveRegionElement(this.$activeLiveRegion);
+
+      if (!message || !liveRegion || !document.contains(liveRegion)) {
         console.warn('There was an error announcing this message.');
         return;
       }
@@ -1046,11 +1078,13 @@ Craft.CP = Garnish.Base.extend(
         clearTimeout(this.announcerTimeout);
       }
 
-      this.$activeLiveRegion?.empty().text(message);
+      // Assigning `textContent` both clears any previous announcement and sets
+      // the new one, matching the old `.empty().text(message)` pair.
+      liveRegion.textContent = message;
 
       // Clear message after interval
       this.announcerTimeout = setTimeout(() => {
-        this.$activeLiveRegion?.empty();
+        this.clearLiveRegion();
       }, 5000);
     },
 
