@@ -47,6 +47,7 @@ use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
+use CraftCms\Cms\Http\Controllers\Users\IndexController as UsersIndexController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
 use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
@@ -228,7 +229,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::patch('users/{userId}/permissions', [PermissionsController::class, 'update'])->whereNumber('userId');
     });
 
-    Route::get('users/{slug?}', [UsersController::class, 'index']);
+    Route::get('users/{slug?}', UsersIndexController::class)->name('users.index');
 
     /**
      * Assets
