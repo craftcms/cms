@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Support\Facades\Auth;
@@ -101,6 +102,16 @@ describe('create / edit', function () {
         get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
             ->assertOk()
             ->assertSee($volume->name);
+    });
+
+    test('slideout form targets the volume CP route', function () {
+        get(action([VolumesController::class, 'create']), [
+            'Accept' => 'application/json',
+            'X-Craft-Container-Id' => 'volume-slideout',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+            ->assertOk()
+            ->assertJsonPath('formAttributes.action', Url::cpUrl('settings/assets/volumes'));
     });
 
     test('edit returns 404 for non-existent volume', function () {

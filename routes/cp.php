@@ -263,16 +263,30 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.index');
 
         // Entry types
-        Route::get('settings/entry-types', [EntryTypesController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/entry-types/new', [EntryTypesController::class, 'create']);
-        Route::get('settings/entry-types/{entryType}', [EntryTypesController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/entry-types/{entryType}', [EntryTypesController::class, 'destroy']);
+        Route::prefix('settings/entry-types')->group(function () {
+            Route::get('/', [EntryTypesController::class, 'index']);
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [EntryTypesController::class, 'create']);
+                Route::post('/', [EntryTypesController::class, 'store']);
+                Route::delete('{entryType}', [EntryTypesController::class, 'destroy']);
+            });
+
+            Route::get('{entryType}', [EntryTypesController::class, 'edit']);
+        });
 
         // Fields
-        Route::get('settings/fields', [FieldsController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/fields/new', [FieldsController::class, 'create']);
-        Route::get('settings/fields/edit/{fieldId}', [FieldsController::class, 'edit']);
-        Route::middleware(RequireAdminChanges::class)->delete('settings/fields/{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
+        Route::prefix('settings/fields')->group(function () {
+            Route::get('/', [FieldsController::class, 'index']);
+            Route::middleware(RequireAdminChanges::class)->get('edit', [FieldsController::class, 'edit']);
+            Route::get('edit/{fieldId}', [FieldsController::class, 'edit'])->whereNumber('fieldId');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [FieldsController::class, 'create']);
+                Route::post('/', [FieldsController::class, 'store']);
+                Route::delete('{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
+            });
+        });
 
         // General
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])
@@ -375,10 +389,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
 
         // Volumes
-        Route::get('settings/assets', [VolumesController::class, 'index']);
-        Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
-        Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
-        Route::middleware(RequireAdminChanges::class)->delete('settings/assets/volumes/{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
+        Route::prefix('settings/assets')->group(function () {
+            Route::get('/', [VolumesController::class, 'index']);
+
+            Route::prefix('volumes')->group(function () {
+                Route::middleware(RequireAdminChanges::class)->get('new', [VolumesController::class, 'create']);
+                Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+
+                Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
+                    Route::post('/', [VolumesController::class, 'save']);
+                });
+            });
+        });
 
         // Transforms
         Route::prefix('settings/assets/transforms')->name('settings.assets.transforms.')->group(function () {

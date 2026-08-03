@@ -123,25 +123,42 @@
       :key="source.type === 'heading' ? source.heading : source.key"
     >
       <template v-if="source.type === 'heading'">
-        <craft-nav-item initial-state="open">
-          <span class="text-xs font-bold" v-if="source.heading">
-            {{ source.heading }}
-          </span>
-          <div slot="subnav">
-            <craft-nav-item
-              v-for="child in source.children"
-              :key="child.key"
-              :href="sourceUrl(child.key)"
-              :active="child.key === activeKey"
-              :data-group="source.heading"
-              v-bind="sourceMoveAttrs(child)"
-              @mousedown.exact="prefetchSource(child.key)"
-              @click.exact.prevent="visitSource(child.key)"
-            >
-              {{ child.label }}
-            </craft-nav-item>
-          </div>
-        </craft-nav-item>
+        <template v-if="!!source.heading">
+          <craft-nav-item initial-state="open">
+            <span class="text-xs font-bold" v-if="source.heading">
+              {{ source.heading }}
+            </span>
+            <craft-nav-list slot="subnav">
+              <craft-nav-item
+                v-for="child in source.children"
+                :key="child.key"
+                :href="sourceUrl(child.key)"
+                :active="child.key === activeKey"
+                :data-group="source.heading"
+                v-bind="sourceMoveAttrs(child)"
+                @mousedown.exact="prefetchSource(child.key)"
+                @click.exact.prevent="visitSource(child.key)"
+              >
+                {{ child.label }}
+              </craft-nav-item>
+            </craft-nav-list>
+          </craft-nav-item>
+        </template>
+        <template v-else>
+          <span>&nbsp;</span>
+          <craft-nav-item
+            v-for="child in source.children"
+            :key="child.key"
+            :href="sourceUrl(child.key)"
+            :active="child.key === activeKey"
+            :data-group="source.heading"
+            v-bind="sourceMoveAttrs(child)"
+            @mousedown.exact="prefetchSource(child.key)"
+            @click.exact.prevent="visitSource(child.key)"
+          >
+            {{ child.label }}
+          </craft-nav-item>
+        </template>
       </template>
       <template v-else>
         <craft-nav-item
