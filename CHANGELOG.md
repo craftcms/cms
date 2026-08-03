@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added support for `.well-known/passkey-endpoints` requests. ([#19364](https://github.com/craftcms/cms/pull/19364))
 - Fixed a bug where image transforms could be generated from a stale locally-cached copy of an asset’s source file, after the file was replaced on a non-local filesystem. ([#19328](https://github.com/craftcms/cms/issues/19328))
 - Fixed a bug where warnings were getting logged for SSO attributes that mapped to native user properties. ([#19294](https://github.com/craftcms/cms/pull/19294))
 - Fixed an error that could occur when applying a draft. ([#19277](https://github.com/craftcms/cms/issues/19277))
