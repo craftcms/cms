@@ -2039,6 +2039,11 @@ JS, [
         };
     }
 
+    /**
+     * Special method that can be used to import data into a container-type attribute.
+     * It handles normalizing value for import and saving the data.
+     * It returns indication of whether it changed any pre-existing data.
+     */
     public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
     {
         // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,

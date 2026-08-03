@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Transformers\ElementTransformer;
+use CraftCms\Cms\Support\Attributes\Importable as ImportableAttribute;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -111,12 +112,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s title
      */
     #[AllowedInSandbox]
+    // importing is handled via native field
     public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('slug', 'Slug')]
     public ?string $slug = null;
 
     /**

@@ -37,7 +37,7 @@ class ElementImporter extends BaseImporter
     /**
      * Calls the parent constructor then sets default match criteria to `['id' => 'id']`.
      *
-     * @param array|null $config Optional config array, potentially containing a `uid` key.
+     * @param  array|null  $config  Optional config array, potentially containing a `uid` key.
      */
     public function __construct(?array $config = null)
     {
@@ -101,11 +101,10 @@ class ElementImporter extends BaseImporter
     /**
      * Validates that the given class name is a known importable element type.
      *
-     * @param mixed $value The value of the element type being validated.
-     * @param string $attribute The name of the attribute being validated.
-     * @param Closure $fail The callback function to invoke when validation fails.
-     * @param Validator $validator The validator instance performing the validation.
-     * @return bool
+     * @param  mixed  $value  The value of the element type being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
      */
     public static function validateElementType(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
@@ -130,11 +129,10 @@ class ElementImporter extends BaseImporter
     /**
      * Validates that the given handle matches a known site.
      *
-     * @param mixed $value The value of the site handle being validated.
-     * @param string $attribute The name of the attribute being validated.
-     * @param Closure $fail The callback function to invoke when validation fails.
-     * @param Validator $validator The validator instance performing the validation.
-     * @return bool
+     * @param  mixed  $value  The value of the site handle being validated.
+     * @param  string  $attribute  The name of the attribute being validated.
+     * @param  Closure  $fail  The callback function to invoke when validation fails.
+     * @param  Validator  $validator  The validator instance performing the validation.
      */
     public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
     {
@@ -174,8 +172,6 @@ class ElementImporter extends BaseImporter
 
     /**
      * Convenience factory returning a new instance.
-     *
-     * @return self
      */
     public static function create(): self
     {
@@ -198,8 +194,7 @@ class ElementImporter extends BaseImporter
     /**
      * Resolves and sets the target site from a Site instance, id, handle, or uid (defaults to primary site if null).
      *
-     * @param string|int|Site|null $site The site instance, ID, handle, uid, or null.
-     * @return self
+     * @param  string|int|Site|null  $site  The site instance, ID, handle, uid, or null.
      */
     public function site(string|int|Site|null $site): self
     {
@@ -226,8 +221,7 @@ class ElementImporter extends BaseImporter
     /**
      * Resolves and sets the field layout UID/type from a FieldLayout instance, id, or uid/type string.
      *
-     * @param string|int|FieldLayout|null $value The field layout instance, ID, uid, type, or null.
-     * @return self
+     * @param  string|int|FieldLayout|null  $value  The field layout instance, ID, uid, type, or null.
      */
     public function fieldLayout(string|int|FieldLayout|null $value): self
     {
@@ -270,8 +264,6 @@ class ElementImporter extends BaseImporter
 
     /**
      * Returns whether the current transformer is the default one for the element type.
-     *
-     * @return bool
      */
     public function usesDefaultTransformer(): bool
     {
@@ -294,8 +286,6 @@ class ElementImporter extends BaseImporter
     /**
      * Builds a select-option list of field layout providers for the element class (singular or multiple layouts).
      * The list of field layout providers as label/value pairs.
-     *
-     * @return array
      */
     public function getAvailableFieldLayoutProviders(): array
     {
@@ -398,7 +388,7 @@ class ElementImporter extends BaseImporter
         // or, we add a setting to the config that allows you to choose if you want the data validated on import and its on by default?
         // -----
         // and validation scenario is "live"
-        //$element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        // $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         // }
 
         $item = Import::processData($this, $data, $element);
@@ -407,21 +397,32 @@ class ElementImporter extends BaseImporter
         $attributeHandles = $element->attributes();
         // $fieldHandles has custom and native fields - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles);
+
+        // get a list of container properties
+        $containerProps = ImportHelper::getImportableContainerProperties($this);
+        // and deduce attributes from those
+        $containerAttributes = empty($containerProps) ? [] : array_map(fn ($prop) => $prop['name'], $containerProps);
+
+        // exclude container attributes from field handles
+        $fieldHandles = empty($containerAttributes) ? $fieldHandles : array_diff($fieldHandles, $containerAttributes);
+
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
 
-        $element->setAttributesForImport($attributes);
+        if (! empty($attributes)) {
+            $element->setAttributesForImport($attributes);
+        }
 
         // todo (iwona): make the match criteria work for nested elements too!
-        $fields = $this->normalizeFields($element, $fields);
+        if (! empty($fields)) {
+            $fields = $this->normalizeFields($element, $fields);
+            $element->setFieldValues($fields);
+        }
 
-        $element->setFieldValues($fields);
-
-        // now get attributes that are containers - those need special processing
-        $containerAttributes = ImportHelper::getImportableContainerProperties($this);
-        foreach ($containerAttributes as $attribute) {
-            if (isset($item[$attribute['name']]) && method_exists($element, 'importIntoContainerAttribute')) {
-                $element->importIntoContainerAttribute($attribute, $item, $this);
+        // attributes that are containers need special processing
+        foreach ($containerProps as $prop) {
+            if (isset($item[$prop['name']]) && method_exists($element, 'importIntoContainerAttribute')) {
+                $element->importIntoContainerAttribute($prop, $item, $this);
             }
         }
 
