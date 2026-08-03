@@ -103,7 +103,7 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
             $buttons[] = Button::make()
                 ->label($option['label'] ?? null)
                 ->icon($option['icon'] ?? null)
-                ->appearance('outline')
+                ->variant('outline')
                 ->active($selected)
                 ->disabled($static)
                 ->attributes(Arr::merge([

@@ -1,5 +1,5 @@
 import {attrs} from './attrs.js';
-import {describe, expect, test} from 'vitest';
+import {describe, expect, test} from 'vite-plus/test';
 
 describe('attrs', () => {
   test('returns an empty object for undefined input', () => {

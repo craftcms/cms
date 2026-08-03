@@ -79,6 +79,32 @@ export const WithChildren: Story = {
   },
 };
 
+/**
+ * `group` renders the item as a non-collapsible semantic grouping: no
+ * disclosure toggle, and the subnav stays open. Contrast with `WithChildren`,
+ * which collapses. A `group` heading has no `href`, so it renders as a plain
+ * `<span>` rather than a link.
+ */
+export const Group: Story = {
+  args: {},
+  render(args) {
+    return html`
+      <craft-nav-list style="max-width: 300px">
+        <craft-nav-item group>
+          Account Security
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="#password" active
+              >Password &amp; Verification</craft-nav-item
+            >
+            <craft-nav-item href="#passkeys">Passkeys</craft-nav-item>
+            <craft-nav-item href="#providers">Sign-in Providers</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
 /** Toggle rendered in the prefix instead of the suffix. */
 export const TogglePositionPrefix: Story = {
   args: {},

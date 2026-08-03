@@ -1,4 +1,5 @@
 import {css} from 'lit';
+
 export default css`
   :host {
     /* Necessary to use variables here to override the default active style specificity */
@@ -60,14 +61,60 @@ export default css`
     );
   }
 
-  :host(:focus:not([disabled])),
-  :host(:focus-visible) {
-    outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
-    outline-offset: var(--c-focus-outline-offset);
+  /*
+  Color palette per variant.
+  The single 'variant' axis picks both a palette and an appearance. Here we map
+  the generic --c-color-* props to a palette; 'primary' uses accent, 'danger'
+  uses danger, everything else uses neutral, and 'inherit' sets nothing so it
+  adopts the parent's theme.
+  */
+  /*
+    Neutral variants use the neutral palette by default. With [inherit] we skip
+    this override so the ambient --c-color-* (set by a colorable ancestor) flows
+    through instead. primary/danger set their palettes unconditionally below, so
+    they are unaffected by [inherit].
+  */
+  :host([variant~='solid']:not([inherit])),
+  :host([variant~='fill']:not([inherit])),
+  :host([variant~='outline']:not([inherit])),
+  :host([variant~='dashed']:not([inherit])),
+  :host([variant~='plain']:not([inherit])),
+  :host([variant~='link']:not([inherit])),
+  :host([variant~='none']:not([inherit])) {
+    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+    --c-color-border-loud: var(--c-color-neutral-border-loud);
+    --c-color-border-normal: var(--c-color-neutral-border-normal);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-on-loud: var(--c-color-neutral-on-loud);
+    --c-color-on-normal: var(--c-color-neutral-on-normal);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
   }
 
-  :host(:focus-visible) {
-    --_focus-outline-color: var(--c-color-focus-outline);
+  :host([variant~='primary']) {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+  }
+
+  :host([variant~='danger-plain']),
+  :host([variant~='danger']) {
+    --c-color-fill-loud: var(--c-color-danger-fill-loud);
+    --c-color-fill-normal: var(--c-color-danger-fill-normal);
+    --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
+    --c-color-border-loud: var(--c-color-danger-border-loud);
+    --c-color-border-normal: var(--c-color-danger-border-normal);
+    --c-color-border-quiet: var(--c-color-danger-border-quiet);
+    --c-color-on-loud: var(--c-color-danger-on-loud);
+    --c-color-on-normal: var(--c-color-danger-on-normal);
+    --c-color-on-quiet: var(--c-color-danger-on-quiet);
   }
 
   @media (hover: hover) {
@@ -80,6 +127,16 @@ export default css`
     }
   }
 
+  :host(:focus:not([disabled])),
+  :host(:focus-visible) {
+    outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
+  :host(:focus-visible) {
+    --_focus-outline-color: var(--c-color-focus-outline);
+  }
+
   :host(:not(:disabled):not(.loading):active),
   :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
@@ -87,10 +144,11 @@ export default css`
     box-shadow: inset 0 1px 3px var(--c-color-mix-active);
   }
 
+  /* Selected state (e.g. inside a radio button-group): show the loud fill. */
   :host(:not(:disabled):not(.loading)[active]),
   :host(.is-active:not(:disabled):not(.loading)) {
-    color: var(--c-color-on-loud);
     background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
     border-color: var(--c-color-border-loud);
   }
 
@@ -152,20 +210,132 @@ export default css`
   }
 
   /*
-  Appearances
+  Variants (appearance × palette)
    */
 
-  /* Inline */
-  :host([appearance~='inline']) {
-    display: inline;
+  /* Solid — primary, danger, and solid are filled with the loud color. */
+  :host([variant~='primary']),
+  :host([variant~='danger']),
+  :host([variant~='solid']) {
+    background-color: var(
+      --c-color-fill-loud,
+      var(--c-color-neutral-fill-loud)
+    );
+    border-color: transparent;
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+  }
+
+  :host([variant~='primary']:hover),
+  :host([variant~='danger']:hover),
+  :host([variant~='solid']:hover) {
+    background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 5)
+    );
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+  }
+
+  :host([variant~='primary']:active),
+  :host([variant~='danger']:active),
+  :host([variant~='solid']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+  }
+
+  /* Fill (default) — neutral normal fill. */
+  :host([variant~='fill']) {
+    border-color: transparent;
+    background-color: var(
+      --c-color-fill-normal,
+      var(--c-color-neutral-fill-normal)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  }
+
+  :host([variant~='fill']:hover) {
+    background-color: hsl(
+      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 5)
+    );
+    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  }
+
+  :host([variant~='fill']:active) {
+    --_active-background-color: hsl(
+      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+        calc(l - 10)
+    );
+    --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  }
+
+  /* Outline, Dashed & Plain — transparent fill. */
+  :host([variant~='outline']),
+  :host([variant~='dashed']),
+  :host([variant~='danger-plain']),
+  :host([variant~='plain']) {
+    background-color: transparent;
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([variant~='outline']:not(:disabled):not(.loading):hover),
+  :host([variant~='dashed']:not(:disabled):not(.loading):hover),
+  :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
+  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-hover)
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([variant~='outline']:not(:disabled):not(.loading):active),
+  :host([variant~='dashed']:not(:disabled):not(.loading):active),
+  :host([variant~='danger-plain']:not(:disabled):not(.loading):active),
+  :host([variant~='plain']:not(:disabled):not(.loading):active) {
+    --_active-background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-mix-active)
+    );
+    --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  }
+
+  /* Outline & Dashed — visible border. */
+  :host([variant~='outline']),
+  :host([variant~='dashed']) {
+    border-color: var(--c-color-border-loud);
+  }
+
+  :host([variant~='dashed']) {
+    --c-button-border-style: dashed;
+  }
+
+  /* Plain — no border. */
+  :host([variant~='danger-plain']),
+  :host([variant~='plain']) {
+    border-color: transparent;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  /* Link — renders as a text hyperlink: no fill or border, underlined. */
+  :host([variant~='link']) {
+    display: inline-flex;
     appearance: none;
     background-color: transparent;
-    border-color: currentColor;
-    color: inherit;
+    border-color: transparent;
+    color: var(--c-color-fill-loud, var(--c-color-neutral-fill-loud));
     font: inherit;
     padding: 0;
     min-height: auto;
     min-width: auto;
+    text-decoration: underline;
 
     &::before {
       /* remove the sizer added by lion */
@@ -177,160 +347,44 @@ export default css`
     }
   }
 
-  :host([appearance='inline']:not(:disabled):not(.loading):hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-button-default-fill)),
-      var(--c-color-mix-hover)
-    );
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance='inline']:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
-    );
-  }
-
-  :host([appearance='inline'][active]) {
-    background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
-    );
-    border-color: var(
-      --c-color-border-normal,
-      var(--c-color-neutral-border-normal)
-    );
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
-    box-shadow: none;
-  }
-
-  /* Plain & Outline (Shared) */
-  :host([appearance~='plain']),
-  :host([appearance~='outline']) {
+  :host([variant~='link']:not(:disabled):not(.loading):hover) {
     background-color: transparent;
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance~='plain']:hover),
-  :host([appearance~='outline']:hover) {
-    background-color: hsl(
-      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
-        calc(l - 5)
+    color: hsl(
+      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
+        calc(l - 10)
     );
+    text-decoration: none;
   }
 
-  :host([appearance~='plain']:active),
-  :host([appearance~='outline']:active) {
-    --_active-background-color: hsl(
-      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
-        calc(l - 8)
-    );
-    --_active-color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  :host([variant~='link']:not(:disabled):not(.loading):active) {
+    background-color: transparent;
   }
 
-  :host([appearance~='plain'][active]),
-  :host([appearance~='outline'][active]) {
-    background-color: var(--c-color-fill-loud);
-    color: var(--c-color-on-loud);
-    border-color: var(--c-color-border-loud);
-  }
-
-  /* Plain */
-  :host([appearance~='plain']) {
+  /* None — completely unstyled; provides behavior only. */
+  :host([variant~='none']) {
+    appearance: none;
+    background-color: transparent;
     border-color: transparent;
+    border-width: 0;
     color: inherit;
+    font: inherit;
+    padding: 0;
+    min-height: auto;
+    min-width: auto;
 
-    &:before {
+    &::before {
       display: none;
+    }
+
+    .button-content {
+      padding: 0;
     }
   }
 
-  :host([appearance='plain']:not(:disabled):not(.loading):hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-button-default-fill)),
-      var(--c-color-mix-hover)
-    );
-    color: var(--c-color-on-quiet);
-  }
-
-  :host([appearance='plain']:not(:disabled):not(.loading):active) {
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
-    );
-  }
-
-  :host([appearance='plain'][active]) {
-    background-color: var(--c-color-fill-normal);
-    border-color: var(--c-color-border-normal);
-    color: var(--c-color-on-normal);
-    box-shadow: none;
-  }
-
-  /* Outline */
-  :host([appearance='outline']) {
-    border-color: var(--c-color-border-loud);
-  }
-
-  /* Solid */
-  :host([appearance~='solid']) {
-    background-color: var(
-      --c-color-fill-loud,
-      var(--c-color-neutral-fill-loud)
-    );
-    border-color: transparent;
-    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
-  }
-
-  :host([appearance='solid']:hover) {
-    background-color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
-        calc(l - 5)
-    );
-    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
-  }
-
-  :host([appearance='solid']:active) {
-    --_active-background-color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
-        calc(l - 10)
-    );
-    --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
-  }
-
-  /* Fill */
-  :host([appearance~='fill']) {
-    border-color: transparent;
-    background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
-    );
-    border-color: transparent;
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
-  }
-
-  :host([appearance='fill']:hover) {
-    background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
-        calc(l - 5)
-    );
-    color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
-  }
-
-  :host([appearance='fill'][active]),
-  :host([appearance='fill']:active) {
-    --_active-background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
-        calc(l - 10)
-    );
-    --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
+  :host([variant~='none']:hover),
+  :host([variant~='none']:active) {
+    background-color: transparent;
+    color: inherit;
   }
 
   .button-content {
@@ -354,16 +408,6 @@ export default css`
 
   .button-content--end {
     justify-content: end;
-  }
-
-  craft-button-group craft-button {
-    border-radius: 0;
-  }
-
-  craft-button-reset,
-  craft-button-submit {
-    /* Temporarily make it very obvious when these are used */
-    outline: 10px solid var(--c-button-danger-border);
   }
 
   .a11y-error {

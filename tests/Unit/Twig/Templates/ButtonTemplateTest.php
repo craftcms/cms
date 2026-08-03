@@ -49,14 +49,14 @@ it('renders the web component from the legacy buttonGroup variables', function (
         ->toContainTag('craft-button', [
             'data-value' => 'left',
             'type' => 'button',
-            'appearance' => 'outline',
+            'variant' => 'outline',
             'active' => 'true',
             'aria-pressed' => 'true',
         ])
         ->toContainTag('craft-button', [
             'data-value' => 'right',
             'type' => 'button',
-            'appearance' => 'outline',
+            'variant' => 'outline',
             'aria-pressed' => 'false',
         ])
         ->and($html)->not->toContainTag('input', ['type' => 'hidden']);

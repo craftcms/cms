@@ -21,7 +21,7 @@
         <craft-button
             type="button"
             class="w-full fld-add-btn mt-2"
-            appearance="outline"
+            variant="outline"
             size="small"
             command="--add-field"
             @disabled($disabled)

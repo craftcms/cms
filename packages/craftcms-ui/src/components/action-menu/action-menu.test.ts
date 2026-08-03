@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftActionMenu from './action-menu.js';
 import type CraftActionItem from '../action-item/action-item.js';
 import type {ActionMenuItem} from './action-menu.types.js';

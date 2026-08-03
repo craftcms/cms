@@ -120,7 +120,7 @@ export class FormObserver extends Base {
         }
         // falls through — matches the legacy switch (e.g. a `class` change)
       }
-      // eslint-disable-next-line no-fallthrough
+      // oxlint-disable-next-line no-fallthrough
       case 'characterData':
         // maybe a <textarea> change
         return (

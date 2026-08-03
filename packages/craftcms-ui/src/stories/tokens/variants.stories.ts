@@ -8,10 +8,9 @@ import '../../components/indicator/indicator.js';
 
 import {appearances} from '@src/constants/appearances';
 import {variants} from '@src/constants/variants';
-import {ButtonVariant, ButtonAppearance} from '@src/components/button/button';
+import {ButtonVariant} from '@src/components/button/button';
 
 const buttonVariants = Object.values(ButtonVariant);
-const buttonAppearances = Object.values(ButtonAppearance);
 
 const meta: Meta = {
   title: 'Tokens/Variants & Appearances',
@@ -64,42 +63,20 @@ export const CalloutMatrix: Story = {
 };
 
 /**
- * Buttons use their own variant subset (accent, neutral, danger)
- * and appearance subset (solid, outline, plain).
+ * Buttons use a single `variant` axis (primary, danger, solid, fill, outline,
+ * dashed, plain, link, none — plus inherit).
  */
 export const ButtonMatrix: Story = {
   name: 'Button Matrix',
   render: () => html`
     <div class="stage">
-      <table class="cp-table cp-table--padded">
-        <thead>
-          <tr>
-            <th>variant</th>
-            ${buttonAppearances.map((a) => html`<th>${a}</th>`)}
-          </tr>
-        </thead>
-        <tbody>
-          ${buttonVariants.map(
-            (variant) => html`
-              <tr>
-                <td><strong>${variant}</strong></td>
-                ${buttonAppearances.map(
-                  (appearance) => html`
-                    <td>
-                      <craft-button
-                        variant="${variant}"
-                        appearance="${appearance}"
-                      >
-                        ${variant}
-                      </craft-button>
-                    </td>
-                  `
-                )}
-              </tr>
-            `
-          )}
-        </tbody>
-      </table>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        ${buttonVariants.map(
+          (variant) => html`
+            <craft-button variant="${variant}">${variant}</craft-button>
+          `
+        )}
+      </div>
     </div>
   `,
 };

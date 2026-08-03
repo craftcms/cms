@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';

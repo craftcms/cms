@@ -69,7 +69,6 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -277,29 +276,20 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
         // Entry Types
-        Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryType?}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::get('entry-types/new', [EntryTypesController::class, 'create']);
-            Route::post('entry-types/save', [EntryTypesController::class, 'store']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
 
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
-            Route::post('fields/save-field', [FieldsController::class, 'store']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
-        });
-        Route::middleware([RequireAdmin::class])->group(function () {
-            Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
         // Matrix
@@ -356,13 +346,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
             Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
         });
-
-        // Sections
-        Route::get('sections/table-data', [SectionsController::class, 'tableData']);
-        Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
 
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);

@@ -350,8 +350,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 'type' => 'button',
                                 'icon' => 'x',
                                 'aria-label' => t('Remove'),
-                                'appearance' => 'plain',
-                                'variant' => 'danger',
+                                'variant' => 'danger-plain',
                                 'size' => 'small',
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
@@ -546,7 +545,7 @@ JS,
             'buttonAttributes' => Arr::merge([
                 'id' => $buttonId,
                 'type' => 'button',
-                'appearance' => 'fill',
+                'variant' => 'fill',
                 'autofocus' => $rule?->getAutofocus(),
             ], $buttonAttributes),
             'inputName' => $rule ? 'type' : 'new-rule-type',
