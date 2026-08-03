@@ -4,6 +4,7 @@
   import {
     appendBodyHtml,
     appendHeadHtml,
+    ButtonVariant,
     serializeFormInputs,
     t,
   } from '@craftcms/ui';
@@ -316,7 +317,7 @@
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        :variant="ButtonVariant.Dashed"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
@@ -368,7 +369,7 @@
     </craft-action-menu>
     <SlideoutButton
       v-if="!readOnly"
-      :url="create['/{cpTrigger?}/settings/entry-types/new']().url"
+      :url="create().url"
       @success="router.reload({only: ['entryTypes']})"
     >
       <craft-icon name="plus" slot="prefix"></craft-icon>

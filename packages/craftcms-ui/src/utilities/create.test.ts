@@ -53,13 +53,11 @@ describe('createButton', () => {
   it('supports the modern options', () => {
     const button = createButton({
       variant: 'danger',
-      appearance: 'outline',
       size: 'small',
       loading: true,
     });
 
     expect(button.variant).toBe('danger');
-    expect(button.appearance).toBe('outline');
     expect(button.size).toBe('small');
     expect(button.loading).toBe(true);
   });

@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -135,7 +134,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 Html::beginTag('craft-disclosure').
                 Button::make()
                     ->label(t('Advanced'))
-                    ->appearance(Appearance::Plain)
+                    ->variant('plain')
                     ->icon('chevron-down')
                     ->slot('invoker')
                     ->attributes([

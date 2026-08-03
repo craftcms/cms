@@ -48,7 +48,7 @@
 
         <slot></slot>
         <template #secondary-action>
-          <craft-button type="reset" @click="emit('close')" appearance="plain">
+          <craft-button type="reset" @click="emit('close')" variant="plain">
             {{ resetLabel }}
           </craft-button>
         </template>

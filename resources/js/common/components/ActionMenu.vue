@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import type {ActionMenuItem} from '@craftcms/ui';
-  import {Appearance, t} from '@craftcms/ui';
+  import {type ActionMenuItem, ButtonVariant, t} from '@craftcms/ui';
   import {
     type Component,
     computed,
@@ -82,6 +81,20 @@
   onBeforeUnmount(() => {
     clearDisplayContainers();
   });
+
+  /**
+   `v-once` is load-bearing, not an optimization. `craft-action-menu` (Lion
+   `OverlayMixin`) imperatively relocates/restructures its own light DOM. If Vue
+   keeps the invoker in its reactive patch path, a later re-render patches the
+   invoker's slot fragment against DOM the element moved and throws "Cannot read
+   properties of null (reading 'insertBefore')". A passive wrapper isn't enough:
+   Vue's block optimization flattens dynamic descendants and patches them with
+   `craft-action-menu` as the container, bypassing the wrapper. `v-once` renders
+   the invoker exactly once and removes it from the block's dynamic children, so
+   Vue never re-patches the overlay-managed DOM. Invokers are static triggers
+   (an icon / avatar), so freezing them is safe. `inline-flex` keeps the wrapper
+   sized to the invoker so the overlay positions against a real box.
+   */
 </script>
 
 <template>
@@ -97,7 +110,7 @@
           size="small"
           icon="ellipsis"
           :aria-label="label"
-          :appearance="Appearance.Outline"
+          :variant="ButtonVariant.Plain"
         >
         </craft-button>
       </slot>

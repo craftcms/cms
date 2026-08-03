@@ -1,3 +1,8 @@
+import {
+  applyOverrideSettings,
+  renderOverrideSettings,
+} from '@actions/Settings/EntryTypesController';
+
 // `Craft` and `$` (jQuery) remain page globals. The entry-type override editor
 // is a still-jQuery `Craft.Slideout` orchestrating server-rendered settings
 // HTML, so the same legacy seams the rest of the manager leans on survive here
@@ -11,7 +16,7 @@ declare const $: any;
  * `Craft.EntryTypeSelectInput.createSettings`/`applySettings` onto the
  * web-component `<craft-component-select>` path. POSTs the chip's current
  * `{id, group, name?, handle?, description?}` JSON to
- * `entry-types/render-override-settings`, opens a `Craft.Slideout` with the
+ * the override-settings action route, opens a `Craft.Slideout` with the
  * returned settings form, and on submit applies the overrides back onto the
  * chip (label + indicators + hidden-input JSON) via {@link applyOverrides}.
  *
@@ -30,7 +35,7 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
   try {
     const response = await Craft.sendActionRequest(
       'POST',
-      'entry-types/render-override-settings',
+      renderOverrideSettings().url,
       {data: JSON.parse(input.value)}
     );
     data = response.data;
@@ -133,7 +138,7 @@ async function applyOverrides(
     try {
       const response = await Craft.sendActionRequest(
         'POST',
-        'entry-types/apply-override-settings',
+        applyOverrideSettings().url,
         {
           data: {
             id: chip.dataset.id,

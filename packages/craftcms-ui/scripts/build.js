@@ -58,6 +58,10 @@ async function generateBundle(config = {}) {
   } catch (error) {
     spinner.fail();
     console.error(error);
+
+    // Nothing was emitted, so the steps after this one would only inspect a
+    // stale dist. Abort the run instead of reporting success.
+    throw error;
   }
 
   spinner.succeed();
@@ -241,7 +245,7 @@ async function generateVueWrappers() {
 
 async function generateColors() {
   spinner.start('Generating Colors');
-  createColors();
+  await createColors();
   spinner.succeed();
   return Promise.resolve();
 }
@@ -265,8 +269,15 @@ async function buildAll() {
 
     spinner.succeed(`The build is complete`);
   } catch (error) {
-    spinner.fail();
+    spinner.fail('The build failed');
     console.error(error);
+
+    // In develop mode the watchers still start, so a bad edit can be fixed in
+    // place. A one-shot build has to exit non-zero or `build:all` will carry on
+    // into the legacy bundles and fail there with unresolvable imports instead.
+    if (!isDeveloping) {
+      process.exitCode = 1;
+    }
   }
 }
 

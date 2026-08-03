@@ -23,12 +23,17 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
-    useElementIndexSelection(() => props.table, {
-      selectable: () => props.selectable,
-      readOnly,
-      actions: () => [],
-    });
+  const {
+    onToggleAllSelected,
+    selectRow,
+    selectRowFromEvent,
+    toggleRow,
+    extendSelectionTo,
+  } = useElementIndexSelection(() => props.table, {
+    selectable: () => props.selectable,
+    readOnly,
+    actions: () => [],
+  });
 
   function rowFor(id: number | string) {
     return props.table.getRow(String(id));
@@ -106,6 +111,7 @@
         :key="element.id"
         :data-id="element.id"
         :tabindex="selectable ? 0 : undefined"
+        @click="selectRowFromEvent(rowFor(element.id), $event)"
         @keydown="onCardKeydown(element.id, cardIdx, $event)"
         :class="{element: true, sel: rowFor(element.id)?.getIsSelected()}"
       >

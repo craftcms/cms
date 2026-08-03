@@ -218,7 +218,7 @@ export default defineConfig(({mode}) => {
     staged: {
       'yii2-adapter/**/*.php':
         './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix',
-      '!(yii2-adapter)/**/*.php': './vendor/bin/rector && ./vendor/bin/pint',
+      '!(yii2-adapter)/**/*.php': ['./vendor/bin/rector', './vendor/bin/pint'],
       'yii2-adapter/**/*.scss':
         'stylelint --fix --allow-empty-input -c ./yii2-adapter/.stylelintrc.json',
       '!(yii2-adapter)/**/*.scss': 'stylelint --fix --allow-empty-input',

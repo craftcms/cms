@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import CpLink from '@/common/components/CpLink.vue';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
 
@@ -60,37 +59,40 @@
       <slot>
         <craft-nav-list v-if="items.length">
           <template v-for="(item, index) in items" :key="index">
-            <li v-if="item.subnav" class="nav-heading">
-              <span class="nav-heading-label">{{ item.label }}</span>
+            <template v-if="item.subnav">
+              <craft-nav-item
+                initial-state="open"
+                block
+                flush
+                :group="item.group"
+              >
+                <span class="text-xs font-bold">{{ item.label }}</span>
 
-              <craft-nav-list>
-                <template
-                  v-for="(subitem, subindex) in item.subnav"
-                  :key="subindex"
-                >
-                  <CpLink
-                    as="craft-nav-item"
+                <craft-nav-list slot="subnav">
+                  <craft-nav-item
+                    v-for="(subitem, subindex) in item.subnav"
+                    :key="subindex"
                     :active="subitem.selected"
                     :href="subitem.url"
                     block
                     flush
                   >
                     {{ subitem.label }}
-                  </CpLink>
-                </template>
-              </craft-nav-list>
-            </li>
+                  </craft-nav-item>
+                </craft-nav-list>
+              </craft-nav-item>
+            </template>
 
-            <CpLink
-              v-else
-              as="craft-nav-item"
-              :active="item.selected"
-              :href="item.url"
-              block
-              flush
-            >
-              {{ item.label }}
-            </CpLink>
+            <template v-else>
+              <craft-nav-item
+                :active="item.selected"
+                :href="item.url"
+                block
+                flush
+              >
+                {{ item.label }}
+              </craft-nav-item>
+            </template>
           </template>
         </craft-nav-list>
       </slot>
