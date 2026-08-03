@@ -10,7 +10,6 @@ use CraftCms\Cms\Cp\Components\TextInput;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
-use CraftCms\Cms\Cp\Forms\Data\PluginData;
 use CraftCms\Cms\Cp\Forms\Form;
 use CraftCms\Cms\Cp\Forms\FormElementTypes;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
@@ -19,10 +18,9 @@ beforeEach(function () {
     app()->forgetInstance(ComponentRegistry::class);
     app()->forgetInstance(FormElementTypes::class);
     app()->forgetInstance(TestPlugin::class);
-    app()->forgetInstance(OtherTestPlugin::class);
 });
 
-it('registers and projects a plugin CP UI Component with derived ownership', function () {
+it('registers and projects a plugin CP UI Component', function () {
     $plugin = TestPlugin::create([
         'handle' => 'color-tools',
         'name' => 'Color Tools',
@@ -47,11 +45,6 @@ it('registers and projects a plugin CP UI Component with derived ownership', fun
                     'type' => 'color-tools:color-map',
                     'name' => 'palette',
                     'props' => ['colors' => ['red', 'blue']],
-                    'plugin' => [
-                        'handle' => 'color-tools',
-                        'name' => 'Color Tools',
-                        'packageName' => 'vendor/color-tools',
-                    ],
                 ]],
             ]],
         ]);
@@ -136,34 +129,9 @@ it('allows an identical registration and rejects a different claimant', function
         ->toThrow(
             InvalidArgumentException::class,
             sprintf(
-                'Form Element Type "color-tools:color-map" is already registered by %s for plugin color-tools; %s for plugin color-tools cannot claim it.',
+                'Form Element Type "color-tools:color-map" is already registered by %s; %s cannot claim it.',
                 ColorMapComponent::class,
                 ConflictingColorMapComponent::class,
-            ),
-        );
-});
-
-it('rejects the same class when a different plugin claims it', function () {
-    $plugin = TestPlugin::create([
-        'handle' => 'color-tools',
-        'name' => 'Color Tools',
-        'packageName' => 'vendor/color-tools',
-    ]);
-    $otherPlugin = OtherTestPlugin::create([
-        'handle' => 'other-tools',
-        'name' => 'Other Tools',
-        'packageName' => 'vendor/other-tools',
-    ]);
-
-    $plugin->registerFormElementTypes(ColorMapComponent::class);
-
-    expect(fn () => $otherPlugin->registerFormElementTypes(ColorMapComponent::class))
-        ->toThrow(
-            InvalidArgumentException::class,
-            sprintf(
-                'already registered by %s for plugin color-tools; %s for plugin other-tools cannot claim it',
-                ColorMapComponent::class,
-                ColorMapComponent::class,
             ),
         );
 });
@@ -182,7 +150,7 @@ it('rejects projection through a type registered to another component class', fu
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf(
-            'Form Element Type "color-tools:color-map" is registered by %s for plugin color-tools; %s cannot project it.',
+            'Form Element Type "color-tools:color-map" is registered by %s; %s cannot project it.',
             ColorMapComponent::class,
             ConflictingColorMapComponent::class,
         ),
@@ -209,13 +177,13 @@ it('rejects a component that projects a type other than its declared type', func
     );
 });
 
-it('identifies Craft when a component class attempts to project a core type', function () {
+it('rejects a component class attempting to project a core type', function () {
     expect(fn () => Form::make([
         Field::make(CoreTextInputSubclass::make()->name('title')),
     ])->toArray())->toThrow(
         InvalidArgumentException::class,
         sprintf(
-            'Form Element Type "craft:text-input" is registered by %s for Craft; %s cannot project it.',
+            'Form Element Type "craft:text-input" is registered by %s; %s cannot project it.',
             TextInput::class,
             CoreTextInputSubclass::class,
         ),
@@ -243,18 +211,8 @@ it('projects registered plugin containers with children', function () {
                 'children' => [[
                     'type' => 'color-tools:color-map',
                     'name' => 'palette',
-                    'plugin' => [
-                        'handle' => 'color-tools',
-                        'name' => 'Color Tools',
-                        'packageName' => 'vendor/color-tools',
-                    ],
                 ]],
             ]],
-            'plugin' => [
-                'handle' => 'color-tools',
-                'name' => 'Color Tools',
-                'packageName' => 'vendor/color-tools',
-            ],
         ]],
     ]);
 });
@@ -275,23 +233,6 @@ it('reserves core types and rejects malformed or invalid component classes', fun
     'Form Element non-component' => [NonComponentFormElement::class, 'must extend'],
 ]);
 
-it('rejects incomplete plugin ownership metadata', function (array $config, string $message) {
-    $plugin = TestPlugin::create($config);
-
-    expect(fn () => $plugin->registerFormElementTypes(ColorMapComponent::class))
-        ->toThrow(InvalidArgumentException::class, $message);
-})->with([
-    'missing name' => [[
-        'handle' => 'color-tools',
-        'packageName' => 'vendor/color-tools',
-    ], 'must define its name and Composer package'],
-    'missing package' => [[
-        'handle' => 'color-tools',
-        'name' => 'Color Tools',
-        'packageName' => null,
-    ], 'must define its name and Composer package'],
-]);
-
 class ColorMapComponent extends ScalarInput
 {
     private array $colors = [];
@@ -306,20 +247,6 @@ class ColorMapComponent extends ScalarInput
         $this->colors = $colors;
 
         return $this;
-    }
-
-    #[Override]
-    public function toFormElementData(): FormElementData
-    {
-        $data = parent::toFormElementData();
-
-        return new FormElementData(
-            type: $data->type,
-            name: $data->name,
-            props: $data->props,
-            attributes: $data->attributes,
-            plugin: new PluginData('spoofed', 'Spoofed', 'spoofed/package'),
-        );
     }
 
     #[Override]
@@ -447,5 +374,3 @@ class PaletteGroupComponent extends FormContainer
         return 'color-tools-palette-box';
     }
 }
-
-class OtherTestPlugin extends TestPlugin {}

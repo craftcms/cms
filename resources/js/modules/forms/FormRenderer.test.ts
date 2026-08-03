@@ -75,11 +75,6 @@ describe('Form renderer', () => {
                 name: 'palette',
                 props: {colors: ['red', 'blue']},
                 attributes: {'data-setting': 'palette'},
-                plugin: {
-                  handle: 'color-tools',
-                  name: 'Color Tools',
-                  packageName: 'vendor/color-tools',
-                },
               },
             ],
           },
@@ -149,11 +144,6 @@ describe('Form renderer', () => {
               {
                 type: 'color-tools:color-map',
                 name: 'palette',
-                plugin: {
-                  handle: 'color-tools',
-                  name: 'Color Tools',
-                  packageName: 'vendor/color-tools',
-                },
               },
             ],
           },
@@ -254,7 +244,7 @@ describe('Form renderer', () => {
     expect(table.modelValue).toBe('Secondary');
   });
 
-  it('shows plugin ownership when its renderer is unavailable', () => {
+  it('shows the Form Element Type when its renderer is unavailable', () => {
     const registry = createCpComponentRegistry();
     const container = document.createElement('div');
 
@@ -269,11 +259,6 @@ describe('Form renderer', () => {
               {
                 type: 'color-tools:color-map',
                 name: 'palette',
-                plugin: {
-                  handle: 'color-tools',
-                  name: 'Color Tools',
-                  packageName: 'vendor/color-tools',
-                },
               },
             ],
           },
@@ -291,9 +276,6 @@ describe('Form renderer', () => {
       '[data-form-element-missing-renderer]'
     )!;
     expect(diagnostic.textContent).toContain('color-tools:color-map');
-    expect(diagnostic.textContent).toContain('Color Tools');
-    expect(diagnostic.textContent).toContain('color-tools');
-    expect(diagnostic.textContent).toContain('vendor/color-tools');
   });
 
   it('gives a plugin container its rendered children while retaining generic presentation state', async () => {
@@ -319,11 +301,6 @@ describe('Form renderer', () => {
             type: 'color-tools:palette-group',
             width: 50,
             visibleWhen: {name: 'enabled', operator: 'equals', value: true},
-            plugin: {
-              handle: 'color-tools',
-              name: 'Color Tools',
-              packageName: 'vendor/color-tools',
-            },
             children: form.elements,
           },
         ],
@@ -601,69 +578,7 @@ describe('Form renderer', () => {
     ).toBe(1);
   });
 
-  it('throws for an unavailable application renderer inside a plugin container', () => {
-    const registry = createCpComponentRegistry();
-    const container = document.createElement('div');
-    const pluginContainer = defineComponent({
-      inheritAttrs: false,
-      setup(_, {slots}) {
-        return () => h('section', slots.default?.());
-      },
-    });
-
-    registry.register('color-tools:palette-group', pluginContainer);
-    (window as any).Cp = {$formElements: registry};
-
-    expect(() =>
-      createApp(FormRenderer, {
-        form: {
-          elements: [
-            {
-              type: 'color-tools:palette-group',
-              plugin: {
-                handle: 'color-tools',
-                name: 'Color Tools',
-                packageName: 'vendor/color-tools',
-              },
-              children: [{type: 'application:control', name: 'setting'}],
-            },
-          ],
-        },
-        bindingScope: 'settings',
-        values: {settings: {setting: null}},
-        errors: {},
-      }).mount(container)
-    ).toThrow('Missing Form Element Renderer for application:control.');
-
-    expect(
-      container.querySelector('[data-form-element-failed-renderer]')
-    ).toBeNull();
-  });
-
-  it('throws when a core or application renderer is unavailable', () => {
-    const registry = createCpComponentRegistry();
-    const container = document.createElement('div');
-
-    (window as any).Cp = {$formElements: registry};
-
-    expect(() =>
-      createApp(FormRenderer, {
-        form: {
-          elements: [
-            {
-              type: 'craft:field',
-              children: [{type: 'application:control', name: 'setting'}],
-            },
-          ],
-        },
-        bindingScope: 'settings',
-        values: {settings: {setting: null}},
-        errors: {},
-      }).mount(container)
-    ).toThrow('Missing Form Element Renderer for application:control.');
-  });
-
-  it('distinguishes a failed registered renderer from a missing plugin', async () => {
+  it('distinguishes a failed registered renderer from a missing renderer', async () => {
     const registry = createCpComponentRegistry();
     const container = document.createElement('div');
     const failedRenderer = defineComponent({
@@ -684,11 +599,6 @@ describe('Form renderer', () => {
               {
                 type: 'color-tools:color-map',
                 name: 'palette',
-                plugin: {
-                  handle: 'color-tools',
-                  name: 'Color Tools',
-                  packageName: 'vendor/color-tools',
-                },
               },
             ],
           },
@@ -710,7 +620,6 @@ describe('Form renderer', () => {
       '[data-form-element-failed-renderer]'
     )!;
     expect(diagnostic.textContent).toContain('color-tools:color-map');
-    expect(diagnostic.textContent).toContain('Color Tools');
     expect(diagnostic.textContent).toContain('Renderer exploded.');
   });
 

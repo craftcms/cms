@@ -8,8 +8,6 @@ use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\Cp\Forms\Contracts\FormElement;
 use CraftCms\Cms\Cp\Forms\Data\FormElementData;
-use CraftCms\Cms\Cp\Forms\Data\PluginData;
-use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
 
@@ -20,7 +18,6 @@ class FormElementTypes
      * @var array<string, array{
      *     class: class-string<ViewComponent&FormElement>,
      *     container: bool,
-     *     plugin: PluginData|null,
      * }>
      */
     private array $registrations;
@@ -57,38 +54,14 @@ class FormElementTypes
                 'class' => $class,
                 'container' => $class::isFormElementContainer(),
             ];
-            $this->registrations[$type] = [
-                ...$this->nativeRegistrations[$type],
-                'plugin' => null,
-            ];
+            $this->registrations[$type] = $this->nativeRegistrations[$type];
         }
     }
 
     /** @param class-string<ViewComponent&FormElement> ...$classes */
     public function register(string ...$classes): void
     {
-        $this->registerBatch(null, ...$classes);
-    }
-
-    /**
-     * @internal Plugins should call Plugin::registerFormElementTypes().
-     *
-     * @param  class-string<ViewComponent&FormElement>  ...$classes
-     */
-    public function registerForPlugin(PluginInterface $plugin, string ...$classes): void
-    {
-        if ($plugin->name === null || $plugin->packageName === null) {
-            throw new InvalidArgumentException("Plugin {$plugin->handle} must define its name and Composer package before registering Form Elements.");
-        }
-
-        $this->registerBatch(
-            new PluginData(
-                handle: $plugin->handle,
-                name: $plugin->name,
-                packageName: $plugin->packageName,
-            ),
-            ...$classes,
-        );
+        $this->registerBatch(...$classes);
     }
 
     /**
@@ -102,11 +75,6 @@ class FormElementTypes
     public function nativeRegistrations(): array
     {
         return $this->nativeRegistrations;
-    }
-
-    public function ownership(string $type): ?PluginData
-    {
-        return $this->registrations[$type]['plugin'] ?? null;
     }
 
     public function isRegistered(string $type): bool
@@ -135,10 +103,9 @@ class FormElementTypes
 
         if ($registration['class'] !== $class) {
             throw new InvalidArgumentException(sprintf(
-                'Form Element Type "%s" is registered by %s%s; %s cannot project it.',
+                'Form Element Type "%s" is registered by %s; %s cannot project it.',
                 $type,
                 $registration['class'],
-                $this->ownerLabel($type, $registration['plugin']),
                 $class,
             ));
         }
@@ -158,7 +125,7 @@ class FormElementTypes
     }
 
     /** @param class-string<ViewComponent&FormElement> ...$classes */
-    private function registerBatch(?PluginData $plugin, string ...$classes): void
+    private function registerBatch(string ...$classes): void
     {
         $registrations = $this->registrations;
 
@@ -188,26 +155,19 @@ class FormElementTypes
             $registration = [
                 'class' => $class,
                 'container' => $class::isFormElementContainer(),
-                'plugin' => $plugin,
             ];
             $existing = $registrations[$type] ?? null;
 
-            if (
-                $existing !== null
-                && $existing['class'] === $class
-                && ($existing['plugin']?->equals($plugin) ?? $plugin === null)
-            ) {
+            if ($existing !== null && $existing['class'] === $class) {
                 continue;
             }
 
             if ($existing !== null) {
                 throw new InvalidArgumentException(sprintf(
-                    'Form Element Type "%s" is already registered by %s%s; %s%s cannot claim it.',
+                    'Form Element Type "%s" is already registered by %s; %s cannot claim it.',
                     $type,
                     $existing['class'],
-                    $this->ownerLabel($type, $existing['plugin']),
                     $class,
-                    $this->ownerLabel($type, $plugin),
                 ));
             }
 
@@ -215,14 +175,5 @@ class FormElementTypes
         }
 
         $this->registrations = $registrations;
-    }
-
-    private function ownerLabel(string $type, ?PluginData $plugin): string
-    {
-        return match (true) {
-            $plugin !== null => " for plugin {$plugin->handle}",
-            str_starts_with($type, 'craft:') => ' for Craft',
-            default => ' for the application',
-        };
     }
 }

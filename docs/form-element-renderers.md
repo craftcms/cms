@@ -64,7 +64,7 @@ Register the component from your plugin:
 $this->registerFormElementTypes(ColorMap::class);
 ```
 
-Craft records the plugin as the type’s owner and rejects conflicting registrations.
+Craft rejects conflicting registrations for the same Form Element Type.
 
 ## Register the Vue renderer
 
@@ -145,7 +145,7 @@ Container components can extend `FormContainer`. Craft passes their rendered chi
 
 ## Missing renderers
 
-If a plugin-owned renderer is unavailable, Craft displays the Form Element Type and plugin ownership details. If a registered renderer throws, Craft displays a separate failed-renderer diagnostic.
+If a renderer is unavailable, Craft displays the Form Element Type. If a registered renderer throws, Craft displays a separate failed-renderer diagnostic.
 
 ## Legacy settings
 

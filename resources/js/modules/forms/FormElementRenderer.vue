@@ -31,52 +31,27 @@
       return null;
     }
 
-    const component = window.Cp.$formElements.resolve(props.element.type);
-
-    if (!component && !props.element.plugin) {
-      throw new Error(
-        `Missing Form Element Renderer for ${props.element.type}.`
-      );
-    }
-
-    return component;
+    return window.Cp.$formElements.resolve(props.element.type);
   });
   const rendererFailure = ref<Error>();
   const missingRenderer = computed(
     () => !isSharedContainer(props.element.type) && !renderer.value
   );
-  const missingRendererMessage = computed(() => {
-    const plugin = props.element.plugin!;
-
-    return t(
-      'Missing Form Element Renderer for {type} from {name} ({handle}, {packageName}). Ensure the plugin is enabled and its control-panel assets are available.',
+  const missingRendererMessage = computed(() =>
+    t(
+      'Missing Form Element Renderer for {type}. Ensure its control-panel assets are available.',
+      {type: props.element.type}
+    )
+  );
+  const failedRendererMessage = computed(() =>
+    t(
+      'Form Element Renderer {type} failed: {message} Check the renderer implementation.',
       {
         type: props.element.type,
-        name: plugin.name,
-        handle: plugin.handle,
-        packageName: plugin.packageName,
-      }
-    );
-  });
-  const failedRendererMessage = computed(() => {
-    const plugin = props.element.plugin;
-    const context = plugin
-      ? ` ${t('for {name} ({handle}, {packageName})', {
-          name: plugin.name,
-          handle: plugin.handle,
-          packageName: plugin.packageName,
-        })}`
-      : '';
-
-    return t(
-      'Form Element Renderer {type} failed{context}: {message} Check the renderer implementation.',
-      {
-        type: props.element.type,
-        context,
         message: rendererFailure.value?.message,
       }
-    );
-  });
+    )
+  );
 
   onErrorCaptured((error) => {
     if (props.element.type === 'craft:field' || !renderer.value) {

@@ -17,6 +17,6 @@ trait HasFormElementTypes
     /** @param class-string<ViewComponent&FormElement> ...$classes */
     public function registerFormElementTypes(string ...$classes): void
     {
-        $this->app->make(FormElementTypes::class)->registerForPlugin($this, ...$classes);
+        $this->app->make(FormElementTypes::class)->register(...$classes);
     }
 }

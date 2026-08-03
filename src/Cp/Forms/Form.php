@@ -71,9 +71,7 @@ readonly class Form implements FormDefinition, JsonSerializable
     {
         $types = app(FormElementTypes::class);
         $data = new FormPayload(array_map(
-            fn (FormElement $element): FormElementData => $types
-                ->project($element)
-                ->withPluginOwnership($types->ownership(...)),
+            $types->project(...),
             $this->elements,
         ));
 
