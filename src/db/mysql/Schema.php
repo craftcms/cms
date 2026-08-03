@@ -544,11 +544,13 @@ SQL;
         ];
 
         $contents = '';
-        foreach (preg_split('/\s+/', $shellCommand->getOutput()) as $token) {
-            if (!str_starts_with($token, '--') || !str_contains($token, '=')) {
+        $output = trim($shellCommand->getOutput());
+        foreach (str_getcsv($output, ' ') as $token) {
+            if ($token === '' || !str_starts_with($token, '--') || !str_contains($token, '=')) {
                 continue;
             }
             [$key, $value] = explode('=', substr($token, 2), 2);
+            $value = trim($value, "\"'");
             if (isset($directives[$key])) {
                 $contents .= PHP_EOL . $directives[$key] . '=' . $value;
             }
