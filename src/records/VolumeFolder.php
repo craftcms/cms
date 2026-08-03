@@ -15,7 +15,7 @@ use yii\db\ActiveQueryInterface;
  * Class VolumeFolder record.
  *
  * @property int $id ID
- * @property int $parentId Parent ID
+ * @property int|null $parentId Parent ID
  * @property int $volumeId Volume ID
  * @property string $name Name
  * @property string $path Path
