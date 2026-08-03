@@ -11,5 +11,6 @@
 - The `$params` argument of `craft\helpers\UrlHelper::url()` now accepts `false` to remove all params from the passed-in URL. ([#19102](https://github.com/craftcms/cms/pull/19102))
 
 ### System
+- Added support for `.well-known/passkey-endpoints` requests. ([#19364](https://github.com/craftcms/cms/pull/19364))
 - Updated Twig to 3.28.
 - Updated yii2-debug to 2.1.28.
