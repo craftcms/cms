@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
 ### Administration
+- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - The `loginPath` config setting is now `false` by default.

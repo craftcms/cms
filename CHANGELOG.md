@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory.
+- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
