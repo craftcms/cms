@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
+use Override;
 use Stringable;
 
 /**
@@ -35,13 +35,13 @@ class InputCopy extends Input
      * Value sent to the clipboard when the copy button is clicked. When
      * omitted, the displayed value is used instead.
      */
-    protected string|int|float|Stringable|Closure|null $copyValue = null;
+    protected string|int|float|Stringable|null $copyValue = null;
 
     /** The copy field is always read-only. */
-    #[\Override]
-    protected bool|Closure $readOnly = true;
+    #[Override]
+    protected bool $readOnly = true;
 
-    #[\Override]
+    #[Override]
     protected function tagName(): string
     {
         return 'craft-input-copy';
@@ -51,21 +51,19 @@ class InputCopy extends Input
      * Value sent to the clipboard when the copy button is clicked. When
      * omitted, the displayed value is copied instead.
      */
-    public function copyValue(string|int|float|Stringable|Closure|null $copyValue): static
+    public function copyValue(string|int|float|Stringable|null $copyValue): static
     {
         $this->copyValue = $copyValue;
 
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     protected function hostAttributes(): array
     {
-        $copyValue = $this->evaluate($this->copyValue);
-
         return [
             ...parent::hostAttributes(),
-            'copy-value' => $copyValue !== null ? (string) $copyValue : null,
+            'copy-value' => $this->copyValue !== null ? (string) $this->copyValue : null,
         ];
     }
 }
