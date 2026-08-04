@@ -886,6 +886,13 @@ class ElementIndexesController extends BaseElementsController
             // (see https://github.com/craftcms/cms/issues/18923)
             $returnUrl = $this->request->getParam('returnUrl');
             if ($returnUrl) {
+                // only require the URL to be hashed if it contains Twig code
+                $validated = Craft::$app->getSecurity()->validateData($returnUrl);
+                if ($validated !== false) {
+                    $returnUrl = $validated;
+                } elseif (str_contains($returnUrl, '{')) {
+                    throw new BadRequestHttpException("Invalid returnUrl param: $returnUrl");
+                }
                 $returnUrl = str_replace('?', ':QS:', $returnUrl);
             }
 
