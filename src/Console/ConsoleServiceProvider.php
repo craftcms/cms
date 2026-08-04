@@ -12,7 +12,6 @@ use CraftCms\Cms\Console\Commands\IdeHelper\GenerateCustomFieldsCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
-use CraftCms\Cms\Console\Commands\ListCachesCommand;
 use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
@@ -72,9 +71,6 @@ class ConsoleServiceProvider extends ServiceProvider
         // Twig
         TwigCacheCommand::class,
         TwigClearCommand::class,
-
-        // Caches
-        ListCachesCommand::class,
 
         // Utils
         AsciiFilenamesCommand::class,

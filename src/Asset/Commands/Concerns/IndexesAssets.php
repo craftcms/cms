@@ -309,8 +309,8 @@ trait IndexesAssets
             label: "What is the new location for <fg=cyan>{$path}</>?",
             options: collect($missingRecords)
                 ->mapWithKeys(fn ($e, int $i) => [(string) ($i + 1) => "{$e->volume->name}/{$e->indexEntry->uri}"])
+                ->prepend('Skip', '')
                 ->all(),
-            validate: fn (?string $value) => is_null($value) || (is_numeric($value) && isset($missingRecords[$value - 1])),
         );
 
         return $selection ? $missingRecords[$selection - 1] : null;

@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
+use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
@@ -33,6 +34,24 @@ class ClearCachesCommand extends Command
 
     public function handle(): int
     {
+        if ($this->signature === 'craft:clear-caches {keys?*}') {
+            $keys = $this->input->getArgument('keys');
+
+            if (is_array($keys) && $keys !== []) {
+                foreach ($keys as $key) {
+                    if (! is_string($key)) {
+                        throw new UnexpectedValueException('Cache keys must be strings.');
+                    }
+
+                    $this->call("craft:clear-caches:$key");
+                }
+
+                return self::SUCCESS;
+            }
+
+            return $this->list();
+        }
+
         $key = Str::after($this->signature, 'craft:clear-caches:');
 
         if ($key === 'all') {
@@ -113,6 +132,10 @@ class ClearCachesCommand extends Command
     public static function signatures(): array
     {
         $signatures = [
+            [
+                'signature' => 'craft:clear-caches {keys?*}',
+                'description' => 'Lists available caches to clear or clear specific caches.',
+            ],
             [
                 'signature' => 'craft:clear-caches:all',
                 'description' => 'Clears all caches.',

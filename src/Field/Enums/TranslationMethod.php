@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Enums;
 
 use CraftCms\Cms\Cp\Concerns\CanSelect;
-use CraftCms\Cms\Cp\Contracts\SelectableEnumInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
-enum TranslationMethod: string implements SelectableEnumInterface
+enum TranslationMethod: string
 {
     use CanSelect;
 

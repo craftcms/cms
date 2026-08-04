@@ -206,6 +206,8 @@ class ElementHelper
                 throw new RuntimeException('Missing "siteId" key in '.$element::class.'::getSupportedSites()');
             }
 
+            $site['siteId'] = (int) $site['siteId'];
+
             if (! isset($siteUidMap[$site['siteId']])) {
                 continue;
             }
