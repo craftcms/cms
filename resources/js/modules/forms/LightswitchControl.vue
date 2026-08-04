@@ -1,7 +1,11 @@
 <script setup lang="ts">
   import CraftSwitch from '@craftcms/ui/components/switch/switch';
   import type {FormControlPayload} from './types';
-  import {inputName, serverErrorValidators} from './runtime';
+  import {
+    ignoreModelValueInitialization,
+    inputName,
+    serverErrorValidators,
+  } from './runtime';
 
   type LightswitchControlProps = {
     indeterminate?: boolean;
@@ -22,13 +26,9 @@
   }>();
   const emit = defineEmits<{(event: 'update:value', value: boolean): void}>();
 
-  function onModelValueChanged(event: Event): void {
-    if ((event as CustomEvent).detail?.initialize) {
-      return;
-    }
-
+  const onModelValueChanged = ignoreModelValueInitialization((event) => {
     emit('update:value', (event.target as CraftSwitch).checked);
-  }
+  });
 </script>
 
 <template>

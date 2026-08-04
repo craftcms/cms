@@ -12,8 +12,9 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -143,7 +144,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
             FormField::make()
                 ->label(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
-                ->control(Select::make('uiMode')->value($this->uiMode)->options([
+                ->control(Choice::make('uiMode')->value($this->uiMode)->options([
                     ['label' => t('Normal'), 'value' => 'normal'],
                     ['label' => t('Enlarged'), 'value' => 'enlarged'],
                 ])),
@@ -155,14 +156,13 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                 FormField::make()
                     ->label(t('Maximum'))
                     ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
-                    ->control(Text::make('fieldLimit')
+                    ->control(Number::make('fieldLimit')
                         ->value($this->charLimit ?? $this->byteLimit)
                         ->deltaGroupAtNamespace()
-                        ->inputType('number')
                         ->min(1)),
                 FormField::make()
                     ->label(t('Unit'))
-                    ->control(Select::make(['limitUnit'])
+                    ->control(Choice::make(['limitUnit'])
                         ->value($this->byteLimit ? 'bytes' : 'chars')
                         ->deltaGroupAtNamespace()
                         ->options([
@@ -180,9 +180,8 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
             ]),
             FormField::make()
                 ->label(t('Initial Rows'))
-                ->control(Text::make('initialRows')
+                ->control(Number::make('initialRows')
                     ->value($this->initialRows)
-                    ->inputType('number')
                     ->min(1)),
         ]);
     }

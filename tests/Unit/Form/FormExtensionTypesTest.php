@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Money;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Range;
 use CraftCms\Cms\Form\Controls\Select;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Controls\Time;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormControlTypes;
@@ -27,12 +35,24 @@ it('registers core and plugin Node and Control types separately', function () {
     $controlTypes = app(FormControlTypes::class);
 
     expect($nodeTypes->types()->all())->toBe([Field::class, Group::class])
-        ->and($controlTypes->types()->all())->toBe([Text::class, Select::class, Lightswitch::class]);
+        ->and($controlTypes->types()->all())->toBe([
+            Text::class,
+            Textarea::class,
+            Select::class,
+            Lightswitch::class,
+            Choice::class,
+            Number::class,
+            Range::class,
+            Date::class,
+            Time::class,
+            Color::class,
+            Money::class,
+        ]);
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
     expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, Notice::class])
-        ->and($controlTypes->types()->all())->toBe([Text::class, Select::class, Lightswitch::class, Slug::class])
+        ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);
 });

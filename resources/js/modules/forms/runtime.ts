@@ -23,6 +23,16 @@ export function serverErrorValidators(invalid: boolean): Validator[] {
     : [];
 }
 
+export function ignoreModelValueInitialization(
+  callback: (event: Event) => void
+): (event: Event) => void {
+  return (event) => {
+    if (!(event as CustomEvent).detail?.initialize) {
+      callback(event);
+    }
+  };
+}
+
 export function inputName(path: string[]): string {
   return `${path[0]}${path
     .slice(1)

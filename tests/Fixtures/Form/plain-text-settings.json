@@ -11,13 +11,15 @@
         "required": false
       },
       "control": {
-        "type": "CraftCms\\Cms\\Form\\Controls\\Select",
-        "component": "craft:select",
+        "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+        "component": "craft:choice",
         "props": {
           "options": [
             {"label": "Normal", "value": "normal"},
             {"label": "Enlarged", "value": "enlarged"}
-          ]
+          ],
+          "multiple": false,
+          "presentation": "select"
         },
         "path": ["settings", "uiMode"],
         "mode": "editable",
@@ -56,8 +58,8 @@
             "required": false
           },
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Text",
-            "component": "craft:text",
+            "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+            "component": "craft:number",
             "props": {"inputType": "number", "min": 1},
             "path": ["settings", "fieldLimit"],
             "mode": "editable",
@@ -69,13 +71,15 @@
           "component": "craft:field",
           "props": {"label": "Unit", "instructions": null, "required": false},
           "control": {
-            "type": "CraftCms\\Cms\\Form\\Controls\\Select",
-            "component": "craft:select",
+            "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+            "component": "craft:choice",
             "props": {
               "options": [
                 {"label": "Characters", "value": "chars"},
                 {"label": "Bytes", "value": "bytes"}
-              ]
+              ],
+              "multiple": false,
+              "presentation": "select"
             },
             "path": ["settings", "limitUnit"],
             "mode": "editable",
@@ -135,8 +139,8 @@
         "required": false
       },
       "control": {
-        "type": "CraftCms\\Cms\\Form\\Controls\\Text",
-        "component": "craft:text",
+        "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+        "component": "craft:number",
         "props": {"inputType": "number", "min": 1},
         "path": ["settings", "initialRows"],
         "mode": "editable",

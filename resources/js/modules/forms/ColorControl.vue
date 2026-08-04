@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import CraftSelect from '@craftcms/ui/components/select/select';
+  import CraftInputColor from '@craftcms/ui/components/input-color/input-color';
   import type {FormControlPayload} from './types';
   import {
     ignoreModelValueInitialization,
@@ -7,47 +7,40 @@
     serverErrorValidators,
   } from './runtime';
 
-  type SelectControlProps = {
-    options: Array<{label: string; value: boolean | number | string}>;
-  };
+  type ColorControlProps = {presets: string[]};
 
   defineProps<{
-    control: FormControlPayload<SelectControlProps>;
+    control: FormControlPayload<ColorControlProps>;
     value: unknown;
     label?: string;
     editable: boolean;
     invalid: boolean;
     required: boolean;
   }>();
-  const emit = defineEmits<{(event: 'update:value', value: string): void}>();
+  const emit = defineEmits<{
+    (event: 'update:value', value: string, kind: 'discrete'): void;
+  }>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     emit(
       'update:value',
-      String((event.target as CraftSelect).modelValue ?? '')
+      String((event.target as CraftInputColor).modelValue ?? ''),
+      'discrete'
     );
   });
 </script>
 
 <template>
-  <craft-select
+  <craft-input-color
     :label="label"
     label-sr-only
     :name="editable ? inputName(control.path) : undefined"
     .modelValue="String(value ?? '')"
+    .presets="control.props.presets"
     :required="editable && required"
+    :readonly="control.mode === 'readOnly'"
     :disabled="!editable"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
-  >
-    <select slot="input">
-      <option
-        v-for="option in control.props.options"
-        :key="String(option.value)"
-        :value="String(option.value)"
-      >
-        {{ option.label }}
-      </option>
-    </select>
-  </craft-select>
+  ></craft-input-color>
 </template>

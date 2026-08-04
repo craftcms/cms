@@ -1,24 +1,21 @@
 <script setup lang="ts">
-  import CraftInput from '@craftcms/ui/components/input/input';
-  import type {FormChangeKind, FormControlPayload} from './types';
+  import CraftTextarea from '@craftcms/ui/components/textarea/textarea';
+  import type {FormControlPayload} from './types';
   import {
     ignoreModelValueInitialization,
     inputName,
     serverErrorValidators,
   } from './runtime';
 
-  type TextControlProps = {
-    inputType?: string;
-    min?: number | string;
-    max?: number | string;
-    step?: number | string;
+  type TextareaControlProps = {
+    rows?: number;
     maxLength?: number;
     placeholder?: string;
     monospace?: boolean;
   };
 
   defineProps<{
-    control: FormControlPayload<TextControlProps>;
+    control: FormControlPayload<TextareaControlProps>;
     value: unknown;
     label?: string;
     editable: boolean;
@@ -26,32 +23,25 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind?: FormChangeKind): void;
+    (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     emit(
       'update:value',
-      String((event.target as CraftInput).modelValue ?? ''),
-      ['text', 'email', 'url', 'tel', 'password'].includes(
-        String((event.target as CraftInput).type)
-      )
-        ? 'typing'
-        : 'discrete'
+      String((event.target as CraftTextarea).modelValue ?? ''),
+      'typing'
     );
   });
 </script>
 
 <template>
-  <craft-input
+  <craft-textarea
     :label="label"
     label-sr-only
     :name="editable ? inputName(control.path) : undefined"
-    :type="control.props.inputType ?? 'text'"
     .modelValue="String(value ?? '')"
-    :min="control.props.min"
-    :max="control.props.max"
-    :step="control.props.step"
+    :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
     :monospace="control.props.monospace"
@@ -60,5 +50,18 @@
     :disabled="control.mode === 'disabled'"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
-  ></craft-input>
+  >
+    <textarea
+      slot="input"
+      :name="editable ? inputName(control.path) : undefined"
+      :value="String(value ?? '')"
+      :rows="control.props.rows ?? 2"
+      :maxlength="control.props.maxLength"
+      :placeholder="control.props.placeholder"
+      :required="editable && required"
+      :readonly="control.mode === 'readOnly'"
+      :disabled="control.mode === 'disabled'"
+      :aria-invalid="invalid ? 'true' : undefined"
+    ></textarea>
+  </craft-textarea>
 </template>

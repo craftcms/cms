@@ -9,6 +9,7 @@
 - Added support for configuring field layout field instruction positions.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
 - Added the renderer-neutral `CraftCms\Cms\Form` APIs, with shared PHP and Vue rendering for Plain Text field settings.
+- Added renderer-neutral scalar and choice Controls for Control Panel Forms, with shared PHP and Vue rendering.
 - Added `CraftCms\Cms\Form\FormNodeTypes` and `CraftCms\Cms\Form\FormControlTypes`, enabling plugins to register custom Form types for the PHP and Vue renderers.
 - Added refreshable Form scopes with value reconciliation and changed-only submission to the Inertia field settings screen.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))

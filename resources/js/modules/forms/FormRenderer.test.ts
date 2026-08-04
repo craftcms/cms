@@ -456,6 +456,247 @@ describe('FormRenderer', () => {
     ).toBe('maybe');
   });
 
+  it('renders and submits scalar and choice Controls', async () => {
+    const controlsPayload = structuredClone(payload) as Mutable<FormPayload>;
+    const controls = [
+      [
+        'craft:textarea',
+        'Textarea',
+        'summary',
+        {rows: 4, maxLength: 120, placeholder: '<write>'},
+        '<summary>',
+      ],
+      [
+        'craft:choice',
+        'Choice',
+        'choice',
+        {
+          options: [
+            {label: '<None>', value: ''},
+            {label: 'One', value: 'one'},
+            {label: 'Enabled', value: true},
+          ],
+          multiple: false,
+          presentation: 'select',
+        },
+        true,
+      ],
+      [
+        'craft:choice',
+        'Choice',
+        'tags',
+        {
+          options: [
+            {label: 'Alpha', value: 'a'},
+            {label: 'Beta', value: 'b'},
+          ],
+          multiple: true,
+          presentation: 'checkboxes',
+        },
+        [],
+      ],
+      [
+        'craft:choice',
+        'Choice',
+        'radio',
+        {
+          options: [
+            {label: 'First', value: 'first'},
+            {label: 'Second', value: 'second'},
+          ],
+          multiple: false,
+          presentation: 'radios',
+        },
+        'first',
+      ],
+      [
+        'craft:number',
+        'Number',
+        'number',
+        {inputType: 'number', min: 0, max: 10, step: 0.5, size: 5},
+        '',
+      ],
+      [
+        'craft:range',
+        'Range',
+        'range',
+        {inputType: 'range', min: 1, max: 5, step: 1},
+        3,
+      ],
+      [
+        'craft:date',
+        'Date',
+        'date',
+        {inputType: 'date', min: '2026-01-01', max: '2026-12-31'},
+        '2026-08-04',
+      ],
+      ['craft:time', 'Time', 'time', {inputType: 'time', step: 60}, '14:30'],
+      ['craft:color', 'Color', 'color', {presets: ['#ff0000']}, 'ff0000'],
+      [
+        'craft:money',
+        'Money',
+        'price',
+        {currency: 'EUR', locale: 'nl_BE', showCurrency: true},
+        {value: '12,50', locale: 'nl_BE'},
+      ],
+    ] as const;
+    controlsPayload.nodes = controls.map(([component, type, path, props]) => ({
+      type,
+      component: 'craft:field',
+      props: {label: path, instructions: null, required: false},
+      control: {
+        type,
+        component,
+        props,
+        path: ['settings', path],
+        mode: 'editable',
+        deltaGroup: ['settings', path],
+      },
+    }));
+    controlsPayload.values = {
+      settings: Object.fromEntries(
+        controls.map(([, , path, , value]) => [path, value])
+      ),
+    };
+    controlsPayload.errors = [
+      {path: ['settings', 'number'], messages: ['Enter a number.']},
+    ];
+    controlsPayload.globalErrors = [];
+    app.unmount();
+    await mount(controlsPayload);
+
+    const textarea = container.querySelector<HTMLTextAreaElement>(
+      'textarea[name="settings[summary]"]'
+    )!;
+    expect(textarea.value).toBe('<summary>');
+    expect(textarea.getAttribute('rows')).toBe('4');
+    expect(textarea.maxLength).toBe(120);
+    expect(textarea.getAttribute('placeholder')).toBe('<write>');
+    expect(
+      container.querySelector<HTMLSelectElement>(
+        'select[name="settings[choice]"]'
+      )?.value
+    ).toBe('1');
+    expect(
+      container
+        .querySelector('select[name="settings[choice]"]')
+        ?.closest('craft-select')
+    ).not.toBeNull();
+    expect(
+      container.querySelectorAll(
+        'input[type="checkbox"][name="settings[tags][]"]'
+      )
+    ).toHaveLength(2);
+    expect(container.querySelectorAll('craft-checkbox')).toHaveLength(2);
+    expect(container.querySelector('craft-checkbox-group')).not.toBeNull();
+    expect(container.querySelectorAll('craft-radio')).toHaveLength(2);
+    expect(container.querySelector('craft-radio-group')).not.toBeNull();
+    await vi.waitFor(() => {
+      expect(
+        container
+          .querySelector<HTMLInputElement>('input[name="settings[number]"]')
+          ?.getAttribute('aria-invalid')
+      ).toBe('true');
+    });
+    const number = container.querySelector<HTMLInputElement>(
+      'input[name="settings[number]"]'
+    )!;
+    expect(number.closest('craft-input')).not.toBeNull();
+    expect(number.min).toBe('0');
+    expect(number.max).toBe('10');
+    expect(number.step).toBe('0.5');
+    expect(number.size).toBe(5);
+    expect(
+      container.querySelector<HTMLInputElement>('input[name="settings[date]"]')
+        ?.value
+    ).toBe('2026-08-04');
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[price][value]"]'
+      )?.value
+    ).toBe('12,50');
+    expect(
+      container
+        .querySelector('input[name="settings[price][value]"]')
+        ?.closest('craft-input-money')
+    ).not.toBeNull();
+    const beta = container.querySelector<HTMLInputElement>(
+      'input[name="settings[tags][]"][value="b"]'
+    )!;
+    beta.checked = true;
+    beta.dispatchEvent(new Event('change', {bubbles: true}));
+
+    for (const [name, value] of [
+      ['number', '2.5'],
+      ['range', '4'],
+      ['date', '2026-08-05'],
+      ['time', '15:00'],
+    ] as const) {
+      const input = container.querySelector<HTMLInputElement>(
+        `input[name="settings[${name}]"]`
+      )!;
+      input.value = value;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+
+    const money = container.querySelector<HTMLInputElement>(
+      'input[name="settings[price][value]"]'
+    )!;
+    money.value = '13,75';
+    money.dispatchEvent(new Event('input', {bubbles: true}));
+
+    const color = container.querySelector('craft-input-color')!;
+    color.modelValue = '00ff00';
+    color.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+    expect(new FormData(form).getAll('settings[tags][]')).toEqual(['b']);
+    expect(Object.fromEntries(new FormData(form))).toMatchObject({
+      'settings[summary]': '<summary>',
+      'settings[choice]': '1',
+      'settings[tags]': '',
+      'settings[radio]': 'first',
+      'settings[number]': '2.5',
+      'settings[range]': '4',
+      'settings[date]': '2026-08-05',
+      'settings[time]': '15:00',
+      'settings[color]': '00ff00',
+      'settings[price][value]': '13,75',
+      'settings[price][locale]': 'nl_BE',
+    });
+
+    for (const mode of ['readOnly', 'disabled'] as const) {
+      visitControls(controlsPayload.nodes, (control) => (control.mode = mode));
+      app.unmount();
+      await mount(controlsPayload);
+
+      expect(Array.from(new FormData(form))).toEqual([]);
+      expect(
+        container.querySelector<HTMLTextAreaElement>('textarea')?.value
+      ).toBe('<summary>');
+      expect(
+        container.querySelector<HTMLInputElement>('input[inputmode="decimal"]')
+          ?.value
+      ).toBe('12,50');
+      expect(container.querySelector<HTMLSelectElement>('select')?.value).toBe(
+        '1'
+      );
+      expect(
+        container.querySelector<HTMLInputElement>('input[type="range"]')?.value
+      ).toBe('3');
+      expect(
+        container.querySelector<HTMLInputElement>('input[type="date"]')?.value
+      ).toBe('2026-08-04');
+      expect(
+        container.querySelector<HTMLInputElement>('input[type="time"]')?.value
+      ).toBe('14:30');
+      expect(container.querySelector('craft-input-color')?.modelValue).toBe(
+        'ff0000'
+      );
+    }
+  });
+
   it.each(['readOnly', 'disabled'] as const)(
     'displays values without names in %s mode',
     async (mode) => {

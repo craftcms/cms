@@ -1,0 +1,153 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\Money;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Range;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Controls\Time;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Support\Facades\I18N;
+use Symfony\Component\DomCrawler\Crawler;
+
+function scalarControlsForm(): Form
+{
+    return Form::make([
+        Field::make()->label('Summary')->control(
+            Textarea::make('summary')->rows(4)->maxLength(120)->placeholder('<write>'),
+        ),
+        Field::make()->label('Choice')->required()->control(
+            Choice::make('choice')->options([
+                ['label' => '<None>', 'value' => ''],
+                ['label' => 'One', 'value' => 'one'],
+                ['label' => 'Enabled', 'value' => true],
+            ]),
+        ),
+        Field::make()->label('Tags')->required()->control(
+            Choice::make('tags')->multiple()->options([
+                ['label' => 'Alpha', 'value' => 'a'],
+                ['label' => 'Beta', 'value' => 'b'],
+            ]),
+        ),
+        Field::make()->label('Number')->control(Number::make('number')->min(0)->max(10)->step(0.5)),
+        Field::make()->label('Range')->control(Range::make('range')->min(1)->max(5)->step(1)),
+        Field::make()->label('Date')->control(Date::make('date')->min('2026-01-01')->max('2026-12-31')),
+        Field::make()->label('Time')->control(Time::make('time')->step(60)),
+        Field::make()->label('Color')->control(Color::make('color')->presets(['#ff0000'])),
+        Field::make()->label('Money')->control(
+            Money::make('price')->currency('EUR')->locale('nl_BE')->min(0),
+        ),
+    ]);
+}
+
+function scalarControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawler
+{
+    $payload = app(FormResolver::class)->resolve(scalarControlsForm(), new FormContext(
+        namespace: 'settings',
+        values: ['settings' => [
+            'summary' => '<script>alert(1)</script>',
+            'choice' => true,
+            'tags' => [],
+            'number' => '',
+            'range' => 3,
+            'date' => '2026-08-04',
+            'time' => '14:30',
+            'color' => 'ff0000',
+            'price' => ['value' => '12,50', 'locale' => 'nl_BE'],
+        ]],
+        errors: ['number' => ['Enter a number.']],
+        mode: $mode,
+    ));
+
+    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+}
+
+it('resolves and renders scalar and choice Controls with canonical values', function () {
+    $crawler = scalarControlsCrawler();
+
+    expect($crawler->filter('textarea[name="settings[summary]"]')->text())->toBe('<script>alert(1)</script>')
+        ->and($crawler->filter('textarea[rows="4"][maxlength="120"][placeholder="<write>"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-select select[name="settings[choice]"][required] option[value="1"][selected]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="hidden"][name="settings[tags]"][value=""]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-checkbox-group craft-checkbox input[type="checkbox"][name="settings[tags][]"]'))->toHaveCount(2)
+        ->and($crawler->filter('[role="group"][aria-required="true"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="number"][name="settings[number]"][value=""][min="0"][max="10"][step="0.5"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="number"][aria-invalid="true"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="date"][value="2026-08-04"][min="2026-01-01"][max="2026-12-31"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="time"][value="14:30"][step="60"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-color input[value="ff0000"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-money input[name="settings[price][value]"][value="12,50"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="hidden"][name="settings[price][locale]"][value="nl_BE"]'))->toHaveCount(1)
+        ->and($crawler->html())->not->toContain('<script>');
+});
+
+it('uses the current formatting locale when money does not declare one', function () {
+    expect(Money::make('price')->props()['locale'])->toBe(I18N::getFormattingLocale()->id);
+});
+
+it('serializes choice presentations', function () {
+    expect(Choice::make('choice')->presentation(ChoicePresentation::Buttons)->props()['presentation'])->toBe('buttons')
+        ->and(Choice::make('choice')->multiple()->props()['presentation'])->toBe('checkboxes');
+});
+
+it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {
+    $choice = Choice::make('choice')
+        ->options([
+            ['label' => 'One', 'value' => 'one'],
+            ['label' => 'Two', 'value' => 'two'],
+        ])
+        ->multiple($multiple)
+        ->presentation($presentation);
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([Field::make()->control($choice)]),
+        new FormContext(namespace: 'settings', values: ['settings' => ['choice' => $multiple ? ['one'] : 'one']]),
+    );
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($crawler->filter($group))->toHaveCount(1)
+        ->and($crawler->filter($option))->toHaveCount(2);
+})->with([
+    'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option'],
+    'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
+    'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
+    'buttons' => [ChoicePresentation::Buttons, false, 'craft-button-group', 'craft-button'],
+    'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
+]);
+
+it('uses scalar and choice Controls in built-in field settings', function () {
+    $payload = app(FormResolver::class)->resolve(new PlainText()->settingsForm(), new FormContext(namespace: 'settings'));
+    $components = collect($payload->nodes)
+        ->flatMap(fn ($node) => $node->children === null ? [$node] : [$node, ...$node->children])
+        ->map(fn ($node) => $node->control?->component)
+        ->filter();
+
+    expect($components)->toContain('craft:choice', 'craft:number');
+});
+
+it('displays scalar and choice values without submitting them in non-editable modes', function (ControlMode $mode) {
+    $crawler = scalarControlsCrawler($mode);
+
+    expect($crawler->filter('[name]'))->toHaveCount(0)
+        ->and($crawler->filter('textarea')->text())->toBe('<script>alert(1)</script>')
+        ->and($crawler->filter('select option[value="1"][selected]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="date"][value="2026-08-04"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="time"][value="14:30"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-color input[value="ff0000"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[value="12,50"]'))->toHaveCount(1);
+})->with([
+    'read-only' => ControlMode::ReadOnly,
+    'disabled' => ControlMode::Disabled,
+]);

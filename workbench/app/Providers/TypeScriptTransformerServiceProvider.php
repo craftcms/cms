@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
@@ -57,6 +58,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    ChoicePresentation::class,
                     ControlMode::class,
                     ControlPayload::class,
                     FormPayload::class,

@@ -7,18 +7,16 @@
     serverErrorValidators,
   } from './runtime';
 
-  type TextControlProps = {
-    inputType?: string;
+  type ScalarControlProps = {
+    inputType: 'date' | 'number' | 'range' | 'time';
     min?: number | string;
     max?: number | string;
     step?: number | string;
-    maxLength?: number;
-    placeholder?: string;
-    monospace?: boolean;
+    size?: number;
   };
 
   defineProps<{
-    control: FormControlPayload<TextControlProps>;
+    control: FormControlPayload<ScalarControlProps>;
     value: unknown;
     label?: string;
     editable: boolean;
@@ -26,18 +24,15 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind?: FormChangeKind): void;
+    (event: 'update:value', value: string, kind: FormChangeKind): void;
   }>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
+    const input = event.target as CraftInput;
     emit(
       'update:value',
-      String((event.target as CraftInput).modelValue ?? ''),
-      ['text', 'email', 'url', 'tel', 'password'].includes(
-        String((event.target as CraftInput).type)
-      )
-        ? 'typing'
-        : 'discrete'
+      String(input.modelValue ?? ''),
+      input.type === 'number' ? 'typing' : 'discrete'
     );
   });
 </script>
@@ -46,18 +41,19 @@
   <craft-input
     :label="label"
     label-sr-only
+    :type="control.props.inputType"
     :name="editable ? inputName(control.path) : undefined"
-    :type="control.props.inputType ?? 'text'"
     .modelValue="String(value ?? '')"
     :min="control.props.min"
     :max="control.props.max"
     :step="control.props.step"
-    :maxlength="control.props.maxLength"
-    :placeholder="control.props.placeholder"
-    :monospace="control.props.monospace"
+    .inputSize="control.props.size"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
+    :disabled="
+      control.mode === 'disabled' ||
+      (control.mode === 'readOnly' && control.props.inputType === 'range')
+    "
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
   ></craft-input>
