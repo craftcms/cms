@@ -1,7 +1,8 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.13 - 2026-08-04
 
+- Added `craft\helpers\StringHelper::isMd5()`.
 - Fixed a bug where image transforms could be generated from a stale locally-cached copy of an asset’s source file, after the file was replaced on a non-local filesystem. ([#19328](https://github.com/craftcms/cms/issues/19328))
 - Fixed a bug where warnings were getting logged for SSO attributes that mapped to native user properties. ([#19294](https://github.com/craftcms/cms/pull/19294))
 - Fixed an error that could occur when applying a draft. ([#19277](https://github.com/craftcms/cms/issues/19277))
@@ -9,6 +10,12 @@
 - Fixed a bug where compiled templates could be missing the injected `{{ head() }}`, `{{ beginBody() }}`, or `{{ endBody() }}` tags. ([#19304](https://github.com/craftcms/cms/issues/19304))
 - Fixed an error that could occur when listing an element without a slug in an element index.
 - Fixed a bug where Matrix and Addresses fields could have empty field action menus. ([#19355](https://github.com/craftcms/cms/issues/19355))
+- Fixed a bug where success/failure notifications weren’t being shown after deleting elements. ([#19028](https://github.com/craftcms/cms/pull/19028))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5jmw-g85v-7jv2, GHSA-9c4j-cjw3-r3xx, GHSA-5r92-75j8-c534)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-4mgp-5vf2-7c9m)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-hfjh-gw6x-7pv5)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-h9jh-v8vc-m5rp)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-6fp2-8j9w-7mj8)
 
 ## 5.10.12 - 2026-07-22
 
