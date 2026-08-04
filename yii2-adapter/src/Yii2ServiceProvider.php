@@ -245,10 +245,6 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.web', HandleYiiSiteRouteFallback::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.cp', RegisterLegacyCompatAssets::class);
 
-        $this->publishes([
-            __DIR__ . '/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
-        ], ['craftcms', 'craftcms-assets']);
-
         $this->commands([
             AddCategoriesSupportCommand::class,
             AddGlobalSetsSupportCommand::class,

@@ -23,7 +23,8 @@
  * jQuery via blocking scripts) is registered ahead of this file, so those
  * globals are present when this evaluates.
  *
- * Loaded CP-wide via CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
+ * Compiled into the legacy asset package and loaded CP-wide via
+ * CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
  */
 (function () {
   'use strict';
@@ -276,7 +277,9 @@
         }
 
         $components.on('keydown', (ev) => {
-          if ([Garnish.BACKSPACE_KEY, Garnish.DELETE_KEY].includes(ev.keyCode)) {
+          if (
+            [Garnish.BACKSPACE_KEY, Garnish.DELETE_KEY].includes(ev.keyCode)
+          ) {
             ev.stopPropagation();
             ev.preventDefault();
             const $selected = this.componentSelect.getSelectedItems();

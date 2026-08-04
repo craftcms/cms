@@ -97,8 +97,8 @@ render `<craft-component-select>` instead of calling
 
 Core no longer instantiates `Craft.ComponentSelectInput` — every core CP
 surface renders `<craft-component-select>`. The legacy class no longer ships in
-the craftcms-legacy bundle either; it was relocated verbatim to
-`yii2-adapter/legacy/web/assets/cpcompat/component-select-input.js` (a real
+the main craftcms-legacy CP bundle either; it was relocated verbatim to
+`packages/craftcms-legacy/cpcompat/src/component-select-input.js` (a real
 implementation, not a warn stub) purely so the `componentSelect.twig` `jsClass`
 escape hatch keeps booting plugin subclasses. See that file and `CpCompatAsset`.
 
