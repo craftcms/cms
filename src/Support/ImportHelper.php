@@ -259,33 +259,36 @@ class ImportHelper
             }
         }
 
-        if (is_array($currentData) && self::pathExists($currentData, $sourceRelativePath)) {
-            $value = self::getPath($currentData, $sourceRelativePath);
-
-            if (is_array($value)) {
-                return [
-                    'value' => $value,
-                    'basePath' => self::pathJoin($currentBasePath, $sourceRelativePath),
-                    'consumed' => [$sourceKey],
-                ];
-            }
+        if (is_array($currentData) && $source = self::resolveArraySource($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
+            return $source;
         }
 
         $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
 
-        if (self::pathExists($rootData, $absolutePath)) {
-            $value = self::getPath($rootData, $absolutePath);
-
-            if (is_array($value)) {
-                return [
-                    'value' => $value,
-                    'basePath' => $absolutePath,
-                    'consumed' => [$sourceKey],
-                ];
-            }
+        if ($source = self::resolveArraySource($rootData, $absolutePath, $absolutePath, $sourceKey)) {
+            return $source;
         }
 
         return null;
+    }
+
+    /**
+     * Resolves a dotted `$path` inside `$data` to an array value, or `null` if the path is
+     * missing or doesn't resolve to an array.
+     */
+    protected static function resolveArraySource(array $data, string $path, string $basePath, string $sourceKey): ?array
+    {
+        $found = self::findPath($data, $path);
+
+        if (! $found['found'] || ! is_array($found['value'])) {
+            return null;
+        }
+
+        return [
+            'value' => $found['value'],
+            'basePath' => $basePath,
+            'consumed' => [$sourceKey],
+        ];
     }
 
     /**
@@ -295,7 +298,7 @@ class ImportHelper
     protected static function mapInlineTypedRow(array $rule, array $rootData, array $row, ?string $basePath): array
     {
         if (array_key_exists('type', $row) && is_string($row['type']) && array_key_exists($row['type'], $rule) && is_array($rule[$row['type']])) {
-            return ['type' => $row['type']] + self::mapNode($rule[$row['type']], $rootData, $row, $basePath, true)['data'];
+            return self::mapTypedRow($row['type'], $rule[$row['type']], $rootData, $row, $basePath);
         }
 
         return self::mapNode($rule, $rootData, $row, $basePath, true)['data'];
@@ -307,7 +310,7 @@ class ImportHelper
         $consumedKeys = [];
 
         foreach ($blockTypeMap as $type => $typeMap) {
-            if (! array_key_exists($type, $sourceValue)) {
+            if (! isset($sourceValue[$type])) {
                 continue;
             }
             if (! is_array($sourceValue[$type])) {
@@ -321,7 +324,7 @@ class ImportHelper
 
             foreach ($sourceValue[$type] as $row) {
                 if (is_array($row)) {
-                    $items[] = ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $typeBasePath, true)['data'];
+                    $items[] = self::mapTypedRow((string) $type, $typeMap, $rootData, $row, $typeBasePath);
                 }
             }
         }
@@ -332,19 +335,27 @@ class ImportHelper
         ];
     }
 
+    /**
+     * Maps `$row` against `$typeMap`, tagging the result with its block `$type`.
+     */
+    protected static function mapTypedRow(string $type, array $typeMap, array $rootData, array $row, ?string $basePath): array
+    {
+        return ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $basePath, true)['data'];
+    }
+
     protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
     {
         if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
             $relativePath = substr($path, strlen($currentBasePath) + 1);
 
             return [
-                'value' => is_array($currentData) ? self::getPath($currentData, $relativePath) : null,
+                'value' => is_array($currentData) ? self::findPath($currentData, $relativePath)['value'] : null,
                 'consumed' => explode('.', $relativePath)[0],
             ];
         }
 
         return [
-            'value' => self::getPath($rootData, $path),
+            'value' => self::findPath($rootData, $path)['value'],
             'consumed' => $currentBasePath === null ? explode('.', $path)[0] : null,
         ];
     }
@@ -418,34 +429,24 @@ class ImportHelper
         return array_any($rule, fn ($_, $childKey) => array_key_exists((string) $childKey, $sourceValue) && is_array($sourceValue[$childKey]) && array_is_list($sourceValue[$childKey]));
     }
 
-    protected static function getPath(array $data, string $path): mixed
+    /**
+     * Walks a dotted `$path` inside `$data`, returning whether it was found and its value.
+     *
+     * @return array{found: bool, value: mixed}
+     */
+    protected static function findPath(array $data, string $path): array
     {
         $current = $data;
 
         foreach (explode('.', $path) as $part) {
             if (! is_array($current) || ! array_key_exists($part, $current)) {
-                return null;
+                return ['found' => false, 'value' => null];
             }
 
             $current = $current[$part];
         }
 
-        return $current;
-    }
-
-    protected static function pathExists(array $data, string $path): bool
-    {
-        $current = $data;
-
-        foreach (explode('.', $path) as $part) {
-            if (! is_array($current) || ! array_key_exists($part, $current)) {
-                return false;
-            }
-
-            $current = $current[$part];
-        }
-
-        return true;
+        return ['found' => true, 'value' => $current];
     }
 
     protected static function pathJoin(?string $basePath, string $key): string
