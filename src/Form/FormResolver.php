@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Form;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
 use JsonException;
 
@@ -43,7 +44,7 @@ class FormResolver
             globalErrors: $globalErrors,
         );
 
-        json_encode($payload, JSON_THROW_ON_ERROR);
+        Json::encode($payload, JSON_THROW_ON_ERROR);
 
         return $payload;
     }
@@ -104,6 +105,15 @@ class FormResolver
         }
 
         $mode = $context->mode === ControlMode::Editable ? $control->getMode() : $context->mode;
+        $deltaGroup = $control->getDeltaGroup();
+        $deltaGroup = $deltaGroup === null
+            ? $path
+            : [...$namespace, ...$this->normalizePath($deltaGroup)];
+
+        if (array_slice($path, 0, count($deltaGroup)) !== $deltaGroup) {
+            throw new InvalidArgumentException('Control delta groups must be ancestors of their paths.');
+        }
+
         $value = $this->has($context->values, $path)
             ? $this->get($context->values, $path)
             : $control->getValue();
@@ -116,7 +126,7 @@ class FormResolver
             props: $control->props(),
             path: $path,
             mode: $mode,
-            deltaGroup: $path,
+            deltaGroup: $deltaGroup,
         );
     }
 

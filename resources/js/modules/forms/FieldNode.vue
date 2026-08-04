@@ -1,7 +1,12 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance} from 'vue';
-  import type {FormNodePayload, FormPayload} from './types';
+  import type {
+    FormChange,
+    FormChangeKind,
+    FormNodePayload,
+    FormPayload,
+  } from './types';
 
   type FieldNodeProps = {
     label?: string | null;
@@ -13,6 +18,10 @@
     node: FormNodePayload<FieldNodeProps>;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
+    touchedPaths: Set<string>;
+  }>();
+  const emit = defineEmits<{
+    (event: 'change', change: FormChange): void;
   }>();
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
@@ -42,7 +51,7 @@
     );
   }
 
-  function setValue(value: unknown): void {
+  function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
     let target = props.values;
 
     control.value.path.forEach((segment, index) => {
@@ -53,6 +62,11 @@
       }
 
       target = target[segment] as Record<string, unknown>;
+    });
+
+    emit('change', {
+      kind,
+      path: control.value.path,
     });
   }
 
@@ -83,6 +97,8 @@
       :invalid="controlErrors.length > 0"
       :required="Boolean(node.props.required)"
       :aria-invalid="controlErrors.length ? 'true' : undefined"
+      :data-form-control-path="JSON.stringify(control.path)"
+      :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
       @update:value="setValue"
     />
     <ul v-if="controlErrors.length" slot="feedback" class="error-list">

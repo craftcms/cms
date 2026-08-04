@@ -10,6 +10,11 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -165,17 +170,34 @@ class FieldEditViewModel extends ViewModel
     }
 
     /**
-     * The current field type's settings, rendered as a legacy HTML island.
+     * A field type's settings rendered as a legacy HTML island until it adopts Form.
      * Inputs are namespaced `types[<typeId>]` to match what the save and
      * render-settings endpoints expect.
      */
-    public function settings(): HtmlFragment
+    public function settings(): ?HtmlFragment
     {
+        if ($this->field instanceof PlainText) {
+            return null;
+        }
+
         return HtmlStack::capture(fn (): string => template('settings/fields/_type-settings', [
             'field' => $this->field,
             'namespace' => sprintf('types[%s]', Html::id($this->typeClass())),
             'readOnly' => $this->readOnly,
         ], templateMode: TemplateMode::Cp));
+    }
+
+    public function settingsForm(): ?FormPayload
+    {
+        if (! $this->field instanceof PlainText) {
+            return null;
+        }
+
+        return app(FormResolver::class)->resolve($this->field->settingsForm(), new FormContext(
+            namespace: 'settings',
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: true,
+        ));
     }
 
     /**

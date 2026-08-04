@@ -61,7 +61,7 @@
             "props": {"inputType": "number", "min": 1},
             "path": ["settings", "fieldLimit"],
             "mode": "editable",
-            "deltaGroup": ["settings", "fieldLimit"]
+            "deltaGroup": ["settings"]
           }
         },
         {
@@ -79,7 +79,7 @@
             },
             "path": ["settings", "limitUnit"],
             "mode": "editable",
-            "deltaGroup": ["settings", "limitUnit"]
+            "deltaGroup": ["settings"]
           }
         }
       ]

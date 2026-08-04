@@ -23,6 +23,8 @@ use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -188,31 +190,38 @@ class FieldsController
             'settings' => ['nullable', 'string'],
             'namespace' => ['nullable', 'string'],
             'oldNamespace' => ['nullable', 'string'],
+            'values' => ['nullable', 'array'],
         ]);
 
         $type = $request->input('type');
         $oldType = $request->input('oldType');
         $field = $this->fieldsService->createField($type);
 
-        if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
+        if ($request->has('values')) {
+            $settings = $request->array('values');
+        } elseif ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->input('settings', '');
             parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->input('oldNamespace');
             $settings = Arr::get($postedOldSettings, $oldNamespace, []);
+        }
 
-            // Remove any settings that aren't defined by the same class between both types
-            $settings = array_filter($settings, function ($attribute) use ($type, $oldType) {
-                try {
-                    $r1 = new ReflectionProperty($type, $attribute);
-                    $r2 = new ReflectionProperty($oldType, $attribute);
+        if (isset($settings) && $oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
+            $settings = $this->compatibleSettings($settings, $type, $oldType);
+        }
 
-                    return $r1->getDeclaringClass()->name === $r2->getDeclaringClass()->name;
-                } catch (ReflectionException) {
-                    return false;
-                }
-            }, ARRAY_FILTER_USE_KEY);
-
+        if (isset($settings)) {
             Typecast::configure($field, $settings);
+        }
+
+        if ($field instanceof PlainText) {
+            return new JsonResponse([
+                'form' => app(FormResolver::class)->resolve($field->settingsForm(), new FormContext(
+                    namespace: 'settings',
+                    values: ['settings' => $settings ?? []],
+                    refreshable: true,
+                )),
+            ]);
         }
 
         $html = template('settings/fields/_type-settings', [
@@ -239,6 +248,7 @@ class FieldsController
             'translationMethod' => ['nullable', 'string'],
             'translationKeyFormat' => ['nullable', 'string'],
             'typeSettings' => ['nullable', 'string'],
+            'settings' => ['nullable', 'array'],
         ]);
 
         $type = $request->input('type');
@@ -264,13 +274,28 @@ class FieldsController
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->enum('translationMethod', TranslationMethod::class, TranslationMethod::None),
             'translationKeyFormat' => $request->input('translationKeyFormat'),
-            'settings' => $this->typeSettingsFromRequest($request, $type),
+            'settings' => $this->typeSettingsFromRequest($request, $type, $oldField ?? null),
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
             Flash::error(t('Couldn’t save field.'));
 
-            throw ValidationException::withMessages($field->errors()->getMessages());
+            $errors = $field->errors()->getMessages();
+
+            if ($request->has('settings')) {
+                $settingAttributes = array_keys($field->getSettings());
+                $errors = collect($errors)->mapWithKeys(function (array $messages, string $attribute) use ($settingAttributes): array {
+                    if (in_array($attribute, ['charLimit', 'byteLimit'], true)) {
+                        return ['settings.fieldLimit' => $messages];
+                    }
+
+                    return in_array($attribute, $settingAttributes, true)
+                        ? ["settings.{$attribute}" => $messages]
+                        : [$attribute => $messages];
+                })->all();
+            }
+
+            throw ValidationException::withMessages($errors);
         }
 
         if ($request->input('addAnother')) {
@@ -292,8 +317,21 @@ class FieldsController
      * HTML rather than form state. The legacy Twig form posts a `types` array.
      */
     /** @return array<string, mixed> */
-    private function typeSettingsFromRequest(Request $request, string $type): array
+    private function typeSettingsFromRequest(Request $request, string $type, ?FieldInterface $oldField = null): array
     {
+        if ($request->has('settings')) {
+            $settings = $oldField
+                ? $this->compatibleSettings($oldField->getSettings(), $type, $oldField::class)
+                : [];
+            $changes = $request->array('settings');
+
+            if (array_key_exists('fieldLimit', $changes) || array_key_exists('limitUnit', $changes)) {
+                unset($settings['charLimit'], $settings['byteLimit']);
+            }
+
+            return array_replace($settings, $changes);
+        }
+
         $settingsStr = $request->input('typeSettings');
 
         if (is_string($settingsStr) && $settingsStr !== '') {
@@ -303,6 +341,30 @@ class FieldsController
         }
 
         return $request->input('types', [])[Html::id($type)] ?? [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $settings
+     * @param  class-string<FieldInterface>  $type
+     * @param  class-string<FieldInterface>  $oldType
+     * @return array<string, mixed>
+     */
+    private function compatibleSettings(array $settings, string $type, string $oldType): array
+    {
+        if ($type === $oldType) {
+            return $settings;
+        }
+
+        return array_filter($settings, function ($attribute) use ($type, $oldType) {
+            try {
+                $newProperty = new ReflectionProperty($type, $attribute);
+                $oldProperty = new ReflectionProperty($oldType, $attribute);
+
+                return $newProperty->getDeclaringClass()->name === $oldProperty->getDeclaringClass()->name;
+            } catch (ReflectionException) {
+                return false;
+            }
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     public function destroy(Request $request, int $fieldId): Response

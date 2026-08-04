@@ -11,6 +11,7 @@ interface PasswordConfirmationOptions<T> {
 
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
+  onSuccess?: () => void;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -97,6 +98,7 @@ export function useSettingsSave<T extends Record<string, any>>(
 
             return false;
           },
+          onSuccess: options.onSuccess,
         });
     }
 

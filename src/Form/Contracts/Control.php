@@ -46,6 +46,13 @@ interface Control
     public function path(): string|array;
 
     /**
+     * Returns an optional ancestor path whose complete value must mutate atomically.
+     *
+     * @return string|list<string>|null
+     */
+    public function getDeltaGroup(): string|array|null;
+
+    /**
      * Returns the control's default value.
      *
      * The resolver uses this value only when the form context does not contain

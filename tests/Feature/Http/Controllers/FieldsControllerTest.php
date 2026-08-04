@@ -90,7 +90,9 @@ it('can create a new field', function () {
             ->has('fieldTypeOptions')
             ->has('supportedTranslationMethods')
             ->has('translationMethodOptions', 5)
-            ->has('settings.html'));
+            ->where('settings', null)
+            ->where('settingsForm.refreshable', true)
+            ->has('settingsForm.nodes'));
 });
 
 it('preselects a requested field type when creating', function (mixed $type, string $expectedType) {
@@ -128,7 +130,8 @@ it('can edit a field', function () {
             ->where('field.type', PlainText::class)
             ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
             ->where('missingFieldPlaceholder', null)
-            ->has('settings.html'));
+            ->where('settings', null)
+            ->has('settingsForm.nodes'));
 });
 
 it('renders the edit screen read-only without admin changes', function () {
@@ -175,6 +178,20 @@ it('can render the settings of a field', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
     ])->assertOk();
+});
+
+it('refreshes Form settings from the complete current value snapshot', function () {
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => PlainText::class,
+        'values' => [
+            'placeholder' => 'Unsaved placeholder',
+            'uiMode' => 'enlarged',
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath('form.refreshable', true)
+        ->assertJsonPath('form.values.settings.placeholder', 'Unsaved placeholder')
+        ->assertJsonPath('form.values.settings.uiMode', 'enlarged');
 });
 
 it('preserves values between rendering settings', function () {
@@ -233,6 +250,77 @@ it('can save a new field with settings posted as a url-encoded string', function
         expect($field->settings['placeholder'])->toBe('Type something…');
         expect($field->settings['multiline'])->toBeTrue();
     });
+});
+
+it('saves changed Form groups without resetting untouched settings', function () {
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'placeholder' => 'Before',
+        'initialRows' => 8,
+    ]));
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'fieldId' => $field->id,
+        'type' => PlainText::class,
+        'name' => $field->name,
+        'handle' => $field->handle,
+        'settings' => ['placeholder' => 'After'],
+    ])->assertOk();
+
+    $saved = Fields::getFieldById($field->id);
+
+    expect($saved->placeholder)->toBe('After')
+        ->and($saved->initialRows)->toBe(8);
+});
+
+it('saves complete atomic Form groups', function () {
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'charLimit' => 10,
+    ]));
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'fieldId' => $field->id,
+        'type' => PlainText::class,
+        'name' => $field->name,
+        'handle' => $field->handle,
+        'settings' => [
+            'fieldLimit' => 25,
+            'limitUnit' => 'bytes',
+        ],
+    ])->assertOk();
+
+    $saved = Fields::getFieldById($field->id);
+
+    expect($saved->charLimit)->toBeNull()
+        ->and($saved->byteLimit)->toBe(25);
+});
+
+it('returns Form setting validation errors at their submitted paths', function () {
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'settings' => ['initialRows' => 0],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('settings.initialRows');
+});
+
+it('keeps host and Form validation errors at their submitted paths', function () {
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => '',
+        'handle' => '',
+        'settings' => ['initialRows' => 0],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['name', 'handle', 'settings.initialRows'])
+        ->assertJsonMissingValidationErrors(['settings.name', 'settings.handle']);
 });
 
 it('can delete a field', function () {

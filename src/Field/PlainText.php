@@ -157,12 +157,14 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                     ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
                     ->control(Text::make('fieldLimit')
                         ->value($this->charLimit ?? $this->byteLimit)
+                        ->deltaGroupAtNamespace()
                         ->inputType('number')
                         ->min(1)),
                 FormField::make()
                     ->label(t('Unit'))
                     ->control(Select::make(['limitUnit'])
                         ->value($this->byteLimit ? 'bytes' : 'chars')
+                        ->deltaGroupAtNamespace()
                         ->options([
                             ['label' => t('Characters'), 'value' => 'chars'],
                             ['label' => t('Bytes'), 'value' => 'bytes'],

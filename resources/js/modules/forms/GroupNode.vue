@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field-group/field-group';
   import FormNode from './FormNode.vue';
-  import type {FormNodePayload, FormPayload} from './types';
+  import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   type GroupNodeProps = {label?: string | null};
 
@@ -9,6 +9,10 @@
     node: FormNodePayload<GroupNodeProps>;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
+    touchedPaths: Set<string>;
+  }>();
+  const emit = defineEmits<{
+    (event: 'change', change: FormChange): void;
   }>();
 </script>
 
@@ -22,6 +26,8 @@
         :node="child"
         :values="values"
         :errors="errors"
+        :touched-paths="touchedPaths"
+        @change="emit('change', $event)"
       />
     </craft-field-group>
   </fieldset>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
-  import type {FormControlPayload} from './types';
+  import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName, serverErrorValidators} from './runtime';
 
   type TextControlProps = {
@@ -17,14 +17,20 @@
     invalid: boolean;
     required: boolean;
   }>();
-  const emit = defineEmits<{(event: 'update:value', value: string): void}>();
+  const emit = defineEmits<{
+    (event: 'update:value', value: string, kind?: FormChangeKind): void;
+  }>();
 
   function onModelValueChanged(event: Event): void {
     if ((event as CustomEvent).detail?.initialize) {
       return;
     }
 
-    emit('update:value', String((event.target as CraftInput).modelValue ?? ''));
+    emit(
+      'update:value',
+      String((event.target as CraftInput).modelValue ?? ''),
+      'typing'
+    );
   }
 </script>
 

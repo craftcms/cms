@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, getCurrentInstance} from 'vue';
-  import type {FormNodePayload, FormPayload} from './types';
+  import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   defineOptions({name: 'FormNode'});
 
@@ -8,6 +8,10 @@
     node: FormNodePayload;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
+    touchedPaths: Set<string>;
+  }>();
+  const emit = defineEmits<{
+    (event: 'change', change: FormChange): void;
   }>();
   const components = getCurrentInstance()!.appContext.components;
   const component = computed(() => {
@@ -24,5 +28,12 @@
 </script>
 
 <template>
-  <component :is="component" :node="node" :values="values" :errors="errors" />
+  <component
+    :is="component"
+    :node="node"
+    :values="values"
+    :errors="errors"
+    :touched-paths="touchedPaths"
+    @change="emit('change', $event)"
+  />
 </template>

@@ -22,3 +22,10 @@ export type FormPayload<
 > = Omit<GeneratedFormPayload, 'nodes'> & {
   nodes: FormNodePayload<NodeProps, ControlProps>[];
 };
+
+export type FormChangeKind = 'discrete' | 'typing';
+
+export type FormChange = {
+  kind: FormChangeKind;
+  path: string[];
+};

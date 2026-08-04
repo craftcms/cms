@@ -13,6 +13,8 @@ abstract class Control implements ControlContract
 
     protected ControlMode $mode = ControlMode::Editable;
 
+    protected string|array|null $deltaGroup = null;
+
     /**
      * Creates a Control bound to a path relative to its Form context.
      *
@@ -47,6 +49,25 @@ abstract class Control implements ControlContract
     final public function path(): string|array
     {
         return $this->path;
+    }
+
+    /** @param string|list<string> $path */
+    final public function deltaGroup(string|array $path): static
+    {
+        $this->deltaGroup = $path;
+
+        return $this;
+    }
+
+    final public function deltaGroupAtNamespace(): static
+    {
+        return $this->deltaGroup([]);
+    }
+
+    /** @return string|list<string>|null */
+    final public function getDeltaGroup(): string|array|null
+    {
+        return $this->deltaGroup;
     }
 
     /**
