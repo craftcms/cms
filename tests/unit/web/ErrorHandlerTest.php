@@ -96,7 +96,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @return array
      */
-    public function exceptionTypeAndNameDataProvider(): array
+    public static function exceptionTypeAndNameDataProvider(): array
     {
         return [
             [new SyntaxError('Twig go boom'), 'Twig Syntax Error'],
@@ -108,7 +108,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * @return array
      */
-    public function getTypeUrlDataProvider(): array
+    public static function getTypeUrlDataProvider(): array
     {
         return [
             ['http://twig.sensiolabs.org/api/2.x/Twig\Template.html#method_render', '__TwigTemplate_', 'render'],
@@ -121,18 +121,18 @@ class ErrorHandlerTest extends TestCase
     /**
      * @return array
      */
-    public function isCoreFileDataProvider(): array
+    public static function isCoreFileDataProvider(): array
     {
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
         $vendorPath = Craft::getAlias('@vendor');
-        $craftPath = Craft::getAlias('@craft');
+        $srcPath = Craft::getAlias('@app');
 
         return [
             [true, $path . '/created_path'],
             [true, $vendorPath . '/twig/twig/LICENSE'],
             [true, $vendorPath . '/twig/twig/composer.json'],
 
-            [false, $craftPath . '/web/twig'],
+            [false, $srcPath . '/web/twig'],
             [false, __DIR__],
         ];
     }

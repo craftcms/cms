@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Class OptionData
@@ -20,23 +21,41 @@ class OptionData implements Serializable
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $label = null;
 
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $value = null;
 
     /**
      * @var bool
      */
+    #[AllowedInSandbox]
     public bool $selected;
 
     /**
      * @var bool
      * @since 3.5.10
      */
+    #[AllowedInSandbox]
     public bool $valid;
+
+    /**
+     * @var string|null
+     * @since 5.8.0
+     */
+    #[AllowedInSandbox]
+    public ?string $icon = null;
+
+    /**
+     * @var string|null
+     * @since 5.8.0
+     */
+    #[AllowedInSandbox]
+    public ?string $color = null;
 
     /**
      * Constructor
@@ -46,12 +65,27 @@ class OptionData implements Serializable
      * @param bool $selected
      * @param bool $valid
      */
-    public function __construct(?string $label, ?string $value, bool $selected, bool $valid = true)
-    {
+    public function __construct(
+        ?string $label,
+        ?string $value,
+        bool $selected,
+        bool $valid = true,
+        ?string $icon = null,
+        ?string $color = null,
+    ) {
         $this->label = $label;
         $this->value = $value;
         $this->selected = $selected;
         $this->valid = $valid;
+        $this->icon = $icon;
+        $this->color = $color;
+
+        if ($this->icon === '') {
+            $this->icon = null;
+        }
+        if ($this->color === '') {
+            $this->color = null;
+        }
     }
 
     /**

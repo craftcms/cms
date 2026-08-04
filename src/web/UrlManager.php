@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\enums\CmsEdition;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -84,9 +85,9 @@ class UrlManager extends \yii\web\UrlManager
     private array $_routeParams = [];
 
     /**
-     * @var ElementInterface|false|null
+     * @var ElementInterface|false
      */
-    private null|false|ElementInterface $_matchedElement = null;
+    private ElementInterface|false $_matchedElement;
 
     /**
      * @var mixed
@@ -241,7 +242,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $this->_getMatchedElementRoute($request);
-        return $this->_matchedElement;
+        return $this->_matchedElement ?? false;
     }
 
     /**
@@ -266,7 +267,7 @@ class UrlManager extends \yii\web\UrlManager
             $element = false;
         }
 
-        $this->_matchedElement = $element;
+        $this->_matchedElement = $element ?? false;
         $this->_matchedElementRoute = $element;
     }
 
@@ -324,8 +325,12 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Craft::$app->getEdition() === Craft::Pro) {
-                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
+            if (Craft::$app->edition->value >= CmsEdition::Team->value) {
+                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
+
+                if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+                    $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
+                }
             }
 
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;
@@ -340,12 +345,13 @@ class UrlManager extends \yii\web\UrlManager
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
-        $event = new RegisterUrlRulesEvent([
-            'rules' => $rules,
-        ]);
-        $this->trigger($eventName, $event);
+        if ($this->hasEventHandlers($eventName)) {
+            $event = new RegisterUrlRulesEvent(['rules' => $rules]);
+            $this->trigger($eventName, $event);
+            $rules = $event->rules;
+        }
 
-        return array_filter($event->rules);
+        return array_filter($rules);
     }
 
     /**
@@ -432,7 +438,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute(Request $request): array|false
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /** @var YiiUrlRule $rule */
+        /** @var YiiUrlRule|object $rule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
@@ -548,6 +554,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $token = $request->getToken();
+        $route = $request->getTokenRoute();
 
         if (App::devMode()) {
             Craft::debug([
@@ -557,10 +564,6 @@ class UrlManager extends \yii\web\UrlManager
             ], __METHOD__);
         }
 
-        if ($token === null) {
-            return false;
-        }
-
-        return Craft::$app->getTokens()->getTokenRoute($token);
+        return $route ?? false;
     }
 }

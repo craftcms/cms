@@ -19,6 +19,7 @@ import './CraftSupportWidget.scss';
       currentScreen: null,
       $helpBody: null,
       $feedbackBody: null,
+      searchQuery: null,
 
       init: function (widgetId, settings) {
         this.widgetId = widgetId;
@@ -169,6 +170,7 @@ import './CraftSupportWidget.scss';
       $cancelBtn: null,
       mode: null,
       bodyStartHeight: null,
+      csHeadingText: null,
 
       $searchResultsContainer: null,
       $searchResults: null,
@@ -187,7 +189,7 @@ import './CraftSupportWidget.scss';
       sendingSupportTicket: false,
 
       afterInit: function () {
-        this.$body = this.$screen.find('.cs-body-text:first').trigger('focus');
+        this.$body = this.$screen.find('.cs-body-text:first').focus();
         this.$formContainer = this.$screen.children('.cs-forms');
         this.$cancelBtn = this.$screen.find('.cancel');
 
@@ -206,11 +208,16 @@ import './CraftSupportWidget.scss';
         );
         this.$searchSubmit = this.$searchForm.find('.submit:first');
         this.addListener(this.$searchForm, 'submit', 'handleSearchFormSubmit');
-        this.addListener(
-          this.$searchForm.find('.cs-button-wrapper > p > a'),
-          'click',
-          'handleSupportLinkClick'
+
+        const $supportLink = this.$searchForm.find(
+          '.cs-button-wrapper > p > a'
         );
+        const $supportButton = $('<button/>', {
+          type: 'button',
+          text: $supportLink.text(),
+        });
+        $supportLink.replaceWith($supportButton);
+        this.addListener($supportButton, 'click', 'handleSupportLinkClick');
 
         // Support mode stuff
         this.$supportForm = this.$formContainer.children(
@@ -277,6 +284,21 @@ import './CraftSupportWidget.scss';
         }
       },
 
+      handleHeadingChange: function () {
+        const $csHeading = this.$formContainer.parent().find('.cs-heading');
+        if ($csHeading.length > 0) {
+          if (this.mode == BaseSearchScreen.MODE_SUPPORT) {
+            this.csHeadingText = $csHeading.text();
+            $csHeading.text(Craft.t('app', 'Contact Developer Support'));
+          } else {
+            if (this.csHeadingText !== null) {
+              $csHeading.text(this.csHeadingText);
+              this.csHeadingText = null;
+            }
+          }
+        }
+      },
+
       handleCancelClick: function () {
         this.widget.closeSearchScreen();
       },
@@ -317,6 +339,7 @@ import './CraftSupportWidget.scss';
         this.clearSearchTimeout();
 
         var text = this.$body.val();
+        this.searchQuery = text;
 
         if (text) {
           var url = this.getSearchUrl(this.$body.val());
@@ -363,11 +386,18 @@ import './CraftSupportWidget.scss';
                     '<span class="status ' +
                     this.getSearchResultStatus(results[i]) +
                     '"></span>' +
-                    this.getSearchResultText(results[i]),
+                    Craft.escapeHtml(this.getSearchResultText(results[i])),
                 })
               )
             );
           }
+
+          // Announce the results for SR users
+          Craft.cp.announce(
+            Craft.t('app', 'Showing results for “{searchQuery}”', {
+              searchQuery: this.searchQuery,
+            })
+          );
 
           var endResultsHeight = this.$searchResultsContainer
             .height('auto')
@@ -409,6 +439,7 @@ import './CraftSupportWidget.scss';
           );
 
         this.showingResults = false;
+        this.searchQuery = null;
         this.$screen.removeClass('with-results');
       },
 
@@ -423,13 +454,13 @@ import './CraftSupportWidget.scss';
       },
 
       reinit: function () {
-        this.$body.trigger('focus');
+        this.$body.focus();
       },
 
       prepForSearch: function (animate) {
         this.mode = BaseSearchScreen.MODE_SEARCH;
 
-        this.$body.velocity('stop').trigger('focus');
+        this.$body.velocity('stop').focus();
 
         if (this.$supportErrorList) {
           this.$supportErrorList.remove();
@@ -446,6 +477,7 @@ import './CraftSupportWidget.scss';
 
         // In case there's already a search value
         this.handleBodyTextChange();
+        this.handleHeadingChange();
         this.search();
       },
 
@@ -455,7 +487,7 @@ import './CraftSupportWidget.scss';
 
         this.mode = BaseSearchScreen.MODE_SUPPORT;
 
-        this.$body.velocity('stop').trigger('focus');
+        this.$body.velocity('stop').focus();
 
         if (animate) {
           this.$body.velocity({height: this.bodyStartHeight * 2});
@@ -467,6 +499,7 @@ import './CraftSupportWidget.scss';
 
         // In case there's already a search value
         this.handleBodyTextChange();
+        this.handleHeadingChange();
       },
 
       swapForms: function ($out, $in, animate) {
@@ -534,7 +567,9 @@ import './CraftSupportWidget.scss';
             if (response.errors.hasOwnProperty(attribute)) {
               for (var i = 0; i < response.errors[attribute].length; i++) {
                 var error = response.errors[attribute][i];
-                $('<li>' + error + '</li>').appendTo(this.$supportErrorList);
+                $('<li/>', {
+                  text: error,
+                }).appendTo(this.$supportErrorList);
               }
             }
           }

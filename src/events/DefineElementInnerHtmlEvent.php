@@ -7,23 +7,15 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
-
-use yii\base\Event;
-
 /**
  * DefineElementInnerHtmlEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated in 5.0.0.
  */
-class DefineElementInnerHtmlEvent extends Event
+class DefineElementInnerHtmlEvent extends ElementEvent
 {
-    /**
-     * @var ElementInterface The element being rendered via `\craft\helpers\Cp::elementHtml()`.
-     */
-    public ElementInterface $element;
-
     /**
      * @var string The context the element is going to be shown in (`index`, `field`, etc.).
      */

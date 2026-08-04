@@ -35,8 +35,7 @@ class TestCase extends Unit
     /**
      * Returns a callable that checks whether the passed in object is an instance of the $class param
      *
-     * @param string $class
-     * @phpstan-param class-string $class
+     * @param class-string $class
      * @return callable
      */
     public function assertObjectIsInstanceOfClassCallback(string $class): callable

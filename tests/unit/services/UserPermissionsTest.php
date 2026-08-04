@@ -9,6 +9,7 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
@@ -131,7 +132,7 @@ class UserPermissionsTest extends TestCase
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -147,7 +148,18 @@ class UserPermissionsTest extends TestCase
         );
 
         $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
-            $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers']);
+        }, UserPermissionsEvent::class);
+
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'viewUsers')
+        );
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers', 'editUsers']);
         }, UserPermissionsEvent::class);
 
         self::assertTrue(
@@ -167,7 +179,7 @@ class UserPermissionsTest extends TestCase
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -198,7 +210,7 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
         }, UserGroupPermissionsEvent::class);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -222,10 +234,11 @@ class UserPermissionsTest extends TestCase
      */
     protected function _before(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
         Craft::$app->getProjectConfig()->rebuild();
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();
+        $this->userPermissions->reset();
     }
 }

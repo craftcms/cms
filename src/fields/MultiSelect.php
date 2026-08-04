@@ -24,6 +24,26 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionIcons = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionColors = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Multi-select');
@@ -32,25 +52,15 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s', MultiOptionsFieldData::class);
+        return 'list-check';
     }
 
     /**
      * @inheritdoc
      */
-    protected bool $multi = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected bool $optgroups = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
@@ -65,6 +75,23 @@ class MultiSelect extends BaseOptionsField
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
             'multi' => true,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return Cp::selectizeHtml([
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
+            'class' => 'selectize',
+            'name' => $this->handle,
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true, $value, $element),
+            'multi' => true,
+            'disabled' => true,
         ]);
     }
 

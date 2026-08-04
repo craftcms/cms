@@ -1,4 +1,4 @@
-{% requireAdmin %}
+{% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
 {% set title = "User Settings"|t('app') %}
@@ -8,9 +8,9 @@
 ] %}
 
 {% set navItems = {
-    groups: CraftEdition == CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
-    fields: { label: "User Fields"|t('app'), url: url('settings/users/fields') },
-    addressFields: { label: "Address Fields"|t('app'), url: url('settings/users/address-fields') },
+    teamGroup: CraftEdition == CraftTeam ? { label: "User Permissions"|t('app'), url: url('settings/users') },
+    groups: CraftEdition >= CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
+    fields: { label: "User Profile Fields"|t('app'), url: url('settings/users/fields') },
     settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
 }|filter %}
 

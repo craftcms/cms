@@ -48,6 +48,14 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     /**
      * @inheritdoc
      */
+    protected function allowMultiple(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getExclusiveQueryParams(): array
     {
         return ['author', 'authorId'];
@@ -59,7 +67,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $query->authorId($this->getElementId());
+        $query->authorId($this->getElementIds());
     }
 
     /**

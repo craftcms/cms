@@ -24,10 +24,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _uploadTotalFiles: 0,
     _uploadFileProgress: {},
     _currentUploaderSettings: {},
+    _includeSubfolders: null,
 
     init: function (elementType, $container, settings) {
       settings = Object.assign({}, Craft.AssetIndex.defaults, settings);
-      this.base(elementType, $container, settings);
+      this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+      if (this.settings.context === 'index') {
+        // remember whether includeSubfolders was set in the query string,
+        // before the URL is updated
+        const queryParams = Craft.getQueryParams();
+        if (queryParams.includeSubfolders !== undefined) {
+          this._includeSubfolders = !!parseInt(queryParams.includeSubfolders);
+        }
+      }
+
+      this.base(elementType, $container, this.settings);
 
       if (this.settings.context === 'index') {
         this.itemDrag = new Garnish.DragDrop({
@@ -58,7 +70,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 .filter(
                   (source) =>
                     Garnish.hasAttr(source, 'data-folder-id') &&
-                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                    Garnish.hasAttr(source, 'data-can-move-to')
                 )
             );
             if (this.sourcePath.length <= 1) {
@@ -89,7 +101,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             Garnish.$bod.addClass('dragging');
             this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
           },
-          onDragStop: () => {
+          onDragStop: async () => {
             Garnish.$bod.removeClass('dragging');
 
             const $draggee = this.itemDrag.$draggee;
@@ -115,30 +127,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             });
 
             const mover = new Craft.AssetMover();
-            mover
-              .moveFolders(folderIds, targetFolderId)
-              .then((totalFoldersMoved) => {
-                mover
-                  .moveAssets(assetIds, targetFolderId)
-                  .then((totalAssetsMoved) => {
-                    const totalItemsMoved =
-                      totalFoldersMoved + totalAssetsMoved;
-                    if (totalItemsMoved) {
-                      Craft.cp.displayNotice(
-                        Craft.t(
-                          'app',
-                          '{totalItems, plural, =1{Item} other{Items}} moved.',
-                          {
-                            totalItems: totalItemsMoved,
-                          }
-                        )
-                      );
-                      Craft.elementIndex.updateElements(true);
-                    } else {
-                      $draggee.closest('tr,li').removeClass('draggee');
-                    }
-                  });
-              });
+
+            const moveParams = await mover.getMoveParams(folderIds, assetIds);
+            if (!moveParams.proceed) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              return;
+            }
+
+            const totalFoldersMoved = await mover.moveFolders(
+              folderIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalAssetsMoved = await mover.moveAssets(
+              assetIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
+            if (totalItemsMoved) {
+              mover.successNotice(
+                moveParams,
+                Craft.t(
+                  'app',
+                  '{totalItems, plural, =1{Item} other{Items}} moved.',
+                  {
+                    totalItems: totalItemsMoved,
+                  }
+                )
+              );
+              Craft.elementIndex.updateElements(true);
+            } else {
+              $draggee.closest('tr,li').removeClass('draggee');
+            }
           },
         });
 
@@ -153,6 +174,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           );
         }
       }
+
+      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
     },
 
     _findDraggableItems: function ($items) {
@@ -191,6 +214,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         this.initForFiles();
       }
 
+      // Double-clicking or double-tapping on folders should open them
+      this.addListener(this.$elements, 'doubletap', function (ev, touchData) {
+        // Make sure the touch targets are the same
+        // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+        if (touchData.firstTap.target === touchData.secondTap.target) {
+          const $element = $(touchData.firstTap.target)
+            .closest('tr,ul.thumbsview > li')
+            .find('.element:first');
+          if (Garnish.hasAttr($element, 'data-is-folder')) {
+            $element.find('a').trigger('activate');
+          }
+        }
+      });
+
       this.base();
     },
 
@@ -206,13 +243,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
     createUploadInputs: function () {
       this.$uploadButton?.remove();
-      this.uploader?.$fileInput.remove();
+      this.$uploadInput?.remove();
 
       this.$uploadButton = $('<button/>', {
         type: 'button',
         class: 'btn submit',
         'data-icon': 'upload',
         style: 'position: relative; overflow: hidden;',
+        'aria-label': Craft.t('app', 'Upload files'),
         text: Craft.t('app', 'Upload files'),
       });
       this.addButton(this.$uploadButton);
@@ -249,7 +287,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           Garnish.hasAttr(this.$source, 'data-can-upload')
         ) {
           this.uploader?.destroy();
-          this.$uploadInput.insertBefore(this.$uploadButton);
           this.$uploadButton.removeClass('disabled');
 
           const options = {
@@ -298,7 +335,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
 
         // will the user be allowed to move items in this folder?
-        const canMoveSubItems = !!currentFolder.canMoveSubItems;
+        const canMoveSubItems =
+          this.context === 'index' && !!currentFolder.canMoveSubItems;
         this.settings.selectable = this.settings.selectable || canMoveSubItems;
         this.settings.multiSelect =
           this.settings.multiSelect || canMoveSubItems;
@@ -348,7 +386,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             .removeClass('hidden');
         }
 
-        var checked = this.getSelectedSourceState('includeSubfolders', false);
+        let checked;
+        if (this._includeSubfolders !== null) {
+          checked = this._includeSubfolders;
+          this._includeSubfolders = null;
+        } else {
+          checked = this.getSelectedSourceState('includeSubfolders', false);
+        }
         this.$includeSubfoldersCheckbox.prop('checked', checked);
 
         this.$includeSubfoldersContainer.velocity(
@@ -434,7 +478,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * Update uploaded byte count.
      */
-    _onUploadProgress: function (event, data) {
+    _onUploadProgress: function (event, data = null) {
       data = event instanceof CustomEvent ? event.detail : data;
 
       var progress = parseInt(Math.min(data.loaded / data.total, 1) * 100, 10);
@@ -448,7 +492,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @param {Object} data
      * @private
      */
-    _onUploadSuccess: function (event, data) {
+    _onUploadSuccess: function (event, data = null) {
       const result = event instanceof CustomEvent ? event.detail : data.result;
 
       // Add the uploaded file to the selected ones, if appropriate
@@ -462,6 +506,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
             {value: 'replace', title: Craft.t('app', 'Replace it')},
           ],
+          modalSettings: {
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+          },
         };
 
         this.promptHandler.addPrompt(result);
@@ -489,16 +537,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     /**
      * On Upload Failure.
      */
-    _onUploadFailure: function (event, data) {
+    _onUploadFailure: function (event, data = null) {
       const response =
         event instanceof CustomEvent ? event.detail : data?.jqXHR?.responseJSON;
 
-      let {message, filename} = response || {};
+      let {message, filename, errors} = response || {};
+      filename = filename || data?.files?.[0].name;
+      let errorMessages = errors ? Object.values(errors).flat() : [];
 
       if (!message) {
-        message = filename
-          ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
-          : Craft.t('app', 'Upload failed.');
+        if (errorMessages.length) {
+          message = errorMessages.join('\n');
+        } else if (filename) {
+          message = Craft.t('app', 'Upload failed for “{filename}”.', {
+            filename,
+          });
+        } else {
+          message = Craft.t('app', 'Upload failed.');
+        }
       }
 
       Craft.cp.displayError(message);
@@ -613,17 +669,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
      * @private
      */
     _onUpdateElements: function (append, $newElements) {
-      this.removeListener(this.$elements, 'keydown');
-      this.addListener(this.$elements, 'keydown', this._onKeyDown.bind(this));
-      this.view.elementSelect.on('focusItem', this._onElementFocus.bind(this));
-
       this.$listedFolders = $newElements.find(
         '.element[data-is-folder][data-folder-name]'
       );
       for (let i = 0; i < this.$listedFolders.length; i++) {
         const $folder = this.$listedFolders.eq(i);
         const $label = $folder.find('.label');
-        const $title = $label.find('.title');
+        const $link = $label.find('.label-link');
         const folderId = parseInt($folder.data('folder-id'));
         const folderName = $folder.data('folder-name');
         const label = Craft.t('app', '{name} folder', {
@@ -636,14 +688,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          const $a = $('<a/>', {
-            href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            html: $title.html(),
-            role: 'button',
-            'aria-label': label,
-          });
-          $label.empty().append($a);
-          this.addListener($a, 'activate', (ev) => {
+          const $newLink = $('<a class="label-link"/>')
+            .html($link.html())
+            .attr({
+              href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
+              role: 'button',
+              'aria-label': label,
+            });
+          $link.replaceWith($newLink);
+          this.addListener($newLink, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {
@@ -681,49 +734,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
     _onKeyDown: function (ev) {
       if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
         if (Craft.PreviewFileModal.openInstance) {
-          Craft.PreviewFileModal.openInstance.selfDestruct();
-        } else {
-          var $element = this.view.elementSelect.$focusedItem.find('.element');
+          Craft.PreviewFileModal.openInstance.hide();
+        } else if (this.view.elementSelect) {
+          let $element = $(ev.target).closest('.element');
+          if (!$element.length) {
+            $element = $(ev.target).find('.element:first');
+          }
 
-          if ($element.length) {
-            this._loadPreview($element);
+          if ($element.length && !Garnish.hasAttr($element, 'data-folder-id')) {
+            Craft.PreviewFileModal.showForAsset(
+              $element,
+              this.view.elementSelect
+            );
           }
         }
 
         ev.stopPropagation();
         return false;
       }
-    },
-
-    /**
-     * Handle element being focused
-     * @private
-     */
-    _onElementFocus: function (ev) {
-      var $element = $(ev.item).find('.element');
-
-      if (Craft.PreviewFileModal.openInstance && $element.length) {
-        this._loadPreview($element);
-      }
-    },
-
-    /**
-     * Load the preview for an asset
-     * @private
-     */
-    _loadPreview: function ($element) {
-      var settings = {};
-
-      if ($element.data('image-width')) {
-        settings.startingWidth = $element.data('image-width');
-        settings.startingHeight = $element.data('image-height');
-      }
-
-      new Craft.PreviewFileModal(
-        $element.data('id'),
-        this.view.elementSelect,
-        settings
-      );
     },
 
     /**
@@ -762,10 +790,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             },
           });
 
-          if (
-            currentFolder.canMove &&
-            this.getMoveTargetSourceKeys(true).length
-          ) {
+          if (currentFolder.canMove && this.getMoveTargetSourceKeys().length) {
             actions.push({
               label: Craft.t('app', 'Move folder'),
               onSelect: () => {
@@ -779,7 +804,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
               label: Craft.t('app', 'Delete folder'),
               destructive: true,
               onSelect: () => {
-                this._deleteFolder();
+                this.deleteCurrentFolder();
               },
             });
           }
@@ -816,37 +841,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
     },
 
-    _deleteFolder: function () {
-      const currentFolder = this.sourcePath[this.sourcePath.length - 1];
-
+    deleteCurrentFolder: async function () {
       if (
-        confirm(
+        await this.deleteFolder(this.sourcePath[this.sourcePath.length - 1])
+      ) {
+        this.sourcePath = this.sourcePath.slice(0, this.sourcePath.length - 1);
+        this.updateElements();
+      }
+    },
+
+    deleteFolder: async function (folder) {
+      if (
+        !confirm(
           Craft.t('app', 'Really delete folder “{folder}”?', {
-            folder: currentFolder.label,
+            folder: folder.label,
           })
         )
       ) {
-        const data = {
-          folderId: currentFolder.folderId,
-        };
-
-        this.setIndexBusy();
-
-        Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
-          .then((response) => {
-            this.setIndexAvailable();
-            Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
-            this.sourcePath = this.sourcePath.slice(
-              0,
-              this.sourcePath.length - 1
-            );
-            this.updateElements();
-          })
-          .catch(({response}) => {
-            this.setIndexAvailable();
-            Craft.cp.displayError(response.data.message);
-          });
+        return false;
       }
+
+      this.setIndexBusy();
+
+      try {
+        await Craft.sendActionRequest('POST', 'assets/delete-folder', {
+          data: {
+            folderId: folder.folderId,
+          },
+        });
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return false;
+      } finally {
+        this.setIndexAvailable();
+      }
+
+      Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
+      return true;
     },
 
     /**
@@ -887,10 +918,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
     },
 
-    getMoveTargetSourceKeys: function (peerFiles) {
-      const attr = peerFiles
-        ? 'data-can-move-peer-files-to'
-        : 'data-can-move-to';
+    getMoveTargetSourceKeys: function () {
       return this.$sources
         .toArray()
         .filter((source) => {
@@ -898,7 +926,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           return (
             volumeHandle &&
             volumeHandle !== 'temp' &&
-            Garnish.hasAttr(source, attr)
+            Garnish.hasAttr(source, 'data-can-move-to')
           );
         })
         .map((source) => $(source).data('key'));
@@ -914,7 +942,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       new Craft.VolumeFolderSelectorModal({
-        sources: this.getMoveTargetSourceKeys(true),
+        sources: this.getMoveTargetSourceKeys(),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),

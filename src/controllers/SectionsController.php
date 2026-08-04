@@ -9,21 +9,20 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\Entry;
-use craft\helpers\Json;
-use craft\helpers\UrlHelper;
-use craft\models\EntryType;
+use craft\enums\PropagationMethod;
+use craft\helpers\Cp;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
- * The SectionsController class is a controller that handles various section and entry type related tasks such as
- * displaying, saving, deleting and reordering them in the control panel.
+ * SectionsController handles various section-related tasks.
+ *
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -31,6 +30,8 @@ use yii\web\Response;
  */
 class SectionsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -40,8 +41,16 @@ class SectionsController extends Controller
             return false;
         }
 
-        // All section actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['index', 'edit-section', 'table-data'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -54,7 +63,8 @@ class SectionsController extends Controller
      */
     public function actionIndex(array $variables = []): Response
     {
-        $variables['sections'] = Craft::$app->getSections()->getAllSections();
+        $variables['sections'] = Craft::$app->getEntries()->getAllSections();
+        $variables['readOnly'] = $this->readOnly;
 
         return $this->renderTemplate('settings/sections/_index.twig', $variables);
     }
@@ -70,6 +80,12 @@ class SectionsController extends Controller
      */
     public function actionEditSection(?int $sectionId = null, ?Section $section = null): Response
     {
+        if ($sectionId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
+        $sectionsService = Craft::$app->getEntries();
+
         $variables = [
             'sectionId' => $sectionId,
             'brandNewSection' => false,
@@ -77,21 +93,21 @@ class SectionsController extends Controller
 
         if ($sectionId !== null) {
             if ($section === null) {
-                $section = Craft::$app->getSections()->getSectionById($sectionId);
+                $section = $sectionsService->getSectionById($sectionId);
 
                 if (!$section) {
                     throw new NotFoundHttpException('Section not found');
                 }
             }
 
-            $variables['title'] = trim($section->name) ?: Craft::t('app', 'Edit Section');
+            $title = trim($section->name) ?: Craft::t('app', 'Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
                 $variables['brandNewSection'] = true;
             }
 
-            $variables['title'] = Craft::t('app', 'Create a new section');
+            $title = Craft::t('app', 'Create a new section');
         }
 
         $typeOptions = [
@@ -106,10 +122,31 @@ class SectionsController extends Controller
 
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
+        $variables['readOnly'] = $this->readOnly;
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
-        return $this->renderTemplate('settings/sections/_edit.twig', $variables);
+        $response = $this->asCpScreen()
+            ->editUrl($section->getCpEditUrl())
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Sections'), 'settings/sections')
+            ->contentTemplate('settings/sections/_edit.twig', $variables);
+
+        if (!$this->readOnly) {
+            $response
+                ->action('sections/save-section')
+                ->redirectUrl('settings/sections')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/sections/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ]);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**
@@ -122,7 +159,7 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $sectionsService = Craft::$app->getSections();
+        $sectionsService = Craft::$app->getEntries();
         $sectionId = $this->request->getBodyParam('sectionId');
         if ($sectionId) {
             $section = $sectionsService->getSectionById($sectionId);
@@ -136,15 +173,23 @@ class SectionsController extends Controller
         // Main section settings
         $section->name = $this->request->getBodyParam('name');
         $section->handle = $this->request->getBodyParam('handle');
-        $section->type = $this->request->getBodyParam('type');
+        $section->type = $this->request->getBodyParam('type') ?? Section::TYPE_CHANNEL;
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
-        $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $minAuthors = $this->request->getBodyParam('minAuthors');
+        $maxAuthors = $this->request->getBodyParam('maxAuthors');
+        $section->minAuthors = is_numeric($minAuthors) ? (int)$minAuthors : 0;
+        $section->maxAuthors = is_numeric($maxAuthors) ? (int)$maxAuthors : null;
+        $section->propagationMethod = PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
+            ?? PropagationMethod::All;
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
+        // Structure settings
         if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $this->request->getBodyParam('maxLevels') ?: null;
             $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
+
+        $section->setEntryTypes(array_filter($this->request->getBodyParam('entryTypes') ?: []));
 
         // Site-specific settings
         $allSiteSettings = [];
@@ -178,18 +223,10 @@ class SectionsController extends Controller
 
         // Save it
         if (!$sectionsService->saveSection($section)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
-
-            // Send the section back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'section' => $section,
-            ]);
-
-            return null;
+            return $this->asModelFailure($section, Craft::t('app', 'Couldn’t save section.'), 'section');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Section saved.'));
-        return $this->redirectToPostedUrl($section);
+        return $this->asModelSuccess($section, Craft::t('app',  'Section saved.'), 'section');
     }
 
     /**
@@ -204,195 +241,41 @@ class SectionsController extends Controller
 
         $sectionId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getSections()->deleteSectionById($sectionId);
+        Craft::$app->getEntries()->deleteSectionById($sectionId);
 
         return $this->asSuccess();
     }
 
-    // Entry Types
-
     /**
-     * Entry types index
+     * Returns data formatted for AdminTable vue component
      *
-     * @param int $sectionId The ID of the section whose entry types we’re listing
      * @return Response
-     * @throws NotFoundHttpException if the requested section cannot be found
-     */
-    public function actionEntryTypesIndex(int $sectionId): Response
-    {
-        $section = Craft::$app->getSections()->getSectionById($sectionId);
-
-        if ($section === null) {
-            throw new NotFoundHttpException('Section not found');
-        }
-
-        $title = Craft::t('app', '{section} Entry Types',
-            ['section' => Craft::t('site', $section->name)]);
-
-        return $this->renderTemplate('settings/sections/_entrytypes/index.twig', [
-            'sectionId' => $sectionId,
-            'section' => $section,
-            'title' => $title,
-        ]);
-    }
-
-    /**
-     * Edit an entry type
-     *
-     * @param int $sectionId The section’s ID.
-     * @param int|null $entryTypeId The entry type’s ID, if any.
-     * @param EntryType|null $entryType The entry type being edited, if there were any validation errors.
-     * @return Response
-     * @throws NotFoundHttpException if the requested section/entry type cannot be found
-     * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
-     */
-    public function actionEditEntryType(int $sectionId, ?int $entryTypeId = null, ?EntryType $entryType = null): Response
-    {
-        $section = Craft::$app->getSections()->getSectionById($sectionId);
-
-        if (!$section) {
-            throw new NotFoundHttpException('Section not found');
-        }
-
-        if ($entryTypeId !== null) {
-            if ($entryType === null) {
-                $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
-
-                if (!$entryType) {
-                    throw new NotFoundHttpException('Entry type not found');
-                }
-
-                if ($entryType->sectionId != $section->id) {
-                    throw new BadRequestHttpException('Entry type does not belong to the requested section');
-                }
-            }
-
-            $title = trim($entryType->name) ?: Craft::t('app', 'Edit Entry Type');
-        } else {
-            if ($entryType === null) {
-                $entryType = new EntryType();
-                $entryType->sectionId = $section->id;
-            }
-
-            $title = Craft::t('app', 'Create a new {section} entry type',
-                ['section' => Craft::t('site', $section->name)]);
-        }
-
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections'),
-            ],
-            [
-                'label' => $section->name,
-                'url' => UrlHelper::url('settings/sections/' . $section->id),
-            ],
-            [
-                'label' => Craft::t('app', 'Entry Types'),
-                'url' => UrlHelper::url('settings/sections/' . $sectionId . '/entrytypes'),
-            ],
-        ];
-
-        return $this->renderTemplate('settings/sections/_entrytypes/edit.twig', [
-            'sectionId' => $sectionId,
-            'section' => $section,
-            'entryTypeId' => $entryTypeId,
-            'entryType' => $entryType,
-            'title' => $title,
-            'crumbs' => $crumbs,
-            'typeName' => Entry::displayName(),
-            'lowerTypeName' => Entry::lowerDisplayName(),
-        ]);
-    }
-
-    /**
-     * Saves an entry type.
-     *
-     * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveEntryType(): ?Response
+    public function actionTableData(): Response
     {
-        $this->requirePostRequest();
-
-        $sectionsService = Craft::$app->getSections();
-        $entryTypeId = $this->request->getBodyParam('entryTypeId');
-
-        if ($entryTypeId) {
-            $entryType = $sectionsService->getEntryTypeById($entryTypeId);
-            if (!$entryType) {
-                throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
-            }
-        } else {
-            $entryType = new EntryType();
-        }
-
-        // Set the simple stuff
-        $entryType->sectionId = $this->request->getRequiredBodyParam('sectionId');
-        $entryType->name = $this->request->getBodyParam('name', $entryType->name);
-        $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
-        $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
-        $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
-        $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
-        $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
-        $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
-        $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
-        $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
-
-        // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Entry::class;
-        $entryType->setFieldLayout($fieldLayout);
-
-        // Save it
-        if (!$sectionsService->saveEntryType($entryType)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
-
-            // Send the entry type back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entryType' => $entryType,
-            ]);
-
-            return null;
-        }
-
-        $this->setSuccessFlash(Craft::t('app', 'Entry type saved.'));
-        return $this->redirectToPostedUrl($entryType);
-    }
-
-    /**
-     * Reorders entry types.
-     *
-     * @return Response
-     */
-    public function actionReorderEntryTypes(): Response
-    {
-        $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
-        Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
+        $entriesService = Craft::$app->getEntries();
 
-        return $this->asSuccess();
-    }
+        $page = (int)$this->request->getParam('page', 1);
+        $limit = (int)$this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search');
+        $orderBy = match ($this->request->getParam('sort.0.field')) {
+            '__slot:handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+        $sortDir = match ($this->request->getParam('sort.0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
 
-    /**
-     * Deletes an entry type.
-     *
-     * @return Response
-     */
-    public function actionDeleteEntryType(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
+        [$pagination, $tableData] = $entriesService->getSectionTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
 
-        $entryTypeId = $this->request->getRequiredBodyParam('id');
-
-        $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
-        return $success ? $this->asSuccess() : $this->asFailure();
+        return $this->asSuccess(data: [
+            'pagination' => $pagination,
+            'data' => $tableData,
+        ]);
     }
 }

@@ -9,10 +9,12 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
+use craft\models\EntryType;
 use craft\models\Section;
-use craft\web\assets\quickpost\QuickPostAsset;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -35,33 +37,41 @@ class QuickPost extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/newspaper.svg');
+        return 'file-circle-plus';
     }
 
     /**
-     * @var string The site ID that the widget should pull entries from
+     * @var int|null The site ID that the widget should create entries for.
      */
-    public string $siteId = '';
+    public ?int $siteId = null;
 
     /**
-     * @var int|null The ID of the section that the widget should post to
+     * @var int The ID of the section that the widget should create entries for.
      */
-    public ?int $section = null;
+    public int $section;
 
     /**
-     * @var int|null The ID of the entry type that the widget should create
+     * @var int|null The ID of the entry type that the widget should create entries with.
      */
     public ?int $entryType = null;
 
     /**
-     * @var int[]|null The IDs of the fields that the widget should show
+     * @var string|null The custom widget title.
+     * @since 5.6.0
      */
-    public ?array $fields = null;
+    public ?string $customTitle = null;
 
     /**
-     * @var Section|false|null
+     * @var Section|false
+     * @see section()
      */
-    private Section|false|null $_section = null;
+    private Section|false $_section;
+
+    /**
+     * @var EntryType|false
+     * @see entryType()
+     */
+    private EntryType|false $_entryType;
 
     /**
      * @inheritdoc
@@ -79,6 +89,12 @@ class QuickPost extends Widget
 
             unset($config['sections']);
         }
+
+        if (isset($config['customTitle']) && $config['customTitle'] === '') {
+            unset($config['customTitle']);
+        }
+
+        unset($config['fields']);
 
         parent::__construct($config);
     }
@@ -102,7 +118,7 @@ class QuickPost extends Widget
         // Find the sections the user has permission to create entries in
         $sections = [];
 
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE) {
                 if (Craft::$app->getUser()->checkPermission('createEntries:' . $section->uid)) {
                     $sections[] = $section;
@@ -110,19 +126,13 @@ class QuickPost extends Widget
             }
         }
 
-        $fieldsByEntryTypeId = [];
-        foreach ($sections as $section) {
-            foreach ($section->getEntryTypes() as $entryType) {
-                $fieldsByEntryTypeId[$entryType->id] = $entryType->getFieldLayout()->getCustomFieldElements();
-            }
-        }
-
-        return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings.twig',
-            [
-                'sections' => $sections,
-                'fieldsByEntryTypeId' => $fieldsByEntryTypeId,
-                'widget' => $this,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings.twig', [
+            'sections' => $sections,
+            'widget' => $this,
+            'siteId' => $this->siteId,
+            'section' => $this->section(),
+            'entryType' => $this->entryType(),
+        ]);
     }
 
     /**
@@ -130,13 +140,18 @@ class QuickPost extends Widget
      */
     public function getTitle(): ?string
     {
-        $section = $this->_getSection();
-
-        if ($section) {
-            return Craft::t('app', 'Post a new {section} entry', ['section' => Craft::t('site', $section->name)]);
+        if (isset($this->customTitle)) {
+            return Craft::t('site', $this->customTitle);
         }
 
-        return static::displayName();
+        $entryType = $this->entryType();
+        if (!$entryType) {
+            return static::displayName();
+        }
+
+        return Craft::t('app', 'Create a new {section} entry', [
+            'section' => Craft::t('site', $this->section()->name),
+        ]);
     }
 
     /**
@@ -144,74 +159,131 @@ class QuickPost extends Widget
      */
     public function getBodyHtml(): ?string
     {
+        $section = $this->section();
+        if (!$section) {
+            return Html::tag('p', Craft::t('app', 'No section has been selected yet.'));
+        }
+
+        $entryType = $this->entryType();
+        if (!$entryType) {
+            return Html::tag('p', Craft::t('app', 'No entry types exist for this section.'));
+        }
+
+        $siteId = $this->siteId();
+        if (!$siteId) {
+            return Html::tag('p', Craft::t('app', 'You’re not permitted to edit any of this section’s sites.'));
+        }
+
+        $buttonId = sprintf('quickpost%s', mt_rand());
+
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(QuickPostAsset::class);
-
-        $section = $this->_getSection();
-
-        if ($section === null) {
-            return '<p>' . Craft::t('app', 'No section has been selected yet.') . '</p>';
+        $view->registerJsWithVars(fn($buttonId, $params, $elementType) => <<<JS
+(() => {
+  const button = $('#' + $buttonId);
+  button.on('activate', async () => {
+    button.addClass('loading');
+    let entry;
+    try {
+      const response = await Craft.sendActionRequest('POST', 'entries/create', {
+        data: $params,
+      });
+      entry = response.data.entry;
+    } finally {
+      button.removeClass('loading');
+    }
+    const slideout = Craft.createElementEditor($elementType, {
+      siteId: entry.siteId,
+      elementId: entry.id,
+      draftId: entry.draftId,
+      params: {
+        fresh: 1,
+      },
+    });
+    
+    slideout.on('submit', ({data}) => {
+      // Are there any Recent Entries widgets to notify?
+      if (typeof Craft.RecentEntriesWidget !== 'undefined') {
+        for (const widget of Craft.RecentEntriesWidget.instances) {
+          if (
+            !widget.params.sectionId ||
+            widget.params.sectionId == entry.sectionId
+          ) {
+            widget.addEntry({
+              url: data.cpEditUrl,
+              title: data.title,
+              dateCreated: data.dateCreated,
+            });
+          }
         }
-
-        $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
-
-        if (empty($entryTypes)) {
-            return '<p>' . Craft::t('app', 'No entry types exist for this section.') . '</p>';
-        }
-
-        if ($this->entryType && isset($entryTypes[$this->entryType])) {
-            $entryTypeId = $this->entryType;
-        } else {
-            $entryTypeId = array_key_first($entryTypes);
-        }
-
-        $entryType = $entryTypes[$entryTypeId];
-
-        $params = [
-            'siteId' => $this->siteId ?? Craft::$app->getSites()->getPrimarySite()->id,
-            'sectionId' => $section->id,
-            'typeId' => $entryTypeId,
-        ];
-
-        $view->startJsBuffer();
-
-        $html = $view->renderTemplate('_components/widgets/QuickPost/body.twig',
+      }
+    });
+  });
+})();
+JS, [
+            $buttonId,
             [
-                'section' => $section,
-                'entryType' => $entryType,
-                'widget' => $this,
-            ]);
+                'siteId' => $this->siteId(),
+                'section' => $section->handle,
+                'type' => $entryType->handle,
+                'authorId' => Craft::$app->getUser()->getId(),
+            ],
+            Entry::class,
+        ]);
 
-        $fieldJs = $view->clearJsBuffer(false);
-        $jsParams = Json::encode($params);
-        $jsHtml = Json::encode($html);
-        $js = <<<JS
-new Craft.QuickPostWidget($this->id, $jsParams, () => {
-  $fieldJs
-}, $jsHtml);
-JS;
-        $view->registerJs($js);
-
-        return $html;
+        return $view->renderTemplate('_includes/forms/button.twig', [
+            'id' => $buttonId,
+            'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', [
+                'type' => Entry::lowerDisplayName(),
+            ])),
+            'spinner' => true,
+        ]);
     }
 
-    /**
-     * Returns the widget's section.
-     *
-     * @return Section|null
-     */
-    private function _getSection(): ?Section
+    private function siteId(): ?int
+    {
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
+        if ($this->siteId && in_array($this->siteId, $editableSiteIds)) {
+            return $this->siteId;
+        }
+
+        $possibleSiteIds = array_intersect($editableSiteIds, $this->section()->getSiteIds());
+        return ArrayHelper::firstValue($possibleSiteIds);
+    }
+
+    private function section(): ?Section
     {
         if (!isset($this->_section)) {
-            if ($this->section) {
-                $this->_section = Craft::$app->getSections()->getSectionById($this->section);
+            if (isset($this->section)) {
+                $section = ArrayHelper::firstWhere(
+                    Craft::$app->getEntries()->getEditableSections(),
+                    fn(Section $section) => $section->id === $this->section,
+                );
+            } else {
+                $section = null;
             }
-
-            if (!isset($this->_section)) {
-                $this->_section = false;
-            }
+            $this->_section = $section ?? false;
         }
 
         return $this->_section ?: null;
+    }
+
+    private function entryType(): ?EntryType
+    {
+        if (!isset($this->_entryType)) {
+            $section = $this->section();
+            if ($section && isset($this->entryType)) {
+                $entryType = ArrayHelper::firstWhere(
+                    $section->getEntryTypes(),
+                    fn(EntryType $entryType) => $entryType->id === $this->entryType,
+                );
+            } else {
+                $entryType = null;
+            }
+            $this->_entryType = $entryType ?? $section?->getEntryTypes()[0] ?? false;
+        }
+
+        return $this->_entryType ?: null;
     }
 }

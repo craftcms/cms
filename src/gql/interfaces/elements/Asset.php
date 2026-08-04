@@ -214,18 +214,14 @@ class Asset extends Element
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
         ]), self::getName());
     }

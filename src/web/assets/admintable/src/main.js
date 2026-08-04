@@ -45,6 +45,12 @@ Craft.VueAdminTable = Garnish.Base.extend(
   {
     defaults: {
       actions: [],
+      allowMultipleDeletions: false,
+      allowMultipleSelections: true,
+      beforeDelete: function () {
+        return Promise.resolve(true);
+      },
+      buttons: [],
       checkboxes: false,
       checkboxStatus: function () {
         return true;
@@ -52,20 +58,45 @@ Craft.VueAdminTable = Garnish.Base.extend(
       columns: [],
       container: null,
       deleteAction: null,
+      deleteCallback: $.noop,
+      deleteConfirmationMessage: null,
+      deleteFailMessage: null,
+      deleteSuccessMessage: null,
+      emptyMessage: Craft.t('app', 'No data available.'),
+      footerActions: [],
+      fullPage: false,
+      fullPane: true,
+      itemLabels: {
+        singular: Craft.t('app', 'item'),
+        plural: Craft.t('app', 'items'),
+      },
+      minItems: null,
+      moveToPageAction: null,
+      noSearchResults: Craft.t('app', 'No results.'),
+      padded: false,
+      paginatedReorderAction: null,
+      perPage: 100,
       reorderAction: null,
-      reorderSuccessMessage: Craft.t('app', 'Items reordered.'),
       reorderFailMessage: Craft.t('app', 'Couldn’t reorder items.'),
+      reorderSuccessMessage: Craft.t('app', 'Items reordered.'),
       search: false,
+      searchClear: Craft.t('app', 'Clear'),
+      searchParams: [],
       searchPlaceholder: Craft.t('app', 'Search'),
-      buttons: [],
       tableData: [],
       tableDataEndpoint: null,
+
+      // Events
+      onCellClicked: $.noop,
+      onCellDoubleClicked: $.noop,
+      onData: $.noop,
       onLoaded: $.noop,
       onLoading: $.noop,
-      onData: $.noop,
       onPagination: $.noop,
-      onSelect: $.noop,
       onQueryParams: $.noop,
+      onRowClicked: $.noop,
+      onRowDoubleClicked: $.noop,
+      onSelect: $.noop,
     },
   }
 );

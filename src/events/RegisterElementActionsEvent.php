@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * RegisterElementActionsEvent class.
@@ -23,7 +23,7 @@ class RegisterElementActionsEvent extends Event
     public string $source;
 
     /**
-     * @var array List of registered actions for the element type.
+     * @var array List of registered bulk actions for the element type.
      */
     public array $actions = [];
 }

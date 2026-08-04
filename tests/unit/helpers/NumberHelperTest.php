@@ -93,7 +93,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function makeNumericDataProvider(): array
+    public static function makeNumericDataProvider(): array
     {
         $toStringClass = new ToString('50');
 
@@ -111,7 +111,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function lowerRomanDataProvider(): array
+    public static function lowerRomanDataProvider(): array
     {
         return [
             ['ii', 2],
@@ -124,7 +124,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function upperRomanDataProvider(): array
+    public static function upperRomanDataProvider(): array
     {
         return [
             ['II', 2],
@@ -137,7 +137,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function wordDataProvider(): array
+    public static function wordDataProvider(): array
     {
         return [
             ['22', 22],
@@ -151,7 +151,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function upperAlphaDataProvider(): array
+    public static function upperAlphaDataProvider(): array
     {
         return [
             ['W', 23],
@@ -166,7 +166,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function lowerAlphaDataProvider(): array
+    public static function lowerAlphaDataProvider(): array
     {
         return [
             ['w', 23],
@@ -181,7 +181,7 @@ class NumberHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isIntOrFloatDataProvider(): array
+    public static function isIntOrFloatDataProvider(): array
     {
         return [
             [true, 0],

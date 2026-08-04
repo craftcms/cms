@@ -7,8 +7,10 @@
 
 namespace craft\mail;
 
+use Craft;
 use craft\elements\User;
 use craft\helpers\MailerHelper;
+use craft\models\Site;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**
@@ -30,6 +32,12 @@ class Message extends \yii\symfonymailer\Message
     public ?array $variables = null;
 
     /**
+     * @var int|null The site ID that the email should be sent from, based on the [[User]] model passed into [[setTo()]], if they have an affiliated site
+     * @since 5.6.0
+     */
+    public ?int $siteId = null;
+
+    /**
      * @var string|null The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred language
      */
     public ?string $language = null;
@@ -46,9 +54,8 @@ class Message extends \yii\symfonymailer\Message
      * user model(s). You may pass an array of addresses if this message is from
      * multiple people. You may also specify sender name in addition to email
      * address using format: `[email => name]`.
-     * @return self self reference
      */
-    public function setFrom($from): self
+    public function setFrom($from): static
     {
         parent::setFrom(MailerHelper::normalizeEmails($from));
         return $this;
@@ -82,6 +89,10 @@ class Message extends \yii\symfonymailer\Message
     public function setTo($to): self
     {
         if ($to instanceof User) {
+            if (!isset($this->siteId) && isset($to->affiliatedSiteId) && !Craft::$app->getRequest()->getIsSiteRequest()) {
+                $this->siteId = $to->affiliatedSiteId;
+            }
+
             if (!isset($this->language)) {
                 $this->language = $to->getPreferredLanguage();
             }

@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 
 /**
  * Admin condition rule.
@@ -24,6 +25,14 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
     public function getLabel(): string
     {
         return Craft::t('app', 'Admin');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isSelectable(): bool
+    {
+        return Craft::$app->edition->value >= CmsEdition::Pro->value;
     }
 
     /**

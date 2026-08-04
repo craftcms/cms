@@ -24,6 +24,12 @@ class Command extends \yii\queue\cli\Command
     use ControllerTrait;
 
     /**
+     * @var string The job ID to run
+     * @since 4.8.0
+     */
+    public ?string $jobId = null;
+
+    /**
      * @var Queue
      */
     public $queue;
@@ -39,6 +45,18 @@ class Command extends \yii\queue\cli\Command
     public $verboseConfig = [
         'class' => VerboseBehavior::class,
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+        if ($actionID === 'run') {
+            $options[] = 'jobId';
+        }
+        return $options;
+    }
 
     /**
      * @inheritdoc
@@ -65,6 +83,10 @@ class Command extends \yii\queue\cli\Command
      */
     public function actionRun(): int
     {
+        if ($this->jobId) {
+            return $this->queue->executeJob($this->jobId) ? ExitCode::OK : ExitCode::UNSPECIFIED_ERROR;
+        }
+
         return $this->queue->run() ?? ExitCode::OK;
     }
 

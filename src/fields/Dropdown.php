@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\enums\AttributeStatus;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 
 /**
@@ -21,8 +23,23 @@ use craft\helpers\Cp;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Dropdown extends BaseOptionsField implements SortableFieldInterface
+class Dropdown extends BaseOptionsField implements SortableFieldInterface, InlineEditableFieldInterface
 {
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionIcons = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionColors = true;
+
     /**
      * @inheritdoc
      */
@@ -34,16 +51,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
     {
-        return sprintf('\\%s', SingleOptionFieldData::class);
+        return 'ballot-check';
     }
 
     /**
      * @inheritdoc
      */
-    protected bool $optgroups = true;
-
     public function getStatus(ElementInterface $element): ?array
     {
         // If the value is invalid and has a default value (which is going to be pulled in via inputHtml()),
@@ -53,7 +68,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
 
         if (!$value->valid && $this->defaultValue() !== null) {
             return [
-                Element::ATTR_STATUS_MODIFIED,
+                AttributeStatus::Modified,
                 Craft::t('app', 'This field has been modified.'),
             ];
         }
@@ -64,27 +79,49 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions(true, $value, $element);
 
-        $hasBlankOption = ArrayHelper::contains($options, function($option) {
-            return isset($option['value']) && $option['value'] === '';
-        });
+        $hasBlankOption = false;
+        foreach ($options as &$option) {
+            if (isset($option['value']) && $option['value'] === '') {
+                $option['value'] = '__blank__';
+                $hasBlankOption = true;
+            }
+            if (isset($option['label']) && $option['label'] === '') {
+                $option['label'] = ' ';
+            }
+        }
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
-            $default = $this->defaultValue();
+            if (!$static) {
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+            }
 
+            $default = $this->defaultValue();
             if ($default !== null) {
-                $value = $this->normalizeValue($this->defaultValue());
+                $value = $this->normalizeValue($default, null);
             } else {
                 $value = null;
 
                 // Add a blank option to the beginning if one doesn't already exist
                 if (!$hasBlankOption) {
-                    array_unshift($options, ['label' => '', 'value' => '']);
+                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
                 }
             }
         }
@@ -95,10 +132,14 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
             'options' => $options,
-            'selectizeOptions' => [
-                'allowEmptyOption' => $hasBlankOption,
-            ],
+            'disabled' => $static,
         ]);
+    }
+
+    protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array|null
+    {
+        $encValue = parent::encodeValue($value);
+        return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
     /**
@@ -107,5 +148,24 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Dropdown Options');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
+    {
+        // special case for blank options, when $value is null
+        if ($value === null && $option['value'] === '') {
+            if (!$selectedBlankOption) {
+                $selectedValues[] = '';
+                $selectedBlankOption = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        return in_array($option['value'], $selectedValues, true);
     }
 }

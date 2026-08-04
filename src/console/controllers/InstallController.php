@@ -10,7 +10,9 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
+use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
@@ -98,13 +100,19 @@ class InstallController extends Controller
     /**
      * Runs the install migration.
      *
-     * @return int
+     * @return mixed
      */
-    public function actionCraft(): int
+    public function actionCraft(): mixed
     {
         if (Craft::$app->getIsInstalled(true)) {
             $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
+        }
+
+        try {
+            Craft::$app->getDb()->open();
+        } catch (DbConnectException $e) {
+            return $this->run('setup/welcome');
         }
 
         $this->run('setup/keys');
@@ -161,7 +169,7 @@ class InstallController extends Controller
         }
         if (
             ($this->language || !$this->interactive) &&
-            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage ?? '', $currentError)
+            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage, $currentError)
         ) {
             $errors[] = ['language', $currentError];
         }
@@ -184,7 +192,7 @@ class InstallController extends Controller
         $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
         $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => $defaultSiteName, 'validator' => $this->createAttributeValidator($site, 'name')]);
         $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => $defaultSiteUrl, 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
-        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage ?? Craft::$app->language, 'validator' => $this->createAttributeValidator($site, 'language')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage, 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it’s not already set to an alias or environment variable
@@ -212,7 +220,10 @@ class InstallController extends Controller
         try {
             $migrator->migrateUp($migration);
         } catch (MigrationException $e) {
-            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
+            $previous = $e->getPrevious();
+            if (!$previous instanceof OperationAbortedException) {
+                $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
+            }
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

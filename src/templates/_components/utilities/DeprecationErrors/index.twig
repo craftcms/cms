@@ -24,7 +24,7 @@
             <tbody>
             {% for log in logs %}
                 <tr data-id="{{ log.id }}">
-                    <td>{{ log.message|e|md(inlineOnly=true)|raw }}</td>
+                    <td>{{ log.message|md(inlineOnly=true, encode=true)|raw }}</td>
                     <td class="code">
                         {{- log.file|e|replace('/', '/<wbr>')|raw }}
                         {%- if log.line -%}
@@ -32,7 +32,7 @@
                         {%- endif -%}
                     </td>
                     <td>{{ log.lastOccurrence|timestamp }}</td>
-                    <td class="nowrap viewtraces"><a role="button">{{ "Stack Trace"|t('app') }}</a></td>
+                    <td class="nowrap viewtraces"><a class="btn hairline" role="button">{{ "Stack Trace"|t('app') }}</a></td>
                     <td><a class="delete icon" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>
                 </tr>
             {% endfor %}

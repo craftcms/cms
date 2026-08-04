@@ -58,7 +58,14 @@ abstract class FieldLayoutFixture extends DbFixture
             // Get the tabs from the $fieldLayout value and unset the tabs (for later)
             $tabConfigs = ArrayHelper::remove($layoutConfig, 'tabs') ?? [];
 
-            $layout = $this->_layouts[] = new FieldLayout($layoutConfig);
+            $layout = null;
+            if (isset($layoutConfig['uid'])) {
+                $layout = $fieldsService->getLayoutByUid($layoutConfig['uid']);
+            }
+            $layout ??= new FieldLayout();
+            Craft::configure($layout, $layoutConfig);
+            $this->_layouts[] = $layout;
+
             $tabs = [];
 
             foreach ($tabConfigs as $tabIndex => $tabConfig) {
@@ -80,20 +87,25 @@ abstract class FieldLayoutFixture extends DbFixture
                     }
 
                     $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
-                    /** @var FieldInterface|Field $field */
-                    $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
-                    if (!$field->groupId) {
-                        $field->groupId = Craft::$app->getFields()->getAllGroups()[0]->id;
+                    $fieldClass = new ($fieldConfig['type']);
+                    // if the field config type indicates that it's a custom field - proceed as before;
+                    // create field component, save it and add to layout elements
+                    if ($fieldClass instanceof FieldInterface) {
+                        /** @var FieldInterface|Field $field */
+                        $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
+
+                        if (!$fieldsService->saveField($field)) {
+                            $this->throwModelError($field);
+                        }
+
+                        $layoutElements[] = new CustomField($field, [
+                            'required' => $required,
+                        ]);
+                    } else {
+                        // otherwise it's a native field, so add it to the layout element
+                        $layoutElements[] = $fieldClass;
                     }
-
-                    if (!$fieldsService->saveField($field)) {
-                        $this->throwModelError($field);
-                    }
-
-                    $layoutElements[] = new CustomField($field, [
-                        'required' => $required,
-                    ]);
                 }
 
                 $tab->setElements($layoutElements);

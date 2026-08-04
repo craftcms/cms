@@ -60,6 +60,7 @@ export class AssetIndexer {
   private _priorityTasks: ConcurrentTask[] = [];
   private _prunedSessionIds: number[] = [];
   private _currentlyReviewing = false;
+  private intervalAnnouncer: IntervalManagerInterface | null = null;
 
   private indexingSessions: {
     [key: number]: AssetIndexingSession;
@@ -77,6 +78,7 @@ export class AssetIndexer {
     this._maxConcurrentConnections = maxConcurrentConnections;
     this.$indexingSessionTable = $indexingSessionTable;
     this.indexingSessions = {};
+
     let reviewSessionId: number = 0;
 
     for (const sessionModel of sessions) {
@@ -101,12 +103,25 @@ export class AssetIndexer {
     }
 
     if (this._currentIndexingSession) {
+      this._createProgressAnnouncer();
+      this._startProgressAnnouncer();
       this.performIndexingStep();
     }
   }
 
   get currentIndexingSession(): number | null {
     return this._currentIndexingSession;
+  }
+
+  /**
+   * Get progress info for the current session
+   */
+  getCurrentSessionProgressInfo(): string | null {
+    if (this.currentIndexingSession !== null) {
+      const session = this.indexingSessions[this.currentIndexingSession];
+      return session.getProgressInfo();
+    }
+    return null;
   }
 
   /**
@@ -260,6 +275,8 @@ export class AssetIndexer {
     if (this._currentlyReviewing) {
       return;
     }
+
+    this._stopProgressAnnouncer();
 
     this._currentlyReviewing = true;
     this.pruneWaitingTasks(session.getSessionId());
@@ -478,6 +495,34 @@ export class AssetIndexer {
       .then((response) => this.processSuccessResponse(response))
       .catch(({response}) => this.processFailureResponse(response))
       .finally(() => cb());
+
+    // Begin making intermittent announcements
+    if (!this.intervalAnnouncer) {
+      this._createProgressAnnouncer();
+      this._startProgressAnnouncer();
+    }
+  }
+
+  private _createProgressAnnouncer(): void {
+    this.intervalAnnouncer = new Craft.IntervalManager({
+      onInterval: () => {
+        if (this.currentIndexingSession !== null) {
+          Craft.cp.announce(
+            Craft.t('app', 'Indexing assets: {progress}', {
+              progress: this.getCurrentSessionProgressInfo(),
+            })
+          );
+        }
+      },
+    });
+  }
+
+  private _stopProgressAnnouncer(): void {
+    this.intervalAnnouncer?.stop();
+  }
+
+  private _startProgressAnnouncer(): void {
+    this.intervalAnnouncer?.start();
   }
 
   public performIndexingStep(): void {
@@ -646,6 +691,10 @@ class AssetIndexingSession {
     return this.indexingSessionData.listEmptyFolders;
   }
 
+  public getProgressInfo(): string {
+    return `${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}`;
+  }
+
   /**
    * Get the remaining entry count for this sessions.
    */
@@ -698,7 +747,10 @@ class AssetIndexingSession {
     ).css('position', 'relative');
     const progressBar = new Craft.ProgressBar(
       $progressCell.find('.progressContainer'),
-      false
+      false,
+      {
+        announceProgress: false,
+      }
     );
 
     progressBar.setItemCount(this.indexingSessionData.totalEntries);
@@ -710,9 +762,7 @@ class AssetIndexingSession {
     $progressCell.data('progressBar', progressBar);
     $progressCell
       .find('.progressContainer')
-      .append(
-        `<div class="progressInfo">${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}</div>`
-      );
+      .append(`<div class="progressInfo">${this.getProgressInfo()}</div>`);
     $tr.append($progressCell);
 
     $tr.append('<td>' + this.getSessionStatusMessage() + '</td>');

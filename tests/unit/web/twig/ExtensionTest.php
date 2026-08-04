@@ -7,12 +7,15 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayIterator;
 use ArrayObject;
-use Codeception\Test\Unit;
 use Craft;
+use craft\base\Model;
 use craft\elements\Address;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\test\TestCase;
@@ -21,9 +24,13 @@ use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use Illuminate\Support\Collection;
+use IteratorAggregate;
+use Traversable;
 use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use TypeError;
+use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -44,14 +51,10 @@ class ExtensionTest extends TestCase
      */
     protected View $view;
 
-    public function _fixtures(): array
-    {
-        return [
-            'globals' => [
-                'class' => GlobalSetFixture::class,
-            ],
-        ];
-    }
+    /**
+     * @var UnitTester
+     */
+    protected UnitTester $tester;
 
     /**
      * @throws LoaderError
@@ -94,11 +97,11 @@ class ExtensionTest extends TestCase
      */
     public function testCraftSystemGlobals(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+        Craft::$app->edition = CmsEdition::Pro;
         $this->testRenderResult(
-            '' . Craft::$app->getEdition() . ' | ' . Craft::Solo . ' | ' . Craft::Pro,
-            Craft::$app->getEdition() . ' | 0 | 1'
+            implode(',', [CmsEdition::Solo->value, CmsEdition::Team->value, CmsEdition::Pro->value]),
+            '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
+            templateMode: View::TEMPLATE_MODE_CP,
         );
     }
 
@@ -127,7 +130,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -135,11 +138,15 @@ class ExtensionTest extends TestCase
     /**
      * @throws LoaderError
      * @throws SyntaxError
-     * @throws Exception
+     * @throws \Throwable
      */
     public function testElementGlobals(): void
     {
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
 
         $this->testRenderResult(
             'A global set | A different global set',
@@ -189,6 +196,88 @@ class ExtensionTest extends TestCase
                 'foo' => new PlainText(),
             ]
         );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testNullSafeOperator(): void
+    {
+        // property access on null short-circuits instead of erroring
+        $this->testRenderResult(
+            '',
+            '{{ user?.name }}',
+            ['user' => null]
+        );
+
+        // method call on null short-circuits
+        $this->testRenderResult(
+            '',
+            '{{ user?.getName() }}',
+            ['user' => null]
+        );
+
+        // chained null-safe access short-circuits at the first null
+        $this->testRenderResult(
+            '',
+            '{{ user?.profile?.name }}',
+            ['user' => null]
+        );
+
+        // non-null case still resolves normally
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.name }}',
+            ['user' => ['name' => 'Bob']]
+        );
+
+        // non-null case still resolves normally for method calls
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.getName() }}',
+            [
+                'user' => new class() {
+                    public function getName(): string
+                    {
+                        return 'Bob';
+                    }
+                },
+            ]
+        );
+    }
+
+    /**
+     *
+     */
+    public function testEmptyTest(): void
+    {
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => null,
+        ]);
+
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() extends Model {
+            },
+        ]);
     }
 
     /**
@@ -542,6 +631,16 @@ class ExtensionTest extends TestCase
             'qux',
             '{{ "https://foo.com/bar/baz/"|replace("/(http(s?):)?\\\/\\\/foo\\\.com\\\/bar\\\/baz\\\//", "qux") }}',
         );
+
+        $this->testRenderResult(
+            '/baz/bar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=true) }}',
+        );
+
+        $this->testRenderResult(
+            'bazbar/',
+            '{{ "/foo/bar/"|replace({"/foo/": "baz"}, regex=false) }}',
+        );
     }
 
     /**
@@ -714,8 +813,29 @@ class ExtensionTest extends TestCase
         );
 
         // invalid value
-        self::expectException(TypeError::class);
+        self::expectException(RuntimeError::class);
         $this->view->renderString('{% do "foo"|group("bar") %}');
+    }
+
+    /**
+     *
+     */
+    public function testHashFilter(): void
+    {
+        $this->testRenderResult(
+            Craft::$app->getSecurity()->hashData('test'),
+            '{{ "test"|hash }}'
+        );
+
+        $this->testRenderResult(
+            '098f6bcd4621d373cade4e832627b4f6',
+            '{{ "test"|hash("md5") }}'
+        );
+
+        $this->testRenderResult(
+            '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+            '{{ "test"|hash("sha256") }}'
+        );
     }
 
     /**
@@ -795,7 +915,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult($expected, $renderString, $variables);
     }
 
-    public function addressFilterDataProvider(): array
+    public static function addressFilterDataProvider(): array
     {
         return [
             ['{{ myAddress|address }}', ['myAddress' => Craft::createObject(Address::class, ['config' => ['attributes' => ['addressLine1' => '1 Main Stree', 'postalCode' => '12345', 'countryCode' => 'US', 'administrativeArea' => 'OR']]])], '<p translate="no">
@@ -908,6 +1028,11 @@ class ExtensionTest extends TestCase
             '{{ 1000|number(decimals=2) }}'
         );
 
+        $this->testRenderResult(
+            '1 000,00',
+            '{{ 1000|number(decimals=2, locale="fr") }}',
+        );
+
         // |number should swallow the InvalidArgumentException here
         $this->testRenderResult(
             'foo',
@@ -953,6 +1078,49 @@ class ExtensionTest extends TestCase
     /**
      *
      */
+    public function testDefaultFilter(): void
+    {
+        $this->testRenderResult('default', '{{ foo|default("default") }}');
+
+        $this->testRenderResult('default', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() extends Model {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+            },
+        ]);
+    }
+
+    /**
+     *
+     */
     public function testCloneFunction(): void
     {
         $this->testRenderResult(
@@ -969,9 +1137,17 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
-        self::assertStringStartsWith('data:image/svg+xml;base64,', $dataUrl);
+        self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
+    }
+
+    public function testEncodeUrlFunction(): void
+    {
+        $this->testRenderResult(
+            'https://domain/fr/offices/gen%C3%AAve',
+            '{{ encodeUrl("https://domain/fr/offices/genêve") }}',
+        );
     }
 
     public function testExpressionFunction(): void
@@ -979,6 +1155,23 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'Im an expression | var | Im an expression',
             '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
+        );
+    }
+
+    public function testFieldValueSqlFunction(): void
+    {
+        $this->tester->haveFixtures([
+            'globals' => [
+                'class' => GlobalSetFixture::class,
+            ],
+        ]);
+
+        $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
+        $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
+        $valueSql = $field->getValueSql();
+        $this->testRenderResult(
+            $valueSql,
+            '{{ fieldValueSql(entryType(\'test1\'), \'plainTextField\') }}'
         );
     }
 
@@ -1061,6 +1254,16 @@ class ExtensionTest extends TestCase
     public function testTagFunction(): void
     {
         $this->testRenderResult(
+            '<p>Hello</p>',
+            '{{ tag("p", "Hello") }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
             '<p class="foo">Hello</p>',
             '{{ tag("p", {text: "Hello", class: "foo"}) }}'
         );
@@ -1074,6 +1277,50 @@ class ExtensionTest extends TestCase
             '<p><script>alert(\'Hello\');</script></p>',
             '{{ tag("p", {html: "<script>alert(\'Hello\');</script>"}) }}'
         );
+    }
+
+    /**
+     *
+     */
+    public function testHeadingFunctions(): void
+    {
+        for ($i = 1; $i <= 6; $i++) {
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ heading($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h$i('Hello') }}"
+            );
+        }
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1("<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
+            '<h1 class="foo">Hello</h1>',
+            '{{ h1({text: "Hello", class: "foo"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1({text: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1><script>alert(\'Hello\');</script></h1>',
+            '{{ h1({html: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderString("{{ heading(7, 'Hello') }}");
     }
 
     /**
@@ -1175,15 +1422,81 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     * @dataProvider collectFunctionDataProvider
+     *
+     * @param string $expectedClass
+     * @param array $items
+     */
+    public function testCollectFunction(string $expectedClass, array $items): void
+    {
+        $this->testRenderResult(
+            $expectedClass,
+            "{{ className(collect(items)) }}",
+            ['items' => $items],
+        );
+    }
+
+    public static function collectFunctionDataProvider(): array
+    {
+        $entry = new Entry();
+
+        return [
+            [Collection::class, []],
+            [Collection::class, ['foo']],
+            [Collection::class, [$entry, 'foo']],
+            [ElementCollection::class, [$entry]],
+        ];
+    }
+
+    public function testSwitchTag(): void
+    {
+        $vars = [
+            'foo' => 'foo',
+            'bar' => 'bar or baz',
+            'baz' => 'bar or baz',
+            'qux' => 'qux or quux or corge',
+            'quux' => 'qux or quux or corge',
+            'corge' => 'qux or quux or corge',
+            'xyz' => 'default',
+        ];
+
+        $template = <<<EOL
+{%- switch var -%}
+  {%- case 'foo' -%}
+    foo
+  {%- case 'bar' or 'baz' -%}
+    bar or baz
+  {%- case 'qux' or 'quux' or 'corge' -%}
+    qux or quux or corge
+  {%- default -%}
+    default
+{%- endswitch -%}
+EOL;
+
+        foreach ($vars as $var => $expected) {
+            $this->testRenderResult(
+                $expected,
+                $template,
+                ['var' => $var],
+            );
+        }
+    }
+
+    /**
      * @param string $expectedString
      * @param string $renderString
      * @param array $variables
+     * @param string $templateMode
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function testRenderResult(string $expectedString, string $renderString, array $variables = [])
-    {
-        $result = $this->view->renderString($renderString, $variables);
+    protected function testRenderResult(
+        string $expectedString,
+        string $renderString,
+        array $variables = [],
+        string $templateMode = View::TEMPLATE_MODE_SITE,
+    ) {
+        $result = $this->view->renderString($renderString, $variables, $templateMode);
         self::assertSame(
             $expectedString,
             $result

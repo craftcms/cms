@@ -5,21 +5,34 @@
 {% set elements = (elements is defined ? elements : []) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
 {% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
+{% set defaultPlacement = defaultPlacement ?? 'end' %}
 
 {% from "_includes/forms" import text %}
 
 <div id="{{ id }}" class="elementselect tagselect">
-    <div class="elements">
-        {% for element in elements %}
-            {% include "_elements/element" with { context: 'field' } %}
-        {% endfor %}
-    </div>
+    <span class="visually-hidden" role="status"></span>
 
-    <div class="texticon add icon">
+    <ul class="elements chips inline-chips">
+        {%- apply spaceless  %}
+        {% for element in elements %}
+            <li>
+                {{ elementChip(element, {
+                    context: 'field',
+                    inputName: (name ?? false) ? "#{name}[]" : null,
+                }) }}
+            </li>
+        {% endfor %}
+        {% endapply -%}
+    </ul>
+
+    <div class="texticon icon add tagselect__input-wrapper">
+        {{ iconSvg('plus') }}
         {{ text({
             width: 'auto',
             placeholder: selectionLabel,
             describedBy: describedBy ?? false,
+            role: 'combobox',
+            labelledBy: labelId ?? false,
         }) }}
         <div class="spinner hidden"></div>
     </div>
@@ -32,6 +45,7 @@
     sourceElementId: sourceElementId ?: null,
     targetSiteId: targetSiteId,
     allowSelfRelations: allowSelfRelations ?? false,
+    defaultPlacement,
 } %}
 
 {% js %}

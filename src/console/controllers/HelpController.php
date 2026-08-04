@@ -9,15 +9,16 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\Console;
 use craft\helpers\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
+use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
 use yii\console\ExitCode;
-use yii\helpers\Console;
 use yii\helpers\Inflector;
 
 /**
@@ -104,6 +105,29 @@ class HelpController extends BaseHelpController
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function getDefaultHelpHeader()
+    {
+        return join("\n", [
+            '', // Blank line
+            Console::ansiFormat('╭───╮', [Console::FG_RED]),
+            Console::ansiFormat('│ ', [Console::FG_RED]) . Console::ansiFormat('C', [Console::ITALIC]) . Console::ansiFormat(' │ ', [Console::FG_RED]) . Console::ansiFormat('Craft CMS', [Console::ITALIC, Console::FG_RED]),
+            Console::ansiFormat('╰───╯', [Console::FG_RED]),
+            '', // Blank line
+            sprintf('Welcome to Craft CMS version %s (Yii %s)', Console::ansiFormat(Craft::$app->getVersion(), [Console::FG_BLUE]), Console::ansiFormat(\Yii::getVersion(), [Console::FG_BLUE])),
+            '', // Blank line
+            Console::ansiFormat('Getting Help', [Console::BOLD]),
+            '', // Blank line
+            Console::ansiFormat('→', [Console::FG_BLUE]) . ' Official Documentation: https://craftcms.com/docs',
+            Console::ansiFormat('→', [Console::FG_BLUE]) . ' Knowledge Base: https://craftcms.com/knowledge-base',
+            Console::ansiFormat('→', [Console::FG_BLUE]) . ' Support: https://craftcms.com/contact',
+            Console::ansiFormat('→', [Console::FG_BLUE]) . ' ' . sprintf('Release notes: https://github.com/craftcms/cms/releases/%s', Craft::$app->getVersion()),
+            '', // Blank line
+        ]);
+    }
+
+    /**
      * Return an array of information on the passed in CLI $command
      *
      * @param string $command
@@ -127,6 +151,7 @@ class HelpController extends BaseHelpController
 
         // Try/catch in case an exception is thrown during reflection
         try {
+            /** @var Action<Controller> $action */
             $action = $controller->createAction($actionId);
             // Get the command description, args, and options
             $description = $this->unformattedActionHelp($controller->getActionMethodReflection($action));

@@ -7,9 +7,9 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\db\ElementQuery;
 use craft\search\SearchQuery;
-use yii\base\Event as BaseEvent;
 
 /**
  * SearchEvent class.
@@ -18,7 +18,7 @@ use yii\base\Event as BaseEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class SearchEvent extends BaseEvent
+class SearchEvent extends Event
 {
     /**
      * @var ElementQuery The element query being executed.
@@ -33,6 +33,7 @@ class SearchEvent extends BaseEvent
 
     /**
      * @var int|int[]|null The site ID(s) to filter by
+     * @deprecated in 5.0.0. The `siteId` property on [[$elementQuery]] should be used instead.
      */
     public array|int|null $siteId = null;
 
@@ -50,7 +51,7 @@ class SearchEvent extends BaseEvent
     public ?array $results = null;
 
     /**
-     * @var array|null The result scores, indexed by element ID
+     * @var array<string,int>|null The element scores indexed by element ID and site ID (e.g. `'100-1'`).
      *
      * This will only be set ahead of time for [[\craft\services\Search::EVENT_AFTER_SEARCH]].
      *

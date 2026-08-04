@@ -1,0 +1,66 @@
+{% import '_includes/forms.twig' as forms %}
+
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
+{%- set disabled = disabled ?? false %}
+{%- set static = static ?? false %}
+
+{%- set id = id ?? "button-group-#{random()}" %}
+{%- set class = (class ?? [])|explodeClass|merge([
+  'btngroup',
+  'btngroup--exclusive',
+]|filter) %}
+
+{%- set containerAttributes = {
+  id,
+  class,
+  aria: {
+    labelledby: labelledBy ?? false,
+  },
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+<div class="btngroup-container">
+  {% tag 'div' with containerAttributes %}
+    {%- for key, option in options %}
+      {%- if option is not iterable %}
+        {%- set option = {label: option, value: key} %}
+      {%- endif %}
+      {% set selected = option.value is defined and option.value == value %}
+      {{ forms.button(option|merge({
+        type: 'button',
+        class: (selected ? ['active'] : [])|merge((option.class ?? [])|explodeClass),
+        attributes: {
+          aria: {
+            pressed: selected ? 'true' : 'false',
+          },
+          data: {
+            value: option.value ?? null,
+          },
+          disabled: disabled or static,
+          tabindex: disabled ? '-1' : '0',
+        }|merge(option.attributes ?? {}, recursive=true),
+        readOnly: disabled,
+      })) }}
+    {% endfor %}
+  {% endtag %}
+</div>
+
+{% if name ?? false %}
+  {% set inputId = "#{id}-input" %}
+  {{ hiddenInput(name, value, {
+    id: inputId,
+  }) }}
+{% endif %}
+
+{% js %}
+(() => {
+  new Craft.Listbox($('#{{ id|namespaceInputId }}'), {
+    {% if name ?? false %}
+      onChange: (selectedOption) => {
+        $('#{{ inputId|namespaceInputId }}').val(selectedOption.data('value'));
+      },
+    {% endif %}
+    readOnly: {{ disabled ? 1 : 0 }}
+  });
+})();
+{% endjs %}

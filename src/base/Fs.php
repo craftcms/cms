@@ -54,6 +54,7 @@ abstract class Fs extends SavableComponent implements FsInterface
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
+            'url' => Craft::t('app', 'Base URL'),
         ];
     }
 
@@ -81,6 +82,12 @@ abstract class Fs extends SavableComponent implements FsInterface
         $rules = parent::defineRules();
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [
+            'url',
+            'required',
+            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
+        ];
+
+        $rules[] = [
             ['handle'],
             HandleValidator::class,
             'reservedWords' => [
@@ -88,6 +95,7 @@ abstract class Fs extends SavableComponent implements FsInterface
                 'dateUpdated',
                 'edit',
                 'id',
+                'new',
                 'title',
                 'uid',
             ],

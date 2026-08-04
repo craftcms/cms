@@ -17,8 +17,12 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   afterInit: function () {
     // Find which of the visible sections the user has permission to create new entries in
-    this.publishableSections = Craft.publishableSections.filter(
-      (s) => !!this.getSourceByKey(`section:${s.uid}`)
+    const includedSections = this.$sources
+      .toArray()
+      .map((source) => $(source).data('handle'))
+      .filter((handle) => !!handle);
+    this.publishableSections = Craft.publishableSections.filter((section) =>
+      includedSections.includes(section.handle)
     );
 
     this.base();
@@ -47,6 +51,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
   updateButton: function () {
     if (!this.$source) {
+      // Remove the old button, if there is one
+      if (this.$newEntryBtnGroup) {
+        this.$newEntryBtnGroup.remove();
+      }
       return;
     }
 
@@ -78,12 +86,21 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       let $menuBtn;
       const menuId = 'new-entry-menu-' + Craft.randomString(10);
 
+      // check if any publishable sections are available for this site
+      const publishableSectionsForSite = this.publishableSections.filter(
+        (section) => section.sites.includes(this.siteId)
+      );
+
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
       // Otherwise only show a menu button
       if (selectedSection) {
         const visibleLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New entry')
+            ? Craft.uppercaseFirst(
+                Craft.t('app', 'New {type}', {
+                  type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+                })
+              )
             : Craft.t('app', 'New {section} entry', {
                 section: selectedSection.name,
               });
@@ -128,7 +145,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           }
         });
 
-        if (this.publishableSections.length > 1) {
+        if (publishableSectionsForSite.length > 1) {
           $menuBtn = $('<button/>', {
             type: 'button',
             class: 'btn submit menubtn btngroup-btn-last',
@@ -137,10 +154,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             'aria-label': Craft.t('app', 'New entry, choose a section'),
           }).appendTo(this.$newEntryBtnGroup);
         }
-      } else {
+      } else if (publishableSectionsForSite.length > 0) {
+        // only add the New Entry button if there are any sections for this site
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New entry'),
+            label: Craft.uppercaseFirst(
+              Craft.t('app', 'New {type}', {
+                type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+              })
+            ),
             ariaLabel: Craft.t('app', 'New entry, choose a section'),
             spinner: true,
           })
@@ -164,8 +186,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             this.settings.context === 'index' ? 'link' : 'button';
           if (
             (this.settings.context === 'index' &&
-              $.inArray(this.siteId, section.sites) !== -1) ||
-            (this.settings.context !== 'index' && section !== selectedSection)
+              section.sites.includes(this.siteId)) ||
+            (this.settings.context !== 'index' &&
+              section !== selectedSection &&
+              section.sites.includes(this.siteId))
           ) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
@@ -176,7 +200,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 section: section.name,
               }),
             }).appendTo($li);
-            this.addListener($a, 'activate', () => {
+            this.addListener($a, 'activate', (ev) => {
+              ev.originalEvent.preventDefault();
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });
@@ -201,7 +226,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
     // ---------------------------------------------------------------------
 
     if (this.settings.context === 'index') {
-      let uri = 'entries';
+      let uri = `content/${this.settings.page ?? 'entries'}`;
 
       if (sectionHandle) {
         uri += '/' + sectionHandle;
@@ -243,11 +268,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             draftId: data.entry.draftId,
             params: {
               fresh: 1,
+              updateSearchIndexImmediately: 1,
             },
           });
-          slideout.on('submit', () => {
-            this.clearSearch();
-            this.setSelectedSortAttribute('dateCreated', 'desc');
+          slideout.on('submit', (ev) => {
+            this.clearSearch(false);
+            this.startSearching();
+            this.$search.val(ev.data.title);
+            this.searchText = ev.data.title;
+
             this.selectElementAfterUpdate(data.entry.id);
             this.updateElements();
           });
@@ -256,6 +285,28 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       .finally(() => {
         this.$newEntryBtn.removeClass('loading');
       });
+  },
+
+  canPaste: function (elementInfo) {
+    if (!this.$source.data('sectionId')) {
+      return false;
+    }
+
+    const entryTypeIds = this.$source.data('entryTypeIds') || [];
+    for (const info of elementInfo) {
+      if (!entryTypeIds.includes(info.data.entryTypeId)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  pasteAttributes: function () {
+    return {
+      sectionId: this.$source.data('sectionId'),
+      placeInStructure: true,
+    };
   },
 });
 

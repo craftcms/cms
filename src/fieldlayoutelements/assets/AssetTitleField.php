@@ -28,7 +28,7 @@ class AssetTitleField extends TitleField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException('AssetTitleField can only be used in asset field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return $element->getVolume()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -40,7 +40,7 @@ class AssetTitleField extends TitleField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException('AssetTitleField can only be used in asset field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return ElementHelper::translationDescription($element->getVolume()->titleTranslationMethod);

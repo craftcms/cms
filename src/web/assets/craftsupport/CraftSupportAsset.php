@@ -51,6 +51,7 @@ class CraftSupportAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Contact Developer Support',
                 'Message sent successfully.',
             ]);
         }

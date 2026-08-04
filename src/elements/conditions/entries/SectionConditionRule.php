@@ -6,10 +6,12 @@ use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
+use craft\models\Section;
+use Illuminate\Support\Collection;
 
 /**
  * Entry section condition rule.
@@ -19,6 +21,13 @@ use craft\helpers\ArrayHelper;
  */
 class SectionConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
+    use HintableConditionRuleTrait;
+
+    /**
+     * @inheritdoc
+     */
+    protected bool $reloadOnOperatorChange = true;
+
     /**
      * @inheritdoc
      */
@@ -38,10 +47,25 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     /**
      * @inheritdoc
      */
+    protected function operators(): array
+    {
+        return [
+            ...parent::operators(),
+            self::OPERATOR_NOT_EMPTY,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function options(): array
     {
-        $sections = Craft::$app->getSections()->getAllSections();
-        return ArrayHelper::map($sections, 'uid', 'name');
+        $sections = new Collection(Craft::$app->getEntries()->getAllSections());
+
+        return $sections
+            ->keyBy('uid')
+            ->map(fn(Section $section) => $section->name . ($this->showLabelHint() ? " ($section->handle)" : ''))
+            ->all();
     }
 
     /**
@@ -50,8 +74,12 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $sections = Craft::$app->getSections();
-        $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
+        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
+            $query->section('*');
+        } else {
+            $sections = Craft::$app->getEntries();
+            $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
+        }
     }
 
     /**
@@ -60,6 +88,10 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->getSection()->uid);
+        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
+            return $element->getSection() !== null;
+        }
+
+        return $this->matchValue($element->getSection()?->uid);
     }
 }

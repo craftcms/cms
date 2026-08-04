@@ -8,9 +8,9 @@
 namespace craft\validators;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\errors\OperationAbortedException;
-use craft\helpers\ElementHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -41,25 +41,37 @@ class ElementUriValidator extends UriValidator
             throw new InvalidConfigException('Invalid use of ElementUriValidator');
         }
 
-        // If this is a draft or revision and it already has a URI, leave it alone
-        if (
-            $model->uri &&
-            (
-                ($model->getIsDraft() && !$model->getIsUnpublishedDraft()) ||
-                $model->getIsRevision()
-            )
-        ) {
+        // Ignore revisions
+        if ($model->getIsRevision()) {
             return;
         }
 
+        // Ignore published drafts if the scenario isn't "live",
+        // or if the canonical element is enabled and the URI hasn't changed on the draft
+        if ($model->getIsDraft() && !$model->getIsUnpublishedDraft()) {
+            if ($model->getScenario() !== Element::SCENARIO_LIVE) {
+                return;
+            }
+
+            $canonical = $model->getCanonical();
+            if (
+                $canonical !== $model &&
+                $model->uri === $canonical->uri &&
+                $canonical->enabled &&
+                $canonical->getEnabledForSite()
+            ) {
+                return;
+            }
+        }
+
         try {
-            ElementHelper::setUniqueUri($model);
+            Craft::$app->getElements()->setElementUri($model);
         } catch (OperationAbortedException) {
             // Not a big deal if the element isn't enabled yet
             if (
                 $model->enabled &&
                 $model->getEnabledForSite() &&
-                !$model->getIsUnpublishedDraft()
+                (!$model->getIsUnpublishedDraft() || $model->getScenario() === Element::SCENARIO_LIVE)
             ) {
                 $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
                 return;

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -58,6 +59,8 @@ class RelationalFieldsController extends Controller
             }
         }
 
+        ElementHelper::loadProvisionalChanges($elements);
+
         $html = $this->getView()->renderTemplate('_includes/forms/elementSelect.twig', [
             'elements' => $elements,
             'id' => $this->request->getParam('containerId'),
@@ -65,10 +68,13 @@ class RelationalFieldsController extends Controller
             'selectionLabel' => $this->request->getParam('selectionLabel'),
             'elementType' => $elementType,
             'maintainHierarchy' => true,
+            'registerJs' => false,
         ]);
 
         return $this->asJson([
             'html' => $html,
+            'headHtml' => $this->getView()->getHeadHtml(),
+            'bodyHtml' => $this->getView()->getBodyHtml(),
         ]);
     }
 }

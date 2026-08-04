@@ -32,7 +32,7 @@
           <li
             v-for="(feature, key) in edition.features"
             :key="key"
-            class="tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid"
+            class="tw-my-2"
             :class="{
               'tw-border-t': key === 0,
             }"
@@ -50,10 +50,12 @@
 
     <plugin-actions :plugin="plugin" :edition="edition" />
 
-    <p v-if="!isPluginEditionFree(edition)" class="tw-text-gray-700">
-      {{ 'Includes one year of updates.' | t('app') }}
+    <p
+      v-if="!isPluginEditionFree(edition) && !plugin.abandoned"
+      class="tw-text-gray-700"
+    >
       {{
-        '{renewalPrice}/year per site for updates after that.'
+        'Plus {renewalPrice}/year for updates after one year.'
           | t('app', {
             renewalPrice: $options.filters.currency(edition.renewalPrice),
           })

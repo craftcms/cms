@@ -8,22 +8,22 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use craft\helpers\Markdown;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement;
 use DateTime;
 use yii\base\Component;
-use yii\helpers\Markdown;
 
 /**
  * Announcements service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAnnouncements()|`Craft::$app->announcements`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAnnouncements()|`Craft::$app->getAnnouncements()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.0
@@ -41,13 +41,15 @@ class Announcements extends Component
      * @param string $heading The announcement heading.
      * @param string $body The announcement body.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
+     * @param bool $adminsOnly Whether only admin users should receive the announcement
      */
-    public function push(string $heading, string $body, ?string $pluginHandle = null): void
+    public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
         Queue::push(new Announcement([
             'heading' => $heading,
             'body' => $body,
             'pluginHandle' => $pluginHandle,
+            'adminsOnly' => $adminsOnly,
         ]));
     }
 
@@ -77,7 +79,10 @@ class Announcements extends Component
 
         // Any enabled plugins?
         $pluginsService = Craft::$app->getPlugins();
-        $enabledPluginHandles = ArrayHelper::getColumn($pluginsService->getAllPlugins(), 'id');
+        $enabledPluginHandles = array_map(
+            fn(PluginInterface $plugin) => $plugin->getHandle(),
+            $pluginsService->getAllPlugins(),
+        );
         if (!empty($enabledPluginHandles)) {
             $query
                 ->addSelect(['pluginHandle' => 'p.handle'])
@@ -97,7 +102,7 @@ class Announcements extends Component
                 $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
                 $label = $plugin->name;
             } else {
-                $icon = file_get_contents(Craft::getAlias('@app/icons/craft-cms.svg'));
+                $icon = file_get_contents(Craft::getAlias('@appicons/craft-cms.svg'));
                 $label = 'Craft CMS';
             }
             return [

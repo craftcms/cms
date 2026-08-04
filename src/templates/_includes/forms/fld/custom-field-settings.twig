@@ -1,0 +1,89 @@
+{% extends '_includes/forms/fld/field-settings.twig' %}
+{% import '_includes/forms' as forms %}
+
+{% set originalField = craft.app.fields.getFieldByUid(field.getField().uid) %}
+
+{% block fieldSettings %}
+  {% if originalField %}
+    {% set fieldSelectId = "fieldselect#{random()}" %}
+    <div class="pane no-border p-m">
+      {{ forms.fieldSelectField({
+        id: fieldSelectId,
+        name: 'fieldId',
+        value: originalField,
+        limit: 1,
+        warning: 'Changing this may result in data loss.'|t('app'),
+      }) }}
+    </div>
+
+    {% js %}
+      (() => {
+        const componentSelect = $("#{{ fieldSelectId|namespaceInputId }}").data('componentSelect');
+        let replaced = false;
+
+        const oldName = {{ defaultLabel|json_encode|raw }};
+        const oldHandle = {{ defaultHandle|json_encode|raw }};
+        const oldInstructions = {{ defaultInstructions|json_encode|raw }};
+
+        const $labelInput = $("#{{ 'label'|namespaceInputId }}");
+        const $handleInput = $("#{{ 'handle'|namespaceInputId }}");
+        const $instructionsInput = $("#{{ 'instructions'|namespaceInputId }}");
+
+        componentSelect.on('change', () => {
+          const $chip = componentSelect.getComponents().first();
+
+          if (!$chip.length) {
+            return;
+          }
+
+          const newName = $chip.data('label');
+          const newHandle = $chip.data('handle');
+          const newInstructions = $chip.data('instructions');
+
+          $labelInput.attr('placeholder', newName);
+          $handleInput.attr('placeholder', newHandle);
+          $instructionsInput.attr('placeholder', newInstructions);
+
+          if (!replaced) {
+            // Override the name/handle/instructions for consistency with the old field,
+            // if they weren't already being overridden
+            if (!$labelInput.val()) {
+              $labelInput.val(oldName);
+            }
+            if (!$handleInput.val()) {
+              $handleInput.val(oldHandle);
+            }
+            if (!$instructionsInput.val()) {
+              $instructionsInput.val(oldInstructions);
+            }
+          }
+
+          replaced = true;
+        });
+      })();
+    {% endjs %}
+  {% endif %}
+
+  {{ block('labelField') }}
+
+  {{ forms.textField({
+    label: 'Handle'|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    maxlength: 64,
+    value: field.handle,
+    placeholder: defaultHandle,
+    errors: field.getErrors('handle'),
+    required: true,
+    data: {
+      'error-key': 'handle'
+    },
+  }) }}
+
+  {{ block('instructionsField') }}
+  {{ block('tipField') }}
+  {{ block('warningField') }}
+{% endblock %}

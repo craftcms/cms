@@ -20,9 +20,15 @@ class I18N extends \yii\i18n\I18N
 {
     /**
      * @var array|null All of the known locales
-     * @see getAllLocales()
+     * @see getAllLocaleIds()
      */
     private ?array $_allLocaleIds = null;
+
+    /**
+     * @var array[]
+     * @see getAllLocaleIds()
+     */
+    private array $_localeAliases;
 
     /**
      * @var bool[]
@@ -60,7 +66,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
-        return new Locale($localeId);
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
+        return new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
     }
 
     /**
@@ -72,12 +81,31 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocaleIds(): array
     {
         if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales('');
+            $allLocaleIds = ResourceBundle::getLocales('');
+            $this->_localeAliases = Craft::$app->getConfig()->getGeneral()->localeAliases;
 
             // Hyphens, not underscores
-            foreach ($this->_allLocaleIds as $i => $locale) {
-                $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
+            foreach ($allLocaleIds as $i => $locale) {
+                $allLocaleIds[$i] = str_replace('_', '-', $locale);
             }
+
+            $allLocaleIds = array_flip($allLocaleIds);
+
+            // `no` wasn’t added until ICU 69
+            if (!isset($allLocaleIds['no']) && isset($allLocaleIds['nb'])) {
+                $this->_localeAliases['no'] ??= [
+                    'aliasOf' => 'nb',
+                    'displayName' => 'Norwegian',
+                ];
+            }
+
+            // Merge in any custom aliases
+            if (!empty($this->_localeAliases)) {
+                $allLocaleIds = array_merge($allLocaleIds, array_flip(array_keys($this->_localeAliases)));
+                ksort($allLocaleIds);
+            }
+
+            $this->_allLocaleIds = array_keys($allLocaleIds);
         }
 
         return $this->_allLocaleIds;
@@ -95,7 +123,7 @@ class I18N extends \yii\i18n\I18N
         $localeIds = $this->getAllLocaleIds();
 
         foreach ($localeIds as $localeId) {
-            $locales[] = new Locale($localeId);
+            $locales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $locales;
@@ -117,10 +145,13 @@ class I18N extends \yii\i18n\I18N
             return $this->_appLocales;
         }
 
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         $this->_appLocales = [];
 
         foreach ($this->getAppLocaleIds() as $localeId) {
-            $this->_appLocales[] = new Locale($localeId);
+            $this->_appLocales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $this->_appLocales;
@@ -150,21 +181,38 @@ class I18N extends \yii\i18n\I18N
         }
 
         $this->_appLocaleIds = [
-            Craft::$app->sourceLanguage => true,
+            'en-US' => true,
+            'ar' => true,
+            'cs' => true,
+            'da' => true,
+            'de' => true,
+            'de-CH' => true,
+            'el' => true,
+            'en' => true,
+            'en-GB' => true,
+            'es' => true,
+            'fa' => true,
+            'fr' => true,
+            'fr-CA' => true,
+            'he' => true,
+            'hu' => true,
+            'is' => true,
+            'it' => true,
+            'ja' => true,
+            'ko' => true,
+            'nb' => true,
+            'nl' => true,
+            'nn' => true,
+            'pl' => true,
+            'pt' => true,
+            'ru' => true,
+            'sk' => true,
+            'sv' => true,
+            'th' => true,
+            'tr' => true,
+            'uk' => true,
+            'zh' => true,
         ];
-
-        // Scan the translations/ dir for the others
-        $dir = Craft::$app->getPath()->getCpTranslationsPath();
-        $handle = opendir($dir);
-        if ($handle === false) {
-            throw new Exception("Unable to open directory: $dir");
-        }
-        while (($subDir = readdir($handle)) !== false) {
-            if ($subDir !== '.' && $subDir !== '..' && is_dir($dir . DIRECTORY_SEPARATOR . $subDir)) {
-                $this->_appLocaleIds[$subDir] = true;
-            }
-        }
-        closedir($handle);
 
         // Add in any extra locales defined by the config
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -201,10 +249,13 @@ class I18N extends \yii\i18n\I18N
      */
     public function getSiteLocales(): array
     {
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         $locales = [];
 
         foreach ($this->getSiteLocaleIds() as $localeId) {
-            $locales[] = new Locale($localeId);
+            $locales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $locales;
@@ -215,11 +266,11 @@ class I18N extends \yii\i18n\I18N
      * control panel.
      *
      * @return Locale A [[Locale]] object representing the primary locale.
+     * @deprecated in 5.0.0. [[\craft\models\Site::getLocale()]] should be used instead.
      */
     public function getPrimarySiteLocale(): Locale
     {
-        $site = Craft::$app->getSites()->getPrimarySite();
-        return new Locale($site->language);
+        return Craft::$app->getSites()->getPrimarySite()->getLocale();
     }
 
     /**
@@ -227,6 +278,7 @@ class I18N extends \yii\i18n\I18N
      * control panel.
      *
      * @return string The primary locale ID.
+     * @deprecated in 5.0.0. [[\craft\models\Site::$language]] should be used instead.
      */
     public function getPrimarySiteLocaleId(): string
     {
@@ -318,17 +370,6 @@ class I18N extends \yii\i18n\I18N
         }
 
         return $translation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function format($message, $params, $language)
-    {
-        // wrap attribute value in an <em> tag
-        array_walk($params, fn(&$val, $key) => ($key == 'attribute') ? $val = "*$val*" : $val);
-
-        return parent::format($message, $params, $language);
     }
 
     /**

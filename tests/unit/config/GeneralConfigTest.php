@@ -38,7 +38,7 @@ class GeneralConfigTest extends Unit
     /**
      * @return array
      */
-    public function renamedSettingsDataProvider(): array
+    public static function renamedSettingsDataProvider(): array
     {
         return [
             [

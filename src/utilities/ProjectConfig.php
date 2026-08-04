@@ -39,9 +39,9 @@ class ProjectConfig extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/sliders.svg');
+        return 'gear';
     }
 
     /**
@@ -50,7 +50,7 @@ class ProjectConfig extends Utility
     public static function contentHtml(): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $areChangesPending = $projectConfig->areChangesPending();
+        $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
 
         if ($areChangesPending) {

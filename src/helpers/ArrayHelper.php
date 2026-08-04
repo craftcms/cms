@@ -237,12 +237,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param callable|string $key the column name or anonymous function which must be set to $value
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @param int|string|null $valueKey The key of the resulting value, or null if it can't be found
      * @return mixed the value, or null if it can't be found
      * @since 3.1.0
      */
-    public static function firstWhere(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
-    {
-        foreach ($array as $element) {
+    public static function firstWhere(
+        iterable $array,
+        callable|string $key,
+        mixed $value = true,
+        bool $strict = false,
+        int|string|null &$valueKey = null,
+    ): mixed {
+        foreach ($array as $valueKey => $element) {
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
@@ -250,6 +256,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
         }
 
+        $valueKey = null;
         return null;
     }
 
@@ -307,7 +314,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 
     /**
      * Returns whether the given array contains *only* values where a given key (the name of a
-     * -ub-array key or sub-object property) is sett o given value.
+     * -ub-array key or sub-object property) is set to given value.
      *
      * @param iterable $array the array that the value will be searched for in
      * @param callable|string $key the column name or anonymous function which must be set to $value
@@ -337,16 +344,14 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function filterEmptyStringsFromArray(array $array): array
     {
-        return array_filter($array, function($value): bool {
-            return $value !== '';
-        });
+        return array_filter($array, fn($value): bool => $value !== '');
     }
 
     /**
      * Returns the first key in a given array.
      *
      * @param array $array
-     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
+     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or `null` if `$array` is empty.
      * @deprecated in 4.5.0. `array_key_first()` should be used instead.
      */
     public static function firstKey(array $array): int|string|null
@@ -358,11 +363,23 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns the first value in a given array.
      *
      * @param array $array
-     * @return mixed The first value, or null if $array isn’t an array, or is empty.
+     * @return mixed The first value, or `null` if `$array` is empty.
      */
     public static function firstValue(array $array): mixed
     {
         return !empty($array) ? reset($array) : null;
+    }
+
+    /**
+     * Returns the last value in a given array.
+     *
+     * @param array $array
+     * @return mixed The last value, or null if $array isn’t an array, or is empty.
+     * @since 5.0.0
+     */
+    public static function lastValue(array $array): mixed
+    {
+        return !empty($array) ? end($array) : null;
     }
 
     /**

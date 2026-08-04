@@ -22,6 +22,9 @@ use craft\models\Site;
 use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
+use craft\web\ErrorHandler;
+use craft\web\Response;
+use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -30,7 +33,7 @@ use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
-use yii\web\Response;
+use yii\web\Response as YiiResponse;
 
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
@@ -68,20 +71,18 @@ class GraphqlController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(Craft::Pro);
-
         return true;
     }
 
     /**
      * Performs a GraphQL query.
      *
-     * @return Response
+     * @return YiiResponse
      * @throws BadRequestHttpException
      * @throws GqlException
      * @throws ForbiddenHttpException
      */
-    public function actionApi(): Response
+    public function actionApi(): YiiResponse
     {
         // Add CORS headers
         $headers = $this->response->getHeaders();
@@ -105,12 +106,12 @@ class GraphqlController extends Controller
 
         if ($this->request->getIsOptions()) {
             // This is just a preflight request, no need to run the actual query yet
-            $this->response->format = Response::FORMAT_RAW;
+            $this->response->format = YiiResponse::FORMAT_RAW;
             $this->response->data = '';
             return $this->response;
         }
 
-        $this->response->format = Response::FORMAT_JSON;
+        $this->response->format = YiiResponse::FORMAT_JSON;
 
         $gqlService = Craft::$app->getGql();
         $schema = $this->_schema($gqlService);
@@ -166,42 +167,76 @@ class GraphqlController extends Controller
             }
         }
 
+        if ($generalConfig->maxGraphqlBatchSize && count($queries) > $generalConfig->maxGraphqlBatchSize) {
+            throw new BadRequestHttpException(sprintf(
+                'No more than %s GraphQL %s can be executed in a single batch.',
+                $generalConfig->maxGraphqlBatchSize,
+                $generalConfig->maxGraphqlBatchSize === 1 ? 'query' : 'queries'
+            ));
+        }
+
+
         // Generate all transforms immediately
         $generalConfig->generateTransformsBeforePageLoad = true;
 
         // Check for the cache-bust header
-        $noCache = $this->request->getHeaders()->get('x-craft-gql-cache', null, true) === 'no-cache';
-        if ($noCache) {
+        $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
+        $cache = $cacheHeader ? ($cacheHeader === 'cache') : null;
+        if ($cache !== null) {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
-            $generalConfig->enableGraphqlCaching = false;
+            $generalConfig->enableGraphqlCaching = $cache;
         }
 
         $result = [];
+        $hasMutations = false;
+
         foreach ($queries as $key => [$query, $variables, $operationName]) {
+            $query = trim($query);
+            $operationName = is_string($operationName) ? $operationName : null;
             try {
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
                 $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, App::devMode());
-            } catch (Throwable $e) {
-                Craft::$app->getErrorHandler()->logException($e);
+            } catch (InvalidValueException $e) {
                 $result[$key] = [
                     'errors' => [
                         [
-                            'message' => App::devMode() || $e instanceof InvalidValueException
-                                ? $e->getMessage()
-                                : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                            'message' => $e->getMessage(),
                         ],
                     ],
                 ];
+            } catch (Throwable $e) {
+                /** @var ErrorHandler $errorHandler */
+                $errorHandler = Craft::$app->getErrorHandler();
+                $errorHandler->logException($e);
+                $result[$key] = [
+                    'errors' => [
+                        $errorHandler->showExceptionDetails()
+                            ? $errorHandler->exceptionAsArray($e)
+                            : ['message' => Craft::t('app', 'Something went wrong when processing the GraphQL query.')],
+                    ],
+                ];
+            }
+
+            if (GqlHelper::isMutation($query, $operationName)) {
+                $hasMutations = true;
             }
         }
 
-        if ($noCache) {
+        if (isset($cacheSetting)) {
             $generalConfig->enableGraphqlCaching = $cacheSetting;
         }
 
-        return $this->asJson($singleQuery ? reset($result) : $result);
+        $this->response->format = Response::FORMAT_GQL;
+        $this->response->data = $singleQuery ? reset($result) : $result;
+
+        // send no-cache headers?
+        if ($hasMutations || $cache === false) {
+            $this->response->setNoCacheHeaders();
+        }
+
+        return $this->response;
     }
 
     /**
@@ -230,45 +265,49 @@ class GraphqlController extends Controller
             return $schema;
         }
 
-        // Was a specific token passed?
-        $authHeaders = $requestHeaders->get('X-Craft-Authorization', null, false) ?? $requestHeaders->get('Authorization', null, false) ?? [];
-        foreach ($authHeaders as $authHeader) {
-            $authValues = array_map('trim', explode(',', $authHeader));
-            foreach ($authValues as $authValue) {
-                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
-                    try {
-                        $token = $gqlService->getTokenByAccessToken($matches[1]);
-                    } catch (InvalidArgumentException) {
-                    }
+        $token = $this->_token($gqlService);
 
-                    if (!isset($token) || !$token->getIsValid()) {
-                        throw new BadRequestHttpException('Invalid Authorization header');
-                    }
-
-                    break 2;
-                }
-            }
-        }
-
-        if (!isset($token)) {
-            // Get the public schema, if it exists & is valid
-            $token = $this->_publicToken($gqlService);
-
-            // If we couldn't find a token, then return the active schema if there is one, otherwise bail
-            if (!$token) {
-                try {
-                    return $gqlService->getActiveSchema();
-                } catch (GqlException) {
-                    throw new BadRequestHttpException('Missing Authorization header');
-                }
+        // If we couldn't find a token, then return the active schema if there is one, otherwise bail
+        if (!$token) {
+            try {
+                return $gqlService->getActiveSchema();
+            } catch (GqlException) {
+                throw new BadRequestHttpException('Missing Authorization header');
             }
         }
 
         // Update the lastUsed timestamp
-        $token->lastUsed = DateTimeHelper::currentUTCDateTime();
-        $gqlService->saveToken($token);
+        $now = DateTimeHelper::currentUTCDateTime();
+        if (
+            !$token->lastUsed ||
+            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
+        ) {
+            $token->lastUsed = $now;
+            $gqlService->saveToken($token);
+        }
 
         return $token->getSchema();
+    }
+
+    private function _token(GqlService $gqlService): ?GqlToken
+    {
+        $bearerToken = $this->request->getBearerToken();
+
+        if ($bearerToken) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($bearerToken);
+
+                if (!$token->getIsValid()) {
+                    throw new BadRequestHttpException('Invalid Authorization header');
+                }
+
+                return $token;
+            } catch (InvalidArgumentException) {
+            }
+        }
+
+        // Get the public schema, if it exists & is valid
+        return $this->_publicToken($gqlService);
     }
 
     /**
@@ -330,12 +369,12 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
      * @throws BadRequestHttpException
      */
-    public function actionGraphiql(): Response
+    public function actionGraphiql(): YiiResponse
     {
         $this->requireAdmin(false);
         $this->getView()->registerAssetBundle(GraphiqlAsset::class);
@@ -358,12 +397,17 @@ class GraphqlController extends Controller
         }
 
         $schemas = [
-            Craft::t('app', 'Full Schema') => '*',
+            [
+                'label' => Craft::t('app', 'Full Schema'),
+                'value' => '*',
+            ],
         ];
 
         foreach ($gqlService->getSchemas() as $schema) {
-            $name = $schema->name;
-            $schemas[$name] = $schema->uid;
+            $schemas[] = [
+                'label' => $schema->name,
+                'value' => $schema->uid,
+            ];
         }
 
         return $this->renderTemplate('graphql/graphiql.twig', [
@@ -376,12 +420,12 @@ class GraphqlController extends Controller
     /**
      * Redirects to the GraphQL Schemas/Tokens page in the control panel.
      *
-     * @return Response
+     * @return YiiResponse
      * @throws NotFoundHttpException if this isn't a control panel request
      * @throws ForbiddenHttpException if the logged-in user isn't an admin
      * @since 3.5.0
      */
-    public function actionCpIndex(): Response
+    public function actionCpIndex(): YiiResponse
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$this->request->getIsCpRequest() || !$generalConfig->enableGql) {
@@ -398,11 +442,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @since 3.4.0
      */
-    public function actionViewSchemas(): Response
+    public function actionViewSchemas(): YiiResponse
     {
         $this->requireAdmin();
 
@@ -415,12 +459,12 @@ class GraphqlController extends Controller
     /**
      * @param int|null $tokenId
      * @param GqlToken|null $token
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditToken(?int $tokenId = null, ?GqlToken $token = null): Response
+    public function actionEditToken(?int $tokenId = null, ?GqlToken $token = null): YiiResponse
     {
         $this->requireAdmin(false);
 
@@ -436,11 +480,11 @@ class GraphqlController extends Controller
                 throw new NotFoundHttpException('Token not found');
             }
 
-            $title = trim($token->name) ?: Craft::t('app', 'Edit GraphQL Token');
+            $title = trim($token->name ?? '') ?: Craft::t('app', 'Edit GraphQL Token');
         } else {
             $token = new GqlToken();
             $accessToken = $this->_generateToken();
-            $title = trim($token->name) ?: Craft::t('app', 'Create a new GraphQL token');
+            $title = trim($token->name ?? '') ?: Craft::t('app', 'Create a new GraphQL token');
         }
 
         $schemas = $gqlService->getSchemas();
@@ -475,7 +519,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response|null
+     * @return YiiResponse|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
@@ -483,7 +527,7 @@ class GraphqlController extends Controller
      * @throws Exception
      * @since 3.4.0
      */
-    public function actionSaveToken(): ?Response
+    public function actionSaveToken(): ?YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAdmin(false);
@@ -524,11 +568,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws BadRequestHttpException
      * @since 3.4.0
      */
-    public function actionDeleteToken(): Response
+    public function actionDeleteToken(): YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -543,11 +587,11 @@ class GraphqlController extends Controller
 
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @since 3.4.0
      */
-    public function actionViewTokens(): Response
+    public function actionViewTokens(): YiiResponse
     {
         $this->requireAdmin(false);
         return $this->renderTemplate('graphql/tokens/_index.twig');
@@ -556,12 +600,12 @@ class GraphqlController extends Controller
     /**
      * @param int|null $schemaId
      * @param GqlSchema|null $schema
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditSchema(?int $schemaId = null, ?GqlSchema $schema = null): Response
+    public function actionEditSchema(?int $schemaId = null, ?GqlSchema $schema = null): YiiResponse
     {
         $this->requireAdmin();
 
@@ -582,7 +626,6 @@ class GraphqlController extends Controller
             $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL Schema');
         }
 
-
         return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
             'title'
@@ -591,12 +634,12 @@ class GraphqlController extends Controller
 
     /**
      * @param GqlSchema|null $schema
-     * @return Response
+     * @return YiiResponse
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionEditPublicSchema(?GqlSchema $schema = null): Response
+    public function actionEditPublicSchema(?GqlSchema $schema = null): YiiResponse
     {
         $this->requireAdmin();
 
@@ -617,12 +660,12 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response|null
+     * @return YiiResponse|null
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionSavePublicSchema(): ?Response
+    public function actionSavePublicSchema(): ?YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -661,7 +704,7 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response|null
+     * @return YiiResponse|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
@@ -669,7 +712,7 @@ class GraphqlController extends Controller
      * @throws Exception
      * @since 3.4.0
      */
-    public function actionSaveSchema(): ?Response
+    public function actionSaveSchema(): ?YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAdmin();
@@ -703,15 +746,15 @@ class GraphqlController extends Controller
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($schema);
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws BadRequestHttpException
      * @since 3.4.0
      */
-    public function actionDeleteSchema(): Response
+    public function actionDeleteSchema(): YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -725,10 +768,10 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      * @throws BadRequestHttpException
      */
-    public function actionFetchToken(): Response
+    public function actionFetchToken(): YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -749,9 +792,9 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return YiiResponse
      */
-    public function actionGenerateToken(): Response
+    public function actionGenerateToken(): YiiResponse
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

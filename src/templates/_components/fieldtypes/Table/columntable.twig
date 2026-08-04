@@ -11,12 +11,13 @@
         allowAdd: true,
         allowReorder: true,
         allowDelete: true,
+        static: readOnly ?? false,
     } %}
         {% block tablecell %}
             {% if colId == 'type' %}
                 <div class="flex flex-nowrap">
                     {{ parent() }}
-                    <a class="settings light{% if value != 'select' %} invisible{% endif %}" role="button" data-icon="settings"></a>
+                    <button class="settings light{% if value != 'select' %} invisible{% endif %}" type="button" data-icon="settings"></button>
                 </div>
             {% else %}
                 {{ parent() }}
@@ -29,5 +30,6 @@
     label: 'Table Columns'|t('app'),
     instructions: 'Define the columns your table should have.'|t('app'),
     id: 'columns',
-    errors: errors
+    errors: errors,
+    data: {'error-key': 'columns'},
 }, input) }}

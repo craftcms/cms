@@ -9,14 +9,15 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Batchable;
+use craft\base\DefaultableFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
-use craft\errors\InvalidElementException;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use Throwable;
 
 /**
@@ -25,11 +26,10 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ResaveElements extends BaseBatchedJob
+class ResaveElements extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type that should be resaved
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type that should be resaved
      */
     public string $elementType;
 
@@ -45,6 +45,12 @@ class ResaveElements extends BaseBatchedJob
     public bool $updateSearchIndex = false;
 
     /**
+     * @var string[] Only resave elements that have custom fields with these global field handles.
+     * @since 5.10.0
+     */
+    public array $withFields = [];
+
+    /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by [[to]].
      * @since 4.2.6
      */
@@ -57,10 +63,22 @@ class ResaveElements extends BaseBatchedJob
     public ?string $to = null;
 
     /**
+     * @var bool Sets the specified fields to their default values.
+     * @since 5.10.0
+     */
+    public bool $toDefault = false;
+
+    /**
      * @var bool Whether the [[set]] attribute should only be set if it doesn’t have a value.
      * @since 4.2.6
      */
     public bool $ifEmpty = false;
+
+    /**
+     * @var bool Whether the [[set]] attribute should only be set if the current value doesn’t validate.
+     * @since 5.1.0
+     */
+    public bool $ifInvalid = false;
 
     /**
      * @var bool Whether to update the `dateUpdated` timestamp for the elements.
@@ -73,10 +91,7 @@ class ResaveElements extends BaseBatchedJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
             ->orderBy(['elements.id' => SORT_ASC]);
 
         if (!empty($this->criteria)) {
@@ -91,25 +106,78 @@ class ResaveElements extends BaseBatchedJob
      */
     protected function processItem(mixed $item): void
     {
-        // Make sure the element was queried with its content
-        /** @var ElementInterface $item */
-        if ($item::hasContent() && $item->contentId === null) {
-            throw new InvalidElementException($item, "Skipped resaving {$item->getUiLabel()} ($item->id) because it wasn’t loaded with its content.");
-        }
+        if ($this->toDefault) {
+            if ($this->set) {
+                /** @var ElementInterface $item */
+                $fields = [$item->getFieldLayout()?->getFieldByHandle($this->set)];
+            } else {
+                $fieldsService = Craft::$app->getFields();
+                $fields = array_map(
+                    function(string $handle) use ($fieldsService, $item) {
+                        $field = $fieldsService->getFieldByHandle($handle);
+                        if (!$field) {
+                            return null;
+                        }
+                        /** @var ElementInterface $item */
+                        return $item->getFieldLayout()?->getFieldByUid($field->uid);
+                    },
+                    $this->withFields,
+                );
+            }
 
+            $fields = array_filter($fields, fn(?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
+
+            foreach ($fields as $field) {
+                $set = true;
+                if ($this->ifEmpty) {
+                    /** @var ElementInterface $item */
+                    if (!ElementHelper::isAttributeEmpty($item, $field->handle)) {
+                        $set = false;
+                    }
+                } elseif ($this->ifInvalid) {
+                    /** @var ElementInterface $item */
+                    $item->setScenario(Element::SCENARIO_LIVE);
+                    if ($item->validate("field:$field->handle")) {
+                        $set = false;
+                    }
+                }
+
+                if ($set) {
+                    /** @var ElementInterface $item */
+                    /** @var DefaultableFieldInterface $field */
+                    $defaultValue = $field->getDefaultValue();
+                    if ($defaultValue !== null) {
+                        $item->setFieldValue($field->handle, $defaultValue);
+                    }
+                }
+            }
+        } elseif (isset($this->set)) {
+            $set = true;
+            if ($this->ifEmpty) {
+                if (!ElementHelper::isAttributeEmpty($item, $this->set)) {
+                    $set = false;
+                }
+            } elseif ($this->ifInvalid) {
+                $item->setScenario(Element::SCENARIO_LIVE);
+                if ($item->validate($this->set) && $item->validate("field:$this->set")) {
+                    $set = false;
+                }
+            }
+
+            if ($set) {
+                $to = ResaveController::normalizeTo($this->to);
+                $item->{$this->set} = $to($item);
+            }
+        }
 
         $item->setScenario(Element::SCENARIO_ESSENTIALS);
         $item->resaving = true;
-
-        if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($item, $this->set))) {
-            $to = ResaveController::normalizeTo($this->to);
-            $item->{$this->set} = $to($item);
-        }
 
         try {
             Craft::$app->getElements()->saveElement($item,
                 updateSearchIndex: $this->updateSearchIndex,
                 forceTouch: $this->touch,
+                saveContent: true,
             );
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
@@ -121,11 +189,8 @@ class ResaveElements extends BaseBatchedJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
         return Translation::prep('app', 'Resaving {type}', [
-            'type' => $elementType::pluralLowerDisplayName(),
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 }

@@ -8,9 +8,13 @@
 namespace craft\test;
 
 use Craft;
+use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
+use craft\models\FieldLayout;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;
+use yii\log\Logger;
 use yii\test\ActiveFixture as YiiActiveFixture;
 use yii\test\BaseActiveFixture;
 
@@ -36,6 +40,9 @@ class ActiveFixture extends YiiActiveFixture
     {
         $tableSchema = $this->getTableSchema();
         $this->data = [];
+
+        $fieldsService = Craft::$app->getFields();
+
         foreach ($this->getData() as $key => $row) {
             $modelClass = $this->modelClass;
 
@@ -44,16 +51,34 @@ class ActiveFixture extends YiiActiveFixture
             $correctRow = $row;
 
             // Set the field layout if it exists.
+            $fieldLayout = null;
             if (isset($row['fieldLayoutType'])) {
-                $fieldLayoutType = $row['fieldLayoutType'];
-                unset($row['fieldLayoutType']);
-
-                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout->id) {
-                    $row['fieldLayoutId'] = $fieldLayout->id;
-                } else {
-                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                $fieldLayoutType = ArrayHelper::remove($row, 'fieldLayoutType');
+                $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
+                if ($fieldLayout->id === null) {
+                    if (function_exists('codecept_debug')) {
+                        codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    } else {
+                        Craft::getLogger()->log(
+                            "Field layout with type: $fieldLayoutType could not be found",
+                            Logger::LEVEL_WARNING,
+                            'testing'
+                        );
+                    }
                 }
+            } elseif (isset($row['fieldLayoutUid'])) {
+                $fieldLayoutUid = ArrayHelper::remove($row, 'fieldLayoutUid');
+                $fieldLayout = $fieldsService->getLayoutByUid($fieldLayoutUid);
+                if (!$fieldLayout) {
+                    $fieldLayout = new FieldLayout([
+                        'type' => Entry::class,
+                        'uid' => $fieldLayoutUid,
+                    ]);
+                    $fieldsService->saveLayout($fieldLayout);
+                }
+            }
+            if ($fieldLayout?->id !== null) {
+                $row['fieldLayoutId'] = $fieldLayout->id;
             }
 
             foreach ($row as $columnName => $rowValue) {

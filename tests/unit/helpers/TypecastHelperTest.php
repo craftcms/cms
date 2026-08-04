@@ -24,27 +24,55 @@ use DateTime;
 class TypecastHelperTest extends TestCase
 {
     /**
+     * @dataProvider scalarPropertiesDataProvider
      *
+     * @param string $class
+     * @param string $property
+     * @param mixed $expected
+     * @param mixed $value
      */
-    public function testScalarProperties(): void
+    public function testScalarProperties(string $class, string $property, mixed $expected, mixed $value): void
     {
         $config = [
-            'aliases' => 'foo,bar',
-            'allowAdminChanges' => '1',
-            'allowUpdates' => '0',
-            'baseCpUrl' => '',
-            'blowfishHashCost' => 123,
+            $property => $value,
         ];
 
-        Typecast::properties(GeneralConfig::class, $config);
+        Typecast::properties($class, $config);
 
         self::assertSame([
-            'aliases' => ['foo', 'bar'],
-            'allowAdminChanges' => true,
-            'allowUpdates' => false,
-            'baseCpUrl' => null,
-            'blowfishHashCost' => 123,
+            $property => $expected,
         ], $config);
+    }
+
+    public static function scalarPropertiesDataProvider(): array
+    {
+        return [
+            [GeneralConfig::class, 'aliases', ['foo', 'bar'], 'foo,bar'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'yes'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'no'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'on'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'off'],
+            [GeneralConfig::class, 'allowAdminChanges', true, '1'],
+            [GeneralConfig::class, 'allowAdminChanges', false, '0'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'true'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'false'],
+            [GeneralConfig::class, 'allowAdminChanges', false, ''],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'whatever'],
+            [GeneralConfig::class, 'baseCpUrl', null, ''],
+            [GeneralConfig::class, 'blowfishHashCost', 123, 123],
+            [GeneralConfig::class, 'isSystemLive', true, 'yes'],
+            [GeneralConfig::class, 'isSystemLive', false, 'no'],
+            [GeneralConfig::class, 'isSystemLive', true, 'on'],
+            [GeneralConfig::class, 'isSystemLive', false, 'off'],
+            [GeneralConfig::class, 'isSystemLive', true, '1'],
+            [GeneralConfig::class, 'isSystemLive', false, '0'],
+            [GeneralConfig::class, 'isSystemLive', true, 'true'],
+            [GeneralConfig::class, 'isSystemLive', false, 'false'],
+            [GeneralConfig::class, 'isSystemLive', null, ''],
+            [GeneralConfig::class, 'isSystemLive', null, 'whatever'],
+            [GeneralConfig::class, 'maxUploadFileSize', 123, '123'],
+            [GeneralConfig::class, 'maxUploadFileSize', '123abc', '123abc'],
+        ];
     }
 
     /**
@@ -71,13 +99,8 @@ class TypecastHelperTest extends TestCase
      */
     public function testEnumProperties(): void
     {
-        if (PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('PHP 8.1+ only');
-        }
-
         $config = [
             'suit' => 'H',
-            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
             'nullableSuit' => '',
         ];
@@ -85,9 +108,7 @@ class TypecastHelperTest extends TestCase
         Typecast::properties(EnumModel::class, $config);
 
         self::assertSame([
-            /** @phpstan-ignore-next-line */
             'suit' => Suit::Hearts,
-            /** @phpstan-ignore-next-line */
             'anotherSuit' => Suit::Hearts,
             'nullableSuit' => null,
         ], $config);

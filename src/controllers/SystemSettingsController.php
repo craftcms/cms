@@ -12,16 +12,21 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
+use craft\helpers\Html;
 use craft\helpers\MailerHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
+use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use yii\base\Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -35,6 +40,8 @@ use yii\web\Response;
  */
 class SystemSettingsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -44,8 +51,21 @@ class SystemSettingsController extends Controller
             return false;
         }
 
-        // All system setting actions require an admin
-        $this->requireAdmin();
+        if (in_array($action->id, [
+            'edit-email-settings',
+            'edit-global-set',
+            'general-settings',
+            'global-set-index',
+            'test-email-settings',
+        ])) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -61,6 +81,7 @@ class SystemSettingsController extends Controller
 
         return $this->renderTemplate('settings/general/_index.twig', [
             'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -127,8 +148,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            /** @var string|TransportAdapterInterface $transportAdapterType */
-            /** @phpstan-var class-string<TransportAdapterInterface>|TransportAdapterInterface $transportAdapterType */
+            /** @var class-string<TransportAdapterInterface> $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
@@ -157,6 +177,7 @@ class SystemSettingsController extends Controller
             'transportTypeOptions' => $transportTypeOptions,
             'allTransportAdapters' => $allTransportAdapters,
             'customMailerFiles' => $customMailerFiles,
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -199,22 +220,30 @@ class SystemSettingsController extends Controller
      */
     public function actionTestEmailSettings(): void
     {
-        $this->requirePostRequest();
+        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $this->requirePostRequest();
 
-        $settings = $this->_createMailSettingsFromPost();
-        $settingsIsValid = $settings->validate();
+            $settings = $this->_createMailSettingsFromPost();
+            $settingsIsValid = $settings->validate();
 
-        /** @var BaseTransportAdapter $adapter */
-        $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        $adapterIsValid = $adapter->validate();
+            /** @var BaseTransportAdapter $adapter */
+            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+            $adapterIsValid = $adapter->validate();
 
-        if ($settingsIsValid && $adapterIsValid) {
-            // Try to send the test email
-            /** @var Mailer $mailer */
-            $mailer = Craft::createObject(App::mailerConfig($settings));
+            if ($settingsIsValid && $adapterIsValid) {
+                $mailer = Craft::createObject(App::mailerConfig($settings));
+            } else {
+                $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
+            }
+        } else {
+            $mailer = Craft::$app->getMailer();
+        }
+
+        // Try to send the test email
+        if (isset($mailer)) {
             $message = $mailer
                 ->composeFromKey('test_email', [
-                    'settings' => MailerHelper::settingsReport($mailer, $adapter),
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter ?? null),
                 ])
                 ->setTo(static::currentUser());
 
@@ -223,14 +252,43 @@ class SystemSettingsController extends Controller
             } else {
                 $this->setFailFlash(Craft::t('app', 'There was an error testing your email settings.'));
             }
-        } else {
-            $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
         }
 
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
-            'settings' => $settings,
-            'adapter' => $adapter,
+            'settings' => $settings ?? null,
+            'adapter' => $adapter ?? null,
+        ]);
+    }
+
+    /**
+     * Global Set index
+     *
+     * @return Response
+     * @since 5.3.0
+     */
+    public function actionGlobalSetIndex(): Response
+    {
+        $view = $this->getView();
+        $view->registerAssetBundle(AdminTableAsset::class);
+        $view->registerTranslations('app', [
+            'Global Set Name',
+            'No global sets exist yet.',
+        ]);
+
+        return $this->renderTemplate('settings/globals/_index.twig', [
+            'title' => Craft::t('app', 'Globals'),
+            'crumbs' => [
+                [
+                    'label' => Craft::t('app', 'Settings'),
+                    'url' => UrlHelper::cpUrl('settings'),
+                ],
+            ],
+            'globalSets' => Craft::$app->getGlobals()->getAllSets(),
+            'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
+                'type' => GlobalSet::lowerDisplayName(),
+            ])),
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -244,6 +302,10 @@ class SystemSettingsController extends Controller
      */
     public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
+        if ($globalSetId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         if ($globalSet === null) {
             if ($globalSetId !== null) {
                 $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
@@ -261,7 +323,9 @@ class SystemSettingsController extends Controller
                 'type' => GlobalSet::displayName(),
             ]);
         } else {
-            $title = Craft::t('app', 'Create a new global set');
+            $title = Craft::t('app', 'Create a new {type}', [
+                'type' => GlobalSet::lowerDisplayName(),
+            ]);
         }
 
         // Breadcrumbs
@@ -282,6 +346,7 @@ class SystemSettingsController extends Controller
             'globalSet' => $globalSet,
             'title' => $title,
             'crumbs' => $crumbs,
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -299,7 +364,11 @@ class SystemSettingsController extends Controller
         $settings->fromName = $this->request->getBodyParam('fromName');
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
-        $settings->transportSettings = $this->request->getBodyParam('transportTypes.' . $settings->transportType);
+        $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam(sprintf('transportTypes.%s', Html::id($settings->transportType))) ?? []);
+        $settings->siteOverrides = array_filter(array_map(
+            fn(array $overrides) => array_filter($overrides),
+            $this->request->getBodyParam('siteOverrides') ?? [],
+        ));
 
         return $settings;
     }

@@ -3,10 +3,16 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use Craft;
+use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
+use craft\models\Volume;
+use craft\test\mockclasses\fs\MockNonLocalFs;
+use ReflectionProperty;
 
 class ImageTransformsTest extends Unit
 {
@@ -50,7 +56,7 @@ class ImageTransformsTest extends Unit
         $transform = ImageTransforms::createTransformFromString($string);
 
         foreach ($expected as $property => $value) {
-            $this->assertSame($transform->{$property}, $value);
+            self::assertSame($transform->{$property}, $value);
         }
     }
 
@@ -120,12 +126,12 @@ class ImageTransformsTest extends Unit
         $transform = ImageTransforms::normalizeTransform($input);
 
         if ($expected === null) {
-            $this->assertSame($expected, $transform);
+            self::assertSame($expected, $transform);
         } else {
-            $this->assertInstanceOf(ImageTransform::class, $transform);
+            self::assertInstanceOf(ImageTransform::class, $transform);
 
             foreach ($expected as $property => $value) {
-                $this->assertSame($transform->$property, $value);
+                self::assertSame($transform->$property, $value);
             }
         }
     }
@@ -201,7 +207,7 @@ class ImageTransformsTest extends Unit
     public function testGetTransformString($expected, $input): void
     {
         $transform = new ImageTransform($input);
-        $this->assertSame($expected, ImageTransforms::getTransformString($transform));
+        self::assertSame($expected, ImageTransforms::getTransformString($transform));
     }
 
     public function getTransformStringProvider(): array
@@ -268,10 +274,10 @@ class ImageTransformsTest extends Unit
     {
         $transform = new ImageTransform($config);
         $str = ImageTransforms::getTransformString($transform);
-        $this->assertSame($config, ImageTransforms::parseTransformString($str));
+        self::assertSame($config, ImageTransforms::parseTransformString($str));
     }
 
-    public function parseTransformStringDataProvider(): array
+    public static function parseTransformStringDataProvider(): array
     {
         return [
             [
@@ -335,5 +341,57 @@ class ImageTransformsTest extends Unit
                 ],
             ],
         ];
+    }
+
+    /**
+     * Covers #19328: getLocalImageSource() only re-downloaded a non-local fs’s cached source file
+     * when it was missing or 0 bytes, never when the remote object itself had changed. That left
+     * transforms rendering from stale bytes after an asset was replaced on a filesystem such as S3
+     * or GCS, if the local cache had already been seeded before the replacement was detected.
+     */
+    public function testGetLocalImageSourceReDownloadsWhenRemoteFileChanges(): void
+    {
+        $remoteRoot = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'mock-non-local-fs-' . uniqid('', true);
+        FileHelper::createDirectory($remoteRoot);
+        $remoteFilename = 'test-image.jpg';
+        $remotePath = $remoteRoot . DIRECTORY_SEPARATOR . $remoteFilename;
+        file_put_contents($remotePath, 'original bytes');
+        touch($remotePath, time() - 100);
+
+        $fs = new MockNonLocalFs([
+            'handle' => 'mockNonLocalFs',
+            'name' => 'Mock Non-Local Fs',
+            'path' => $remoteRoot,
+        ]);
+        $volume = new Volume();
+        $volume->setFs($fs);
+
+        $asset = new Asset();
+        $asset->id = PHP_INT_MAX - 1;
+        $asset->folderPath = '';
+        $asset->setFilename($remoteFilename);
+        (new ReflectionProperty(Asset::class, '_volume'))->setValue($asset, $volume);
+
+        $cachePath = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . $asset->getExtension();
+
+        try {
+            // First read: nothing cached yet, so it should download the original bytes.
+            $sourcePath = ImageTransforms::getLocalImageSource($asset);
+            self::assertSame($cachePath, $sourcePath);
+            self::assertSame('original bytes', file_get_contents($sourcePath));
+
+            // Change the remote file's content (and mtime) without going through Craft, simulating
+            // a "replace file" on a non-local fs while a local cached copy already exists.
+            file_put_contents($remotePath, 'updated bytes');
+            touch($remotePath, time() + 100);
+
+            // Second read: the cached copy is still present and non-empty, but it's now stale
+            // relative to the remote object, so it must be re-downloaded.
+            $sourcePath = ImageTransforms::getLocalImageSource($asset);
+            self::assertSame('updated bytes', file_get_contents($sourcePath));
+        } finally {
+            FileHelper::removeDirectory($remoteRoot);
+            FileHelper::unlink($cachePath);
+        }
     }
 }

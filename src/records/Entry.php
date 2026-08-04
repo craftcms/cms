@@ -15,11 +15,13 @@ use yii\db\ActiveQueryInterface;
  * Class Entry record.
  *
  * @property int $id ID
- * @property int $sectionId Section ID
+ * @property int|null $sectionId Section ID
+ * @property int|null $fieldId Field ID
+ * @property int $primaryOwnerId Primary owner ID
  * @property int $typeId Type ID
- * @property int|null $authorId Author ID
  * @property string|null $postDate Post date
  * @property string|null $expiryDate Expiry date
+ * @property string $status Live
  * @property Element $element Element
  * @property Section $section Section
  * @property EntryType $type Type
@@ -66,15 +68,5 @@ class Entry extends ActiveRecord
     public function getType(): ActiveQueryInterface
     {
         return $this->hasOne(EntryType::class, ['id' => 'typeId']);
-    }
-
-    /**
-     * Returns the entry’s author.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getAuthor(): ActiveQueryInterface
-    {
-        return $this->hasOne(User::class, ['id' => 'authorId']);
     }
 }

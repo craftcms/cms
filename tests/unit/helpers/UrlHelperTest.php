@@ -31,6 +31,10 @@ class UrlHelperTest extends TestCase
     public const NON_ABSOLUTE_URL = 'craftcms.com/';
     public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
     public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const EMAIL_URL = 'mailto:test@abc.com';
+    public const TEL_URL = 'tel:+10123456789';
+    public const FILE_PATH_1 = 'C:';
+    public const FILE_PATH_2 = 'C:\foo\bar.txt';
 
     /**
      * @var UnitTester
@@ -159,7 +163,15 @@ class UrlHelperTest extends TestCase
      */
     public function testEncodeParams(string $expected, string $url): void
     {
-        $this->assertSame($expected, UrlHelper::encodeParams($url));
+        self::assertSame($expected, UrlHelper::encodeParams($url));
+    }
+
+    /**
+     * @dataProvider encodeUrlDataProvider
+     */
+    public function testEncodeUrl(string $expected, string $url): void
+    {
+        self::assertSame($expected, UrlHelper::encodeUrl($url));
     }
 
     /**
@@ -186,7 +198,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
-        $scheme = $scheme ?? 'https';
+        $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
         self::assertSame($expected, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
@@ -226,7 +238,7 @@ class UrlHelperTest extends TestCase
      */
     public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): void
     {
-        $scheme = $scheme ?? 'https';
+        $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
         self::assertSame($expected, UrlHelper::siteUrl($path, $params, $scheme, $siteId));
     }
@@ -239,6 +251,9 @@ class UrlHelperTest extends TestCase
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
         ]);
+        $this->tester->mockCraftMethods('tokens', [
+            'getRemainingTokenUsages' => 1,
+        ]);
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
         self::assertSame($expected, UrlHelper::url('endpoint'));
@@ -250,10 +265,10 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = str_replace('https', 'http', TestSetup::SITE_URL) . 'index.php?p=actions/endpoint';
+        $expected = Craft::getAlias('@web/index.php?p=actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint'));
 
-        $expected = TestSetup::SITE_URL . 'actions/endpoint';
+        $expected = Craft::getAlias('@web/actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
     }
 
@@ -270,7 +285,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function buildQueryDataProvider(): array
+    public static function buildQueryDataProvider(): array
     {
         return [
             ['', []],
@@ -279,22 +294,27 @@ class UrlHelperTest extends TestCase
             ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
-            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
-            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo%5B0%5D=1&foo%5B1%5D=2', ['foo' => [1, 2]]],
+            ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
+            ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
-            ['foo+bar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Fbar=baz', ['foo/bar' => 'baz']],
+            ['foo%5B{bar}%5D=baz', ['foo[{bar}]' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
-            ['foo[1]=bar', ['foo[1]' => 'bar']],
-            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
+            ['foo=some%2Fpath%2F{bar}', ['foo' => 'some/path/{bar}']],
+            ['p=actions/endpoint', ['p' => 'actions/endpoint']],
+            ['returnUrl=https%3A%2F%2Fexample.test%2Fpath%2F{id}%3Ffoo%3Dbar', ['returnUrl' => 'https://example.test/path/{id}?foo=bar']],
+            ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
+            ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
     /**
      * @return array
      */
-    public function isAbsoluteUrlDataProvider(): array
+    public static function isAbsoluteUrlDataProvider(): array
     {
         return [
             'absolute-url' => [true, self::ABSOLUTE_URL],
@@ -303,13 +323,17 @@ class UrlHelperTest extends TestCase
             'absolute-url-www' => [true, self::ABSOLUTE_URL_WWW],
             'non-url' => [false, self::NON_ABSOLUTE_URL],
             'non-absolute-url-www' => [false, self::NON_ABSOLUTE_URL_WWW],
+            'email-url' => [true, self::EMAIL_URL],
+            'tel-url' => [true, self::TEL_URL],
+            'file-path-1' => [false, self::FILE_PATH_1],
+            'file-path-2' => [false, self::FILE_PATH_2],
         ];
     }
 
     /**
      * @return array
      */
-    public function isFulUrlDataProvider(): array
+    public static function isFulUrlDataProvider(): array
     {
         return [
             'absolute-url' => [true, self::ABSOLUTE_URL],
@@ -329,7 +353,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isRootRelativeUrlDataProvider(): array
+    public static function isRootRelativeUrlDataProvider(): array
     {
         return [
             'root-relative-true' => [true, '/22'],
@@ -342,7 +366,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function cpUrlCreationDataProvider(): array
+    public static function cpUrlCreationDataProvider(): array
     {
         return [
             'test-empty' => ['{cpUrl}', '', []],
@@ -350,6 +374,16 @@ class UrlHelperTest extends TestCase
                 '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
+            ],
+            'test-token-and-forward-slash-params' => [
+                '{cpUrl}/nav?redirect=some%2Fpath%2F{id}&site={handle}',
+                'nav',
+                ['redirect' => 'some/path/{id}', 'site' => '{handle}'],
+            ],
+            'test-return-url-param' => [
+                '{cpUrl}/nav?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                'nav',
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
             ],
             'test-preexisting-endpoints' => [
                 '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
@@ -379,7 +413,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function stripQueryStringDataProvider(): array
+    public static function stripQueryStringDataProvider(): array
     {
         return [
             'invalid-query-string' => [
@@ -406,7 +440,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithParametersDataProvider(): array
+    public static function urlWithParametersDataProvider(): array
     {
         return [
             'with-fragment' => [
@@ -425,14 +459,14 @@ class UrlHelperTest extends TestCase
                 '?param1=entry1&param2=entry2',
             ],
             '#' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2#anchor',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor'],
+                ['param1' => 'value', 'param2' => 'value2', '#' => 'anchor'],
             ],
             'basic-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2'],
+                ['param1' => 'value', 'param2' => 'value2'],
             ],
             'empty-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -450,9 +484,44 @@ class UrlHelperTest extends TestCase
                 ['someparam'],
             ],
             'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value1&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1=name&param2=name2',
+                '?param1=value1&param2=value2',
+            ],
+            'query-string-with-token' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1={value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1={value}',
+            ],
+            'query-string-with-token-name' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B{key}%5D={value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[{key}]={value}',
+            ],
+            'query-string-with-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5Bkey%5D={value}&param1%5Bkey2%5D=value2&param2%5Bkey%5D={value3}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[key]={value}&param1[key2]=value2&param2[key]={value3}',
+            ],
+            'query-string-with-with-non-indexed-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B0%5D=value1&param1%5B1%5D=value2',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[]=value1&param1[]=value2',
+            ],
+            'query-string-with-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path',
+            ],
+            'query-string-with-token-and-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath%2F{value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path/{value}',
+            ],
+            'return-url-with-query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fcontent%2Fentries%2Fsingles%3Fsource%3Dsingles',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['returnUrl' => 'https://example.test/admin/content/entries/singles?source=singles'],
             ],
             'pre-queried-url' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3&param1=name&param2=name2',
@@ -467,7 +536,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithTokenDataProvider(): array
+    public static function urlWithTokenDataProvider(): array
     {
         $https = true;
         $baseUrl = self::ABSOLUTE_URL_HTTPS;
@@ -506,7 +575,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function urlWithSchemeDataProvider(): array
+    public static function urlWithSchemeDataProvider(): array
     {
         return [
             'no-scheme' => [
@@ -560,7 +629,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function encodeParamsDataProvider(): array
+    public static function encodeParamsDataProvider(): array
     {
         return [
             ['http://example.test', 'http://example.test?'],
@@ -568,6 +637,21 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+            ['http://example.test?foo=some%2Fpath%2F{token}', 'http://example.test?foo=some/path/{token}'],
+            ['http://example.test?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://example.test?returnUrl=https://example.test/admin/entries?site={handle}'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeUrlDataProvider(): array
+    {
+        return [
+            ['https://domain/fr/offices/gen%C3%AAve', 'https://domain/fr/offices/genêve'],
+            ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/genêve?foo=bar'],
+            ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/gen%C3%AAve?foo=bar'],
+            ['foo+bar', 'foo bar'],
         ];
     }
 
@@ -576,7 +660,7 @@ class UrlHelperTest extends TestCase
      *
      * @return array
      */
-    public function rootRelativeUrlDataProvider(): array
+    public static function rootRelativeUrlDataProvider(): array
     {
         return [
             ['/', ''],
@@ -598,7 +682,7 @@ class UrlHelperTest extends TestCase
     /**
      * @return array
      */
-    public function urlFunctionDataProvider(): array
+    public static function urlFunctionDataProvider(): array
     {
         return [
             'base' => [
@@ -620,10 +704,22 @@ class UrlHelperTest extends TestCase
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https',
             ],
+            'token-and-forward-slash-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?redirect=some%2Fpath%2F{id}',
+                self::ABSOLUTE_URL,
+                ['redirect' => 'some/path/{id}'],
+                'https',
+            ],
+            'return-url-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                self::ABSOLUTE_URL,
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
+                'https',
+            ],
         ];
     }
 
-    public function hostInfoDataProvider(): array
+    public static function hostInfoDataProvider(): array
     {
         return [
             ['https://google.com', 'https://google.com'],
@@ -634,12 +730,14 @@ class UrlHelperTest extends TestCase
         ];
     }
 
-    public function siteUrlDataProvider(): array
+    public static function siteUrlDataProvider(): array
     {
         return [
             ['{siteUrl}endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
-            ['{siteUrl}endpoint?param1=x&param2[0]=y&param2[1]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?redirect=some%2Fpath%2F{id}', 'endpoint', ['redirect' => 'some/path/{id}']],
+            ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}']],
         ];
     }
 

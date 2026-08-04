@@ -14,7 +14,8 @@ use craft\db\Table;
  * Class Address record.
  *
  * @property int $id ID
- * @property int|null $ownerId Owner ID
+ * @property int|null $fieldId Field ID
+ * @property int|null $primaryOwnerId Owner ID
  * @property string $countryCode Country code
  * @property string|null $administrativeArea Administrative area
  * @property string|null $locality Locality
@@ -23,6 +24,7 @@ use craft\db\Table;
  * @property string|null $sortingCode Sorting code
  * @property string|null $addressLine1 First line of the address block
  * @property string|null $addressLine2 Second line of the address block
+ * @property string|null $addressLine3 Third line of the address block
  * @property string|null $organization Organization name
  * @property string|null $organizationTaxId Organization tax ID
  * @property string|null $fullName Full name

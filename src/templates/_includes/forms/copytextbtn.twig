@@ -9,46 +9,6 @@
     tabindex: '0',
 } %}
 
-<div class="copytextbtn-wrapper">
-    {{ input('text', null, value, {
-        class: 'visually-hidden',
-        readonly: true,
-        size: value|length,
-        tabindex: '-1',
-        aria: {
-            hidden: 'true',
-        },
-    }) }}
-    {% tag 'div' with attributes %}
-        {{ tag('span', {
-            class: 'copytextbtn__value',
-            text: value,
-        }) }}
-        {{ tag('span', {
-            class: 'visually-hidden',
-            text: 'Copy to clipboard'|t('app'),
-        }) }}
-        <span class="copytextbtn__icon" data-icon="clipboard" aria-hidden="true"></span>
-    {% endtag %}
-</div>
-
-{% js %}
-    {% block js %}
-        (() => {
-            const $btn = $('#{{ id|namespaceInputId|e('js') }}');
-            const $input = $btn.prev('input[readonly]');
-            const copyValue = function() {
-                $input[0].select();
-                document.execCommand('copy');
-                Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
-                $btn.trigger('copy');
-                $input[0].setSelectionRange(0, 0);
-                $btn.focus();
-            };
-            $btn.on('activate', ev => {
-                copyValue();
-                ev.preventDefault();
-            });
-        })();
-    {% endblock %}
-{% endjs %}
+<craft-copy-attribute value="{{ value }}">
+    {{ value }}
+</craft-copy-attribute>

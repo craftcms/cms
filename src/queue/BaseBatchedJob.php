@@ -12,6 +12,7 @@ use craft\base\Batchable;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
+use yii\queue\RetryableJobInterface;
 
 /**
  * BaseBatchedJob is the base class for large jobs that may need to spawn
@@ -60,6 +61,17 @@ abstract class BaseBatchedJob extends BaseJob
 
     private ?Batchable $_data = null;
     private ?int $_totalItems = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        $this->ttr ??= ($this instanceof RetryableJobInterface ? $this->getTtr() : null)
+            ?? Craft::$app->getQueue()->ttr;
+    }
 
     public function __sleep(): array
     {
@@ -115,37 +127,61 @@ abstract class BaseBatchedJob extends BaseJob
     public function execute($queue): void
     {
         $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
-        $totalInBatch = is_array($items) ? count($items) : iterator_count($items);
 
         $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
+        $start = microtime(true);
+
+        if ($this->itemOffset === 0) {
+            $this->before();
+        }
+
+        $this->beforeBatch();
 
         $i = 0;
 
         foreach ($items as $item) {
-            $this->setProgress($queue, $i / $totalInBatch, Translation::prep('app', '{step, number} of {total, number}', [
-                'step' => $this->itemOffset + 1,
-                'total' => $this->totalItems(),
+            $step = $this->itemOffset + 1;
+            $total = $this->totalItems();
+            $this->setProgress($queue, $step / $total, Translation::prep('app', '{step, number} of {total, number}', [
+                'step' => $step,
+                'total' => $total,
             ]));
             $this->processItem($item);
             $this->itemOffset++;
             $i++;
 
-            // Make sure we're not getting uncomfortably close to the memory limit, every 10 items
-            if ($startMemory !== null && $i % 10 === 0) {
+            // Make sure we're not getting uncomfortably close to the memory limit
+            if ($startMemory !== null) {
                 $memory = memory_get_usage();
                 $avgMemory = ($memory - $startMemory) / $i;
                 if ($memory + ($avgMemory * 15) > $memoryLimit) {
                     break;
                 }
             }
+
+            // Make sure we don't hit the TTR, even if the next item takes twice as long as the average
+            $runningTime = microtime(true) - $start;
+            $avgRunningTime = $runningTime / $i;
+            if ($this->ttr !== null && $runningTime + ($avgRunningTime * 2) > $this->ttr) {
+                break;
+            }
+
+            // Make sure the job is still reserved before continuing
+            if ($queue instanceof Queue && !$queue->isReserved($queue->getJobId())) {
+                return;
+            }
         }
+
+        $this->afterBatch();
 
         // Spawn another job if there are more items
         if ($this->itemOffset < $this->totalItems()) {
             $nextJob = clone $this;
             $nextJob->batchIndex++;
             QueueHelper::push($nextJob, $this->priority, 0, $this->ttr, $queue);
+        } else {
+            $this->after();
         }
     }
 
@@ -155,6 +191,42 @@ abstract class BaseBatchedJob extends BaseJob
      * @param mixed $item
      */
     abstract protected function processItem(mixed $item): void;
+
+    /**
+     * Does things before the first item of the first batch.
+     *
+     * @since 5.0.0
+     */
+    protected function before(): void
+    {
+    }
+
+    /**
+     * Does things after the last item of the last batch.
+     *
+     * @since 5.0.0
+     */
+    protected function after(): void
+    {
+    }
+
+    /**
+     * Does things before the first item of the current batch.
+     *
+     * @since 5.0.0
+     */
+    protected function beforeBatch(): void
+    {
+    }
+
+    /**
+     * Does things after the last item of the current batch.
+     *
+     * @since 5.0.0
+     */
+    protected function afterBatch(): void
+    {
+    }
 
     /**
      * @inheritdoc

@@ -17,10 +17,10 @@ use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
+use craft\enums\CmsEdition;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
@@ -83,7 +83,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => \Craft::Solo,
+        'edition' => CmsEdition::Pro->value,
     ];
 
     /**
@@ -164,9 +164,15 @@ class Craft extends Yii2
 
         parent::_before($test);
 
+        // transaction events are registered now, so it's ok to open the connection
+        \Craft::$app->db->open();
+
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
-            /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
+            /**
+             * @var ConsoleApplication|WebApplication|MockObject $mockApp
+             * @phpstan-ignore varTag.nativeType
+             */
             $mockApp = TestSetup::getMockModule($test);
             \Craft::$app = $mockApp;
             Yii::$app = $mockApp;
@@ -207,16 +213,14 @@ class Craft extends Yii2
                 TestSetup::getSeedProjectConfigData()
             );
 
-            \Craft::$app->getProjectConfig()->saveModifiedConfigData();
+            \Craft::$app->getProjectConfig()->flush();
         } else {
             \Craft::$app->getProjectConfig()->rebuild();
 
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');
             if (is_int($edition)) {
-                \Craft::$app->setEdition(
-                    $edition
-                );
+                \Craft::$app->setEdition($edition);
             }
         }
 
@@ -282,6 +286,8 @@ class Craft extends Yii2
             ob_end_clean();
             throw $exception;
         }
+
+        \Craft::$app->setEdition(CmsEdition::Pro);
 
         // Avoid a "headers already sent" error
         ob_end_clean();
@@ -418,7 +424,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
@@ -426,8 +432,6 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -543,7 +547,6 @@ class Craft extends Yii2
      */
     public function runQueue(string $queueItem, array $params = []): void
     {
-        /** @var BaseJob $job */
         $job = new $queueItem($params);
 
         if (!$job instanceof BaseJob) {
@@ -592,19 +595,12 @@ class Craft extends Yii2
      */
     public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
-        if (!$field = \Craft::$app->getFields()->getFieldByHandle($fieldHandle)) {
-            return null;
-        }
-
-        $layoutId = (new Query())
-            ->select(['layoutId'])
-            ->from([Table::FIELDLAYOUTFIELDS])
-            ->where(['fieldId' => $field->id])
-            ->column();
-
-        if ($layoutId) {
-            $layoutId = ArrayHelper::firstValue($layoutId);
-            return \Craft::$app->getFields()->getLayoutById($layoutId);
+        foreach (\Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->handle === $fieldHandle) {
+                    return $fieldLayout;
+                }
+            }
         }
 
         return null;
@@ -680,8 +676,7 @@ class Craft extends Yii2
 
     /**
      * @param CodeceptionTestCase $test
-     * @param string $moduleClass
-     * @phpstan-param class-string<Module> $moduleClass
+     * @param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
     protected function addModule(CodeceptionTestCase $test, string $moduleClass): void
@@ -690,7 +685,10 @@ class Craft extends Yii2
             return;
         }
 
-        /** @var array $componentMap */
+        /**
+         * @var array $componentMap
+         * @phpstan-ignore argument.type
+         */
         $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.

@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\gql\base\SingularTypeInterface;
-use yii\base\Event;
 
 /**
  * RegisterGqlTypesEvent class.

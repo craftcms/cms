@@ -8,17 +8,13 @@
 namespace craft\web;
 
 use Craft;
-use craft\controllers\UsersController;
 use craft\db\Table;
 use craft\elements\User as UserElement;
-use craft\errors\UserLockedException;
-use craft\events\LoginFailureEvent;
 use craft\helpers\ConfigHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
-use craft\helpers\User as UserHelper;
-use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
@@ -57,6 +53,17 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
     public string $elevatedSessionTimeoutParam = '__elevated_timeout';
+
+    /**
+     * @var string The session variable name used to store the original user ID, when impersonating another user.
+     * @since 5.6.0
+     */
+    public string $impersonatorIdParam = '__impersonator_id';
+
+    /**
+     * @see getImpersonator()
+     */
+    private UserElement|false $impersonator;
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -99,7 +106,7 @@ class User extends \yii\web\User
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
             $seconds = ConfigHelper::durationInSeconds($generalConfig->rememberUsernameDuration);
-            $cookie->expire = time() + $seconds;
+            $cookie->expire = DateTimeHelper::currentTimeStamp() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
             Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
@@ -113,11 +120,10 @@ class User extends \yii\web\User
     {
         // Set the default based on the config, if it’s not specified
         if ($defaultUrl === null) {
-            // Is this a control panel request and can they access the control panel?
-            if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
+            if ($this->getIsGuest()) {
+                $defaultUrl = UrlHelper::actionUrl('users/redirect');
             } else {
-                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getPostLoginRedirect());
+                $defaultUrl = $this->getDefaultReturnUrl();
             }
         }
 
@@ -127,6 +133,22 @@ class User extends \yii\web\User
         // i.e. if there was a {siteUrl} tag in the Site URL setting, but no matching environment variable,
         // so they ended up on something like http://example.com/%7BsiteUrl%7D/some/path
         return str_replace(['{', '}'], '', $url);
+    }
+
+    /**
+     * Returns the default return URL.
+     *
+     * @return string
+     * @since 5.6.2
+     */
+    public function getDefaultReturnUrl(): string
+    {
+        // Is this a control panel request and can they access the control panel?
+        if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
+            return UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
+        }
+
+        return UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getPostLoginRedirect());
     }
 
     /**
@@ -234,7 +256,7 @@ class User extends \yii\web\User
             }
 
             $expire = SessionHelper::get($this->authTimeoutParam);
-            $time = time();
+            $time = DateTimeHelper::currentTimeStamp();
 
             if ($expire !== null && $expire > $time) {
                 return $expire - $time;
@@ -242,6 +264,58 @@ class User extends \yii\web\User
         }
 
         return 0;
+    }
+
+    /**
+     * Returns the original user, if the current user is being impersonated.
+     *
+     * @return UserElement|null
+     * @since 5.6.0
+     */
+    public function getImpersonator(): ?UserElement
+    {
+        if (!isset($this->impersonator)) {
+            $impersonatorId = SessionHelper::get($this->impersonatorIdParam);
+            if (!$impersonatorId) {
+                return null;
+            }
+
+            $impersonator = UserElement::find()
+                ->id($impersonatorId)
+                ->one();
+
+            $this->impersonator = $impersonator?->can('impersonateUsers')
+                ? $impersonator
+                : false;
+        }
+
+        return $this->impersonator ?: null;
+    }
+
+    /**
+     * Returns the ID of the original user, if the current user is being impersonated.
+     *
+     * @return int|null
+     * @since 5.6.0
+     */
+    public function getImpersonatorId(): ?int
+    {
+        return $this->getImpersonator()?->id;
+    }
+
+    /**
+     * Sets the ID of the original user, if the current user is being impersonated.
+     *
+     * @param int|null $id
+     * @since 5.6.0
+     */
+    public function setImpersonatorId(?int $id): void
+    {
+        if ($id) {
+            SessionHelper::set($this->impersonatorIdParam, $id);
+        } else {
+            SessionHelper::remove($this->impersonatorIdParam);
+        }
     }
 
     // Authorization
@@ -285,7 +359,7 @@ class User extends \yii\web\User
             $expires = SessionHelper::get($this->elevatedSessionTimeoutParam);
 
             if ($expires !== null) {
-                $currentTime = time();
+                $currentTime = DateTimeHelper::currentTimeStamp();
 
                 if ($expires > $currentTime) {
                     return $expires - $currentTime;
@@ -317,60 +391,6 @@ class User extends \yii\web\User
     }
 
     /**
-     * Starts an elevated user session for the current user.
-     *
-     * @param string $password the current user’s password
-     * @return bool Whether the password was valid, and the user session has been elevated
-     * @throws UserLockedException if the user is locked.
-     */
-    public function startElevatedSession(string $password): bool
-    {
-        // If the current user is being impersonated by an admin, get the admin instead
-        if ($previousUserId = SessionHelper::get(UserElement::IMPERSONATE_KEY)) {
-            /** @var UserElement $user */
-            $user = UserElement::find()
-                ->addSelect(['users.password'])
-                ->id($previousUserId)
-                ->one();
-        } else {
-            // Get the current user
-            $user = $this->getIdentity();
-        }
-
-        if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-            $this->_handleLoginFailure(UserElement::AUTH_INVALID_CREDENTIALS);
-            return false;
-        }
-
-        if ($user->locked) {
-            throw new UserLockedException($user);
-        }
-
-        // Validate the password
-        $validator = new UserPasswordValidator();
-
-        // Did they submit a valid password, and is the user capable of being logged-in?
-        if (!$validator->validate($password) || !$user->authenticate($password)) {
-            $this->_handleLoginFailure($user->authError, $user);
-            return false;
-        }
-
-        // Make sure elevated sessions haven't been disabled
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($generalConfig->elevatedSessionDuration === 0) {
-            return true;
-        }
-
-        // Set the elevated session expiration date
-        $timeout = time() + $generalConfig->elevatedSessionDuration;
-        SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
-
-        return true;
-    }
-
-    /**
      * @inheritdoc
      */
     public function login(IdentityInterface $identity, $duration = 0): bool
@@ -381,6 +401,16 @@ class User extends \yii\web\User
             $this->authTimeout = $duration;
         }
         $success = parent::login($identity, $duration);
+
+        if ($success) {
+            // Set the elevated session expiration date
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if ($generalConfig->elevatedSessionDuration !== 0) {
+                $timeout = DateTimeHelper::currentTimeStamp() + $generalConfig->elevatedSessionDuration;
+                SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
+            }
+        }
+
         $this->authTimeout = $authTimeout;
         return $success;
     }
@@ -392,6 +422,7 @@ class User extends \yii\web\User
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
+            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
             return false;
         }
 
@@ -412,17 +443,16 @@ class User extends \yii\web\User
             SessionHelper::remove($this->authDurationParam);
         }
 
+        $this->_clearOtherSessionParams();
+
         // Save the username cookie if they're not being impersonated
-        $impersonating = SessionHelper::get(UserElement::IMPERSONATE_KEY) !== null;
-        if (!$impersonating) {
+        $impersonator = $this->getImpersonator();
+        if (!$impersonator) {
             $this->sendUsernameCookie($identity);
         }
 
-        // Clear out the elevated session, if there is one
-        SessionHelper::remove($this->elevatedSessionTimeoutParam);
-
         // Update the user record
-        if (!$impersonating) {
+        if (!$impersonator) {
             Craft::$app->getUsers()->handleValidLogin($identity);
         }
 
@@ -443,6 +473,8 @@ class User extends \yii\web\User
                 $this->generateToken($identity->id);
             }
         }
+
+        $this->_clearOtherSessionParams();
 
         parent::switchIdentity($identity, $duration);
     }
@@ -468,10 +500,30 @@ class User extends \yii\web\User
     /**
      * @inheritdoc
      */
+    public function setReturnUrl($url): void
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if ($scheme && !in_array($scheme, ['http', 'https'])) {
+            $url = '/';
+        }
+        parent::setReturnUrl(strip_tags($url));
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
+        if (!Craft::$app->getIsInstalled()) {
+            return;
+        }
+
+        if (!$this->_validateUserAgentAndIp()) {
+            // Only log a warning if a PHP session exists
+            if (Craft::$app->getSession()->getHasSessionId()) {
+                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
+            }
             return;
         }
 
@@ -535,7 +587,10 @@ class User extends \yii\web\User
     {
         /** @var UserElement $identity */
         // Delete the impersonation session, if there is one
-        SessionHelper::remove(UserElement::IMPERSONATE_KEY);
+        SessionHelper::remove($this->impersonatorIdParam);
+        $this->impersonator = false;
+
+        $this->_clearOtherSessionParams();
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
@@ -559,28 +614,17 @@ class User extends \yii\web\User
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-            Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
-            return false;
-        }
-
-        return true;
+        return $request->getUserAgent() !== null && $request->getUserIP() !== null;
     }
 
-    /**
-     * @param string|null $authError
-     * @param UserElement|null $user
-     */
-    private function _handleLoginFailure(?string $authError, ?UserElement $user = null): void
+    private function _clearOtherSessionParams(): void
     {
-        $message = UserHelper::getLoginFailureMessage($authError, $user);
+        // Clear out the elevated session, if there is one
+        SessionHelper::remove($this->elevatedSessionTimeoutParam);
 
-        // Fire a 'loginFailure' event
-        $event = new LoginFailureEvent([
-            'authError' => $authError,
-            'message' => $message,
-            'user' => $user,
-        ]);
-        $this->trigger(UsersController::EVENT_LOGIN_FAILURE, $event);
+        // Make sure 2FA data doesn't bleed over
+        $authService = Craft::$app->getAuth();
+        $authService->setUser(null);
+        SessionHelper::remove($authService->passkeyCreationOptionsParam);
     }
 }

@@ -35,7 +35,7 @@ class DownloadAssetFile extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        activate: \$selectedItems => {
+        activate: (selectedItems, elementIndex) => {
             var \$form = Craft.createForm().appendTo(Garnish.\$bod);
             $(Craft.getCsrfInput()).appendTo(\$form);
             $('<input/>', {
@@ -43,7 +43,7 @@ class DownloadAssetFile extends ElementAction
                 name: 'action',
                 value: 'assets/download-asset'
             }).appendTo(\$form);
-            \$selectedItems.each(function() {
+            selectedItems.each(function() {
                 $('<input/>', {
                     type: 'hidden',
                     name: 'assetId[]',

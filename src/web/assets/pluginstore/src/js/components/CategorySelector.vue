@@ -45,7 +45,9 @@
       ...mapState({
         categories: (state) => state.pluginStore.categories,
         CraftEdition: (state) => state.craft.CraftEdition,
+        CraftTeam: (state) => state.craft.CraftTeam,
         CraftPro: (state) => state.craft.CraftPro,
+        CraftEnterprise: (state) => state.craft.CraftEnterprise,
         licensedEdition: (state) => state.craft.licensedEdition,
       }),
     },

@@ -20,10 +20,16 @@ class DefineFieldHtmlEvent extends DefineHtmlEvent
     /**
      * @var mixed The field’s value
      */
-    public mixed $value = null;
+    public mixed $value;
 
     /**
      * @var ElementInterface|null The element the field is associated with, if there is one
      */
     public ?ElementInterface $element = null;
+
+    /**
+     * @var bool Whether this is for an inline edit form.
+     * @since 5.0.0
+     */
+    public bool $inline;
 }

@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\elements\db\EagerLoadInfo;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 
 /**
@@ -18,8 +20,21 @@ use DateTime;
 trait ElementTrait
 {
     /**
+     * @var ElementInterface[]|null All elements that the element was queried with.
+     * @since 5.0.0
+     */
+    public ?array $elementQueryResult = null;
+
+    /**
+     * @var EagerLoadInfo|null Info about the eager loading setup used to query this element.
+     * @since 5.0.0
+     */
+    public ?EagerLoadInfo $eagerLoadInfo = null;
+
+    /**
      * @var int|null The element’s ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
@@ -46,8 +61,15 @@ trait ElementTrait
     public bool $isProvisionalDraft = false;
 
     /**
+     * @var bool Whether provisional changes have been loaded onto this element.
+     * @since 5.9.0
+     */
+    public bool $hasProvisionalChanges = false;
+
+    /**
      * @var string|null The element’s UID
      */
+    #[AllowedInSandbox]
     public ?string $uid = null;
 
     /**
@@ -67,48 +89,51 @@ trait ElementTrait
     public ?int $structureId = null;
 
     /**
-     * @var int|null The element’s content row ID
-     */
-    public ?int $contentId = null;
-
-    /**
      * @var bool Whether the element is enabled
      */
+    #[AllowedInSandbox]
     public bool $enabled = true;
 
     /**
      * @var bool Whether the element is archived
      */
+    #[AllowedInSandbox]
     public bool $archived = false;
 
     /**
      * @var int|null The site ID the element is associated with
      */
+    #[AllowedInSandbox]
     public ?int $siteId = null;
 
     /**
      * @var string|null The element’s title
      */
+    #[AllowedInSandbox]
     public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
+    #[AllowedInSandbox]
     public ?string $slug = null;
 
     /**
      * @var string|null The element’s URI
      */
+    #[AllowedInSandbox]
     public ?string $uri = null;
 
     /**
      * @var DateTime|null The date that the element was created
      */
+    #[AllowedInSandbox]
     public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null The date that the element was last updated
      */
+    #[AllowedInSandbox]
     public ?DateTime $dateUpdated = null;
 
     /**
@@ -121,7 +146,14 @@ trait ElementTrait
      * @var DateTime|null The date that the element was trashed
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public ?DateTime $dateDeleted = null;
+
+    /**
+     * @var bool|null Whether the element was deleted along with its owner
+     * @since 5.0.0
+     */
+    public ?bool $deletedWithOwner = null;
 
     /**
      * @var int|null The element’s structure’s root ID
@@ -151,6 +183,7 @@ trait ElementTrait
     /**
      * @var bool Whether the element has been soft-deleted.
      */
+    #[AllowedInSandbox]
     public bool $trashed = false;
 
     /**
@@ -164,11 +197,24 @@ trait ElementTrait
     public bool $propagating = false;
 
     /**
+     * @var ElementInterface|null The element that this element is being propagated from.
+     * @since 5.0.0
+     */
+    public ?ElementInterface $propagatingFrom = null;
+
+    /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
      * overwriting existing site-specific values.
      * @since 3.2.0
      */
     public bool $propagateAll = false;
+
+    /**
+     * @var bool Whether all required element attributes should be propagated across all its supported sites, but only if otherwise
+     * they wouldn’t validate.
+     * @since 5.9.0
+     */
+    public bool $propagateRequired = false;
 
     /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
@@ -183,13 +229,19 @@ trait ElementTrait
     public bool $isNewForSite = false;
 
     /**
+     * @var bool Whether this is for a newly-created site.
+     * @since 5.6.10
+     */
+    public bool $isNewSite = false;
+
+    /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
      * @since 3.1.22
      */
     public bool $resaving = false;
 
     /**
-     * @var ElementInterface|null The element that this element is being duplicated by.
+     * @var ElementInterface|null The element that this element is duplicating.
      */
     public ?ElementInterface $duplicateOf = null;
 
@@ -198,6 +250,12 @@ trait ElementTrait
      * @since 3.7.5
      */
     public bool $firstSave = false;
+
+    /**
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     * @since 5.9.0
+     */
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
@@ -221,8 +279,30 @@ trait ElementTrait
     public bool $previewing = false;
 
     /**
+     * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
+     * @since 5.6.0
+     */
+    public ?string $viewMode = null;
+
+    /**
+     * @var bool Whether the element should definitely be saved, if it’s a nested element being considered
+     * for saving by [[NestedElementManager]].
+     * @since 5.0.0
+     */
+    public bool $forceSave = false;
+
+    /**
      * @var bool Whether the element is being hard-deleted.
      * @since 3.2.0
      */
     public bool $hardDelete = false;
+
+    /**
+     * @var bool Whether the element’s search keywords should be indexed immediately.
+     *
+     * If `null`, the search index will only be updated immediately for console requests.
+     *
+     * @since 5.8.0
+     */
+    public ?bool $updateSearchIndexImmediately = null;
 }

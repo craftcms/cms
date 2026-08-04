@@ -16,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -36,12 +37,13 @@ class TagsController extends Controller
      */
     public function actionIndex(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
         return $this->renderTemplate('settings/tags/index.twig', [
             'tagGroups' => $tagGroups,
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ]);
     }
 
@@ -55,7 +57,14 @@ class TagsController extends Controller
      */
     public function actionEditTagGroup(?int $tagGroupId = null, ?TagGroup $tagGroup = null): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
+
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+
+        if ($tagGroupId === null && $readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
 
         if ($tagGroupId !== null) {
             if ($tagGroup === null) {
@@ -92,6 +101,7 @@ class TagsController extends Controller
             'tagGroup' => $tagGroup,
             'title' => $title,
             'crumbs' => $crumbs,
+            'readOnly' => $readOnly,
         ]);
     }
 

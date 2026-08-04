@@ -30,6 +30,11 @@ class Asset extends ElementMutationArguments
                 'description' => 'The file to use for this asset',
                 'type' => File::getType(),
             ],
+            'alt' => [
+                'name' => 'alt',
+                'description' => 'Alternative text for the asset.',
+                'type' => Type::string(),
+            ],
             'newFolderId' => [
                 'name' => 'newFolderId',
                 'description' => 'ID of the new folder for this asset',
@@ -39,6 +44,11 @@ class Asset extends ElementMutationArguments
                 'name' => 'uploaderId',
                 'description' => 'The ID of the user who first added this asset (if known).',
                 'type' => Type::id(),
+            ],
+            'focalPoint' => [
+                'name' => 'focalPoint',
+                'description' => 'The image focal point, in the format of "0.5;0.5".',
+                'type' => Type::string(),
             ],
         ]);
     }

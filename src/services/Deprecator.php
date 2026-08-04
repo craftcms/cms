@@ -13,7 +13,6 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\DeprecationException;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
@@ -26,7 +25,7 @@ use yii\db\Exception;
 
 /**
  * Deprecator service.
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->deprecator`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->getDeprecator()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -139,6 +138,7 @@ class Deprecator extends Component
     public function storeLogs(): void
     {
         $db = Craft::$app->getDb();
+        $tableSchema = $db->getSchema()->getTableSchema(Table::DEPRECATIONERRORS);
 
         foreach ($this->_pendingRequestLogs as $log) {
             try {
@@ -149,7 +149,7 @@ class Deprecator extends Component
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
-                    'traces' => Json::encode($log->traces),
+                    'traces' => Db::prepareValueForDb($log->traces, $tableSchema->columns['traces']->dbType),
                 ]);
                 $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
@@ -451,6 +451,7 @@ class Deprecator extends Component
                 } else {
                     $strValue = '"' . $value . '"';
                 }
+                $strValue = mb_convert_encoding($strValue, 'UTF-8');
             } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
             } elseif ($value === null) {

@@ -11,10 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
+use yii\log\Logger;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 
@@ -58,6 +61,8 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function load(): void
     {
+        $fieldsService = Craft::$app->getFields();
+
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();
 
@@ -65,14 +70,34 @@ abstract class BaseElementFixture extends DbFixture
             $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
 
             // Set the field layout
-            $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
-            if ($fieldLayoutType) {
-                $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout->id) {
-                    $element->fieldLayoutId = $fieldLayout->id;
-                } else {
-                    codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+            $fieldLayout = null;
+            if (isset($data['fieldLayoutType'])) {
+                $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
+                $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
+                if ($fieldLayout->id === null) {
+                    if (function_exists('codecept_debug')) {
+                        codecept_debug("Field layout with type: $fieldLayoutType could not be found");
+                    } else {
+                        Craft::getLogger()->log(
+                            "Field layout with type: $fieldLayoutType could not be found",
+                            Logger::LEVEL_WARNING,
+                            'testing'
+                        );
+                    }
                 }
+            } elseif (isset($data['fieldLayoutUid'])) {
+                $fieldLayoutUid = ArrayHelper::remove($data, 'fieldLayoutUid');
+                $fieldLayout = $fieldsService->getLayoutByUid($fieldLayoutUid);
+                if (!$fieldLayout) {
+                    $fieldLayout = new FieldLayout([
+                        'type' => Entry::class,
+                        'uid' => $fieldLayoutUid,
+                    ]);
+                    $fieldsService->saveLayout($fieldLayout);
+                }
+            }
+            if ($fieldLayout?->id !== null) {
+                $element->fieldLayoutId = $fieldLayout->id;
             }
 
             $this->populateElement($element, $data);
