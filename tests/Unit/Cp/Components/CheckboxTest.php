@@ -137,12 +137,3 @@ describe('custom-option mode', function () {
             ->and($html)->toContainTag('input', ['type' => 'text', 'class' => 'custom-option-input']);
     });
 });
-
-it('evaluates closures with injection', function () {
-    $html = Checkbox::make()
-        ->id('cb')
-        ->checked(fn (Checkbox $checkbox): bool => true)
-        ->toHtml();
-
-    expect($html)->toContain(' checked');
-});

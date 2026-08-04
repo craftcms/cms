@@ -299,14 +299,16 @@ export class BaseElementSelectInput extends Base {
                 helperLagBase: 1.5,
                 onBeforeDragStart: () => {
                     this.elementEditor?.pause();
+                    // Disable the labels' overflow tooltips while dragging so they
+                    // don't recompute/pop up during the drag.
                     this.$elementsContainer
-                        .find('craft-element-label')
+                        .find('craft-truncate')
                         .attr('disabled', true);
                 },
                 onDragStop: () => {
                     this.elementEditor?.resume();
                     this.$elementsContainer
-                        .find('craft-element-label')
+                        .find('craft-truncate')
                         .removeAttr('disabled');
                 },
                 onSortChange: () => {

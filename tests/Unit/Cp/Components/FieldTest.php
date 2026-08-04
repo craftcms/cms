@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Components\Field;
 use Illuminate\Support\HtmlString;
 use Twig\Markup;
@@ -141,38 +140,6 @@ describe('errors', function () {
 
         expect($html)->not->toContain('has-errors')
             ->and($html)->not->toContain('slot="feedback"');
-    });
-});
-
-describe('callback properties', function () {
-    it('evaluates closures at render time', function () {
-        $field = Field::make()->label(fn (): string => 'Lazy Label');
-
-        expect($field->toHtml())->toContain('label="Lazy Label"');
-    });
-
-    it('injects the component by parameter name', function () {
-        $html = Field::make()
-            ->label(fn ($component): string => 'Label for '.$component::class)
-            ->toHtml();
-
-        expect($html)->toContain('label="Label for '.Field::class.'"');
-    });
-
-    it('injects the component by type hint', function () {
-        $html = Field::make()
-            ->required(fn (Field $field): bool => true)
-            ->toHtml();
-
-        expect($html)->toContain(' required');
-    });
-
-    it('resolves container services for typed closure parameters', function () {
-        $html = Field::make()
-            ->translatable(fn (GeneralConfig $config): bool => $config instanceof GeneralConfig)
-            ->toHtml();
-
-        expect($html)->toContain(' translatable');
     });
 });
 

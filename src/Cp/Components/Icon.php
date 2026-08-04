@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Shared\Enums\Color;
 use Illuminate\Contracts\Support\Htmlable;
@@ -30,17 +29,17 @@ use Stringable;
  */
 class Icon extends ViewComponent
 {
-    protected string|Closure|null $name = null;
+    protected ?string $name = null;
 
-    protected string|Closure|null $family = null;
+    protected ?string $family = null;
 
-    protected string|Closure|null $variant = null;
+    protected ?string $variant = null;
 
-    protected string|Closure|null $label = null;
+    protected ?string $label = null;
 
-    protected string|Closure|null $appearance = null;
+    protected ?string $appearance = null;
 
-    protected Color|string|Closure|null $color = null;
+    protected Color|string|null $color = null;
 
     protected function tagName(): string
     {
@@ -48,7 +47,7 @@ class Icon extends ViewComponent
     }
 
     /** Icon name; legacy aliases and custom icons are resolved at render time. */
-    public function name(string|Closure|null $name): static
+    public function name(?string $name): static
     {
         $this->name = $name;
 
@@ -56,14 +55,14 @@ class Icon extends ViewComponent
     }
 
     /** Icon family; overrides the family resolved from the name. */
-    public function family(string|Closure|null $family): static
+    public function family(?string $family): static
     {
         $this->family = $family;
 
         return $this;
     }
 
-    public function variant(string|Closure|null $variant): static
+    public function variant(?string $variant): static
     {
         $this->variant = $variant;
 
@@ -74,7 +73,7 @@ class Icon extends ViewComponent
      * A description of the icon for assistive devices. Without one, the web
      * component treats the icon as presentational.
      */
-    public function label(string|Closure|null $label): static
+    public function label(?string $label): static
     {
         $this->label = $label;
 
@@ -82,7 +81,7 @@ class Icon extends ViewComponent
     }
 
     /** `plain` (default) or `badge`. */
-    public function appearance(string|Closure|null $appearance): static
+    public function appearance(?string $appearance): static
     {
         $this->appearance = $appearance;
 
@@ -93,7 +92,7 @@ class Icon extends ViewComponent
      * Palette for the icon, rendered as the `data-color` attribute that
      * scopes the `--c-color-*` tokens.
      */
-    public function color(Color|string|Closure|null $color): static
+    public function color(Color|string|null $color): static
     {
         $this->color = $color;
 
@@ -105,17 +104,11 @@ class Icon extends ViewComponent
      * When slotted content is present, the web component suppresses the
      * name-based icon. Pairs with {@see Icons::svg()}.
      */
-    public function svg(string|Stringable|Htmlable|Closure|null $svg): static
+    public function svg(string|Stringable|Htmlable|null $svg): static
     {
-        $this->slots[static::DEFAULT_SLOT] = $svg === null ? null : function () use ($svg) {
-            $svg = $this->evaluate($svg);
-
-            if ($svg === null) {
-                return null;
-            }
-
-            return $svg instanceof Htmlable ? $svg : new HtmlString((string) $svg);
-        };
+        $this->slots[static::DEFAULT_SLOT] = $svg === null || $svg instanceof Htmlable
+            ? $svg
+            : new HtmlString((string) $svg);
 
         return $this;
     }
@@ -123,17 +116,15 @@ class Icon extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
-        $name = $this->evaluate($this->name);
-        $resolved = $name !== null ? Icons::resolveIconData((string) $name) : null;
-        $color = $this->evaluate($this->color);
+        $resolved = $this->name !== null ? Icons::resolveIconData($this->name) : null;
 
         return [
             'name' => $resolved['name'] ?? null,
-            'family' => $this->evaluate($this->family) ?? $resolved['family'] ?? null,
-            'variant' => $this->evaluate($this->variant),
-            'label' => $this->evaluate($this->label),
-            'appearance' => $this->evaluate($this->appearance),
-            'data-color' => $color instanceof Color ? $color->value : $color,
+            'family' => $this->family ?? $resolved['family'] ?? null,
+            'variant' => $this->variant,
+            'label' => $this->label,
+            'appearance' => $this->appearance,
+            'data-color' => $this->color instanceof Color ? $this->color->value : $this->color,
         ];
     }
 }

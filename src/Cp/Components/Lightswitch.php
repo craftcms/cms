@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
@@ -39,41 +38,41 @@ class Lightswitch extends ViewComponent
 
     protected const string DEFAULT_INDETERMINATE_VALUE = '-';
 
-    protected bool|Closure $on = false;
+    protected bool $on = false;
 
-    protected bool|Closure $indeterminate = false;
+    protected bool $indeterminate = false;
 
-    protected string|Closure|null $name = null;
+    protected ?string $name = null;
 
     /** @var array<string, mixed> Additional attributes for the switch button. */
     protected array $buttonAttributes = [];
 
-    protected string|Closure $value = self::DEFAULT_VALUE;
+    protected string $value = self::DEFAULT_VALUE;
 
-    protected string|Closure $indeterminateValue = self::DEFAULT_INDETERMINATE_VALUE;
+    protected string $indeterminateValue = self::DEFAULT_INDETERMINATE_VALUE;
 
-    protected string|Closure|null $label = null;
+    protected ?string $label = null;
 
-    protected string|Closure|null $onLabel = null;
+    protected ?string $onLabel = null;
 
-    protected string|Closure|null $offLabel = null;
+    protected ?string $offLabel = null;
 
-    protected string|Closure|null $toggle = null;
+    protected ?string $toggle = null;
 
-    protected string|Closure|null $reverseToggle = null;
+    protected ?string $reverseToggle = null;
 
-    protected string|Closure|null $labelledBy = null;
+    protected ?string $labelledBy = null;
 
-    protected string|Closure|null $describedBy = null;
+    protected ?string $describedBy = null;
 
-    protected string|Stringable|Closure|null $instructions = null;
+    protected string|Stringable|null $instructions = null;
 
     protected function tagName(): string
     {
         return 'craft-switch';
     }
 
-    public function on(bool|Closure $on = true): static
+    public function on(bool $on = true): static
     {
         $this->on = $on;
 
@@ -81,7 +80,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** Mixed state; only meaningful while the switch is off. */
-    public function indeterminate(bool|Closure $indeterminate = true): static
+    public function indeterminate(bool $indeterminate = true): static
     {
         $this->indeterminate = $indeterminate;
 
@@ -89,7 +88,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** Renders a hidden input posting the switch state under this name. */
-    public function name(string|Closure|null $name): static
+    public function name(?string $name): static
     {
         $this->name = $name;
 
@@ -97,7 +96,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** The value posted when the switch is on. */
-    public function value(string|int|float|Closure $value): static
+    public function value(string|int|float $value): static
     {
         $this->value = is_int($value) || is_float($value) ? (string) $value : $value;
 
@@ -105,14 +104,14 @@ class Lightswitch extends ViewComponent
     }
 
     /** The value posted when the switch is indeterminate. */
-    public function indeterminateValue(string|Closure $indeterminateValue): static
+    public function indeterminateValue(string $indeterminateValue): static
     {
         $this->indeterminateValue = $indeterminateValue;
 
         return $this;
     }
 
-    public function label(string|Closure|null $label): static
+    public function label(?string $label): static
     {
         $this->label = $label;
 
@@ -120,7 +119,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** State label rendered after the control; omitted when equal to the label. */
-    public function onLabel(string|Closure|null $onLabel): static
+    public function onLabel(?string $onLabel): static
     {
         $this->onLabel = $onLabel;
 
@@ -128,7 +127,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** State label rendered before the control. */
-    public function offLabel(string|Closure|null $offLabel): static
+    public function offLabel(?string $offLabel): static
     {
         $this->offLabel = $offLabel;
 
@@ -136,7 +135,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** Selector (or element id) of a container to reveal while the switch is on. */
-    public function toggle(string|Closure|null $toggle): static
+    public function toggle(?string $toggle): static
     {
         $this->toggle = $toggle;
 
@@ -144,21 +143,21 @@ class Lightswitch extends ViewComponent
     }
 
     /** Selector (or element id) of a container to reveal while the switch is off. */
-    public function reverseToggle(string|Closure|null $reverseToggle): static
+    public function reverseToggle(?string $reverseToggle): static
     {
         $this->reverseToggle = $reverseToggle;
 
         return $this;
     }
 
-    public function labelledBy(string|Closure|null $labelledBy): static
+    public function labelledBy(?string $labelledBy): static
     {
         $this->labelledBy = $labelledBy;
 
         return $this;
     }
 
-    public function describedBy(string|Closure|null $describedBy): static
+    public function describedBy(?string $describedBy): static
     {
         $this->describedBy = $describedBy;
 
@@ -166,7 +165,7 @@ class Lightswitch extends ViewComponent
     }
 
     /** Help text below the switch; supports markdown. */
-    public function instructions(string|Stringable|Closure|null $instructions): static
+    public function instructions(string|Stringable|null $instructions): static
     {
         $this->instructions = $instructions;
 
@@ -176,30 +175,25 @@ class Lightswitch extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
-        $on = (bool) $this->evaluate($this->on);
-        $label = $this->evaluate($this->label);
-        $onLabel = $this->evaluate($this->onLabel) ?? $label;
-        $offLabel = $this->evaluate($this->offLabel);
-        $value = (string) $this->evaluate($this->value);
-        $indeterminateValue = (string) $this->evaluate($this->indeterminateValue);
+        $onLabel = $this->onLabel ?? $this->label;
 
         return [
-            'checked' => $on,
+            'checked' => $this->on,
             'indeterminate' => $this->effectiveIndeterminateValue() !== null,
             'disabled' => $this->isDisabled(),
             'size' => $this->getSize(),
-            'value' => $value !== self::DEFAULT_VALUE ? $value : null,
-            'indeterminate-value' => $indeterminateValue !== self::DEFAULT_INDETERMINATE_VALUE ? $indeterminateValue : null,
-            'label' => $label,
-            'on-label' => $onLabel !== null && $onLabel !== $label ? $onLabel : null,
-            'off-label' => $offLabel,
+            'value' => $this->value !== self::DEFAULT_VALUE ? $this->value : null,
+            'indeterminate-value' => $this->indeterminateValue !== self::DEFAULT_INDETERMINATE_VALUE ? $this->indeterminateValue : null,
+            'label' => $this->label,
+            'on-label' => $onLabel !== null && $onLabel !== $this->label ? $onLabel : null,
+            'off-label' => $this->offLabel,
         ];
     }
 
     #[\Override]
     protected function renderSlots(): string
     {
-        $instructions = (string) ($this->evaluate($this->instructions) ?? '');
+        $instructions = (string) ($this->instructions ?? '');
 
         return implode('', array_filter([
             $this->switchButtonHtml(),
@@ -231,10 +225,7 @@ class Lightswitch extends ViewComponent
 
     protected function switchButtonHtml(): string
     {
-        $on = (bool) $this->evaluate($this->on);
         $indeterminate = $this->effectiveIndeterminateValue() !== null;
-        $toggle = $this->evaluate($this->toggle);
-        $reverseToggle = $this->evaluate($this->reverseToggle);
 
         return Html::tag('craft-switch-button', '', Arr::merge(
             [
@@ -242,21 +233,21 @@ class Lightswitch extends ViewComponent
                 'id' => $this->getId(),
                 'role' => 'switch',
                 'size' => $this->getSize() ?? 'medium',
-                'checked' => $on,
+                'checked' => $this->on,
                 'indeterminate' => $indeterminate,
                 'disabled' => $this->isDisabled(),
                 'class' => array_filter([
-                    $toggle || $reverseToggle ? 'fieldtoggle' : null,
+                    $this->toggle || $this->reverseToggle ? 'fieldtoggle' : null,
                 ]),
                 'data' => [
                     'tag-name' => 'craft-switch-button',
-                    'target' => $toggle ?: null,
-                    'reverse-target' => $reverseToggle ?: null,
+                    'target' => $this->toggle ?: null,
+                    'reverse-target' => $this->reverseToggle ?: null,
                 ],
                 'aria' => [
-                    'checked' => $on ? 'true' : ($indeterminate ? 'mixed' : 'false'),
-                    'labelledby' => $this->evaluate($this->labelledBy),
-                    'describedby' => $this->evaluate($this->describedBy),
+                    'checked' => $this->on ? 'true' : ($indeterminate ? 'mixed' : 'false'),
+                    'labelledby' => $this->labelledBy,
+                    'describedby' => $this->describedBy,
                 ],
             ],
             $this->buttonAttributes,
@@ -265,13 +256,11 @@ class Lightswitch extends ViewComponent
 
     protected function hiddenInputHtml(): string
     {
-        $name = $this->evaluate($this->name);
-
-        if ($name === null) {
+        if ($this->name === null) {
             return '';
         }
 
-        return (string) Html::hiddenInput($name, $this->postedValue(), [
+        return (string) Html::hiddenInput($this->name, $this->postedValue(), [
             'disabled' => $this->isDisabled(),
             'slot' => 'hidden-input',
         ]);
@@ -279,8 +268,8 @@ class Lightswitch extends ViewComponent
 
     protected function postedValue(): string
     {
-        if ($this->evaluate($this->on)) {
-            return (string) $this->evaluate($this->value);
+        if ($this->on) {
+            return $this->value;
         }
 
         return $this->effectiveIndeterminateValue() ?? '';
@@ -289,10 +278,10 @@ class Lightswitch extends ViewComponent
     /** The effective indeterminate posting value, or `null` when not indeterminate. */
     private function effectiveIndeterminateValue(): ?string
     {
-        if ($this->evaluate($this->on) || ! $this->evaluate($this->indeterminate)) {
+        if ($this->on || ! $this->indeterminate) {
             return null;
         }
 
-        return (string) $this->evaluate($this->indeterminateValue);
+        return $this->indeterminateValue;
     }
 }

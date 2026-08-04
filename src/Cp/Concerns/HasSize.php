@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Concerns;
 
-use Closure;
 use CraftCms\Cms\Cp\Enums\Size;
 
 /**
@@ -14,9 +13,9 @@ use CraftCms\Cms\Cp\Enums\Size;
  */
 trait HasSize
 {
-    protected Size|string|Closure|null $size = null;
+    protected Size|string|null $size = null;
 
-    public function size(Size|string|Closure|null $size): static
+    public function size(Size|string|null $size): static
     {
         $this->size = $size;
 
@@ -25,12 +24,10 @@ trait HasSize
 
     public function getSize(): ?string
     {
-        $size = $this->evaluate($this->size);
-
-        if ($size === null) {
+        if ($this->size === null) {
             return null;
         }
 
-        return $size instanceof Size ? $size->value : Size::from($size)->value;
+        return $this->size instanceof Size ? $this->size->value : Size::from($this->size)->value;
     }
 }

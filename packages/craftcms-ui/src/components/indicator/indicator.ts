@@ -17,6 +17,10 @@ export default class CraftIndicator extends LitElement {
   static override styles = [
     variantsStyles,
     css`
+      :host {
+        display: contents;
+      }
+
       .indicator {
         --_fill: var(--fill, var(--c-color-fill-loud));
         --_size: var(--size, 0.5em);

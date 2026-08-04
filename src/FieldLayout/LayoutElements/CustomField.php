@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
@@ -134,7 +133,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() === 0) {
             return parent::label();
@@ -150,7 +149,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
         parent::instructions($instructions);
 
@@ -161,9 +160,8 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $this;
     }
 
-    public function handle(string|Closure|null $handle): static
+    public function handle(?string $handle): static
     {
-        $handle = $this->evaluate($handle);
         $this->handle = $handle;
 
         if ($this->_field !== null) {
@@ -175,14 +173,14 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
     public function editCondition(mixed $editCondition): static
     {
-        $this->setEditCondition($this->evaluate($editCondition));
+        $this->setEditCondition($editCondition);
 
         return $this;
     }
 
     public function elementEditCondition(mixed $elementEditCondition): static
     {
-        $this->setElementEditCondition($this->evaluate($elementEditCondition));
+        $this->setElementEditCondition($elementEditCondition);
 
         return $this;
     }

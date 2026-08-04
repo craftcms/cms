@@ -78,13 +78,3 @@ describe('slots', function () {
             ->and($html)->toContain('<craft-icon name="chevron-down" slot="suffix">');
     });
 });
-
-it('evaluates closures with injection', function () {
-    $html = Button::make()
-        ->label(fn (Button $button): string => 'Lazy')
-        ->loading(fn (): bool => true)
-        ->toHtml();
-
-    expect($html)->toContain('Lazy')
-        ->and($html)->toContain(' loading');
-});

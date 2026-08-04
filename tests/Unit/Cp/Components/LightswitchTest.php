@@ -118,11 +118,3 @@ it('renders markdown instructions into the help-text slot', function () {
     expect($html)->toContain('slot="help-text"')
         ->and($html)->toContain('<strong>bold</strong>');
 });
-
-it('evaluates closures with injection', function () {
-    $html = Lightswitch::make()
-        ->on(fn (Lightswitch $lightswitch): bool => true)
-        ->toHtml();
-
-    expect($html)->toContain(' checked');
-});
