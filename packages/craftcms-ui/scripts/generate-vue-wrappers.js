@@ -79,6 +79,14 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-input-money',
+    className: 'CraftInputMoney',
+    fileName: 'CraftInputMoney',
+    modelType: 'string',
+    importPath: '../components/input-money/input-money',
+    slots: ['label', 'help-text', 'input', 'feedback', 'before', 'after'],
+  },
+  {
     tagName: 'craft-input-password',
     className: 'CraftInputPassword',
     fileName: 'CraftInputPassword',

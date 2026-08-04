@@ -37,6 +37,7 @@ export {default as CraftInputColor} from './components/input-color/input-color.j
 export {default as CraftInputCopy} from './components/input-copy/input-copy.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
+export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
