@@ -1805,7 +1805,6 @@ JS, [
             $entryElement = null;
             $newKey = null;
 
-            // if matrix field entries were keyed by the entry type handle
             // if there's no type or type is not allowed - bail
             if (! isset($entry['type'])) {
                 continue;

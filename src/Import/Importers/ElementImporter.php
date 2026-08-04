@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Import\Importers;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -379,21 +378,8 @@ class ElementImporter extends BaseImporter
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
 
-        // if ($element->id !== null) {
-        // todo (iwona): not sure if we want to be this extreme;
-        // when used via command or any other option where user is not logged in to the CP
-        // it'll force the entry data to have author(s) specified or for them to be turned off on section's level
-        // or maybe we should set the live scenario by default but if someone maps the status,
-        // and it's set to disabled then we go with the default or essential scenario?
-        // or, we add a setting to the config that allows you to choose if you want the data validated on import and its on by default?
-        // -----
-        // and validation scenario is "live"
-        // $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        // }
-
         $item = Import::processData($this, $data, $element);
 
-        // for existing elements, snapshot old values so we can tell after the fact whether anything actually changed
         $isNew = $element->id === null;
 
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
@@ -426,7 +412,6 @@ class ElementImporter extends BaseImporter
             $element->setAttributesForImport($attributes);
         }
 
-        // todo (iwona): make the match criteria work for nested elements too!
         if (! empty($fields)) {
             $fields = $this->normalizeFields($element, $fields);
             $element->setFieldValues($fields);
