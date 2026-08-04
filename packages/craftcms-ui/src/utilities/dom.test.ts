@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, test, vi} from 'vitest';
+import {beforeEach, describe, expect, test, vi} from 'vite-plus/test';
 
 // Prevent happy-dom from making real network requests for CSS/JS files
 const happyDOM = (window as any).happyDOM;

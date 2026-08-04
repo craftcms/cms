@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Enums\Appearance;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -239,7 +239,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             Button::make()
                 ->label(t('Advanced'))
                 ->icon('chevron-down')
-                ->appearance(Appearance::Plain)
+                ->variant(ButtonVariant::Plain)
                 ->attributes([
                     'slot' => 'invoker',
                     'class' => 'justify-self-start',

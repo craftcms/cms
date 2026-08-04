@@ -29,18 +29,18 @@ composer serve                # Start the testbench dev server
 ### Frontend
 
 ```bash
-npm run dev           # Vite dev server (HMR) for the Inertia/Vue CP
-npm run build         # Production Vite build (cp.ts + legacy.ts + cp.css)
-npm run build:all     # Build legacy bundles + CP component package + Vite
-npm run dev:bundles   # Webpack dev watch for legacy jQuery bundles
-npm run dev:ui        # Dev build for the @craftcms/ui component package
-npm run build:ui      # Production build for the @craftcms/ui component package
-npm run lint          # ESLint + Stylelint + TypeScript type-check
-npm run typecheck     # TypeScript type-check only (vue-tsc)
-npm run test:ui       # Vitest tests for the @craftcms/ui package
+vp dev                # Vite dev server (HMR) for the Inertia/Vue CP
+vp build              # Production Vite build (cp.ts + legacy.ts + cp.css)
+vp run build:all      # Build legacy bundles + CP component package + Vite
+vp run dev:bundles    # Webpack dev watch for legacy jQuery bundles
+vp run dev:ui         # Dev build for the @craftcms/ui component package
+vp run build:ui       # Production build for the @craftcms/ui component package
+vp check              # Oxfmt + Oxlint + TypeScript type-check
+vp run typecheck      # TypeScript type-check only (vue-tsc)
+vp run test:ui        # Vitest tests for the @craftcms/ui package
 ```
 
-> **Note:** `@craftcms/ui` must be built (`npm run build:ui`) before building or running the main Vite app if you've
+> **Note:** `@craftcms/ui` must be built (`vp run build:ui`) before building or running the main Vite app if you've
 > made changes to it.
 
 ## Testing
@@ -105,9 +105,8 @@ Server-rendered CP UI is moving onto the `@craftcms/ui` web components via PHP c
 `src/Cp/Components/`:
 
 - Each component (e.g. `Button`, `Checkbox`, `Lightswitch`, `Field`) extends `ViewComponent` and renders its custom
-  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters, named-slot handling, and lazily
-  evaluated Closure values (DI-resolved, Filament-style). Build instances with `Component::make()->…`;
-  `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
+  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters and named-slot handling. Build instances
+  with `Component::make()->…`; `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
 - `ComponentRegistry` (`#[Singleton]`, plugin-extensible) maps template-facing names to component classes and backs
   the `ui()` PHP helper and the `ui` Twig function.
 - `CraftCms\Cms\Cp\FormFields` is the legacy shim layer. Its `*FromConfig()` methods translate the legacy Twig

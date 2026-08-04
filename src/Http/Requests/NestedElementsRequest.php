@@ -88,6 +88,30 @@ class NestedElementsRequest extends FormRequest
         return $this->elementIds;
     }
 
+    /**
+     * Ensures the user is authorized to reorder the nested elements, in addition to
+     * (not instead of) the general `manageNestedElements` authorization checked by
+     * {@see owner()} — a field's nested elements can be manageable without being sortable.
+     */
+    public function authorizeReorder(): void
+    {
+        $owner = $this->owner();
+        $attribute = $this->attribute();
+
+        if (SessionAuth::checkAuthorization(sprintf('reorderNestedElements::%s::%s', $owner->id, $attribute))) {
+            return;
+        }
+
+        if (
+            $owner->id !== $owner->getCanonicalId() &&
+            SessionAuth::checkAuthorization(sprintf('reorderNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
+        ) {
+            return;
+        }
+
+        abort(403, 'User is not authorized to perform this action');
+    }
+
     public function offset(): int
     {
         $this->validateReorder();

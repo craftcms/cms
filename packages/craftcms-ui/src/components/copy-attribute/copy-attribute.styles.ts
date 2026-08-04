@@ -34,11 +34,11 @@ export default css`
   }
 
   .copy-attribute::part(button):not(.copy-attribute--success):not(
-      .copy-attribute--error
-    ):hover,
+    .copy-attribute--error
+  ):hover,
   .copy-attribute::part(button):not(.copy-attribute--success):not(
-      .copy-attribute--error
-    ):focus {
+    .copy-attribute--error
+  ):focus {
     border-color: var(--c-color-neutral-border-quiet);
     color: var(--c-text-default);
   }

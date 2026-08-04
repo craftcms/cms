@@ -87,6 +87,8 @@ readonly class DeleteElementsController
     public function destroy(Elements $elementsService): JsonResponse
     {
         $deleteOwnership = [];
+        $elementsToDelete = 0;
+        $failureCount = 0;
 
         foreach ($this->elements as $element) {
             if (
@@ -98,7 +100,10 @@ readonly class DeleteElementsController
                 continue;
             }
 
-            $elementsService->deleteElement($element, $this->hardDelete);
+            $elementsToDelete++;
+            if (! $elementsService->deleteElement($element, $this->hardDelete)) {
+                $failureCount++;
+            }
         }
 
         foreach ($deleteOwnership as $ownerId => $elementIds) {
@@ -108,7 +113,22 @@ readonly class DeleteElementsController
                 ->delete();
         }
 
-        return new JsonResponse;
+        $showAsFailure = $failureCount !== 0 && $failureCount === $elementsToDelete;
+
+        if ($showAsFailure) {
+            $message = t('Couldn’t delete {type}.', [
+                'type' => $elementsToDelete === 1 ? $this->elementType::lowerDisplayName() : $this->elementType::pluralLowerDisplayName(),
+            ]);
+        } else {
+            $message = t('{type} deleted.', [
+                'type' => $elementsToDelete === 1 ? $this->elementType::displayName() : $this->elementType::pluralDisplayName(),
+            ]);
+        }
+
+        return new JsonResponse([
+            'message' => $message,
+            'showAsFailure' => $showAsFailure,
+        ]);
     }
 
     public function replaceRelationsModal(): CpModalResponse

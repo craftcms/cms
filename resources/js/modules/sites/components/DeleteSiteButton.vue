@@ -19,8 +19,7 @@
       size="small"
       icon
       type="button"
-      variant="danger"
-      appearance="plain"
+      variant="danger-plain"
       :disabled="site.primary"
       @click="modalActive = true"
     >

@@ -193,6 +193,7 @@ readonly class Cp
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => self::httpProxy($generalConfig),
             'isImagick' => Images::getIsImagick(),
+            'isVips' => Images::getIsVips(),
             'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => AssetsHelper::getMaxUploadSize(),

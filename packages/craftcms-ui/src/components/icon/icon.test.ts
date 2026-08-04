@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {html} from 'lit';
 import type CraftIcon from './icon.js';
 import './icon.js';

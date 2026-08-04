@@ -89,6 +89,7 @@ class TemplateManagerTestTwigRenderer extends TemplateManagerTestRenderer implem
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string {
         return $this->renderString($template, $variables, $templateMode);
     }

@@ -6,7 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
+use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
@@ -14,6 +17,7 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 use function CraftCms\Cms\cp_url;
@@ -25,35 +29,63 @@ readonly class DashboardController
     public function __construct(
         private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
+        private CustomWidgets $customWidgets,
         private WidgetTypes $widgetTypes,
     ) {}
 
     public function index(): View
     {
-        $widgetTypeInfo = [];
-        foreach ($this->widgetTypes->types()->sortBy(fn (string $type): string => $type::displayName()) as $widgetType) {
-            if (! $widgetType::isSelectable()) {
-                continue;
-            }
+        $widgets = $this->dashboard->getAllWidgets();
 
-            $this->HtmlStack->startJsBuffer();
-            $widget = $this->dashboard->createWidget($widgetType);
-            $widgetTypeInfo[$widget::class] = [
-                'iconSvg' => $this->getWidgetIconSvg($widget),
-                'name' => $widget::displayName(),
-                'maxColspan' => $widget::maxColspan(),
-                'settingsHtml' => InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__'),
-                'settingsJs' => (string) $this->HtmlStack->clearJsBuffer(false),
-                'selectable' => true,
-            ];
+        /** @var Collection<string, class-string<WidgetInterface>|array{type: class-string<Custom>, settings: array{definitionId: string}}> $widgetConfigs */
+        $widgetConfigs = Collection::make();
+
+        foreach ($this->widgetTypes->types() as $widgetType) {
+            if ($widgetType::isSelectable()) {
+                $widgetConfigs->put($widgetType, $widgetType);
+            }
         }
+
+        $this->customWidgets->all()
+            ->reject(fn (CustomWidgetDefinition $definition) => $widgets->contains(
+                fn (WidgetInterface $widget) => $widget instanceof Custom && $widget->definitionId === $definition->id,
+            ))
+            ->each(function (CustomWidgetDefinition $definition) use ($widgetConfigs) {
+                $widgetConfigs->put($definition->type(), [
+                    'type' => Custom::class,
+                    'settings' => [
+                        'definitionId' => $definition->id,
+                    ],
+                ]);
+            });
+
+        /** @var Collection<string, array{iconSvg: string|null, name: string, maxColspan: int|null, settingsHtml: string, settingsJs: string, selectable: bool}> $widgetTypeInfo */
+        $widgetTypeInfo = Collection::make();
+
+        foreach ($widgetConfigs as $type => $config) {
+            $this->HtmlStack->startJsBuffer();
+            $widget = $this->dashboard->createWidget($config);
+            $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
+            $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
+
+            $widgetTypeInfo->put($type, [
+                'iconSvg' => $this->getWidgetIconSvg($widget),
+                'name' => $widget->getDisplayName(),
+                'maxColspan' => $widget->getMaxColspan(),
+                'settingsHtml' => $settingsHtml,
+                'settingsJs' => $settingsJs,
+                'selectable' => true,
+            ]);
+        }
+
+        $widgetTypeInfo = $widgetTypeInfo->sortBy(fn (array $info) => $info['name']);
 
         $variables = [];
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
         $allWidgetJs = '';
 
-        $this->dashboard->getAllWidgets()
+        $widgets
             ->each(function (WidgetInterface $widget) use ($widgetTypeInfo, &$variables, &$allWidgetJs) {
                 $this->HtmlStack->startJsBuffer();
                 $info = $this->getWidgetInfo($widget);
@@ -66,8 +98,10 @@ readonly class DashboardController
                 if (! isset($widgetTypeInfo[$info['type']])) {
                     $widgetTypeInfo[$info['type']] = [
                         'iconSvg' => $this->getWidgetIconSvg($widget),
-                        'name' => $widget::displayName(),
-                        'maxColspan' => $widget::maxColspan(),
+                        'name' => $widget->getDisplayName(),
+                        'maxColspan' => $widget->getMaxColspan(),
+                        'settingsHtml' => '',
+                        'settingsJs' => '',
                         'selectable' => false,
                     ];
                 }

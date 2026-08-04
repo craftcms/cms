@@ -12,6 +12,7 @@ use CraftCms\Cms\Utility\Utility;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 use InvalidArgumentException;
@@ -59,6 +60,16 @@ readonly class UtilitiesController
             abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
+        // Capture each chunk so only the assets the utility itself registers
+        // end up on the page props. Draining the whole stack here would also
+        // swallow the global CP asset bundle (jQuery, Garnish, legacy cp.js,
+        // the `window.Craft` config) that `HandleInertiaRequests` registers for
+        // every CP request, leaving `app.blade.php`'s `<head>` empty on the
+        // initial page load.
+        $content = $htmlStack->capture(fn (): string => $class::contentHtml());
+        $toolbar = $htmlStack->capture(fn (): string => $class::toolbarHtml());
+        $footer = $htmlStack->capture(fn (): string => $class::footerHtml());
+
         return Inertia::render('utilities/Show', [
             'crumbs' => [
                 ['label' => 'Utilities', 'url' => Url::cpUrl('utilities')],
@@ -66,31 +77,42 @@ readonly class UtilitiesController
             ],
             'id' => $id,
             'title' => $class::displayName(),
-            'contentHtml' => $class::contentHtml(),
-            'toolbarHtml' => $class::toolbarHtml(),
-            'footerHtml' => $class::footerHtml(),
-            'headHtml' => $htmlStack->headHtml(),
-            'bodyHtml' => $htmlStack->bodyHtml(),
+            // The HTML itself still renders through `DynamicHtmlRenderer`,
+            // which compiles it as a Vue template — utility content can
+            // reference Vue components (e.g. `<ProjectConfig>`).
+            'contentHtml' => $content->html,
+            'toolbarHtml' => $toolbar->html,
+            'footerHtml' => $footer->html,
+            // Picked up by `AppLayout`'s `useAppendHtml()`, which appends and
+            // executes these against the document on mount and on subsequent
+            // Inertia visits.
+            'headHtml' => self::join($content->headHtml, $toolbar->headHtml, $footer->headHtml),
+            'bodyHtml' => self::join($content->bodyHtml, $toolbar->bodyHtml, $footer->bodyHtml),
             'utilities' => $this->utilityInfo(),
         ]);
     }
 
-    /** @return list<array{id:string, url:string, iconSvg:string, displayName:string, iconPath:string|null, badgeCount:int}> */
-    private function utilityInfo(): array
+    /**
+     * Joins the non-empty asset chunks captured for a utility.
+     */
+    private static function join(string ...$parts): string
     {
-        $utilities = [];
-        foreach ($this->utilitiesService->getAuthorizedUtilityTypes() as $class) {
-            $utilities[] = [
+        return implode(PHP_EOL, array_filter($parts, fn (string $part) => $part !== ''));
+    }
+
+    /** @return Collection<int, covariant array{id:string, url:string, iconSvg:string, displayName:string, iconPath:string|null, badgeCount:int}> */
+    private function utilityInfo(): Collection
+    {
+        return $this->utilitiesService
+            ->getAuthorizedUtilityTypes()
+            ->map(fn (string $class) => [
                 'id' => $class::id(),
                 'url' => Url::cpUrl('utilities/'.$class::id()),
                 'iconSvg' => $this->utilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::icon(),
                 'badgeCount' => $class::badgeCount(),
-            ];
-        }
-
-        return $utilities;
+            ]);
     }
 
     /**

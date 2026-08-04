@@ -139,7 +139,9 @@ class VolumesController
                 $this->readOnly,
                 function (CpScreenResponse $response) use ($volume) {
                     $response
-                        ->action('volumes/save-volume')
+                        ->formAttributes([
+                            'action' => Url::cpUrl('settings/assets/volumes'),
+                        ])
                         ->redirectUrl('settings/assets')
                         ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
                         ->addAltAction(t('Save and continue editing'), [

@@ -13,13 +13,15 @@ trait InteractsWithWidgets
 {
     protected function getWidgetIconSvg(WidgetInterface $widget): ?string
     {
-        $icon = $widget::icon();
-        $label = $widget::displayName();
+        $icon = $widget->getIcon();
+        $label = $widget->getDisplayName();
 
         return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
     }
 
-    /** @return array<string, mixed>|false */
+    /**
+     * @return array{id: int|null, type: string, colspan: int, title: string|null, subtitle: string|null, name: string, bodyHtml: string, settingsHtml: string, settingsJs: string, settings: array<string, mixed>}|false
+     */
     protected function getWidgetInfo(WidgetInterface $widget): array|false
     {
         // Get the body HTML
@@ -37,17 +39,17 @@ trait InteractsWithWidgets
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = $widget->colspan ?: 1;
 
-        if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
+        if (($maxColspan = $widget->getMaxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
         }
 
         return [
             'id' => $widget->id,
-            'type' => $widget::class,
+            'type' => $widget->getType(),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
             'subtitle' => $widget->getSubtitle(),
-            'name' => $widget->displayName(),
+            'name' => $widget->getDisplayName(),
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,
             'settingsJs' => (string) $settingsJs,

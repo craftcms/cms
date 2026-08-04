@@ -95,7 +95,7 @@ readonly class PreviewHtml
                 'type' => 'button',
                 'label' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
                 'size' => 'small',
-                'appearance' => 'filled',
+                'variant' => 'fill',
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],

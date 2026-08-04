@@ -592,7 +592,7 @@ readonly class ElementWrites
                                 $updated = false;
 
                                 foreach ($generatedFields as $field) {
-                                    $value = renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                    $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
                                     $value = normalizeValue($value) ?? '';
 
                                     if ($value !== ($content[$field['uid']] ?? '')) {

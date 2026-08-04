@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Htmlable;
@@ -23,12 +22,6 @@ use Twig\Markup;
  * plus typed fluent setters. This base supplies attribute merging and slot
  * handling.
  *
- * Slot and attribute values may be Closures, resolved lazily at render time
- * with dependency injection (see {@see EvaluatesClosures}) — Filament-style
- * callback properties:
- *
- *     Field::make()->label(fn (GeneralConfig $config) => ...)
- *
  * A slot value may resolve to a string, an {@see Htmlable}/{@see Stringable},
  * or another {@see ViewComponent} (rendered into the slot, with its `slot`
  * attribute set for you). Plain strings are HTML-encoded; pass an `Htmlable`
@@ -36,8 +29,6 @@ use Twig\Markup;
  */
 abstract class ViewComponent implements Htmlable, Stringable
 {
-    use EvaluatesClosures;
-
     /** Key under which the default (unnamed) slot is stored. */
     protected const DEFAULT_SLOT = '';
 
@@ -67,10 +58,10 @@ abstract class ViewComponent implements Htmlable, Stringable
         foreach ($config as $key => $value) {
             $method = Str::camel((string) $key);
 
-            // Only fluent setters are configurable — evaluated getters
+            // Only fluent setters are configurable — getters
             // (get*/is*) and the rendering API would otherwise swallow the
             // value silently, since PHP ignores extra arguments.
-            $notASetter = in_array($method, ['configure', 'make', 'evaluate', 'toHtml'], true)
+            $notASetter = in_array($method, ['configure', 'make', 'toHtml'], true)
                 || preg_match('/^(get|is|render)[A-Z]/', $method) === 1;
 
             if ($notASetter || ! method_exists($this, $method)) {
@@ -147,8 +138,8 @@ abstract class ViewComponent implements Htmlable, Stringable
     }
 
     /**
-     * Direct markup rendering: the custom element tag wrapping the resolved
-     * slot content.
+     * Direct markup rendering: the custom element tag wrapping the slot
+     * content.
      */
     protected function renderMarkup(): string
     {
@@ -162,7 +153,7 @@ abstract class ViewComponent implements Htmlable, Stringable
     /**
      * Data passed to a view-backed component's Blade template. The base
      * payload keeps slot-attachment and attribute semantics in PHP so
-     * templates stay layout-only; subclasses add their own evaluated pieces.
+     * templates stay layout-only; subclasses add their own pieces.
      *
      * @return array<string, mixed>
      */
@@ -188,7 +179,7 @@ abstract class ViewComponent implements Htmlable, Stringable
     }
 
     /**
-     * Resolves and concatenates all assigned slot content.
+     * Renders and concatenates all assigned slot content.
      */
     protected function renderSlots(): string
     {
@@ -203,18 +194,16 @@ abstract class ViewComponent implements Htmlable, Stringable
 
     protected function renderSlot(string $name, mixed $content): string
     {
-        $resolved = $this->evaluate($content);
-
-        if ($resolved === null || $resolved === '') {
+        if ($content === null || $content === '') {
             return '';
         }
 
         // The default slot may hold a list of children (e.g. a field group's
         // fields); render each in turn.
-        if ($name === static::DEFAULT_SLOT && is_iterable($resolved)) {
+        if ($name === static::DEFAULT_SLOT && is_iterable($content)) {
             $html = '';
 
-            foreach ($resolved as $item) {
+            foreach ($content as $item) {
                 $html .= $this->renderSlot($name, $item);
             }
 
@@ -222,11 +211,11 @@ abstract class ViewComponent implements Htmlable, Stringable
         }
 
         // A nested component drops straight into the named slot.
-        if ($name !== static::DEFAULT_SLOT && $resolved instanceof self) {
-            return $resolved->slot($name)->toHtml();
+        if ($name !== static::DEFAULT_SLOT && $content instanceof self) {
+            return $content->slot($name)->toHtml();
         }
 
-        $rendered = $this->renderContent($resolved);
+        $rendered = $this->renderContent($content);
 
         if ($name === static::DEFAULT_SLOT) {
             return $rendered;
@@ -236,7 +225,7 @@ abstract class ViewComponent implements Htmlable, Stringable
     }
 
     /**
-     * Renders a resolved content value to HTML: `Htmlable` passes through raw,
+     * Renders a content value to HTML: `Htmlable` passes through raw,
      * Twig `Markup` (e.g. `{% set %}` captures) is pre-escaped by Twig, and
      * anything else is treated as literal text and encoded.
      */

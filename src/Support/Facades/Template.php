@@ -22,7 +22,7 @@ use Override;
  * @method static string renderString(string $template, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site', \CraftCms\Cms\View\TemplateEngine|string|null $renderer = null)
  * @method static string renderTwigString(string $template, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site', bool $escapeHtml = false)
  * @method static string renderSandboxedString(string $template, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site', bool $escapeHtml = false)
- * @method static string renderObjectTemplate(string $template, mixed $object, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site')
+ * @method static string renderObjectTemplate(string $template, mixed $object, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site', string|false $escaperStrategy = false)
  * @method static string renderSandboxedObjectTemplate(string $template, mixed $object, array<array-key, mixed> $variables = [], \CraftCms\Cms\View\TemplateMode $templateMode = 'site')
  * @method static string normalizeObjectTemplate(string $template)
  * @method static array<array-key, mixed> getDrivers()

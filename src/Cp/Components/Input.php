@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
@@ -37,64 +36,64 @@ class Input extends ViewComponent
     use HasId;
     use HasSize;
 
-    protected string|Closure $type = 'text';
+    protected string $type = 'text';
 
-    protected string|Closure|null $name = null;
+    protected ?string $name = null;
 
-    protected string|int|float|Stringable|Closure|null $value = null;
+    protected string|int|float|Stringable|null $value = null;
 
-    protected int|Closure|null $maxlength = null;
+    protected ?int $maxlength = null;
 
     /** Native input `size` attribute (character width). */
-    protected int|Closure|null $inputSize = null;
+    protected ?int $inputSize = null;
 
-    protected string|Closure|null $width = null;
+    protected ?string $width = null;
 
-    protected bool|Closure $small = false;
+    protected bool $small = false;
 
-    protected bool|Closure $center = false;
+    protected bool $center = false;
 
-    protected bool|Closure $monospace = false;
+    protected bool $monospace = false;
 
-    protected bool|Closure $hiddenInput = false;
+    protected bool $hiddenInput = false;
 
-    protected bool|Closure $autofocus = false;
+    protected bool $autofocus = false;
 
-    protected bool|string|Closure $autocomplete = false;
+    protected bool|string $autocomplete = false;
 
-    protected bool|Closure $autocorrect = true;
+    protected bool $autocorrect = true;
 
-    protected bool|Closure $autocapitalize = true;
+    protected bool $autocapitalize = true;
 
-    protected bool|Closure $readOnly = false;
+    protected bool $readOnly = false;
 
-    protected string|Closure|null $title = null;
+    protected ?string $title = null;
 
-    protected string|Closure|null $placeholder = null;
+    protected ?string $placeholder = null;
 
-    protected string|int|float|Closure|null $min = null;
+    protected string|int|float|null $min = null;
 
-    protected string|int|float|Closure|null $max = null;
+    protected string|int|float|null $max = null;
 
-    protected string|int|float|Closure|null $step = null;
+    protected string|int|float|null $step = null;
 
-    protected string|Closure|null $inputmode = null;
+    protected ?string $inputmode = null;
 
-    protected string|Closure|null $orientation = null;
+    protected ?string $orientation = null;
 
-    protected string|Closure|null $role = null;
+    protected ?string $role = null;
 
-    protected bool|string|Closure|null $expanded = null;
+    protected bool|string|null $expanded = null;
 
-    protected string|Stringable|Closure|null $suffix = null;
+    protected string|Stringable|null $suffix = null;
 
-    protected string|Closure|null $descriptionId = null;
+    protected ?string $descriptionId = null;
 
-    protected bool|Closure $showCharsLeft = false;
+    protected bool $showCharsLeft = false;
 
-    protected string|Closure|null $labelledBy = null;
+    protected ?string $labelledBy = null;
 
-    protected string|Closure|null $describedBy = null;
+    protected ?string $describedBy = null;
 
     /** @var array<string, mixed> Additional attributes for the native input. */
     protected array $inputAttributes = [];
@@ -104,21 +103,21 @@ class Input extends ViewComponent
         return 'craft-input';
     }
 
-    public function type(string|Closure $type): static
+    public function type(string $type): static
     {
         $this->type = $type;
 
         return $this;
     }
 
-    public function name(string|Closure|null $name): static
+    public function name(?string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function value(string|int|float|Stringable|Closure|null $value): static
+    public function value(string|int|float|Stringable|null $value): static
     {
         $this->value = $value;
 
@@ -129,7 +128,7 @@ class Input extends ViewComponent
      * Maximum character count. Reflected on the host, where it also shrinks
      * the control to the expected character width (see {@see self::width()}).
      */
-    public function maxlength(int|Closure|null $maxlength): static
+    public function maxlength(?int $maxlength): static
     {
         $this->maxlength = $maxlength;
 
@@ -137,7 +136,7 @@ class Input extends ViewComponent
     }
 
     /** The native input's character-width `size` attribute. */
-    public function inputSize(int|Closure|null $inputSize): static
+    public function inputSize(?int $inputSize): static
     {
         $this->inputSize = $inputSize;
 
@@ -149,7 +148,7 @@ class Input extends ViewComponent
      * a `maxlength`; `auto` shrinks to the input's intrinsic width without
      * one.
      */
-    public function width(string|Closure|null $width): static
+    public function width(?string $width): static
     {
         $this->width = $width;
 
@@ -157,7 +156,7 @@ class Input extends ViewComponent
     }
 
     /** Renders the input at a smaller size. */
-    public function small(bool|Closure $small = true): static
+    public function small(bool $small = true): static
     {
         $this->small = $small;
 
@@ -165,7 +164,7 @@ class Input extends ViewComponent
     }
 
     /** Center-aligns the input text. */
-    public function center(bool|Closure $center = true): static
+    public function center(bool $center = true): static
     {
         $this->center = $center;
 
@@ -173,7 +172,7 @@ class Input extends ViewComponent
     }
 
     /** Renders the input value in a monospace font. */
-    public function monospace(bool|Closure $monospace = true): static
+    public function monospace(bool $monospace = true): static
     {
         $this->monospace = $monospace;
 
@@ -184,7 +183,7 @@ class Input extends ViewComponent
      * Visually hides the control while keeping it form-bound, so its value
      * still submits.
      */
-    public function hiddenInput(bool|Closure $hiddenInput = true): static
+    public function hiddenInput(bool $hiddenInput = true): static
     {
         $this->hiddenInput = $hiddenInput;
 
@@ -192,7 +191,7 @@ class Input extends ViewComponent
     }
 
     /** Honored only when the current user prefers autofocus (and not on mobile). */
-    public function autofocus(bool|Closure $autofocus = true): static
+    public function autofocus(bool $autofocus = true): static
     {
         $this->autofocus = $autofocus;
 
@@ -200,7 +199,7 @@ class Input extends ViewComponent
     }
 
     /** Booleans render as `on`/`off`; strings (e.g. `postal-code`) pass through. */
-    public function autocomplete(bool|string|Closure $autocomplete): static
+    public function autocomplete(bool|string $autocomplete): static
     {
         $this->autocomplete = $autocomplete;
 
@@ -208,7 +207,7 @@ class Input extends ViewComponent
     }
 
     /** `false` renders `autocorrect="off"`; `true` omits the attribute. */
-    public function autocorrect(bool|Closure $autocorrect = true): static
+    public function autocorrect(bool $autocorrect = true): static
     {
         $this->autocorrect = $autocorrect;
 
@@ -216,56 +215,56 @@ class Input extends ViewComponent
     }
 
     /** `false` renders `autocapitalize="none"`; `true` omits the attribute. */
-    public function autocapitalize(bool|Closure $autocapitalize = true): static
+    public function autocapitalize(bool $autocapitalize = true): static
     {
         $this->autocapitalize = $autocapitalize;
 
         return $this;
     }
 
-    public function readOnly(bool|Closure $readOnly = true): static
+    public function readOnly(bool $readOnly = true): static
     {
         $this->readOnly = $readOnly;
 
         return $this;
     }
 
-    public function title(string|Closure|null $title): static
+    public function title(?string $title): static
     {
         $this->title = $title;
 
         return $this;
     }
 
-    public function placeholder(string|Closure|null $placeholder): static
+    public function placeholder(?string $placeholder): static
     {
         $this->placeholder = $placeholder;
 
         return $this;
     }
 
-    public function min(string|int|float|Closure|null $min): static
+    public function min(string|int|float|null $min): static
     {
         $this->min = $min;
 
         return $this;
     }
 
-    public function max(string|int|float|Closure|null $max): static
+    public function max(string|int|float|null $max): static
     {
         $this->max = $max;
 
         return $this;
     }
 
-    public function step(string|int|float|Closure|null $step): static
+    public function step(string|int|float|null $step): static
     {
         $this->step = $step;
 
         return $this;
     }
 
-    public function inputmode(string|Closure|null $inputmode): static
+    public function inputmode(?string $inputmode): static
     {
         $this->inputmode = $inputmode;
 
@@ -273,14 +272,14 @@ class Input extends ViewComponent
     }
 
     /** Writing direction (`ltr`/`rtl`); defaults to the app locale's orientation. */
-    public function orientation(string|Closure|null $orientation): static
+    public function orientation(?string $orientation): static
     {
         $this->orientation = $orientation;
 
         return $this;
     }
 
-    public function role(string|Closure|null $role): static
+    public function role(?string $role): static
     {
         $this->role = $role;
 
@@ -288,7 +287,7 @@ class Input extends ViewComponent
     }
 
     /** `aria-expanded` state; defaults to `false` when the role is `combobox`. */
-    public function expanded(bool|string|Closure|null $expanded): static
+    public function expanded(bool|string|null $expanded): static
     {
         $this->expanded = $expanded;
 
@@ -299,7 +298,7 @@ class Input extends ViewComponent
      * Display-only unit suffix rendered in the `suffix` slot, with a hidden
      * description ("Value suffixed by …") linked via `aria-describedby`.
      */
-    public function suffix(string|Stringable|Closure|null $suffix): static
+    public function suffix(string|Stringable|null $suffix): static
     {
         $this->suffix = $suffix;
 
@@ -307,7 +306,7 @@ class Input extends ViewComponent
     }
 
     /** Id of the suffix description element; defaults to `{id}-desc`. */
-    public function descriptionId(string|Closure|null $descriptionId): static
+    public function descriptionId(?string $descriptionId): static
     {
         $this->descriptionId = $descriptionId;
 
@@ -318,21 +317,21 @@ class Input extends ViewComponent
      * Marks the input for the legacy chars-left counter JS, padding the input
      * on the counter's side to make room for it.
      */
-    public function showCharsLeft(bool|Closure $showCharsLeft = true): static
+    public function showCharsLeft(bool $showCharsLeft = true): static
     {
         $this->showCharsLeft = $showCharsLeft;
 
         return $this;
     }
 
-    public function labelledBy(string|Closure|null $labelledBy): static
+    public function labelledBy(?string $labelledBy): static
     {
         $this->labelledBy = $labelledBy;
 
         return $this;
     }
 
-    public function describedBy(string|Closure|null $describedBy): static
+    public function describedBy(?string $describedBy): static
     {
         $this->describedBy = $describedBy;
 
@@ -359,29 +358,25 @@ class Input extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
-        $type = (string) $this->evaluate($this->type);
-        $placeholder = $this->evaluate($this->placeholder);
-        $name = $this->evaluate($this->name);
-
         return [
-            'maxlength' => $this->evaluate($this->maxlength),
+            'maxlength' => $this->maxlength,
             'size' => $this->getSize(),
-            'small' => (bool) $this->evaluate($this->small),
-            'width' => $this->evaluate($this->width),
-            'center' => (bool) $this->evaluate($this->center),
-            'monospace' => (bool) $this->evaluate($this->monospace),
-            'hidden-input' => (bool) $this->evaluate($this->hiddenInput),
+            'small' => $this->small,
+            'width' => $this->width,
+            'center' => $this->center,
+            'monospace' => $this->monospace,
+            'hidden-input' => $this->hiddenInput,
             // Lion pushes these host properties onto the slotted input when
             // the element upgrades (LionInput::updated()), overwriting the
             // server-rendered attributes with its defaults — so any
             // non-default value must also live on the host. The native input
             // keeps them too, for pre-upgrade correctness (form posts,
             // password masking, CSS).
-            'type' => $type !== 'text' ? $type : null,
-            'placeholder' => $placeholder !== null && $placeholder !== '' ? (string) $placeholder : null,
-            'name' => $name !== null && $name !== '' ? (string) $name : null,
+            'type' => $this->type !== 'text' ? $this->type : null,
+            'placeholder' => $this->placeholder !== null && $this->placeholder !== '' ? $this->placeholder : null,
+            'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),
-            'readonly' => (bool) $this->evaluate($this->readOnly),
+            'readonly' => $this->readOnly,
         ];
     }
 
@@ -394,55 +389,49 @@ class Input extends ViewComponent
     protected function inputHtml(): string
     {
         $orientation = $this->getOrientation();
-        $maxlength = $this->evaluate($this->maxlength);
-        $inputSize = $this->evaluate($this->inputSize);
-        $role = $this->evaluate($this->role);
-        $autocomplete = $this->evaluate($this->autocomplete);
-        $expanded = $this->evaluate($this->expanded) ?? ($role === 'combobox' ? false : null);
-        $showCharsLeft = (bool) $this->evaluate($this->showCharsLeft);
-        $value = $this->evaluate($this->value);
+        $expanded = $this->expanded ?? ($this->role === 'combobox' ? false : null);
 
         $attributes = Arr::merge([
             'slot' => 'input',
-            'type' => $this->evaluate($this->type),
+            'type' => $this->type,
             'id' => $this->getId(),
             'class' => array_filter([
                 'text',
-                $inputSize === null ? 'fullwidth' : null,
+                $this->inputSize === null ? 'fullwidth' : null,
             ]),
-            'inputmode' => $this->evaluate($this->inputmode),
-            'size' => $inputSize,
-            'name' => $this->evaluate($this->name),
-            'value' => $value !== null ? (string) $value : null,
-            'maxlength' => $maxlength,
-            'autofocus' => (bool) $this->evaluate($this->autofocus)
+            'inputmode' => $this->inputmode,
+            'size' => $this->inputSize,
+            'name' => $this->name,
+            'value' => $this->value !== null ? (string) $this->value : null,
+            'maxlength' => $this->maxlength,
+            'autofocus' => $this->autofocus
                 && (currentUserElement()?->getAutofocusPreferred() ?? false)
                 && ! request()->isMobileBrowser(true),
-            'autocomplete' => is_bool($autocomplete) ? ($autocomplete ? 'on' : 'off') : $autocomplete,
-            'autocorrect' => (bool) $this->evaluate($this->autocorrect) ? null : 'off',
-            'autocapitalize' => (bool) $this->evaluate($this->autocapitalize) ? null : 'none',
+            'autocomplete' => is_bool($this->autocomplete) ? ($this->autocomplete ? 'on' : 'off') : $this->autocomplete,
+            'autocorrect' => $this->autocorrect ? null : 'off',
+            'autocapitalize' => $this->autocapitalize ? null : 'none',
             'disabled' => $this->isDisabled(),
-            'readonly' => (bool) $this->evaluate($this->readOnly),
-            'title' => $this->evaluate($this->title),
-            'placeholder' => $this->evaluate($this->placeholder),
-            'step' => $this->evaluate($this->step),
-            'min' => $this->evaluate($this->min),
-            'max' => $this->evaluate($this->max),
+            'readonly' => $this->readOnly,
+            'title' => $this->title,
+            'placeholder' => $this->placeholder,
+            'step' => $this->step,
+            'min' => $this->min,
+            'max' => $this->max,
             'dir' => $orientation,
-            'role' => $role,
+            'role' => $this->role,
             'aria' => [
-                'labelledby' => $this->evaluate($this->labelledBy),
+                'labelledby' => $this->labelledBy,
                 'describedby' => implode(' ', array_filter([
-                    $this->evaluate($this->describedBy),
+                    $this->describedBy,
                     $this->hasSuffix() ? $this->getDescriptionId() : null,
                 ])) ?: null,
                 'expanded' => is_bool($expanded) ? ($expanded ? 'true' : 'false') : $expanded,
             ],
             'data' => [
-                'show-chars-left' => $showCharsLeft ?: null,
+                'show-chars-left' => $this->showCharsLeft ?: null,
             ],
-            'style' => $showCharsLeft && $maxlength !== null ? [
-                'padding-'.($orientation === 'ltr' ? 'right' : 'left') => round(7.2 * strlen((string) $maxlength) + 14, 1).'px',
+            'style' => $this->showCharsLeft && $this->maxlength !== null ? [
+                'padding-'.($orientation === 'ltr' ? 'right' : 'left') => round(7.2 * strlen((string) $this->maxlength) + 14, 1).'px',
             ] : [],
         ], $this->inputAttributes);
 
@@ -456,9 +445,7 @@ class Input extends ViewComponent
      */
     protected function suffixHtml(): string
     {
-        $suffix = $this->evaluate($this->suffix);
-
-        if ($suffix === null || (string) $suffix === '') {
+        if ($this->suffix === null || (string) $this->suffix === '') {
             return '';
         }
 
@@ -466,12 +453,12 @@ class Input extends ViewComponent
 
         return
             ($descriptionId !== null
-                ? Html::tag('span', Html::encode(t('Value suffixed by “{suffix}”.', ['suffix' => (string) $suffix])), [
+                ? Html::tag('span', Html::encode(t('Value suffixed by “{suffix}”.', ['suffix' => (string) $this->suffix])), [
                     'id' => $descriptionId,
                     'hidden' => true,
                 ])
                 : '').
-            Html::tag('div', Html::encode((string) $suffix), [
+            Html::tag('div', Html::encode((string) $this->suffix), [
                 'slot' => 'suffix',
                 'class' => ['label', 'light'],
                 'aria' => ['hidden' => 'true'],
@@ -480,17 +467,13 @@ class Input extends ViewComponent
 
     protected function hasSuffix(): bool
     {
-        $suffix = $this->evaluate($this->suffix);
-
-        return $suffix !== null && (string) $suffix !== '';
+        return $this->suffix !== null && (string) $this->suffix !== '';
     }
 
     protected function getDescriptionId(): ?string
     {
-        $descriptionId = $this->evaluate($this->descriptionId);
-
-        if ($descriptionId !== null) {
-            return (string) $descriptionId;
+        if ($this->descriptionId !== null) {
+            return $this->descriptionId;
         }
 
         $id = $this->getId();
@@ -501,7 +484,7 @@ class Input extends ViewComponent
     protected function getOrientation(): string
     {
         return (string) (
-            $this->evaluate($this->orientation)
+            $this->orientation
             ?? $this->inputAttributes['dir']
             ?? I18N::getLocale()->getOrientation()
         );

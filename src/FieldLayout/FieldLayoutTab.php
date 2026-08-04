@@ -305,9 +305,9 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
     }
 
-    public function name(string|Closure $name): static
+    public function name(string $name): static
     {
-        $this->name = $this->evaluate($name);
+        $this->name = $name;
 
         return $this;
     }
@@ -349,16 +349,16 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(CustomField): mixed)|null $configure */
-    public function field(FieldInterface|string|Closure $field, ?Closure $configure = null): static
+    public function field(FieldInterface|string $field, ?Closure $configure = null): static
     {
-        $element = CustomField::make($this->evaluate($field));
+        $element = CustomField::make($field);
         $configure?->__invoke($element);
 
         return $this->add($element);
     }
 
     /** @param (Closure(Heading): mixed)|null $configure */
-    public function heading(string|Closure $heading, ?Closure $configure = null): static
+    public function heading(string $heading, ?Closure $configure = null): static
     {
         $element = Heading::make($heading);
         $configure?->__invoke($element);
@@ -367,7 +367,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Tip): mixed)|null $configure */
-    public function tip(string|Closure $tip, ?Closure $configure = null): static
+    public function tip(string $tip, ?Closure $configure = null): static
     {
         $element = Tip::make($tip);
         $configure?->__invoke($element);
@@ -376,7 +376,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Tip): mixed)|null $configure */
-    public function warning(string|Closure $warning, ?Closure $configure = null): static
+    public function warning(string $warning, ?Closure $configure = null): static
     {
         $element = Tip::make($warning)->warning();
         $configure?->__invoke($element);
@@ -385,7 +385,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Markdown): mixed)|null $configure */
-    public function markdown(string|Closure $content, ?Closure $configure = null): static
+    public function markdown(string $content, ?Closure $configure = null): static
     {
         $element = Markdown::make($content);
         $configure?->__invoke($element);
@@ -394,7 +394,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Template): mixed)|null $configure */
-    public function template(string|Closure $template, ?Closure $configure = null): static
+    public function template(string $template, ?Closure $configure = null): static
     {
         $element = Template::make($template);
         $configure?->__invoke($element);

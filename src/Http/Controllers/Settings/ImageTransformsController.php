@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Imagine\Image\Format;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -142,14 +141,14 @@ class ImageTransformsController
     }
 
     /**
-     * @return array<int, array{label: string, value: string}>
+     * @return array<int, array{label: string, value: string|int}>
      */
     private function formatOptions(Images $images, ImageTransform $transform): array
     {
         return collect(ImageTransformFormat::asOptions())
             ->prepend(['label' => t('Auto'), 'value' => ''])
-            ->reject(fn (array $option) => $option['value'] === ImageTransformFormat::WEBP->value && $transform->format !== Format::ID_WEBP && ! $images->getSupportsWebP())
-            ->reject(fn (array $option) => $option['value'] === ImageTransformFormat::AVIF->value && $transform->format !== Format::ID_AVIF && ! $images->getSupportsAvif())
+            ->reject(fn (array $option) => $transform->format !== $option['value'] && $option['value'] !== '' && ! $images->supportsFormat($option['value']))
+            ->values()
             ->all();
     }
 }

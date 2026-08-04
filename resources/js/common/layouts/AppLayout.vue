@@ -27,6 +27,7 @@
     ActionItemButton,
     FormSaveOptions,
   } from '@/common/types';
+  import {ButtonVariant} from '@craftcms/ui';
 
   type DefaultFormAction = 'saveAndContinueEditing';
 
@@ -208,7 +209,7 @@
         <craft-button
           icon
           type="button"
-          appearance="plain"
+          :variant="ButtonVariant.Plain"
           @click="toggleSidebar"
           v-if="!isLargeScreen"
           ref="sidebarToggle"
@@ -221,7 +222,7 @@
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
-        <craft-button icon appearance="plain" type="button">
+        <craft-button icon :variant="ButtonVariant.Plain" type="button">
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
         <UserMenu />

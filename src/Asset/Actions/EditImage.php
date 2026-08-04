@@ -22,6 +22,12 @@ class EditImage extends ElementAction
     }
 
     #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
+    #[\Override]
     public function getTriggerLabel(): string
     {
         return $this->label;

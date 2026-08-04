@@ -342,6 +342,15 @@ class Cp extends Component
     }
 
     /**
+     * Renders a copy-text input's HTML from the legacy copytext variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function copytext(array $config = []): string
+    {
+        return FormFields::copytextFromConfig($config)->toHtml();
+    }
+
+    /**
      * Renders a textarea's HTML from the legacy textarea variables.
      */
     /** @param array<string, mixed> $config */

@@ -44,26 +44,31 @@ export const actionClient = axios.create();
 const csrf = new Csrf();
 
 actionClient.interceptors.request.use(async (config) => {
-  // Resolve the base URL lazily so it reflects the runtime CP trigger; the
-  // config isn't guaranteed to be initialized when this module is first
-  // imported. Request URLs come in two shapes, told apart by their leading
-  // character:
+  // Resolve the URL lazily so it reflects the runtime CP trigger; the config
+  // isn't guaranteed to be initialized when this module is first imported.
+  // Request URLs come in three shapes:
   //
+  // - A bare action path (e.g. `users/confirm-password`) is expanded to the
+  //   full action URL via `ConfigService.getActionUrl()`, which inserts the
+  //   path into the *pathname*. This preserves any query string on the action
+  //   base URL — notably `?site=` on multi-site installs — which naive
+  //   `baseURL` + path string concatenation would corrupt by appending the
+  //   path after the query (`?site=default/users/confirm-password`).
   // - A route path starting with `/` (e.g. a Wayfinder-generated
   //   `/admin/actions/fields/render-settings`) already carries the CP/action
-  //   triggers, so it resolves against the origin only. `URL.origin`
-  //   supplies scheme + host (+ port) without the `protocol` trailing-colon
-  //   / port-doubling pitfalls.
-  // - A bare action path (e.g. `users/confirm-password`) resolves against
-  //   the full action base URL (`Url::actionUrl()`), which carries the
-  //   triggers for it.
-  //
-  // Absolute URLs skip `baseURL` entirely, per axios semantics.
-  const actionUrl = getActionUrl();
-  config.baseURL =
-    config.url && !config.url.startsWith('/')
-      ? actionUrl.replace(/\/+$/, '')
-      : new URL(actionUrl).origin;
+  //   triggers, so it resolves against the origin only. `URL.origin` supplies
+  //   scheme + host (+ port) without the `protocol` trailing-colon /
+  //   port-doubling pitfalls.
+  // - An absolute URL is left untouched, per axios semantics.
+  if (
+    config.url &&
+    !config.url.startsWith('/') &&
+    !/^[a-z][a-z\d+.-]*:/i.test(config.url)
+  ) {
+    config.url = getActionUrl(config.url);
+  } else if (config.url?.startsWith('/')) {
+    config.baseURL = new URL(getActionUrl()).origin;
+  }
 
   // Set X-Requested-With header
   config.headers.set('X-Requested-With', 'XMLHttpRequest');

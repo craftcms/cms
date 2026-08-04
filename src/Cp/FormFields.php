@@ -15,6 +15,7 @@ use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
+use CraftCms\Cms\Cp\Components\InputCopy;
 use CraftCms\Cms\Cp\Components\InputPassword;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
@@ -233,7 +234,7 @@ readonly class FormFields
             ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
             ->disabled((bool) ($config['disabled'] ?? $readOnly))
             ->size($size)
-            ->appearance($config['appearance'] ?? null)
+            ->variant($config['variant'] ?? $config['appearance'] ?? null)
             ->command($config['command'] ?? null)
             ->attributes(Arr::merge(
                 [
@@ -273,7 +274,7 @@ readonly class FormFields
     public static function buttonGroupFromConfig(array $config): ButtonGroup
     {
         $value = $config['value'] ?? null;
-        $appearance = $config['appearance'] ?? 'outline';
+        $variant = $config['variant'] ?? $config['appearance'] ?? 'outline';
         $size = $config['size'] ?? null;
         $disabled = ($config['disabled'] ?? false) || ($config['static'] ?? false);
 
@@ -292,7 +293,7 @@ readonly class FormFields
                     ? new HtmlString((string) $option['labelHtml'])
                     : ($option['label'] ?? null))
                 ->icon($option['icon'] ?? null)
-                ->appearance($option['appearance'] ?? $appearance)
+                ->variant($option['variant'] ?? $option['appearance'] ?? $variant)
                 ->size($option['size'] ?? $size)
                 ->active($selected)
                 ->disabled($disabled)
@@ -943,6 +944,51 @@ readonly class FormFields
 
         return self::fieldHtml(
             fn (array $c): string => self::textFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function copytextHtml(array $config): string
+    {
+        return self::copytextFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy copytext config surface onto the {@see InputCopy}
+     * component — the PHP twin of the `_includes/forms/copytext` glue
+     * template. The `class` key targets the native input (matching the legacy
+     * text input convention). Pass `copy-value` (or `copyValue`) when the
+     * clipboard value should differ from the displayed one.
+     */
+    /** @param array<string, mixed> $config */
+    public static function copytextFromConfig(array $config): InputCopy
+    {
+        $value = $config['value'] ?? null;
+        $copyValue = $config['copyValue'] ?? $config['copy-value'] ?? false;
+
+        return InputCopy::make()
+            ->id($config['id'] ?? 'copytext'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->value($value !== false ? $value : null)
+            ->copyValue($copyValue !== false ? $copyValue : null)
+            ->monospace((bool) ($config['monospace'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['inputAttributes'] ?? [],
+            ));
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function copytextFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'copytext'.mt_rand();
+
+        return self::fieldHtml(
+            fn (array $c): string => self::copytextFromConfig($c)->toHtml(),
             $config,
         );
     }

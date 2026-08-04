@@ -12,7 +12,7 @@ export default class CraftSelect extends LionSelect {
 
   @property({reflect: true, type: Boolean}) small = false;
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   override _inputGroupInputTemplate() {
     return html`
       <div class="input-group__input">

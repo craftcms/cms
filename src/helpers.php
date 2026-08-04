@@ -250,9 +250,9 @@ function renderSandboxedString(string $template, array $variables = [], Template
 }
 
 /** @param array<array-key, mixed> $variables */
-function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, string|false $escaperStrategy = false): string
 {
-    return Template::renderObjectTemplate($template, $object, $variables, $templateMode);
+    return Template::renderObjectTemplate($template, $object, $variables, $templateMode, $escaperStrategy);
 }
 
 /** @param array<array-key, mixed> $variables */

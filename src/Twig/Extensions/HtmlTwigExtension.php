@@ -174,11 +174,38 @@ class HtmlTwigExtension extends AbstractExtension
         }
 
         return new MarkdownData(
-            (string) $markdown,
+            $this->dedent((string) $markdown),
             $flavor ?? MarkdownService::FLAVOR_ORIGINAL,
             encode: $encode,
             inlineOnly: $inlineOnly,
         )->getHtml();
+    }
+
+    /**
+     * Strips the leading indentation common to every non-blank line.
+     *
+     * `{% apply md %}` captures its body with the template's own indentation,
+     * and CommonMark treats any line indented four or more spaces as a code
+     * block — so an indented block would render as `<pre><code>` instead of
+     * parsed Markdown. Removing only the shared minimum indentation preserves
+     * relative structure (genuine nested code blocks survive) and is a no-op
+     * for content that already starts at column 0.
+     */
+    private function dedent(string $markdown): string
+    {
+        preg_match_all('/^[ \t]*(?=\S)/m', $markdown, $matches);
+
+        if ($matches[0] === []) {
+            return $markdown;
+        }
+
+        $min = min(array_map(strlen(...), $matches[0]));
+
+        if ($min === 0) {
+            return $markdown;
+        }
+
+        return preg_replace(sprintf('/^[ \t]{1,%d}/m', $min), '', $markdown);
     }
 
     /**

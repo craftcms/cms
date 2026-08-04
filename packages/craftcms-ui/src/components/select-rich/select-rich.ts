@@ -69,7 +69,7 @@ export default class CraftSelectRich extends LionSelectRich {
     this._overlayCtrl.contentWrapperNode.style.width = initContentWidth;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   override _inputGroupInputTemplate() {
     return html`
       <div class="input-group__input">

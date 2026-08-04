@@ -815,6 +815,8 @@ class CpScreenResponse implements Responsable
                 'withButton' => false,
             ], namespace: $namespace),
             'content' => $content,
+            'inertiaPage' => $this->inertiaPage,
+            'inertiaProps' => $this->inertiaProps,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
             'headHtml' => HtmlStack::headHtml(),

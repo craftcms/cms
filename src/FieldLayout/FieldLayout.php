@@ -27,7 +27,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -51,7 +50,6 @@ use function CraftCms\Cms\t;
  */
 class FieldLayout extends Component
 {
-    use EvaluatesClosures;
     use LegacyConstants;
 
     public ?int $id = null;
@@ -188,9 +186,8 @@ class FieldLayout extends Component
      *
      * @param  Closure(FieldLayoutTab): mixed|null  $configure
      */
-    public function tab(string|Closure $name, ?Closure $configure = null): static
+    public function tab(string $name, ?Closure $configure = null): static
     {
-        $name = $this->evaluate($name);
         $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
 
         if ($tab === null) {
@@ -455,10 +452,10 @@ class FieldLayout extends Component
         $this->_generatedFields = array_values($fields);
     }
 
-    /** @param list<GeneratedFieldConfig>|Closure(): (list<GeneratedFieldConfig>|null)|null $fields */
-    public function generatedFields(array|Closure|null $fields): static
+    /** @param list<GeneratedFieldConfig>|null $fields */
+    public function generatedFields(?array $fields): static
     {
-        $this->setGeneratedFields($this->evaluate($fields));
+        $this->setGeneratedFields($fields);
 
         return $this;
     }
@@ -485,17 +482,17 @@ class FieldLayout extends Component
         $this->reset();
     }
 
-    /** @param list<string>|Closure(): (list<string>|null)|null $items */
-    public function cardView(array|Closure|null $items): static
+    /** @param list<string>|null $items */
+    public function cardView(?array $items): static
     {
-        $this->setCardView($this->evaluate($items));
+        $this->setCardView($items);
 
         return $this;
     }
 
-    public function thumbFieldKey(string|Closure|null $key): static
+    public function thumbFieldKey(?string $key): static
     {
-        $this->thumbFieldKey = $this->evaluate($key);
+        $this->thumbFieldKey = $key;
 
         return $this;
     }
@@ -530,10 +527,8 @@ class FieldLayout extends Component
         $this->_cardThumbAlignment = $alignment ?? 'end';
     }
 
-    public function cardThumbAlignment(string|Closure|null $alignment = null): static
+    public function cardThumbAlignment(?string $alignment = null): static
     {
-        $alignment = $this->evaluate($alignment);
-
         if ($alignment !== null && ! in_array($alignment, ['start', 'end'], true)) {
             throw new InvalidArgumentException("Invalid card thumbnail alignment: $alignment");
         }

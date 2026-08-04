@@ -164,7 +164,7 @@ export class LinkInput extends Base<LinkInputSettings> {
   createTextInput(value: string): void {
     this.reset();
     const input = buildTextInput({
-      ...(this.settings!.inputAttributes ?? {}),
+      ...this.settings!.inputAttributes,
       name: this.settings!.inputName,
       value,
     });

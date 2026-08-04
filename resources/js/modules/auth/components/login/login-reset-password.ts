@@ -125,7 +125,7 @@ export default class CraftLoginResetPassword extends LitElement {
 
         <craft-button
           type="button"
-          appearance="plain"
+          variant="link"
           size="small"
           @click="${this.#onBack}"
         >

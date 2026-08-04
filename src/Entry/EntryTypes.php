@@ -233,7 +233,7 @@ class EntryTypes
         }
 
         if (is_numeric($entryType)) {
-            return $this->getEntryTypeById($entryType);
+            return $this->getEntryTypeById((int) $entryType);
         }
 
         if (is_string($entryType)) {
@@ -247,7 +247,7 @@ class EntryTypes
         }
 
         if (isset($config['id'])) {
-            $entryType = $this->getEntryTypeById($config['id']);
+            $entryType = $this->getEntryTypeById((int) $config['id']);
         } elseif (isset($config['uid'])) {
             $entryType = $this->getEntryTypeByUid($config['uid']);
         } else {
@@ -335,7 +335,7 @@ class EntryTypes
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
-            $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
+            $entryTypeModel->slugTranslationMethod = $data['slugTranslationMethod'] ?? TranslationMethod::Site->value;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeModel->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeModel->uid = $entryTypeUid;

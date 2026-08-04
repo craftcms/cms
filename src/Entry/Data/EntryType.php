@@ -186,15 +186,13 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             ],
         ];
 
-        HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
 $(document).on('click', '#' + $id, () => {
-new Craft.CpScreenSlideout('entry-types/edit', {
-params: $params,
-})
+new Craft.CpScreenSlideout($url)
 });
 JS, [
             InputNamespace::namespaceId($editId),
-            ['entryTypeId' => $this->id],
+            Url::cpUrl("settings/entry-types/$this->id"),
         ]);
 
         return $items;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Auth\Methods;
 
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Http\Controllers\Users\RecoveryCodesController;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use InvalidArgumentException;
@@ -41,6 +42,7 @@ class RecoveryCodes extends BaseAuthMethod
     {
         return template('_components/auth/methods/RecoveryCodes/setup', [
             'containerId' => $containerId,
+            'generateUrl' => action([RecoveryCodesController::class, 'generate']),
         ]);
     }
 

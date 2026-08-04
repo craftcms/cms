@@ -660,9 +660,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         ]);
     }
 
-    /** @TODO: Remove $_ variable after ElementQueryInterface is removed */
     /** @param array<int, string>|string $columns */
-    public function count(array|string $columns = '*', mixed $_ = null): int
+    public function count($columns = '*'): int
     {
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
@@ -723,8 +722,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $query->query->getCountForPagination($columns);
     }
 
-    /** @TODO: Remove $db variable after ElementQueryInterface is removed */
-    public function exists(mixed $db = null): bool
+    public function exists(): bool
     {
         try {
             $this->applyBeforeQueryCallbacks();
