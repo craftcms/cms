@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.15 - 2026-08-04
 
 - Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
