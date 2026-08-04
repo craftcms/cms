@@ -23,8 +23,11 @@ jobs:
           set -e
           # isCrossRepository == false means the PR's head branch lives in this repo,
           # not a fork — forks are ignored entirely, not just skipped later.
+          # Draft PRs are excluded too — they're not ready for review yet, so an
+          # auto-pushed merge commit would just be noise.
           numbers=$(gh pr list --repo "$REPO" --base "$BASE" --state open \
-            --json number,isCrossRepository -q '.[] | select(.isCrossRepository == false) | .number')
+            --json number,isCrossRepository,isDraft \
+            -q '.[] | select(.isCrossRepository == false and .isDraft == false) | .number')
 
           conflicted=()
           for n in $numbers; do
