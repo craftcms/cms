@@ -1070,7 +1070,7 @@ Craft.ui = {
       return $(instance.list);
     };
 
-    getAccessibleName = () => {
+    const getAccessibleName = () => {
       return $input.attr('aria-label');
     };
 
