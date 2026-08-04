@@ -67,37 +67,46 @@ export default Base.extend({
     }
   },
 
+  once: function (events, data, handler) {
+    if (typeof data === 'function') {
+      handler = data;
+      data = {};
+    }
+
+    const onceler = (event) => {
+      this.off(events, onceler);
+      handler(event);
+    };
+    this.on(events, data, onceler);
+  },
+
   trigger: function (type, data) {
-    var ev = {
+    const ev = {
       type: type,
       target: this,
     };
 
     // instance level event handlers
-    var i, handler, _ev;
-    for (i = 0; i < this._eventHandlers.length; i++) {
-      handler = this._eventHandlers[i];
-
-      if (handler.type === type) {
-        _ev = $.extend({data: handler.data}, data, ev);
+    this._eventHandlers
+      .filter((handler) => handler.type === type)
+      .forEach((handler) => {
+        const _ev = $.extend({data: handler.data}, data, ev);
         handler.handler(_ev);
-      }
-    }
+      });
 
     // class level event handlers
-    for (i = 0; i < Garnish._eventHandlers.length; i++) {
-      handler = Garnish._eventHandlers[i];
-
-      if (
-        handler &&
-        handler.target &&
-        this instanceof handler.target &&
-        handler.type === type
-      ) {
-        _ev = $.extend({data: handler.data}, data, ev);
+    Garnish._eventHandlers
+      .filter(
+        (handler) =>
+          handler &&
+          handler.target &&
+          this instanceof handler.target &&
+          handler.type === type
+      )
+      .forEach((handler) => {
+        const _ev = $.extend({data: handler.data}, data, ev);
         handler.handler(_ev);
-      }
-    }
+      });
   },
 
   _splitEvents: function (events) {

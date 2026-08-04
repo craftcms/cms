@@ -1,8 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "GraphQL Tokens"|t('app') %}
 
-{% requireEdition CraftPro %}
-
 {% set selectedSubnavItem = 'tokens' %}
 
 {% set tokens = craft.app.gql.tokens %}
@@ -31,7 +29,7 @@
         url: url('graphql/tokens/' ~ token.id),
         status: token.enabled ? true : false,
         lastUsed: { value: token.lastUsed , date: token.lastUsed ? token.lastUsed|timestamp : null },
-        expiryDate: token.expiryDate ? token.expiryDate|timestamp : 'Never'|t()
+        expiryDate: { value: token.expiryDate, date: token.expiryDate ? token.expiryDate|timestamp : null }
     }]) %}
 {% endfor %}
 

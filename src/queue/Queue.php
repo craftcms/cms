@@ -10,8 +10,10 @@ namespace craft\queue;
 use Craft;
 use craft\db\Connection;
 use craft\db\Table;
+use craft\errors\MutexException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Queue as QueueHelper;
@@ -40,6 +42,13 @@ use yii\web\Response;
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {
+    /**
+     * @event ExecEvent The event that is triggered after a job is executed and released.
+     * @see executeJob()
+     * @since 4.4.8
+     */
+    public const EVENT_AFTER_EXEC_AND_RELEASE = 'afterExecAndRelease';
+
     /**
      * @see isFailed()
      */
@@ -182,6 +191,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
             $this->release($payload['id']);
+
+            if ($this->hasEventHandlers(self::EVENT_AFTER_EXEC_AND_RELEASE)) {
+                // Can't just capture the exec event from handleMessage()
+                // because it was probably created in a subprocess
+                [$job, $error] = $this->unserializeMessage($payload['job']);
+                $this->trigger(self::EVENT_AFTER_EXEC_AND_RELEASE, new ExecEvent([
+                    'id' => $payload['id'],
+                    'job' => $job,
+                    'ttr' => $payload['ttr'],
+                    'attempt' => $payload['attempt'],
+                    'error' => $error,
+                ]));
+            }
         }
 
         return true;
@@ -200,6 +222,17 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
+     * Returns the ID of the current job being handled.
+     *
+     * @return string
+     * @since 5.2.0
+     */
+    public function getJobId(): string
+    {
+        return $this->_executingJobId;
+    }
+
+    /**
      * @param string $id The job ID.
      * @return bool
      */
@@ -213,13 +246,11 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function status($id): int
     {
-        $payload = $this->db->usePrimary(function() use ($id) {
-            return $this->_createJobQuery()
-                ->select(['fail', 'timeUpdated'])
-                // No need to use andWhere() here since we're fetching by ID
-                ->where(['id' => $id])
-                ->one($this->db);
-        });
+        $payload = $this->db->usePrimary(fn() => $this->_createJobQuery()
+            ->select(['fail', 'timeUpdated'])
+            // No need to use andWhere() here since we're fetching by ID
+            ->where(['id' => $id])
+            ->one($this->db));
 
         return $this->_status($payload);
     }
@@ -327,6 +358,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $id,
             ], [], $this->db);
         });
+
+        if ($this->proxyQueue instanceof ReleasableQueueInterface) {
+            $this->proxyQueue->release($id);
+        }
     }
 
     /**
@@ -339,6 +374,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'channel' => $this->channel(),
             ], [], $this->db);
         });
+
+        if ($this->proxyQueue instanceof ReleasableQueueInterface) {
+            $this->proxyQueue->releaseAll();
+        }
     }
 
     /**
@@ -349,7 +388,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->_lock(function() use ($progress, $label) {
             $data = [
                 'progress' => $progress,
-                'timeUpdated' => time(),
+                'timeUpdated' => DateTimeHelper::currentTimeStamp(),
             ];
 
             if ($label !== null) {
@@ -370,9 +409,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createWaitingJobQuery()->exists($this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createWaitingJobQuery()->exists($this->db));
     }
 
     /**
@@ -383,9 +420,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createReservedJobQuery()->exists($this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createReservedJobQuery()->exists($this->db));
     }
 
     /**
@@ -398,9 +433,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createWaitingJobQuery()->count('*', $this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createWaitingJobQuery()->count('*', $this->db));
     }
 
     /**
@@ -413,9 +446,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createDelayedJobQuery()->count('*', $this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createDelayedJobQuery()->count('*', $this->db));
     }
 
     /**
@@ -428,9 +459,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createReservedJobQuery()->count('*', $this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createReservedJobQuery()->count('*', $this->db));
     }
 
     /**
@@ -443,9 +472,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        return $this->db->usePrimary(function() {
-            return $this->_createFailedJobQuery()->count('*', $this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createFailedJobQuery()->count('*', $this->db));
     }
 
     /**
@@ -453,12 +480,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function getJobDetails(string $id): array
     {
-        $result = $this->db->usePrimary(function() use ($id) {
-            return (new Query())
-                ->from($this->tableName)
-                ->where(['id' => $id])
-                ->one($this->db);
-        });
+        $result = $this->db->usePrimary(fn() => (new Query())
+            ->from($this->tableName)
+            ->where(['id' => $id])
+            ->one($this->db));
 
         if ($result === false) {
             throw new InvalidArgumentException("Invalid job ID: $id");
@@ -468,6 +493,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
         return ArrayHelper::filterEmptyStringsFromArray([
+            'class' => $job::class,
             'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
@@ -477,9 +503,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
-            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed']) : '',
-            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated']) : '',
-            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed']) : '',
+            'Pushed at' => $result['timePushed'] ? $formatter->asDatetime($result['timePushed'], withTimeZone: true) : '',
+            'Updated at' => $result['timeUpdated'] ? $formatter->asDatetime($result['timeUpdated'], withTimeZone: true) : '',
+            'Failed at' => $result['dateFailed'] ? $formatter->asDatetime($result['dateFailed'], withTimeZone: true) : '',
         ]);
     }
 
@@ -488,10 +514,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function getTotalJobs(): int
     {
-        return $this->db->usePrimary(function() {
-            return $this->_createJobQuery()
-                ->count('*', $this->db);
-        });
+        return $this->db->usePrimary(fn() => $this->_createJobQuery()
+            ->count('*', $this->db));
     }
 
     /**
@@ -504,22 +528,24 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $query = $this->_createJobQuery();
 
-        // Set up the reserved jobs condition
-        $reservedCondition = $this->db->getQueryBuilder()->buildCondition([
-            'and',
-            ['fail' => false],
-            ['not', ['timeUpdated' => null]],
-        ], $query->params);
+        $notFailedSql = $this->db->getQueryBuilder()->buildCondition(['fail' => false], $query->params);
+        $runningSql = $this->db->getQueryBuilder()->buildCondition(['not', ['timeUpdated' => null]], $query->params);
 
         $query
             ->select(['id', 'description', 'timePushed', 'delay', 'progress', 'progressLabel', 'timeUpdated', 'fail', 'error'])
-            ->orderBy(new Expression("CASE WHEN $reservedCondition THEN 1 ELSE 0 END DESC"))
+            // Sort by not failed first
+            ->orderBy(new Expression("CASE WHEN $notFailedSql THEN 1 ELSE 0 END DESC"))
+            // then running first
+            ->addOrderBy(new Expression("CASE WHEN $runningSql THEN 1 ELSE 0 END DESC"))
+            // then earliest start time (now or timePushed + delay)
+            ->addOrderBy(new Expression('GREATEST(:time, [[timePushed]] + [[delay]]) ASC', [
+                ':time' => DateTimeHelper::currentTimeStamp(),
+            ]))
+            // then priority and ID
             ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit);
 
-        $results = $this->db->usePrimary(function() use ($query) {
-            return $query->all($this->db);
-        });
+        $results = $this->db->usePrimary(fn() => $query->all($this->db));
 
         $info = [];
 
@@ -596,33 +622,22 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-    var XMLHttpFactories = [
-        function () {return new XMLHttpRequest()},
-        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-    ];
-    var req = false;
-    for (var i = 0; i < XMLHttpFactories.length; i++) {
-        try {
-            req = XMLHttpFactories[i]();
-        }
-        catch (e) {
-            continue;
-        }
-        break;
-    }
-    if (!req) return;
+  try {
+    var req = new XMLHttpRequest();
     req.open('GET', $url, true);
-    if (req.readyState == 4) return;
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (req.readyState === 4) return;
     req.send();
+  } catch (e) {}
 })();
 /*]]>*/
 </script>
 EOD;
 
-        if ($response->content === null) {
-            $response->content = $js;
+        $response->content ??= '';
+        $pos = strripos($response->content, '</body>');
+        if ($pos !== false) {
+            $response->content = substr($response->content, 0, $pos) . $js . substr($response->content, $pos);
         } else {
             $response->content .= $js;
         }
@@ -638,7 +653,7 @@ EOD;
             'channel' => $this->channel(),
             'job' => $message,
             'description' => $this->_jobDescription,
-            'timePushed' => time(),
+            'timePushed' => DateTimeHelper::currentTimeStamp(),
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
@@ -710,7 +725,9 @@ EOD;
             $payload = $this->db->usePrimary(function() use ($id) {
                 $query = $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
-                    ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
+                    ->andWhere('[[timePushed]] + [[delay]] <= :time', [
+                        'time' => DateTimeHelper::currentTimeStamp(),
+                    ])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1);
 
@@ -770,36 +787,33 @@ EOD;
      */
     private function _moveExpired(): void
     {
-        if ($this->_reserveTime !== time()) {
-            $this->_lock(function() {
-                $this->_reserveTime = time();
+        $timestamp = DateTimeHelper::currentTimeStamp();
+        if ($this->_reserveTime !== $timestamp) {
+            $this->_reserveTime = $timestamp;
 
-                $expiredIds = $this->db->usePrimary(function() {
-                    return (new Query())
-                        ->select(['id'])
-                        ->from([$this->tableName])
-                        ->where([
-                            'and',
-                            [
-                                'channel' => $this->channel(),
-                                'fail' => false,
-                            ],
-                            '[[timeUpdated]] < :time - [[ttr]]',
-                        ], [
-                            ':time' => $this->_reserveTime,
-                        ])
-                        ->column($this->db);
-                });
+            $expiredIds = $this->db->usePrimary(fn() => (new Query())
+                ->select(['id'])
+                ->from([$this->tableName])
+                ->where([
+                    'and',
+                    [
+                        'channel' => $this->channel(),
+                        'fail' => false,
+                    ],
+                    '[[timeUpdated]] < :time - [[ttr]]',
+                ], [
+                    ':time' => $this->_reserveTime,
+                ])
+                ->column($this->db));
 
-                if (!empty($expiredIds)) {
-                    Db::update($this->tableName, [
-                        'dateReserved' => null,
-                        'timeUpdated' => null,
-                        'progress' => 0,
-                        'progressLabel' => null,
-                    ], ['id' => $expiredIds], [], false, $this->db);
-                }
-            });
+            if (!empty($expiredIds)) {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                ], ['id' => $expiredIds], [], false, $this->db);
+            }
         }
     }
 
@@ -835,7 +849,9 @@ EOD;
     {
         return $this->_createJobQuery()
             ->andWhere(['fail' => false, 'timeUpdated' => null])
-            ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()]);
+            ->andWhere('[[timePushed]] + [[delay]] <= :time', [
+                'time' => DateTimeHelper::currentTimeStamp(),
+            ]);
     }
 
     /**
@@ -847,7 +863,9 @@ EOD;
     {
         return $this->_createJobQuery()
             ->andWhere(['fail' => false, 'timeUpdated' => null])
-            ->andWhere('[[timePushed]] + [[delay]] > :time', ['time' => time()]);
+            ->andWhere('[[timePushed]] + [[delay]] > :time', [
+                'time' => DateTimeHelper::currentTimeStamp(),
+            ]);
     }
 
     /**
@@ -899,16 +917,22 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
-     * @throws Exception
+     * @param int|null $timeout
+     * @param bool $throwException
+     * @throws MutexException
      */
-    private function _lock(callable $callback): void
+    private function _lock(callable $callback, ?int $timeout = null, bool $throwException = true): void
     {
         $acquireLock = !$this->_locked;
 
         if ($acquireLock) {
             $channel = $this->channel();
-            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
+            $mutexName = sprintf('%s::%s', self::class, $channel);
+            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+                if ($throwException) {
+                    throw new MutexException($mutexName, "Could not acquire a mutex lock for the queue ($channel).");
+                }
+                return;
             }
             $this->_locked = true;
         }
@@ -917,7 +941,7 @@ EOD;
             $callback();
         } finally {
             if ($acquireLock) {
-                $this->mutex->release(__CLASS__ . "::$channel");
+                $this->mutex->release($mutexName);
                 $this->_locked = false;
             }
         }

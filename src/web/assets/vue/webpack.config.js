@@ -2,6 +2,8 @@
 /* globals module, require, __dirname */
 const {getConfig} = require('@craftcms/webpack');
 const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
+const pkgDir = require('pkg-dir');
+const path = require('path');
 
 module.exports = getConfig({
   context: __dirname,
@@ -10,10 +12,16 @@ module.exports = getConfig({
       new MergeIntoSingleFilePlugin({
         files: {
           'vue.js': [
-            require.resolve('vue/dist/vue.min.js'),
-            require.resolve('vue-router/dist/vue-router.min.js'),
-            require.resolve('vuex/dist/vuex.min.js'),
-            require.resolve('vue-autosuggest/dist/vue-autosuggest.js'),
+            path.resolve(pkgDir.sync(), 'node_modules/vue/dist/vue.min.js'),
+            path.resolve(
+              pkgDir.sync(),
+              'node_modules/vue-router/dist/vue-router.min.js'
+            ),
+            path.resolve(pkgDir.sync(), 'node_modules/vuex/dist/vuex.min.js'),
+            path.resolve(
+              pkgDir.sync(),
+              'node_modules/vue-autosuggest/dist/vue-autosuggest.js'
+            ),
           ],
         },
       }),

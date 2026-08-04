@@ -6,7 +6,7 @@ use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
+use craft\models\Site;
 
 /**
  * Site condition rule.
@@ -37,8 +37,10 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     protected function options(): array
     {
-        $sites = Craft::$app->getSites()->getEditableSites();
-        return ArrayHelper::map($sites, 'uid', 'name');
+        return array_map(fn(Site $site) => [
+            'label' => $site->getUiLabel(),
+            'value' => $site->uid,
+        ], Craft::$app->getSites()->getEditableSites());
     }
 
     /**

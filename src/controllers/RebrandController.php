@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\enums\CmsEdition;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -35,8 +36,13 @@ class RebrandController extends Controller
      */
     public function beforeAction($action): bool
     {
-        Craft::$app->requireEdition(Craft::Pro);
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        Craft::$app->requireEdition(CmsEdition::Pro);
+
+        return true;
     }
 
     /**
@@ -102,7 +108,7 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);

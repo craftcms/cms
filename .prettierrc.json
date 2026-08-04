@@ -1,5 +1,6 @@
 {
   "singleQuote": true,
   "bracketSpacing": false,
-  "vueIndentScriptAndStyle": true
+  "vueIndentScriptAndStyle": true,
+  "trailingComma": "es5"
 }

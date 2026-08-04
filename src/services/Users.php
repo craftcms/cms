@@ -11,13 +11,16 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\ImageException;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\ConfigEvent;
+use craft\events\DefineUserGroupsEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -25,6 +28,7 @@ use craft\events\UserPhotoEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -32,6 +36,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
@@ -41,11 +46,13 @@ use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\UserException;
+use yii\caching\TagDependency;
 
 /**
  * The Users service provides APIs for managing users.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->getUsers()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -143,6 +150,13 @@ class Users extends Component
     public const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
 
     /**
+     * @event DefineUserGroupsEvent The event that is triggered when defining the default user groups to assign to a publicly-registered user.
+     * @see getDefaultUserGroups()
+     * @since 4.5.4
+     */
+    public const EVENT_DEFINE_DEFAULT_USER_GROUPS = 'defineDefaultUserGroups';
+
+    /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the default
@@ -156,13 +170,13 @@ class Users extends Component
     public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
-     * @event UserSavePhotoEvent The event that is triggered before a user photo is saved.
+     * @event UserPhotoEvent The event that is triggered before a user photo is saved.
      * @since 4.4.0
      */
     public const EVENT_BEFORE_SAVE_USER_PHOTO = 'beforeSaveUserPhoto';
 
     /**
-     * @event UserSavePhotoEvent The event that is triggered after a user photo is saved.
+     * @event UserPhotoEvent The event that is triggered after a user photo is saved.
      * @since 4.4.0
      */
     public const EVENT_AFTER_SAVE_USER_PHOTO = 'afterSaveUserPhoto';
@@ -193,18 +207,32 @@ class Users extends Component
         /** @var User|null $user */
         $user = User::find()
             ->email($email)
-            ->status(null)
+            ->status([UserQuery::STATUS_CREDENTIALED])
             ->one();
 
-        if (!$user) {
-            $user = new User();
-            $user->email = $email;
-            if (!$user->validate(['email'])) {
-                throw new InvalidArgumentException($user->getFirstError('email'));
-            }
-            if (!Craft::$app->getElements()->saveElement($user, false)) {
-                throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
-            }
+        if ($user) {
+            return $user;
+        }
+
+        /** @var User|null $user */
+        $user = User::find()
+            ->email($email)
+            ->status([User::STATUS_INACTIVE])
+            ->one();
+
+        if ($user) {
+            return $user;
+        }
+
+        $user = new User();
+        $user->email = $email;
+
+        if (!$user->validate(['email'])) {
+            throw new InvalidArgumentException($user->getFirstError('email'));
+        }
+
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
+            throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
         }
 
         return $user;
@@ -293,7 +321,7 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * <config4:verificationCodeDuration> config setting. If it is still valid,
+     * <config5:verificationCodeDuration> config setting. If it is still valid,
      * then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -323,7 +351,7 @@ class Users extends Component
 
         // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
-            $userRecord = $userRecord ?? $this->_getUserRecordById($user->id);
+            $userRecord ??= $this->_getUserRecordById($user->id);
             $userRecord->verificationCode = $user->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
             $userRecord->save();
@@ -361,7 +389,15 @@ class Users extends Component
                 ->where(['userId' => $userId])
                 ->scalar();
 
-            $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
+            if ($preferences) {
+                if (is_string($preferences)) {
+                    $preferences = Json::decode($preferences);
+                }
+            } else {
+                $preferences = [];
+            }
+
+            $this->_userPreferences[$userId] = $preferences;
         }
 
         return $this->_userPreferences[$userId];
@@ -377,10 +413,11 @@ class Users extends Component
     {
         // Merge in any other saved preferences
         $preferences += $this->getUserPreferences($user->id);
+        $tableSchema = Craft::$app->getDb()->getSchema()->getTableSchema(Table::USERPREFERENCES);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-            'preferences' => Json::encode($preferences),
+            'preferences' => Db::prepareValueForDb($preferences, $tableSchema->columns['preferences']->dbType),
         ]);
 
         $this->_userPreferences[$user->id] = $preferences;
@@ -504,11 +541,10 @@ class Users extends Component
      * Removes credentials for a user.
      *
      * @param User $user The user that should have credentials removed.
-     * @return bool Whether the user’s credentials were successfully removed.
-     * @throws UserNotFoundException
+     * @throws InvalidElementException
      * @since 4.0.0
      */
-    public function removeCredentials(User $user): bool
+    public function removeCredentials(User $user): void
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->active = false;
@@ -516,15 +552,21 @@ class Users extends Component
         $userRecord->password = null;
         $userRecord->verificationCode = null;
 
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
+
         if (!$userRecord->save()) {
-            return false;
+            $user->addErrors($userRecord->getErrors());
+            throw new InvalidElementException($user);
         }
 
         $user->active = false;
         $user->pending = false;
         $user->password = null;
         $user->verificationCode = null;
-        return true;
+
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
@@ -533,10 +575,11 @@ class Users extends Component
      * @param User $user the user.
      * @param string $fileLocation the local image path on server
      * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
+     * @param string|null $mimeType the default MIME type to use, if it can’t be determined based on the server path
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
+    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null, ?string $mimeType = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -545,19 +588,21 @@ class Users extends Component
         }
 
         $assetsService = Craft::$app->getAssets();
+        $photoId = $user->photoId;
 
-        $event = new UserPhotoEvent([
-            'user' => $user,
-            'photoId' => $user->photoId,
-        ]);
-
+        // Fire a 'beforeSaveUserPhoto' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_PHOTO)) {
+            $event = new UserPhotoEvent([
+                'user' => $user,
+                'photoId' => $photoId,
+            ]);
             $this->trigger(self::EVENT_BEFORE_SAVE_USER_PHOTO, $event);
+            $photoId = $event->photoId;
         }
 
         // If the photo exists, just replace the file.
-        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
-            $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
+        if ($photoId && ($photo = Craft::$app->getAssets()->getAssetById($photoId)) !== null) {
+            $assetsService->replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
             $volume = $this->_userPhotoVolume();
             $folderId = $this->_userPhotoFolderId($user, $volume);
@@ -567,6 +612,7 @@ class Users extends Component
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
+            $photo->setMimeType(FileHelper::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -708,14 +754,16 @@ class Users extends Component
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         }
 
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
         $userRecord->save();
 
         // Update the User model too
         $user->lastLoginDate = $now;
         $user->invalidLoginCount = null;
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
@@ -762,6 +810,7 @@ class Users extends Component
             $user->invalidLoginCount = $userRecord->invalidLoginCount;
         }
 
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
         $userRecord->save();
 
         // Update the User model too
@@ -774,30 +823,30 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
      * Activates a user, bypassing email verification.
      *
      * @param User $user The user.
-     * @return bool Whether the user was activated successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function activateUser(User $user): bool
+    public function activateUser(User $user): void
     {
         // Fire a 'beforeActivateUser' event
-        $event = new UserEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ACTIVATE_USER, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ACTIVATE_USER)) {
+            $event = new UserEvent(['user' => $user]);
+            $this->trigger(self::EVENT_BEFORE_ACTIVATE_USER, $event);
+            if (!$event->isValid) {
+                throw new InvalidElementException($user);
+            }
         }
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->active = true;
         $user->pending = false;
         $user->locked = false;
@@ -818,8 +867,7 @@ class Users extends Component
             $user->invalidLoginCount = $originalUser->invalidLoginCount;
             $user->lastInvalidLoginDate = $originalUser->lastInvalidLoginDate;
             $user->lockoutDate = $originalUser->lockoutDate;
-
-            return false;
+            throw new InvalidElementException($user);
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -835,6 +883,8 @@ class Users extends Component
             $userRecord->invalidLoginCount = null;
             $userRecord->lastInvalidLoginDate = null;
             $userRecord->lockoutDate = null;
+
+            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
             // If they have an unverified email address, now is the time to set it to their primary email address
@@ -853,30 +903,28 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
      * Deactivates a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was deactivated successfully.
      * @throws Throwable if reasons
      * @since 4.0.0
+     * @throws InvalidElementException
      */
-    public function deactivateUser(User $user): bool
+    public function deactivateUser(User $user): void
     {
         // Fire a 'beforeActivateUser' event
-        $event = new UserEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEACTIVATE_USER)) {
+            $event = new UserEvent(['user' => $user]);
+            $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
+            if (!$event->isValid) {
+                throw new InvalidElementException($user);
+            }
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -892,6 +940,8 @@ class Users extends Component
             $userRecord->invalidLoginCount = null;
             $userRecord->lastInvalidLoginDate = null;
             $userRecord->lockoutDate = null;
+
+            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
             $user->active = false;
@@ -917,10 +967,9 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
@@ -928,13 +977,13 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @param User $user
-     * @return bool
+     * @throws InvalidElementException
      */
-    public function verifyEmailForUser(User $user): bool
+    public function verifyEmailForUser(User $user): void
     {
         // Bail if they don't have an unverified email to begin with
         if (!$user->unverifiedEmail) {
-            return true;
+            return;
         }
 
         $userRecord = $this->_getUserRecordById($user->id);
@@ -945,36 +994,36 @@ class Users extends Component
             $userRecord->username = $user->unverifiedEmail;
         }
 
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
+
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
-            return false;
+            throw new InvalidElementException($user);
         }
 
         // If the user status is pending, let's activate them.
         if ($userRecord->pending) {
             $this->activateUser($user);
+        } elseif ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
         }
-
-        return true;
     }
 
     /**
      * Unlocks a user, bypassing the cooldown phase.
      *
      * @param User $user The user.
-     * @return bool Whether the user was unlocked successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function unlockUser(User $user): bool
+    public function unlockUser(User $user): void
     {
         // Fire a 'beforeUnlockUser' event
-        $event = new UserEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_UNLOCK_USER, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UNLOCK_USER)) {
+            $event = new UserEvent(['user' => $user]);
+            $this->trigger(self::EVENT_BEFORE_UNLOCK_USER, $event);
+            if (!$event->isValid) {
+                throw new InvalidElementException($user);
+            }
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -984,6 +1033,8 @@ class Users extends Component
             $userRecord->invalidLoginCount = null;
             $userRecord->invalidLoginWindowStart = null;
             $userRecord->lockoutDate = null;
+
+            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
             $transaction->commit();
@@ -1004,34 +1055,33 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
      * Suspends a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was suspended successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function suspendUser(User $user): bool
+    public function suspendUser(User $user): void
     {
         // Fire a 'beforeSuspendUser' event
-        $event = new UserEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SUSPEND_USER)) {
+            $event = new UserEvent(['user' => $user]);
+            $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
+            if (!$event->isValid) {
+                throw new InvalidElementException($user);
+            }
         }
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->suspended = true;
         $user->suspended = true;
+
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
         $userRecord->save();
 
         // Destroy all sessions for this user
@@ -1044,29 +1094,26 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
      * Unsuspends a user.
      *
      * @param User $user The user.
-     * @return bool Whether the user was unsuspended successfully.
-     * @throws Throwable if reasons
+     * @throws InvalidElementException
      */
-    public function unsuspendUser(User $user): bool
+    public function unsuspendUser(User $user): void
     {
         // Fire a 'beforeUnsuspendUser' event
-        $event = new UserEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UNSUSPEND_USER)) {
+            $event = new UserEvent(['user' => $user]);
+            $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
+            if (!$event->isValid) {
+                throw new InvalidElementException($user);
+            }
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
@@ -1074,6 +1121,8 @@ class Users extends Component
         try {
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->suspended = false;
+
+            $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
             $transaction->commit();
@@ -1093,10 +1142,9 @@ class Users extends Component
             ]));
         }
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
-
-        return true;
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
     }
 
     /**
@@ -1105,11 +1153,10 @@ class Users extends Component
      * @param int $userId The user’s ID.
      * @param string $message The message to be shunned.
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
-     * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): bool
+    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): void
     {
-        return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
+        Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
             'expiryDate' => Db::prepareDateForDb($expiryDate),
@@ -1121,11 +1168,10 @@ class Users extends Component
      *
      * @param int $userId The user’s ID.
      * @param string $message The message to un-shun.
-     * @return bool Whether the message was un-shunned successfully.
      */
-    public function unshunMessageForUser(int $userId, string $message): bool
+    public function unshunMessageForUser(int $userId, string $message): void
     {
-        return (bool)Db::delete(Table::SHUNNEDMESSAGES, [
+        Db::delete(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
         ]);
@@ -1185,9 +1231,11 @@ class Users extends Component
         }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
+        $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
         $userRecord->save();
 
         $originalUser = clone $user;
+        $user->setScenario(User::SCENARIO_ACTIVATION);
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;
@@ -1197,13 +1245,14 @@ class Users extends Component
             $user->pending = $originalUser->pending;
             $user->verificationCode = $originalUser->verificationCode;
             $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
-            throw new InvalidElementException($user, 'Unable to set verification code on user: ' . implode(', ', $user->getFirstErrors()));
+            throw new InvalidElementException($user);
         }
 
         $transaction->commit();
 
-        // Invalidate caches
-        Craft::$app->getElements()->invalidateCachesForElement($user);
+        if ($indexAttributesChanged) {
+            $this->invalidateIndexCaches();
+        }
 
         return $unhashedCode;
     }
@@ -1212,7 +1261,7 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are
      * just taking up space.
      *
-     * This method will check the <config4:purgePendingUsersDuration> config
+     * This method will check the <config5:purgePendingUsersDuration> config
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.
@@ -1237,9 +1286,13 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
-            /** @var User $user */
-            $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
+            try {
+                /** @var User $user */
+                $elementsService->deleteElement($user);
+                Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
+            } catch (UserException $e) {
+                Craft::warning($e->getMessage(), __METHOD__);
+            }
         }
     }
 
@@ -1281,39 +1334,44 @@ class Users extends Component
             return true;
         }
 
-        // Fire a 'beforeAssignUserToGroups' event
-        $event = new UserGroupsAssignEvent([
-            'userId' => $userId,
-            'groupIds' => $groupIds,
-            'removedGroupIds' => $removedGroupIds,
-            'newGroupIds' => array_keys($newGroupIds),
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
+        $newGroupIds = array_keys($newGroupIds);
 
-        if (!$event->isValid) {
-            return false;
+        // Fire a 'beforeAssignUserToGroups' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS)) {
+            $event = new UserGroupsAssignEvent([
+                'userId' => $userId,
+                'groupIds' => $groupIds,
+                'removedGroupIds' => $removedGroupIds,
+                'newGroupIds' => $newGroupIds,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
+            if (!$event->isValid) {
+                return false;
+            }
+            $removedGroupIds = $event->removedGroupIds;
+            $newGroupIds = $event->newGroupIds;
         }
 
         // Make sure the event hasn't left us with nothing to do
-        if (empty($event->removedGroupIds) && empty($event->newGroupIds)) {
+        if (empty($removedGroupIds) && empty($newGroupIds)) {
             return true;
         }
 
         $transaction = $db->beginTransaction();
         try {
             // Add the new groups
-            if (!empty($event->newGroupIds)) {
+            if (!empty($newGroupIds)) {
                 $values = [];
-                foreach ($event->newGroupIds as $groupId) {
+                foreach ($newGroupIds as $groupId) {
                     $values[] = [$groupId, $userId];
                 }
                 Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, $db);
             }
 
-            if (!empty($event->removedGroupIds)) {
+            if (!empty($removedGroupIds)) {
                 Db::delete(Table::USERGROUPS_USERS, [
                     'userId' => $userId,
-                    'groupId' => $event->removedGroupIds,
+                    'groupId' => $removedGroupIds,
                 ], [], $db);
             }
 
@@ -1328,16 +1386,49 @@ class Users extends Component
             $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
                 'userId' => $userId,
                 'groupIds' => $groupIds,
-                'removedGroupIds' => $event->removedGroupIds,
-                'newGroupIds' => $event->newGroupIds,
+                'removedGroupIds' => $removedGroupIds,
+                'newGroupIds' => $newGroupIds,
             ]));
         }
+
+        $this->invalidateIndexCaches();
 
         return true;
     }
 
     /**
-     * Assigns a user to the default user group.
+     * Returns the default user groups that the given user should belong to.
+     *
+     * @param User $user
+     * @return UserGroup[]
+     * @since 4.5.4
+     */
+    public function getDefaultUserGroups(User $user): array
+    {
+        $groups = [];
+        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        if ($uid) {
+            $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
+            if ($group) {
+                $groups[] = $group;
+            }
+        }
+
+        // Fire a 'defineDefaultUserGroups' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_DEFAULT_USER_GROUPS)) {
+            $event = new DefineUserGroupsEvent([
+                'user' => $user,
+                'userGroups' => $groups,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_DEFAULT_USER_GROUPS, $event);
+            return $event->userGroups;
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Assigns a user to the default user group(s).
      *
      * This method is called toward the end of a public registration request.
      *
@@ -1346,30 +1437,26 @@ class Users extends Component
      */
     public function assignUserToDefaultGroup(User $user): bool
     {
-        // Make sure there's a default group
-        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        $groups = $this->getDefaultUserGroups($user);
 
-        if (!$uid) {
-            return false;
-        }
-
-        $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
-
-        if (!$group) {
+        if (empty($groups)) {
             return false;
         }
 
         // Fire a 'beforeAssignUserToDefaultGroup' event
-        $event = new UserAssignGroupEvent([
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
-
-        if (!$event->isValid) {
-            return false;
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP)) {
+            $event = new UserAssignGroupEvent([
+                'user' => $user,
+                'userGroups' => $groups,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
-        if (!$this->assignUserToGroups($user->id, [$group->id])) {
+        $groupIds = array_map(fn(UserGroup $group) => $group->id, $groups);
+        if (!$this->assignUserToGroups($user->id, $groupIds)) {
             return false;
         }
 
@@ -1377,6 +1464,7 @@ class Users extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP)) {
             $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP, new UserAssignGroupEvent([
                 'user' => $user,
+                'userGroups' => $groups,
             ]));
         }
 
@@ -1427,11 +1515,10 @@ class Users extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayoutConfig = $layout->getConfig();
-        $uid = StringHelper::UUID();
+        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [
+            $layout->uid => $layout->getConfig(),
+        ], 'Save the user field layout');
 
-        $projectConfig->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1466,7 +1553,7 @@ class Users extends Component
         $impersonateePermissions = $permissionsService->getPermissionsByUserId($impersonatee->id);
 
         foreach ($impersonateePermissions as $permission) {
-            if (!isset($impersonatorPermissions[$permission])) {
+            if (!isset($impersonatorPermissions[$permission]) && $permissionsService->validatePermission($permission)) {
                 return false;
             }
         }
@@ -1490,6 +1577,10 @@ class Users extends Component
 
         // Even if you have moderateUsers permissions, only and admin should be able to suspend another admin.
         if (!$suspender->admin && $suspendee->admin) {
+            return false;
+        }
+
+        if ($suspendee->getHasSsoIdentity()) {
             return false;
         }
 
@@ -1562,24 +1653,28 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
+        $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         $cp = (
-            $user->can('accessCp') ||
+            Craft::$app->edition->value < CmsEdition::Pro->value ||
+            ($isCpRequest && $user->can('accessCp')) ||
             ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
         );
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
+        $siteId = $isCpRequest ? $user->affiliatedSiteId : null;
 
         if (!$cp) {
-            return UrlHelper::siteUrl($fePath, $params, $scheme);
+            return UrlHelper::siteUrl($fePath, $params, $scheme, siteId: $siteId);
         }
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
+        if ($generalConfig->baseCpUrl || $isCpRequest) {
             $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
         } else {
             $path = UrlHelper::prependCpTrigger($cpPath);
-            $url = UrlHelper::siteUrl($path, $params, $scheme);
+            $url = UrlHelper::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
         if (UrlHelper::isRootRelativeUrl($url)) {
@@ -1590,5 +1685,40 @@ class Users extends Component
         }
 
         return $url;
+    }
+
+    /**
+     * Returns the maximum number of users the system can have, for the given Craft edition.
+     *
+     * @param CmsEdition $edition
+     * @return int|null
+     * @since 5.5.0
+     */
+    final public function getMaxUsers(CmsEdition $edition): ?int
+    {
+        return match ($edition) {
+            CmsEdition::Solo => 1,
+            CmsEdition::Team => 5,
+            default => null,
+        };
+    }
+
+    /**
+     * Returns whether new users can be added to the system.
+     *
+     * @return bool
+     * @since 5.0.0
+     */
+    final public function canCreateUsers(): bool
+    {
+        $maxUsers = $this->getMaxUsers(Craft::$app->edition);
+        return !$maxUsers || $maxUsers > User::find()->status(null)->count();
+    }
+
+    private function invalidateIndexCaches(): void
+    {
+        TagDependency::invalidate(Craft::$app->getCache(), [
+            sprintf('element-index-query::%s', User::class),
+        ]);
     }
 }

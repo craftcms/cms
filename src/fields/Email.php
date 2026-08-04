@@ -8,9 +8,12 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -24,7 +27,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Email extends Field implements PreviewableFieldInterface
+class Email extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -37,9 +40,25 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'at';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return 'string|null';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -61,15 +80,20 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function getSettingsHtml(): ?string
     {
-        return Schema::TYPE_STRING;
+        return $this->settingsHtml(false);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): ?string
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Placeholder Text'),
@@ -78,6 +102,7 @@ class Email extends Field implements PreviewableFieldInterface
             'name' => 'placeholder',
             'value' => $this->placeholder,
             'errors' => $this->getErrors('placeholder'),
+            'disabled' => $readOnly,
         ]);
     }
 
@@ -100,7 +125,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'type' => 'email',
@@ -120,7 +145,7 @@ class Email extends Field implements PreviewableFieldInterface
     {
         return [
             ['trim'],
-            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
+            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => App::supportsIdn()],
         ];
     }
 
@@ -135,12 +160,24 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
         }
         $value = Html::encode($value);
         return "<a href=\"mailto:$value\">$value</a>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = Craft::$app->getUser()->getIdentity()->email;
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 }

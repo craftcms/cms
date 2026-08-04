@@ -41,6 +41,10 @@ class StructuresController extends Controller
      */
     public function beforeAction($action): bool
     {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -66,7 +70,6 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->drafts(null)
             ->provisionalDrafts(null)
@@ -80,7 +83,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**

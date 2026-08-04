@@ -1,10 +1,24 @@
-{% apply spaceless %}
+{% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
+{% set returnUrl = returnUrl ?? null %}
 
-{% for element in elements %}
-    <li data-id="{{ element.id }}" class="{% if element.id in disabledElementIds %}disabled{% endif %} {% if showCheckboxes %}has-checkbox{% endif %}">
-        {% include "_elements/element" %}
-        {% if showCheckboxes %}<div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>{% endif %}
-    </li>
-{% endfor %}
+{% apply spaceless %}
+  {% for element in elements %}
+    {% tag 'li' with {
+      class: element.id in disabledElementIds ? 'disabled' : null,
+      data: {
+        id: element.id,
+      },
+    } %}
+      {{ elementChip(element, {
+        context: context ?? 'index',
+        size: 'large',
+        selectable: selectable,
+        sortable: sortable,
+        hyperlink,
+        returnUrl,
+      }) }}
+    {% endtag %}
+  {% endfor %}
 
 {% endapply -%}

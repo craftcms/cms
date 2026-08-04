@@ -10,6 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\db\Table;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
@@ -40,6 +41,12 @@ class Announcement extends BaseJob
     public ?string $pluginHandle = null;
 
     /**
+     * @var bool Whether only admins should receive the announcement.
+     * @since 4.5.6
+     */
+    public bool $adminsOnly = false;
+
+    /**
      * @inheritdoc
      * @throws Exception
      */
@@ -57,8 +64,15 @@ class Announcement extends BaseJob
         }
 
         // Fetch all of the control panel users
-        $userQuery = User::find()
-            ->can('accessCp');
+        $userQuery = User::find();
+
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            $userQuery->can('accessCp');
+        }
+
+        if ($this->adminsOnly) {
+            $userQuery->admin();
+        }
 
         $totalUsers = $userQuery->count();
         $batchSize = 100;

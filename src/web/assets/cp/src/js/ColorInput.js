@@ -11,7 +11,9 @@ Craft.ColorInput = Garnish.Base.extend(
     $colorPreview: null,
     $colorInput: null,
 
-    init: function (container) {
+    init: function (container, settings) {
+      this.setSettings(settings, Craft.ColorInput.defaults);
+
       this.$container = $(container);
       this.$input = this.$container.find('.color-input');
       this.$colorContainer = this.$container.children('.color');
@@ -32,14 +34,34 @@ Craft.ColorInput = Garnish.Base.extend(
         return;
       }
 
+      let isDisabled = false;
+      if (this.$container.parents('.input').hasClass('disabled')) {
+        isDisabled = true;
+      }
       this.$colorContainer.removeClass('static');
       this.$colorInput = $(input)
         .addClass('color-preview-input')
         .attr({
           'aria-controls': this.$input.attr('id'),
           'aria-label': Craft.t('app', 'Color picker'),
+          'aria-labelledby': this.$input.attr('aria-labelledby'),
         })
         .appendTo(this.$colorPreview);
+
+      if (isDisabled) {
+        this.$colorInput.attr('disabled', '');
+      }
+
+      if (this.settings.presets?.length) {
+        const listId = `listbox-${Math.floor(Math.random() * 1000000)}`;
+        this.$colorInput.attr('list', listId);
+        const $list = $('<datalist/>', {
+          id: listId,
+        }).insertAfter(this.$colorInput);
+        for (const color of this.settings.presets) {
+          $('<option/>').text(color).appendTo($list);
+        }
+      }
 
       this.addListener(this.$colorInput, 'click', function (ev) {
         ev.stopPropagation();
@@ -60,7 +82,7 @@ Craft.ColorInput = Garnish.Base.extend(
     handleTextChange: function () {
       let val = this.$input.val();
 
-      if (val !== (val = Craft.trim(val))) {
+      if (val !== (val = val.trim())) {
         this.$input.val(val);
       }
 
@@ -92,6 +114,10 @@ Craft.ColorInput = Garnish.Base.extend(
     },
   },
   {
+    defaults: {
+      presets: [],
+    },
+
     _browserSupportsColorInputs: null,
 
     doesBrowserSupportColorInputs: function () {

@@ -43,10 +43,20 @@ class QueryBatcher implements Batchable
     public function count(): int
     {
         try {
-            return $this->query->count(db: $this->db);
+            $count = $this->query->count(db: $this->db);
         } catch (QueryAbortedException) {
             return 0;
         }
+
+        // Query::count() doesn't take the offset and limit into account
+        if (isset($this->query->offset)) {
+            $count = max($count - (int)$this->query->offset, 0);
+        }
+        if (isset($this->query->limit)) {
+            $count = min((int)$this->query->limit, $count);
+        }
+
+        return $count;
     }
 
     /**
@@ -72,7 +82,7 @@ class QueryBatcher implements Batchable
             $slice = $query
                 ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
                 ->limit($limit)
-                ->all();
+                ->all($this->db);
         } catch (QueryAbortedException) {
             $slice = [];
         }

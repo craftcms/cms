@@ -10,10 +10,16 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\errors\MigrationException;
+use craft\filters\UtilityAccess;
+use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
+use craft\utilities\DbBackup;
+use craft\utilities\DeprecationErrors;
+use craft\utilities\FindAndReplace as FindAndReplaceUtility;
+use craft\utilities\Migrations;
 use craft\utilities\Updates;
 use craft\utilities\Upgrade;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -24,11 +30,44 @@ use yii\base\InvalidArgumentException;
 use yii\caching\TagDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class UtilitiesController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => DeprecationErrors::class,
+                'only' => ['get-deprecation-error-traces-modal', 'delete-all-deprecation-errors', 'delete-deprecation-error'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => ClearCaches::class,
+                'only' => ['clear-caches-perform-action', 'invalidate-tags'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => DbBackup::class,
+                'only' => ['db-backup-perform-action'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => FindAndReplaceUtility::class,
+                'only' => ['find-and-replace-perform-action'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => Migrations::class,
+                'only' => ['apply-new-migrations'],
+            ],
+        ]);
+    }
+
     /**
      * Index
      *
@@ -64,22 +103,20 @@ class UtilitiesController extends Controller
      *
      * @param string $id
      * @return Response
-     * @throws NotFoundHttpException if $id is invalid
      * @throws ForbiddenHttpException if the user doesn’t have access to the requested utility
      * @throws Exception in case of failure
      */
     public function actionShowUtility(string $id): Response
     {
         $utilitiesService = Craft::$app->getUtilities();
+        $class = $utilitiesService->getUtilityTypeById($id);
 
-        if (($class = $utilitiesService->getUtilityTypeById($id)) === null) {
-            throw new NotFoundHttpException('Invalid utility ID: ' . $id);
+        if ($class === null) {
+            return $this->run('index');
         }
 
-        /** @var string|UtilityInterface $class */
-        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
-            throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
+            throw new ForbiddenHttpException(sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
         $this->getView()->registerAssetBundle(UtilitiesAsset::class);
@@ -102,7 +139,6 @@ class UtilitiesController extends Controller
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -124,7 +160,6 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -141,7 +176,6 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteDeprecationError(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -160,8 +194,6 @@ class UtilitiesController extends Controller
      */
     public function actionClearCachesPerformAction(): Response
     {
-        $this->requirePermission('utility:clear-caches');
-
         $caches = $this->request->getRequiredBodyParam('caches');
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
@@ -199,8 +231,6 @@ class UtilitiesController extends Controller
      */
     public function actionInvalidateTags(): Response
     {
-        $this->requirePermission('utility:clear-caches');
-
         $tags = $this->request->getRequiredBodyParam('tags');
         $cache = Craft::$app->getCache();
 
@@ -220,8 +250,6 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackupPerformAction(): ?Response
     {
-        $this->requirePermission('utility:db-backup');
-
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (Throwable $e) {
@@ -253,8 +281,6 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplacePerformAction(): Response
     {
-        $this->requirePermission('utility:find-replace');
-
         $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
@@ -275,8 +301,6 @@ class UtilitiesController extends Controller
      */
     public function actionApplyNewMigrations(): Response
     {
-        $this->requirePermission('utility:migrations');
-
         $migrator = Craft::$app->getContentMigrator();
 
         try {
@@ -299,13 +323,12 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
-            /** @var string|UtilityInterface $class */
-            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
+            /** @var class-string<UtilityInterface> $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
                 'displayName' => $class::displayName(),
-                'iconPath' => $class::iconPath(),
+                'iconPath' => $class::icon(),
                 'badgeCount' => $class::badgeCount(),
             ];
         }
@@ -316,44 +339,37 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param string $class
-     * @phpstan-param class-string<UtilityInterface> $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface|string $class */
-        $iconPath = $class::iconPath();
+        $icon = $class::icon();
 
-        if ($iconPath === null) {
+        if ($icon === null) {
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
-        if (!is_file($iconPath)) {
-            Craft::warning("Utility icon file doesn't exist: $iconPath", __METHOD__);
-            return $this->_getDefaultUtilityIconSvg($class);
+        try {
+            $svg = Cp::iconSvg($icon);
+            if ($svg !== '') {
+                return $svg;
+            }
+        } catch (InvalidArgumentException) {
         }
 
-        if (!FileHelper::isSvg($iconPath)) {
-            Craft::warning("Utility icon file is not an SVG: $iconPath", __METHOD__);
-            return $this->_getDefaultUtilityIconSvg($class);
-        }
-
-        return file_get_contents($iconPath);
+        return $this->_getDefaultUtilityIconSvg($class);
     }
 
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param string $class
-     * @phpstan-param class-string<UtilityInterface> $class
+     * @param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var string|UtilityInterface $class */
-        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
+        return $this->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }

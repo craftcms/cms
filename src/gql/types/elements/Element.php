@@ -7,8 +7,10 @@
 
 namespace craft\gql\types\elements;
 
+use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\RevisionBehavior;
+use craft\gql\ArgumentManager;
 use craft\gql\base\ObjectType;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\services\Gql;
@@ -49,6 +51,10 @@ class Element extends ObjectType
         }
 
         if (in_array($fieldName, ['prev', 'next'])) {
+            // we need to prepare arguments for prev/next - otherwise registered argument handlers won't kick in for them
+            /** @var ArgumentManager $argumentManager */
+            $argumentManager = $context['argumentManager'] ?? Craft::createObject(['class' => ArgumentManager::class]);
+            $arguments = $argumentManager->prepareArguments($arguments);
             return $source->{'get' . ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
         }
 
@@ -57,17 +63,9 @@ class Element extends ObjectType
         }
 
         if ($fieldName === 'revisionNotes') {
-            $revision = $source->getCurrentRevision();
-            if (!$revision) {
-                return null;
-            }
-
             /** @var RevisionBehavior|null $behavior */
-            $behavior = $revision->getBehavior('revision');
-            if (!$behavior) {
-                return null;
-            }
-            return $behavior->revisionNotes;
+            $behavior = $source->getBehavior('revision') ?? $source->getCurrentRevision()?->getBehavior('revision');
+            return $behavior?->revisionNotes;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

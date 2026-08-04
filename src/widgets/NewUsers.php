@@ -9,6 +9,8 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
 
@@ -25,7 +27,9 @@ class NewUsers extends Widget
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'New Users');
+        return Craft::t('app', 'New {type}', [
+            'type' => User::pluralDisplayName(),
+        ]);
     }
 
     /**
@@ -34,7 +38,7 @@ class NewUsers extends Widget
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
-        return (Craft::$app->getEdition() === Craft::Pro);
+        return Craft::$app->edition->value >= CmsEdition::Pro->value;
     }
 
     /**
@@ -42,7 +46,7 @@ class NewUsers extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/users.svg');
+        return 'user-group';
     }
 
     /**
@@ -64,7 +68,11 @@ class NewUsers extends Widget
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
             if ($userGroup) {
-                return Craft::t('app', 'New Users') . ' – ' . Craft::t('app', $userGroup->name);
+                return sprintf(
+                    '%s – %s',
+                    parent::getTitle(),
+                    Craft::t('site', $userGroup->name)
+                );
             }
         }
 
@@ -76,7 +84,7 @@ class NewUsers extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->edition < CmsEdition::Pro) {
             return null;
         }
 

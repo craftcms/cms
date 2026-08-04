@@ -68,17 +68,20 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var string 'crop'|'fit'|'stretch'|'letterbox' Mode
+     * @var string Mode
+     * @phpstan-var 'crop'|'fit'|'stretch'|'letterbox'
      */
     public string $mode = 'crop';
 
     /**
-     * @var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right' Position
+     * @var string Position
+     * @phpstan-var 'top-left'|'top-center'|'top-right'|'center-left'|'center-center'|'center-right'|'bottom-left'|'bottom-center'|'bottom-right'
      */
     public string $position = 'center-center';
 
     /**
-     * @var 'none'|'line'|'plane'|'partition' Interlace
+     * @var string Interlace
+     * @phpstan-var 'none'|'line'|'plane'|'partition'
      */
     public string $interlace = 'none';
 
@@ -105,10 +108,15 @@ class ImageTransform extends Model
     public ?bool $upscale = null;
 
     /**
-     * @var string The image transformer to use.
-     * @phpstan-var class-string<ImageTransformerInterface>
+     * @var class-string<ImageTransformerInterface> The image transformer to use.
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
+
+    /**
+     * @var int|null The image transform index ID (if one was passed to the request).
+     * @since 5.3.0
+     */
+    public ?int $indexId = null;
 
     /**
      * @inheritdoc
@@ -167,6 +175,7 @@ class ImageTransform extends Model
         $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
         $rules[] = [['parameterChangeTime'], DateTimeValidator::class];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];
@@ -314,7 +323,7 @@ class ImageTransform extends Model
             'name' => $this->name,
             'position' => $this->position,
             'quality' => $this->quality,
-            'upscale' => $this->upscale,
+            'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
             'width' => $this->width,
         ];
     }

@@ -14,11 +14,8 @@ use craft\elements\User;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 4.5.4. [[DefineUserGroupsEvent]] should be used instead.
  */
-class UserAssignGroupEvent extends CancelableEvent
+class UserAssignGroupEvent extends DefineUserGroupsEvent
 {
-    /**
-     * @var User The user model associated with this event
-     */
-    public User $user;
 }

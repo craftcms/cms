@@ -10,7 +10,9 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use Throwable;
 
 /**
@@ -25,6 +27,12 @@ class Duplicate extends ElementAction
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
     public bool $deep = false;
+
+    /**
+     * @var bool Whether to duplicate the selected elements as drafts
+     * @since 5.9.0
+     */
+    public bool $asDrafts = false;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
@@ -48,21 +56,31 @@ class Duplicate extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for duplicatable elements, per canDuplicate()
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $attr) => <<<JS
 (() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    });
+  new Craft.ElementActionTrigger({
+    type: $type,
+    validateSelection: (selectedItems, elementIndex) => {
+      for (let i = 0; i < selectedItems.length; i++) {
+        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attr)) {
+          return false;
+        }
+      }
+
+      return elementIndex.settings.canDuplicateElements(selectedItems);
+    },
+    beforeActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.onBeforeDuplicateElements(selectedItems);
+    },
+    afterActivate: async (selectedItems, elementIndex) => {
+      await elementIndex.onDuplicateElements(selectedItems);
+    },
+  });
 })();
-JS, [static::class]);
+JS, [
+            static::class,
+            $this->asDrafts ? 'data-duplicatable-as-draft' : 'data-duplicatable',
+        ]);
 
         return null;
     }
@@ -76,11 +94,10 @@ JS, [static::class]);
             $query->orderBy(['structureelements.lft' => SORT_ASC]);
         }
 
-        $elements = $query->all();
         $successCount = 0;
         $failCount = 0;
 
-        $this->_duplicateElements($query, $elements, $successCount, $failCount);
+        $this->_duplicateElements($query, $successCount, $failCount);
 
         // Did all of them fail?
         if ($successCount === 0) {
@@ -99,18 +116,26 @@ JS, [static::class]);
 
     /**
      * @param ElementQueryInterface $query
-     * @param ElementInterface[] $elements
-     * @param int[] $duplicatedElementIds
+     * @param array<int|string, bool> $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
+    private function _duplicateElements(ElementQueryInterface $query, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
+        $user = Craft::$app->getUser()->getIdentity();
 
-        foreach ($elements as $element) {
+        foreach (Db::each($query) as $element) {
+            $allowed = $this->asDrafts
+                ? $elementsService->canDuplicateAsDraft($element, $user)
+                : $elementsService->canDuplicate($element, $user);
+
+            if (!$allowed) {
+                continue;
+            }
+
             // Make sure this element wasn't already duplicated, which could
             // happen if it's the descendant of a previously duplicated element
             // and $this->deep == true.
@@ -118,8 +143,23 @@ JS, [static::class]);
                 continue;
             }
 
+            $attributes = [
+                'isProvisionalDraft' => false,
+                'draftId' => null,
+            ];
+
+            // If the element was loaded for a non-primary owner, set its primary owner to it
+            if ($element instanceof NestedElementInterface) {
+                $attributes['primaryOwner'] = $element->getOwner();
+                $attributes['sortOrder'] = null; // clear our sort order too
+            }
+
             try {
-                $duplicate = $elementsService->duplicateElement($element);
+                $duplicate = $elementsService->duplicateElement(
+                    $element,
+                    $attributes,
+                    asUnpublishedDraft: $this->asDrafts,
+                );
             } catch (Throwable) {
                 // Validation error
                 $failCount++;
@@ -139,14 +179,13 @@ JS, [static::class]);
 
             if ($this->deep) {
                 // Don't use $element->children() here in case its lft/rgt values have changed
-                $children = $element::find()
+                $childQuery = $element::find()
                     ->siteId($element->siteId)
                     ->descendantOf($element->id)
                     ->descendantDist(1)
-                    ->status(null)
-                    ->all();
+                    ->status(null);
 
-                $this->_duplicateElements($query, $children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
+                $this->_duplicateElements($childQuery, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
     }

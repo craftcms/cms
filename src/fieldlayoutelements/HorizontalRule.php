@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -23,9 +24,9 @@ class HorizontalRule extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    protected function conditional(): bool
+    public function isMultiInstance(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -34,9 +35,20 @@ class HorizontalRule extends FieldLayoutElement
     public function selectorHtml(): string
     {
         $label = Craft::t('app', 'Horizontal Rule');
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+            'class' => ['cp-icon', 'puny', 'orange'],
+            'title' => Craft::t('app', 'This element is conditional'),
+            'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+        ]) : '';
+
         return <<<HTML
-<div class="fld-hr">
-  <div class="smalltext light">$label</div>
+<div>
+  <div class="fld-hr">
+    <div class="smalltext light flex flex-nowrap gap-xs">
+      <span>$label</span>
+      $indicatorHtml
+    </div>
+  </div>
 </div>
 HTML;
     }

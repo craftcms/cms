@@ -3,12 +3,14 @@
 Craft.ElementFieldSettings = Garnish.Base.extend({
   allowMultipleSources: null,
   $maintainHierarchyField: null,
-  $maintainHierarchyInput: null,
+  $maintainHierarchyButton: null,
   $sourcesField: null,
   $sourceSelect: null,
   $branchLimitField: null,
   $maxRelationsField: null,
   $minRelationsField: null,
+  $defaultPlacementField: null,
+  $viewModeField: null,
 
   init: function (
     allowMultipleSources,
@@ -16,14 +18,13 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     sourcesFieldId,
     branchLimitFieldId,
     minRelationsFieldId,
-    maxRelationsFieldId
+    maxRelationsFieldId,
+    defaultPlacementFieldId,
+    viewModeFieldId
   ) {
-    debugger;
     this.allowMultipleSources = allowMultipleSources;
     this.$maintainHierarchyField = $(`#${maintainHierarchyFieldId}`);
-    this.$maintainHierarchyInput = this.$maintainHierarchyField.find(
-      'input[type="checkbox"]'
-    );
+    this.$maintainHierarchyButton = this.$maintainHierarchyField.find('button');
     this.$sourcesField = $(`#${sourcesFieldId}`);
     if (!this.allowMultipleSources) {
       this.$sourceSelect = this.$sourcesField.find('select');
@@ -31,10 +32,12 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     this.$branchLimitField = $(`#${branchLimitFieldId}`);
     this.$minRelationsField = $(`#${minRelationsFieldId}`);
     this.$maxRelationsField = $(`#${maxRelationsFieldId}`);
+    this.$defaultPlacementField = $(`#${defaultPlacementFieldId}`);
+    this.$viewModeField = $(`#${viewModeFieldId}`);
 
     this.updateLimitFields();
     this.addListener(
-      this.$maintainHierarchyInput,
+      this.$maintainHierarchyButton,
       'change',
       'updateLimitFields'
     );
@@ -62,15 +65,20 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
   updateLimitFields: function () {
     if (
       !this.$maintainHierarchyField.hasClass('hidden') &&
-      this.$maintainHierarchyInput.is(':checked')
+      this.$maintainHierarchyButton.hasClass('on')
     ) {
       this.$minRelationsField.addClass('hidden');
       this.$maxRelationsField.addClass('hidden');
       this.$branchLimitField.removeClass('hidden');
+      this.$defaultPlacementField.addClass('hidden');
+      this.$viewModeField.find('select').val('list').trigger('change');
+      this.$viewModeField.addClass('hidden');
     } else {
       this.$branchLimitField.addClass('hidden');
       this.$minRelationsField.removeClass('hidden');
       this.$maxRelationsField.removeClass('hidden');
+      this.$defaultPlacementField.removeClass('hidden');
+      this.$viewModeField.removeClass('hidden');
     }
   },
 

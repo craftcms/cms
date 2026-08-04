@@ -16,8 +16,6 @@ use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
-use yii\base\ErrorException;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\console\controllers\BaseMigrateController;
@@ -177,6 +175,24 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
+    public function runAction($id, $params = []): ?int
+    {
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
+            $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
+        }
+
+        return parent::runAction($id, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if ($action->id !== 'all') {
@@ -202,17 +218,14 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-            FileHelper::createDirectory($this->migrationPath);
         }
 
-        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
-        $projectConfig = Craft::$app->getProjectConfig();
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
-            $projectConfig->regenerateExternalConfig();
-        }
-
-        if (!$this->traitBeforeAction($action)) {
-            return false;
+        try {
+            if (!$this->traitBeforeAction($action)) {
+                return false;
+            }
+        } catch (InvalidConfigException $e) {
+            // migrations folder not created, but we don't mind.
         }
 
         return true;
@@ -254,13 +267,7 @@ class MigrateController extends BaseMigrateController
         $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
 
         if (!$this->interactive || $this->confirm("Create new migration '$file'?", true)) {
-            $templateFile = Craft::getAlias($this->templateFile);
-
-            if ($templateFile === false) {
-                throw new Exception('There was a problem getting the template file path');
-            }
-
-            $content = $this->renderFile($templateFile, [
+            $content = $this->renderFile(Craft::getAlias($this->templateFile), [
                 'isInstall' => $isInstall,
                 'namespace' => $this->getMigrator()->migrationNamespace,
                 'className' => $name,
@@ -359,6 +366,10 @@ class MigrateController extends BaseMigrateController
                     $this->stdout(PHP_EOL . "$applied from $total " . ($applied === 1 ? 'migration was' : 'migrations were') . ' applied.' . PHP_EOL, Console::FG_RED);
                     $this->stdout(PHP_EOL . 'Migration failed. The rest of the migrations are canceled.' . PHP_EOL, Console::FG_RED);
                     Craft::$app->disableMaintenanceMode();
+                    Craft::$app->getProjectConfig()->reset();
+                    if (!$this->restore()) {
+                        $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+                    }
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
                 $applied++;
@@ -375,7 +386,6 @@ class MigrateController extends BaseMigrateController
         $this->stdout(PHP_EOL . "$total " . ($total === 1 ? 'migration was' : 'migrations were') . ' applied.' . PHP_EOL, Console::FG_GREEN);
         $this->stdout(PHP_EOL . 'Migrated up successfully.' . PHP_EOL, Console::FG_GREEN);
         Craft::$app->disableMaintenanceMode();
-        $this->_clearCompiledTemplates();
         return ExitCode::OK;
     }
 
@@ -410,6 +420,14 @@ class MigrateController extends BaseMigrateController
 
         $res = parent::actionUp($limit);
 
+        if ($res === ExitCode::UNSPECIFIED_ERROR) {
+            Craft::$app->getProjectConfig()->reset();
+            if (!$this->restore()) {
+                $this->stdout("\nRestore a database backup before trying again.\n", Console::FG_RED);
+            }
+            return $res;
+        }
+
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
             if ($this->track === MigrationManager::TRACK_CRAFT) {
@@ -417,8 +435,6 @@ class MigrateController extends BaseMigrateController
             } elseif ($this->plugin) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
-
-            $this->_clearCompiledTemplates();
         }
 
         return $res;
@@ -438,21 +454,6 @@ class MigrateController extends BaseMigrateController
             return $plugin;
         }
         return $pluginsService->createPlugin($handle);
-    }
-
-    /**
-     * Clears all compiled templates.
-     */
-    private function _clearCompiledTemplates(): void
-    {
-        try {
-            FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException) {
-            // the directory doesn't exist
-        } catch (ErrorException $e) {
-            Craft::error('Could not delete compiled templates: ' . $e->getMessage());
-            Craft::$app->getErrorHandler()->logException($e);
-        }
     }
 
     /**
@@ -481,15 +482,20 @@ class MigrateController extends BaseMigrateController
                         $this->_migrators[$track] = Craft::$app->getContentMigrator();
                         break;
                     default:
-                        // Give plugins & modules a chance to register a custom migrator
-                        $event = new RegisterMigratorEvent([
-                            'track' => $track,
-                        ]);
-                        $this->trigger(self::EVENT_REGISTER_MIGRATOR, $event);
-                        if (!$event->migrator) {
+                        // Fire a 'registerMigrator' event
+                        if ($this->hasEventHandlers(self::EVENT_REGISTER_MIGRATOR)) {
+                            $event = new RegisterMigratorEvent(['track' => $track]);
+                            $this->trigger(self::EVENT_REGISTER_MIGRATOR, $event);
+                            $migrator = $event->migrator;
+                        } else {
+                            $migrator = null;
+                        }
+
+                        if (!$migrator) {
                             throw new InvalidConfigException("Invalid migration track: $track");
                         }
-                        $this->_migrators[$track] = $event->migrator;
+
+                        $this->_migrators[$track] = $migrator;
                 }
             }
         }

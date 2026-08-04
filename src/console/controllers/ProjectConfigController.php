@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
@@ -126,6 +127,8 @@ class ProjectConfigController extends Controller
      * php craft project-config/get system.edition
      * ```
      *
+     * The “path” syntax used here may be composed of directory and filenames (within your `config/project` folder), YAML object keys (including UUIDs for many Craft resources), and integers (referencing numerically-indexed arrays), joined by a dot (`.`): `path.to.nested.array.0.property`.
+     *
      * @param string $path The config item path
      * @return int
      * @since 4.1.0
@@ -144,8 +147,16 @@ class ProjectConfigController extends Controller
      *
      * Example:
      * ```
-     * php craft project-config/set system.edition pro
+     * php craft project-config/set some.nested.key
      * ```
+     *
+     * See [get](#project-config-get) for the accepted key formats.
+     *
+     * ::: danger
+     * This should only be used when the equivalent change is not possible through the control panel or other Craft APIs. By directly modifying project config values, you are bypassing all validation and can easily destabilize configuration.
+     * :::
+     *
+     * Values are updated in the database *and* in your local YAML files, but the root `dateModified` project config property is only touched when using the [`--update-timestamp` flag](#project-config-set-options). If you do not update the timestamp along with the value, the change may not be detected or applied in other environments!
      *
      * @param string $path The config item path
      * @param string $value The config item value as a valid YAML string
@@ -193,8 +204,14 @@ class ProjectConfigController extends Controller
      *
      * Example:
      * ```
-     * php craft project-config/set system.edition pro
+     * php craft project-config/remove some.nested.key
      * ```
+     *
+     * ::: danger
+     * This should only be used when the equivalent change is not possible through the control panel or other Craft APIs. By directly modifying project config values, you are bypassing all validation and can easily destabilize configuration.
+     * :::
+     *
+     * As with [set](#project-config-set), removing values only updates the root `dateModified` key when using the [`--update-timestamp` flag](#project-config-set-options). If you do not include this flag, you must run `project-config/touch` before changes will be detected or applied in other environments!
      *
      * @param string $path The config item path
      * @return int
@@ -282,16 +299,13 @@ class ProjectConfigController extends Controller
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateExternalConfig();
         } else {
-            // Any plugins need to be installed/uninstalled?
+            // Install new plugins
             $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS, true) ?? []);
-
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             $this->stdout('Applying changes from your project config files ...');
 
@@ -316,17 +330,22 @@ class ProjectConfigController extends Controller
                 $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
+            } finally {
+                if (!$this->quiet) {
+                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
+                }
             }
+
+            $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
+
+            // Uninstall plugins
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
         }
-
-        $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
-
-        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
 
         return ExitCode::OK;
     }
@@ -443,7 +462,7 @@ class ProjectConfigController extends Controller
      */
     public function actionTouch(): int
     {
-        $time = time();
+        $time = DateTimeHelper::currentTimeStamp();
         ProjectConfig::touch($time);
         $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

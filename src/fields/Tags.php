@@ -21,7 +21,9 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use DOMElement;
 use GraphQL\Type\Definition\Type;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Tags represents a Tags field.
@@ -37,6 +39,14 @@ class Tags extends BaseRelationField
     public static function displayName(): string
     {
         return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'tag';
     }
 
     /**
@@ -58,7 +68,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
     }
@@ -82,7 +92,23 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getSettingsHtml(): ?string
+    {
+        $html = parent::getSettingsHtml();
+
+        // Remove the “Show the search input” field
+        $crawler = new Crawler("<html><body>$html</body></html>");
+        /** @var DOMElement $node */
+        $node = $crawler->filter('#show-search-input-field')->getNode(0);
+        $node->remove();
+
+        return $crawler->filter('body')->first()->html();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
@@ -104,6 +130,7 @@ class Tags extends BaseRelationField
                     'elementType' => static::elementType(),
                     'id' => $this->getInputId(),
                     'describedBy' => $this->describedBy,
+                    'labelId' => $this->getLabelId(),
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,
@@ -111,10 +138,21 @@ class Tags extends BaseRelationField
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                     'allowSelfRelations' => (bool)$this->allowSelfRelations,
+                    'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }
 
         return '<p class="error">' . Craft::t('app', 'This field is not set to a valid source.') . '</p>';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function supportedViewModes(): array
+    {
+        return [
+            'list' => Craft::t('app', 'List'),
+        ];
     }
 
     /**

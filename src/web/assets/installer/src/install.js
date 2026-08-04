@@ -126,9 +126,19 @@ import './install.scss';
           }, 1000);
         } else {
           $h1.text('Install failed 😞');
-          $('<p/>', {
-            text: 'Please check your logs for more info.',
-          }).insertAfter($h1);
+          const messageHtml = response?.response?.data?.messageHtml;
+          if (messageHtml) {
+            $('<div/>', {
+              class: 'pane',
+              html: messageHtml,
+            }).insertAfter($h1);
+          } else {
+            $('<p/>', {
+              text:
+                response?.response?.data?.message ??
+                'Please check your logs for more info.',
+            }).insertAfter($h1);
+          }
         }
       },
 
@@ -173,7 +183,7 @@ import './install.scss';
           this.showInstallScreen();
         } else if (i !== 1) {
           // Give focus to the first input
-          this.$currentScreen.find('input[type=text]:first').trigger('focus');
+          this.$currentScreen.find('input[type=text]:first').focus();
         }
       },
 
@@ -205,7 +215,7 @@ import './install.scss';
                 $('#' + what).find('.buttons')
               );
 
-              for (let input in response.data.errors) {
+              for (const input in response.data.errors) {
                 if (!response.data.errors.hasOwnProperty(input)) {
                   continue;
                 }

@@ -28,7 +28,7 @@ use yii\base\Component;
 /**
  * Globals service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->getGlobals()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -85,7 +85,7 @@ class Globals extends Component
      */
     public function getAllSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getAllSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getAllSets());
     }
 
     /**
@@ -104,7 +104,7 @@ class Globals extends Component
      */
     public function getEditableSetIds(): array
     {
-        return ArrayHelper::getColumn($this->getEditableSets(), 'id');
+        return array_map(fn(GlobalSet $globalSet) => $globalSet->id, $this->getEditableSets());
     }
 
     /**
@@ -149,9 +149,7 @@ class Globals extends Component
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
             $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
-                function(GlobalSet $globalSet) use ($session): bool {
-                    return $session->checkPermission("editGlobalSet:$globalSet->uid");
-                }, true, true, false);
+                fn(GlobalSet $globalSet): bool => $session->checkPermission("editGlobalSet:$globalSet->uid"), true, true, false);
         }
 
         return $this->_editableGlobalSets[$currentSiteId];
@@ -298,7 +296,9 @@ class Globals extends Component
             ]));
         }
 
-        // Don't validate required custom fields
+        // Prevent most custom field validators
+        $globalSet->setScenario(GlobalSet::SCENARIO_SAVE_SET);
+
         if ($runValidation && !$globalSet->validate()) {
             Craft::info('Global set not saved due to validation error.', __METHOD__);
             return false;
@@ -505,7 +505,7 @@ class Globals extends Component
                 ->scalar();
 
             if ($fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId, true);
             }
 
             Craft::$app->getElements()->deleteElementById($globalSetRecord->id);

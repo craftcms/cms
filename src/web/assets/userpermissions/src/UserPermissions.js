@@ -9,12 +9,9 @@ import './user-permissions.scss';
     $allCheckboxes: null,
 
     init: function (wrapper) {
-      this.$wrapper = wrapper;
-      this.$selectAllBtn = $('.select-all', this.$wrapper);
-      this.$allCheckboxes = $(
-        'input[type=checkbox]:not(.group-permission)',
-        this.$wrapper
-      );
+      this.$wrapper = $(wrapper);
+      this.$selectAllBtn = this.$wrapper.find('.select-all');
+      this.$allCheckboxes = this.$wrapper.find('input[type=checkbox]');
 
       this.addListener(this.$selectAllBtn, 'click', 'toggleSelectAll');
       this.addListener(this.$allCheckboxes, 'click', 'toggleCheckbox');
@@ -38,10 +35,9 @@ import './user-permissions.scss';
         return;
       }
 
-      let $uls = $checkbox.parent('li').find('> ul');
       let $childrenCheckboxes = $checkbox
         .parent('li')
-        .find('> ul > li > input[type=checkbox]:not(.group-permission)');
+        .find('> ul > li > input[type=checkbox]');
 
       if ($checkbox.prop('checked')) {
         $childrenCheckboxes.prop('disabled', false);
@@ -64,11 +60,5 @@ import './user-permissions.scss';
     canSelectAll: function () {
       return !!this.$allCheckboxes.filter(':not(:checked)').length;
     },
-  });
-
-  var userPermissions = $('.user-permissions');
-
-  $.each(userPermissions, function () {
-    new Craft.UserPermissions(this);
   });
 })(jQuery);

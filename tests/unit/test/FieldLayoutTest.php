@@ -8,11 +8,8 @@
 namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
-use Craft;
-use craft\db\Query;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryWithFieldsFixture;
-use yii\base\NotSupportedException;
 
 /**
  * Unit tests for App
@@ -30,25 +27,5 @@ class FieldLayoutTest extends TestCase
                 'class' => EntryWithFieldsFixture::class,
             ],
         ];
-    }
-
-    /**
-     * @throws NotSupportedException
-     */
-    public function testFieldLayoutMatrix(): void
-    {
-        $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
-        $matrixTableName = Craft::$app->getDb()->tablePrefix . 'matrixcontent_matrixfirst';
-
-        self::assertContains($matrixTableName, $tableNames);
-
-        $matrixRows = (new Query())
-            ->select('*')->from($matrixTableName)->all();
-
-        self::assertCount(2, $matrixRows);
-
-        foreach ($matrixRows as $row) {
-            self::assertSame('Some text', $row['field_aBlock_firstSubfield_aaaaaaaa']);
-        }
     }
 }

@@ -17,6 +17,7 @@ use yii\base\Module;
  *
  * @mixin PluginTrait
  * @mixin Module
+ * @phpstan-require-extends Module
  * @property string $handle The plugin’s handle (alias of [[id]])
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -123,6 +124,16 @@ interface PluginInterface
      * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
      */
     public function getSettingsResponse(): mixed;
+
+    /**
+     * Returns a read-only version of the settings page response.
+     *
+     * This method is called when admin changes are disallowed, if [[$hasReadOnlyCpSettings]] is `true`.
+     *
+     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
+     * @since 5.6.0
+     */
+    public function getReadOnlySettingsResponse(): mixed;
 
     /**
      * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.

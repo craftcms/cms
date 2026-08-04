@@ -75,8 +75,8 @@ class ScalarTypesTest extends TestCase
     {
         $timeAsStr = (new \DateTime('now'))->format('Y-m-d H:i:s');
 
-        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
-        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
+        self::assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
+        self::assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
     }
 
     /**
@@ -122,9 +122,7 @@ class ScalarTypesTest extends TestCase
         ]);
         $resolver = $dateField->getContentGqlType()['resolve'];
         $element = $this->make(Entry::class, [
-            'getFieldValue' => function() use ($dateTime) {
-                return clone $dateTime;
-            },
+            'getFieldValue' => fn() => clone $dateTime,
         ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;
@@ -142,14 +140,14 @@ class ScalarTypesTest extends TestCase
 
         Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
-        $this->assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
+        self::assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
         Craft::$app->setTimeZone($currentTimezone);
     }
 
     /**
      * @return array[]
      */
-    public function serializationDataProvider(): array
+    public static function serializationDataProvider(): array
     {
         $now = new \DateTime();
 
@@ -185,7 +183,7 @@ class ScalarTypesTest extends TestCase
     /**
      * @return array[]
      */
-    public function parsingValueDataProvider(): array
+    public static function parsingValueDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 
@@ -211,7 +209,7 @@ class ScalarTypesTest extends TestCase
     /**
      * @return array[]
      */
-    public function parsingLiteralDataProvider(): array
+    public static function parsingLiteralDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 

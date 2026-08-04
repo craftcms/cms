@@ -10,9 +10,12 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\filters\UtilityAccess;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
+use craft\models\Volume;
+use craft\utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;
@@ -32,13 +35,28 @@ class AssetIndexesController extends Controller
     /**
      * @inheritdoc
      */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => AssetIndexes::class,
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
-        // No permission no bueno
-        $this->requirePermission('utility:asset-indexes');
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
         $this->requireAcceptsJson();
 
-        return parent::beforeAction($action);
+        return true;
     }
 
     /**
@@ -50,15 +68,20 @@ class AssetIndexesController extends Controller
     public function actionStartIndexing(): Response
     {
         $request = Craft::$app->getRequest();
-        $volumes = (array)$request->getRequiredBodyParam('volumes');
+        $volumeIds = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
         $listEmptyFolders = (bool)$request->getBodyParam('listEmptyFolders', false);
 
-        if (empty($volumes)) {
+        // Typecast volume IDs and filter out any disallowed volumes
+        $volumeIds = array_map(fn($volumeId) => (int)$volumeId, $volumeIds);
+        $allowedVolumeIds = array_map(fn(Volume $volume) => $volume->id, AssetIndexes::volumes());
+        $volumeIds = array_intersect($volumeIds, $allowedVolumeIds);
+
+        if (empty($volumeIds)) {
             return $this->asFailure(Craft::t('app', 'No volumes specified.'));
         }
 
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         $data = ['session' => $sessionData];
@@ -127,6 +150,14 @@ class AssetIndexesController extends Controller
         // If action is not required, continue with indexing
         if (!$indexingSession->actionRequired) {
             $indexingSession = $assetIndexer->processIndexSession($indexingSession);
+
+            if ($indexingSession->forceStop) {
+                $assetIndexer->stopIndexingSession($indexingSession);
+                return $this->asFailure(data: [
+                    'stop' => $sessionId,
+                    'message' => Craft::t('app', 'There was a problem indexing assets.'),
+                ]);
+            }
 
             // If action is now required, we just processed the last entry
             // To save a round-trip, just pull the session review data

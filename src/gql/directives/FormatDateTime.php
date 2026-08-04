@@ -35,12 +35,10 @@ class FormatDateTime extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::name())) {
-            return $type;
-        }
+        $typeName = static::name();
 
-        return GqlEntityRegistry::createEntity(static::name(), new self([
-            'name' => static::name(),
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new self([
+            'name' => $typeName,
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
@@ -61,6 +59,12 @@ class FormatDateTime extends Directive
                     'name' => 'locale',
                     'type' => Type::string(),
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
+                ]),
+                new FieldArgument([
+                    'name' => 'withTimeZone',
+                    'type' => Type::boolean(),
+                    'description' => 'Whether the time zone abbreviation should be appended to the formatted time.',
+                    'defaultValue' => false,
                 ]),
             ],
             'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
@@ -85,7 +89,7 @@ class FormatDateTime extends Directive
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
 
             // Is this a custom PHP date format?
-            if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
+            if (!in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
                 if (str_starts_with($format, 'icu:')) {
                     $format = substr($format, 4);
                 } else {
@@ -94,7 +98,7 @@ class FormatDateTime extends Directive
             }
 
             if (!empty($arguments['locale'])) {
-                $formatter = (new Locale($arguments['locale']))->getFormatter();
+                $formatter = Craft::$app->getI18n()->getLocaleById($arguments['locale'])->getFormatter();
             } else {
                 $formatter = Craft::$app->getFormatter();
             }
@@ -110,7 +114,7 @@ class FormatDateTime extends Directive
 
             $formatter->timeZone = $timezone;
 
-            $value = $formatter->asDatetime($value, $format);
+            $value = $formatter->asDatetime($value, $format, $arguments['withTimeZone'] ?? false);
         }
 
         return $value;

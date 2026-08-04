@@ -10,7 +10,7 @@ namespace crafttests\fixtures;
 use craft\test\fixtures\elements\EntryFixture as BaseEntryFixture;
 
 /**
- * Class EntryWithFieldsFixture
+ * Class EntryWithMatrixFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.10
@@ -25,5 +25,5 @@ class EntryWithMatrixFixture extends BaseEntryFixture
     /**
      * @inheritdoc
      */
-    public $depends = [FieldLayoutFixture::class, SectionsFixture::class, EntryTypeFixture::class, EntryFixture::class];
+    public $depends = [EntryFixture::class];
 }

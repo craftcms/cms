@@ -2,7 +2,6 @@
 
 namespace craft\base\conditions;
 
-use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -28,16 +27,40 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     private array $_values = [];
 
     /**
+     * @var bool Whether “has a value” and “is empty” operators should be available to the condition rule.
+     * @since 5.7.0
+     */
+    protected bool $includeEmptyOperators = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->includeEmptyOperators) {
+            $this->reloadOnOperatorChange = true;
+        }
+    }
+
+    /**
      * Returns the operators that should be allowed for this rule.
      *
      * @return array
      */
     protected function operators(): array
     {
-        return [
+        $operators = [
             self::OPERATOR_IN,
             self::OPERATOR_NOT_IN,
         ];
+
+        if ($this->includeEmptyOperators) {
+            array_push($operators, self::OPERATOR_NOT_EMPTY, self::OPERATOR_EMPTY);
+        }
+
+        return $operators;
     }
 
     /**
@@ -85,33 +108,21 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
-        $multiSelectId = 'multiselect';
-        $namespacedId = Craft::$app->getView()->namespaceInputId($multiSelectId);
+        if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+            return '';
+        }
 
-        $js = <<<JS
-$('#$namespacedId').selectize({
-    plugins: ['remove_button'],
-    dropdownParent: 'body',
-    onDropdownClose: () => {
-        htmx.trigger(htmx.find('#$namespacedId'), 'change');
-    },
-});
-JS;
-        Craft::$app->getView()->registerJs($js);
+        $multiSelectId = 'multiselect';
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
-            Cp::multiSelectHtml([
+            Cp::selectizeHtml([
                 'id' => $multiSelectId,
-                'class' => 'selectize flex-grow',
+                'class' => 'flex-grow',
                 'name' => 'values',
                 'values' => $this->_values,
                 'options' => $this->options(),
-                'inputAttributes' => [
-                    'style' => [
-                        'display' => 'none', // Hide it before selectize does its thing
-                    ],
-                ],
+                'multi' => true,
             ]);
     }
 
@@ -129,10 +140,17 @@ JS;
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
      * @param callable|null $normalizeValue Method for normalizing a given selected value.
-     * @return array|null
+     * @return string|array|null
      */
-    protected function paramValue(?callable $normalizeValue = null): ?array
+    protected function paramValue(?callable $normalizeValue = null): string|array|null
     {
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY])) {
+            return match ($this->operator) {
+                self::OPERATOR_NOT_EMPTY => ':notempty:',
+                self::OPERATOR_EMPTY => ':empty:',
+            };
+        }
+
         $values = [];
         foreach ($this->_values as $value) {
             if ($normalizeValue !== null) {
@@ -163,6 +181,13 @@ JS;
      */
     protected function matchValue(array|string|null $value): bool
     {
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY])) {
+            return match ($this->operator) {
+                self::OPERATOR_EMPTY => empty($value),
+                self::OPERATOR_NOT_EMPTY => !empty($value),
+            };
+        }
+        
         if (!$this->_values) {
             return true;
         }

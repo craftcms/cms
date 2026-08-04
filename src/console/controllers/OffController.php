@@ -23,7 +23,7 @@ class OffController extends BaseSystemStatusController
     /**
      * @var int|null Number of seconds the `Retry-After` HTTP header should be set to for 503 responses.
      *
-     * The `retryDuration` config setting can be used to configure a *system-wide* `Retry-After` header.
+     * The “Retry Duration” general setting can be used to configure a *system-wide* `Retry-After` header.
      *
      * ::: warning
      * The `isSystemLive` config setting takes precedence over the `system.live` project config value,

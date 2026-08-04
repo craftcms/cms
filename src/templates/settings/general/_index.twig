@@ -1,10 +1,20 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t('app') %}
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/general'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
 ] %}
 
 {# set defaults #}
@@ -18,16 +28,21 @@
 
 {% macro configWarning(setting, file) -%}
     {{ "This is being overridden by the {setting} config setting."|t('app', {
-        setting: '<a href="https://craftcms.com/docs/4.x/config/config-settings.html#'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
+        setting: '<a href="https://craftcms.com/docs/5.x/reference/config/general.html#'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
 
 {% from _self import configWarning %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
-    {{ actionInput('system-settings/save-general-settings') }}
-    {{ redirectInput('settings') }}
+    {% if not readOnly %}
+        {{ actionInput('system-settings/save-general-settings') }}
+        {{ redirectInput('settings') }}
+    {% endif %}
 
     {{ forms.autosuggestField({
         first: true,
@@ -35,7 +50,8 @@
         id: 'name',
         suggestEnvVars: true,
         name: 'name',
-        value: system.name
+        value: system.name,
+        disabled: readOnly,
     }) }}
 
     {{ forms.booleanMenuField({
@@ -46,7 +62,8 @@
         yesLabel: 'Online'|t('app'),
         noLabel: 'Offline'|t('app'),
         includeEnvVars: true,
-        value: system.live
+        value: system.live,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -57,6 +74,7 @@
         value: system.retryDuration,
         inputmode: 'numeric',
         size: 4,
+        disabled: readOnly,
     }) }}
 
     {{ forms.timeZoneField({
@@ -66,9 +84,10 @@
         name: 'timeZone',
         value: system.timeZone,
         includeEnvVars: true,
+        disabled: readOnly,
     }) }}
 
-    {% if CraftEdition == CraftPro %}
+    {% if CraftEdition >= CraftPro %}
         <hr>
 
         {% do view.registerTranslations('app', [
@@ -78,14 +97,15 @@
         {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 
         {{ forms.field({
-            label: "Login Page Logo"|t('app'),
-            instructions: "SVG file recommended. The logo will be displayed at {size} wide."|t('app', { size: '300px' })
-        }, include('settings/general/_images/logo.twig')) }}
+            label: "Site Icon"|t('app'),
+            instructions: "Square SVG file recommended. The logo will be displayed at {size} by {size}."|t('app', { size: '32px' }),
+            disabled: readOnly,
+        }, include('settings/general/_images/icon.twig', {'disabled': readOnly})) }}
 
         {{ forms.field({
-            label: "Site Icon"|t('app'),
-            instructions: "Square SVG file recommended. The logo will be displayed at {size} by {size}."|t('app', { size: '32px' })
-        }, include('settings/general/_images/icon.twig')) }}
+            label: "Login Page Logo"|t('app'),
+            instructions: "SVG file recommended. The logo will be displayed at {size} wide."|t('app', { size: '288px' }),
+        }, include('settings/general/_images/logo.twig', {'disabled': readOnly})) }}
 
         <div class="clear"></div>
     {% endif %}

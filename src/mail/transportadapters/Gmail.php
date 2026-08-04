@@ -39,12 +39,6 @@ class Gmail extends BaseTransportAdapter
     public ?string $password = null;
 
     /**
-     * @var int The timeout duration (in seconds)
-     * @deprecated in 4.3.7.
-     */
-    public int $timeout = 10;
-
-    /**
      * @inheritdoc
      */
     protected function defineBehaviors(): array
@@ -87,8 +81,22 @@ class Gmail extends BaseTransportAdapter
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings.twig', [
             'adapter' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 

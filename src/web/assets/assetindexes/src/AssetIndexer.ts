@@ -60,6 +60,7 @@ export class AssetIndexer {
   private _priorityTasks: ConcurrentTask[] = [];
   private _prunedSessionIds: number[] = [];
   private _currentlyReviewing = false;
+  private intervalAnnouncer: IntervalManagerInterface | null = null;
 
   private indexingSessions: {
     [key: number]: AssetIndexingSession;
@@ -77,6 +78,7 @@ export class AssetIndexer {
     this._maxConcurrentConnections = maxConcurrentConnections;
     this.$indexingSessionTable = $indexingSessionTable;
     this.indexingSessions = {};
+
     let reviewSessionId: number = 0;
 
     for (const sessionModel of sessions) {
@@ -101,12 +103,25 @@ export class AssetIndexer {
     }
 
     if (this._currentIndexingSession) {
+      this._createProgressAnnouncer();
+      this._startProgressAnnouncer();
       this.performIndexingStep();
     }
   }
 
   get currentIndexingSession(): number | null {
     return this._currentIndexingSession;
+  }
+
+  /**
+   * Get progress info for the current session
+   */
+  getCurrentSessionProgressInfo(): string | null {
+    if (this.currentIndexingSession !== null) {
+      const session = this.indexingSessions[this.currentIndexingSession];
+      return session.getProgressInfo();
+    }
+    return null;
   }
 
   /**
@@ -187,7 +202,7 @@ export class AssetIndexer {
     this._currentConnectionCount--;
     this._updateCurrentIndexingSession();
 
-    alert(responseData.message);
+    Craft.cp.displayError(responseData.message);
 
     if (responseData.stop) {
       this.discardIndexingSession(responseData.stop);
@@ -261,6 +276,8 @@ export class AssetIndexer {
       return;
     }
 
+    this._stopProgressAnnouncer();
+
     this._currentlyReviewing = true;
     this.pruneWaitingTasks(session.getSessionId());
     let $confirmBody = $('<div></div>');
@@ -281,7 +298,7 @@ export class AssetIndexer {
       let skippedFilesList = '';
 
       for (const skippedFile of skippedFiles) {
-        skippedFilesList += `<li>${skippedFile}</li>`;
+        skippedFilesList += `<li>${Craft.escapeHtml(skippedFile)}</li>`;
       }
 
       $confirmBody.append(`
@@ -302,7 +319,9 @@ export class AssetIndexer {
       if (missingFolders.length) {
         let missingEntries = '';
         for (const [id, uri] of missingFolders) {
-          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${uri}</label></li>`;
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="${id}"> ${Craft.escapeHtml(
+            uri
+          )}</label></li>`;
         }
 
         const translationParams = {items: 'folders'};
@@ -331,7 +350,9 @@ export class AssetIndexer {
       if (missingFiles.length) {
         let missingEntries = '';
         for (const [id, uri] of missingFiles) {
-          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${uri}</label></li>`;
+          missingEntries += `<li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="${id}"> ${Craft.escapeHtml(
+            uri
+          )}</label></li>`;
         }
 
         const translationParams = {items: 'files'};
@@ -474,6 +495,34 @@ export class AssetIndexer {
       .then((response) => this.processSuccessResponse(response))
       .catch(({response}) => this.processFailureResponse(response))
       .finally(() => cb());
+
+    // Begin making intermittent announcements
+    if (!this.intervalAnnouncer) {
+      this._createProgressAnnouncer();
+      this._startProgressAnnouncer();
+    }
+  }
+
+  private _createProgressAnnouncer(): void {
+    this.intervalAnnouncer = new Craft.IntervalManager({
+      onInterval: () => {
+        if (this.currentIndexingSession !== null) {
+          Craft.cp.announce(
+            Craft.t('app', 'Indexing assets: {progress}', {
+              progress: this.getCurrentSessionProgressInfo(),
+            })
+          );
+        }
+      },
+    });
+  }
+
+  private _stopProgressAnnouncer(): void {
+    this.intervalAnnouncer?.stop();
+  }
+
+  private _startProgressAnnouncer(): void {
+    this.intervalAnnouncer?.start();
   }
 
   public performIndexingStep(): void {
@@ -642,6 +691,10 @@ class AssetIndexingSession {
     return this.indexingSessionData.listEmptyFolders;
   }
 
+  public getProgressInfo(): string {
+    return `${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}`;
+  }
+
   /**
    * Get the remaining entry count for this sessions.
    */
@@ -678,13 +731,15 @@ class AssetIndexingSession {
         this.getSessionId() +
         '">'
     );
-    $tr.append(
-      '<td><ul><li>' +
-        Object.values(this.indexingSessionData.indexedVolumes).join(
-          '</li><li>'
-        ) +
-        '</li></ul></td>'
-    );
+    const $td = $('<td/>').appendTo($tr);
+    const $ul = $('<ul/>').appendTo($td);
+    for (const volume of Object.values(
+      this.indexingSessionData.indexedVolumes
+    )) {
+      $('<li/>', {
+        text: volume,
+      }).appendTo($ul);
+    }
     $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
 
     const $progressCell = $(
@@ -692,7 +747,10 @@ class AssetIndexingSession {
     ).css('position', 'relative');
     const progressBar = new Craft.ProgressBar(
       $progressCell.find('.progressContainer'),
-      false
+      false,
+      {
+        announceProgress: false,
+      }
     );
 
     progressBar.setItemCount(this.indexingSessionData.totalEntries);
@@ -704,9 +762,7 @@ class AssetIndexingSession {
     $progressCell.data('progressBar', progressBar);
     $progressCell
       .find('.progressContainer')
-      .append(
-        `<div class="progressInfo">${this.indexingSessionData.processedEntries} / ${this.indexingSessionData.totalEntries}</div>`
-      );
+      .append(`<div class="progressInfo">${this.getProgressInfo()}</div>`);
     $tr.append($progressCell);
 
     $tr.append('<td>' + this.getSessionStatusMessage() + '</td>');

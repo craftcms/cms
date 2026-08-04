@@ -9,16 +9,22 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\BaseFsInterface;
+use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
-use craft\enums\PeriodType;
+use craft\enums\TimePeriod;
 use craft\errors\FsException;
+use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
+use Illuminate\Support\Collection;
+use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -35,7 +41,7 @@ class Assets
     public const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
-     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     * @event SetAssetFilenameEvent The event that is triggered when defining an asset’s filename.
      */
     public const EVENT_SET_FILENAME = 'setFilename';
 
@@ -80,19 +86,19 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param BaseFsInterface $fs
      * @param Asset $asset
      * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
-    public static function generateUrl(BaseFsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
+        $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        $rootUrl = $fs->getRootUrl() ?? '';
-        $url = ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $path;
+        $rootUrl = $volume->getRootUrl() ?? '';
+        $url = $rootUrl . $path;
 
         if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
@@ -111,16 +117,22 @@ class Assets
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
-        /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
-        $v = $dateModified->getTimestamp();
+        $v = [];
+
+        $dateModified = max($asset->dateModified, $dateUpdated);
+        if ($dateModified) {
+            $v[] = $dateModified->getTimestamp();
+        }
 
         if ($asset->getHasFocalPoint()) {
             $fp = $asset->getFocalPoint();
-            $v .= ",{$fp['x']},{$fp['y']}";
+            $v[] = $fp['x'];
+            $v[] = $fp['y'];
         }
 
-        return compact('v');
+        return array_filter([
+            'v' => implode(',', $v),
+        ]);
     }
 
     /**
@@ -189,15 +201,15 @@ class Assets
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
         if ($isFilename) {
-            /** @var string $baseName */
-            $baseName = pathinfo($name, PATHINFO_FILENAME);
+            /** @var string $originalBaseName */
+            $originalBaseName = pathinfo($name, PATHINFO_FILENAME);
             /** @var string $extension */
             $extension = pathinfo($name, PATHINFO_EXTENSION);
             if ($extension !== '') {
                 $extension = '.' . $extension;
             }
         } else {
-            $baseName = $name;
+            $originalBaseName = $name;
             $extension = '';
         }
 
@@ -208,29 +220,27 @@ class Assets
             $separator = null;
         }
 
-        $baseNameSanitized = FileHelper::sanitizeFilename($baseName, [
+        $baseName = FileHelper::sanitizeFilename($originalBaseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator,
         ]);
 
-        // Give developers a chance to do their own sanitation
-        if ($isFilename && !$preventPluginModifications) {
-            $event = new SetAssetFilenameEvent([
-                'filename' => $baseNameSanitized,
-                'originalFilename' => $baseName,
-                'extension' => $extension,
-            ]);
-            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
-            $baseName = $event->filename;
-            $extension = $event->extension;
-        }
+        if ($isFilename) {
+            // Fire a 'setFilename' event
+            if (!$preventPluginModifications && Event::hasHandlers(self::class, self::EVENT_SET_FILENAME)) {
+                $event = new SetAssetFilenameEvent([
+                    'filename' => $baseName,
+                    'originalFilename' => $originalBaseName,
+                    'extension' => $extension,
+                ]);
+                Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+                $baseName = $event->filename;
+                $extension = $event->extension;
+            }
 
-        if ($isFilename && empty($baseName)) {
-            $baseName = '-';
-        }
-
-        if (!$isFilename) {
-            $baseName = $baseNameSanitized;
+            if ($baseName === '') {
+                $baseName = '-';
+            }
         }
 
         // Put them back together, but keep the full filename w/ extension from going over 255 chars
@@ -255,9 +265,9 @@ class Assets
     }
 
     /**
-     * Mirrors a folder structure on a volume.
+     * Mirrors a folder structure within a volume.
      *
-     * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
+     * @param VolumeFolder $sourceParentFolder Folder whose nested folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
      * @param array $targetTreeMap map of relative path => existing folder ID
      * @return array map of original folder ID => new folder ID
@@ -327,12 +337,12 @@ class Assets
     public static function periodList(): array
     {
         return [
-            PeriodType::Seconds => Craft::t('app', 'Seconds'),
-            PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours => Craft::t('app', 'Hours'),
-            PeriodType::Days => Craft::t('app', 'Days'),
-            PeriodType::Months => Craft::t('app', 'Months'),
-            PeriodType::Years => Craft::t('app', 'Years'),
+            TimePeriod::Seconds->value => Craft::t('app', 'Seconds'),
+            TimePeriod::Minutes->value => Craft::t('app', 'Minutes'),
+            TimePeriod::Hours->value => Craft::t('app', 'Hours'),
+            TimePeriod::Days->value => Craft::t('app', 'Days'),
+            TimePeriod::Months->value => Craft::t('app', 'Months'),
+            TimePeriod::Years->value => Craft::t('app', 'Years'),
         ];
     }
 
@@ -344,9 +354,8 @@ class Assets
      */
     public static function sortFolderTree(array &$tree): void
     {
-        ArrayHelper::multisort($tree, function($folder) {
-            return $folder->getVolume()->sortOrder;
-        });
+        /** @phpstan-ignore parameterByRef.type */
+        ArrayHelper::multisort($tree, fn($folder) => $folder->getVolume()->sortOrder);
     }
 
     /**
@@ -683,13 +692,12 @@ class Assets
             // Merge with the extraFileKinds setting
             self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
 
-            // Allow plugins to modify file kinds
-            $event = new RegisterAssetFileKindsEvent([
-                'fileKinds' => self::$_fileKinds,
-            ]);
-
-            Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
-            self::$_fileKinds = $event->fileKinds;
+            // Fire a 'registerFileKinds' event
+            if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
+                $event = new RegisterAssetFileKindsEvent(['fileKinds' => self::$_fileKinds]);
+                Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
+                self::$_fileKinds = $event->fileKinds;
+            }
 
             // Sort by label
             ArrayHelper::multisort(self::$_fileKinds, 'label');
@@ -878,9 +886,14 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0
      */
     public static function iconUrl(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         return UrlHelper::actionUrl('assets/icon', [
             'extension' => $extension,
         ]);
@@ -892,6 +905,7 @@ class Assets
      * @param string $extension
      * @return string
      * @since 4.0.0
+     * @deprecated in 4.5.0. [[iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
     public static function iconPath(string $extension): string
     {
@@ -905,24 +919,133 @@ class Assets
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
-
-        $extLength = strlen($extension);
-        if ($extLength <= 3) {
-            $textSize = '20';
-        } elseif ($extLength === 4) {
-            $textSize = '17';
-        } else {
-            if ($extLength > 5) {
-                $extension = substr($extension, 0, 4) . '…';
-            }
-            $textSize = '14';
-        }
-
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"$textSize\">" . strtoupper($extension) . '</text>';
-        $svg = str_replace('<!-- EXT -->', $textNode, $svg);
+        $svg = static::iconSvg($extension);
 
         FileHelper::writeToFile($path, $svg);
         return $path;
+    }
+
+    /**
+     * Returns the SVG contents for an asset icon with a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.5.0
+     */
+    public static function iconSvg(string $extension): string
+    {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
+
+        $extLength = strlen($extension);
+        if ($extLength <= 3) {
+            $textSize = '19';
+        } elseif ($extLength === 4) {
+            $textSize = '16';
+        } else {
+            $extension = substr($extension, 0, 3) . '…';
+            $textSize = '15';
+        }
+        $textNode = Html::tag('text', strtoupper($extension), [
+            'x' => 50,
+            'y' => 73,
+            'text-anchor' => 'middle',
+            'font-family' => 'sans-serif',
+            'fill' => 'hsl(210, 10%, 47%)',
+            'font-size' => $textSize,
+        ]);
+
+        return Html::appendToTag($svg, $textNode);
+    }
+
+    /**
+     * Returns whether the given filesystem is used to store temporary asset uploads.
+     *
+     * @param FsInterface $fs
+     * @return bool
+     */
+    public static function isTempUploadFs(FsInterface $fs): bool
+    {
+        if ($fs instanceof Temp) {
+            return true;
+        }
+
+        if (!$fs->handle) {
+            return false;
+        }
+
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        return $fs->handle === $handle;
+    }
+
+    /**
+     * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
+     * matching volume folder (if one exists).
+     *
+     * @param Volume $volume
+     * @param string|null $subpath
+     * @param ElementInterface|null $element
+     * @return array{0:string,1:VolumeFolder|null}
+     * @throws Exception
+     * @throws InvalidSubpathException
+     * @since 5.9.0
+     */
+    public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
+    {
+        $assetsService = Craft::$app->getAssets();
+        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+
+        // Are we looking for the root folder?
+        $subpath = trim($subpath ?? '', '/');
+        if ($subpath === '') {
+            return [$subpath, $rootFolder];
+        }
+
+        if (str_contains($subpath, '{')) {
+            // Prepare the path by parsing tokens and normalizing slashes.
+            try {
+                if ($element?->duplicateOf) {
+                    $element = $element->duplicateOf->getCanonical();
+                }
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+            } catch (InvalidConfigException|RuntimeError $e) {
+                throw new InvalidSubpathException($subpath, null, 0, $e);
+            }
+
+            // Did any of the tokens return null?
+            if (
+                $renderedSubpath === '' ||
+                trim($renderedSubpath, '/') != $renderedSubpath ||
+                str_contains($renderedSubpath, '//') ||
+                Collection::make(explode('/', $renderedSubpath))
+                    ->contains(fn(string $segment) => ElementHelper::isTempSlug($segment))
+            ) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            // Sanitize the subpath
+            $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
+                'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            ]), $segments);
+            $subpath = implode('/', $segments);
+        }
+
+        $folder = $assetsService->findFolder([
+            'volumeId' => $volume->id,
+            'path' => $subpath . '/',
+        ]);
+
+        return [$subpath, $folder];
     }
 }

@@ -1,0 +1,56 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div class="readable">
+  {% apply md %}
+## {{ 'Step {number}:'|t('app', {number: 1}) }} {{ 'Install an authenticator app.'|t('app') }}
+{{ 'Install an authenticator app, such as:'|t('app') }}
+
+- [Duo Mobile](https://duo.com/product/multi-factor-authentication-mfa/duo-mobile-app) ({{ 'iOS and Android'|t('app') }})
+- Google Authenticator ({{ 'iOS and Android'|t('app') }})
+- [Microsoft Authenticator](https://www.microsoft.com/en-us/security/mobile-authenticator-app) ({{ 'iOS and Android'|t('app') }})
+
+{{ 'Or use a password manager with built-in authentication support:'|t('app') }}
+
+- [1Password](https://1password.com/) ({{ 'all platforms and browsers'|t('app') }})
+- [Bitwarden](https://bitwarden.com/) ({{ 'all platforms and browsers'|t('app') }})
+
+## {{ 'Step {number}:'|t('app', {number: 2}) }} {{ 'Create a one-time password.'|t('app') }}
+{{ 'Within the app, create a new time-based one-time password (TOTP) for this site. Scan the **QR code** or enter the **setup key** below when prompted.'|t('app') }}
+  {% endapply %}
+</div>
+
+<div class="pane">
+  {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
+    {% if qrCode is defined and qrCode is not empty %}
+      <div class="field">
+        <div class="heading"><strong>{{ 'QR Code' | t('app') }}</strong></div>
+        <div id="qr-code-wrapper">
+          {{ qrCode|raw }}
+        </div>
+      </div>
+    {% endif %}
+    {% if secret is defined and secret is not empty %}
+      <div class="mt-m">
+        {{ forms.copyTextField({
+          label: 'Setup Key' | t('app'),
+          name: 'setup-key',
+          class: 'code',
+          value: secret,
+        }) }}
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+<div class="readable mt-xl">
+  {% apply md %}
+## {{ 'Step {number}:'|t('app', {number: 3}) }} {{ 'Verify with an authentication code.'|t('app') }}
+{{ 'Enter the authentication code provided by the app to verify that everything has been set up correctly.'|t('app') }}
+  {% endapply %}
+</div>
+
+<div class="pane">
+  {% include '_components/auth/methods/TOTP/form.twig' with {
+    formId: totpFormId,
+  } %}
+</div>

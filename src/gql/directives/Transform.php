@@ -43,17 +43,15 @@ class Transform extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::name())) {
-            return $type;
-        }
+        $typeName = static::name();
 
-        return GqlEntityRegistry::createEntity(static::name(), new self([
-            'name' => static::name(),
+        return GqlEntityRegistry::getOrCreate(static::name(), fn() => new self([
+            'name' => $typeName,
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
             'args' => TransformArguments::getArguments(),
-            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/4.x/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
+            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/5.x/development/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
         ]));
     }
 
@@ -78,7 +76,7 @@ class Transform extends Directive
 
         if ($value instanceof Asset) {
             $value->setTransform($transform);
-        } elseif ($value instanceof Collection) {
+        } elseif ($value instanceof Collection || is_array($value)) {
             foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
@@ -86,6 +84,16 @@ class Transform extends Directive
                 }
             }
         } elseif ($source instanceof Asset) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $allowTransform = match ($source->getMimeType()) {
+                'image/gif' => $generalConfig->transformGifs,
+                'image/svg+xml' => $generalConfig->transformSvgs,
+                default => true,
+            };
+            if (!$allowTransform) {
+                $transform = null;
+            }
+
             switch ($resolveInfo->fieldName) {
                 case 'format':
                     return $source->getFormat($transform);
@@ -94,8 +102,8 @@ class Transform extends Directive
                 case 'mimeType':
                     return $source->getMimeType($transform);
                 case 'url':
-                    $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-                    return $source->getUrl($transform, $generateNow);
+                    $immediately = $arguments['immediately'] ?? null;
+                    return $source->getUrl($transform, $immediately);
                 case 'width':
                     return $source->getWidth($transform);
             }

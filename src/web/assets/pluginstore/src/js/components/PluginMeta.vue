@@ -71,6 +71,8 @@
     <dl class="tw-mt-2">
       <install-plugin :plugin="plugin" />
 
+      <PluginRatingStat :plugin="plugin" :stats="plugin.reviewStats" />
+
       <active-installs :plugin="plugin" />
 
       <div class="tw-grid tw-grid-cols-2">
@@ -106,7 +108,43 @@
             {{ 'Compatibility' | t('app') }}
           </template>
           <template #content>
-            {{ plugin.compatibility }}
+            <div class="tw-mt-2 tw-space-y-2">
+              <div class="tw-flex tw-items-center tw-gap-2">
+                <!-- eslint-disable vue/no-v-html -->
+                <div
+                  class="tw-w-5 tw-h-5 tw-opacity-70 tw-flex tw-items-center"
+                  v-html="craftMaskIcon"
+                />
+                <!-- eslint-enable vue/no-v-html -->
+                <div>
+                  {{ plugin.compatibility }}
+                </div>
+              </div>
+
+              <template v-if="plugin.cloudTested">
+                <div class="tw-flex tw-items-center tw-gap-2">
+                  <!-- eslint-disable vue/no-v-html -->
+                  <div
+                    class="tw-w-5 tw-h-5 tw-opacity-70 tw-flex tw-items-center"
+                    v-html="cloudIcon"
+                  />
+                  <!-- eslint-enable vue/no-v-html -->
+                  <div>Tested on Craft Cloud</div>
+                </div>
+              </template>
+
+              <template v-if="plugin.supportsGql">
+                <div class="tw-flex tw-items-center tw-gap-2">
+                  <!-- eslint-disable vue/no-v-html -->
+                  <div
+                    class="tw-w-5 tw-h-5 tw-opacity-70 tw-flex tw-items-center"
+                    v-html="graphqlIcon"
+                  />
+                  <!-- eslint-enable vue/no-v-html -->
+                  <div>Supports GraphQL</div>
+                </div>
+              </template>
+            </div>
           </template>
         </meta-stat>
 
@@ -190,15 +228,28 @@
 </template>
 
 <script>
+  import craftMaskIcon from '../../images/craft-mask.svg';
+  import cloudIcon from '../../images/cloud.svg';
+  import graphqlIcon from '../../images/graphql.svg';
+
   import MetaStat from './MetaStat';
   import PluginMetaBuyButton from './PluginMetaBuyButton';
   import {mapState} from 'vuex';
   import InstallPlugin from './InstallPlugin';
   import GithubActivity from './github-activity/GithubActivity';
   import ActiveInstalls from './ActiveInstalls';
+  import PluginRatingStat from './PluginRatingStat.vue';
 
   export default {
+    data() {
+      return {
+        craftMaskIcon,
+        cloudIcon,
+        graphqlIcon,
+      };
+    },
     components: {
+      PluginRatingStat,
       InstallPlugin,
       ActiveInstalls,
       GithubActivity,
@@ -214,17 +265,24 @@
     computed: {
       ...mapState({
         categories: (state) => state.pluginStore.categories,
+        cloudIcon: (state) => state.craft.cloudIcon,
+        graphqlIcon: (state) => state.craft.graphqlIcon,
       }),
       licenseLabel() {
         switch (this.plugin.license) {
+          case 'apache-2.0':
+            return 'Apache-2.0';
           case 'craft':
             return 'Craft';
-
+          case 'gpl-2.0':
+            return 'GPL-2.0';
+          case 'gpl-3.0':
+            return 'GPL-3.0';
           case 'mit':
             return 'MIT';
-          default:
-            return null;
         }
+
+        return this.plugin.license;
       },
 
       pluginCategories() {

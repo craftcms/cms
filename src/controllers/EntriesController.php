@@ -9,18 +9,26 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\User;
+use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
+use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use Exception;
+use Illuminate\Support\Collection;
 use Throwable;
-use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -36,6 +44,16 @@ use yii\web\ServerErrorHttpException;
  */
 class EntriesController extends BaseEntriesController
 {
+    /**
+     * @since 5.9.0
+     */
+    public function actionIndex(): Response
+    {
+        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
+        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        return $this->redirect("content/$slug");
+    }
+
     /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
@@ -53,7 +71,7 @@ class EntriesController extends BaseEntriesController
             $sectionHandle = $this->request->getRequiredBodyParam('section');
         }
 
-        $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
+        $section = Craft::$app->getEntries()->getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
@@ -77,10 +95,10 @@ class EntriesController extends BaseEntriesController
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
-            if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
+            if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
-                    'baseUrl' => "entries/$section->handle/new",
+                    'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]);
             }
 
@@ -94,21 +112,28 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->authorId = $this->request->getQueryParam('authorId', $user->id);
+
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds(
+                $this->request->getQueryParam('authorIds') ??
+                $this->request->getQueryParam('authorId') ??
+                $user->id
+            );
+        }
 
         // Type
-        if (($typeHandle = $this->request->getQueryParam('type')) !== null) {
+        if (($typeHandle = $this->request->getParam('type')) !== null) {
             $type = ArrayHelper::firstWhere($entry->getAvailableEntryTypes(), 'handle', $typeHandle);
             if ($type === null) {
                 throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
             }
             $entry->typeId = $type->id;
         } else {
-            $entry->typeId = $this->request->getQueryParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
+            $entry->typeId = $this->request->getParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
         }
 
         // Status
-        if (($status = $this->request->getQueryParam('status')) !== null) {
+        if (($status = $this->request->getParam('status')) !== null) {
             $enabled = $status === 'enabled';
         } else {
             // Set the default status based on the section's settings
@@ -135,12 +160,12 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the user is allowed to create this entry
         if (!Craft::$app->getElements()->canSave($entry, $user)) {
-            throw new ForbiddenHttpException('User not authorized to save this entry.');
+            throw new ForbiddenHttpException('User not authorized to create this entry.');
         }
 
         // Title & slug
-        $entry->title = $this->request->getQueryParam('title');
-        $entry->slug = $this->request->getQueryParam('slug');
+        $entry->title = $this->request->getParam('title');
+        $entry->slug = $this->request->getParam('slug');
         if ($entry->title && !$entry->slug) {
             $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->language);
         }
@@ -148,38 +173,30 @@ class EntriesController extends BaseEntriesController
             $entry->slug = ElementHelper::tempSlug();
         }
 
-        // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
-        DateTimeHelper::pause();
-
         // Post & expiry dates
-        if (($postDate = $this->request->getQueryParam('postDate')) !== null) {
+        if (($postDate = $this->request->getParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
         }
 
-        if (($expiryDate = $this->request->getQueryParam('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->getParam('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
         }
 
         // Custom fields
         foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
-            if (($value = $this->request->getQueryParam($field->handle)) !== null) {
+            if (($value = $this->request->getParam($field->handle)) !== null) {
                 $entry->setFieldValue($field->handle, $value);
             }
         }
 
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false);
-
-        // Resume time
-        DateTimeHelper::resume();
+        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
 
         if (!$success) {
-            return $this->asModelFailure($entry, Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($entry, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
-            ]), 'entry');
+            ])), 'entry');
         }
 
         // Set its position in the structure if a before/after param was passed
@@ -202,7 +219,7 @@ class EntriesController extends BaseEntriesController
         $response = $this->asModelSuccess($entry, Craft::t('app', '{type} created.', [
             'type' => Entry::displayName(),
         ]), 'entry', array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
+            'cpEditUrl' => $this->request->getIsCpRequest() ? $editUrl : null,
         ]));
 
         if (!$this->request->getAcceptsJson()) {
@@ -231,20 +248,6 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = static::currentUser();
-        $section = $entry->getSection();
-
-        // Is this another user’s entry (and it’s not a Single)?
-        if (
-            $entry->id &&
-            !$duplicate &&
-            $entry->authorId != $currentUser->id &&
-            $section->type !== Section::TYPE_SINGLE &&
-            $entry->enabled
-        ) {
-            // Make sure they have permission to make live changes to those
-            $this->requirePermission("savePeerEntries:$section->uid");
-        }
 
         // Keep track of whether the entry was disabled as a result of duplication
         $forceDisabled = false;
@@ -272,7 +275,9 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asModelFailure(
                     $entry,
-                    Craft::t('app', 'Couldn’t duplicate entry.'),
+                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        'type' => Entry::lowerDisplayName(),
+                    ]),
                     'entry'
                 );
             } catch (Throwable $e) {
@@ -283,19 +288,10 @@ class EntriesController extends BaseEntriesController
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
 
+        $this->enforceEditEntryPermissions($entry, $duplicate);
+
         if ($forceDisabled) {
             $entry->enabled = false;
-        }
-
-        $section = $entry->getSection();
-
-        // Even more permission enforcement
-        if ($entry->enabled) {
-            if ($entry->id) {
-                $this->requirePermission("saveEntries:$section->uid");
-            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
-                $entry->enabled = false;
-            }
         }
 
         // Save the entry (finally!)
@@ -308,7 +304,7 @@ class EntriesController extends BaseEntriesController
             $lockKey = "entry:$entry->id";
             $mutex = Craft::$app->getMutex();
             if (!$mutex->acquire($lockKey, 15)) {
-                throw new Exception('Could not acquire a lock to save the entry.');
+                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
             }
         }
 
@@ -365,7 +361,7 @@ class EntriesController extends BaseEntriesController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->getIsCpRequest()) {
-                $data['elementHtml'] = Cp::elementHtml($entry);
+                $data['elementHtml'] = Cp::elementChipHtml($entry);
             }
         }
 
@@ -374,6 +370,165 @@ class EntriesController extends BaseEntriesController
             Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
             data: $data,
         );
+    }
+
+    /**
+     * Get sections that we can move selected entries to and return the list html for the modal.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.3.0
+     */
+    public function actionMoveToSectionModalData(): Response
+    {
+        $this->requireCpRequest();
+
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        $siteId = $this->request->getRequiredParam('siteId');
+        $currentSectionUid = $this->request->getRequiredParam('currentSectionUid');
+
+        // get entry types by entry IDs
+        $entryTypes = (new Query())
+            ->select(['et.id'])
+            ->from(['et' => Table::ENTRYTYPES])
+            ->leftJoin(['e' => Table::ENTRIES], '[[e.typeId]] = [[et.id]]')
+            ->where(['in', 'e.id', $entryIds])
+            ->distinct()
+            ->all();
+        $entryTypes = array_map(fn($item) => $item['id'], $entryTypes);
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        // filter all sections to those that have all the entry types we just got
+        $compatibleSections = Collection::make(Craft::$app->getEntries()->getEditableSections())
+            ->filter(function(Section $section) use ($entryTypes, $siteId, $currentSectionUid, $user) {
+                // don't allow moving to a single section
+                if ($section->type === Section::TYPE_SINGLE) {
+                    return false;
+                }
+
+                // limit to the sections available for the site we're doing this for
+                if (!isset($section->getSiteSettings()[$siteId])) {
+                    return false;
+                }
+
+                // exclude section we started this move from
+                if ($currentSectionUid !== null && $section->uid === $currentSectionUid) {
+                    return false;
+                }
+
+                // ensure person can save entries in the section we're moving to
+                if (!$user->can("saveEntries:$section->uid")) {
+                    return false;
+                }
+
+                $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
+
+                return !empty($entryTypes) && empty(array_diff($entryTypes, $sectionEntryTypes));
+            })
+            ->sortBy(fn(Section $section) => $section->getUiLabel())
+            ->all();
+
+        if (empty($compatibleSections)) {
+            $listHtml = Html::tag(
+                'p',
+                Craft::t('app', 'Couldn’t find any sections that all selected elements could be moved to.'),
+                ['class' => 'zilch']
+            );
+        } else {
+            $listHtml = '';
+            foreach ($compatibleSections as $section) {
+                $listHtml .= Cp::chipHtml($section, [
+                    'selectable' => true,
+                    'class' => 'fullwidth',
+                ]);
+            }
+        }
+
+        return $this->asJson(['listHtml' => $listHtml]);
+    }
+
+    /**
+     * Move entries to a new section.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.3.0
+     */
+    public function actionMoveToSection(): Response
+    {
+        $this->requireCpRequest();
+
+        $sectionId = $this->request->getRequiredParam('sectionId');
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        if (empty($entryIds)) {
+            throw new BadRequestHttpException('entryIds cannot be empty.');
+        }
+
+        $section = Craft::$app->getEntries()->getSectionById($sectionId);
+        if (!$section) {
+            throw new BadRequestHttpException('Cannot find the section to move the entries to.');
+        }
+
+        $this->requirePermission("saveEntries:$section->uid");
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->id($entryIds)
+            ->status(null)
+            ->drafts(null)
+            ->site('*')
+            ->unique()
+            ->all();
+
+        if (empty($entries)) {
+            throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
+        }
+
+        foreach ($entries as $entry) {
+            if (!$entry->canMove()) {
+                throw new ForbiddenHttpException('User is not authorized to perform this action.');
+            }
+        }
+
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+        $entryTypeIds = array_unique(array_map(fn(Entry $entry) => $entry->typeId, $entries));
+
+        if (!empty(array_diff($entryTypeIds, $sectionEntryTypeIds))) {
+            throw new BadRequestHttpException('Not all entries have a type supported by the target section.');
+        }
+
+        $errors = [];
+        foreach ($entries as $entry) {
+            try {
+                Craft::$app->getEntries()->moveEntryToSection($entry, $section);
+            } catch (Exception|InvalidElementException|UnsupportedSiteException $e) {
+                Craft::error('Could not delete move entry to a different section: ' . $e->getMessage(), __METHOD__);
+                $errors[] = $e->getMessage();
+            }
+        }
+
+        if (!empty($errors)) {
+            if (count($errors) === count($entries)) {
+                return $this->asFailure(Craft::t(
+                    'app',
+                    'Couldn’t move entries to the “{name}” section.',
+                    ['name' => $section->name]
+                ));
+            }
+
+            return $this->asSuccess(Craft::t(
+                'app',
+                'Some entries have been moved to the “{name}” section.',
+                ['name' => $section->name]
+            ));
+        }
+
+        return $this->asSuccess(Craft::t(
+            'app',
+            'Entries have been moved to the “{name}” section.',
+            ['name' => $section->name]
+        ));
     }
 
     /**
@@ -414,14 +569,11 @@ class EntriesController extends BaseEntriesController
             throw new NotFoundHttpException('Entry not found');
         }
 
-        $entry = new Entry();
-        $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
-
-        if ($siteId) {
-            $entry->siteId = $siteId;
-        }
-
-        return $entry;
+        // Pass the config into the constructor so they're in place for ensureBehaviors()
+        return new Entry(array_filter([
+            'sectionId' => $this->request->getRequiredBodyParam('sectionId'),
+            'siteId' => $siteId,
+        ]));
     }
 
     /**
@@ -432,14 +584,14 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author') ?? $entry->getAuthorId() ?? static::currentUser()->id,
+            'expiryDate' => $this->request->getBodyParam('expiryDate'),
+            'postDate' => $this->request->getBodyParam('postDate'),
+            'slug' => $this->request->getBodyParam('slug'),
+            'title' => $this->request->getBodyParam('title'),
+            'typeId' => $this->request->getBodyParam('typeId'),
+        ], fn($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -449,32 +601,28 @@ class EntriesController extends BaseEntriesController
             $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
-        // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: static::currentUser()->id));
-
-        if (is_array($authorId)) {
-            $authorId = $authorId[0] ?? null;
+        // Authors
+        if (empty($entry->getAuthorIds()) && !$entry->id) {
+            $entry->setAuthor(static::currentUser());
         }
-
-        $entry->authorId = $authorId;
 
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        // Set the custom field values now that everything that could affect field conditions has been set
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Is fresh?
         if ($this->request->getBodyParam('isFresh')) {
@@ -483,5 +631,56 @@ class EntriesController extends BaseEntriesController
 
         // Revision notes
         $entry->setRevisionNotes($this->request->getBodyParam('notes'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassignModal(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = $this->request->getRequiredParam('oldUserIds');
+
+        return $this->asCpModal()
+            ->action('entries/reassign')
+            ->contentHtml(fn() =>
+                Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Choose a new author'),
+                    'name' => 'newUserId',
+                    'elementType' => User::class,
+                    'criteria' => [
+                        'id' => array_map(fn($id) => "not $id", $oldUserIds),
+                    ],
+                    'single' => true,
+                ]) .
+                implode('', array_map(fn($id) => Html::hiddenInput('oldUserIds[]', $id), $oldUserIds))
+            )
+            ->submitButtonLabel(Craft::t('app', 'Reassign'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassign(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = array_map(fn($id) => (int)$id, $this->request->getRequiredParam('oldUserIds'));
+        $newUserId = (int)$this->request->getRequiredBodyParam('newUserId');
+
+        if (!$newUserId) {
+            return $this->asFailure(Craft::t('app', 'No new author selected.'));
+        }
+
+        $count = Craft::$app->getEntries()->reassignEntries($oldUserIds, $newUserId);
+
+        return $this->asSuccess(Craft::t('app', '{type} reassigned.', [
+            'type' => $count === 1 ? Entry::displayName() : Entry::pluralDisplayName(),
+        ]));
     }
 }

@@ -10,6 +10,7 @@
 })) %}
 
 {% tag 'div' with containerAttributes %}
+    {% set tabsHaveErrors = false %}
     {% tag 'div'  with {
         class: 'scrollable',
         role: 'tablist',
@@ -18,6 +19,7 @@
         },
     } %}
         {% for containerId, tab in tabs %}
+            {% set containerId = containerId|namespaceInputId %}
             {% tag 'a' with {
                 id: tab.tabId ?? "tab-#{containerId}",
                 class: (tab.selected ? ['sel'] : [])|merge(tab.class),
@@ -47,29 +49,46 @@
                                 class: 'visually-hidden',
                             }) }}
                         {% endtag %}
+                        {% set tabsHaveErrors = true %}
                     {% endif %}
                 {% endtag %}
             {% endtag %}
         {% endfor %}
     {%  endtag %}
-    {{ tag('button', {
+    {% tag 'button' with {
         type: 'button',
-        class: 'btn menubtn hidden',
+        class: 'btn menubtn hidden' ~ (tabsHaveErrors ? ' error' : ''),
         title: 'List all tabs'|t('app'),
         aria: {
             label: 'List all tabs'|t('app'),
+            controls: 'tab-menu',
         },
-    }) }}
-    <div class="menu">
-        <ul class="padded" role="listbox">
+        data: {
+            'disclosure-trigger': true,
+        }
+    } %}
+        {%- apply spaceless %}
+            {% if tabsHaveErrors %}
+                {{ tag('span', {
+                    data: {
+                        icon: 'alert',
+                    }
+                }) }}
+            {% endif %}
+        {% endapply -%}
+    {% endtag %}
+    <div id="tab-menu" class="menu menu--disclosure">
+        <ul class="padded">
             {% for containerId, tab in tabs %}
+                {% set containerId = containerId|namespaceInputId %}
                 <li>
                     {% tag 'a' with {
-                        class: tab.selected ? 'sel' : null,
+                        class: (tab.selected ? 'sel' : null) ~ ('error' in tab.class ? ' error' : null),
                         href: tab.url,
                         data: {
                             id: containerId,
                         },
+                        role: 'button'
                     } %}
                         {{ tab.label }}
                         {% if 'error' in tab.class %}

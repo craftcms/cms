@@ -1,0 +1,146 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set showResetPassword = showResetPassword ?? false %}
+{% set showRememberMeCheckbox = showRememberMeCheckbox ?? false %}
+{% set staticEmail = staticEmail ?? null %}
+
+{% set generalConfig = craft.app.config.general %}
+{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '') %}
+
+{% if generalConfig.useEmailAsUsername %}
+  {% set usernameLabel = 'Email'|t('app') %}
+  {% set usernameType = 'email' %}
+{% else %}
+  {% set usernameLabel = 'Username or Email'|t('app') %}
+  {% set usernameType = 'text' %}
+{% endif %}
+
+<div class="login-container">
+  <div class="pane secondary login-form-container">
+    {% tag 'form' with {
+      class: {
+        'login-form': true,
+        'hidden': authFormData is defined,
+      }|filter|keys,
+      method: 'post',
+      'accept-charset': 'UTF-8',
+    } %}
+      {% if staticEmail %}
+        {{ hiddenInput('username', staticEmail, {
+          class: 'login-username',
+        }) }}
+      {% else %}
+        {{ forms.textField({
+          label: usernameLabel,
+          class: 'login-username',
+          name: 'username',
+          value: username,
+          autocomplete: 'username',
+          autocapitalize: false,
+          type: usernameType,
+          inputAttributes: {
+            aria: {
+              required: 'true',
+            },
+          },
+        }) }}
+      {% endif %}
+
+      <div>
+        {{ forms.passwordField({
+          label: 'Password'|t('app'),
+          class: 'login-password',
+          name: 'password',
+          autocomplete: 'current-password',
+          inputAttributes: {
+            aria: {
+              required: 'true',
+            },
+          },
+        }) }}
+        {% if showResetPassword %}
+          <button type="button" class="btn login-forgot-password chromeless">{{ 'Forgot password?'|t('app') }}</button>
+        {% endif %}
+      </div>
+
+      {% if showRememberMeCheckbox and generalConfig.rememberedUserSessionDuration %}
+        {{ forms.checkboxField({
+          label: 'Stay signed in for {duration}'|t('app', {
+            duration: generalConfig.getRememberedUserSessionDuration()|duration,
+          }),
+          class: 'login-remember-me',
+        }) }}
+      {% endif %}
+
+      {{ forms.submitButton({
+        class: ['fullwidth', 'last'],
+        label: 'Sign in'|t('app'),
+        spinner: true,
+        busyMessage: 'Signing in'|t('app'),
+        successMessage: 'Signed in'|t('app'),
+        failureMessage: 'Sign in unsuccessful'|t('app'),
+        retryMessage: 'Try again'|t('app'),
+      }) }}
+    {% endtag %}
+
+    <div class="login-errors hidden"></div>
+
+    {% if showResetPassword %}
+      <form class="login-reset-password hidden">
+        {{ forms.textField({
+          label: usernameLabel,
+          class: 'login-username',
+          name: 'username',
+          autocomplete: 'username',
+          autocapitalize: false,
+          type: usernameType,
+          inputAttributes: {
+            aria: {
+              required: 'true',
+            },
+          },
+        }) }}
+
+        {{ forms.submitButton({
+          class: ['fullwidth', 'last'],
+          label: 'Reset password'|t('app'),
+          spinner: true,
+        }) }}
+
+        <div class="login-errors hidden"></div>
+
+        <hr>
+
+        <div class="login-alt-container">
+          {{ forms.button({
+            label: (craft.app.locale.getOrientation() == 'ltr' ? '← ' : ' →') ~
+              'Back to sign in'|t('app'),
+            class: ['login-reset-back-btn', 'chromeless'],
+            spinner: true,
+          }) }}
+        </div>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="flex alternative-login-methods hidden">
+    {{ forms.button({
+      id: 'webauthn-login',
+      class: ['login-passkey-btn', 'hidden'],
+      label: 'Sign in with a passkey'|t('app'),
+      spinner: true,
+      busyMessage: 'Signing in'|t('app'),
+      successMessage: 'Signed in'|t('app'),
+      failureMessage: 'Sign in unsuccessful'|t('app'),
+      retryMessage: 'Sign in with a passkey'|t('app'),
+    }) }}
+
+    {% if CraftEdition == CraftEnterprise %}
+      {% for provider in craft.app.sso.providers %}
+        {{ provider.getCpLoginHtml()|raw }}
+      {% endfor %}
+    {% endif %}
+
+    {% hook 'cp.login.alternative-login-methods' %}
+  </div>
+</div>

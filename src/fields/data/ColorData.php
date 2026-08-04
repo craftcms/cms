@@ -7,8 +7,9 @@
 
 namespace craft\fields\data;
 
+use craft\base\Model;
 use craft\base\Serializable;
-use yii\base\BaseObject;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Multi-select option field data class.
@@ -26,8 +27,14 @@ use yii\base\BaseObject;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since 3.0.0
  */
-class ColorData extends BaseObject implements Serializable
+class ColorData extends Model implements Serializable
 {
+    /**
+     * @var string|null The human-facing label for the color.
+     * @since 5.7.0
+     */
+    public ?string $label = null;
+
     /**
      * @var string The color’s hex value
      */
@@ -62,6 +69,21 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'blue';
+        $attributes[] = 'green';
+        $attributes[] = 'hex';
+        $attributes[] = 'luma';
+        $attributes[] = 'red';
+        $attributes[] = 'rgb';
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function serialize(): mixed
     {
         return $this->_hex;
@@ -72,6 +94,7 @@ class ColorData extends BaseObject implements Serializable
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getHex(): string
     {
         return $this->_hex;
@@ -82,6 +105,7 @@ class ColorData extends BaseObject implements Serializable
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getRgb(): string
     {
         return "rgb({$this->getRed()},{$this->getGreen()},{$this->getBlue()})";
@@ -93,6 +117,7 @@ class ColorData extends BaseObject implements Serializable
      * @return string
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getHsl(): string
     {
         [$h, $s, $l] = $this->_hsl();
@@ -102,6 +127,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getRed(): int
     {
         return hexdec(substr($this->_hex, 1, 2));
@@ -110,6 +136,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getR(): int
     {
         return $this->getRed();
@@ -118,6 +145,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getGreen(): int
     {
         return hexdec(substr($this->_hex, 3, 2));
@@ -126,6 +154,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getG(): int
     {
         return $this->getGreen();
@@ -134,6 +163,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getBlue(): int
     {
         return hexdec(substr($this->_hex, 5, 2));
@@ -142,6 +172,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return int
      */
+    #[AllowedInSandbox]
     public function getB(): int
     {
         return $this->getBlue();
@@ -151,6 +182,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getHue(): int
     {
         return $this->_hsl()[0];
@@ -160,6 +192,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getH(): int
     {
         return $this->getHue();
@@ -169,6 +202,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getSaturation(): int
     {
         return $this->_hsl()[1];
@@ -178,6 +212,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getS(): int
     {
         return $this->getSaturation();
@@ -187,6 +222,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getLightness(): int
     {
         return $this->_hsl()[2];
@@ -196,6 +232,7 @@ class ColorData extends BaseObject implements Serializable
      * @return int
      * @since 3.7.26
      */
+    #[AllowedInSandbox]
     public function getL(): int
     {
         return $this->getLightness();
@@ -254,6 +291,7 @@ class ColorData extends BaseObject implements Serializable
      * @see https://en.wikipedia.org/wiki/Luma_(video) Luma
      * @return float
      */
+    #[AllowedInSandbox]
     public function getLuma(): float
     {
         return (0.2126 * $this->getRed() + 0.7152 * $this->getGreen() + 0.0722 * $this->getBlue()) / 255;

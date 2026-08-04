@@ -30,7 +30,7 @@ class CreateDbCacheTable extends Migration
         }
 
         $this->createTable(Table::CACHE, [
-            'id' => $this->char(128)->notNull(),
+            'id' => $this->string(128)->notNull(),
             'expire' => $this->integer(11),
             'data' => $dataType,
             'PRIMARY KEY([[id]])',

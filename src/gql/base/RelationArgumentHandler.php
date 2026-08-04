@@ -27,8 +27,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param array $criteriaList
      * @return int[][]
      */
@@ -55,6 +54,16 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         }
 
         $argumentValue = $argumentList[$this->argumentName];
+
+        // Extract relatedViaField and relatedViaSite values
+        $relationParams = [];
+        foreach ($argumentValue as &$value) {
+            $relationParams[] = array_filter([
+                'field' => ArrayHelper::remove($value, 'relatedViaField'),
+                'site' => ArrayHelper::remove($value, 'relatedViaSite'),
+            ]);
+        }
+
         $hash = md5(serialize($argumentValue));
 
         // See if we have done something exactly like this already.
@@ -76,7 +85,8 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         }
 
         foreach ($idSets as $idSet) {
-            $relatedTo[] = ['element' => $idSet];
+            $relationParams = array_shift($relationParams) ?? [];
+            $relatedTo[] = ['element' => $idSet] + $relationParams;
         }
 
         $argumentList['relatedTo'] = $relatedTo;

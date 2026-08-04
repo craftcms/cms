@@ -78,22 +78,24 @@ class Tag extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $tagId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         $tag = $elementService->getElementById($tagId, TagElement::class);
 
         if (!$tag) {
-            return;
+            return false;
         }
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
-        $elementService->deleteElementById($tagId);
+        return $elementService->deleteElementById($tagId, hardDelete: $hardDelete);
     }
 }

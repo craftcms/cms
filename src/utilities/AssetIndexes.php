@@ -10,8 +10,10 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\events\ListVolumesEvent;
+use craft\helpers\App;
 use craft\helpers\Html;
 use craft\i18n\Locale;
+use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 use yii\base\Event;
 
@@ -48,9 +50,29 @@ class AssetIndexes extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): ?string
+    public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/photo.svg');
+        return 'image';
+    }
+
+    /**
+     * Returns all of the available volumes for indexing.
+     *
+     * @return Volume[]
+     * @since 4.4.6
+     */
+    public static function volumes(): array
+    {
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+
+        // Fire a 'listVolumes' event
+        if (Event::hasHandlers(self::class, self::EVENT_LIST_VOLUMES)) {
+            $event = new ListVolumesEvent(['volumes' => $volumes]);
+            Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event);
+            return $event->volumes;
+        }
+
+        return $volumes;
     }
 
     /**
@@ -58,15 +80,9 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        // Fire a 'listVolumes' event
-        $event = new ListVolumesEvent([
-            'volumes' => Craft::$app->getVolumes()->getAllVolumes(),
-        ]);
-        Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event,);
-
         $volumeOptions = [];
 
-        foreach ($event->volumes as $volume) {
+        foreach (static::volumes() as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id,
@@ -91,6 +107,7 @@ class AssetIndexes extends Utility
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
             'dateFormat' => $dateFormat,
+            'isEphemeral' => App::isEphemeral(),
         ]);
     }
 }

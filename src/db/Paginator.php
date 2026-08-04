@@ -11,6 +11,7 @@ use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
+use yii\db\ExpressionInterface;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\di\Instance;
@@ -47,9 +48,8 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection|array|string|null The DB connection to be used with the query.
+     * @var YiiConnection|array|class-string<YiiConnection>|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
-     * @phpstan-var YiiConnection|array{class:class-string<YiiConnection>}|class-string<YiiConnection>|null
      */
     public YiiConnection|array|string|null $db = null;
 
@@ -137,7 +137,7 @@ class Paginator extends BaseObject
         if ($query->offset) {
             $this->totalResults = max(0, $this->totalResults - $query->offset);
         }
-        if ($query->limit && $this->totalResults > $query->limit) {
+        if ($query->limit && !$query->limit instanceof ExpressionInterface && $this->totalResults > $query->limit) {
             $this->totalResults = $query->limit;
         }
 

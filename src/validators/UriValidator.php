@@ -28,7 +28,7 @@ class UriValidator extends Validator
      */
     protected function validateValue($value): ?array
     {
-        if (!preg_match($this->pattern, $value)) {
+        if ($value === null || !preg_match($this->pattern, $value)) {
             return [Craft::t('app', '{attribute} is not a valid URI'), []];
         }
 

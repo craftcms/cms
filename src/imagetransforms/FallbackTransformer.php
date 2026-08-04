@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Component;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
 use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
@@ -28,11 +29,20 @@ class FallbackTransformer extends Component implements ImageTransformerInterface
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $transformString = ltrim(ImageTransforms::getTransformString($imageTransform, true), '_');
+        if (match ($asset->getMimeType()) {
+            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
+            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            default => true,
+        }) {
+            $transformString = ltrim(ImageTransforms::getTransformString($imageTransform, true), '_');
+        } else {
+            $transformString = 'original';
+        }
+
+        $security = Craft::$app->getSecurity();
         return UrlHelper::actionUrl('assets/generate-fallback-transform', [
-            'assetId' => $asset->id,
-            'transform' => Craft::$app->getSecurity()->hashData($transformString),
-        ], showScriptName: false);
+            'transform' => $security->hashData(sprintf('%s,%s', $asset->id, $transformString)),
+        ] + Assets::revParams($asset), showScriptName: false);
     }
 
     /**

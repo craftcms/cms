@@ -11,10 +11,10 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\assets\inputmask\InputmaskAsset;
 use craft\web\View;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
-use yii\widgets\MaskedInputAsset;
 
 /**
  * Asset bundle for Money field
@@ -34,7 +34,7 @@ class MoneyAsset extends AssetBundle
      */
     public $depends = [
         CpAsset::class,
-        MaskedInputAsset::class,
+        InputmaskAsset::class,
     ];
 
     /**
@@ -70,11 +70,7 @@ JS;
     private function _getCurrencySubUnits(): string
     {
         $currencies = new ISOCurrencies();
-        $subUnitsByCurrencyCode = ArrayHelper::map(iterator_to_array($currencies), static function(Currency $currency) {
-            return $currency->getCode();
-        }, static function(Currency $currency) use ($currencies) {
-            return $currencies->subunitFor($currency);
-        });
+        $subUnitsByCurrencyCode = ArrayHelper::map(iterator_to_array($currencies), static fn(Currency $currency) => $currency->getCode(), static fn(Currency $currency) => $currencies->subunitFor($currency));
 
         return Json::encode($subUnitsByCurrencyCode);
     }

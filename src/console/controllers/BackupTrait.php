@@ -93,4 +93,33 @@ trait BackupTrait
         Console::outputWarning('Please backup your database before continuing.');
         return $this->confirm('Ready to continue?');
     }
+
+    /**
+     * Attempts to restore the database after a migration failure.
+     *
+     * @return bool
+     * @since 4.4.15
+     */
+    protected function restore(): bool
+    {
+        if (
+            !$this->backupPath ||
+            ($this->interactive && !$this->confirm("\nRestore the database backup?", true))
+        ) {
+            return false;
+        }
+
+        $this->stdout('Restoring the database backup ... ', Console::FG_YELLOW);
+
+        try {
+            Craft::$app->getDb()->restore($this->backupPath);
+        } catch (Throwable $e) {
+            $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
+            return false;
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return true;
+    }
 }

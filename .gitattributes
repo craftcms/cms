@@ -27,9 +27,11 @@
 /package.json export-ignore
 /packages/ export-ignore
 /phpstan.neon export-ignore
+/scripts/ export-ignore
 /src/web/assets/**/src/ export-ignore
 /stubs/ export-ignore
 /tests/ export-ignore
+/tests-playwright/ export-ignore
 /tsconfig.json export-ignore
 /webpack.config.js export-ignore
 

@@ -31,7 +31,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     init: function (elementType, settings) {
       this.elementType = elementType;
       this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
-      const headingId = 'elementSelectorModalHeading-' + Date.now();
+      const headingId =
+        'elementSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
 
       // Build the modal
       const $container = $('<div/>', {
@@ -192,22 +193,24 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       Garnish.uiLayerManager.addLayer(this.$sidebar);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.closeSidebar();
-
-        // If the focus is currently inside the sidebar, refocus the toggle
-        const $focusedEl = Garnish.getFocusedElement();
-        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
-          this.$sidebarToggleBtn.focus();
       });
     },
 
     closeSidebar: function () {
       if (!this.$sidebarToggleBtn) return;
 
+      // Remove the sidebar layer when applicable
       if (this.sidebarIsOpen()) {
         Garnish.uiLayerManager.removeLayer();
-        this.$sidebar.addClass('hidden');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       }
+
+      this.$sidebar.addClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+
+      // If the focus is currently inside the sidebar, refocus the toggle
+      const $focusedEl = Garnish.getFocusedElement();
+      if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
+        this.$sidebarToggleBtn.focus();
 
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
@@ -227,7 +230,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
-          this.elementIndex.$search.trigger('focus');
+          this.elementIndex.$search.focus();
         }
       }
 
@@ -251,12 +254,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     updateSelectBtnState: function () {
       if (this.$selectBtn) {
-        if (this.hasSelection()) {
+        if (this.shouldEnableSelectBtn()) {
           this.enableSelectBtn();
         } else {
           this.disableSelectBtn();
         }
       }
+    },
+
+    shouldEnableSelectBtn: function () {
+      return this.hasSelection();
     },
 
     hasSelection: function () {
@@ -298,7 +305,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     selectElements: function () {
       if (this.hasSelection()) {
         // TODO: This code shouldn't know about views' elementSelect objects
-        if (this.elementSelect) {
+        if (this.elementIndex.view && this.elementIndex.view.elementSelect) {
           this.elementIndex.view.elementSelect.clearMouseUpTimeout();
         }
 
@@ -341,6 +348,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.updateModalBottomPadding();
       this.updateSidebarView();
+
+      if (this.elementIndex?.searching) {
+        this.elementIndex.clearSearch(true);
+      }
+
       this.base();
     },
 
@@ -375,6 +387,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         context: 'modal',
         elementType: this.elementType,
         sources: this.settings.sources,
+        condition: this.settings.condition,
       };
 
       if (
@@ -382,6 +395,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.settings.showSiteMenu !== 'auto'
       ) {
         params.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+      }
+
+      if (this.settings.siteIds) {
+        params.siteIds = this.settings.siteIds;
       }
 
       return params;
@@ -401,7 +418,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         // Initialize the element index
         this.elementIndex = Craft.createElementIndex(
           this.elementType,
-          this.$body,
+          this.$body.children('.element-index'),
           this.getIndexSettings()
         );
 
@@ -420,12 +437,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             // Make sure the touch targets are the same
             // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
             // and make sure the element is actually selectable
-            if (
-              touchData.firstTap.target === touchData.secondTap.target &&
-              this.elementIndex.view.elementSelect.getItemIndex(
-                touchData.firstTap.target
-              ) != -1
-            ) {
+            if (touchData.firstTap.target === touchData.secondTap.target) {
               this.selectElements();
             }
           }
@@ -447,11 +459,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           storageKey: this.settings.storageKey,
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId,
+          referenceElementOwnerId: this.settings.referenceElementOwnerId,
           referenceElementSiteId: this.settings.referenceElementSiteId,
-          criteria: this.settings.criteria,
+          criteria: Object.assign({}, this.settings.criteria),
           disabledElementIds: this.settings.disabledElementIds,
           selectable: true,
           multiSelect: this.settings.multiSelect,
+          waitForDoubleClicks: true,
           buttonContainer: this.$secondaryButtons,
           onSelectionChange: () => {
             if (this.elementIndex) {
@@ -468,6 +482,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           defaultSiteId: this.settings.defaultSiteId,
           defaultSource: this.settings.defaultSource,
           defaultSourcePath: this.settings.defaultSourcePath,
+          preferStoredSource: this.settings.preferStoredSource,
           showSourcePath: this.settings.showSourcePath,
         },
         this.settings.indexSettings
@@ -482,10 +497,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       sources: null,
       condition: null,
       referenceElementId: null,
+      referenceElementOwnerId: null,
       referenceElementSiteId: null,
       criteria: null,
       multiSelect: false,
       showSiteMenu: null,
+      siteIds: null,
       disabledElementIds: [],
       disableElementsOnSelect: false,
       hideOnSelect: true,
@@ -498,6 +515,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       defaultSiteId: null,
       defaultSource: null,
       defaultSourcePath: null,
+      preferStoredSource: false,
       showSourcePath: true,
       bodyAction: 'element-selector-modals/body',
       indexSettings: {},

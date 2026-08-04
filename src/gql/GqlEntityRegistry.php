@@ -35,10 +35,16 @@ class GqlEntityRegistry
      */
     public static function prefixTypeName(string $typeName): string
     {
+        $prefix = self::getPrefix();
+
+        if (!$prefix || str_starts_with($typeName, $prefix)) {
+            return $typeName;
+        }
+
         $rootTypes = ['Query', 'Mutation', 'Subscription'];
 
         if (Craft::$app->getConfig()->getGeneral()->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
-            return self::getPrefix() . $typeName;
+            return $prefix . $typeName;
         }
 
         return $typeName;
@@ -71,19 +77,14 @@ class GqlEntityRegistry
     }
 
     /**
-     * Get a registered entity.
+     * Return a registered entity.
      *
      * @param string $entityName
      * @return mixed
      */
     public static function getEntity(string $entityName): mixed
     {
-        // Check if we need to apply the prefix.
-        $prefix = self::getPrefix();
-        if ($prefix && !str_starts_with($entityName, $prefix)) {
-            $entityName = self::prefixTypeName($entityName);
-        }
-
+        $entityName = self::prefixTypeName($entityName);
         return self::$_entities[$entityName] ?? false;
     }
 
@@ -100,12 +101,23 @@ class GqlEntityRegistry
         $entity->name = self::prefixTypeName($entity->name);
 
         self::$_entities[$entityName] = $entity;
-
-        TypeLoader::registerType($entityName, function() use ($entity) {
-            return $entity;
-        });
+        TypeLoader::registerType($entityName, fn() => $entity);
 
         return $entity;
+    }
+
+    /**
+     * Returns a registered entity, creating it in the process if it doesn’t exist yet.
+     *
+     * @param string $name
+     * @param callable $factory
+     * @return mixed
+     * @since 4.5.0
+     */
+    public static function getOrCreate(string $name, callable $factory): mixed
+    {
+        $name = self::prefixTypeName($name);
+        return self::$_entities[$name] ??= self::createEntity($name, $factory());
     }
 
     /**

@@ -8,17 +8,19 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
+use craft\enums\Color as ColorEnum;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -29,7 +31,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -37,6 +44,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public static function displayName(): string
     {
         return Craft::t('app', 'Lightswitch');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function icon(): string
+    {
+        return 'toggle-on';
     }
 
     /**
@@ -50,9 +65,34 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return 'bool';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_BOOLEAN;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function queryCondition(array $instances, mixed $value, array &$params): array
+    {
+        $valueSql = static::valueSql($instances);
+        $strict = false;
+
+        if (is_array($value) && isset($value['value'])) {
+            $strict = $value['strict'] ?? $strict;
+            $value = $value['value'];
+        }
+
+        $defaultValue = $strict ? null : $instances[0]->default;
+        return Db::parseBooleanParam($valueSql, $value, $defaultValue, Schema::TYPE_JSON);
     }
 
     /**
@@ -73,6 +113,12 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public ?string $offLabel = null;
 
     /**
+     * @var bool Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.
+     * @since 5.9.0
+     */
+    public bool $showLabelsInCards = false;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -88,15 +134,20 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function getSettingsHtml(): ?string
     {
-        return Schema::TYPE_BOOLEAN;
+        return $this->settingsHtml(false);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): ?string
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
     {
         return
             Cp::lightswitchFieldHtml([
@@ -104,6 +155,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 'id' => 'default',
                 'name' => 'default',
                 'on' => $this->default,
+                'disabled' => $readOnly,
             ]) .
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'OFF Label'),
@@ -111,6 +163,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 'id' => 'off-label',
                 'name' => 'offLabel',
                 'value' => $this->offLabel,
+                'disabled' => $readOnly,
             ]) .
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'ON Label'),
@@ -118,13 +171,51 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 'id' => 'on-label',
                 'name' => 'onLabel',
                 'value' => $this->onLabel,
+                'disabled' => $readOnly,
+            ]) .
+            Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Show ON/OFF labels in cards'),
+                'instructions' => Craft::t('app', 'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
+                'id' => 'show-labels-in-cards',
+                'name' => 'showLabelsInCards',
+                'on' => $this->showLabelsInCards,
+                'disabled' => $readOnly,
             ]);
     }
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getDefaultValue(): bool
+    {
+        return $this->default;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        return $this->_inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        return $this->_inputHtmlInternal($value, $element, true);
+    }
+
+    /**
+     * Render html for both static and interactive lightswitch field
+     *
+     * @param mixed $value
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return string
+     */
+    private function _inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
@@ -133,15 +224,16 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool)$value,
-            'onLabel' => $this->onLabel,
-            'offLabel' => $this->offLabel,
+            'onLabel' => Craft::t('site', $this->onLabel),
+            'offLabel' => Craft::t('site', $this->offLabel),
+            'disabled' => $static,
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If this is a new entry, look for a default option
         if ($value === null) {
@@ -157,20 +249,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public function getElementConditionRuleType(): array|string|null
     {
         return LightswitchFieldConditionRule::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
-    {
-        /** @var ElementQuery $query */
-        if ($value === null) {
-            return;
-        }
-
-        $column = ElementHelper::fieldColumnFromField($this);
-        $query->subQuery->andWhere(Db::parseBooleanParam("content.$column", $value, $this->default));
     }
 
     /**
@@ -209,21 +287,58 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
+        $canShowLabel = ($value && $this->onLabel) || (!$value && $this->offLabel);
+
+        if (
+            $element->viewMode === 'cards' &&
+            (!$this->showLabelsInCards || !$canShowLabel)
+        ) {
+            return Cp::statusLabelHtml([
+                'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
+                'label' => $this->getUiLabel(),
+                'icon' => $value ? 'check' : 'xmark',
+            ]);
+        }
+
+        if (($value && $this->onLabel) || (!$value && $this->offLabel)) {
+            return Cp::statusLabelHtml([
+                'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
+                'label' => Craft::t('site', $value ? $this->onLabel : $this->offLabel),
+                'icon' => $value ? 'check' : 'xmark',
+            ]);
+        }
+
         if (!$value) {
             return '';
         }
-        
-        $label = $this->onLabel ?: Craft::t('app', 'Enabled');
 
-        return Html::tag('span', '', [
-            'class' => 'checkbox-icon',
-            'role' => 'img',
-            'title' => $label,
-            'aria' => [
-                'label' => $label,
-            ],
-        ]);
+        $label = $this->onLabel ? Craft::t('site', $this->onLabel) : Craft::t('app', 'Enabled');
+
+        return
+            Html::tag('span', '', [
+                'class' => 'checkbox-icon',
+                'role' => 'img',
+                'title' => $label,
+                'aria' => [
+                    'label' => $label,
+                ],
+            ]) .
+            Html::tag('span', $this->getUiLabel(), [
+                'class' => 'checkbox-preview-label',
+            ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = 1;
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
     }
 }

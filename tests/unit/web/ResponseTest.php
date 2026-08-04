@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use craft\web\Response;
 
@@ -47,15 +48,16 @@ class ResponseTest extends TestCase
      */
     public function testSetCacheHeaders(): void
     {
+        DateTimeHelper::pause();
         $this->response->setCacheHeaders();
         $headers = $this->response->getHeaders();
-
         $cacheTime = 31536000; // 1 year
-
         self::assertSame('cache', $headers->get('Pragma'));
         self::assertSame('cache', $headers->get('Pragma'));
-        self::assertSame('max-age=31536000', $headers->get('Cache-Control'));
-        self::assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
+        self::assertSame('public, max-age=31536000', $headers->get('Cache-Control'));
+        $expectedExpires = DateTimeHelper::currentTimeStamp() + $cacheTime;
+        self::assertSame(gmdate('D, d M Y H:i:s', $expectedExpires) . ' GMT', $headers->get('Expires'));
+        DateTimeHelper::resume();
     }
 
     /**
@@ -79,13 +81,13 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
-        $this->assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
+        self::assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
     }
 
     /**
      * @return array
      */
-    public function getContentTypeDataProvider(): array
+    public static function getContentTypeDataProvider(): array
     {
         return [
             ['text/html', Response::FORMAT_HTML],
@@ -110,15 +112,15 @@ class ResponseTest extends TestCase
     /**
      * @return array
      */
-    public function testRedirectDataProvider(): array
+    public static function testRedirectDataProvider(): array
     {
         return [
             ['https://test.craftcms.test/', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
             ['https://test.craftcms.test:80/', '/'],
             ['https://test.craftcms.test:80/something-relative', '/something-relative'],
-            ['https://test.craftcms.test/actions/foo/bar', ['foo/bar']],
-            ['https://test.craftcms.test/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
+            ['https://test.craftcms.test:80/actions/foo/bar', ['foo/bar']],
+            ['https://test.craftcms.test:80/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
         ];
     }
 }

@@ -1,6 +1,6 @@
 <template>
   <a
-    :title="'Delete' | t('app')"
+    :title="deleteTitle"
     v-on:click.prevent="handleClick"
     class="delete icon"
     :class="{disabled}"
@@ -18,6 +18,10 @@
       actionUrl: String,
       before: Function,
       confirmationMessage: String,
+      deleteTitle: {
+        type: String,
+        default: Craft.escapeHtml(Craft.t('app', 'Delete')),
+      },
       disabled: Boolean,
       failMessage: String,
       id: [Number, String],
@@ -31,26 +35,23 @@
 
     computed: {
       success() {
-        var successMessage =
-          this.successMessage !== undefined
-            ? Craft.t('site', this.successMessage, {name: this.name})
-            : Craft.t('app', '“{name}” deleted.', {name: this.name});
+        var successMessage = this.successMessage
+          ? Craft.t('site', this.successMessage, {name: this.name})
+          : Craft.t('app', '“{name}” deleted.', {name: this.name});
         return Craft.escapeHtml(successMessage);
       },
       confirm() {
-        var confirmationMessage =
-          this.confirmationMessage !== undefined
-            ? Craft.t('site', this.confirmationMessage, {name: this.name})
-            : Craft.t('app', 'Are you sure you want to delete “{name}”?', {
-                name: this.name,
-              });
+        var confirmationMessage = this.confirmationMessage
+          ? Craft.t('site', this.confirmationMessage, {name: this.name})
+          : Craft.t('app', 'Are you sure you want to delete “{name}”?', {
+              name: this.name,
+            });
         return Craft.escapeHtml(confirmationMessage);
       },
       failed() {
-        var failMessage =
-          this.failMessage !== undefined
-            ? Craft.t('site', this.failMessage, {name: this.name})
-            : Craft.t('app', 'Couldn’t delete “{name}”.', {name: this.name});
+        var failMessage = this.failMessage
+          ? Craft.t('site', this.failMessage, {name: this.name})
+          : Craft.t('app', 'Couldn’t delete “{name}”.', {name: this.name});
         return Craft.escapeHtml(failMessage);
       },
     },

@@ -2,6 +2,7 @@
 
 {% set sourceOptions = field.getSourceOptions() %}
 {% set elementType = elementType ?? pluralElementType %}
+{% set upperElementType = upperElementType ?? elementType|capitalize %}
 
 {% block fieldSettings %}
     {% block sourcesField %}
@@ -15,7 +16,8 @@
                     options: sourceOptions,
                     values: field.sources,
                     showAllOption: true,
-                    errors: field.getErrors('sources')
+                    errors: field.getErrors('sources'),
+                    data: {'error-key': 'sources'},
                 }) }}
             {% else %}
                 {{ forms.selectField({
@@ -25,12 +27,13 @@
                     name: 'source',
                     options: sourceOptions,
                     value: field.source,
-                    errors: field.getErrors('source')
+                    errors: field.getErrors('source'),
+                    data: {'error-key': 'source'},
                 }) }}
             {% endif %}
         {% else %}
             {{ forms.field({
-                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app'))
+                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app')),
             }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
         {% endif %}
     {% endblock %}
@@ -40,12 +43,12 @@
     {% endblock %}
 
     {% block maintainHierarchy %}
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Maintain hierarchy'|t('app'),
             instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
             id: 'maintain-hierarchy',
             name: 'maintainHierarchy',
-            checked: field.maintainHierarchy
+            on: field.maintainHierarchy,
         }) }}
     {% endblock %}
 
@@ -61,6 +64,7 @@
                 value: field.minRelations,
                 size: 2,
                 errors: field.getErrors('minRelations'),
+                data: {'error-key': 'minRelations'},
             }) }}
 
             {{ forms.textField({
@@ -73,6 +77,7 @@
                 value: field.maxRelations,
                 size: 2,
                 errors: field.getErrors('maxRelations'),
+                data: {'error-key': 'maxRelations'},
             }) }}
         {% endif %}
 
@@ -83,8 +88,25 @@
             name: 'branchLimit',
             value: field.branchLimit,
             size: 2,
-            errors: field.getErrors('branchLimit')
+            errors: field.getErrors('branchLimit'),
+            data: {'error-key': 'branchLimit'},
         }) }}
+    {% endblock %}
+
+    {% block defaultPlacementField %}
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: upperElementType}),
+            instructions: 'Where new {type} should be placed by default in the field.'|t('app', {type: pluralElementType}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: pluralElementType}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: pluralElementType}), value: 'end'},
+            ],
+            value: field.defaultPlacement,
+            errors: field.getErrors('defaultPlacement'),
+            data: {'error-key': 'defaultPlacement'},
+        })}}
     {% endblock %}
 
     {% block viewModeField %}
@@ -93,38 +115,49 @@
 
     {% block selectionLabelField %}
         {{ forms.textField({
-            label: "Selection Label"|t('app'),
-            instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: elementType }),
+            label: '“Add” Button Label'|t('app'),
+            instructions: 'The text label for {type} selection buttons.'|t('app', { type: elementType }),
             id: 'selection-label',
             name: 'selectionLabel',
             value: field.selectionLabel,
             placeholder: field.defaultSelectionLabel(),
-            errors: field.getErrors('selectionLabel')
+            errors: field.getErrors('selectionLabel'),
+        }) }}
+    {% endblock %}
+
+    {% block showSearchInputField %}
+        {{ forms.lightswitchField({
+            fieldClass: field.allowMultipleSources ? 'hidden' : null,
+            label: 'Show the search input'|t('app'),
+            id: 'show-search-input',
+            name: 'showSearchInput',
+            on: field.showSearchInput,
+            errors: field.getErrors('showSearchInput'),
         }) }}
     {% endblock %}
 
     {% block validateRelatedElementsField %}
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Validate related {type}'|t('app', { type: pluralElementType }),
             instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
-            checked: field.validateRelatedElements
+            on: field.validateRelatedElements,
         }) }}
     {% endblock %}
 
     {% block advancedSettings %}
         <hr>
 
-        <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+        <button type="button" class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</button>
         <div id="advanced" class="hidden">
 
-            {{ forms.checkboxField({
+            {{ forms.lightswitchField({
                 label: 'Allow self relations'|t('app'),
                 instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
                 id: 'allow-self-relations',
                 name: 'allowSelfRelations',
-                checked: field.allowSelfRelations,
+                on: field.allowSelfRelations,
             }) }}
 
             {% if craft.app.getIsMultiSite() %}
@@ -132,17 +165,57 @@
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}
                 {% endblock %}
-
-                {% block localizeRelationsField %}
-                    {{ forms.checkboxField({
-                        label: 'Manage relations on a per-site basis'|t('app'),
-                        id: 'localize-relations',
-                        name: 'localizeRelations',
-                        checked: field.localizeRelations
-                    }) }}
-                {% endblock %}
             {% endif %}
 
         </div>
     {% endblock %}
 {% endblock %}
+
+{% if field.allowMultipleSources %}
+{% js %}
+(() => {
+  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
+  const $inputs = $sourcesField.find('input');
+  const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
+
+  const updateSearchField = function() {
+    let showSearchField = false;
+    if (!$sourcesField.is(':visible')) {
+      showSearchField = true;
+    } else {
+      let foundChecked = false;
+      for (let i = 0; i < $inputs.length; i++) {
+        const $input = $inputs.eq(i);
+        const val = $input.val();
+        const checked = $input.prop('checked');
+        if (val === '*') {
+          if (checked) {
+            showSearchField = false;
+            break;
+          }
+        } else if (checked) {
+          if (foundChecked) {
+            showSearchField = false;
+            break;
+          }
+          showSearchField = true;
+          foundChecked = true;
+        }
+      }
+    }
+
+    if (showSearchField) {
+      $searchField.removeClass('hidden');
+    } else {
+      $searchField.addClass('hidden');
+    }
+  };
+
+  $inputs.on('change', () => {
+    updateSearchField();
+  });
+
+  updateSearchField();
+})();
+{% endjs %}
+{% endif %}

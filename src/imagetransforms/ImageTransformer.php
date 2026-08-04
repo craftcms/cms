@@ -29,6 +29,7 @@ use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
@@ -78,18 +79,43 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getTransformFs();
+        $mimeType = $asset->getMimeType();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if (!$fs->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
         }
 
+        if ($mimeType === 'image/gif' && !$generalConfig->transformGifs) {
+            throw new NotSupportedException('GIF files shouldn’t be transformed.');
+        }
+
+        if ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) {
+            throw new NotSupportedException('SVG files shouldn’t be transformed.');
+        }
+
         $index = $this->getTransformIndex($asset, $imageTransform);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
-        // If it's a local filesystem, double-check that the transform exists
-        if ($fs instanceof LocalFsInterface && $index->fileExists && !$fs->fileExists($uri)) {
-            $index->fileExists = false;
-            $this->storeTransformIndexData($index);
+        // If it's a local filesystem, make sure `fileExists` is accurate
+        if ($fs instanceof LocalFsInterface) {
+            $fileExists = $fs->fileExists($uri);
+
+            // if the file exists on disk, make sure it's not stale
+            if (
+                $fileExists &&
+                !$index->fileExists &&
+                $imageTransform->parameterChangeTime &&
+                $fs->getDateModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
+            ) {
+                $fileExists = false;
+            }
+
+            if ($fileExists !== $index->fileExists) {
+                // Flip it and save it
+                $index->fileExists = !$index->fileExists;
+                $this->storeTransformIndexData($index);
+            }
         }
 
         if (!$index->fileExists) {
@@ -97,7 +123,15 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
                 Queue::push(new GenerateImageTransform([
                     'transformId' => $index->id,
+                    'description' => Translation::prep('app', 'Generating image transform for {file}', [
+                        'file' => $asset->getFilename(),
+                    ]),
                 ]), 2048);
+
+                // Prevent the page from being cached
+                if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+                    Craft::$app->getResponse()->setNoCacheHeaders();
+                }
 
                 // Return the temporary transform URL
                 return UrlHelper::actionUrl('assets/generate-transform', [
@@ -132,7 +166,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -192,8 +226,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         try {
             $asset->getVolume()->getTransformFs()->deleteFile($path);
-        } catch (InvalidConfigException) {
-            // nbd
+        } catch (InvalidConfigException|NotSupportedException) {
+            // NBD
         }
     }
 
@@ -366,6 +400,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $this->storeTransformIndexData($index);
         }, $image);
 
+        // Fire a 'transformImage' event
         if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
             $event = new ImageTransformerOperationEvent([
                 'asset' => $asset,
@@ -414,9 +449,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
+        $asset ??= Craft::$app->getAssets()->getAssetById($index->assetId);
 
         if (!$asset) {
             throw new ImageTransformException('Asset not found - ' . $index->assetId);
@@ -507,6 +542,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             $query->andWhere(['format' => null]);
         } else {
             $query->andWhere(['format' => $transform->format]);
+        }
+
+        if ($transform->indexId !== null) {
+            $query->andWhere(['id' => $transform->indexId]);
         }
 
         $result = $query->one();
@@ -653,8 +692,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        /** @var Raster $image */
-        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($asset->height, $asset->width));
+        if (FileHelper::isSvg($imageCopy)) {
+            $size = max($asset->width, $asset->height) ?? 1000;
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy, true, $size);
+        } else {
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy);
+        }
 
         // TODO Is this hacky? It seems hacky.
         // We're rasterizing SVG, we have to make sure that the filename change does not get lost
@@ -752,7 +797,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected function getTransformBasePath(Asset $asset): string
     {
-        $subPath = $asset->getVolume()->transformSubpath;
+        $subPath = $asset->getVolume()->getTransformSubpath();
         $subPath = StringHelper::removeRight($subPath, '/');
         return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
     }

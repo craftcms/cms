@@ -7,11 +7,11 @@
 
 namespace craft\helpers;
 
-use Composer\Repository\PlatformRepository;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use ErrorException;
+use Imagick;
 
 /**
  * Craftnet API helper.
@@ -29,10 +29,15 @@ abstract class Api
      */
     public static function headers(): array
     {
+        $request = Craft::$app->getRequest();
+        $user = Craft::$app->getUser()->getIdentity();
+        $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $pluginsService = Craft::$app->getPlugins();
+
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => Craft::$app->env,
-            'X-Craft-System' => 'craft:' . Craft::$app->getVersion() . ';' . strtolower(Craft::$app->getEditionName()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
         ];
 
         // platform
@@ -43,7 +48,6 @@ abstract class Api
         $headers['X-Craft-Platform'] = implode(',', $platform);
 
         // request info
-        $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest()) {
             if (($host = $request->getHostInfo()) !== null) {
                 $headers['X-Craft-Host'] = $host;
@@ -54,7 +58,7 @@ abstract class Api
         }
 
         // email
-        if (($user = Craft::$app->getUser()->getIdentity()) !== null) {
+        if ($user) {
             $headers['X-Craft-User-Email'] = $user->email;
         }
 
@@ -63,13 +67,12 @@ abstract class Api
             $headers['X-Craft-License'] = $licenseKey;
         } elseif (defined('CRAFT_LICENSE_KEY')) {
             $headers['X-Craft-License'] = '__INVALID__';
-        } elseif ($user) {
+        } elseif ($user && $allowAdminChanges) {
             $headers['X-Craft-License'] = '__REQUEST__';
         }
 
         // plugin info
         $pluginLicenses = [];
-        $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled'] && !$pluginInfo['private']) {
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
@@ -78,11 +81,19 @@ abstract class Api
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
-                $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
+                if ($licenseKey || $allowAdminChanges) {
+                    $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
+                }
             }
         }
         if (!empty($pluginLicenses)) {
             $headers['X-Craft-Plugin-Licenses'] = implode(',', $pluginLicenses);
+        }
+
+        // Craft Cloud
+        $craftCloudProjectId = App::env('CRAFT_CLOUD_PROJECT_ID');
+        if ($craftCloudProjectId) {
+            $headers['X-Craft-Cloud-Project-Id'] = $craftCloudProjectId;
         }
 
         return $headers;
@@ -96,18 +107,37 @@ abstract class Api
      */
     public static function platformVersions(bool $useComposerOverrides = false): array
     {
-        // Let Composer's PlatformRepository do most of the work
-        if ($useComposerOverrides) {
-            $overrides = Craft::$app->getComposer()->getConfig()['config']['platform'] ?? [];
-        } else {
-            $overrides = [];
-        }
+        $versions = [
+            'php' => App::phpVersion(),
+        ];
 
-        $repo = new PlatformRepository([], $overrides);
+        // loosely based on Composer\Repository\PlatformRepository::initialize()
+        foreach (get_loaded_extensions() as $name) {
+            if (in_array($name, ['standard', 'Core'])) {
+                continue;
+            }
 
-        $versions = [];
-        foreach ($repo->getPackages() as $package) {
-            $versions[$package->getName()] = $package->getPrettyVersion();
+            $extName = sprintf('ext-%s', str_replace(' ', '-', strtolower($name)));
+            $extVersion = phpversion($name);
+            $versions[$extName] = App::normalizeVersion(is_string($extVersion) ? $extVersion : '0');
+
+            switch ($name) {
+                case 'curl':
+                    $versions["lib-$name"] = App::normalizeVersion(curl_version()['version']);
+                    break;
+                case 'gd':
+                    $versions["lib-$name"] = App::normalizeVersion(GD_VERSION);
+                    break;
+                case 'iconv':
+                    $versions["lib-$name"] = App::normalizeVersion(ICONV_VERSION);
+                    break;
+                case 'intl':
+                    $versions['lib-icu'] = App::normalizeVersion(INTL_ICU_VERSION);
+                    break;
+                case 'imagick':
+                    $versions["lib-$name-imagemagick"] = App::normalizeVersion((new Imagick())->getVersion()['versionString']);
+                    break;
+            }
         }
 
         // Also include the Composer PHP requirement
@@ -137,7 +167,8 @@ abstract class Api
         $cache = Craft::$app->getCache();
         $duration = 31536000;
         if (isset($headers['x-craft-allow-trials'])) {
-            $cache->set('editionTestableDomain@' . Craft::$app->getRequest()->getHostName(), (bool)reset($headers['x-craft-allow-trials']), $duration);
+            $cacheKey = sprintf('editionTestableDomain@%s', Craft::$app->getRequest()->getHostName());
+            $cache->set($cacheKey, (int)reset($headers['x-craft-allow-trials']), $duration);
         }
 
         // did we just get a new license key?
@@ -180,14 +211,14 @@ abstract class Api
 
         // license info
         if (isset($headers['x-craft-license-info'])) {
-            $oldLicenseInfo = $cache->get('licenseInfo') ?: [];
+            $oldLicenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
             $licenseInfo = [];
-            $allCombinedInfo = explode(',', reset($headers['x-craft-license-info']));
+            $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
                 [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
-                if ($combinedValues === LicenseKeyStatus::Invalid) {
+                if ($combinedValues === LicenseKeyStatus::Invalid->value) {
                     // invalid license
-                    $licenseStatus = LicenseKeyStatus::Invalid;
+                    $licenseStatus = LicenseKeyStatus::Invalid->value;
                     $licenseId = $licenseEdition = $timestamp = null;
                 } else {
                     [$licenseId, $licenseEdition, $licenseStatus] = explode(';', $combinedValues, 3);
@@ -199,7 +230,7 @@ abstract class Api
                     ) {
                         $timestamp = $oldLicenseInfo[$handle]['timestamp'];
                     } else {
-                        $timestamp = time();
+                        $timestamp = DateTimeHelper::currentTimeStamp();
                     }
                 }
                 $licenseInfo[$handle] = [
@@ -209,7 +240,14 @@ abstract class Api
                     'timestamp' => $timestamp,
                 ];
             }
-            $cache->set('licenseInfo', $licenseInfo, $duration);
+
+            $cache->set(App::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
+            $request = Craft::$app->getRequest();
+            if ($request->getIsWebRequest()) {
+                $cache->set(App::CACHE_KEY_LICENSE_INFO_HOST, $request->getHostName(), $duration);
+            } else {
+                $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
+            }
         }
     }
 

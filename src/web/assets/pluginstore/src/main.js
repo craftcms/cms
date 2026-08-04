@@ -5,7 +5,13 @@
 import Vue from 'vue';
 import axios from 'axios';
 import {currency} from './js/filters/currency';
-import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft';
+import {
+  escapeHtml,
+  uppercaseFirst,
+  formatDate,
+  formatNumber,
+  t,
+} from './js/filters/craft';
 import router from './js/router';
 import store from './js/store';
 import {mapState} from 'vuex';
@@ -19,9 +25,11 @@ import CDropdown from './js/components/ui/CDropdown';
 import CIcon from './js/components/ui/CIcon';
 import CSpinner from './js/components/ui/CSpinner';
 import CTextbox from './js/components/ui/CTextbox';
+import CLightswitch from './js/components/ui/CLightswitch';
 
 Vue.filter('currency', currency);
 Vue.filter('escapeHtml', escapeHtml);
+Vue.filter('uppercaseFirst', uppercaseFirst);
 Vue.filter('formatDate', formatDate);
 Vue.filter('formatNumber', formatNumber);
 Vue.filter('t', t);
@@ -31,6 +39,7 @@ Vue.component('c-dropdown', CDropdown);
 Vue.component('c-icon', CIcon);
 Vue.component('c-spinner', CSpinner);
 Vue.component('c-textbox', CTextbox);
+Vue.component('c-lightswitch', CLightswitch);
 
 Garnish.$doc.ready(function () {
   Craft.initUiElements();
@@ -175,7 +184,9 @@ Garnish.$doc.ready(function () {
               }
             })
             .catch((error) => {
-              this.$root.displayError('Couldn’t update cart’s email.');
+              this.$root.displayError(
+                Craft.t('app', 'Couldn’t update cart’s email.')
+              );
 
               if (callback) {
                 callback();

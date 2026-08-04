@@ -23,17 +23,15 @@ comment: off
 github_checks:
   annotations: false
 ignore:
-  - 'src/web/assets'
-  - 'src/test/internal'
+  - 'bootstrap'
+  - 'lib'
   - 'src/config'
   - 'src/icons'
-  - 'src/test/internal'
   - 'src/migrations'
   - 'src/templates'
+  - 'src/test/internal'
   - 'src/translations'
   - 'src/views'
   - 'src/web/assets'
-  - 'bootstrap'
-  - 'lib'
   - 'tests'
   - 'vendor'

@@ -1,14 +1,30 @@
 {% extends '_layouts/cp.twig' %}
 
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/tags/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import '_includes/forms.twig' as forms %}
 
-{% block content %}
-    {{ actionInput('tags/save-tag-group') }}
-    {{ redirectInput('settings/tags') }}
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
-    {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('tags/save-tag-group') }}
+        {{ redirectInput('settings/tags') }}
+
+        {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
+    {% endif %}
 
     {{ forms.textField({
         first: true,
@@ -20,6 +36,7 @@
         errors: tagGroup.getErrors('name'),
         autofocus: true,
         required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -32,13 +49,15 @@
         autocapitalize: false,
         value: tagGroup.handle,
         errors: tagGroup.getErrors('handle'),
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 
     <hr>
 
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: tagGroup.getFieldLayout(),
+        disabled: readOnly,
     }) }}
 {% endblock %}
 

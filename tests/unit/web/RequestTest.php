@@ -335,8 +335,8 @@ class RequestTest extends TestCase
         self::assertNotSame($newToken, $token);
 
         // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame('1', $tokenComponents['2']);
-        self::assertSame(40, strlen($tokenComponents['0']));
+        self::assertSame('1', $tokenComponents[2]);
+        self::assertSame(40, strlen($tokenComponents[0]));
     }
 
     /**
@@ -386,12 +386,47 @@ class RequestTest extends TestCase
         self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
     }
 
+    public function testGetPreviewParam(): void
+    {
+        self::assertNull($this->request->getPreviewParam());
+        self::assertFalse($this->request->getHeaders()->has('X-Craft-Preview-Token'));
+
+        $this->request->setQueryParams(['x-craft-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->setQueryParams(['x-craft-live-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->getHeaders()->add('X-Craft-Preview-Token', 'foobar');
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->getHeaders()->remove('X-Craft-Preview-Token');
+        self::assertNull($this->request->getPreviewParam());
+    }
+
+    /**
+     * @dataProvider acceptsDataProvider
+     */
+    public function testAccepts(bool $expected, string $contentType, array $accepts): void
+    {
+        $request = $this->make(Request::class, [
+            'getAcceptableContentTypes' => array_flip($accepts),
+        ]);
+        self::assertEquals($expected, $request->accepts($contentType));
+    }
+
     /**
      * https://deviceatlas.com/blog/list-of-user-agent-strings
      *
      * @return array
      */
-    public function isMobileBrowserDataProvider(): array
+    public static function isMobileBrowserDataProvider(): array
     {
         return [
             [true, 'Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.107 Mobile Safari/537.36'],
@@ -433,7 +468,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getUserIpDataProvider(): array
+    public static function getUserIpDataProvider(): array
     {
         return [
             ['123.123.123.123', 'Client-IP', '123.123.123.123'],
@@ -453,7 +488,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getClientOsDataProvider(): array
+    public static function getClientOsDataProvider(): array
     {
         return [
             ['Linux', 'Mozilla/5.0 (Linux; Android 6.0; HTC One X10 Build/MRA58K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Mobile Safari/537.36'],
@@ -466,7 +501,7 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function getParamDataProvider(): array
+    public static function getParamDataProvider(): array
     {
         return [
             [['param1', 'param2', 'param3'], null, ['param1', 'param2', 'param3'], null],
@@ -480,12 +515,27 @@ class RequestTest extends TestCase
     /**
      * @return array
      */
-    public function checkRequestSpecialPathDataProvider(): array
+    public static function checkRequestSpecialPathDataProvider(): array
     {
         return [
             ['login'],
             ['logout'],
             ['update'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function acceptsDataProvider(): array
+    {
+        return [
+            [false, 'application/json', ['text/html']],
+            [true, 'application/json', ['application/json']],
+            [true, 'application/json', ['application/*']],
+            [true, 'text/foo-bar', ['text/*']],
+            [true, 'text/*', ['text/html']],
+            [true, 'application/*+json', ['application/graphql-response+json']],
         ];
     }
 

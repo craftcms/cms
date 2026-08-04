@@ -14,5 +14,6 @@ return [
     'cpTrigger' => 'adminustriggerus',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
+    'enableTwigSandbox' => true,
     'securityKey' => App::env('SECURITY_KEY'),
 ];

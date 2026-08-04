@@ -10,20 +10,29 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\elements\Entry;
+use craft\enums\CmsEdition;
+use craft\enums\LicenseKeyStatus;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
+use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -141,6 +150,14 @@ class Cp extends Component
     public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
+     * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the
+     * Settings page in the control panel, when admin changes are disallowed.
+     * @see EVENT_REGISTER_CP_SETTINGS
+     * @since 5.6.0
+     */
+    public const EVENT_REGISTER_READ_ONLY_CP_SETTINGS = 'registerReadOnlyCpSettings';
+
+    /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
@@ -169,7 +186,7 @@ class Cp extends Component
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
      * - `id` – The HTML `id` attribute the nav item should have (optional)
-     * - `icon` – The path to an SVG file that should be used as the nav item icon (optional)
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
      * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      * - `badgeCount` – A number that should be displayed beside the nav item when unselected
      * - `subnav` – A sub-array of subnav items
@@ -178,6 +195,8 @@ class Cp extends Component
      *
      * - `label` – The human-facing subnav item label
      * - `url` – The URL the subnav item should link to
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
+     * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      *
      * For example:
      *
@@ -203,7 +222,6 @@ class Cp extends Component
      */
     public function nav(): array
     {
-        $craftPro = Craft::$app->getEdition() === Craft::Pro;
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -211,23 +229,37 @@ class Cp extends Component
             [
                 'label' => Craft::t('app', 'Dashboard'),
                 'url' => 'dashboard',
-                'fontIcon' => 'gauge',
+                'icon' => 'gauge',
             ],
         ];
 
-        if (Craft::$app->getSections()->getTotalEditableSections()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-                'fontIcon' => 'section',
-            ];
+        if (Craft::$app->getEntries()->getTotalEditableSections()) {
+            $elementSourcesService = Craft::$app->getElementSources();
+            $entryPages = $elementSourcesService->getPages(Entry::class);
+
+            if (!empty($entryPages)) {
+                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
+                foreach ($entryPages as $page) {
+                    $navItems[] = [
+                        'label' => $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                        'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
+                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
+                    ];
+                }
+            } else {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'Entries'),
+                    'url' => 'content/entries',
+                    'icon' => 'newspaper',
+                ];
+            }
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals',
-                'fontIcon' => 'globe',
+                'icon' => 'globe',
             ];
         }
 
@@ -235,7 +267,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
                 'url' => 'categories',
-                'fontIcon' => 'tree',
+                'icon' => 'sitemap',
             ];
         }
 
@@ -243,15 +275,18 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
                 'url' => 'assets',
-                'fontIcon' => 'assets',
+                'icon' => 'image',
             ];
         }
 
-        if ($craftPro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (
+            Craft::$app->edition !== CmsEdition::Solo &&
+            Craft::$app->getUser()->checkPermission('viewUsers')
+        ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
-                'fontIcon' => 'users',
+                'icon' => 'user-group',
             ];
         }
 
@@ -269,7 +304,7 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($craftPro && $generalConfig->enableGql) {
+            if ($generalConfig->enableGql) {
                 $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
@@ -293,7 +328,7 @@ class Cp extends Component
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => '@appicons/graphql.svg',
+                    'icon' => 'graphql',
                     'subnav' => $subNavItems,
                 ];
             }
@@ -312,38 +347,36 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'fontIcon' => 'tool',
+                'icon' => 'wrench',
                 'badgeCount' => $badgeCount,
             ];
         }
 
         if ($isAdmin) {
-            if ($generalConfig->allowAdminChanges) {
-                $navItems[] = [
-                    'url' => 'settings',
-                    'label' => Craft::t('app', 'Settings'),
-                    'fontIcon' => 'settings',
-                ];
-            }
+            $navItems[] = [
+                'url' => 'settings',
+                'label' => Craft::t('app', 'Settings'),
+                'icon' => Craft::$app->getConfig()->getGeneral()->allowAdminChanges ? 'gear' : 'gear-slash',
+            ];
 
             $navItems[] = [
                 'url' => 'plugin-store',
                 'label' => Craft::t('app', 'Plugin Store'),
-                'fontIcon' => 'plugin',
+                'icon' => 'plug',
             ];
         }
 
-        // Allow plugins to modify the nav
-        $event = new RegisterCpNavItemsEvent([
-            'navItems' => $navItems,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        $navItems = $event->navItems;
+        // Fire a 'registerCpNavItems' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
+            $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
+            $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+            $navItems = $event->navItems;
+        }
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path === 'myaccount') {
+        if ($path === 'myaccount' || str_starts_with($path, 'myaccount/')) {
             $path = 'users';
         }
 
@@ -352,17 +385,20 @@ class Cp extends Component
         foreach ($navItems as &$item) {
             if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
                 $foundSelectedItem = true;
+
+                // Modify aria-current value for exact page vs. subpages
+                $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
             } else {
                 $item['sel'] = false;
+            }
+
+            if (!isset($item['subnav'])) {
                 $item['subnav'] = false;
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', StringHelper::toAscii(str_replace('/', '-', $item['url'])));
             }
 
             $item['url'] = UrlHelper::url($item['url']);
@@ -386,72 +422,82 @@ class Cp extends Component
      */
     public function settings(): array
     {
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@appicons/sliders.svg',
+            'iconMask' => '@app/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => '@appicons/world.svg',
+            'iconMask' => sprintf('@app/icons/light/%s.svg', CpHelper::earthIcon()),
             'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@appicons/routes.svg',
+                'iconMask' => '@app/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@appicons/users.svg',
+            'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
+        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $settings[$label]['addresses'] = [
+                'iconMask' => '@app/icons/light/map-location.svg',
+                'label' => Craft::t('app', 'Addresses'),
+            ];
+        }
         $settings[$label]['email'] = [
-            'iconMask' => '@appicons/envelope.svg',
+            'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@appicons/plugin.svg',
+            'iconMask' => '@app/icons/light/plug.svg',
             'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
-        $settings[$label]['fields'] = [
-            'iconMask' => '@appicons/field.svg',
-            'label' => Craft::t('app', 'Fields'),
-        ];
         $settings[$label]['sections'] = [
-            'iconMask' => '@appicons/newspaper.svg',
+            'iconMask' => '@app/icons/light/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
+        $settings[$label]['entry-types'] = [
+            'iconMask' => '@app/icons/light/files.svg',
+            'label' => Craft::t('app', 'Entry Types'),
+        ];
+        $settings[$label]['fields'] = [
+            'iconMask' => '@app/icons/light/pen-to-square.svg',
+            'label' => Craft::t('app', 'Fields'),
+        ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@appicons/globe.svg',
+            'iconMask' => '@app/icons/light/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@appicons/tree.svg',
+            'iconMask' => '@app/icons/light/sitemap.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@appicons/tags.svg',
+            'iconMask' => '@app/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Media');
 
-        $settings[$label]['filesystems'] = [
-            'iconMask' => '@appicons/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
-        ];
-
         $settings[$label]['assets'] = [
-            'iconMask' => '@appicons/photo.svg',
+            'iconMask' => '@app/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
+        ];
+        $settings[$label]['filesystems'] = [
+            'iconMask' => '@app/icons/light/folder-open.svg',
+            'label' => Craft::t('app', 'Filesystems'),
         ];
 
         $label = Craft::t('app', 'Plugins');
@@ -459,7 +505,7 @@ class Cp extends Component
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($plugin->hasCpSettings) {
+            if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
@@ -468,13 +514,15 @@ class Cp extends Component
             }
         }
 
-        // Allow plugins to modify the settings
-        $event = new RegisterCpSettingsEvent([
-            'settings' => $settings,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+        // Fire a 'registerCpSettings' event
+        $eventName = $readOnly ? self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS : self::EVENT_REGISTER_CP_SETTINGS;
+        if ($this->hasEventHandlers($eventName)) {
+            $event = new RegisterCpSettingsEvent(['settings' => $settings]);
+            $this->trigger($eventName, $event);
+            return $event->settings;
+        }
 
-        return $event->settings;
+        return $settings;
     }
 
     /**
@@ -485,7 +533,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get('licenseInfo') !== false);
+        return (Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) !== false);
     }
 
     /**
@@ -496,6 +544,67 @@ class Cp extends Component
     public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+    }
+
+    /**
+     * Returns info about the active trials.
+     *
+     * @return array|null
+     * @internal
+     */
+    public function trialInfo(): ?array
+    {
+        $issues = Collection::make(App::licensingIssues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]));
+
+        if ($issues->isEmpty()) {
+            return null;
+        }
+
+        $cmsIssues = $issues->filter(fn($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
+        $pluginEditionIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-edition');
+        $pluginRenewalIssues = $issues->filter(fn($issue) => $issue[2]['type'] === 'plugin-renewal');
+
+        $names = $cmsIssues->map(fn($issue) => $issue[0])->all();
+        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
+            /** @var Collection $group */
+            $count = $group->count();
+            if ($count === 1) {
+                $names[] = $group->first()[0];
+            } elseif ($count !== 0) {
+                if ($group->first()[2]['type'] === 'plugin-edition') {
+                    $name = Craft::t('app', '{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
+                        'count' => $count,
+                    ]);
+                } else {
+                    $name = Craft::t('app', '{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
+                        'count' => $count,
+                    ]);
+                }
+                if (empty($names)) {
+                    $name = ucfirst($name);
+                }
+                $names[] = $name;
+            }
+        }
+
+        $message = Craft::t('app', '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
+            'names' => Inflector::sentence($names),
+            'total' => $issues->count(),
+        ]);
+
+        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
+            'items' => $issues->map(fn($issue) => $issue[2])->all(),
+        ]);
+
+        return [
+            'message' => $message,
+            'cartUrl' => $cartUrl,
+        ];
     }
 
     /**
@@ -538,6 +647,11 @@ class Cp extends Component
         if ($includeAliases) {
             $aliasSuggestions = [];
             foreach (Craft::$aliases as $alias => $path) {
+                // Don't ever suggest @web
+                if ($alias === '@web' || str_starts_with($alias, '@web/')) {
+                    continue;
+                }
+
                 if (is_array($path)) {
                     if (
                         isset($path[$alias]) &&
@@ -597,13 +711,11 @@ class Cp extends Component
                     $data['hint'] = $security->redactIfSensitive($var, Craft::getAlias($value, false));
                 }
 
-                $options[] = [
+                $options[] = array_filter([
                     'label' => "$$var",
                     'value' => "$$var",
-                    'data' => [
-                        'data' => !empty($data) ? $data : false,
-                    ],
-                ];
+                    'data' => !empty($data) ? $data : null,
+                ]);
             }
         }
 
@@ -634,9 +746,51 @@ class Cp extends Component
                     'label' => "$$var",
                     'value' => "$$var",
                     'data' => [
-                        'data' => [
-                            'boolean' => $booleanValue,
-                        ],
+                        'boolean' => $booleanValue ? '1' : '0',
+                    ],
+                ];
+            }
+        }
+
+        return $this->_envOptions($options);
+    }
+
+    /**
+     * Returns environment variable options for a language menu.
+     *
+     * @param bool $appOnly Whether to limit the env options to those that match available app locales
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageEnvOptions(bool $appOnly = false): array
+    {
+        $options = [];
+        if ($appOnly) {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+        } else {
+            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+        }
+
+        foreach (array_keys($_SERVER) as $var) {
+            if (!is_string($var)) {
+                continue;
+            }
+            $value = App::env($var);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $languageValue = null;
+            if (in_array($value, $allLanguages, true)) {
+                $languageValue = $value;
+            }
+
+            if ($languageValue !== null) {
+                $options[] = [
+                    'label' => "$$var",
+                    'value' => "$$var",
+                    'data' => [
+                        'hint' => $languageValue,
                     ],
                 ];
             }
@@ -664,24 +818,25 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
+     * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
      * @return array
      * @since 3.7.0
      */
-    public function getTimeZoneOptions(): array
+    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $utc = new DateTime();
+        $utc = new DateTimeZone('UTC');
+        $offsetDate = $offsetDate ? (clone $offsetDate)->setTimezone($utc) : DateTimeHelper::now($utc);
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
-            $abbr = $transition[0]['abbr'];
+            $abbr = DateTimeHelper::timeZoneAbbreviation($timezone, $offsetDate);
 
-            $offset = round($timezone->getOffset($utc) / 60);
+            $offset = round($timezone->getOffset($offsetDate) / 60);
 
             if ($offset) {
                 $hour = floor($offset / 60);
@@ -706,16 +861,70 @@ class Cp extends Component
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = [
+            $options[] = array_filter([
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => [
-                    'data' => !empty($data) ? $data : false,
-                ],
-            ];
+                'data' => !empty($data) ? $data : null,
+            ]);
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns all known language options for a language input.
+     *
+     * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
+     * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
+     * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
+     * @return array
+     * @since 5.0.0
+     */
+    public function getLanguageOptions(
+        bool $showLocaleIds = false,
+        bool $showLocalizedNames = false,
+        bool $appLocales = false,
+    ): array {
+        $options = [];
+
+        $languageId = Craft::$app->getLocale()->getLanguageID();
+
+        if ($appLocales) {
+            $allLocales = Craft::$app->getI18n()->getAppLocales();
+        } else {
+            $allLocales = Craft::$app->getI18n()->getAllLocales();
+        }
+
+        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+
+        foreach ($allLocales as $locale) {
+            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
+            $option = [
+                'label' => $locale->getDisplayName(Craft::$app->language),
+                'value' => $locale->id,
+                'data' => [
+                    'data' => [
+                        'keywords' => $name,
+                    ],
+                ],
+            ];
+
+            $hints = [];
+            if ($showLocaleIds) {
+                $hints[] = $locale->id;
+            }
+            if ($showLocalizedNames) {
+                $hints[] = $name;
+                $option['data']['data']['hintLang'] = $locale->id;
+            }
+            if (!empty($hints)) {
+                $option['data']['data']['hint'] = implode(', ', $hints);
+            }
+
+            $options[] = $option;
+        }
 
         return $options;
     }
@@ -728,14 +937,14 @@ class Cp extends Component
      */
     public function getFsOptions(): array
     {
-        $options = array_map(fn(FsInterface $fs) => [
-            'label' => $fs->name,
-            'value' => $fs->handle,
-        ], Craft::$app->getFs()->getAllFilesystems());
-
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
+            ->map(fn(FsInterface $fs) => [
+                'label' => Craft::t('site', $fs->name),
+                'value' => $fs->handle,
+            ])
+            ->sortBy(fn(array $option) => $option['label'])
+            ->all();
     }
 
     /**
@@ -878,11 +1087,16 @@ class Cp extends Component
      */
     public function prepFormActions(?array $formActions): ?array
     {
-        $event = new FormActionsEvent([
-            'formActions' => $formActions ?? [],
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
-        return $event->formActions ?: null;
+        // Fire a 'registerFormActions' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FORM_ACTIONS)) {
+            $event = new FormActionsEvent([
+                'formActions' => $formActions ?? [],
+            ]);
+            $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+            return $event->formActions ?: null;
+        }
+
+        return $formActions;
     }
 
     /**
@@ -907,6 +1121,7 @@ class Cp extends Component
      * @param array $config
      * @return string
      * @since 4.0.0
+     * @deprecated in 5.5.0. The `fieldLayoutDesigner()` global CP function should be used instead.
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {

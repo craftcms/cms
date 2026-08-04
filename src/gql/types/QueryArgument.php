@@ -45,7 +45,7 @@ class QueryArgument extends ScalarType implements SingularTypeInterface
      */
     public static function getType(): QueryArgument
     {
-        return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
+        return GqlEntityRegistry::getOrCreate(self::getName(), fn() => new self());
     }
 
     /**

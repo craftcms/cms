@@ -15,7 +15,8 @@ use Twig\Node\Node;
 use Twig\Template;
 
 /**
- * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to [[TemplateHelper::attribute()]] rather than twig_get_attribute().
+ * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to
+ * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -26,13 +27,12 @@ class GetAttrNode extends GetAttrExpression
      * @param array $nodes An array of named nodes
      * @param array $attributes An array of attributes (should not be nodes)
      * @param int $lineno The line number
-     * @param string|null $tag The tag name associated with the Node
      * @noinspection PhpMissingParentConstructorInspection
      */
-    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, ?string $tag = null)
+    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0)
     {
         // Skip parent::__construct()
-        Node::__construct($nodes, $attributes, $lineno, $tag);
+        Node::__construct($nodes, $attributes, $lineno);
     }
 
     /**
@@ -40,13 +40,17 @@ class GetAttrNode extends GetAttrExpression
      */
     public function compile(Compiler $compiler): void
     {
+        // The following code is based on GetAttrExpression::compile().
+        // Differences noted below with `DIFF` comments.
+
         $env = $compiler->getEnvironment();
+        $arrayAccessSandbox = false;
 
         // optimize array calls
         if (
             $this->getAttribute('optimizable')
             && (!$env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
-            && !$this->getAttribute('is_defined_test')
+            && !$this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
             && Template::ARRAY_CALL === $this->getAttribute('type')
         ) {
             $var = '$' . $compiler->getVarName();
@@ -54,60 +58,129 @@ class GetAttrNode extends GetAttrExpression
                 ->raw('((' . $var . ' = ')
                 ->subcompile($this->getNode('node'))
                 ->raw(') && is_array(')
-                ->raw($var)
+                ->raw($var);
+
+            if (!$env->hasExtension(SandboxExtension::class)) {
+                $compiler
+                    ->raw(') || ')
+                    ->raw($var)
+                    ->raw(' instanceof ArrayAccess ? (')
+                    ->raw($var)
+                    ->raw('[(string)') // DIFF: `(string)` added
+                    ->subcompile($this->getNode('attribute'))
+                    ->raw('] ?? null) : null)')
+                ;
+
+                return;
+            }
+
+            $arrayAccessSandbox = true;
+
+            $compiler
                 ->raw(') || ')
                 ->raw($var)
-                ->raw(' instanceof ArrayAccess ? (')
+                ->raw(' instanceof ArrayAccess && in_array(')
+                ->raw($var . '::class')
+                ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
-                ->raw('[')
+                ->raw('[(string)') // DIFF: `(string)` added
                 ->subcompile($this->getNode('attribute'))
-                ->raw('] ?? null) : null)');
-
-            return;
+                ->raw('] ?? null) : ')
+            ;
         }
-
-        // This is the only line that should be different from GetAttrExpression::compile()
-        $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
 
         if ($this->getAttribute('ignore_strict_check')) {
             $this->getNode('node')->setAttribute('ignore_strict_check', true);
         }
 
-        $compiler->subcompile($this->getNode('node'));
+        // DIFF: null-safe (`?.`) short-circuit support, ported from GetAttrExpression::compile()
+        $nullSafe = $this->getAttribute('null_safe');
 
-        $compiler->raw(', ')->subcompile($this->getNode('attribute'));
-
-        // only generate optional arguments when needed (to make generated code more readable)
-        $needFifth = $env->hasExtension(SandboxExtension::class);
-        $needFourth = $needFifth || $this->getAttribute('ignore_strict_check');
-        $needThird = $needFourth || $this->getAttribute('is_defined_test');
-        $needSecond = $needThird || Template::ANY_CALL !== $this->getAttribute('type');
-        $needFirst = $needSecond || $this->hasNode('arguments');
-
-        if ($needFirst) {
-            if ($this->hasNode('arguments')) {
-                $compiler->raw(', ')->subcompile($this->getNode('arguments'));
-            } else {
-                $compiler->raw(', []');
+        if (null === $nullSafeNode = $nullSafe ? $this : null) {
+            $node = $this->getNode('node');
+            while ($node instanceof self) {
+                if ($node->getAttribute('null_safe')) {
+                    $nullSafeNode = $node;
+                    break;
+                }
+                $node = $node->getNode('node');
             }
         }
 
-        if ($needSecond) {
-            $compiler->raw(', ')->repr($this->getAttribute('type'));
+        $isShortCircuited = false;
+        if (null !== $nullSafeNode && !$nullSafeNode->isShortCircuited()) {
+            $compiler
+                ->raw('((null === (' . $nullSafeNode->getVarName($compiler) . ' = ')
+                ->subcompile($nullSafeNode->getNode('node'))
+                ->raw(')) ? null : ');
+
+            $nullSafeNode->markAsShortCircuited();
+            $isShortCircuited = true;
         }
 
-        if ($needThird) {
-            $compiler->raw(', ')->repr($this->getAttribute('is_defined_test'));
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
+        $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
+
+        if ($nullSafe) {
+            $compiler->raw($this->getVarName($compiler));
+        } else {
+            $compiler->subcompile($this->getNode('node'));
         }
 
-        if ($needFourth) {
-            $compiler->raw(', ')->repr($this->getAttribute('ignore_strict_check'));
+        $compiler
+            ->raw(', ')
+            ->subcompile($this->getNode('attribute'))
+        ;
+
+        if ($this->hasNode('arguments')) {
+            $compiler->raw(', ')->subcompile($this->getNode('arguments'));
+        } else {
+            $compiler->raw(', []');
         }
 
-        if ($needFifth) {
-            $compiler->raw(', ')->repr($env->hasExtension(SandboxExtension::class));
+        $compiler->raw(', ')
+            ->repr($this->getAttribute('type'))
+            ->raw(', ')->repr($this->isDefinedTestEnabled()) // DIFF: $this->definedTest is private
+            ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
+            ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
+            ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
+            ->raw(')')
+        ;
+
+        if ($arrayAccessSandbox) {
+            $compiler->raw(')');
         }
 
-        $compiler->raw(')');
+        if ($isShortCircuited) {
+            $compiler->raw(')');
+        }
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function isShortCircuited(): bool
+    {
+        return $this->getAttribute('is_short_circuited');
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function markAsShortCircuited(): void
+    {
+        $this->setAttribute('is_short_circuited', true);
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function getVarName(Compiler $compiler): string
+    {
+        if (null === $this->getAttribute('var_name')) {
+            $this->setAttribute('var_name', $compiler->getVarName());
+        }
+
+        return '$' . $this->getAttribute('var_name');
     }
 }

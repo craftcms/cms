@@ -22,13 +22,15 @@ use yii\web\Session;
  * @mixin Target
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.23
+ * @deprecated in 5.8.0. Use `craft\log\MonologTarget` instead.
+ * @phpstan-ignore trait.unused
  */
 trait LogTargetTrait
 {
     /**
      * @var bool Whether the user IP should be included in the default log prefix.
-     * @since 3.0.25
      * @see Target::$prefix
+     * @since 3.0.25
      */
     public bool $includeUserIp = false;
 

@@ -297,12 +297,12 @@ class SoftDeleteQueryBehavior extends Behavior
             $alias = array_keys($fromTables)[0];
 
             foreach ($condition as $attribute => $value) {
-                if (is_numeric($attribute) || strpos($attribute, '.') !== false) {
+                if (is_numeric($attribute) || str_contains($attribute, '.')) {
                     continue;
                 }
 
                 unset($condition[$attribute]);
-                if (strpos($attribute, '[[') === false) {
+                if (!str_contains($attribute, '[[')) {
                     $attribute = '[[' . $attribute . ']]';
                 }
                 $attribute = $alias . '.' . $attribute;

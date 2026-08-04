@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
@@ -48,6 +49,9 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         $config->set('Attr.DefaultImageAlt', '');
         $config->set('Attr.DefaultInvalidImageAlt', '');
 
+        // allow HTML5 ID attributes by default
+        $config->set('Attr.ID.HTML5', true);
+
         // Add support for some HTML5 elements
         // see https://github.com/mewebstudio/Purifier/issues/32#issuecomment-182502361
         // see https://gist.github.com/lluchs/3303693
@@ -78,8 +82,13 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             // https://github.com/ezyang/htmlpurifier/issues/152#issuecomment-414192516
             $def->addAttribute('a', 'download', 'URI');
 
+            // https://github.com/craftcms/ckeditor/issues/80
+            $def->addAttribute('div', 'data-oembed-url',  new VideoEmbedUrlDef());
+
             $def->addElement('oembed', 'Block', 'Inline', 'Common');
             $def->addAttribute('oembed', 'url', new VideoEmbedUrlDef());
+
+            $def->addAttribute('a', 'rel', new RelAttrLinkTypeDef('rel'));
         }
     }
 }

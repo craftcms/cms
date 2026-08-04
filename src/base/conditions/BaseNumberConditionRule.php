@@ -27,12 +27,19 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     public string $maxValue = '';
 
     /**
+     * @var int|float|null The `step` value the input should have.
+     * @since 5.2.2
+     */
+    public int|float|null $step = 1;
+
+    /**
      * @inheritdoc
      */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
             'maxValue' => $this->maxValue,
+            'step' => $this->step,
         ]);
     }
 
@@ -51,11 +58,13 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             self::OPERATOR_BETWEEN,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
+            self::OPERATOR_IN,
+            self::OPERATOR_NOT_IN,
         ];
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected function operatorLabel(string $operator): string
     {
@@ -80,7 +89,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['maxValue'], 'safe'],
+            [['maxValue', 'step'], 'safe'],
         ]);
     }
 
@@ -121,7 +130,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * @inheritdoc
      */
-    protected function paramValue(): ?string
+    protected function paramValue(): string|array|null
     {
         if ($this->operator === self::OPERATOR_BETWEEN) {
             if (empty($this->value) && empty($this->maxValue)) {
@@ -172,7 +181,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     protected function inputOptions(): array
     {
         return array_merge(parent::inputOptions(), [
-            'step' => '1',
+            'step' => $this->step ?? 'any',
         ]);
     }
 }
