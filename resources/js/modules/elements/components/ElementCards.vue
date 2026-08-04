@@ -49,8 +49,13 @@
 
   // Folder cards (asset index) navigate into the folder on click, except when
   // the click lands on an interactive control (the select checkbox, a link, …).
+  // Other cards fall through to the normal click-to-select behavior.
   function onCardClick(element: CardElement, event: MouseEvent) {
-    if (!isFolderRow(element)) return;
+    if (!isFolderRow(element)) {
+      selectRowFromEvent(rowFor(element.id), event);
+      return;
+    }
+
     if (
       (event.target as HTMLElement).closest(
         'a[href], button, input, craft-checkbox'
@@ -134,9 +139,8 @@
         :key="element.id"
         v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
-        @click="selectRowFromEvent(rowFor(element.id), $event)"
-        @keydown="onCardKeydown(element.id, cardIdx, $event)"
         @click="onCardClick(element, $event)"
+        @keydown="onCardKeydown(element.id, cardIdx, $event)"
         :class="{
           element: true,
           'element--folder': isFolderRow(element),
