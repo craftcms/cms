@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.18.6 - 2026-08-04
 
 - Added `craft\helpers\StringHelper::isMd5()`.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-5r92-75j8-c534)
