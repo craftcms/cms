@@ -7,6 +7,8 @@
 
 namespace craft\gql\base;
 
+use craft\base\Event;
+use craft\events\DefineGqlArgumentsEvent;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
 use craft\gql\types\input\criteria\CategoryRelation;
@@ -27,11 +29,17 @@ use GraphQL\Type\Definition\Type;
 abstract class ElementArguments extends Arguments
 {
     /**
+     * @event DefineGqlArgumentsEvent The event that is triggered when arguments are being defined.
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ARGUMENTS = 'defineArguments';
+
+    /**
      * @inheritdoc
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
+        $arguments = array_merge(parent::getArguments(), static::getDraftArguments(), static::getRevisionArguments(), static::getStatusArguments(), [
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
@@ -193,6 +201,14 @@ abstract class ElementArguments extends Arguments
                 'description' => 'Narrows the query results based on the unique identifier for an element-site relation.',
             ],
         ]);
+
+        if (Event::hasHandlers(self::class, self::EVENT_DEFINE_ARGUMENTS)) {
+            $event = new DefineGqlArgumentsEvent(compact('arguments'));
+            Event::trigger(self::class, self::EVENT_DEFINE_ARGUMENTS, $event);
+            return $event->arguments;
+        }
+
+        return $arguments;
     }
 
     /**

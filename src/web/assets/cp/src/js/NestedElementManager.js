@@ -14,6 +14,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
     // cards
     $elements: null,
     elementSort: null,
+    elementSelect: null,
 
     // index
     elementIndex: null,
@@ -222,6 +223,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
       });
     },
 
+    bulkActionMode: function ($element) {
+      return (
+        this.elementSelect?.totalSelected > 1 &&
+        this.elementSelect.isSelected($element)
+      );
+    },
+
     addButton($button) {
       if (this.settings.mode === 'cards') {
         if (!this.$btnContainer) {
@@ -247,9 +255,42 @@ Craft.NestedElementManager = Garnish.Base.extend(
         this.$container.children('.zilch').addClass('hidden');
       }
 
-      if (this.settings.sortable) {
+      if (this.settings.selectable) {
+        this.elementSelect = new Garnish.Select(
+          this.$elements,
+          this.$elements.children().children('.element'),
+          {
+            multi: true,
+            vertical: !this.settings.showInGrid,
+            filter: (target) => {
+              return !$(target).closest(
+                'a[href],.toggle,.btn,[role=button],.move,craft-copy-attribute'
+              ).length;
+            },
+            checkboxMode: true,
+            waitForDoubleClicks: true,
+          }
+        );
+      }
+
+      // only initialise drag-sorting if the device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elements,
+          filter: this.settings.selectable
+            ? () => {
+                // Only return all the selected items if the target item is selected
+                if (
+                  this.elementSort.$targetItem
+                    .children('.element')
+                    .hasClass('sel')
+                ) {
+                  return this.elementSelect.getSelectedItems().parent('li');
+                } else {
+                  return this.elementSort.$targetItem;
+                }
+              }
+            : null,
           handle:
             '> .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn',
           ignoreHandleSelector: null,
@@ -274,7 +315,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
       this.$elements.remove();
       this.$elements = null;
-      this.elementSort.destroy();
+      this.elementSort?.destroy();
       this.elementSort = null;
       this.$container.children('.zilch').removeClass('hidden');
     },
@@ -363,11 +404,25 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     async onSortChange($draggee) {
-      const elementId = parseInt($draggee.find('.element').data('id'));
+      const elementIds = $draggee
+        .find('.element')
+        .toArray()
+        .map((element) => parseInt($(element).data('id')));
 
       try {
-        const response = await this.updateSortOrder(elementId);
+        const response = await this.updateSortOrder(elementIds);
         Craft.cp.displayNotice(response.data.message);
+        if (Craft.broadcaster && this.elementEditor?.settings.draftId) {
+          Craft.broadcaster.postMessage({
+            pageId: Craft.pageId,
+            event: 'reorderNestedElements',
+            canonicalId: this.elementEditor.settings.canonicalId,
+            draftId: this.elementEditor.settings.draftId,
+            isProvisionalDraft: this.elementEditor.settings.isProvisionalDraft,
+            elementType: this.elementType,
+            elementIds,
+          });
+        }
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
       }
@@ -378,13 +433,14 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
-    async updateSortOrder(elementId) {
-      elementId = parseInt(elementId);
+    async updateSortOrder(elementIds) {
+      elementIds = Array.isArray(elementIds) ? elementIds : [elementIds];
+      elementIds = elementIds.map((id) => parseInt(id));
       const allIds = this.getElementIds();
 
       const data = Object.assign(await this.getBaseActionData(), {
-        elementIds: [elementId],
-        offset: this.getBaseElementOffset() + allIds.indexOf(elementId),
+        elementIds,
+        offset: this.getBaseElementOffset() + allIds.indexOf(elementIds[0]),
       });
 
       return await Craft.sendActionRequest('POST', 'nested-elements/reorder', {
@@ -586,7 +642,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
-    duplicateElement: async function ($element) {
+    async duplicateElement(element) {
+      const $element = $(element);
+
       Craft.cp.announce(Craft.t('app', 'Loading'));
       await this.markAsDirty();
 
@@ -618,7 +676,17 @@ Craft.NestedElementManager = Garnish.Base.extend(
       this.elementEditor?.checkForm(true);
     },
 
-    async pasteElements() {
+    async duplicateElements(elements) {
+      if (elements instanceof jQuery) {
+        elements = elements.toArray();
+      }
+
+      for (const element of elements) {
+        await this.duplicateElement(element);
+      }
+    },
+
+    async pasteElements($before = null) {
       Craft.cp.announce(Craft.t('app', 'Loading'));
       this.$pasteBtn.addClass('loading');
 
@@ -641,7 +709,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         }
 
         if (this.settings.mode === 'cards') {
-          const $cards = await this.addElementCards(newElementInfo, false);
+          const $cards = await this.addElementCards(newElementInfo, $before);
           await this.updateSortOrder(newElementInfo[0].id);
           Garnish.firstFocusableElement($cards).focus();
         } else {
@@ -658,6 +726,10 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
     initElement($element) {
       setTimeout(() => {
+        if (this.settings.selectable) {
+          this.elementSelect.addItems($element);
+        }
+
         const editable = Garnish.hasAttr($element, 'data-editable');
 
         if (editable) {
@@ -696,14 +768,19 @@ Craft.NestedElementManager = Garnish.Base.extend(
           const $actionMenu = actionDisclosure.$container;
 
           const destructiveGroup = actionDisclosure.getFirstDestructiveGroup();
-          let moveUpButton, moveDownButton, duplicateButton;
+          let moveUpButton,
+            moveDownButton,
+            duplicateButton,
+            copyButton,
+            pasteButton,
+            deleteButton;
 
           const $li = $element.parent();
           const getPrev = () => $li.prev('li');
           const getNext = () => $li.next('li');
 
           if (this.settings.sortable) {
-            this.elementSort.addItems($li);
+            this.elementSort?.addItems($li);
 
             const ul = actionDisclosure.addGroup(null, true, destructiveGroup);
 
@@ -771,7 +848,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
                   icon: async () => await Craft.ui.icon('clone'),
                   label: Craft.t('app', 'Duplicate'),
                   onActivate: () => {
-                    this.duplicateElement($element);
+                    if (this.bulkActionMode($element)) {
+                      this.duplicateElements(
+                        this.elementSelect.getSelectedItems()
+                      );
+                    } else {
+                      this.duplicateElement($element);
+                    }
                   },
                 },
                 ul
@@ -785,30 +868,65 @@ Craft.NestedElementManager = Garnish.Base.extend(
                 actionDisclosure.removeItem($oldCopyBtn[0]);
               }
 
-              actionDisclosure.addItem(
+              copyButton = actionDisclosure.addItem(
                 {
                   icon: async () => await Craft.ui.icon('clone-dashed'),
                   iconColor: 'fuchsia',
                   label: Craft.t('app', 'Copy'),
                   onActivate: () => {
-                    Craft.cp.copyElements($element);
+                    if (this.bulkActionMode($element)) {
+                      Craft.cp.copyElements(
+                        this.elementSelect.getSelectedItems()
+                      );
+                    } else {
+                      Craft.cp.copyElements($element);
+                    }
                   },
                 },
                 ul
               );
             }
+
+            // Paste
+            pasteButton = actionDisclosure.addItem(
+              {
+                icon: async () => await Craft.ui.icon('duplicate'),
+                iconColor: 'fuchsia',
+                label: this.settings.showInGrid
+                  ? Craft.t('app', 'Paste {type} before', {
+                      type: Craft.elementTypeNames[this.elementType][3],
+                    })
+                  : Craft.t('app', 'Paste {type} above', {
+                      type: Craft.elementTypeNames[this.elementType][3],
+                    }),
+                onActivate: async () => {
+                  if (this.canPaste(Craft.cp.getCopiedElements())) {
+                    await this.pasteElements($element.parent());
+                  }
+                },
+              },
+              ul
+            );
           }
 
           if (Garnish.hasAttr($element, 'data-deletable')) {
             const ul = actionDisclosure.addGroup();
-            actionDisclosure.addItem(
+            deleteButton = actionDisclosure.addItem(
               {
                 icon: async () => await Craft.ui.icon('trash'),
                 label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
                 destructive: true,
                 onActivate: () => {
-                  if (confirm(this.settings.deleteConfirmationMessage)) {
-                    this.deleteElement($element);
+                  if (this.bulkActionMode($element)) {
+                    if (confirm(this.settings.bulkDeleteConfirmationMessage)) {
+                      this.deleteElements(
+                        this.elementSelect.getSelectedItems()
+                      );
+                    }
+                  } else {
+                    if (confirm(this.settings.deleteConfirmationMessage)) {
+                      this.deleteElement($element);
+                    }
                   }
                 },
               },
@@ -817,6 +935,8 @@ Craft.NestedElementManager = Garnish.Base.extend(
           }
 
           actionDisclosure.on('show', () => {
+            const bulk = this.bulkActionMode($element);
+
             if (moveUpButton) {
               actionDisclosure.toggleItem(moveUpButton, getPrev().length);
             }
@@ -827,6 +947,64 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
             if (duplicateButton) {
               actionDisclosure.toggleItem(duplicateButton, this.canCreate());
+
+              $(duplicateButton)
+                .children('.menu-item-label')
+                .text(
+                  bulk
+                    ? Craft.t('app', 'Duplicate selected {type}', {
+                        type: Craft.elementTypeNames[this.elementType][3],
+                      })
+                    : Craft.t('app', 'Duplicate')
+                );
+            }
+
+            if (copyButton) {
+              $(copyButton)
+                .children('.menu-item-label')
+                .text(
+                  bulk
+                    ? Craft.t('app', 'Copy selected {type}', {
+                        type: Craft.elementTypeNames[this.elementType][3],
+                      })
+                    : Craft.t('app', 'Copy')
+                );
+            }
+
+            const copiedElements = Craft.cp.getCopiedElements();
+            const showPasteButton =
+              copiedElements.length && this.canPaste(copiedElements);
+            actionDisclosure.toggleItem(pasteButton, showPasteButton);
+            if (showPasteButton) {
+              $(pasteButton)
+                .children('.menu-item-label')
+                .text(
+                  this.settings.showInGrid
+                    ? Craft.t('app', 'Paste {type} before', {
+                        type:
+                          copiedElements.length === 1
+                            ? Craft.elementTypeNames[this.elementType][2]
+                            : Craft.elementTypeNames[this.elementType][3],
+                      })
+                    : Craft.t('app', 'Paste {type} above', {
+                        type:
+                          copiedElements.length === 1
+                            ? Craft.elementTypeNames[this.elementType][2]
+                            : Craft.elementTypeNames[this.elementType][3],
+                      })
+                );
+            }
+
+            if (deleteButton) {
+              $(deleteButton)
+                .children('.menu-item-label')
+                .text(
+                  bulk
+                    ? Craft.t('app', 'Delete selected {type}', {
+                        type: Craft.elementTypeNames[this.elementType][3],
+                      })
+                    : Craft.t('app', 'Delete')
+                );
             }
           });
         }
@@ -882,7 +1060,9 @@ Craft.NestedElementManager = Garnish.Base.extend(
       });
     },
 
-    async deleteElement($element) {
+    async deleteElement(element) {
+      const $element = $(element);
+
       const data = Object.assign(await this.getBaseActionData(), {
         elementId: $element.data('id'),
       });
@@ -900,7 +1080,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.removeItems($element);
+        this.elementSort?.removeItems($element);
       }
 
       $element.parent().remove();
@@ -923,11 +1103,21 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
+    async deleteElements(elements) {
+      if (elements instanceof jQuery) {
+        elements = elements.toArray();
+      }
+
+      for (const element of elements) {
+        await this.deleteElement(element);
+      }
+    },
+
     async addElementCard(element) {
       return await this.addElementCards([element]);
     },
 
-    async addElementCards(elements) {
+    async addElementCards(elements, $before = null) {
       if (this.creatingElement) {
         return null;
       }
@@ -950,6 +1140,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
                     context: 'field',
                     ui: 'card',
                     sortable: this.settings.sortable,
+                    selectable: this.settings.selectable,
                     showActionMenu: true,
                     hyperlink: false,
                   },
@@ -972,7 +1163,12 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
       for (const elementInfo of elements) {
         for (const card of data.elements[elementInfo.id] || []) {
-          const $li = $('<li/>').appendTo(this.$elements);
+          const $li = $('<li/>');
+          if ($before?.length) {
+            $li.insertBefore($before);
+          } else {
+            $li.appendTo(this.$elements);
+          }
           const $card = $(card).appendTo($li);
           $cards = $cards.add($card);
           this.initElement($card);
@@ -1001,6 +1197,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       ownerId: null,
       ownerSiteId: null,
       attribute: null,
+      selectable: false,
       sortable: false,
       indexSettings: {},
       canCreate: false,
@@ -1016,6 +1213,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
       baseInputName: null,
       deleteLabel: null,
       deleteConfirmationMessage: null,
+      bulkDeleteConfirmationMessage: null,
       prevalidate: false,
     },
   }

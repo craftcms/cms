@@ -182,4 +182,18 @@ class TextField extends BaseNativeField
     {
         return $this->name ?? parent::errorKey();
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
+    }
 }

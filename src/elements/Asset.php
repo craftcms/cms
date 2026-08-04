@@ -15,6 +15,7 @@ use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -72,19 +73,19 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Imagick;
 use Throwable;
 use Twig\Markup;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use yii\validators\RequiredValidator;
 
 /**
  * Asset represents an asset element.
@@ -668,10 +669,10 @@ class Asset extends Element
      */
     protected static function defineCardAttributes(): array
     {
-        $attributes = array_merge(parent::defineCardAttributes(), [
+        $attributes = array_merge($parentAttributes = parent::defineCardAttributes(), [
             'dateCreated' => [
                 'label' => Craft::t('app', 'Date Uploaded'),
-                // placeholder will be merged from parent
+                'placeholder' => $parentAttributes['dateCreated']['placeholder'],
             ],
             'filename' => [
                 'label' => Craft::t('app', 'Filename'),
@@ -741,6 +742,7 @@ class Asset extends Element
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
         $assets = [];
+        $originalLimit = $elementQuery->limit;
 
         // Include folders in the results?
         /** @var AssetQuery $elementQuery */
@@ -809,7 +811,6 @@ class Asset extends Element
 
             // Is there room for any normal assets as well?
             $totalAssets = count($assets);
-            /** @phpstan-ignore-next-line */
             if ($totalAssets < $elementQuery->limit) {
                 $elementQuery->offset(max($elementQuery->offset - $totalFolders, 0));
                 $elementQuery->limit($elementQuery->limit - $totalAssets);
@@ -820,7 +821,7 @@ class Asset extends Element
         // return the folders directly
         if (
             self::isFolderIndex() ||
-            count($assets) === (int)$elementQuery->limit
+            count($assets) === (int)$originalLimit
         ) {
             return $assets;
         }
@@ -994,9 +995,9 @@ class Asset extends Element
 
         $userSession = Craft::$app->getUser();
         $canUpload = $userSession->checkPermission("saveAssets:$volume->uid");
-        $canMoveTo = $canUpload && $userSession->checkPermission("deleteAssets:$volume->uid");
-        $canMovePeerFilesTo = (
-            $canMoveTo &&
+        $canMoveTo = (
+            $canUpload &&
+            $userSession->checkPermission("deleteAssets:$volume->uid") &&
             $userSession->checkPermission("savePeerAssets:$volume->uid") &&
             $userSession->checkPermission("deletePeerAssets:$volume->uid")
         );
@@ -1015,7 +1016,6 @@ class Asset extends Element
                 'folder-id' => $folder->id,
                 'can-upload' => $folder->volumeId === null || $canUpload,
                 'can-move-to' => $canMoveTo,
-                'can-move-peer-files-to' => $canMovePeerFilesTo,
                 'fs-type' => $fs::class,
             ],
         ];
@@ -1040,6 +1040,7 @@ class Asset extends Element
      * @since 4.4.0
      * @internal
      */
+    #[AllowedInSandbox]
     public bool $isFolder = false;
 
     /**
@@ -1047,58 +1048,69 @@ class Asset extends Element
      * @since 4.4.0
      * @internal
      */
+    #[AllowedInSandbox]
     public ?array $sourcePath = null;
 
     /**
      * @var int|null Folder ID
      */
+    #[AllowedInSandbox]
     public ?int $folderId = null;
 
     /**
      * @var int|null The ID of the user who first added this asset (if known)
      */
+    #[AllowedInSandbox]
     public ?int $uploaderId = null;
 
     /**
      * @var string|null Folder path
      */
+    #[AllowedInSandbox]
     public ?string $folderPath = null;
 
     /**
      * @var string|null Kind
      */
+    #[AllowedInSandbox]
     public ?string $kind = null;
 
     /**
      * @var string|null Alternative text
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public ?string $alt = null;
 
     /**
      * @var int|null Size
      */
+    #[AllowedInSandbox]
     public ?int $size = null;
 
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
+    #[AllowedInSandbox]
     public ?bool $keptFile = null;
 
     /**
      * @var DateTime|null Date modified
      */
+    #[AllowedInSandbox]
     public ?DateTime $dateModified = null;
 
     /**
      * @var string|null New file location
      */
+    #[AllowedInSandbox]
     public ?string $newLocation = null;
 
     /**
      * @var string|null Location error code
      * @see AssetLocationValidator::validateAttribute()
      */
+    #[AllowedInSandbox]
     public ?string $locationError = null;
 
     /**
@@ -1221,12 +1233,11 @@ class Asset extends Element
      */
     public function __toString(): string
     {
-        try {
-            if (isset($this->_transform) && ($url = (string)$this->getUrl())) {
+        if (isset($this->_transform)) {
+            $url = $this->getUrl();
+            if ($url) {
                 return $url;
             }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
         }
 
         return parent::__toString();
@@ -1291,9 +1302,6 @@ class Asset extends Element
 
         if (isset($this->alt)) {
             $this->alt = trim($this->alt);
-            if ($this->alt === '') {
-                $this->alt = null;
-            }
         }
 
         $this->_oldVolumeId = $this->_volumeId;
@@ -1318,6 +1326,7 @@ class Asset extends Element
      *
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getVolumeId(): ?int
     {
         return (int)$this->_volumeId ?: null;
@@ -1339,23 +1348,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $altElement = $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this);
-            if ($altElement && $altElement->required) {
-                (new RequiredValidator())->validateAttribute($this, 'alt');
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -1364,10 +1356,17 @@ class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
+        $rules[] = [['newFilename'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
+
+        $rules[] = [
+            ['alt'],
+            'required',
+            'on' => [self::SCENARIO_LIVE],
+            'when' => fn() => $this->getFieldLayout()->getFirstVisibleElementByType(AltField::class, $this)->required ?? false,
+        ];
 
         // Validate the extension unless all we're doing is moving the file
         $rules[] = [
@@ -1428,19 +1427,40 @@ class Asset extends Element
                 'label' => Craft::t('app', 'Assets'),
                 'url' => UrlHelper::cpUrl('assets'),
             ],
-            [
-                'menu' => [
-                    'label' => Craft::t('app', 'Select volume'),
-                    'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
-                        ->map(fn(Volume $v) => [
-                            'label' => Craft::t('site', $v->name),
-                            'url' => "assets/$v->handle",
-                            'selected' => $v->id === $volume->id,
-                        ])
-                        ->all(),
-                ],
-            ],
         ];
+
+        // Is the volume’s source enabled?
+        $elementSourcesService = Craft::$app->getElementSources();
+        if ($elementSourcesService->sourceExists(Asset::class, "volume:$volume->uid")) {
+            $volumes = Collection::make(Craft::$app->getVolumes()->getViewableVolumes());
+
+            // Filter out any volumes that don’t have an enabled source
+            $sources = $elementSourcesService->getSources(Asset::class);
+            $sourceKeys = array_flip(array_filter(array_map(fn(array $source) => $source['key'] ?? null, $sources)));
+            $volumes = $volumes->filter(fn(Volume $v) => isset($sourceKeys["volume:$v->uid"]));
+
+            $volumeOptions = $volumes->map(fn(Volume $v) => [
+                'label' => $v->getUiLabel(),
+                'url' => "assets/$v->handle",
+                'selected' => $v->id === $volume->id,
+            ]);
+
+            if ($volumeOptions->count() > 1) {
+                $crumbs[] = [
+                    'menu' => [
+                        'label' => Craft::t('app', 'Select volume'),
+                        'items' => $volumeOptions->all(),
+                    ],
+                ];
+            } else {
+                $crumbs[] = $volumeOptions->first();
+            }
+        } else {
+            // Just show its name w/o a link
+            $crumbs[] = [
+                'label' => $volume->getUiLabel(),
+            ];
+        }
 
         $uri = "assets/$volume->handle";
 
@@ -1820,6 +1840,55 @@ JS,[
             ]);
         }
 
+        if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $items[] = ['type' => MenuItemType::HR];
+
+            // Volume settings
+            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
+            $items[] = [
+                'id' => $volumeEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Volume settings'),
+            ];
+
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
+  });
+})();
+JS, [
+                $view->namespaceInputId($volumeEditId),
+                ['volumeId' => $this->volumeId],
+            ]);
+
+            // Filesystem settings
+            $fsEditId = sprintf('edit-fs-%s', mt_rand());
+            $items[] = [
+                'id' => $fsEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Filesystem settings'),
+            ];
+
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('fs/edit', {params});
+  });
+})();
+JS, [
+                $view->namespaceInputId($fsEditId),
+                ['handle' => $this->getVolume()->getFs()->handle],
+            ]);
+        }
+
         return $items;
     }
 
@@ -1832,6 +1901,7 @@ JS,[
      * @return Markup|null
      * @throws InvalidArgumentException
      */
+    #[AllowedInSandbox]
     public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
         if ($this->kind !== self::KIND_IMAGE) {
@@ -1890,6 +1960,7 @@ JS,[
      * @since 5.9.0 Added $preload param
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getSrcset(array $sizes, mixed $transform = null, bool $preload = false): string|false
     {
         $urls = array_filter($this->getUrlsBySize($sizes, $transform, $preload));
@@ -1940,6 +2011,7 @@ JS,[
      * @since 5.9.0 Added $preload param
      * @since 3.7.16
      */
+    #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null, bool $preload = false): array
     {
         if ($this->kind !== self::KIND_IMAGE) {
@@ -2079,6 +2151,7 @@ JS,[
      * @return VolumeFolder
      * @throws InvalidConfigException if [[folderId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getFolder(): VolumeFolder
     {
         if (!isset($this->folderId)) {
@@ -2098,6 +2171,7 @@ JS,[
      * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getVolume(): Volume
     {
         if (isset($this->_volume)) {
@@ -2123,6 +2197,7 @@ JS,[
      * @return User|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getUploader(): ?User
     {
         if (isset($this->_uploader)) {
@@ -2411,6 +2486,7 @@ JS,[
      * @return string
      * @throws InvalidConfigException if the filename isn’t set yet
      */
+    #[AllowedInSandbox]
     public function getFilename(bool $withExtension = true): string
     {
         if ($this->isFolder) {
@@ -2444,6 +2520,7 @@ JS,[
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
@@ -2467,6 +2544,7 @@ JS,[
      * @return string|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
+    #[AllowedInSandbox]
     public function getMimeType(mixed $transform = null): ?string
     {
         $transform ??= $this->_transform;
@@ -2498,6 +2576,7 @@ JS,[
      * @return string The asset's format
      * @throws ImageTransformException If an invalid transform handle is supplied
      */
+    #[AllowedInSandbox]
     public function getFormat(mixed $transform = null): string
     {
         $ext = $this->getExtension();
@@ -2516,6 +2595,7 @@ JS,[
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
@@ -2537,6 +2617,7 @@ JS,[
      * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getWidth(array|string|ImageTransform $transform = null): ?int
     {
         return $this->_dimensions($transform)[0];
@@ -2560,6 +2641,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getFormattedSize(?int $decimals = null, bool $short = true): ?string
     {
         if (!isset($this->size)) {
@@ -2578,6 +2660,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getFormattedSizeInBytes(bool $short = true): ?string
     {
         if (!isset($this->size)) {
@@ -2599,6 +2682,7 @@ JS,[
      * @return string|null
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getDimensions(): ?string
     {
         $width = $this->getWidth();
@@ -2615,6 +2699,7 @@ JS,[
      * @param string|null $filename Filename to use. If not specified, the asset's filename will be used.
      * @return string
      */
+    #[AllowedInSandbox]
     public function getPath(?string $filename = null): string
     {
         return $this->folderPath . ($filename ?: $this->_filename);
@@ -2660,6 +2745,7 @@ JS,[
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      * @throws FsException if a stream cannot be created
      */
+    #[AllowedInSandbox]
     public function getStream()
     {
         return $this->getVolume()->getFileStream($this->getPath());
@@ -2673,6 +2759,7 @@ JS,[
      * @throws AssetException if a stream could not be created
      * @since 3.0.6
      */
+    #[AllowedInSandbox]
     public function getContents(): string
     {
         return stream_get_contents($this->getStream());
@@ -2686,6 +2773,7 @@ JS,[
      * @throws AssetException if a stream could not be created
      * @since 3.5.13
      */
+    #[AllowedInSandbox]
     public function getDataUrl(): string
     {
         return Html::dataUrlFromString($this->getContents(), $this->getMimeType());
@@ -2707,6 +2795,7 @@ JS,[
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getHasFocalPoint(): bool
     {
         return isset($this->_focalPoint);
@@ -2718,6 +2807,7 @@ JS,[
      * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
      */
+    #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
         if (!in_array($this->kind, [self::KIND_IMAGE, self::KIND_VIDEO], true)) {
@@ -3270,34 +3360,46 @@ JS;
     public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
-            // Are we uploading an image that needs to be sanitized?
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
-                ($this->sanitizeOnUpload ?? (
-                    !Craft::$app->getRequest()->getIsCpRequest() ||
-                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
-                ))
-            ) {
-                Image::cleanImageByPath($this->tempFilePath);
-            }
+            $isImage = isset($this->tempFilePath) && Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE;
 
-            // if we're creating or replacing and image, get the width or height via getimagesize
-            // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
             $fallbackWidth = null;
             $fallbackHeight = null;
-            if (
-                isset($this->tempFilePath) &&
-                in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
-            ) {
-                $imageSize = getimagesize($this->tempFilePath);
-                if (isset($imageSize[0])) {
-                    $fallbackWidth = (int)$imageSize[0];
+
+            if ($isImage) {
+                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
+                if (
+                    ($this->alt === null || $this->alt === '') &&
+                    in_array($this->getScenario(), [self::SCENARIO_CREATE, self::SCENARIO_REPLACE], true)
+                ) {
+                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
+                    if ($alt !== null) {
+                        // ensure it's UTF-8
+                        // (see https://github.com/craftcms/cms/issues/19069)
+                        $this->alt = StringHelper::convertToUtf8($alt);
+                    }
                 }
-                if (isset($imageSize[1])) {
-                    $fallbackHeight = (int)$imageSize[1];
+
+                // Are we uploading an image that needs to be sanitized?
+                if (
+                    in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
+                    ($this->sanitizeOnUpload ?? (
+                        !Craft::$app->getRequest()->getIsCpRequest() ||
+                        Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                    ))
+                ) {
+                    Image::cleanImageByPath($this->tempFilePath);
+                }
+
+                // if we're creating or replacing and image, get the width or height via getimagesize
+                // in case loadImage is not able to get them properly (e.g. imagick runs out of memory)
+                if (in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true)) {
+                    $imageSize = getimagesize($this->tempFilePath);
+                    if (isset($imageSize[0])) {
+                        $fallbackWidth = (int)$imageSize[0];
+                    }
+                    if (isset($imageSize[1])) {
+                        $fallbackHeight = (int)$imageSize[1];
+                    }
                 }
             }
 
@@ -3500,7 +3602,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile) {
+        if ($this->dateDeleted && $this->keptFile && Craft::$app->getElements()->canSave($this)) {
             $attributes['data']['restorable'] = true;
         }
 
@@ -3763,5 +3865,135 @@ JS;
             'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
             default => true,
         };
+    }
+
+    /**
+     * Attempts to extract alt text from XMP metadata embedded in an image file.
+     * Checks Iptc4xmpCore:AltTextAccessibility first, then dc:description.
+     *
+     * @param string $filePath
+     * @return string|null
+     */
+    private function _getAltFromXmpMetadata(string $filePath): ?string
+    {
+        try {
+            $xmp = null;
+
+            if (Craft::$app->getImages()->getIsImagick() && class_exists(Imagick::class)) {
+                $imagick = new Imagick($filePath);
+                $xmp = $imagick->getImageProfile('xmp') ?: null;
+                $imagick->clear();
+            }
+
+            if ($xmp === null) {
+                // Fall back to scanning the raw file for the XMP packet
+                $handle = fopen($filePath, 'rb');
+                if ($handle === false) {
+                    return null;
+                }
+                $chunk = fread($handle, 131072); // 128KB covers the XMP packet in most images
+                fclose($handle);
+
+                if ($chunk !== false) {
+                    $xmpStart = strpos($chunk, '<x:xmpmeta');
+                    if ($xmpStart !== false) {
+                        $xmpEnd = strpos($chunk, '</x:xmpmeta>', $xmpStart);
+                        if ($xmpEnd !== false) {
+                            $xmp = substr($chunk, $xmpStart, $xmpEnd - $xmpStart + strlen('</x:xmpmeta>'));
+                        }
+                    }
+                }
+            }
+
+            if (empty($xmp)) {
+                return null;
+            }
+
+            $dom = new \DOMDocument();
+            if (!@$dom->loadXML($xmp)) {
+                return null;
+            }
+
+            $xpath = new \DOMXPath($dom);
+            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
+            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
+
+            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
+            foreach ([
+                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
+                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
+                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
+            ] as $query) {
+                $nodes = $xpath->query($query);
+                if ($nodes !== false) {
+                    foreach ($nodes as $node) {
+                        $value = trim($node->textContent);
+                        if ($value !== '') {
+                            return $value;
+                        }
+                    }
+                }
+            }
+
+            // Try dc:description as an rdf:Alt structure
+            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+
+            // Try dc:description as a plain string value
+            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors and fall through to IPTC
+        }
+
+        return null;
+    }
+
+    /**
+     * Attempts to extract alt text from IPTC Caption/Abstract (Iptc.Application2.Caption, field 2:120).
+     *
+     * @param string $filePath
+     * @return string|null
+     */
+    private function _getAltFromIptcMetadata(string $filePath): ?string
+    {
+        try {
+            $imageInfo = [];
+            @getimagesize($filePath, $imageInfo);
+
+            if (!isset($imageInfo['APP13'])) {
+                return null;
+            }
+
+            $iptc = iptcparse($imageInfo['APP13']);
+
+            if (!empty($iptc['2#120'])) {
+                $value = trim(implode(' ', $iptc['2#120']));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        } catch (Throwable) {
+            // Ignore errors
+        }
+
+        return null;
     }
 }

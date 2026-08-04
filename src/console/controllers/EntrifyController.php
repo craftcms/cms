@@ -145,6 +145,10 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromCategoryGroup' => $categoryGroup->handle,
             ]);
+
+            // Add it to a “Categories” page
+            $this->_addSectionToPage('Categories', 'sitemap');
+
             $projectConfigChanged = true;
             $sectionCreated = true;
         }
@@ -371,6 +375,10 @@ class EntrifyController extends Controller
             $this->run('sections/create', [
                 'fromTagGroup' => $tagGroup->handle,
             ]);
+
+            // Add it to a “Tags” page
+            $this->_addSectionToPage('Tags', 'tags');
+
             $projectConfigChanged = true;
         }
 
@@ -807,5 +815,29 @@ Run this command on other environments immediately after deploying these changes
 $command
 ```
 MD);
+    }
+
+    private function _addSectionToPage(string $name, string $icon): void
+    {
+        $sourcesService = Craft::$app->getElementSources();
+
+        $sourceKey = sprintf('section:%s', $this->_section()->uid);
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+            ->map(function(array $config) use ($sourceKey, $name) {
+                if (($config['key'] ?? null) === $sourceKey) {
+                    $config['page'] = $name;
+                } else {
+                    $config['page'] ??= 'Entries';
+                }
+                return $config;
+            })
+            ->all();
+        $sourcesService->saveSources(Entry::class, $sourceConfigs);
+
+        $pageSettings = $sourcesService->getPageSettings(Entry::class);
+        $pageSettings[$name] = [
+            'icon' => $icon,
+        ];
+        $sourcesService->savePageSettings(Entry::class, $pageSettings);
     }
 }

@@ -10,9 +10,13 @@
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
 {% else %}
-    {% set selectizeOptions = selectizeOptions|merge({
-        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
-    }) %}
+    {% if selectizeOptions.extraPlugins is defined and selectizeOptions.extraPlugins == false %}
+        {# don't include extra plugins if the settings explicitly tell us not to #}
+    {% else %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+        }) %}
+    {% endif %}
 {% endif %}
 
 {# Normalize the options #}
@@ -209,6 +213,12 @@
         },
         onChange: onChange,
         onInitialize: function () {
+            // this is needed so that you can delete selected item when the field is not fully in viewport
+            // see https://github.com/craftcms/cms/issues/18079 for details
+            {% if multi %}
+                this.isFocused = true;
+            {% endif %}
+
             // Copy all ARIA attributes from initial select to selectize
             [...$select[0].attributes]
                 .filter(attr => /^aria-/.test(attr.name))

@@ -19,6 +19,8 @@
     columnsTable: null,
     defaultsTable: null,
 
+    staticRows: false,
+
     init: function (
       columnsTableName,
       defaultsTableName,
@@ -26,11 +28,13 @@
       defaults,
       columnSettings,
       dropdownSettingsHtml,
-      dropdownSettingsCols
+      dropdownSettingsCols,
+      staticRows
     ) {
       this.columnsTableName = columnsTableName;
       this.defaultsTableName = defaultsTableName;
       this.columnsData = columnsData;
+      this.staticRows = staticRows ?? false;
 
       this.columnsTableId = Craft.formatInputId(this.columnsTableName);
       this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
@@ -83,6 +87,8 @@
           allowAdd: true,
           allowReorder: true,
           allowDelete: true,
+          staticRows: this.staticRows,
+          includeRowId: true,
         }
       );
     },
@@ -197,6 +203,8 @@
           this.defaultsTableName,
           defaults[rowId],
           true,
+          true,
+          false,
           true
         ).appendTo($tbody);
       }
@@ -222,8 +230,10 @@
       }
 
       this.fieldSettings.initColumnSettingInputs(this.$tbody);
-      this.sorter.settings.onSortChange =
-        this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      if (this.sorter) {
+        this.sorter.settings.onSortChange =
+          this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      }
       return true;
     },
 

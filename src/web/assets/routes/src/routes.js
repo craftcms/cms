@@ -22,11 +22,15 @@ import './routes.scss';
         this.routes.push(route);
       }
 
-      this.sorter = new Garnish.DragSort($routes, {
-        handle: '.move',
-        axis: Garnish.Y_AXIS,
-        onSortChange: this.updateRouteOrder.bind(this),
-      });
+      if (Craft.hasMousePointerEvents()) {
+        this.sorter = new Garnish.DragSort($routes, {
+          handle: '.move',
+          axis: Garnish.Y_AXIS,
+          onSortChange: this.updateRouteOrder.bind(this),
+        });
+      } else {
+        $('#routes .move').hide();
+      }
 
       this.$addRouteBtn = $('#add-route-btn');
 
@@ -59,7 +63,9 @@ import './routes.scss';
     },
 
     addRoute: function () {
-      new RouteSettingsModal();
+      new RouteSettingsModal(null, {
+        triggerElement: this.$addRouteBtn,
+      });
     },
   });
 
@@ -138,7 +144,9 @@ import './routes.scss';
 
     edit: function () {
       if (!this.modal) {
-        this.modal = new RouteSettingsModal(this);
+        this.modal = new RouteSettingsModal(this, {
+          triggerElement: this.$container.find('.edit-btn'),
+        });
       } else {
         this.modal.show();
       }
@@ -229,7 +237,7 @@ import './routes.scss';
     $deleteBtn: null,
     loading: false,
 
-    init: function (route) {
+    init: function (route, settings) {
       this.route = route;
 
       var tokenHtml = '<h4>' + Craft.t('app', 'Add a token') + '</h4>';
@@ -382,7 +390,7 @@ import './routes.scss';
         this.$templateInput.val(templateVal);
       }
 
-      this.base($container);
+      this.base($container, settings);
 
       // We must add vars on mousedown, so that text elements don't have a chance
       // to lose focus, thus losing the caret position.
@@ -452,7 +460,7 @@ import './routes.scss';
       this.base();
     },
 
-    saveRoute: function (event) {
+    saveRoute: async function (event) {
       event.preventDefault();
 
       if (this.loading) {
@@ -528,61 +536,77 @@ import './routes.scss';
       this.$saveBtn.addClass('active');
       this.$spinner.show();
 
-      Craft.sendActionRequest('POST', 'routes/save-route', {data})
-        .then((response) => {
-          // Is this a new route?
-          if (!this.route) {
-            var routeHtml =
-              '<div class="route" data-uid="' +
-              response.data.routeUid +
-              '"' +
-              (response.data.siteUid
-                ? ' data-site-uid="' + response.data.siteUid + '"'
-                : '') +
-              '>' +
-              '<div class="uri-container">';
+      let response;
 
-            if (Craft.isMultiSite) {
-              routeHtml += '<span class="site"></span>';
-            }
-
-            routeHtml +=
-              '<span class="uri" dir="ltr"></span>' +
-              '</div>' +
-              '<div class="template" dir="ltr"></div>' +
-              '</div>';
-
-            var $route = $(routeHtml);
-
-            $route.appendTo('#routes');
-
-            this.addNewRouteActions($route);
-
-            this.route = new Route($route);
-            this.route.modal = this;
-
-            Craft.routes.sorter.addItems($route);
-
-            // Was this the first one?
-            if (Craft.routes.sorter.$items.length === 1) {
-              $('#noroutes').addClass('hidden');
-            }
-          }
-
-          this.route.siteUid = response.data.siteUid;
-          this.route.updateHtmlFromModal();
-          this.hide();
-
-          Craft.cp.displaySuccess(Craft.t('app', 'Route saved.'));
-        })
-        .catch(() => {
-          Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
-        })
-        .finally(() => {
-          this.$saveBtn.removeClass('active');
-          this.$spinner.hide();
-          this.loading = false;
+      try {
+        response = await Craft.sendActionRequest('POST', 'routes/save-route', {
+          data,
         });
+      } catch (e) {
+        Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
+      } finally {
+        this.$saveBtn.removeClass('active');
+        this.$spinner.hide();
+        this.loading = false;
+      }
+
+      // Is this a new route?
+      if (!this.route) {
+        let routeHtml =
+          '<div class="route" data-uid="' +
+          response.data.routeUid +
+          '"' +
+          (response.data.siteUid
+            ? ' data-site-uid="' + response.data.siteUid + '"'
+            : '') +
+          '>' +
+          '<div class="uri-container">';
+
+        if (Craft.isMultiSite) {
+          routeHtml += '<span class="site"></span>';
+        }
+
+        const icon = await Craft.ui.icon('edit');
+        routeHtml +=
+          '<span class="uri" dir="ltr"></span>' +
+          '</div>' +
+          '<div class="template" dir="ltr"></div>' +
+          '<div class="actions">' +
+          `<button class="chromeless small edit-btn" title="${Craft.t(
+            'app',
+            'Edit'
+          )}" aria-label="${Craft.t('app', 'Edit')}" role="none">` +
+          '<div class="inline-flex">' +
+          '<div class="cp-icon">' +
+          $(icon).html() +
+          '</div>' +
+          '</div>' +
+          '</button>' +
+          '</div>' +
+          '</div>';
+
+        var $route = $(routeHtml);
+
+        $route.appendTo('#routes');
+
+        this.addNewRouteActions($route);
+
+        this.route = new Route($route);
+        this.route.modal = this;
+
+        Craft.routes.sorter?.addItems($route);
+
+        // Was this the first one?
+        if (Craft.routes.sorter?.$items.length === 1) {
+          $('#noroutes').addClass('hidden');
+        }
+      }
+
+      this.route.siteUid = response.data.siteUid;
+      this.route.updateHtmlFromModal();
+      this.hide();
+
+      Craft.cp.displaySuccess(Craft.t('app', 'Route saved.'));
     },
 
     addNewRouteActions: function ($route) {
@@ -680,12 +704,13 @@ import './routes.scss';
           Craft.cp.displaySuccess(Craft.t('app', 'Route deleted.'));
         });
 
-        Craft.routes.sorter.removeItems(this.route.$container);
+        Craft.routes.sorter?.removeItems(this.route.$container);
         this.route.$container.remove();
+        this.$triggerElement = Craft.routes.$addRouteBtn;
         this.hide();
 
         // Was this the last one?
-        if (Craft.routes.sorter.$items.length === 0) {
+        if (Craft.routes.sorter?.$items.length === 0) {
           $('#noroutes').removeClass('hidden');
         }
       }

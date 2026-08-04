@@ -19,7 +19,10 @@
     name: 'preferredLocale',
     label: 'Formatting Locale'|t('app'),
     instructions: 'The locale that should be used for date and number formatting.'|t('app'),
-    options: [{'label' : 'Same as language'|t('app'), 'value' : '__blank__'}]|merge(craft.cp.getLanguageOptions(false, true)),
+    options: [
+      {label: 'Same as language'|t('app'), value: '__blank__'},
+      ...craft.cp.getLanguageOptions(false, true),
+    ],
     value: userLocale,
   }) }}
 
@@ -29,6 +32,17 @@
     name: 'weekStartDay',
     options: craft.app.locale.getWeekDayNames(),
     value: currentUser.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
+  }) }}
+
+  {{ forms.timeZoneField({
+    label: 'Time Zone'|t('app'),
+    id: 'time-zone',
+    name: 'timeZone',
+    options: [
+      {label: 'System time zone ({abbr})'|t('app', {abbr: timeZoneAbbr}), value: '__blank__'},
+      ...craft.cp.getTimeZoneOptions(offsetDate ?? null),
+    ],
+    value: currentUser.getPreference('timeZone'),
   }) }}
 </div>
 

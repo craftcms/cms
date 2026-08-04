@@ -62,6 +62,8 @@
 {% from _self import permissionList %}
 
 {% for group in permissions %}
+    {% set headingId = "content-heading-#{random()}" %}
+
     {# Include a placeholder for the user group being created? #}
     {% if (includeGroupPlaceholder ?? false) and group.permissions.editUsers is defined %}
         {% set group = group|merge({
@@ -79,17 +81,22 @@
 
     <div class="user-permissions {{ wrapperClass }}">
         {{ tag('h3', {
+            id: headingId,
             class: {
                 'mt-0': loop.first,
             }|filter|keys,
             text: group.heading,
         }) }}
         {% if not disabled %}
-            {{ tag('div', {
+            {{ tag('button', {
+                type: 'button',
                 class: {
                     'select-all': true,
                     'mt-0': loop.first,
                 }|filter|keys,
+                aria: {
+                    describedby: headingId,
+                },
             }) }}
         {% endif %}
         {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled) }}

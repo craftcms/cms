@@ -622,6 +622,11 @@ class UserPermissions extends Component
                                 'nested' => array_filter([
                                     "savePeerEntries:$section->uid" => [
                                         'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType])),
+                                        'nested' => [
+                                            "changeAuthorForPeerEntries:$section->uid" => [
+                                                'label' => Craft::t('app', 'Change the author of other users’ entries'),
+                                            ],
+                                        ],
                                     ],
                                     "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
                                         'label' => Craft::t('app', 'Delete other users’ {type} for site', ['type' => $pluralType]),

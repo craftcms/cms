@@ -135,10 +135,6 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
 $createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
 
-// Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
-
 // Create the storage/logs/ folder if it doesn't already exist
 if (!App::isStreamLog()) {
     $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
@@ -146,7 +142,7 @@ if (!App::isStreamLog()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (App::normalizeBooleanValue(App::env('CRAFT_LOG_PHP_ERRORS')) !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -162,7 +158,7 @@ error_reporting($errorLevel);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig->devMode;
+$devMode = App::normalizeBooleanValue(App::env('CRAFT_DEV_MODE')) ?? $generalConfig->devMode;
 
 if ($devMode) {
     ini_set('display_errors', '1');
@@ -286,7 +282,7 @@ $localConfig = ArrayHelper::merge(
     $configService->getConfigFromFile("app.{$appType}")
 );
 
-$safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
+$safeMode = App::normalizeBooleanValue(App::env('CRAFT_SAFE_MODE')) ?? $generalConfig->safeMode;
 
 if ($safeMode) {
     ArrayHelper::remove($localConfig, 'bootstrap');
@@ -300,6 +296,11 @@ $config = ArrayHelper::merge($config, $localConfig);
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
+
+// Create the runtime folder if it doesn't already exist
+$runtimePath = Craft::getAlias($config['runtimePath']);
+$createFolder($runtimePath);
+$ensureFolderIsReadable($runtimePath, true);
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

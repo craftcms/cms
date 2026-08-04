@@ -261,6 +261,11 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       return {};
     },
 
+    reload: function () {
+      this.showLoadSpinner();
+      this.load();
+    },
+
     updateHeaderVisibility: function () {
       // Should the header be shown regardless of viewport size?
       const forceShow =
@@ -307,6 +312,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         }
 
         this.$content.html(data.content);
+        if (this.$actionBtn) {
+          this.$actionBtn.data('disclosureMenu')?.destroy();
+          this.$actionBtn.remove();
+        }
 
         if (data.submitButtonLabel) {
           this.$saveBtn.find('.label').text(data.submitButtonLabel);
@@ -411,7 +420,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           resolve();
           this.trigger('load');
-          this.settings.onLoad();
+          if (this.settings.onLoad) {
+            this.settings.onLoad();
+          }
         });
       });
     },
@@ -617,7 +628,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         data: (data.modelName && data[data.modelName]) || {},
       };
       this.trigger('submit', ev);
-      this.settings.onSubmit(ev);
+      if (this.settings.onSubmit) {
+        this.settings.onSubmit(ev);
+      }
       if (this.settings.closeOnSubmit) {
         this.close();
       }

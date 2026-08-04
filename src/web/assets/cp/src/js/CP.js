@@ -1775,6 +1775,8 @@ Craft.CP = Garnish.Base.extend(
         if (this.jobInfo.length) {
           // Check again after a delay
           this.trackJobProgress(true);
+        } else {
+          this.trigger('queueCompleted');
         }
 
         // Notify the other browser tabs about the jobs
@@ -2320,6 +2322,7 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
             type: e.type,
             id: e.id,
             siteId: e.siteId,
+            revisionId: e.revisionId ?? null,
             instances: [
               {
                 ui: 'chip',

@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Class IconData
@@ -24,7 +25,9 @@ class IconData implements Serializable
      * @param string[] $styles The Font Awesome styles the icon is available in
      */
     public function __construct(
+        #[AllowedInSandbox]
         public string $name,
+        #[AllowedInSandbox]
         public array $styles,
     ) {
     }

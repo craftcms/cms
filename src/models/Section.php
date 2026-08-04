@@ -18,6 +18,7 @@ use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
@@ -87,6 +88,12 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $type = null;
 
     /**
+     * @var int Min authors
+     * @since 5.10.0
+     */
+    public int $minAuthors = 1;
+
+    /**
      * @var int|null Max authors
      * @since 5.0.0
      */
@@ -145,6 +152,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     private ?array $_entryTypes = null;
 
     /**
+     * @see page()
+     */
+    private string|false $page;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -201,11 +213,19 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [
-            ['maxLevels', 'maxAuthors'],
+            ['maxLevels', 'minAuthors'],
             'number',
             'integerOnly' => true,
             'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
+        $rules[] = [
+            ['maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => $this->minAuthors,
             'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
         ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
@@ -410,6 +430,39 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     }
 
     /**
+     * Returns the section’s control panel index page URI.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+        return sprintf(
+            'content/%s/%s',
+            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $this->type === self::TYPE_SINGLE ? 'singles' : $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     *
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getPage(): ?string
+    {
+        if (!isset($this->page)) {
+            $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey, withDisabled: true);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getIcon(): ?string
@@ -431,10 +484,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'type' => $this->type,
             'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
+            'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         if (!empty($this->previewTargets)) {

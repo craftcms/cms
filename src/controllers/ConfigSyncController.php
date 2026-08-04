@@ -32,6 +32,18 @@ class ConfigSyncController extends BaseUpdaterController
     public const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
     public const ACTION_INSTALL_PLUGIN = 'install-plugin';
 
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+
+    public function beforeAction($action): bool
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAdmin(false);
+        return true;
+    }
+
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
      *

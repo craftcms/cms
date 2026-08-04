@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -39,7 +40,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Money extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -54,7 +60,22 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public static function icon(): string
     {
-        return 'dollar-sign';
+        return self::currencyIcon(Craft::$app->getLocale()->getDefaultCurrency());
+    }
+
+    private static function currencyIcon(string $currency): string
+    {
+        return match ($currency) {
+            'CHF' => 'franc-sign',
+            'EUR' => 'euro-sign',
+            'GBP' => 'sterling-sign',
+            'INR' => 'indian-rupee-sign',
+            'JPY', 'CNY' => 'yen-sign',
+            'KRW' => 'won-sign',
+            'RUB' => 'ruble-sign',
+            'TRY' => 'turkish-lira-sign',
+            default => 'dollar-sign',
+        };
     }
 
     /**
@@ -146,6 +167,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     /**
      * @inheritdoc
      */
+    public function getIcon(): ?string
+    {
+        return self::currencyIcon($this->currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSettingsHtml(): ?string
     {
         return $this->settingsHtml(false);
@@ -191,6 +220,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     {
         $valueSql = static::valueSql($instances);
         return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): float|int|null
+    {
+        return $this->defaultValue;
     }
 
     /**

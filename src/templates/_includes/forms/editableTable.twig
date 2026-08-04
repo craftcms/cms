@@ -6,6 +6,7 @@
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
 {%- set describedBy = describedBy ?? null %}
+{%- set includeRowId = includeRowId ?? false %}
 
 {%- set totalRows = rows|length %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
@@ -88,6 +89,9 @@
         {% if allowDelete %}<col>{% endif %}
         {% if allowReorder %}<col>{% endif %}
     {% endif %}
+    {% if includeRowId %}
+        <col> {# for hidden row ID #}
+    {% endif %}
     {% if cols|filter(c => (c.headingHtml ?? c.heading ?? c.info ?? '') is not same as(''))|length %}
         <thead>
             <tr>
@@ -109,6 +113,9 @@
                 {% if (allowDelete or allowReorder) %}
                     <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
                 {% endif %}
+                {% if includeRowId %}
+                    <th class="hidden">Row ID</th>
+                {% endif %}
             </tr>
         </thead>
     {% endif %}
@@ -121,16 +128,24 @@
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
                     {% set value = cell.value is defined ? cell.value : cell %}
+                    {% if col.width ?? false %}
+                        {% set width = col.width|trim %}
+                        {% set width = width ends with 'px' ? width|slice(0, width|length - 2) : width %}
+                        {% set minWidth = width ends with '%' ? col.width : "#{col.width}px" %}
+                        {% set widthAttributes = " width=\"#{width}\" style=\"min-width: #{minWidth}\"" %}
+                    {% else %}
+                        {% set widthAttributes = '' %}
+                    {% endif %}
                     {% if col.type == 'heading' %}
-                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</th>
+                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</th>
                     {% elseif col.type == 'html' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</td>
+                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</td>
                     {% else %}
                         {% set headingId = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
+                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}
@@ -220,6 +235,11 @@
                                             describedBy: describedBy,
                                         } only %}
                                     {%- default -%}
+                                        {% if col.type == 'number' and col.locale ?? false %}
+                                            {{ hiddenInput("#{cellName}[locale]", col.locale) }}
+                                            {% set cellName = "#{cellName}[value]" %}
+                                            {% set value = value|number(locale=col.locale) %}
+                                        {% endif %}
                                         {% if static %}
                                             <pre class="noteditable">{{ value }}</pre>
                                         {% else %}
@@ -285,6 +305,9 @@
                 {% for inputName, value in row.hiddenInputs ?? [] %}
                     {{ hiddenInput("#{name}[#{rowId}][#{inputName}]", value) }}
                 {% endfor %}
+                {% if includeRowId and (row.rowId ?? false) %}
+                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId) }}
+                {% endif %}
             </tr>
         {% endfor %}
     </tbody>

@@ -26,11 +26,6 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
-    public bool $includeInCards = true;
-
-    /**
-     * @inheritdoc
-     */
     public function attribute(): string
     {
         return 'address';

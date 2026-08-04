@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
+use SensitiveParameter;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -67,7 +68,7 @@ class Security extends \yii\base\Security
      * validation fails.
      * @return string The hash.
      */
-    public function hashPassword(string $password, bool $validateHash = false): string
+    public function hashPassword(#[SensitiveParameter] string $password, bool $validateHash = false): string
     {
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
@@ -93,7 +94,7 @@ class Security extends \yii\base\Security
      * @see hkdf()
      * @see pbkdf2()
      */
-    public function hashData($data, $key = null, $rawHash = false): string
+    public function hashData(#[SensitiveParameter] $data, #[SensitiveParameter] $key = null, $rawHash = false): string
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -118,7 +119,7 @@ class Security extends \yii\base\Security
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
      */
-    public function validateData($data, $key = null, $rawHash = false): string|false
+    public function validateData($data, #[SensitiveParameter] $key = null, $rawHash = false): string|false
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -138,7 +139,7 @@ class Security extends \yii\base\Security
      * @see decryptByKey()
      * @see encryptByPassword()
      */
-    public function encryptByKey($data, $inputKey = null, $info = null): string
+    public function encryptByKey(#[SensitiveParameter] $data, #[SensitiveParameter] $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -157,7 +158,7 @@ class Security extends \yii\base\Security
      * @throws Exception on OpenSSL error
      * @see encryptByKey()
      */
-    public function decryptByKey($data, $inputKey = null, $info = null): string|false
+    public function decryptByKey($data, #[SensitiveParameter] $inputKey = null, $info = null): string|false
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -185,7 +186,7 @@ class Security extends \yii\base\Security
      * @param mixed $value
      * @return mixed The possibly-redacted value
      */
-    public function redactIfSensitive(string $key, mixed $value): mixed
+    public function redactIfSensitive(string $key, #[SensitiveParameter] mixed $value): mixed
     {
         if (is_array($value)) {
             foreach ($value as $n => &$v) {
@@ -199,7 +200,7 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * Returns whether the given file path is located within or above any system directories.
+     * Returns whether the given file path is located within or above any Craft-specific system directories.
      *
      * @param string $path
      * @return bool
@@ -212,6 +213,67 @@ class Security extends \yii\base\Security
         foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
             $dir = FileHelper::absolutePath($dir, '/');
             if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns whether the given file path is located in what's considered a sensitive/restricted directory.
+     *
+     * @param string $path
+     * @return bool
+     * @since 5.10.9
+     */
+    public function isRestrictedDir(string $path): bool
+    {
+        $path = FileHelper::absolutePath($path, '/');
+
+        // is it located within a Craft-specific system directory
+        if ($this->isSystemDir($path)) {
+            return true;
+        }
+
+        // is it located within a sensitive os directory
+        // windows-based sensitive directories
+        if (PHP_OS_FAMILY === 'Windows') {
+            // is it located directly in the filesystem's root (e.g. C:\myfile.json, \\server\sharename\myfile.json)
+            // we're using forward slashes cause FileHelper::absolutePath() already normalized this path
+            if (preg_match('#^(?:[A-Za-z]:/[^/]+|//[^/]+/[^/]+/[^/]+)$#', $path)) {
+                return true;
+            }
+
+            $winRoot = FileHelper::normalizePath($_SERVER['SystemRoot'] ?? 'C:\\Windows');
+            $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
+            $sensitiveDirs = [
+                $winRoot, // C:/Windows
+                $drive . 'Users', // C:/Users
+                $drive . 'Program Files',
+                $drive . 'Program Files (x86)',
+                $drive . 'ProgramData',
+            ];
+        } else {
+            // is it located directly in the filesystem's root (e.g. /myfile.json)
+            $parent = dirname($path);
+            if ($parent === dirname($parent)) {
+                return true;
+            }
+
+            // non-windows-based sensitive directories
+            $sensitiveDirs = [
+                '/boot',
+                '/dev',
+                '/etc',
+                '/proc',
+                '/root',
+                '/sys',
+            ];
+        }
+
+        foreach ($sensitiveDirs as $dir) {
+            if ($path === $dir || FileHelper::isWithin($path, $dir)) {
                 return true;
             }
         }

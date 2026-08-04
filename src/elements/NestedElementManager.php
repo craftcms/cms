@@ -69,6 +69,11 @@ class NestedElementManager extends Component
     public const EVENT_AFTER_CREATE_REVISIONS = 'afterCreateRevisions';
 
     /**
+     * @see getSupportedSiteIds()
+     */
+    private static array $renderedPropagationFormats = [];
+
+    /**
      * Constructor
      *
      * @param class-string<NestedElementInterface> $elementType The nested element type.
@@ -323,7 +328,11 @@ class NestedElementManager extends Component
         $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
-            $propagationKey = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
+            if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                self::$renderedPropagationFormats[$cacheKey] = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+            }
+            $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
 
         foreach ($ownerSiteIds as $siteId) {
@@ -341,8 +350,14 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
-                        $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
+                        $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $siteId);
+                        if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
+                            $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                            self::$renderedPropagationFormats[$cacheKey] = $siteOwner
+                                ? $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
+                                : false;
+                        }
+                        $include = $propagationKey === self::$renderedPropagationFormats[$cacheKey];
                     }
                     break;
                 default:
@@ -370,6 +385,7 @@ class NestedElementManager extends Component
         $config += [
             'showInGrid' => false,
             'prevalidate' => false,
+            'selectable' => false,
         ];
 
         return $this->createView(
@@ -384,7 +400,11 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
+                    'bulkDeleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+                        'type' => $this->elementType::pluralLowerDisplayName(),
+                    ]),
                     'showInGrid' => $config['showInGrid'],
+                    'selectable' => $config['selectable'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -424,6 +444,7 @@ class NestedElementManager extends Component
                         fn(ElementInterface $element) => Cp::elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
+                            'selectable' => $config['selectable'],
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
                         ]),
@@ -540,17 +561,17 @@ class NestedElementManager extends Component
                 }
 
                 return Cp::elementIndexHtml($this->elementType, [
+                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
                     'context' => 'embedded-index',
-                    'id' => $id,
-                    'showSiteMenu' => false,
-                    'sources' => false,
-                    'fieldLayouts' => $config['fieldLayouts'],
                     'defaultSort' => $config['defaultSort'],
                     'defaultTableColumns' => $config['defaultTableColumns'],
                     'defaultViewMode' => $config['defaultViewMode'],
-                    'registerJs' => false,
-                    'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
+                    'fieldLayouts' => $config['fieldLayouts'],
+                    'id' => $id,
                     'prevalidate' => $config['prevalidate'] ?? false,
+                    'registerJs' => false,
+                    'showSiteMenu' => false,
+                    'sources' => false,
                 ]);
             },
         );
@@ -680,7 +701,11 @@ JS, [
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
-        } elseif ($this->isDirty($owner) || !empty($owner->newSiteIds)) {
+        } elseif (
+            $this->isDirty($owner) ||
+            $this->propagateRequired($owner) ||
+            !empty($owner->newSiteIds)
+        ) {
             $this->saveNestedElements($owner);
         } elseif ($owner->mergingCanonicalChanges) {
             $this->mergeCanonicalChanges($owner);
@@ -762,6 +787,23 @@ JS, [
         }
     }
 
+    private function propagateRequired(ElementInterface $owner, ?ElementInterface $localizedOwner = null): bool
+    {
+        foreach ($this->fieldInstances($owner) as $instance) {
+            if (
+                $instance->layoutElement->required &&
+                (
+                    !$localizedOwner ||
+                    $instance->isValueEmpty($localizedOwner->getFieldValue($instance->handle), $localizedOwner)
+                )
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function saveNestedElements(ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
@@ -798,10 +840,18 @@ JS, [
                     $elementsService->restoreElement($element);
                 }
 
+                // if the owner is propagating required fields and attributes, so should the nested elements
+                if ($owner->propagateRequired) {
+                    $element->propagateRequired = true;
+                }
+
                 $sortOrder++;
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
+                    // Only set $resaving=true if the element isn’t new.
+                    // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
+                    $element->resaving = $owner->resaving && $element->id;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
@@ -817,7 +867,7 @@ JS, [
                     ) {
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
-                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                        if (ElementHelper::belongsToCanonicalOwner($canonical, $owner)) {
                             Craft::$app->getDrafts()->removeDraftData($element);
                             Db::delete(Table::ELEMENTS_OWNERS, [
                                 'elementId' => $canonical->id,
@@ -850,7 +900,11 @@ JS, [
             // Should we duplicate the elements to other sites?
             if (
                 $this->propagationMethod !== PropagationMethod::All &&
-                ($owner->propagateAll || !empty($owner->newSiteIds))
+                (
+                    $owner->propagateAll ||
+                    $this->propagateRequired($owner) ||
+                    !empty($owner->newSiteIds)
+                )
             ) {
                 // Find the owner's site IDs that *aren't* supported by this site's nested elements
                 $ownerSiteIds = array_map(
@@ -860,8 +914,8 @@ JS, [
                 $fieldSiteIds = $this->getSupportedSiteIds($owner);
                 $otherSiteIds = array_diff($ownerSiteIds, $fieldSiteIds);
 
-                // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
-                if (!$owner->propagateAll) {
+                // If propagateAll & propagateRequired aren't set, only deal with sites that the element was just propagated to for the first time
+                if (!$owner->propagateAll && !$this->propagateRequired($owner)) {
                     $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
                 } else {
@@ -915,7 +969,9 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || in_array($localizedOwner->siteId, $owner->newSiteIds)) {
+                                $this->duplicateNestedElements($owner, $localizedOwner, force: true);
+                            }
                         }
 
                         // Make sure we don't duplicate elements for any of the sites that were just propagated to
@@ -993,7 +1049,7 @@ JS, [
      * which weren’t included in the duplication
      * @param bool $force Whether to force duplication, even if it looks like only the nested element ownership was duplicated
      */
-    private function duplicateNestedElements(
+    public function duplicateNestedElements(
         ElementInterface $source,
         ElementInterface $target,
         bool $checkOtherSites = false,
@@ -1020,18 +1076,19 @@ JS, [
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            // Only set the canonicalId if the target owner element is a derivative
+            // and if the target's canonical element is not the same as target element, see
+            // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    // Only set the canonicalId if the target owner element is a derivative
-                    // and if the target's canonical element is not the same as target element, see
-                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
+                    'resaving' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
 
@@ -1039,7 +1096,20 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
-                if ($target->updatingFromDerivative && $element->getIsDerivative()) {
+                /** @var NestedElementInterface $canonical */
+                $canonical = $element->getCanonical(true);
+
+                if (
+                    $target->updatingFromDerivative &&
+                    $element->getIsDerivative() &&
+                    (
+                        ElementHelper::isRevision($source) ||
+                        (
+                            $element->getPrimaryOwnerId() === $source->id &&
+                            $canonical->getPrimaryOwnerId() === $target->id
+                        )
+                    )
+                ) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
@@ -1058,7 +1128,12 @@ JS, [
                             'sortOrder' => $element->getSortOrder(),
                         ], updateTimestamp: false);
                     } else {
-                        $newElementId = $element->getCanonicalId();
+                        // if the canonical element is owned by the target element, then go with its ID
+                        if ($canonical->getOwnerId() === $target->id) {
+                            $newElementId = $element->getCanonicalId();
+                        } else {
+                            $newElementId = $element->id;
+                        }
                     }
                 } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element
@@ -1169,12 +1244,36 @@ JS, [
         );
 
         /** @var NestedElementInterface[] $elements */
-        $elements = $this->nestedElementQuery($canonical)
-            ->siteId($siteIds)
-            ->preferSites([$canonical->siteId])
-            ->unique()
-            ->status(null)
-            ->all();
+        $elements = [];
+        $processedElementIds = [];
+
+        foreach ($siteIds as $siteId) {
+            if ($siteId === $canonical->siteId) {
+                $owner = $canonical;
+            } else {
+                $owner = $canonical::find()
+                    ->id($canonical->id)
+                    ->siteId($siteId)
+                    ->status(null)
+                    ->one();
+
+                if ($owner === null) {
+                    continue;
+                }
+            }
+
+            $siteElements = $this->nestedElementQuery($owner)
+                ->status(null)
+                ->all();
+
+            /** @var NestedElementInterface $element */
+            foreach ($siteElements as $element) {
+                if (!isset($processedElementIds[$element->id])) {
+                    $processedElementIds[$element->id] = true;
+                    $elements[] = $element;
+                }
+            }
+        }
 
         $revisionsService = Craft::$app->getRevisions();
         $elementRevisionIds = [];
@@ -1271,19 +1370,21 @@ JS, [
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
                             $elementsService->deleteElement($derivativeElement);
                         }
-                    } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
+                    } elseif (
+                        !$derivativeElement->trashed &&
+                        $derivativeElement::trackChanges() &&
+                        ElementHelper::isOutdated($derivativeElement)
+                    ) {
                         // Merge the upstream changes into the derivative nested element
                         $elementsService->mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
-                    // This is a new element, so duplicate it into the derivative owner
-                    $elementsService->duplicateElement($canonicalElement, [
-                        'canonicalId' => $canonicalElement->id,
-                        'primaryOwner' => $owner,
-                        'owner' => $localizedOwners[$canonicalElement->siteId],
-                        'siteId' => $canonicalElement->siteId,
-                        'propagating' => false,
-                    ]);
+                    // This is a new nested element, so duplicate its ownership into the derivative
+                    Db::upsert(Table::ELEMENTS_OWNERS, [
+                        'elementId' => $canonicalElement->id,
+                        'ownerId' => $owner->id,
+                        'sortOrder' => $canonicalElement->getSortOrder(),
+                    ], false);
                 }
             }
 

@@ -9,3 +9,4 @@ packages/**/dist/*
 tests/_craft/*
 vendor/*
 .ddev/*
+tests-playwright/.authentication.json

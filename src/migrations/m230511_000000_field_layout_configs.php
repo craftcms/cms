@@ -24,7 +24,7 @@ class m230511_000000_field_layout_configs extends Migration
         $fieldsService = Craft::$app->getFields();
         $fieldLayouts = $fieldsService->getAllLayouts();
 
-        $this->addColumn(Table::FIELDLAYOUTS, 'config', $this->text()->after('type'));
+        $this->addColumn(Table::FIELDLAYOUTS, 'config', $this->json()->after('type'));
         $this->db->getSchema()->refreshTableSchema(Table::FIELDLAYOUTS);
 
         foreach ($fieldLayouts as $fieldLayout) {

@@ -4,6 +4,7 @@
   label: 'Entry Types'|t('app'),
   instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
   id: 'entry-types',
+  disabled: readOnly,
 } %}
   {% block input %}
     {% import "_includes/forms" as forms %}
@@ -30,6 +31,7 @@
               id: "entry-type-select-#{random()}",
               values: entryTypes,
               includeGroupInValues: true,
+              disabled: readOnly,
             })) }}
           {% endtag %}
         {% endfor %}
@@ -211,7 +213,9 @@
         <img class="mb-xs" src="{{ baseIconsUrl }}/cards.svg" width="80" height="60" alt="">
         {{ input('radio', 'viewMode', 'cards', {
           checked: field.viewMode == 'cards',
+          class: 'fieldtoggle',
           disabled: readOnly,
+          data: {'target-prefix': 'view-mode--'},
         }) }}
         {{ 'Cards'|t('app') }}
       </label>
@@ -219,7 +223,9 @@
         <img class="mb-xs" src="{{ baseIconsUrl }}/cards-grid.svg" width="80" height="60" alt="">
         {{ input('radio', 'viewMode', 'cards-grid', {
           checked: field.viewMode == 'cards-grid',
+          class: 'fieldtoggle',
           disabled: readOnly,
+          data: {'target-prefix': 'view-mode--'},
         }) }}
         {{ 'Card grid'|t('app') }}
       </label>
@@ -227,7 +233,9 @@
         <img class="mb-xs" src="{{ baseIconsUrl }}/blocks.svg" width="80" height="60" alt="">
         {{ input('radio', 'viewMode', 'blocks', {
           checked: field.viewMode == 'blocks',
+          class: 'fieldtoggle',
           disabled: readOnly,
+          data: {'target-prefix': 'view-mode--'},
         }) }}
         {{ 'Blocks'|t('app') }}
       </label>
@@ -235,7 +243,9 @@
         <img class="mb-xs" src="{{ baseIconsUrl }}/index.svg" width="80" height="60" alt="">
         {{ input('radio', 'viewMode', 'index', {
           checked: field.viewMode == 'index',
+          class: 'fieldtoggle',
           disabled: readOnly,
+          data: {'target-prefix': 'view-mode--'},
         }) }}
         {{ 'Index'|t('app') }}
       </label>
@@ -338,10 +348,8 @@
 
     {% if readOnly %}
       config['disabled'] = true;
-    {% else %}
-      config['sortable'] = true;
     {% endif %}
 
-    Craft.ui.createCheckboxSelect(config).appendTo($defaultColumnsContainer);
+    Craft.ui.createSortableCheckboxSelect(config).appendTo($defaultColumnsContainer);
   })();
 {% endjs %}

@@ -3,8 +3,6 @@
 {% set viewMode = viewMode ?? null %}
 {% set size = size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small') %}
 
-{% dump {viewMode, inline: inline ?? null} %}
-
 {% apply spaceless %}
   {% tag 'ul' with {
     class: [

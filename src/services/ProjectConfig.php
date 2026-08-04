@@ -109,6 +109,8 @@ class ProjectConfig extends Component
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
     public const PATH_ELEMENT_SOURCES = 'elementSources';
+    /** @since 5.9.0 */
+    public const PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
     public const PATH_GLOBAL_SETS = 'globalSets';
@@ -916,6 +918,7 @@ class ProjectConfig extends Component
      * Returns a summary of all pending config changes.
      *
      * @return array
+     * @deprecated in 5.9.19
      */
     public function getPendingChangeSummary(): array
     {
@@ -927,7 +930,7 @@ class ProjectConfig extends Component
         foreach ($pendingChanges as $type => $changes) {
             $summary[$type] = [];
             foreach ($changes as $path) {
-                $pathParts = explode('.', $path);
+                $pathParts = ProjectConfigHelper::pathSegments($path);
                 if (count($pathParts) > 1) {
                     $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
                 }
@@ -1123,7 +1126,7 @@ class ProjectConfig extends Component
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = substr_count($path, '.');
+        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
@@ -1483,11 +1486,33 @@ class ProjectConfig extends Component
 
         unset($removedItem);
 
-        // Sort by number of dots to ensure deepest paths listed first
+        // Group paths by similarity, sorted by depth (descending), e.g.:
+        // - foo1.bar.baz
+        // - foo1.bar
+        // - foo2.bar.baz
+        // - foo2.bar
         $sorter = function($a, $b) {
-            $aDepth = substr_count($a, '.');
-            $bDepth = substr_count($b, '.');
-            return $bDepth <=> $aDepth;
+            if (str_starts_with($a, "$b.")) {
+                // a is a subpath of b
+                return -1;
+            }
+            if (str_starts_with($b, "$a.")) {
+                // b is a subpath of a
+                return 1;
+            }
+
+            // find the first segment where they differ and sort based on that
+            $aSegs = ProjectConfigHelper::pathSegments($a);
+            $bSegs = ProjectConfigHelper::pathSegments($b);
+
+            foreach ($aSegs as $i => $aSeg) {
+                $result = $aSeg <=> $bSegs[$i];
+                if ($result !== 0) {
+                    return $result;
+                }
+            }
+
+            return 0;
         };
 
         $newItems = array_unique($newItems);
@@ -1625,8 +1650,12 @@ class ProjectConfig extends Component
 
             if (!empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*' . preg_quote($uid) . '.*)$/mi';
-                    $replacements[] = '$1 # ' . $name;
+                    $name = trim((string)$name);
+
+                    if ($name !== '') {
+                        $uids[] = sprintf('/^.*\b%s\b.*$/m', preg_quote($uid));
+                        $replacements[] = "$0 # $name";
+                    }
                 }
             }
 
@@ -1846,14 +1875,12 @@ class ProjectConfig extends Component
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
             foreach ($rows as $path => $value) {
                 $current = &$data;
-                $segments = explode('.', $path);
+                $segments = ProjectConfigHelper::pathSegments($path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
                     if (!is_array($current)) {
                         $current = [];
                     }
-                    /** @phpstan-ignore-next-line */
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }

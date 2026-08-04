@@ -52,4 +52,16 @@ class ExecuteGqlQueryEvent extends Event
      * @var array|null The query result to be returned.
      */
     public ?array $result = null;
+
+    /**
+     * @var string[]|null The cache invalidation tags that were registered during the query execution.
+     * @since 5.9.11
+     */
+    public ?array $cacheTags = null;
+
+    /**
+     * @var int|null The duration that the query should be cached for.
+     * @since 5.9.11
+     */
+    public ?int $cacheDuration = null;
 }

@@ -57,6 +57,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
     activityTooltips: null,
+    _checkActivityTimeout: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -239,17 +240,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       // handle closing tips
       this.handleDismissibleTips();
 
-      if (this.isFullPage && Craft.messageReceiver) {
+      if (Craft.messageReceiver) {
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
         Craft.broadcaster.addEventListener('message', (ev) => {
           if (
-            (ev.data.event === 'saveDraft' &&
+            (['saveDraft', 'reorderNestedElements'].includes(ev.data.event) &&
               ev.data.canonicalId === this.settings.canonicalId &&
               (ev.data.draftId === this.settings.draftId ||
                 (ev.data.isProvisionalDraft && !this.settings.draftId))) ||
             (ev.data.event === 'saveElement' &&
               ev.data.id === this.settings.canonicalId &&
-              !this.settings.draftId)
+              (!this.settings.draftId || this.settings.isProvisionalDraft))
           ) {
             // Reload unless reloadOnBroadcastSave is disabled (unless the
             // draftId is different, in which case we really need to reload)
@@ -257,29 +258,43 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.settings.reloadOnBroadcastSave ||
               ev.data.draftId !== this.settings.draftId
             ) {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+              if (this.isFullPage) {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              } else if (this.slideout) {
+                this.queue?.push(async () => {
+                  this.slideout.reload();
+                });
+              }
             }
           } else if (
             ev.data.event === 'deleteDraft' &&
             ev.data.canonicalId === this.settings.canonicalId &&
             ev.data.draftId === this.settings.draftId
           ) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('draftId');
-            if (url.href !== document.location.href) {
-              window.location.href = url;
-            } else {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+            if (this.isFullPage) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('draftId');
+              if (url.href !== document.location.href) {
+                window.location.href = url;
+              } else {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              }
+            } else if (this.slideout) {
+              this.queue?.push(async () => {
+                this.slideout.settings.elementId = ev.data.id;
+                this.slideout.settings.draftId = false;
+                this.slideout.reload();
+              });
             }
           }
         });
@@ -439,7 +454,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             Craft.t('app', 'Are you sure you want to discard your changes?')
           )
         ) {
-          this.queue.unshift(
+          this.queue?.unshift(
             () =>
               new Promise((resolve, reject) => {
                 if (this.isFullPage) {
@@ -470,8 +485,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                       // Broadcast a saveMessage event, in case any chips/cards should be
                       // updated to stop showing the provisional changes
                       Craft.broadcaster.postMessage({
-                        event: 'saveElement',
-                        id: this.settings.canonicalId,
+                        event: 'deleteDraft',
+                        canonicalId: this.settings.canonicalId,
+                        draftId: this.settings.draftId,
                       });
 
                       this.slideout?.close();
@@ -975,9 +991,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       this.addListener($a, 'click', () => {
-        setTimeout(() => {
-          this.activatePreviewToken();
-        }, 1);
+        if (
+          decodeURIComponent($a.attr('href')).match(/\bpreview\/create-token\b/)
+        ) {
+          setTimeout(() => {
+            this.activatePreviewToken();
+          }, 1);
+        }
       });
 
       this.previewLinks.push($a);
@@ -1001,11 +1021,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     activatePreviewToken: function () {
-      if (this.settings.isLive) {
-        // don't do anything yet, but leave the event in case we need it later
-        return;
-      }
-
       this.activatedPreviewToken = true;
       this.updatePreviewLinks();
     },
@@ -1035,7 +1050,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         canonicalId: this.settings.canonicalId,
         siteId: this.settings.siteId,
         revisionId: this.settings.revisionId,
-        previewToken: this.settings.previewToken,
+        previewToken: this.settings.hashedPreviewToken,
       };
 
       if (this.settings.draftId && !this.settings.isProvisionalDraft) {
@@ -1073,11 +1088,11 @@ Craft.ElementEditor = Garnish.Base.extend(
      */
     getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
-
-      if (
+      const withPreviewParam =
         this.settings.previewParamValue &&
-        (previewParam || !this.settings.isLive)
-      ) {
+        (previewParam || !this.settings.isLive);
+
+      if (withPreviewParam) {
         // Randomize the URL so CDNs don't return cached pages
         params[previewParam || 'x-craft-preview'] =
           this.settings.previewParamValue;
@@ -1087,8 +1102,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         params[Craft.siteToken] = this.settings.siteToken;
       }
 
-      // No need for a token if we're looking at a live element
-      if (this.settings.isLive) {
+      if (!withPreviewParam) {
         const previewUrl = Craft.getUrl(url, params);
 
         if (asPromise) {
@@ -1100,7 +1114,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return previewUrl;
       }
 
-      if (!this.settings.previewToken) {
+      if (!this.settings.previewToken || !this.settings.hashedPreviewToken) {
         throw 'Missing preview token';
       }
 
@@ -1308,7 +1322,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     checkForm: function (force, saveDraft = null) {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             // If this is a revision, there's nothing to check
@@ -1386,7 +1400,8 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise<void>}
      */
     async refreshContent(params) {
-      this.settings.visibleLayoutElements = [];
+      this.settings.visibleLayoutElements = {};
+      this.settings.staticLayoutElements = {};
       const data = [this.serializeForm(true)];
       data.push(
         $.param({
@@ -1407,7 +1422,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     saveDraft: function () {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             this._saveDraftInternal(this.serializeForm(true))
@@ -1478,6 +1493,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         $.param({
           [this.namespaceInputName('visibleLayoutElements')]:
             this.settings.visibleLayoutElements,
+        }),
+        $.param({
+          [this.namespaceInputName('staticLayoutElements')]:
+            this.settings.staticLayoutElements,
         })
       );
 
@@ -1755,6 +1774,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       const extraData = {
         [this.namespaceInputName('visibleLayoutElements')]:
           this.settings.visibleLayoutElements,
+        [this.namespaceInputName('staticLayoutElements')]:
+          this.settings.staticLayoutElements,
       };
 
       // Are we editing a provisional draft?
@@ -1796,7 +1817,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.httpError = e.response.data ? e.response.data.message : null;
           }
           this._showFailStatus();
-          reject(e);
+          throw e;
         }
       }
 
@@ -1916,6 +1937,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Update the visible elements
       let $allTabContainers = $();
       const visibleLayoutElements = {};
+      const staticLayoutElements = {};
       let changedElements = false;
 
       for (const tabInfo of response.data.missingElements) {
@@ -1944,6 +1966,13 @@ Craft.ElementEditor = Garnish.Base.extend(
               visibleLayoutElements[tabInfo.uid] = [];
             }
             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (elementInfo.static) {
+              if (!staticLayoutElements[tabInfo.uid]) {
+                staticLayoutElements[tabInfo.uid] = [];
+              }
+              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+            }
 
             if (typeof elementInfo.html === 'string') {
               const $oldElement = $tabContainer.children(
@@ -2001,6 +2030,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.settings.visibleLayoutElements = visibleLayoutElements;
+      this.settings.staticLayoutElements = staticLayoutElements;
 
       // Update the tabs
       const updateTabs =
@@ -2298,7 +2328,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hideTip: function (ev) {
       const targetElement = ev.target;
       if (targetElement) {
-        const $targetParent = $(targetElement).closest('.readable');
+        const $targetParent = $(targetElement).closest('[data-layout-element]');
         if ($targetParent.length) {
           const layoutElementUid = $targetParent.data('layout-element');
           $targetParent.remove();
@@ -2323,7 +2353,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
-      this.queue.push(
+      this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'elements/recent-activity', {
@@ -2457,7 +2487,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.trigger('checkActivity', data);
 
-                setTimeout(() => {
+                this._checkActivityTimeout = setTimeout(() => {
                   this._checkActivity();
                 }, 15000);
                 resolve();
@@ -2478,12 +2508,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     destroy: function () {
-      this.queue.destroy();
+      this.queue?.destroy();
       delete this.queue;
       this.formObserver?.destroy();
       delete this.formObserver;
       this.preview?.destroy();
       delete this.preview;
+      this.$container.removeData('elementEditor');
+      clearTimeout(this._checkActivityTimeout);
       this.base();
     },
   },
@@ -2509,6 +2541,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      hashedPreviewToken: null,
       previewParamValue: null,
       revisionId: null,
       fieldId: null,
@@ -2518,6 +2551,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       saveParams: null,
       siteToken: null,
       visibleLayoutElements: {},
+      staticLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,

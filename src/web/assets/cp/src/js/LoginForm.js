@@ -331,15 +331,15 @@ Craft.LoginForm = Garnish.Base.extend(
           'POST',
           'auth/passkey-request-options'
         );
-        const authResponse = await startAuthentication(
-          optionsResponse.data.options
-        );
+        const authResponse = await startAuthentication({
+          optionsJSON: JSON.parse(optionsResponse.data.options),
+        });
         const loginResponse = await Craft.sendActionRequest(
           'POST',
           'users/login-with-passkey',
           {
             data: {
-              requestOptions: JSON.stringify(optionsResponse.data.options),
+              requestOptions: optionsResponse.data.options,
               response: JSON.stringify(authResponse),
             },
           }
@@ -354,6 +354,8 @@ Craft.LoginForm = Garnish.Base.extend(
 
         if (message) {
           this.showError(message);
+        } else {
+          console.warn(e);
         }
       } finally {
         this.passkeyBtn.endBusyState();

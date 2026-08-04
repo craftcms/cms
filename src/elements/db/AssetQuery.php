@@ -955,10 +955,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderPath) {
-            if (!str_ends_with($this->folderPath, '/') && Db::escapeParam($this->folderPath) === $this->folderPath) {
-                $this->folderPath .= '/';
+            $folderPath = (array)$this->folderPath;
+            foreach ($folderPath as &$path) {
+                if (
+                    is_strinG($path) &&
+                    !str_ends_with($path, '/') &&
+                    Db::escapeParam($path) === $path
+                ) {
+                    $path .= '/';
+                }
             }
-            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $this->folderPath));
+
+            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $folderPath));
         }
 
         if ($this->uploaderId) {
@@ -972,10 +980,11 @@ class AssetQuery extends ElementQuery
         if ($this->kind) {
             $kindCondition = ['or', Db::parseParam('assets.kind', $this->kind)];
             $kinds = Assets::getFileKinds();
+            $isPgsql = Craft::$app->getDb()->getIsPgsql();
             foreach ((array)$this->kind as $kind) {
                 if (isset($kinds[$kind])) {
                     foreach ($kinds[$kind]['extensions'] as $extension) {
-                        $kindCondition[] = ['like', 'assets.filename', "%.$extension", false];
+                        $kindCondition[] = [$isPgsql ? 'ilike' : 'like', 'assets.filename', "%.$extension", false];
                     }
                 }
             }

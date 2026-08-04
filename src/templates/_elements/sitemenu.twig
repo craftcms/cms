@@ -1,5 +1,5 @@
 {% set siteIds = siteIds ?? craft.app.sites.getEditableSiteIds() %}
-{% if siteIds|length %}
+{% if siteIds|length > 1 %}
     {% if selectedSiteId is not defined %}
         {% if requestedSite and requestedSite.id in siteIds %}
             {% set selectedSiteId = requestedSite.id %}

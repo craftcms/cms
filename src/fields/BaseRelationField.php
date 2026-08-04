@@ -34,6 +34,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -152,8 +153,34 @@ abstract class BaseRelationField extends Field implements
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
+            $emptyParam = array_shift($value);
+
+            if (self::isQueryConditionFieldMultiInstance($instances)) {
+                // look at the JSON values rather than the `relations` table data
+                // (see https://github.com/craftcms/cms/issues/17290 + https://github.com/craftcms/cms/pull/18092)
+                if (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
+                    $emptyCondition = ['or'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ];
+                    }
+                } else {
+                    $emptyCondition = ['and'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ];
+                    }
+                }
+                $conditions[] = $emptyCondition;
+            } elseif (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
                 $conditions[] = static::existsQueryCondition($field);
             } else {
                 $conditions[] = ['not', static::existsQueryCondition($field)];
@@ -161,6 +188,7 @@ abstract class BaseRelationField extends Field implements
         }
 
         if (!empty($value)) {
+            $siteId = ElementQuery::$activeQuery?->siteId;
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -169,7 +197,7 @@ abstract class BaseRelationField extends Field implements
             $condition = $parser->parse([
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ]);
+            ], $siteId !== '*' ? $siteId : null);
             if ($condition !== false) {
                 $conditions[] = $condition;
             }
@@ -181,6 +209,27 @@ abstract class BaseRelationField extends Field implements
 
         array_unshift($conditions, 'or');
         return $conditions;
+    }
+
+    /**
+     * @param self[] $instances
+     * @return bool
+     */
+    private static function isQueryConditionFieldMultiInstance(array $instances): bool
+    {
+        foreach ($instances as $instance) {
+            // See if this instance is used multiple times within its field layout
+            $allInstances = $instance->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+                $field instanceof CustomField &&
+                $field->getFieldUid() === $instance->uid
+            ));
+
+            if ($allInstances && count($allInstances) > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -759,37 +808,35 @@ JS, [
                     CancelableEvent $event,
                     ElementQuery $query,
                 ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
                                 [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ]
-                            );
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
 
-                            if (
-                                $this->sortable &&
-                                !$this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            count($query->orderBy ?? []) === 1 &&
+                            ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+                        ) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
                     }
                 },
@@ -810,7 +857,7 @@ JS, [
         return $query;
     }
 
-    private function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    private function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;
@@ -897,14 +944,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element): bool
-    {
-        return $this->localizeRelations;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -955,6 +994,8 @@ JS, [
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }
@@ -1316,7 +1357,14 @@ JS, [
                 'structure-id' => $s['structureId'] ?? null,
             ],
         ], $this->availableSources());
-        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
+
+        ArrayHelper::multisort(
+            $options,
+            fn(array $option) => $option['value'] === '*' ? 0 : $option['label'],
+            SORT_ASC,
+            SORT_NATURAL | SORT_FLAG_CASE,
+        );
+
         return $options;
     }
 
@@ -1469,7 +1517,6 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
-            $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [
@@ -1554,6 +1601,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1570,6 +1619,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1582,7 +1632,7 @@ JS, [
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }

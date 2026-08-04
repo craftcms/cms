@@ -57,6 +57,20 @@ class FindAndReplace extends BaseBatchedJob
         );
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function execute($queue): void
+    {
+        // for this job, we need to ensure the offset is zero for each batch;
+        // that's because the items from previous batch will no longer match the query when we start the second one,
+        // so setting offset at e.g. 100 after the first batch, would mean doing find and replace on the first 100 records,
+        // skipping next 100, running it on the 3rd set of records and so on
+        $this->itemOffset = 0;
+
+        parent::execute($queue);
+    }
+
     protected function processItem(mixed $item): void
     {
         if (is_string($item['content'])) {

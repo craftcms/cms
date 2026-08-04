@@ -17,3 +17,4 @@ vendor/
 cpresources/*
 .ddev/
 test-results/
+.claude/settings.local.json

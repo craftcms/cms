@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -18,7 +19,9 @@ use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Localization;
+use craft\helpers\Markdown;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
@@ -31,7 +34,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Number extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -217,6 +225,14 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
+    public function getDefaultValue(): int|null|float
+    {
+        return $this->defaultValue;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
@@ -274,7 +290,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
         try {
             $formatNumber = !$this->step && !$formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formatNumber = false;
         }
 
@@ -323,6 +339,15 @@ JS;
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
+            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
+        ]);
+    }
+
+    private function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->previewCurrency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
         ]);
     }
 
@@ -383,11 +408,11 @@ JS;
         };
 
         if ($this->prefix) {
-            $formatted = $this->prefix . $formatted;
+            $formatted = Markdown::processParagraph(Html::encode($this->prefix)) . $formatted;
         }
 
         if ($this->suffix) {
-            $formatted = $formatted . $this->suffix;
+            $formatted = $formatted . Markdown::processParagraph(Html::encode($this->suffix));
         }
 
         return $formatted;

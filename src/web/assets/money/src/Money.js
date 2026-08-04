@@ -19,14 +19,13 @@ import './Money.scss';
           .find('.clear-btn');
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
+        this.$field.on('blur', $.proxy(this, 'onBlur'));
         this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
         if (this.$clearBtn) {
           this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
         }
 
-        if (this.$field.val() != '') {
-          this.updateInputMask();
-        }
+        this.updateInputMask();
 
         this.$field.data('money-input', this);
       },
@@ -57,6 +56,10 @@ import './Money.scss';
       },
 
       onFocus: function () {
+        this.updateInputMask();
+      },
+
+      onBlur: function () {
         this.updateInputMask();
       },
 
@@ -97,7 +100,7 @@ import './Money.scss';
         maskOptions: {
           alias: 'currency',
           autoGroup: false,
-          clearMaskOnLostFocus: false,
+          clearMaskOnLostFocus: true,
           digits: 2,
           digitsOptional: false,
           groupSeparator: ',',

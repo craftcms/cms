@@ -49,15 +49,34 @@ class Structures extends Component
     public const EVENT_AFTER_INSERT_ELEMENT = 'afterInsertElement';
 
     /**
+     * @event MoveElementEvent The event that is triggered before an element’s position is updated.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting repositioned.
+     *
+     * @since 5.9.0
+     */
+    public const EVENT_BEFORE_UPDATE_ELEMENT = 'beforeUpdateElement';
+
+    /**
+     * @event MoveElementEvent The event that is triggered after an element’s position is updated.
+     * @since 5.9.0
+     */
+    public const EVENT_AFTER_UPDATE_ELEMENT = 'afterUpdateElement';
+
+    /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      *
      * In Craft 4.5 and later, you may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the
      * element from getting moved.
+     *
+     * @deprecated in 5.9.0. [[EVENT_BEFORE_UPDATE_ELEMENT]] should be used instead.
      */
     public const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
     /**
      * @event MoveElementEvent The event that is triggered after an element is moved.
+     *
+     * @deprecated in 5.9.0. [[EVENT_AFTER_UPDATE_ELEMENT]] should be used instead.
      */
     public const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
@@ -540,7 +559,7 @@ class Structures extends Component
 
         [$beforeEvent, $afterEvent] = match ($mode) {
             self::MODE_INSERT => [self::EVENT_BEFORE_INSERT_ELEMENT, self::EVENT_AFTER_INSERT_ELEMENT],
-            self::MODE_UPDATE => [self::EVENT_BEFORE_MOVE_ELEMENT, self::EVENT_AFTER_MOVE_ELEMENT],
+            self::MODE_UPDATE => [self::EVENT_BEFORE_UPDATE_ELEMENT, self::EVENT_AFTER_UPDATE_ELEMENT],
         };
 
         $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;

@@ -54,6 +54,7 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -74,6 +75,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
@@ -523,6 +525,20 @@ class Elements extends Component
      * @since 4.4.0
      */
     public const EVENT_AFTER_DELETE_FOR_SITE = 'afterDeleteForSite';
+
+    /**
+     * @var string
+     * @since 5.10.0
+     */
+    public const REF_TAG_PATTERN = '/
+        \{                                      # Tags always begin with a `{`
+            (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+            \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+            (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+            (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+            (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+        \}                                      # Tags always close with a `}`
+    /x';
 
     /**
      * @var array|null
@@ -1241,16 +1257,17 @@ class Elements extends Component
      * callback function.
      *
      * @param callable $callback
+     * @return mixed
      * @since 5.3.0
      */
-    public function ensureBulkOp(callable $callback): void
+    public function ensureBulkOp(callable $callback): mixed
     {
         if (empty($this->bulkKeys)) {
             $bulkKey = $this->beginBulkOp();
         }
 
         try {
-            $callback();
+            return $callback();
         } finally {
             if (isset($bulkKey)) {
                 $this->endBulkOp($bulkKey);
@@ -1502,6 +1519,7 @@ class Elements extends Component
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
+            'canonicalId' => $canonical->getCanonicalId(),
             'root' => $canonical->root,
             'lft' => $canonical->lft,
             'rgt' => $canonical->rgt,
@@ -1784,6 +1802,7 @@ class Elements extends Component
      * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
      * @param bool $checkAuthorization whether to ensure the current user is authorized to save the new element,
      * once its new attributes have been applied to it
+     * @param bool $copyModifiedFields whether to copy modified attribute/field data over to the duplicated element
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1796,6 +1815,7 @@ class Elements extends Component
         bool $placeInStructure = true,
         bool $asUnpublishedDraft = false,
         bool $checkAuthorization = false,
+        bool $copyModifiedFields = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1922,6 +1942,7 @@ class Elements extends Component
             $mainClone,
             $supportedSites,
             $element,
+            $copyModifiedFields,
             $placeInStructure,
             $newAttributes,
             $behaviors,
@@ -1933,6 +1954,10 @@ class Elements extends Component
                 // Start with $element’s site
                 if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
                     throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
+                }
+
+                if ($copyModifiedFields) {
+                    $this->copyModifiedFields($element, $mainClone);
                 }
 
                 // Should we add the clone to the source element’s structure?
@@ -2026,6 +2051,10 @@ class Elements extends Component
                             throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                         }
 
+                        if ($copyModifiedFields) {
+                            $this->copyModifiedFields($siteElement, $siteClone);
+                        }
+
                         $propagatedTo[$siteClone->siteId] = true;
                         if ($siteClone->isNewForSite) {
                             $mainClone->newSiteIds[] = $siteClone->siteId;
@@ -2035,7 +2064,7 @@ class Elements extends Component
                     // Now propagate $mainClone to any sites the source element didn’t already exist in
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
-                            $siteClone = $element->getIsDraft() && !$element->getIsUnpublishedDraft() ? null : false;
+                            $siteClone = $element->getIsDerivative() ? null : false;
                             if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 /** @phpstan-ignore-next-line */
                                 throw $siteClone
@@ -2067,6 +2096,89 @@ class Elements extends Component
         });
 
         return $mainClone;
+    }
+
+    private function copyModifiedFields(ElementInterface $from, ElementInterface $to): void
+    {
+        $modifiedAttributes = [
+            ...$from->getModifiedAttributes(),
+            ...$from->getDirtyAttributes(),
+        ];
+        $modifiedFields = [
+            ...$from->getModifiedFields(),
+            ...$from->getDirtyFields(),
+        ];
+
+        if ($from->duplicateOf?->getIsDraft()) {
+            $modifiedAttributes += [
+                ...$from->duplicateOf->getModifiedAttributes(),
+                ...$from->duplicateOf->getDirtyAttributes(),
+            ];
+            $modifiedFields += [
+                ...$from->duplicateOf->getModifiedFields(),
+                ...$from->duplicateOf->getDirtyFields(),
+            ];
+        }
+
+        $modifiedAttributes = array_unique($modifiedAttributes);
+        $modifiedFields = array_unique($modifiedFields);
+
+        $timestamp = Db::prepareDateForDb($to->dateUpdated);
+        $userId = Craft::$app->getUser()->getId();
+
+        if (!empty($modifiedAttributes)) {
+            $data = [];
+
+            foreach ($modifiedAttributes as $attribute) {
+                $data[] = [
+                    $to->id,
+                    $to->siteId,
+                    $attribute,
+                    $timestamp,
+                    false,
+                    $userId,
+                ];
+            }
+
+            Db::batchInsert(Table::CHANGEDATTRIBUTES, [
+                'elementId',
+                'siteId',
+                'attribute',
+                'dateUpdated',
+                'propagated',
+                'userId',
+            ], $data);
+        }
+
+        if (!empty($modifiedFields)) {
+            $data = [];
+            $fieldLayout = $to->getFieldLayout();
+
+            foreach ($modifiedFields as $handle) {
+                $field = $fieldLayout->getFieldByHandle($handle);
+                if ($field) {
+                    $data[] = [
+                        $to->id,
+                        $to->siteId,
+                        $field->id,
+                        $field->layoutElement->uid,
+                        $timestamp,
+                        false,
+                        $userId,
+                    ];
+                }
+            }
+
+            Db::batchInsert(Table::CHANGEDFIELDS, [
+                'elementId',
+                'siteId',
+                'fieldId',
+                'layoutElementUid',
+                'dateUpdated',
+                'propagated',
+                'userId',
+            ], $data);
+        }
     }
 
     /**
@@ -2844,6 +2956,10 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
+            if (!isset($users[$result['userId']])) {
+                continue;
+            }
+
             $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
@@ -3016,15 +3132,7 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/
-                \{                                      # Tags always begin with a {
-                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
-                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
-                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
-                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
-                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
-                \}                                      # Tags always close with a }
-            /x',
+            self::REF_TAG_PATTERN,
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
@@ -3395,9 +3503,16 @@ class Elements extends Component
                         $query->offset = null;
                         $query->limit = null;
 
+                        // The mapping criteria should take precedence here, except for `siteId`/`site`
+                        // (see https://github.com/craftcms/cms/pull/18704 and https://github.com/craftcms/cms/issues/18588)
+                        $siteParams = ['siteId', 'site'];
+                        $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
+                        $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
+
                         $criteria = array_merge(
-                            $map['criteria'] ?? [],
-                            $plan->criteria
+                            $siteCriteria,
+                            $plan->criteria,
+                            $otherCriteria,
                         );
 
                         // Save the offset & limit params for later
@@ -3691,6 +3806,7 @@ class Elements extends Component
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     * @param Element_SiteSettingsRecord|null $siteSettingsRecord
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3705,6 +3821,7 @@ class Elements extends Component
         bool $forceTouch = false,
         bool $crossSiteValidate = false,
         bool $saveContent = false,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
         /** @var ElementInterface&DraftBehavior $element */
         $isNewElement = !$element->id;
@@ -3794,8 +3911,6 @@ class Elements extends Component
                 'elementId' => $element->id,
                 'siteId' => $element->siteId,
             ]);
-        } else {
-            $siteSettingsRecord = null;
         }
 
         $element->isNewForSite = empty($siteSettingsRecord);
@@ -3827,7 +3942,7 @@ class Elements extends Component
             }
         }
 
-        $this->ensureBulkOp(function() use (
+        $success = $this->ensureBulkOp(function() use (
             $element,
             $isNewElement,
             $originalFirstSave,
@@ -3845,7 +3960,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
-            $siteSettingsRecord,
+            &$siteSettingsRecord,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
@@ -3941,6 +4056,8 @@ class Elements extends Component
                             $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
                             $element->tempId = null;
                         }
+
+                        $element->afterAssignedId();
                     }
                 }
 
@@ -3984,7 +4101,6 @@ class Elements extends Component
                     }
 
                     $content = [];
-                    $view = Craft::$app->getView();
 
                     if ($fieldLayout) {
                         $validUids = [];
@@ -4010,21 +4126,13 @@ class Elements extends Component
                             }
                         }
 
-                        $generatedFieldValues = [];
-                        foreach ($generatedFields as $field) {
-                            $validUids[$field['uid']] = true;
-
-                            $value = $view->renderObjectTemplate($field['template'] ?? '', $element);
-                            if ($value !== '') {
-                                $content[$field['uid']] = $value;
-                                if (($field['handle'] ?? '') !== '') {
-                                    $generatedFieldValues[$field['handle']] = $value;
+                        if ($oldContent) {
+                            foreach ($generatedFields as $field) {
+                                if (isset($oldContent[$field['uid']])) {
+                                    $content[$field['uid']] = $oldContent[$field['uid']];
                                 }
-                            } elseif (!$saveContent) {
-                                unset($oldContent[$field['uid']]);
                             }
                         }
-                        $element->setGeneratedFieldValues($generatedFieldValues);
                     }
 
                     // if we're only saving dirty fields, merge in the existing values,
@@ -4062,6 +4170,11 @@ class Elements extends Component
                 // Update the list of dirty attributes
                 $dirtyAttributes = $element->getDirtyAttributes();
 
+                /** @var array<int,ElementInterface> $siteElements */
+                $siteElements = [];
+                /** @var array<int,Element_SiteSettingsRecord> $siteSettingsRecords */
+                $siteSettingsRecords = [];
+
                 // Update the element across the other sites?
                 if ($propagate) {
                     $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
@@ -4073,27 +4186,74 @@ class Elements extends Component
                                 ->status(null)
                                 ->indexBy('siteId')
                                 ->all();
-                        } else {
-                            $siteElements = [];
                         }
 
                         foreach (array_keys($supportedSites) as $siteId) {
                             // Skip the initial site
                             if ($siteId != $element->siteId) {
                                 $siteElement = $siteElements[$siteId] ?? false;
+                                $siteElementRecord = null;
                                 if (!$this->_propagateElement(
                                     $element,
                                     $supportedSites,
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
-                                    saveContent: true,
+                                    siteSettingsRecord: $siteElementRecord,
                                 )) {
                                     throw new InvalidConfigException();
                                 }
+                                $siteElements[$siteId] = $siteElement;
+                                $siteSettingsRecords[$siteId] = $siteElementRecord;
                             }
                         }
                     }
+                }
+
+                // Save the generated fields after the element has been fully propagated,
+                // so Matrix/CB/etc. have had a chance to save their data via afterElementPropagate()
+                // (see https://github.com/craftcms/cms/issues/17938)
+                if (!$element->propagating && !empty($generatedFields)) {
+                    $siteElements[$element->siteId] = $element;
+                    $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
+
+                    $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
+                        foreach ($siteElements as $siteId => $siteElement) {
+                            $siteSettingsRecord = $siteSettingsRecords[$siteId];
+                            $content = $siteSettingsRecord->content ?? [];
+                            if (is_string($content)) {
+                                $content = $content !== '' ? Json::decode($content) : [];
+                            }
+                            $view = Craft::$app->getView();
+                            $generatedFieldValues = [];
+                            $updated = false;
+
+                            foreach ($generatedFields as $field) {
+                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                // handle 'true'/'false'/'null'/int/float values
+                                $value = App::normalizeValue($value) ?? '';
+
+                                if ($value !== ($content[$field['uid']] ?? '')) {
+                                    $updated = true;
+                                }
+                                if ($value !== '') {
+                                    $content[$field['uid']] = $value;
+                                    if (($field['handle'] ?? '') !== '') {
+                                        $generatedFieldValues[$field['handle']] = $value;
+                                    }
+                                } else {
+                                    unset($content[$field['uid']]);
+                                }
+                            }
+
+                            if ($updated) {
+                                $siteSettingsRecord->content = $content;
+                                $siteSettingsRecord->save(false, ['content']);
+                                $siteElement->setGeneratedFieldValues($generatedFieldValues);
+                            }
+                        }
+                    });
                 }
 
                 // It's now fully saved and propagated
@@ -4127,14 +4287,15 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    Db::deleteIfExists(
-                        Table::ELEMENTS_SITES,
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => array_keys($supportedSites)]],
-                        ]
-                    );
+                    $deleteCondition = [
+                        'and',
+                        ['elementId' => $element->id],
+                        ['not', ['siteId' => array_keys($supportedSites)]],
+                    ];
+
+                    Db::deleteIfExists(Table::ELEMENTS_SITES, $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEX, $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEXQUEUE, $deleteCondition);
                 }
 
                 // Invalidate any caches involving this element
@@ -4200,7 +4361,13 @@ class Elements extends Component
                     }
                 }
             }
+
+            return true;
         });
+
+        if (!$success) {
+            return false;
+        }
 
         // Fire an 'afterSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
@@ -4263,6 +4430,7 @@ class Elements extends Component
      * @param-out ElementInterface $siteElement
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether the element’s content should be saved
+     * @param Element_SiteSettingsRecord|null $siteSettingsRecord
      * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
@@ -4273,6 +4441,7 @@ class Elements extends Component
         ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
         bool $saveContent = true,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
@@ -4328,7 +4497,10 @@ class Elements extends Component
         // Copy the title value?
         if (
             $element::hasTitles() &&
-            $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey()
+            (
+                $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->title))
+            )
         ) {
             $siteElement->title = $element->title;
         }
@@ -4336,7 +4508,10 @@ class Elements extends Component
         // Copy the slug value?
         if (
             $element->slug !== null &&
-            $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey()
+            (
+                $siteElement->getSlugTranslationKey() === $element->getSlugTranslationKey() ||
+                ($element->propagateRequired && empty($siteElement->slug))
+            )
         ) {
             $siteElement->slug = $element->slug;
         }
@@ -4359,6 +4534,19 @@ class Elements extends Component
             }
         }
 
+        // Save it
+        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if (
+            ($crossSiteValidate || $element->propagateRequired) &&
+            $siteElement->enabled &&
+            $siteElement->getEnabledForSite()
+        ) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
+        }
+
+
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
 
@@ -4371,30 +4559,26 @@ class Elements extends Component
                 $fieldLayout = $element->getFieldLayout();
 
                 if ($fieldLayout !== null) {
-                    // Only copy the non-translatable field values
                     foreach ($fieldLayout->getCustomFields() as $field) {
-                        // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
                             $element->propagateAll ||
+                            // If propagateRequired is set, is the field value invalid on the propagated site element?
+                            (
+                                $element->propagateRequired &&
+                                $field->layoutElement->required &&
+                                $field->isValueEmpty($siteElement->getFieldValue($field->handle), $siteElement)
+                            ) ||
+                            // Has this field changed, and does it produce the same translation key as it did for the initial element?
                             (
                                 $element->isFieldDirty($field->handle) &&
                                 $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                             )
                         ) {
-                            // Copy the initial element’s value over
-                            $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                            $field->propagateValue($element, $siteElement);
                         }
                     }
                 }
             }
-        }
-
-        // Save it
-        $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
-
-        // validate element against "live" scenario across all sites, if element is enabled for the site
-        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
-            $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
         $siteElement->propagating = true;
@@ -4405,7 +4589,8 @@ class Elements extends Component
             $crossSiteValidate,
             false,
             supportedSites: $supportedSites,
-            saveContent: $saveContent
+            saveContent: $saveContent,
+            siteSettingsRecord: $siteSettingsRecord,
         );
 
         if (!$success) {

@@ -287,7 +287,6 @@ EOD;
             }
         }
 
-        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -325,7 +324,6 @@ EOD;
 
         test:
 
-        /** @phpstan-ignore-next-line */
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
@@ -594,7 +592,7 @@ EOD;
         $this->stdout(" → $message\n\n");
 
         Craft::$app->getComposer()->install([
-            'craftcms/cloud' => '*',
+            'craftcms/cloud' => '^3',
         ], function($type, $buffer) {
             if ($type === Process::ERR) {
                 $this->stderr($buffer);

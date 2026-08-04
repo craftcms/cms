@@ -91,7 +91,9 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         () => {
           button.classList.remove('loading');
         },
-        // give them 5 minutes to complete setup
+        // Re-request elevated session even if user just logged in
+        // to ensure they have full elevated session duration time or 5 minutes (whichever's lower)
+        // to complete the setup.
         Math.min(Craft.elevatedSessionDuration, 300)
       );
     },
@@ -144,6 +146,16 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
         id: data.containerId,
       },
     });
+
+    // Add alt text to QR code image
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR Code'),
+      });
+    }
   },
 
   showSuccess() {

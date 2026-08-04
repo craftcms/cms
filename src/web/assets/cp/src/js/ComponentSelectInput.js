@@ -123,7 +123,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     initComponentSort: function () {
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.componentSort = new Garnish.DragSort({
           container: this.$list,
           filter: this.settings.selectable
@@ -293,7 +293,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         });
       }
 
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         const $chipActions = $component.find('.chip-actions');
         if (!$chipActions.has('.move').length) {
           $('<button/>', {
@@ -383,6 +383,18 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         destructive: true,
       });
 
+      if (this.$addBtn.length) {
+        actions.push({
+          icon: async () => await Craft.ui.icon('arrows-rotate'),
+          label: Craft.t('app', 'Replace'),
+          callback: () => {
+            const menu = this.$addBtn.disclosureMenu().data('disclosureMenu');
+            menu.$alignmentElement = $component;
+            menu.show();
+          },
+        });
+      }
+
       return actions;
     },
 
@@ -450,13 +462,28 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.onChange();
     },
 
-    removeComponent: function ($component) {
+    removeComponent: function ($component, animate = true, callback = null) {
+      if (typeof animate == 'function') {
+        callback = animate;
+        animate = true;
+      }
+
       // Remove any inputs from the form data
       $('[name]', $component).removeAttr('name');
       this.removeComponents($component);
-      this.animateComponentAway($component, () => {
+
+      const afterRemove = () => {
         $component.parent('li').remove();
-      });
+        if (callback) {
+          callback();
+        }
+      };
+
+      if (animate) {
+        this.animateComponentAway($component, afterRemove);
+      } else {
+        afterRemove();
+      }
     },
 
     animateComponentAway: function ($component, callback) {
@@ -516,22 +543,19 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      const canAdd = this.canAddMoreComponents();
-      let $item = false;
-
-      if (canAdd) {
-        const $component = $(data.components[type][id][0]);
-        this.insertComponent($component);
-        this.addComponents($component);
-        $item = $component;
+      if (!this.canAddMoreComponents()) {
+        this.removeComponent(this.getComponents().last(), false);
       }
+
+      const $component = $(data.components[type][id][0]);
+      this.insertComponent($component);
+      this.addComponents($component);
+      let $item = $component;
 
       if (addToMenu && disclosureMenu) {
         const $menuItem = $(data.menuItems[type][id]);
         disclosureMenu.addItem($menuItem);
-        if (canAdd) {
-          disclosureMenu.hideItem($menuItem.children()[0]);
-        }
+        disclosureMenu.hideItem($menuItem.children()[0]);
         $item = $menuItem;
         $menuItem.find('button').on('activate', () => {
           this.addComponent(type, id);

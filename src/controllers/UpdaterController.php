@@ -69,6 +69,11 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionBackup(): Response
     {
+        // make sure migrations are pending
+        if (!Craft::$app->getUpdates()->getAreMigrationsPending()) {
+            return $this->sendFinished();
+        }
+
         try {
             Craft::$app->getDb()->backup();
         } catch (Throwable $e) {
@@ -390,7 +395,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something
-        $toVersion = App::normalizeVersion($toVersion);
+        $toVersion = App::normalizeVersion(ltrim($toVersion, '^'));
         $fromVersion = App::normalizeVersion($fromVersion);
 
         return Comparator::greaterThan($toVersion, $fromVersion);

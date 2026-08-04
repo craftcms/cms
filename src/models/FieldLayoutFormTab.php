@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\FieldLayoutComponent;
+use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\helpers\Html;
 
@@ -35,7 +36,8 @@ class FieldLayoutFormTab extends Model
     public bool $hasErrors = false;
 
     /**
-     * @var array The tab’s elements, whether they’re conditional, and their HTML form HTML.
+     * @var array{0:FieldLayoutElement,1:bool,2:string|false,3:bool}[] The tab’s elements, whether they’re conditional,
+     * their HTML form HTML, and whether they were rendered statically.
      * @since 4.0.0
      */
     public array $elements;
@@ -104,10 +106,11 @@ class FieldLayoutFormTab extends Model
     {
         $components = [];
 
-        foreach ($this->elements as [$layoutElement, $isConditional, $elementHtml]) {
+        foreach ($this->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
             /** @var FieldLayoutComponent $layoutElement */
             /** @var bool $isConditional */
             /** @var string|bool $elementHtml */
+            /** @var bool $isStatic */
             if (is_string($elementHtml) && $elementHtml) {
                 $components[] = $elementHtml;
             } elseif ($isConditional) {

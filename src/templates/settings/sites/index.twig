@@ -73,6 +73,7 @@
                     {% endif %}
                     {% if canSort %}
                         <td class="thin"></td>
+                        <td class="thin"></td>
                     {% endif %}
                     {% if multiple %}
                         <td class="thin"></td>
@@ -95,6 +96,7 @@
                             {% endif %}
                             {% if canSort %}
                                 <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                                <td class="thin actions-container"></td>
                             {% endif %}
                             {% if multiple %}
                                 <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>

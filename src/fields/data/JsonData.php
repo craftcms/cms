@@ -11,10 +11,13 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
 use craft\helpers\Json;
+use craft\web\twig\AllowableInSandbox;
+use craft\web\twig\AllowedInSandbox;
 use IteratorAggregate;
 use Traversable;
 use yii\base\BaseObject;
 use yii\base\InvalidCallException;
+use yii\base\UnknownMethodException;
 
 /**
  * JSON field data class.
@@ -22,7 +25,7 @@ use yii\base\InvalidCallException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.7.0
  */
-class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable
+class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable, AllowableInSandbox
 {
     public function __construct(
         private mixed $value,
@@ -36,6 +39,31 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
         return $this->getJson();
     }
 
+    public function __call($name, $params)
+    {
+        try {
+            return parent::__call($name, $params);
+        } catch (UnknownMethodException $e) {
+            if (!empty($params)) {
+                throw $e;
+            }
+
+            // This is probably just Twig falling back to calling a properly like it's a method
+            return null;
+        }
+    }
+
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        return true;
+    }
+
+    #[AllowedInSandbox]
     public function getType(): string
     {
         $type = gettype($this->value);
@@ -45,11 +73,13 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
         };
     }
 
+    #[AllowedInSandbox]
     public function getValue(): mixed
     {
         return $this->value;
     }
 
+    #[AllowedInSandbox]
     public function getJson(bool $pretty = false, string $indent = '  '): string
     {
         if (isset($this->value['__ERROR__'], $this->value['__VALUE__'])) {

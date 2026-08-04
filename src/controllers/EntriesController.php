@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
@@ -43,6 +44,16 @@ use yii\web\ServerErrorHttpException;
  */
 class EntriesController extends BaseEntriesController
 {
+    /**
+     * @since 5.9.0
+     */
+    public function actionIndex(): Response
+    {
+        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
+        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        return $this->redirect("content/$slug");
+    }
+
     /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
@@ -87,7 +98,7 @@ class EntriesController extends BaseEntriesController
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
-                    'baseUrl' => "entries/$section->handle/new",
+                    'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]);
             }
 
@@ -101,11 +112,14 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::createObject(Entry::class);
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->setAuthorIds(
-            $this->request->getQueryParam('authorIds') ??
-            $this->request->getQueryParam('authorId') ??
-            $user->id
-        );
+
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds(
+                $this->request->getQueryParam('authorIds') ??
+                $this->request->getQueryParam('authorId') ??
+                $user->id
+            );
+        }
 
         // Type
         if (($typeHandle = $this->request->getParam('type')) !== null) {
@@ -159,14 +173,9 @@ class EntriesController extends BaseEntriesController
             $entry->slug = ElementHelper::tempSlug();
         }
 
-        // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
-        DateTimeHelper::pause();
-
         // Post & expiry dates
         if (($postDate = $this->request->getParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
         }
 
         if (($expiryDate = $this->request->getParam('expiryDate')) !== null) {
@@ -183,9 +192,6 @@ class EntriesController extends BaseEntriesController
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
-
-        // Resume time
-        DateTimeHelper::resume();
 
         if (!$success) {
             return $this->asModelFailure($entry, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
@@ -281,6 +287,8 @@ class EntriesController extends BaseEntriesController
 
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
+
+        $this->enforceEditEntryPermissions($entry, $duplicate);
 
         if ($forceDisabled) {
             $entry->enabled = false;
@@ -414,10 +422,9 @@ class EntriesController extends BaseEntriesController
                     return false;
                 }
 
-
                 $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
 
-                return !empty(array_intersect($entryTypes, $sectionEntryTypes));
+                return !empty($entryTypes) && empty(array_diff($entryTypes, $sectionEntryTypes));
             })
             ->sortBy(fn(Section $section) => $section->getUiLabel())
             ->all();
@@ -453,15 +460,19 @@ class EntriesController extends BaseEntriesController
         $this->requireCpRequest();
 
         $sectionId = $this->request->getRequiredParam('sectionId');
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        if (empty($entryIds)) {
+            throw new BadRequestHttpException('entryIds cannot be empty.');
+        }
+
         $section = Craft::$app->getEntries()->getSectionById($sectionId);
         if (!$section) {
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        $entryIds = $this->request->getRequiredParam('entryIds');
-        if (empty($entryIds)) {
-            throw new BadRequestHttpException('entryIds cannot be empty.');
-        }
+        $this->requirePermission("saveEntries:$section->uid");
+
+        /** @var Entry[] $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
@@ -469,8 +480,22 @@ class EntriesController extends BaseEntriesController
             ->site('*')
             ->unique()
             ->all();
+
         if (empty($entries)) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
+        }
+
+        foreach ($entries as $entry) {
+            if (!$entry->canMove()) {
+                throw new ForbiddenHttpException('User is not authorized to perform this action.');
+            }
+        }
+
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+        $entryTypeIds = array_unique(array_map(fn(Entry $entry) => $entry->typeId, $entries));
+
+        if (!empty(array_diff($entryTypeIds, $sectionEntryTypeIds))) {
+            throw new BadRequestHttpException('Not all entries have a type supported by the target section.');
         }
 
         $errors = [];
@@ -559,14 +584,14 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author') ?? $entry->getAuthorId() ?? static::currentUser()->id,
+            'expiryDate' => $this->request->getBodyParam('expiryDate'),
+            'postDate' => $this->request->getBodyParam('postDate'),
+            'slug' => $this->request->getBodyParam('slug'),
+            'title' => $this->request->getBodyParam('title'),
+            'typeId' => $this->request->getBodyParam('typeId'),
+        ], fn($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -576,24 +601,14 @@ class EntriesController extends BaseEntriesController
             $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
         // Authors
-        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (!$entry->id) {
+        if (empty($entry->getAuthorIds()) && !$entry->id) {
             $entry->setAuthor(static::currentUser());
         }
 
@@ -602,6 +617,13 @@ class EntriesController extends BaseEntriesController
             $entry->setParentId($parentId);
         }
 
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        // Set the custom field values now that everything that could affect field conditions has been set
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
+
         // Is fresh?
         if ($this->request->getBodyParam('isFresh')) {
             $entry->setIsFresh();
@@ -609,5 +631,56 @@ class EntriesController extends BaseEntriesController
 
         // Revision notes
         $entry->setRevisionNotes($this->request->getBodyParam('notes'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassignModal(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = $this->request->getRequiredParam('oldUserIds');
+
+        return $this->asCpModal()
+            ->action('entries/reassign')
+            ->contentHtml(fn() =>
+                Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Choose a new author'),
+                    'name' => 'newUserId',
+                    'elementType' => User::class,
+                    'criteria' => [
+                        'id' => array_map(fn($id) => "not $id", $oldUserIds),
+                    ],
+                    'single' => true,
+                ]) .
+                implode('', array_map(fn($id) => Html::hiddenInput('oldUserIds[]', $id), $oldUserIds))
+            )
+            ->submitButtonLabel(Craft::t('app', 'Reassign'));
+    }
+
+    /**
+     * @since 5.10.0
+     */
+    public function actionReassign(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+        $this->requirePermission('deleteUsers');
+
+        $oldUserIds = array_map(fn($id) => (int)$id, $this->request->getRequiredParam('oldUserIds'));
+        $newUserId = (int)$this->request->getRequiredBodyParam('newUserId');
+
+        if (!$newUserId) {
+            return $this->asFailure(Craft::t('app', 'No new author selected.'));
+        }
+
+        $count = Craft::$app->getEntries()->reassignEntries($oldUserIds, $newUserId);
+
+        return $this->asSuccess(Craft::t('app', '{type} reassigned.', [
+            'type' => $count === 1 ? Entry::displayName() : Entry::pluralDisplayName(),
+        ]));
     }
 }

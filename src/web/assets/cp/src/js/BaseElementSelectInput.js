@@ -182,7 +182,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     initElementSort: function () {
-      if (this.settings.sortable) {
+      // hide the diamond icon (for drag sorting) if the device doesn't have mouse events
+      if (!Craft.hasMousePointerEvents()) {
+        $(
+          '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
+        ).hide();
+      }
+
+      // init drag-sorting if device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elementsContainer,
           filter: this.settings.selectable
@@ -312,28 +320,33 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
-    focusNextLogicalElement: function () {
+    getNextLogicalFocusElement: function () {
       let $focusTarget;
-      if (this.canAddMoreElements()) {
-        // If can add more elements, focus on search input or add button
-        // Focus on the container if neither of those are available
-        if (
-          this.$searchContainer.length &&
-          !this.$searchContainer.hasClass('hidden')
-        ) {
-          $focusTarget = this.$searchInput;
-        } else if (
-          this.$addElementBtn.length &&
-          !this.$addElementBtn.hasClass('hidden')
-        ) {
-          $focusTarget = this.$addElementBtn;
-        } else {
-          $focusTarget = this.$container;
-          this.$container.attr('tabindex', '-1');
-        }
-      } else {
-        this.focusLastRemoveBtn();
+      if (!this.canAddMoreElements()) {
+        return this.getLastActionBtn();
       }
+
+      // If can add more elements, focus on search input or add button
+      if (
+        this.$searchContainer.length &&
+        !this.$searchContainer.hasClass('hidden')
+      ) {
+        return this.$searchInput;
+      }
+
+      if (
+        this.$addElementBtn.length &&
+        !this.$addElementBtn.hasClass('hidden')
+      ) {
+        return this.$addElementBtn;
+      }
+
+      // Focus on the container if neither of those are available
+      return this.$container.attr('tabindex', '-1');
+    },
+
+    focusNextLogicalElement: function () {
+      const $focusTarget = this.getNextLogicalFocusElement();
 
       if ($focusTarget?.length) {
         $focusTarget.focus();
@@ -347,8 +360,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.focusLastActionBtn();
     },
 
+    getLastActionBtn: function () {
+      return this.$container.find('.action-btn').last();
+    },
+
     focusLastActionBtn: function () {
-      this.$container.find('.action-btn').last().focus();
+      this.getLastActionBtn().focus();
     },
 
     resetElements: function () {
@@ -396,7 +413,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           });
         }
 
-        if (this.settings.sortable) {
+        // only add the diamond icon (for drag-sorting) if device has mouse events
+        if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
             .createButton({
               class: 'chromeless small move-btn',
@@ -422,7 +440,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.addItems($elements.parent('li'));
+        this.elementSort?.addItems($elements.parent('li'));
       }
 
       if (this.settings.editable) {
@@ -811,10 +829,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           multiSelect: this.settings.limit != 1,
           hideOnSelect: false,
           showSiteMenu: this.settings.showSiteMenu,
+          siteIds: this.settings.siteIds,
           disabledElementIds: this.getDisabledElementIds(),
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
-          triggerElement: this.$addElementBtn,
+          triggerElement: () => this.getNextLogicalFocusElement(),
           modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
@@ -833,7 +852,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       const ids = [];
 
       for (let i = 0; i < this.$elements.length; i++) {
-        ids.push(this.$elements.eq(i).data('id'));
+        if (
+          this.settings.modalSettings.matchSiteBeforeDisablingElement &&
+          this.settings.modalSettings.siteId
+        ) {
+          if (
+            this.$elements.eq(i).data('siteId') ==
+            this.settings.modalSettings.siteId
+          ) {
+            ids.push(this.$elements.eq(i).data('id'));
+          }
+        } else {
+          ids.push(this.$elements.eq(i).data('id'));
+        }
       }
 
       return ids;
@@ -860,6 +891,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.modal?.disableSelectBtn();
       this.modal?.showFooterSpinner();
 
+      // Pause the element editor so we aren’t causing multiple draft saves
+      this.elementEditor?.pause();
+
       if (this._$replaceElement) {
         this.removeElement(this._$replaceElement);
         this._$replaceElement = null;
@@ -872,6 +906,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           case 'large':
             return ['chip', 'large'];
           case 'cards':
+          case 'cards-grid':
             return ['card', null];
           default:
             return ['chip', 'small'];
@@ -933,6 +968,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+
+      this.elementEditor?.resume();
     },
 
     onModalHide: function () {
@@ -948,13 +985,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       this._$replaceElement = null;
-
-      // If we can't add any more elements, don't focus on the “Add” button
-      if (!this.canAddMoreElements()) {
-        setTimeout(() => {
-          this.focusNextLogicalElement();
-        }, 200);
-      }
     },
 
     selectElements: async function (elements) {
@@ -982,8 +1012,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     selectStructuredElements: async function (elements) {
-      // Get the new element HTML
-      var selectedElementIds = this.getSelectedElementIds();
+      // when branchLimit is 1, a new selection needs to replace the existing one;
+      // in that case, don't include old IDs, so Structures::applyBranchLimitToElements() keeps the new element;
+      // (it's called from relational-fields/structured-input-html)
+      var selectedElementIds =
+        this.settings.branchLimit == 1 ? [] : this.getSelectedElementIds();
 
       for (var i = 0; i < elements.length; i++) {
         selectedElementIds.push(elements[i].id);
@@ -1503,6 +1536,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       limit: null,
       defaultPlacement: 'end',
       showSiteMenu: false,
+      siteIds: null,
       modalStorageKey: null,
       modalSettings: {},
       onAddElements: $.noop,

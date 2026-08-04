@@ -153,6 +153,11 @@
 {% endmacro %}
 
 
+{% macro fieldSelect(config) %}
+    {% include "_includes/forms/fieldSelect" with config only %}
+{% endmacro %}
+
+
 {% macro autosuggest(config) %}
     {% include "_includes/forms/autosuggest" with config only %}
 {% endmacro %}
@@ -389,6 +394,12 @@
 {% macro entryTypeSelectField(config) %}
     {% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/entryTypeSelect') }}
+{% endmacro %}
+
+
+{% macro fieldSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "fieldselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/fieldSelect') }}
 {% endmacro %}
 
 

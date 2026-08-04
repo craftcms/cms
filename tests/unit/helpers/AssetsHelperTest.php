@@ -31,15 +31,6 @@ class AssetsHelperTest extends TestCase
      */
     protected UnitTester $tester;
 
-    public function _fixtures(): array
-    {
-        return [
-            'assets' => [
-                'class' => AssetFixture::class,
-            ],
-        ];
-    }
-
     /**
      * @dataProvider generateUrlDataProvider
      * @param string $expected
@@ -48,6 +39,10 @@ class AssetsHelperTest extends TestCase
      */
     public function testGenerateUrl(string $expected, array $params): void
     {
+        $this->tester->haveFixtures([
+            'assets' => AssetFixture::class,
+        ]);
+
         $assetQuery = Asset::find();
 
         foreach ($params as $key => $value) {

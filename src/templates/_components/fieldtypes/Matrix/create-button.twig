@@ -9,7 +9,6 @@
         type: entryTypes|first.handle,
       },
       aria: {
-        label: entryTypes|first.name|t('site'),
         describedby: labelId,
       },
     },
@@ -67,13 +66,14 @@
           },
         }) %}
         {{ disclosureMenu(items, {
-          buttonLabel: group,
+          buttonLabel: group|t('site'),
           buttonSpinner: true,
           buttonAttributes: {
             class: {
               dashed: true,
               add: loop.first,
               icon: loop.first,
+              'btngroup-btn-first': loop.first,
             }|filter|keys,
             aria: {
               describedby: btngroupDescriptionId,

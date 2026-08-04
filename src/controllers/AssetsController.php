@@ -15,12 +15,14 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
+use craft\events\SaveAssetImageEvent;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -68,6 +70,16 @@ use ZipArchive;
 class AssetsController extends Controller
 {
     use AssetsControllerTrait;
+
+    /**
+     * @event SaveAssetImageEvent The event that is triggered before an edited asset image is saved.
+     *
+     * Event handlers may set [[SaveAssetImageEvent::handled]] to `true` in order to skip
+     * Craft's native image editor save implementation.
+     *
+     * @since 5.10.6
+     */
+    public const EVENT_BEFORE_SAVE_IMAGE = 'beforeSaveImage';
 
     /**
      * @inheritdoc
@@ -142,6 +154,9 @@ class AssetsController extends Controller
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
+
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
 
         return $this->asJson([
             'img' => $asset->getPreviewThumbImg($width, $height),
@@ -347,6 +362,14 @@ class AssetsController extends Controller
             }
         }
 
+        // try to get uploaded asset's URL
+        $url = null;
+        try {
+            $url = $asset->getUrl();
+        } catch (Throwable) {
+            // do nothing
+        }
+
         if ($asset->conflictingFilename !== null) {
             $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
@@ -357,12 +380,14 @@ class AssetsController extends Controller
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                'url' => $url,
             ]);
         }
 
         return $this->asSuccess(data: [
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
+            'url' => $url,
         ]);
     }
 
@@ -383,6 +408,14 @@ class AssetsController extends Controller
 
         $sourceAssetId = $this->request->getBodyParam('sourceAssetId');
         $targetFilename = $this->request->getBodyParam('targetFilename');
+
+        if (
+            $targetFilename &&
+            (str_contains($targetFilename, '/') || str_contains($targetFilename, '\\'))
+        ) {
+            throw new BadRequestHttpException('Invalid filename: $targetFilename');
+        }
+
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();
@@ -408,8 +441,14 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace ?: $sourceAsset);
-        $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace ?: $sourceAsset);
+        if ($assetToReplace) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+        }
+        if ($sourceAsset) {
+            $this->requireVolumePermissionByAsset('replaceFiles', $sourceAsset);
+            $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $sourceAsset);
+        }
 
         // Handle the Element Action
         if ($assetToReplace !== null && $uploadedFile) {
@@ -432,6 +471,11 @@ class AssetsController extends Controller
                     ->folderId($sourceAsset->folderId)
                     ->filename(Db::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+                    $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+                }
             }
 
             // If we have an actual asset for which to replace the file, just do it.
@@ -461,7 +505,11 @@ class AssetsController extends Controller
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime(
+                $resultingAsset->dateUpdated,
+                Formatter::FORMAT_WIDTH_SHORT,
+                true,
+            ),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),
@@ -534,7 +582,7 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folder);
         $assets->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();
@@ -668,6 +716,10 @@ class AssetsController extends Controller
 
             // If there's a conflicting asset, then merge and replace the file.
             if ($conflictingAsset) {
+                $this->requireVolumePermissionByAsset('deleteAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('savePeerAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $conflictingAsset);
+
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
@@ -724,11 +776,17 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The destination folder does not exist');
         }
 
-        // Check if it's possible to delete objects in the source volume, create folders
-        // in the target volume, and save assets in the target volume.
-        $this->requireVolumePermissionByFolder('deleteAssets', $folderToMove);
-        $this->requireVolumePermissionByFolder('createFolders', $destinationFolder);
+        // Make sure the user has permission to move the source folder
+        // (same permissions checked for `data-movable`)
+        $this->requireVolumePermissionByFolder('savePeerAssets', $folderToMove);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $folderToMove);
+
+        // Make sure the user has permission to move folders into the target folder
+        // (same permissions checked for `data-can-move-to`)
         $this->requireVolumePermissionByFolder('saveAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deleteAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('savePeerAssets', $destinationFolder);
+        $this->requireVolumePermissionByFolder('deletePeerAssets', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
@@ -835,6 +893,13 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to edit does not exist.'));
         }
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
+        }
+
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
         $html = $this->getView()->renderTemplate('_special/image_editor.twig');
@@ -856,7 +921,14 @@ class AssetsController extends Controller
 
         $asset = Asset::findOne($assetId);
         if (!$asset) {
-            throw new BadRequestHttpException('The Asset cannot be found');
+            throw new BadRequestHttpException("Invalid asset ID: $asset");
+        }
+
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
         }
 
         try {
@@ -923,7 +995,27 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('Invalid cropping parameters passed');
         }
 
-        // TODO Fire an event for any other image editing takers.
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE)) {
+            $event = new SaveAssetImageEvent([
+                'asset' => $asset,
+                'replace' => (bool)$replace,
+                'viewportRotation' => $viewportRotation,
+                'imageRotation' => $imageRotation,
+                'cropData' => $cropData,
+                'focalPoint' => $focalPoint,
+                'imageDimensions' => $imageDimensions,
+                'flipData' => $flipData,
+                'zoom' => $zoom,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE, $event);
+
+            if ($event->handled) {
+                return $this->asSuccess(data: array_filter([
+                    'newAssetId' => $event->newAssetId,
+                ]));
+            }
+        }
+
         $transformer = new ImageTransformer();
 
         $originalImageWidth = $asset->width;
@@ -1128,6 +1220,7 @@ class AssetsController extends Controller
                 throw new ServerErrorHttpException('Image transform cannot be created.', previous: $e);
             }
         } else {
+            $this->requirePermission('accessCp');
             $assetId = $this->request->getRequiredBodyParam('assetId');
             $handle = $this->request->getRequiredBodyParam('handle');
             if (!is_string($handle)) {
@@ -1179,6 +1272,9 @@ class AssetsController extends Controller
         if (!$asset) {
             return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
         }
+
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
 
         $previewHtml = null;
 
@@ -1283,6 +1379,16 @@ class AssetsController extends Controller
     {
         if ($uploadedFile->getHasError()) {
             throw new UploadFailedException($uploadedFile->error);
+        }
+
+        // Make sure the file extension is allowed
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+        $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
+
+        if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+            throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                'extension' => $extension,
+            ]));
         }
 
         // Move the uploaded file to the temp folder
@@ -1395,6 +1501,9 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+
         // get the folder for selected asset
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();
@@ -1461,6 +1570,23 @@ class AssetsController extends Controller
                 ['id' => $assetIds],
                 ['folderId' => array_unique($folderIds)],
             ]);
+
+        // make sure the user has permission to move each of these assets
+        $volumeIds = (clone $query)
+            ->select(['volumeId'])
+            ->groupBy(['volumeId'])
+            ->column();
+
+        $volumesService = Craft::$app->getVolumes();
+
+        foreach ($volumeIds as $volumeId) {
+            $volume = $volumesService->getVolumeById($volumeId);
+            if ($volume) {
+                $this->requireVolumePermission('savePeerAssets', $volume->uid);
+                $this->requireVolumePermission('deletePeerAssets', $volume->uid);
+            }
+        }
+
         $count = (int)$query->count();
         $totalSize = (int)$query->sum('[[size]]');
 

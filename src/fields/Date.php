@@ -356,16 +356,12 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             if ($this->showTimeZone) {
                 $timeZone = $formatter->timeZone;
                 $formatter->timeZone = $value->getTimezone()->getName();
-                $html = sprintf(
-                    '%s %s',
-                    $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    $value->format('T')
-                );
+                $html = $formatter->asDatetime($value, Locale::LENGTH_SHORT, true);
                 $formatter->timeZone = $timeZone;
                 return $html;
             }
 
-            return $formatter->asDatetime($value, Locale::LENGTH_SHORT);
+            return $formatter->asDatetime($value, Locale::LENGTH_SHORT, true);
         }
 
         if ($this->showDate) {
@@ -422,7 +418,9 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             return null;
         }
 
+        /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
+            /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 

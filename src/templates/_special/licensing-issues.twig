@@ -46,15 +46,10 @@
           </span>
         </div>
 
-        {% set refreshLabel %}
-          {%- apply spaceless %}
-            <div data-icon="refresh" aria-hidden="true"></div>
-            {{ 'Refresh'|t('app') }}
-          {% endapply -%}
-        {% endset %}
         {{ forms.button({
           id: 'refresh-btn',
-          labelHtml: refreshLabel,
+          icon: 'refresh',
+          label: 'Refresh'|t('app'),
           class: 'hairline',
           spinner: true,
         }) }}

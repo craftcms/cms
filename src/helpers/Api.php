@@ -29,6 +29,11 @@ abstract class Api
      */
     public static function headers(): array
     {
+        $request = Craft::$app->getRequest();
+        $user = Craft::$app->getUser()->getIdentity();
+        $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $pluginsService = Craft::$app->getPlugins();
+
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => Craft::$app->env,
@@ -43,7 +48,6 @@ abstract class Api
         $headers['X-Craft-Platform'] = implode(',', $platform);
 
         // request info
-        $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest()) {
             if (($host = $request->getHostInfo()) !== null) {
                 $headers['X-Craft-Host'] = $host;
@@ -54,7 +58,7 @@ abstract class Api
         }
 
         // email
-        if (($user = Craft::$app->getUser()->getIdentity()) !== null) {
+        if ($user) {
             $headers['X-Craft-User-Email'] = $user->email;
         }
 
@@ -63,13 +67,12 @@ abstract class Api
             $headers['X-Craft-License'] = $licenseKey;
         } elseif (defined('CRAFT_LICENSE_KEY')) {
             $headers['X-Craft-License'] = '__INVALID__';
-        } elseif ($user) {
+        } elseif ($user && $allowAdminChanges) {
             $headers['X-Craft-License'] = '__REQUEST__';
         }
 
         // plugin info
         $pluginLicenses = [];
-        $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled'] && !$pluginInfo['private']) {
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
@@ -78,7 +81,9 @@ abstract class Api
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
-                $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
+                if ($licenseKey || $allowAdminChanges) {
+                    $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
+                }
             }
         }
         if (!empty($pluginLicenses)) {

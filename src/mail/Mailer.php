@@ -11,12 +11,13 @@ use Craft;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\App;
+use craft\helpers\Markdown;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 use yii\mail\MailEvent;
 
 /**
@@ -177,9 +178,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $subject = $view->renderString($systemMessage->subject, $variables);
-                $textBody = $view->renderString($systemMessage->body, $variables);
-                $htmlBody = $view->renderString($systemMessage->body, $variables, escapeHtml: true);
+                $subject = $view->renderSandboxedString($systemMessage->subject, $variables);
+                $textBody = $view->renderSandboxedString($systemMessage->body, $variables);
+                $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
@@ -199,7 +200,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
                 try {
                     $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                        'body' => Template::raw(Markdown::process($htmlBody)),
+                        'body' => Template::raw(Markdown::process($htmlBody, 'gfm-comment')),
                     ]), $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body
@@ -226,6 +227,10 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             return parent::send($message);
+        } catch (TransportExceptionInterface $e) {
+            Craft::warning('Error sending email: ' . $e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return false;
         } finally {
             // Set things back to normal
             Craft::$app->language = $language;
