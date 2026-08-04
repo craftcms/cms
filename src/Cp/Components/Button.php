@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
@@ -218,13 +219,24 @@ class Button extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
+        // Legacy aliases and custom icons are resolved here, same as `Icon`
+        // — `<craft-button>`'s `icon` is a single name attribute (no separate
+        // `family`), so a non-`solid` family is folded into it as a prefix.
+        $icon = null;
+        if ($this->icon !== null) {
+            $resolvedIcon = Icons::resolveIconData($this->icon);
+            $icon = $resolvedIcon['family'] !== 'solid'
+                ? "{$resolvedIcon['family']}/{$resolvedIcon['name']}"
+                : $resolvedIcon['name'];
+        }
+
         return [
             'id' => $this->getId(),
             'type' => $this->href === null ? $this->type : null,
             'variant' => $this->getVariant(),
             'inherit' => $this->inherit,
             'size' => $this->getSize(),
-            'icon' => $this->icon,
+            'icon' => $icon,
             'icon-position' => $this->iconPosition,
             'loading' => $this->loading,
             'active' => $this->active ? 'true' : null,

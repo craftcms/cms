@@ -1124,6 +1124,19 @@ readonly class ElementHtml
             ], fn ($value) => $value !== null);
         }
 
+        // `craft-action-item` resolves its `icon` client-side (defaulting to
+        // the `solid` family) with no knowledge of `Icons::LEGACY_ICON_MAP` or
+        // which names are custom icons — resolve here and, when the icon
+        // isn't in the default `solid` family, prefix it the same way
+        // `Navigation.php` does for `custom-icons/*` icons.
+        $iconAttr = false;
+        if ($item['icon'] ?? false) {
+            $resolvedIcon = Icons::resolveIconData($item['icon']);
+            $iconAttr = $resolvedIcon['family'] !== 'solid'
+                ? "{$resolvedIcon['family']}/{$resolvedIcon['name']}"
+                : $resolvedIcon['name'];
+        }
+
         $attributes = Arr::merge([
             // Deliberately *not* run through `InputNamespace::namespaceId()`:
             // this whole method already runs inside its own
@@ -1132,7 +1145,7 @@ readonly class ElementHtml
             // attribute in the returned HTML automatically — namespacing it
             // here too would double it up.
             'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
-            'icon' => $item['icon'] ?? false,
+            'icon' => $iconAttr,
             'icon-color' => $color ?: false,
             'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : false,
             'disabled' => $item['disabled'] ?? false,
