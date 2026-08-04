@@ -120,6 +120,11 @@ class Address extends Element
                 'type' => Type::string(),
                 'description' => 'Second line of the address',
             ],
+            'addressLine3' => [
+                'name' => 'addressLine3',
+                'type' => Type::string(),
+                'description' => 'Third line of the address',
+            ],
             'organization' => [
                 'name' => 'organization',
                 'type' => Type::string(),

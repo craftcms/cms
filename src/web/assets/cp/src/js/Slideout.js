@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -9,7 +11,10 @@
       $outerContainer: null,
       $container: null,
       $shade: null,
+      $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
+      $triggerElement: null,
       isOpen: false,
+      isOpening: false,
       useMobileStyles: null,
 
       init: function (contents, settings) {
@@ -28,9 +33,15 @@
           .data('slideout', this)
           .appendTo(this.$outerContainer);
 
+        if (this.$container.attr('id')) {
+          Craft.Slideout.instances[this.$container.attr('id')] = this;
+        }
+
         Garnish.addModalAttributes(this.$outerContainer);
 
         Craft.trapFocusWithin(this.$container);
+
+        this.$liveRegion.appendTo(this.$container);
 
         if (this.settings.autoOpen) {
           this.open();
@@ -42,8 +53,9 @@
           return;
         }
 
-        this.setTriggerElement(document.activeElement);
-
+        this.setTriggerElement(
+          this.settings.triggerElement || document.activeElement
+        );
         this._cancelTransitionListeners();
 
         const activePreview =
@@ -74,34 +86,52 @@
 
           // Keep the shade + container to the end of <body> so they get the highest sub-z-indexes
           if (activePreview) {
-            this.$shade.appendTo(activePreview.$editorContainer);
-          } else {
-            this.$shade.appendTo(Garnish.$bod);
           }
 
-          this.$shade.show();
+          this.$shade.appendTo(Garnish.$bod).show();
+        } else if (this.$shade) {
+          this.$shade.remove();
+          delete this.$shade;
         }
+
+        this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
 
         if (activePreview) {
-          this.$outerContainer.appendTo(activePreview.$editorContainer);
-        } else {
-          this.$outerContainer.appendTo(Garnish.$bod);
+          // keep the width equal to the edit pane width
+          this.updateWidthsForPreviewPane(activePreview);
+          let containerWidth = activePreview.$editorContainer.width();
+          const resizeObserver = new ResizeObserver((entries) => {
+            if (
+              this.isOpen &&
+              containerWidth !==
+                (containerWidth = activePreview.$editorContainer.width())
+            ) {
+              this.updateWidthsForPreviewPane(activePreview);
+            }
+          });
+          resizeObserver.observe(activePreview.$editorContainer[0]);
+          activePreview.on('beforeClose', () => {
+            resizeObserver.disconnect();
+          });
         }
 
-        this.$outerContainer.removeClass('hidden');
+        this.isOpening = true;
 
         if (this.useMobileStyles) {
-          this.$container
-            .css('top', '100vh')
-            .css(Garnish.ltr ? 'left' : 'right', '');
+          this.$container.css({
+            top: '100vh',
+            [Craft.Slideout.positionProp()]: '',
+          });
         } else {
-          this.$container
-            .css('top', '')
-            .css(Garnish.ltr ? 'left' : 'right', '100vw');
+          this.$container.css({
+            top: '',
+            [Craft.Slideout.positionProp()]: '100vw',
+          });
         }
 
-        this.$container.one('transitionend.slideout', () => {
-          Craft.setFocusWithin(this.$container);
+        this._afterTransition(this.$container, () => {
+          this.isOpening = false;
+          this.setFocusWithin();
         });
 
         if (this.$shade) {
@@ -126,8 +156,20 @@
         this.trigger('open');
       },
 
+      setFocusWithin: function () {
+        Craft.setFocusWithin(this.$container);
+      },
+
+      updateWidthsForPreviewPane: function (activePreview) {
+        const width = activePreview.$editorContainer.width() - 1;
+        if (this.$shade) {
+          this.$shade.width(width);
+        }
+        this.$outerContainer.css('width', `calc(${width}px - var(--m) * 2)`);
+      },
+
       setTriggerElement: function (trigger) {
-        this.settings.triggerElement = trigger;
+        this.$triggerElement = $(trigger);
       },
 
       close: function () {
@@ -142,23 +184,57 @@
         this._cancelTransitionListeners();
 
         if (this.$shade) {
-          this.$shade
-            .removeClass('so-visible')
-            .one('transitionend.slideout', () => {
-              this.$shade.hide();
-            });
+          this.$shade.removeClass('so-visible');
+          this._afterTransition(this.$shade, () => {
+            this.$shade.hide();
+          });
         }
 
         Craft.Slideout.removePanel(this);
         Garnish.uiLayerManager.removeLayer();
         Garnish.resetModalBackgroundLayerVisibility();
-        this.$container.one('transitionend.slideout', () => {
+        this._afterTransition(this.$container, () => {
           this.$outerContainer.addClass('hidden');
           this.trigger('close');
         });
 
-        if (this.settings.triggerElement) {
-          this.settings.triggerElement.focus();
+        if (this.$triggerElement?.length) {
+          let focusTarget = $(this.$triggerElement)[0]; // Ensure we convert from jQuery to DOM element
+
+          // Check if target is still visible
+          if (!focusTarget.checkVisibility()) {
+            // If it's a disclosure, get the disclosure trigger instead
+            const disclosure = focusTarget.closest('.menu--disclosure');
+            if (disclosure) {
+              const disclosureId = disclosure.getAttribute('id');
+              focusTarget = document.querySelector(
+                `[aria-controls="${disclosureId}"]`
+              );
+            } else {
+              focusTarget = null;
+            }
+          }
+
+          if (focusTarget) {
+            setTimeout(() => {
+              focusTarget.focus();
+            }, 150);
+          }
+        }
+      },
+
+      /**
+       * Performs the callback after the CSS transition has ended, or immediately if user prefers reduced motion
+       * @param $target
+       * @param callback
+       * @private
+       */
+      _afterTransition: function ($target, callback) {
+        // If a user prefers reduced motion, perform the callback immediately
+        if (Garnish.prefersReducedMotion()) {
+          callback();
+        } else {
+          $target.one('transitionend.slideout', callback);
         }
       },
 
@@ -183,6 +259,11 @@
         this.$outerContainer = null;
         this.$container = null;
 
+        Craft.Slideout.instances = Craft.filterObject(
+          Craft.Slideout.instances,
+          (instance) => instance !== this
+        );
+
         this.base();
       },
     },
@@ -195,7 +276,17 @@
         closeOnShadeClick: true,
         triggerElement: null,
       },
+      instances: {},
       openPanels: [],
+      positionProp: function () {
+        // go with the opposite of the setting, b/c of the way we animate it
+        return `inset-inline-${
+          Craft.slideoutPosition === 'start' ? 'end' : 'start'
+        }`;
+      },
+      totalPanels: function () {
+        return Craft.Slideout.openPanels.length;
+      },
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
         if (panel.useMobileStyles) {
@@ -211,16 +302,16 @@
         if (panel.useMobileStyles) {
           panel.$container.css('top', '100vh');
         } else {
-          panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
+          panel.$container.css(Craft.Slideout.positionProp(), '100vw');
           Craft.Slideout.updateStyles();
         }
       },
       updateStyles: function () {
-        const totalPanels = Craft.Slideout.openPanels.length;
+        const totalPanels = Craft.Slideout.totalPanels();
         Craft.Slideout.openPanels.forEach((panel, i) => {
           panel.$container.css(
-            Garnish.ltr ? 'left' : 'right',
-            `${50 * ((totalPanels - i) / totalPanels)}vw`
+            Craft.Slideout.positionProp(),
+            `${45 * ((totalPanels - i) / totalPanels)}vw`
           );
         });
 
@@ -232,4 +323,12 @@
       },
     }
   );
+
+  Garnish.on(Craft.Slideout, ['open', 'close'], () => {
+    for (const hud of Garnish.HUD.instances) {
+      if (hud.showing) {
+        hud.updateSizeAndPosition(true);
+      }
+    }
+  });
 })(jQuery);

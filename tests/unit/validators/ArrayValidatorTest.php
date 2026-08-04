@@ -96,7 +96,7 @@ class ArrayValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function paramsToTestOnEmptyDataProvider(): array
+    public static function paramsToTestOnEmptyDataProvider(): array
     {
         $newValidator = new ArrayValidator(['min' => 1, 'max' => 10, 'count' => 4]);
 
@@ -108,7 +108,7 @@ class ArrayValidatorTest extends TestCase
     /**
      * @return array
      */
-    public function arrayValidatorValuesDataProvider(): array
+    public static function arrayValidatorValuesDataProvider(): array
     {
         return [
             [[1, 2, 3, 4], true],

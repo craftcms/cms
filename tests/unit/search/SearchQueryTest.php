@@ -17,7 +17,7 @@ use craft\test\TestCase;
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/4.x/searching.html
+ * https://craftcms.com/docs/5.x/system/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -192,7 +192,7 @@ class SearchQueryTest extends TestCase
     /**
      *
      */
-    public function searchQueryDataProviders(): array
+    public static function searchQueryDataProviders(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
         $quotedPhraseConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 
 /**
  * Delete represents a “Delete for site” element action.
@@ -44,13 +45,14 @@ class DeleteForSite extends ElementAction
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable-for-site')) {
                     return false;
                 }
             }
-            return true;
+
+            return elementIndex.settings.canDeleteElements(selectedItems);
         },
     });
 })();
@@ -80,15 +82,8 @@ JS, [static::class]);
      */
     public function getConfirmationMessage(): ?string
     {
-        if (isset($this->confirmationMessage)) {
-            return $this->confirmationMessage;
-        }
-
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
-        return Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
-            'type' => $elementType::pluralLowerDisplayName(),
+        return $this->confirmationMessage ?? Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 
@@ -100,24 +95,21 @@ JS, [static::class]);
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        // Ignore any elements the user doesn’t have permission to delete
-        $elements = array_filter(
-            $query->all(),
-            fn(ElementInterface $element) => (
+        foreach (Db::batch($query) as $elements) {
+            // Ignore any elements the user doesn’t have permission to delete
+            $elements = array_filter($elements, fn(ElementInterface $element) => (
                 $elementsService->canView($element, $user) &&
                 $elementsService->canDeleteForSite($element, $user)
-            ),
-        );
+            ));
 
-        $elementsService->deleteElementsForSite($elements);
+            $elementsService->deleteElementsForSite($elements);
+        }
 
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted for site.', [
-                'type' => $elementType::pluralDisplayName(),
+                'type' => $this->elementType::pluralDisplayName(),
             ]));
         }
 

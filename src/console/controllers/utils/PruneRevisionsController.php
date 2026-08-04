@@ -63,7 +63,7 @@ class PruneRevisionsController extends Controller
     {
         $sectionIds = [];
         if ($this->section) {
-            $sectionsService = Craft::$app->getSections();
+            $sectionsService = Craft::$app->getEntries();
             $sectionHandles = StringHelper::split($this->section);
             foreach ($sectionHandles as $sectionHandle) {
                 $section = $sectionsService->getSectionByHandle($sectionHandle);
@@ -78,9 +78,7 @@ class PruneRevisionsController extends Controller
         if (!isset($this->maxRevisions)) {
             $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
                 'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
-                'validator' => function($input) {
-                    return filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0;
-                },
+                'validator' => fn($input) => filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0,
             ]);
         }
 
@@ -95,6 +93,14 @@ class PruneRevisionsController extends Controller
             $subQuery
                 ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
                 ->andWhere(['entries.sectionId' => $sectionIds]);
+        } else {
+            $subQuery
+                ->leftJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
+                ->andWhere([
+                    'or',
+                    ['entries.id' => null],
+                    ['not', ['entries.sectionId' => null]],
+                ]);
         }
 
         $this->stdout('Finding elements with too many revisions ... ');
@@ -125,7 +131,7 @@ class PruneRevisionsController extends Controller
                 continue;
             }
 
-            /** @var ElementInterface|string $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
 

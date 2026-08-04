@@ -8,8 +8,8 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\Model;
-use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
@@ -17,6 +17,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use yii\base\InvalidConfigException;
 
@@ -26,14 +27,22 @@ use yii\base\InvalidConfigException;
  * @property bool|string $enabled Enabled
  * @property string|null $baseUrl The site’s base URL
  * @property string $name The site’s name
+ * @property string $language The site’s language
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Site extends Model
+class Site extends Model implements Chippable
 {
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getSites()->getSiteById($id);
+    }
+
     /**
      * @var int|null ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
@@ -44,21 +53,19 @@ class Site extends Model
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
-
-    /**
-     * @var string|null Name
-     */
-    public ?string $language = null;
 
     /**
      * @var bool Primary site?
      */
+    #[AllowedInSandbox]
     public bool $primary = false;
 
     /**
      * @var bool Has URLs
      */
+    #[AllowedInSandbox]
     public bool $hasUrls = true;
 
     /**
@@ -86,7 +93,7 @@ class Site extends Model
      * @see getBaseUrl()
      * @see setBaseUrl()
      */
-    private ?string $_baseUrl = '@web/';
+    private ?string $_baseUrl = null;
 
     /**
      * @var string|null Name
@@ -103,12 +110,36 @@ class Site extends Model
     private bool|string $_enabled = true;
 
     /**
+     * @var string|null Language
+     * @see getLanguage()
+     * @see setLanguage()
+     */
+    private ?string $_language = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): string|int|null
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->getName());
+    }
+
+    /**
      * Returns the site’s name.
      *
      * @param bool $parse Whether to parse the name for an environment variable
      * @return string
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getName(bool $parse = true): string
     {
         return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
@@ -132,10 +163,16 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
+    #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
-            return $parse ? rtrim(App::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
+            if ($parse) {
+                $parsed = App::parseEnv($this->_baseUrl);
+                return $parsed ? rtrim($parsed, '/') . '/' : null;
+            }
+
+            return $this->_baseUrl;
         }
 
         return null;
@@ -159,6 +196,7 @@ class Site extends Model
      * @return bool|string
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getEnabled(bool $parse = true): bool|string
     {
         if ($this->primary) {
@@ -166,7 +204,7 @@ class Site extends Model
         }
 
         if ($parse) {
-            return App::parseBooleanEnv($this->_enabled) ?? true;
+            return App::parseBooleanEnv($this->_enabled) ?? false;
         }
         return $this->_enabled;
     }
@@ -183,20 +221,27 @@ class Site extends Model
     }
 
     /**
-     * @inheritdoc
+     * Returns the site’s language.
+     *
+     * @param bool $parse Whether to parse the language for an environment variable
+     * @return string
+     * @since 5.0.0
      */
-    protected function defineBehaviors(): array
+    #[AllowedInSandbox]
+    public function getLanguage(bool $parse = true): string
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'name' => fn() => $this->getName(false),
-                    'baseUrl' => fn() => $this->getBaseUrl(false),
-                    'enabled' => fn() => $this->getEnabled(false),
-                ],
-            ],
-        ];
+        return ($parse ? App::parseEnv($this->_language) : $this->_language) ?? '';
+    }
+
+    /**
+     * Sets the site’s language.
+     *
+     * @param string $language
+     * @since 5.0.0
+     */
+    public function setLanguage(string $language): void
+    {
+        $this->_language = $language;
     }
 
     /**
@@ -215,9 +260,26 @@ class Site extends Model
     /**
      * @inheritdoc
      */
+    public function beforeValidate(): bool
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        // Can't use the `trim` rule because it replaces env vars
+        // see https://github.com/craftcms/cms/pull/18789
+        $this->setName(trim($this->getName(false)));
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
+        $rules[] = [['handle'], 'trim'];
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
@@ -240,6 +302,7 @@ class Site extends Model
         $attributes = parent::attributes();
         $attributes[] = 'name';
         $attributes[] = 'baseUrl';
+        $attributes[] = 'language';
         return $attributes;
     }
 
@@ -250,7 +313,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->getName()) ?: static::class;
+        return $this->getUiLabel() ?: static::class;
     }
 
     /**
@@ -265,7 +328,7 @@ class Site extends Model
             throw new InvalidConfigException('Site is missing its group ID');
         }
 
-        if (($group = Craft::$app->getSites()->getGroupById($this->groupId)) === null) {
+        if (($group = Craft::$app->getSites()->getGroupById($this->groupId, true)) === null) {
             throw new InvalidConfigException('Invalid site group ID: ' . $this->groupId);
         }
 
@@ -278,12 +341,14 @@ class Site extends Model
      * @return Locale
      * @since 3.5.8
      */
+    #[AllowedInSandbox]
     public function getLocale(): Locale
     {
         if ($this->language === Craft::$app->language) {
             return Craft::$app->getLocale();
         }
-        return new Locale($this->language);
+
+        return Craft::$app->getI18n()->getLocaleById($this->language);
     }
 
     /**
@@ -298,7 +363,7 @@ class Site extends Model
             'siteGroup' => $this->getGroup()->uid,
             'name' => $this->_name,
             'handle' => $this->handle,
-            'language' => $this->language,
+            'language' => $this->getLanguage(false),
             'hasUrls' => $this->hasUrls,
             'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => $this->sortOrder,

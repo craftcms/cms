@@ -1,5 +1,10 @@
+import * as d3 from 'd3';
+
 /** global: Craft */
 /** global: Garnish */
+/** global: $ */
+/** global: jQuery */
+/** global: d3FormatLocaleDefinition */
 
 // Use old jQuery prefilter behavior
 // see https://jquery.com/upgrade-guide/3.5/
@@ -12,6 +17,10 @@ jQuery.htmlPrefilter = function (html) {
 // Set all the standard Craft.* stuff
 $.extend(Craft, {
   navHeight: 48,
+
+  isIterable(obj) {
+    return obj && typeof obj[Symbol.iterator] === 'function';
+  },
 
   /**
    * @callback indexKeyCallback
@@ -26,14 +35,18 @@ $.extend(Craft, {
    * @param {(string|indexKeyCallback)} key
    */
   index: function (arr, key) {
-    if (!Array.isArray(arr)) {
-      throw 'The first argument passed to Craft.index() must be an array.';
+    if (arr instanceof NodeList || this.isIterable(arr)) {
+      arr = Array.from(arr);
+    } else if (!Array.isArray(arr)) {
+      throw 'The first argument passed to Craft.index() must be an array, NodeList, or iterable object.';
     }
 
-    return arr.reduce((index, obj, i) => {
-      index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
-      return index;
-    }, {});
+    if (typeof key === 'string') {
+      const k = key;
+      key = (item) => item[k];
+    }
+
+    return Object.fromEntries(arr.map((item) => [key(item), item]));
   },
 
   /**
@@ -393,7 +406,23 @@ $.extend(Craft, {
    * @returns {string}
    */
   formatInputId: function (inputName) {
-    return this.rtrim(inputName.replace(/[^\w\-]+/g, '-'), '-');
+    // IDs must begin with a letter
+    let id = inputName.replace(/^[^A-Za-z]+/, '');
+    id = this.rtrim(id.replace(/[^A-Za-z0-9_.]+/g, '-'), '-');
+    return id || this.randomString(10);
+  },
+
+  /**
+   * Sleeps for the given duration in milliseconds.
+   *
+   * @param {number} delay
+   * @return {Promise}
+   * @since 5.6.0
+   */
+  sleep: function (delay) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
   },
 
   /**
@@ -483,14 +512,13 @@ $.extend(Craft, {
 
     // Does the base URL already have a query string?
     qsPos = url.indexOf('?');
+    let baseParams;
     if (qsPos !== -1) {
-      params = $.extend(
-        Object.fromEntries(
-          new URLSearchParams(url.substring(qsPos + 1)).entries()
-        ),
-        params
+      baseParams = Object.fromEntries(
+        new URLSearchParams(url.substring(qsPos + 1)).entries()
       );
       url = url.substring(0, qsPos);
+      params = Object.assign({}, baseParams, params);
     }
 
     if (!Craft.omitScriptNameInUrls && path) {
@@ -501,13 +529,10 @@ $.extend(Craft, {
         }
       } else {
         // Move the path into the query string params
-
-        // Is the path param already set?
-        if (typeof params[Craft.pathParam] !== 'undefined') {
-          let basePath = params[Craft.pathParam].trimEnd();
-          path = basePath + (path ? '/' + path : '');
+        if (baseParams && baseParams[Craft.pathParam] !== undefined) {
+          path =
+            baseParams[Craft.pathParam].trimEnd() + (path ? '/' + path : '');
         }
-
         params[Craft.pathParam] = path;
         path = null;
       }
@@ -534,6 +559,9 @@ $.extend(Craft, {
    * @returns {string}
    */
   getCpUrl: function (path, params) {
+    if (!Craft.baseCpUrl) {
+      throw 'Craft.baseCpUrl is undefined.';
+    }
     return this.getUrl(path, params, Craft.baseCpUrl);
   },
 
@@ -583,6 +611,13 @@ $.extend(Craft, {
     }
 
     history.replaceState({}, '', url);
+
+    // If there's a site crumb menu, update each of its URLs
+    const siteLinks = document.querySelectorAll('#site-crumb-menu a[href]');
+    for (const link of siteLinks) {
+      const site = this.getQueryParam('site', link.href);
+      link.href = this.getUrl(url, {site});
+    }
   },
 
   /**
@@ -808,7 +843,15 @@ $.extend(Craft, {
         // Force Safari to not load from cache
         v: new Date().getTime(),
       });
-      axios.request(options).then(resolve).catch(reject);
+      axios
+        .request(options)
+        .then((response) => {
+          if (response.headers['x-csrf-token']) {
+            Craft.csrfTokenValue = response.headers['x-csrf-token'];
+          }
+          resolve(response);
+        })
+        .catch(reject);
     });
   },
 
@@ -820,7 +863,7 @@ $.extend(Craft, {
    * @returns {Promise}
    * @since 3.3.16
    */
-  sendApiRequest: function (method, uri, options) {
+  sendApiRequest: function (method, uri, options = {}) {
     return new Promise((resolve, reject) => {
       options = options ? $.extend({}, options) : {};
       let cancelToken = options.cancelToken || null;
@@ -1055,75 +1098,174 @@ $.extend(Craft, {
    * @param {string} oldData
    * @param {string} newData
    * @param {Object} deltaNames
-   * @param {findDeltaDataCallback} [callback] Callback function that should be called whenever a new group of modified params has been found
+   * @param {findDeltaDataCallback|null} [callback] Callback function that should be called whenever a new group of modified params has been found
    * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
-   * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
+   * @param {Object} [forceModifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
+   * @param {boolean} [asArray] Whether the params should be returned as an array
    * @returns {string}
    */
   findDeltaData: function (
     oldData,
     newData,
     deltaNames,
-    callback,
-    initialDeltaValues,
-    modifiedDeltaNames
+    callback = null,
+    initialDeltaValues = {},
+    forceModifiedDeltaNames = [],
+    asArray = false
+  ) {
+    const [modifiedDeltaNames, groupedNewParams] = this.findModifiedDeltaNames(
+      oldData,
+      newData,
+      deltaNames,
+      initialDeltaValues,
+      forceModifiedDeltaNames
+    );
+
+    // Figure out which of the new params should actually be posted
+    let params = groupedNewParams.__root__;
+    for (const name of modifiedDeltaNames) {
+      params = params.concat(groupedNewParams[name]);
+      params.push(`modifiedDeltaNames[]=${name}`);
+      if (callback) {
+        callback(name, groupedNewParams[name]);
+      }
+    }
+
+    return asArray ? params : params.join('&');
+  },
+
+  /**
+   * Returns the delta names that have been modified, given old and new form data.
+   *
+   * @param {string} oldData
+   * @param {string} newData
+   * @param {Object} deltaNames
+   * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+   * @param {Object} [modifiedDeltaNames] List of delta names that should be considered modified regardless of their param values
+   * @param {boolean} [mostSpecific] Whether the most specific modified delta names should be returned
+   * @returns {Array}
+   */
+  findModifiedDeltaNames: function (
+    oldData,
+    newData,
+    deltaNames,
+    initialDeltaValues = {},
+    modifiedDeltaNames = [],
+    mostSpecific = false
   ) {
     // Make sure oldData and newData are always strings. This is important because further below String.split is called.
     oldData = typeof oldData === 'string' ? oldData : '';
     newData = typeof newData === 'string' ? newData : '';
-    deltaNames = Array.isArray(deltaNames) ? deltaNames : [];
+    deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
     initialDeltaValues = $.isPlainObject(initialDeltaValues)
       ? initialDeltaValues
       : {};
     modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
-      ? modifiedDeltaNames
+      ? [...modifiedDeltaNames]
       : [];
 
     // Sort the delta namespaces from least -> most specific
-    deltaNames.sort(function (a, b) {
+    deltaNames.sort((a, b) => {
       if (a.length === b.length) {
         return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
       }
       return a.length > b.length ? 1 : -1;
     });
 
-    // Group all of the old & new params by namespace
-    var groupedOldParams = this._groupParamsByDeltaNames(
-      oldData.split('&'),
+    // Group all the old & new params by namespace
+    const groupedOldParams = this._groupParamsByDeltaNames(
+      oldData,
       deltaNames,
       false,
       initialDeltaValues
     );
-    var groupedNewParams = this._groupParamsByDeltaNames(
-      newData.split('&'),
+    const groupedNewParams = this._groupParamsByDeltaNames(
+      newData,
       deltaNames,
       true,
       false
     );
 
-    // Figure out which of the new params should actually be posted
-    var params = groupedNewParams.__root__;
-    for (var n = 0; n < deltaNames.length; n++) {
+    for (const name of deltaNames) {
       if (
-        Craft.inArray(deltaNames[n], modifiedDeltaNames) ||
-        (typeof groupedNewParams[deltaNames[n]] === 'object' &&
-          (typeof groupedOldParams[deltaNames[n]] !== 'object' ||
-            JSON.stringify(groupedOldParams[deltaNames[n]]) !==
-              JSON.stringify(groupedNewParams[deltaNames[n]])))
+        !modifiedDeltaNames.includes(name) &&
+        typeof groupedNewParams[name] === 'object' &&
+        (typeof groupedOldParams[name] !== 'object' ||
+          JSON.stringify(groupedOldParams[name]) !==
+            JSON.stringify(groupedNewParams[name]))
       ) {
-        params = params.concat(groupedNewParams[deltaNames[n]]);
-        params.push('modifiedDeltaNames[]=' + deltaNames[n]);
-        if (callback) {
-          callback(deltaNames[n], groupedNewParams[deltaNames[n]]);
-        }
+        modifiedDeltaNames.push(name);
       }
     }
 
-    return params.join('&');
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
+
+    return [modifiedDeltaNames, groupedNewParams];
   },
 
   /**
-   * @param {Object} params
+   * @param {string|Object} params
+   * @param {Object} deltaNames
+   * @param {boolean} [withRoot]
+   * @returns {Object}
+   */
+  groupParams: function (params, deltaNames, withRoot = false) {
+    if (typeof params === 'string') {
+      params = params.split('&');
+    }
+
+    const grouped = {};
+
+    if (withRoot) {
+      grouped.__root__ = [];
+    }
+
+    // sort delta names from most to least specific
+    deltaNames = deltaNames.sort((a, b) => b.length - a.length);
+
+    for (const name of deltaNames) {
+      grouped[name] = [];
+    }
+
+    const encodeURIComponentExceptEqualChar = (o) =>
+      encodeURIComponent(o).replace('%3D', '=');
+
+    params = params.map((p) => decodeURIComponent(p));
+
+    paramLoop: for (const param of params) {
+      for (const name of deltaNames) {
+        const paramName = param.substring(0, name.length + 1);
+        if ([`${name}=`, `${name}[`].includes(paramName)) {
+          if (typeof grouped[name] === 'undefined') {
+            grouped[name] = [];
+          }
+          grouped[name].push(encodeURIComponentExceptEqualChar(param));
+          continue paramLoop;
+        }
+      }
+
+      if (withRoot) {
+        grouped.__root__.push(encodeURIComponentExceptEqualChar(param));
+      }
+    }
+
+    return grouped;
+  },
+
+  /**
+   * @param {string|Object} params
    * @param {Object} deltaNames
    * @param {boolean} withRoot
    * @param {(boolean|Object)} initialValues
@@ -1136,39 +1278,7 @@ $.extend(Craft, {
     withRoot,
     initialValues
   ) {
-    const grouped = {};
-
-    if (withRoot) {
-      grouped.__root__ = [];
-    }
-
-    const encodeURIComponentExceptEqualChar = (o) =>
-      encodeURIComponent(o).replace('%3D', '=');
-
-    params = params.map((p) => decodeURIComponent(p));
-
-    paramLoop: for (let p = 0; p < params.length; p++) {
-      // loop through the delta names from most -> least specific
-      for (let n = deltaNames.length - 1; n >= 0; n--) {
-        const paramName = params[p].substring(0, deltaNames[n].length + 1);
-        if (
-          paramName === deltaNames[n] + '=' ||
-          paramName === deltaNames[n] + '['
-        ) {
-          if (typeof grouped[deltaNames[n]] === 'undefined') {
-            grouped[deltaNames[n]] = [];
-          }
-          grouped[deltaNames[n]].push(
-            encodeURIComponentExceptEqualChar(params[p])
-          );
-          continue paramLoop;
-        }
-      }
-
-      if (withRoot) {
-        grouped.__root__.push(encodeURIComponentExceptEqualChar(params[p]));
-      }
-    }
+    const grouped = this.groupParams(params, deltaNames, withRoot);
 
     if (initialValues) {
       const serializeParam = (name, value) => {
@@ -1182,11 +1292,11 @@ $.extend(Craft, {
         return `${encodeURIComponent(name)}=${value}`;
       };
 
-      for (let name in initialValues) {
+      for (const name in initialValues) {
         if (initialValues.hasOwnProperty(name)) {
           if ($.isPlainObject(initialValues[name])) {
             grouped[name] = [];
-            for (let subName in initialValues[name]) {
+            for (const subName in initialValues[name]) {
               if (initialValues[name].hasOwnProperty(subName)) {
                 grouped[name].push(
                   serializeParam(
@@ -1270,7 +1380,7 @@ $.extend(Craft, {
   /**
    * Creates a form element populated with hidden inputs based on a string of serialized form data.
    *
-   * @param {string} data
+   * @param {string} [data]
    * @returns {(jQuery|HTMLElement)}
    */
   createForm: function (data) {
@@ -1464,11 +1574,29 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @returns {boolean}
-   * @deprecated String.prototype.endsWith() should be used instead
    */
-  startsWith: function (str, substr) {
+  startsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().startsWith(substr.toLowerCase());
+    }
     return str.startsWith(substr);
+  },
+
+  /**
+   * Returns whether a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @returns {boolean}
+   */
+  endsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().endsWith(substr.toLowerCase());
+    }
+    return str.endsWith(substr);
   },
 
   /**
@@ -1476,10 +1604,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureStartsWith: function (str, substr) {
-    if (!str.startsWith(substr)) {
+  ensureStartsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.startsWith(str, substr, caseInsensitive)) {
       str = substr + str;
     }
     return str;
@@ -1490,11 +1619,42 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureEndsWith: function (str, substr) {
-    if (!str.endsWith(substr)) {
+  ensureEndsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.endsWith(str, substr, caseInsensitive)) {
       str += substr;
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the beginning of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeLeft: function (str, substr, caseInsensitive = false) {
+    if (Craft.startsWith(str, substr, caseInsensitive)) {
+      return str.slice(substr.length);
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the end of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeRight: function (str, substr, caseInsensitive = false) {
+    if (Craft.endsWith(str, substr, caseInsensitive)) {
+      return str.slice(0, -substr.length);
     }
     return str;
   },
@@ -1530,6 +1690,26 @@ $.extend(Craft, {
     }
 
     return filtered;
+  },
+
+  /**
+   * @callback filterObjectCallback
+   * @param {*} value
+   * @param {string} key
+   * @return {boolean}
+   */
+  /**
+   * Filters an object by a callback method.
+   *
+   * @param {Object} obj
+   * @param {filterObjectCallback} [callback] A user-defined callback function. If null, values that equate to false will be removed.
+   * @returns {Object}
+   */
+  filterObject(obj, callback) {
+    if (typeof callback === 'undefined') {
+      callback = (v) => !!v;
+    }
+    return Object.fromEntries(Object.entries(obj).filter(callback));
   },
 
   /**
@@ -1578,6 +1758,17 @@ $.extend(Craft, {
   },
 
   /**
+   * Reduces an array to only unique items.
+   *
+   * @param {Array} arr
+   * @returns {Array}
+   */
+  uniqueArray: function (arr) {
+    // h/t https://stackoverflow.com/a/33121880/1688568
+    return [...new Set(arr)];
+  },
+
+  /**
    * Makes the first character of a string uppercase.
    *
    * @param {string} str
@@ -1615,18 +1806,33 @@ $.extend(Craft, {
     };
   },
 
-  getQueryParams: function () {
-    return Object.fromEntries(
-      new URLSearchParams(window.location.search).entries()
-    );
+  /**
+   * Returns a URL’s query params as an object.
+   * @param {string} [url] The URL. The window’s URL will be used by default.
+   * @returns Object
+   */
+  getQueryParams: function (url) {
+    let qs;
+    if (url) {
+      const m = url.match(/\?.+/);
+      if (!m) {
+        return {};
+      }
+      qs = m[0];
+    } else {
+      qs = window.location.search;
+    }
+    return Object.fromEntries(new URLSearchParams(qs).entries());
   },
 
-  getQueryParam: function (name) {
-    // h/t https://stackoverflow.com/a/901144/1688568
-    const params = new Proxy(new URLSearchParams(window.location.search), {
-      get: (searchParams, prop) => searchParams.get(prop),
-    });
-    return params[name];
+  /**
+   * Returns a query param.
+   * @param {string} name The param name
+   * @param {string} [url] The URL. The window’s URL will be used by default.
+   * @returns Object
+   */
+  getQueryParam: function (name, url) {
+    return this.getQueryParams(url)[name];
   },
 
   isSameHost: function (url) {
@@ -1813,56 +2019,91 @@ $.extend(Craft, {
 
   _existingCss: null,
   _existingJs: null,
+  _appendHtmlQueue: null,
 
-  _appendHtml: function (html, $parent) {
+  _appendHtml: async function (html, $parent) {
     if (!html) {
       return;
     }
 
-    const nodes = $.parseHTML(html.trim(), true).filter((node) => {
+    /**
+     * Separate scripts from other nodes to bypass jQuery's internal
+     * script handling, which uses sync XHR (jQuery._evalUrl) and
+     * silently falls back to async for cross-origin URLs, breaking
+     * execution order.
+     *
+     * @see https://github.com/jquery/jquery/issues/4801
+     * @see https://github.com/jquery/jquery/issues/1895
+     */
+    const scriptNodes = [];
+    const otherNodes = [];
+
+    for (const node of $.parseHTML(html.trim(), true)) {
+      // Deduplicate CSS
       if (node.nodeName === 'LINK' && node.href) {
         if (!this._existingCss) {
           this._existingCss = $('link[href]')
             .toArray()
             .map((n) => n.href.replace(/&/g, '&amp;'));
         }
-
         if (this._existingCss.includes(node.href)) {
-          return false;
+          continue;
         }
-
         this._existingCss.push(node.href);
-        return true;
       }
 
-      if (node.nodeName === 'SCRIPT' && node.src) {
-        if (!this._existingJs) {
-          this._existingJs = $('script[src]')
-            .toArray()
-            .map((n) => n.src.replace(/&/g, '&amp;'));
+      // Deduplicate and separate scripts
+      if (node.nodeName === 'SCRIPT') {
+        if (node.src) {
+          if (!this._existingJs) {
+            this._existingJs = $('script[src]')
+              .toArray()
+              .map((n) => n.src.replace(/&/g, '&amp;'));
+          }
+          if (this._existingJs.includes(node.src)) {
+            continue;
+          }
+          this._existingJs.push(node.src);
         }
-
-        // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
-        if (
-          node.src.startsWith(this.resourceBaseUrl) &&
-          !this.isSameHost(node.src)
-        ) {
-          node.src = this.getActionUrl('app/resource-js', {
-            url: node.src,
-          });
-        }
-
-        if (this._existingJs.includes(node.src)) {
-          return false;
-        }
-
-        this._existingJs.push(node.src);
+        scriptNodes.push(node);
+        continue;
       }
 
-      return true;
-    });
+      otherNodes.push(node);
+    }
 
-    $parent.append(nodes);
+    if (otherNodes.length) {
+      $parent.append(otherNodes);
+    }
+
+    // Load scripts sequentially via native <script> insertion to
+    // preserve execution order without requiring CORS.
+    const parentEl = $parent[0];
+    for (const scriptNode of scriptNodes) {
+      const scriptEl = document.createElement('script');
+
+      for (const attr of scriptNode.attributes) {
+        scriptEl.setAttribute(attr.name, attr.value);
+      }
+
+      if (scriptEl.src) {
+        await new Promise((resolve) => {
+          scriptEl.onload = scriptEl.onerror = resolve;
+          parentEl.appendChild(scriptEl);
+        });
+      } else {
+        scriptEl.textContent = scriptNode.textContent;
+        parentEl.appendChild(scriptEl);
+      }
+    }
+  },
+
+  _queueAppendHtml: function (html, $parent) {
+    const append = () => this._appendHtml(html, $parent);
+    this._appendHtmlQueue = (this._appendHtmlQueue || Promise.resolve())
+      .catch(() => {})
+      .then(append);
+    return this._appendHtmlQueue;
   },
 
   /**
@@ -1871,8 +2112,8 @@ $.extend(Craft, {
    * @param {string} html
    * @returns {Promise}
    */
-  appendHeadHtml: async function (html) {
-    this._appendHtml(html, $('head'));
+  appendHeadHtml: function (html) {
+    return this._queueAppendHtml(html, $('head'));
   },
 
   /**
@@ -1881,8 +2122,8 @@ $.extend(Craft, {
    * @param {string} html
    * @returns {Promise}
    */
-  appendBodyHtml: async function (html) {
-    this._appendHtml(html, Garnish.$bod);
+  appendBodyHtml: function (html) {
+    return this._queueAppendHtml(html, Garnish.$bod);
   },
 
   /**
@@ -1894,7 +2135,7 @@ $.extend(Craft, {
     console.warn(
       'Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.'
     );
-    this.appendBodyHtml(html);
+    return this.appendBodyHtml(html);
   },
 
   /**
@@ -1904,37 +2145,65 @@ $.extend(Craft, {
    */
   initUiElements: function ($container) {
     $('.grid', $container).grid();
-    $('.info', $container).infoicon();
     $('.checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
     $('.nicetext', $container).nicetext();
-    $('.formsubmit', $container).formsubmit();
-    $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
-    $('[data-disclosure-trigger]', $container).disclosureMenu();
     $('.datetimewrapper', $container).datetime();
     $(
       '.datewrapper > input[type="date"], .timewrapper > input[type="time"]',
       $container
     ).datetimeinput();
+    $('.formsubmit', $container).formsubmit();
+    // menus last, since they can mess with the DOM
+    $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
+    $('[data-disclosure-trigger]', $container).disclosureMenu();
+    $('.expandable-button--collapsed', $container).expandableButton();
+
+    /**
+     * Swap any instruction text with info icons but avoid those with the class
+     * visually-hidden as those have already been swapped
+     * This needs to happen before the `infoicon` method
+     */
+    $(
+      '.field.info-icon-instructions > .instructions, #details .meta > .field > .instructions',
+      $container
+    )
+      .not('.visually-hidden')
+      .each(function () {
+        const $instructions = $(this);
+        const $label = $instructions.siblings('.heading').find('label');
+        $('<div/>', {
+          class: 'info',
+          html: $instructions.children().html(),
+        }).appendTo($label);
+        // Keep the original element around in case an aria-describedby attribute is referencing it
+        $instructions.addClass('visually-hidden');
+      });
+
+    $('.info', $container).infoicon();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
-    $('a', $container).each(function () {
-      if (
-        this.hostname.length &&
-        this.hostname !== location.hostname &&
-        typeof $(this).attr('target') === 'undefined'
-      ) {
-        $(this).attr('rel', 'noopener').attr('target', '_blank');
-      }
-    });
+    // ignore items in contenteditable divs (like redactor or ckeditor fields)
+    $('a', $container)
+      .not('[contenteditable="true"] a')
+      .each(function () {
+        if (
+          this.hostname.length &&
+          this.hostname !== location.hostname &&
+          typeof $(this).attr('target') === 'undefined'
+        ) {
+          $(this).attr('rel', 'noopener').attr('target', '_blank');
+        }
+      });
   },
 
   _elementIndexClasses: {},
   _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
   _uploaderClasses: {},
+  _authFormHandlers: {},
 
   /**
    * Registers an element index class for a given element type.
@@ -1990,22 +2259,12 @@ $.extend(Craft, {
     this._elementSelectorModalClasses[elementType] = func;
   },
 
-  /**
-   * Registers an element editor class for a given element type.
-   *
-   * @param {string} elementType
-   * @param {function} func
-   */
-  registerElementEditorClass: function (elementType, func) {
-    if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
-      throw (
-        'An element editor class has already been registered for the element type “' +
-        elementType +
-        '”.'
-      );
+  registerAuthFormHandler(method, func) {
+    if (typeof this._authFormHandlers[method] !== 'undefined') {
+      throw `An authentication form handler has already been registered for the method “${method}”.`;
     }
 
-    this._elementEditorClasses[elementType] = func;
+    this._authFormHandlers[method] = func;
   },
 
   /**
@@ -2066,6 +2325,27 @@ $.extend(Craft, {
     return new func(elementType, settings);
   },
 
+  createAuthFormHandler(method, container, onSuccess, showError) {
+    if (typeof this._authFormHandlers[method] === 'undefined') {
+      throw `No authentication form has been registered for the method "${method}".`;
+    }
+
+    if (container instanceof jQuery) {
+      if (!container.length) {
+        throw 'No form element specified.';
+      }
+      container = container[0];
+    }
+
+    if (!showError) {
+      showError = (error) => {
+        Craft.cp.displayError(error);
+      };
+    }
+
+    return new this._authFormHandlers[method](container, onSuccess, showError);
+  },
+
   /**
    * Creates a new element editor slideout for a given element type.
    *
@@ -2094,7 +2374,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2146,7 +2426,7 @@ $.extend(Craft, {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
     return document.cookie.replace(
       new RegExp(
-        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
+        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}_${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
       ),
       '$1'
     );
@@ -2168,7 +2448,7 @@ $.extend(Craft, {
    */
   setCookie: function (name, value, options) {
     options = $.extend({}, this.defaultCookieOptions, options);
-    let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(
+    let cookie = `Craft-${Craft.systemUid}_${name}=${encodeURIComponent(
       value
     )}`;
     if (options.path) {
@@ -2203,7 +2483,7 @@ $.extend(Craft, {
    * @returns {Object}
    */
   getElementInfo: function (element) {
-    var $element = $(element);
+    let $element = $(element);
 
     if (!$element.hasClass('element')) {
       $element = $element.find('.element:first');
@@ -2215,7 +2495,7 @@ $.extend(Craft, {
       label: $element.data('label'),
       status: $element.data('status'),
       url: $element.data('url'),
-      hasThumb: $element.hasClass('hasthumb'),
+      hasThumb: $element.hasClass('has-thumb'),
       $element: $element,
     };
   },
@@ -2227,7 +2507,7 @@ $.extend(Craft, {
    * @param {string} size
    */
   setElementSize: function (element, size) {
-    var $element = $(element);
+    const $element = $(element);
 
     if (size !== 'small' && size !== 'large') {
       size = 'small';
@@ -2237,12 +2517,12 @@ $.extend(Craft, {
       return;
     }
 
-    var otherSize = size === 'small' ? 'large' : 'small';
+    const otherSize = size === 'small' ? 'large' : 'small';
 
     $element.addClass(size).removeClass(otherSize);
 
-    if ($element.hasClass('hasthumb')) {
-      var $oldImg = $element.find('> .elementthumb > img'),
+    if ($element.hasClass('has-thumb')) {
+      const $oldImg = $element.find('> .thumb > img'),
         imgSize = size === 'small' ? '30' : '100',
         $newImg = $('<img/>', {
           sizes: imgSize + 'px',
@@ -2258,6 +2538,209 @@ $.extend(Craft, {
   },
 
   /**
+   * Refreshes all DOM instances of an element with the given ID by re-rendering them via an AJAX request.
+   *
+   * Finds all `.element` divs with the specified `elementId` and updates their HTML using the server-rendered markup.
+   * Useful for keeping element displays in sync after edits or changes.
+   *
+   * @param {number|string} elementId The ID of the element to refresh.
+   */
+  refreshElementInstances(elementId) {
+    const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
+    if (!$elements.length) {
+      return;
+    }
+    const elementsBySite = {};
+    for (let i = 0; i < $elements.length; i++) {
+      const $element = $elements.eq(i);
+      const siteId = $element.data('site-id');
+      if (typeof elementsBySite[siteId] === 'undefined') {
+        elementsBySite[siteId] = {
+          key: i,
+          type: $element.data('type'),
+          id: elementId,
+          fieldId: $element.data('field-id'),
+          ownerId: $element.data('owner-id'),
+          siteId,
+          instances: [],
+        };
+      }
+      elementsBySite[siteId].instances.push($element.data('settings'));
+    }
+    const data = {
+      elements: Object.values(elementsBySite),
+    };
+    Craft.sendActionRequest('POST', 'app/render-elements', {data}).then(
+      ({data}) => {
+        const instances = data.elements[elementId] || {};
+        for (const key of Object.keys(instances)) {
+          const $element = $elements.eq(key);
+          const $replacement = $(instances[key]);
+          const replacementAttributes = $replacement[0].attributes;
+          for (const attribute of replacementAttributes) {
+            if (attribute.name === 'class') {
+              $element.addClass(attribute.value);
+            } else {
+              $element.attr(attribute.name, attribute.value);
+            }
+          }
+          for (const attribute of $element[0].attributes) {
+            if (replacementAttributes[attribute.name] === undefined) {
+              $element.removeAttr(attribute.name);
+            }
+          }
+          const $actions = $element
+            .find(
+              '> .chip-content .chip-actions, > .card-titlebar > .card-actions-container .card-actions'
+            )
+            .detach();
+          const $inputs = $element.find('input,button').detach();
+          $element.html($replacement.html()).removeClass('error');
+
+          if ($actions.length) {
+            const $oldStatus = $actions.find('span.status');
+            const $newStatus = $replacement.find(
+              '> .chip-content .chip-actions span.status, > .card-titlebar > .card-actions-container .card-actions span.status'
+            );
+
+            if (
+              $oldStatus.length &&
+              $newStatus.length &&
+              $oldStatus[0].classList !== $newStatus[0].classList
+            ) {
+              $actions.find('span.status').replaceWith($newStatus);
+            }
+
+            $element
+              .find(
+                '> .chip-content .chip-actions, > .card-titlebar > .card-actions-container .card-actions'
+              )
+              .replaceWith($actions);
+          }
+          if ($inputs.length) {
+            $inputs.appendTo($element);
+          }
+        }
+        Craft.cp.elementThumbLoader.load($elements);
+      }
+    );
+  },
+
+  refreshComponentInstances(type, id) {
+    const $chips = $(
+      `div.chip[data-type="${$.escapeSelector(
+        type
+      )}"][data-id="${id}"][data-settings]`
+    );
+    if (!$chips.length) {
+      return;
+    }
+    const instances = [];
+    for (let i = 0; i < $chips.length; i++) {
+      instances.push($chips.eq(i).data('settings'));
+    }
+    const data = {
+      components: [{type, id, instances}],
+    };
+    Craft.sendActionRequest('POST', 'app/render-components', {data}).then(
+      ({data}) => {
+        for (let i = 0; i < data.components[type][id].length; i++) {
+          const $chip = $chips.eq(i);
+          const $replacement = $(data.components[type][id][i]);
+          for (const attribute of $replacement[0].attributes) {
+            if (attribute.name === 'class') {
+              $chip.addClass(attribute.value);
+            } else {
+              $chip.attr(attribute.name, attribute.value);
+            }
+          }
+          const $actions = $chip.find('.chip-actions').detach();
+          const $indicators = $chip.find('.chip-label .indicators').detach();
+          const $inputs = $chip.find('input,button').detach();
+          $chip.html($replacement.html());
+          if ($actions.length) {
+            $chip.find('.chip-actions').replaceWith($actions);
+          }
+          if ($indicators.length) {
+            $chip.find('.chip-label').append($indicators);
+          }
+          if ($inputs.length) {
+            $inputs.appendTo($chip);
+          }
+        }
+      }
+    );
+  },
+
+  /**
+   * Adds actions to a chip or card.
+   *
+   * @param {jQuery|HTMLElement} chip
+   * @param {Array} actions
+   * @param {boolean} [prepend]
+   */
+  addActionsToChip(chip, actions, prepend = false) {
+    if (!actions?.length) {
+      return;
+    }
+
+    const $actions = $(chip).find(
+      '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
+    );
+    let $actionMenuBtn = $actions.find('.action-btn').removeClass('hidden');
+
+    if (!$actionMenuBtn.length) {
+      // the chip/card doesn't have an action menu yet, so add one
+      const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
+      const labelId = `${menuId}-label`;
+      const $label = $('<label/>', {
+        id: labelId,
+        class: 'visually-hidden',
+        text: Craft.t('app', 'Actions'),
+      }).appendTo($actions);
+      $actionMenuBtn = $('<button/>', {
+        class: 'btn action-btn',
+        type: 'button',
+        title: Craft.t('app', 'Actions'),
+        'aria-controls': menuId,
+        'aria-describedby': labelId,
+        'data-disclosure-trigger': 'true',
+      }).insertAfter($label);
+      $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).insertAfter($actionMenuBtn);
+    }
+
+    const disclosureMenu = $actionMenuBtn
+      .disclosureMenu()
+      .data('disclosureMenu');
+
+    const safeActions = actions.filter((a) => !a.destructive);
+    const destructiveActions = actions.filter((a) => a.destructive);
+
+    let before = prepend
+      ? disclosureMenu.$container.children().first().get(0)
+      : null;
+
+    if (safeActions.length) {
+      disclosureMenu.addItems(
+        safeActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
+    }
+
+    if (destructiveActions.length) {
+      disclosureMenu.addItems(
+        destructiveActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
+    }
+
+    Craft.initUiElements(disclosureMenu.$container);
+  },
+
+  /**
    * Submits a form.
    * @param {Object} $form
    * @param {Object} [options]
@@ -2267,6 +2750,7 @@ $.extend(Craft, {
    * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
    * @param {Object} [options.data] Additional data to be passed to the submit event
    * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+   * @param {boolean} [options.requireElevatedSession] Whether an elevated session is required
    */
   submitForm: function ($form, options) {
     if (typeof options === 'undefined') {
@@ -2277,10 +2761,22 @@ $.extend(Craft, {
       return;
     }
 
+    if (options.requireElevatedSession) {
+      Craft.elevatedSessionManager.requireElevatedSession(() => {
+        this._submitFormInternal($form, options);
+      });
+    } else {
+      this._submitFormInternal($form, options);
+    }
+  },
+
+  _submitFormInternal($form, options) {
+    const namespace = options.namespace ?? null;
+
     if (options.action) {
       $('<input/>', {
         type: 'hidden',
-        name: 'action',
+        name: this.namespaceInputName('action', namespace),
         val: options.action,
       }).appendTo($form);
     }
@@ -2288,17 +2784,17 @@ $.extend(Craft, {
     if (options.redirect) {
       $('<input/>', {
         type: 'hidden',
-        name: 'redirect',
+        name: this.namespaceInputName('redirect', namespace),
         val: options.redirect,
       }).appendTo($form);
     }
 
     if (options.params) {
-      for (let name in options.params) {
-        let value = options.params[name];
+      for (const name in options.params) {
+        const value = options.params[name];
         $('<input/>', {
           type: 'hidden',
-          name: name,
+          name: this.namespaceInputName(name, namespace),
           val: value,
         }).appendTo($form);
       }
@@ -2317,6 +2813,14 @@ $.extend(Craft, {
    */
   trapFocusWithin: function (container) {
     Garnish.trapFocusWithin(container);
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
   },
 
   /**
@@ -2370,7 +2874,7 @@ $.extend(Craft, {
   setElementAttributes: function (element, attributes) {
     const $element = $(element);
 
-    for (let name in attributes) {
+    for (const name in attributes) {
       if (!attributes.hasOwnProperty(name)) {
         continue;
       }
@@ -2385,7 +2889,7 @@ $.extend(Craft, {
         if (Craft.dataAttributes.includes(name)) {
           // Make sure it's an object
           value = Object.assign({}, value);
-          for (let n in value) {
+          for (const n in value) {
             if (!value.hasOwnProperty(n)) {
               continue;
             }
@@ -2407,7 +2911,7 @@ $.extend(Craft, {
           if ($.isPlainObject(value)) {
             value = Object.values(value);
           }
-          for (let c of value) {
+          for (const c of value) {
             $element.addClass(c);
           }
         } else if (name === 'style') {
@@ -2431,6 +2935,65 @@ $.extend(Craft, {
   useMobileStyles: function () {
     return Garnish.isMobileBrowser() || document.body.clientWidth < 600;
   },
+
+  animate: async function (element, css) {
+    await this.animateAll([[element, css]]);
+  },
+
+  transitionQueue: null,
+
+  animateAll: function (animations) {
+    if (!Craft.transitionQueue) {
+      Craft.transitionQueue = new Craft.Queue();
+    }
+
+    return Craft.transitionQueue.push(() => {
+      return new Promise((resolve, reject) => {
+        for (let i = 0; i < animations.length; i++) {
+          if ((!animations[i][0]) instanceof jQuery) {
+            animations[i][0] = $(animations[i][0]);
+          }
+        }
+
+        if (!document.startViewTransition) {
+          // fallback to Velocity
+          for (let i = 0; i < animations.length; i++) {
+            const [$element, css] = animations[i];
+            $element.velocity(
+              css,
+              Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
+              i === animations.length - 1 ? resolve : null
+            );
+          }
+          return;
+        }
+
+        for (const [$element] of animations) {
+          if ($element.css('view-transition-name') === 'none') {
+            $element.css(
+              'view-transition-name',
+              `vt-${Math.floor(Math.random() * 100000)}`
+            );
+          }
+        }
+
+        const transition = document.startViewTransition(() => {
+          for (const [$element, css] of animations) {
+            $element.css(css);
+          }
+        });
+
+        transition.finished.then(resolve).catch((e) => {
+          console.warn(e);
+          resolve();
+        });
+      });
+    });
+  },
+
+  hasMousePointerEvents: function () {
+    return matchMedia('(pointer:fine)').matches;
+  },
 });
 
 // -------------------------------------------
@@ -2444,54 +3007,37 @@ if (typeof BroadcastChannel !== 'undefined') {
   Craft.broadcaster = new BroadcastChannel(channelName);
   Craft.messageReceiver = new BroadcastChannel(channelName);
 
-  Craft.messageReceiver.addEventListener('message', (ev) => {
-    if (ev.data.event === 'saveElement') {
-      // Are there any instances of the same element on the page?
-      const $elements = $(
-        `div.element[data-id="${ev.data.id}"][data-settings]`
-      );
-      if (!$elements.length) {
-        return;
-      }
-      const data = {
-        type: $elements.data('type'),
-        id: ev.data.id,
-        instances: [],
-      };
-      for (let i = 0; i < $elements.length; i++) {
-        const $element = $elements.eq(i);
-        data.instances.push(
-          Object.assign(
-            {
-              siteId: $element.data('site-id'),
-            },
-            $element.data('settings')
-          )
-        );
-      }
-      Craft.sendActionRequest('POST', 'app/render-element', {data}).then(
-        ({data}) => {
-          for (let i = 0; i < $elements.length; i++) {
-            const $element = $elements.eq(i);
-            if (data.elementHtml[i]) {
-              const $replacement = $(data.elementHtml[i]);
-              for (let attribute of $replacement[0].attributes) {
-                if (attribute.name === 'class') {
-                  $element.addClass(attribute.value);
-                } else {
-                  $element.attr(attribute.name, attribute.value);
-                }
-              }
-              const $inputs = $element.find('input,button').detach();
-              $element.html($replacement.html());
-              if ($inputs.length) {
-                $inputs.prependTo($element);
-              }
-            }
-          }
-          Craft.cp.elementThumbLoader.load($elements);
+  Craft.broadcaster.addEventListener('message', (ev) => {
+    switch (ev.data.event) {
+      case 'beforeTrackJobProgress':
+        Craft.cp.cancelJobTracking();
+        break;
+
+      case 'trackJobProgress':
+        Craft.cp.setJobData(ev.data.jobData);
+        if (Craft.cp.jobInfo.length) {
+          // Check again after a longer delay than usual,
+          // as it looks like another browser tab is driving for now
+          const delay = Craft.cp.getNextJobDelay() + 1000;
+          Craft.cp.trackJobProgress(delay);
         }
-      );
+        break;
+
+      case 'copyElements':
+        const elementInfo = Craft.getLocalStorage('copiedElements');
+        Craft.cp.showElementCopyNotification(elementInfo || []);
+        break;
+    }
+  });
+
+  Craft.messageReceiver.addEventListener('message', (ev) => {
+    switch (ev.data.event) {
+      case 'saveElement':
+        Craft.refreshElementInstances(ev.data.id);
+        break;
+      case 'deleteDraft':
+        Craft.refreshElementInstances(ev.data.canonicalId);
+        break;
     }
   });
 }
@@ -2593,8 +3139,10 @@ $.extend($.fn, {
    */
   checkboxselect: function () {
     return this.each(function () {
-      if (!$.data(this, 'checkboxselect')) {
-        new Garnish.CheckboxSelect(this);
+      if (!$.data(this, 'checkboxSelect')) {
+        new Garnish.CheckboxSelect(this, {
+          storageKey: this.getAttribute('data-storage-key'),
+        });
       }
     });
   },
@@ -2661,22 +3209,57 @@ $.extend($.fn, {
 
   formsubmit: function () {
     // Secondary form submit buttons
-    return this.on('click', function (ev) {
-      let $btn = $(ev.currentTarget);
-      let params = $btn.data('params') || {};
+    return this.on('activate', function (ev) {
+      const $btn = $(ev.currentTarget);
+      const params = $btn.data('params') || {};
       if ($btn.data('param')) {
         params[$btn.data('param')] = $btn.data('value');
       }
 
-      let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-      let $form = $anchor.attr('data-form')
-        ? $('#' + $anchor.attr('data-form'))
-        : $anchor.closest('form');
+      let $form;
+      let namespace = null;
+
+      if ($btn.attr('data-form') === 'false') {
+        $form = Craft.createForm()
+          .addClass('hidden')
+          .append(Craft.getCsrfInput())
+          .appendTo(Garnish.$bod);
+      } else {
+        let $anchor = $btn.closest('.menu--disclosure').length
+          ? $btn.closest('.menu--disclosure').data('trigger').$trigger
+          : $btn.data('menu')
+            ? $btn.data('menu').$anchor
+            : $btn;
+
+        let isFullPage = $anchor.parents('.slideout').length == 0;
+        let isElementIndex = $anchor.parents('.element-index.pane').length > 0;
+
+        if (isFullPage || isElementIndex) {
+          $form = $anchor.attr('data-form')
+            ? $('#' + $anchor.attr('data-form'))
+            : $btn.attr('data-form')
+              ? $('#' + $btn.attr('data-form'))
+              : $anchor.closest('form');
+        } else {
+          $form = $anchor.closest('form');
+          namespace = $anchor.parents('.slideout').data('cpScreen').namespace;
+        }
+
+        if ($anchor.data('disclosureMenu')) {
+          $anchor.data('disclosureMenu').hide();
+        }
+      }
 
       Craft.submitForm($form, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),
+        requireElevatedSession: Garnish.hasAttr(
+          $btn,
+          'data-require-elevated-session'
+        ),
+        namespace: namespace,
         params: params,
         data: $.extend(
           {
@@ -2704,23 +3287,88 @@ $.extend($.fn, {
     });
   },
 
-  disclosureMenu: function () {
+  disclosureMenu: function (settings) {
     return this.each(function () {
       const $trigger = $(this);
       // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
-        new Garnish.DisclosureMenu($trigger);
+        new Garnish.DisclosureMenu($trigger, settings);
       }
+    });
+  },
+
+  expandableButton: function () {
+    return this.each(function () {
+      const $collapsed = $(this);
+      let $expanded = $collapsed.next('.expandable-button--expanded');
+      if (!$expanded.length) {
+        $expanded = $collapsed.prev('.expandable-button--collapsed');
+      }
+      const $container = $collapsed.parent();
+      let containerWidth;
+      let isVisible = false;
+      let isExpanded = false;
+
+      const adjust = () => {
+        if (!containerWidth) {
+          return;
+        }
+
+        if (!isExpanded) {
+          $collapsed.addClass('hidden');
+          $expanded.removeClass('hidden');
+        }
+
+        isExpanded = $container[0].scrollWidth <= containerWidth;
+
+        if (!isExpanded) {
+          $collapsed.removeClass('hidden');
+          $expanded.addClass('hidden');
+        }
+      };
+
+      const intersectionObserver = new IntersectionObserver((entries) => {
+        // was the container just made visible?
+        if (
+          isVisible !== (isVisible = entries[0].intersectionRatio !== 0) &&
+          isVisible
+        ) {
+          adjust();
+        }
+      });
+      intersectionObserver.observe($container[0]);
+
+      const checkContainerWidth = () => {
+        if (
+          containerWidth !==
+            (containerWidth = $container[0].getBoundingClientRect().width) &&
+          containerWidth
+        ) {
+          adjust();
+        }
+      };
+      checkContainerWidth();
+
+      const resizeObserver = new ResizeObserver(() => {
+        Garnish.requestAnimationFrame(() => {
+          checkContainerWidth();
+        });
+      });
+      resizeObserver.observe($container[0]);
     });
   },
 
   datetime: function () {
     return this.each(function () {
       let $wrapper = $(this);
-      let $inputs = $wrapper.find('input:not([name$="[timezone]"])');
+      let $inputs = $wrapper.find('input.text');
       let checkValue = () => {
         let hasValue = false;
         for (let i = 0; i < $inputs.length; i++) {
+          if ($inputs.eq(i).is(':disabled')) {
+            hasValue = false;
+            break;
+          }
           if ($inputs.eq(i).val()) {
             hasValue = true;
             break;

@@ -26,7 +26,7 @@ Craft.AdminTable = Garnish.Base.extend(
       this.$tbody = this.$table.children('tbody');
       this.totalItems = this.$tbody.children().length;
 
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.sorter = new Craft.DataTableSorter(this.$table, {
           onSortChange: this.reorderItems.bind(this),
         });
@@ -44,7 +44,15 @@ Craft.AdminTable = Garnish.Base.extend(
         }
       });
 
+      this.$tbody.children('tr').each((key, row) => {
+        this.initRow(row);
+      });
+
       this.updateUI();
+    },
+
+    initRow: function (row) {
+      return new Craft.AdminTable.Row(this, row);
     },
 
     addRow: function (row) {
@@ -56,8 +64,8 @@ Craft.AdminTable = Garnish.Base.extend(
       var $row = $(row).appendTo(this.$tbody),
         $deleteBtn = $row.find('.delete');
 
-      if (this.settings.sortable) {
-        this.sorter.addItems($row);
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
+        this.sorter?.addItems($row);
       }
 
       this.$deleteBtns = this.$deleteBtns.add($deleteBtn);
@@ -74,12 +82,7 @@ Craft.AdminTable = Garnish.Base.extend(
       }
 
       // Get the new field order
-      var ids = [];
-
-      for (var i = 0; i < this.sorter.$items.length; i++) {
-        var id = $(this.sorter.$items[i]).attr(this.settings.idAttribute);
-        ids.push(id);
-      }
+      let ids = this.getRowOrder();
 
       // Send it to the server
       var data = {
@@ -98,6 +101,17 @@ Craft.AdminTable = Garnish.Base.extend(
             Craft.t('app', this.settings.reorderFailMessage)
           );
         });
+    },
+
+    getRowOrder: function () {
+      var ids = [];
+      // Get the new field order
+      this.$tbody.children('tr').each((key, row) => {
+        let id = $(row).attr(this.settings.idAttribute);
+        ids.push(id);
+      });
+
+      return ids;
     },
 
     handleDeleteBtnClick: function (event) {
@@ -193,12 +207,16 @@ Craft.AdminTable = Garnish.Base.extend(
 
       // Disable the sort buttons if there's only one row
       if (this.settings.sortable) {
-        var $moveButtons = this.$table.find('.move');
-
-        if (this.totalItems === 1) {
-          $moveButtons.addClass('disabled');
+        if (!Craft.hasMousePointerEvents()) {
+          this.$table.find('.move').hide();
         } else {
-          $moveButtons.removeClass('disabled');
+          var $moveButtons = this.$table.find('.move');
+
+          if (this.totalItems === 1) {
+            $moveButtons.addClass('disabled');
+          } else {
+            $moveButtons.removeClass('disabled');
+          }
         }
       }
 
@@ -248,3 +266,107 @@ Craft.AdminTable = Garnish.Base.extend(
     },
   }
 );
+
+Craft.AdminTable.Row = Garnish.Base.extend({
+  table: null,
+  $row: null,
+  $moveHandle: null,
+  $actionMenuBtn: null,
+  $actionMenu: null,
+  actionDisclosure: null,
+  moveUpBtn: null,
+  moveDownBtn: null,
+
+  init: function (table, row) {
+    this.table = table;
+    this.$row = $(row);
+
+    this.initSortActions();
+  },
+
+  initSortActions: function () {
+    if (!this.table.settings.sortable) {
+      return;
+    }
+
+    // find the delete button and add the actions menu before it
+    let $deleteButtonWrapper = this.$row.find('.delete').parent('td');
+
+    const menuId = 'menu-' + Math.floor(Math.random() * 1000000000);
+    let $actionMenuBtnWrapper = this.$row.find('.actions-container');
+
+    if ($actionMenuBtnWrapper.length > 0) {
+      this.$actionMenuBtn = $('<button/>', {
+        class: 'btn action-btn',
+        'aria-controls': menuId,
+        'aria-label': Craft.t('app', 'Actions'),
+        'data-disclosure-trigger': '',
+        'data-icon': 'ellipsis',
+      }).appendTo($actionMenuBtnWrapper);
+      this.$actionMenu = $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).appendTo($actionMenuBtnWrapper);
+
+      this.actionDisclosure = new Garnish.DisclosureMenu(this.$actionMenuBtn);
+      this.moveUpBtn = this.actionDisclosure.addItem({
+        icon: async () => await Craft.ui.icon('arrow-up'),
+        label: Craft.t('app', 'Move up'),
+        onActivate: () => {
+          this.moveUp();
+        },
+      });
+      this.moveDownBtn = this.actionDisclosure.addItem({
+        icon: async () => await Craft.ui.icon('arrow-down'),
+        label: Craft.t('app', 'Move down'),
+        onActivate: () => {
+          this.moveDown();
+        },
+      });
+
+      this.actionDisclosure.on('show', () => {
+        if (this.getPrevItem()) {
+          this.actionDisclosure.showItem(this.moveUpBtn);
+        } else {
+          this.actionDisclosure.hideItem(this.moveUpBtn);
+        }
+        if (this.getNextItem()) {
+          this.actionDisclosure.showItem(this.moveDownBtn);
+        } else {
+          this.actionDisclosure.hideItem(this.moveDownBtn);
+        }
+      });
+    }
+  },
+
+  moveUp: function () {
+    const $prev = this.getPrevItem();
+    if ($prev) {
+      this.$row.insertBefore($prev);
+      this.$row.trigger('movedUp');
+      this.table.reorderItems();
+    }
+  },
+
+  moveDown: function () {
+    const $next = this.getNextItem();
+    if ($next) {
+      this.$row.insertAfter($next);
+      this.$row.trigger('movedDown');
+      this.table.reorderItems();
+    }
+  },
+
+  getPrevItem: function () {
+    //const $row = this.$row.prevAll('tr');
+    const $row = this.$row.prevAll('tr:has(.actions-container):first');
+
+    return $row.length ? $row : null;
+  },
+
+  getNextItem: function () {
+    const $row = this.$row.nextAll('tr:has(.actions-container):first');
+
+    return $row.length ? $row : null;
+  },
+});

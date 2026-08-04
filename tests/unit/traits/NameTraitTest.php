@@ -43,14 +43,14 @@ class NameTraitTest extends TestCase
         $this->_class->save();
 
         foreach ($expected as $attr => $val) {
-            $this->assertSame($val, $this->_class->$attr);
+            self::assertSame($val, $this->_class->$attr);
         }
     }
 
     /**
      * @return array
      */
-    public function namesDataProvider(): array
+    public static function namesDataProvider(): array
     {
         return [
             'onlyFullName' => [
@@ -64,13 +64,6 @@ class NameTraitTest extends TestCase
             'lastNamePrefix' => [
                 ['fullName' => 'Emmett von Brown'],
                 ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'von Brown'],
-            ],
-            'lastNamePrefixWithCasingChange' => [
-                ['fullName' => 'Emmett von Brown'],
-                ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'Von Brown'],
-                [],
-                [],
-                ['Von'],
             ],
             'lastNamePrefixWithWordingChange' => [
                 ['fullName' => 'Emmett von Brown'],
@@ -106,6 +99,15 @@ class NameTraitTest extends TestCase
                 [],
                 [],
                 ['Prefix'],
+            ],
+            // https://github.com/craftcms/cms/issues/14723
+            'maintainCasing1' => [
+                ['fullName' => 'Eddie Van Halen'],
+                ['fullName' => 'Eddie Van Halen', 'firstName' => 'Eddie', 'lastName' => 'Van Halen'],
+            ],
+            'maintainCasing2' => [
+                ['fullName' => 'Vincent van Gogh'],
+                ['fullName' => 'Vincent van Gogh', 'firstName' => 'Vincent', 'lastName' => 'van Gogh'],
             ],
         ];
     }

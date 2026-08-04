@@ -13,10 +13,13 @@ use craft\db\Table;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
+use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
+use craft\web\twig\AllowedInSandbox;
+use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 
@@ -67,14 +70,6 @@ class Tag extends Element
     public static function refHandle(): ?string
     {
         return 'tag';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
-    {
-        return true;
     }
 
     /**
@@ -138,13 +133,21 @@ class Tag extends Element
     }
 
     /**
-     * @inheritdoc
-     * @since 3.3.0
+     * Returns the GraphQL type name that tags should use, based on their tag group.
+     *
+     * @since 5.0.0
      */
-    public static function gqlTypeNameByContext(mixed $context): string
+    public static function gqlTypeName(TagGroup $tagGroup): string
     {
-        /** @var TagGroup $context */
-        return $context->handle . '_Tag';
+        return sprintf('%s_Tag', $tagGroup->handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function baseGqlType(): Type
+    {
+        return TagInterface::getType();
     }
 
     /**
@@ -159,17 +162,28 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @since 3.5.0
      */
-    public static function gqlMutationNameByContext(mixed $context): string
+    protected static function defineFieldLayouts(?string $source): array
     {
-        /** @var TagGroup $context */
-        return 'save_' . $context->handle . '_Tag';
+        if ($source !== null) {
+            $groups = [];
+            if (preg_match('/^taggroup:(.+)$/', $source, $matches)) {
+                $group = Craft::$app->getTags()->getTagGroupByUid($matches[1]);
+                if ($group) {
+                    $groups[] = $group;
+                }
+            }
+        } else {
+            $groups = Craft::$app->getTags()->getAllTagGroups();
+        }
+
+        return array_map(fn(TagGroup $group) => $group->getFieldLayout(), $groups);
     }
 
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -198,9 +212,7 @@ class Tag extends Element
         $rules[] = [
             ['title'],
             'validateTitle',
-            'when' => function(): bool {
-                return !$this->hasErrors('groupId') && !$this->hasErrors('title');
-            },
+            'when' => fn(): bool => !$this->hasErrors('groupId') && !$this->hasErrors('title'),
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         return $rules;
@@ -278,7 +290,11 @@ class Tag extends Element
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
+        try {
+            return $this->getGroup()->getFieldLayout();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**
@@ -287,6 +303,7 @@ class Tag extends Element
      * @return TagGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): TagGroup
     {
         if (!isset($this->groupId)) {
@@ -306,7 +323,7 @@ class Tag extends Element
      */
     public function getGqlTypeName(): string
     {
-        return static::gqlTypeNameByContext($this->getGroup());
+        return static::gqlTypeName($this->getGroup());
     }
 
     // Events

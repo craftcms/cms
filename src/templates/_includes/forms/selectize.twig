@@ -1,6 +1,7 @@
 {% set id = id ?? "selectize#{random()}" %}
 {% set selectizeOptions = {
     dropdownParent: 'body',
+    plugins: ['auto_position', 'selectize-plugin-a11y'],
 }|merge(selectizeOptions ?? []) %}
 
 {% set multi = multi ?? false %}
@@ -9,9 +10,13 @@
         plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
     }) %}
 {% else %}
-    {% set selectizeOptions = selectizeOptions|merge({
-        plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
-    }) %}
+    {% if selectizeOptions.extraPlugins is defined and selectizeOptions.extraPlugins == false %}
+        {# don't include extra plugins if the settings explicitly tell us not to #}
+    {% else %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+        }) %}
+    {% endif %}
 {% endif %}
 
 {# Normalize the options #}
@@ -20,7 +25,10 @@
     label: o.label is defined ? o.label : o,
 }) %}
 {% set options = options|map(o => o|merge({
-    data: (o.data ?? {})|merge(o.data.data ?? {})
+    data: (o.data ?? {})|merge(o.data.data ?? {})|merge({
+        color: o.data.color ?? o.color ?? null,
+        icon: iconSvg(o.data.icon ?? o.icon ?? null),
+    }|filter)
 })) %}
 
 {% if includeEnvVars ?? false %}
@@ -60,6 +68,7 @@
     class: (class ?? [])|explodeClass|push('selectize')|unique,
     inputAttributes: {
         style: {display: 'none'},
+        autocomplete: (not multi and autocomplete is defined) ? autocomplete : false
     }|merge(inputAttributes ?? [], recursive=true),
 } %}
 
@@ -86,12 +95,28 @@
                 return getData(data, 'status');
             }
             if (hasData(data, 'boolean')) {
-                return getData(data, 'boolean') ? 'green' : 'white';
+                return getData(data, 'boolean') ? 'enabled' : 'white';
             }
             return null;
         })();
         if (status) {
             label += `<span class="status ${status}"></span>`;
+        }
+        const icon = hasData(data, 'icon') ? getData(data, 'icon') : false;
+        const color = hasData(data, 'color') ? getData(data, 'color') : false;
+        if (icon !== false) {
+            const style = color ? `style="--icon-color: ${color}"` : '';
+            label += `<span class="cp-icon puny" ${style}>${icon}</span> `;
+        } else if (color !== false) {
+            label += '<div class="color small">';
+            if (color[0] == '#') {
+                label += `<div class="color-preview" style="background-color: ${color}"></div>`;
+            } else if (color != '__blank__') {
+                label += `<div class="color-preview bg-${color}"></div>`;
+            } else {
+                label += `<div class="color-preview"></div>`;
+            }
+            label += '</div>';
         }
         label += `<span>${Craft.escapeHtml(getData(data, 'text'))}</span>`;
         if (showHint && hasData(data, 'hint') && getData(data, 'hint') !== '') {
@@ -159,30 +184,6 @@
         }
     };
 
-    const positionDropdown = () => {
-        const selectize = $select.data('selectize');
-
-        // adjust dropdown position - if there's not enough space to display it below the field
-        // display it above the field
-        const bodyHeight = $('body').height();
-        const windowInnerHeight = window.innerHeight;
-        let offsetAdjustment = 0;
-        if (bodyHeight > windowInnerHeight) {
-            offsetAdjustment = bodyHeight - windowInnerHeight;
-        }
-
-        const controlOffset = selectize.settings.dropdownParent === 'body' ? selectize.$control.offset() : selectize.$control.position();
-        const controlHeight = selectize.$control.outerHeight();
-        const dropdownHeight = selectize.$dropdown.outerHeight();
-        const exceededWindowHeight = (controlOffset.top - offsetAdjustment + controlHeight + dropdownHeight) > windowInnerHeight;
-
-        if (exceededWindowHeight) {
-            selectize.$dropdown.css({
-                top: controlOffset.top - dropdownHeight - 4,
-            });
-        }
-    };
-
     {% if not multi %}
         const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
         const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
@@ -190,13 +191,14 @@
 
     $select.selectize($.extend({
         searchField: ['text', 'hint', 'value', 'keywords'],
+        selectOnTab: false,
         render: {
             option: data => {
                 const classes = ['option'];
                 if (data.value === '') {
                     classes.push('selectize-dropdown-emptyoptionlabel');
                 }
-                return `<div class="${classes.join(' ')}">${label(data, true)}</div>`;
+                return `<div class="${classes.join(' ')}" role="option" id="${data.text.replace(' ', '')}">${label(data, true)}</div>`;
             },
             item: data => {
                 const attrs = ['class="item"'];
@@ -211,15 +213,39 @@
         },
         onChange: onChange,
         onInitialize: function () {
+            // this is needed so that you can delete selected item when the field is not fully in viewport
+            // see https://github.com/craftcms/cms/issues/18079 for details
+            {% if multi %}
+                this.isFocused = true;
+            {% endif %}
+
             // Copy all ARIA attributes from initial select to selectize
             [...$select[0].attributes]
                 .filter(attr => /^aria-/.test(attr.name))
                 .forEach((attr) => {
                     this.$control_input.attr(attr.name, attr.value);
                 });
+
+            {% if not multi %}
+                // we need some sort of class here to be able to prevent Garnish.setFocusWithin()
+                // from auto-focusing and therefore opening the selectized field if it's the first one in a slideout
+                // see https://github.com/craftcms/cms/issues/15245
+                this.$control_input.addClass('prevent-autofocus');
+            {% endif %}
+
+            // allow autocomplete;
+            // despite what the documentation says, the "autofill_disable" seems to be ON by default,
+            // and there's no "proper" way to disable it
+            // more info: https://github.com/selectize/selectize.js/issues/1535
+            const autocomplete = $select.attr('autocomplete');
+            if (autocomplete) {
+                const selectize = $select.data('selectize');
+                selectize.$control_input
+                    .removeAttr('autofill')
+                    .attr('autocomplete', autocomplete);
+            }
         },
         onDropdownOpen: function() {
-            positionDropdown();
             {% if not multi %}
                 $select[0].dispatchEvent(selectizeDropdownOpenEvent);
             {% endif %}
@@ -229,7 +255,6 @@
                 $select[0].dispatchEvent(selectizeDropdownCloseEvent);
             {% endif %}
         },
-        onItemAdd: positionDropdown,
     }, {{ selectizeOptions|json_encode|raw }}));
 
     onChange();

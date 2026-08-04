@@ -119,4 +119,14 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * @return string|null
      */
     public function getSettingsHtml(): ?string;
+
+    /**
+     * Returns a read-only version of the component’s settings HTML.
+     *
+     * This method is called to output settings when admin changes are disallowed.
+     *
+     * @return string|null
+     * @since 5.6.0
+     */
+    public function getReadOnlySettingsHtml(): ?string;
 }

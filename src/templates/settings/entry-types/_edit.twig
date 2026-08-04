@@ -1,0 +1,228 @@
+{% import "_includes/forms" as forms %}
+
+{% if entryType.id %}{{ hiddenInput('entryTypeId', entryType.id) }}{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    instructions: "What this entry type will be called in the control panel."|t('app'),
+    id: 'name',
+    name: 'name',
+    value: entryType.name,
+    autofocus: true,
+    required: true,
+    errors: entryType.getErrors('name'),
+    data: {'error-key': 'name'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    instructions: "How you’ll refer to this entry type in the templates."|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: entryType.handle,
+    required: true,
+    errors: entryType.getErrors('handle'),
+    data: {'error-key': 'handle'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: entryType.description ?? null,
+    errors: entryType.getErrors('description'),
+    disabled: readOnly,
+}) }}
+
+{{ forms.iconPickerField({
+    label: 'Icon'|t('app'),
+    id: 'icon',
+    name: 'icon',
+    value: entryType.icon,
+    errors: entryType.getErrors('icon'),
+    data: {
+        'error-key': 'icon',
+    },
+    static: readOnly,
+}) }}
+
+{{ forms.colorSelectField({
+    label: 'Color'|t('app'),
+    id: 'color',
+    name: 'color',
+    value: entryType.color,
+    errors: entryType.getErrors('color'),
+    data: {
+        'error-key': 'color',
+    },
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: 'UI Label Format'|t('app'),
+  instructions: 'How entries should be labeled within the control panel.'|t('app'),
+  id: 'uiLabelFormat',
+  name: 'uiLabelFormat',
+  class: 'code',
+  value: entryType.uiLabelFormat,
+  errors: entryType.getErrors('uiLabelFormat'),
+  data: {
+    'error-key': 'uiLabelFormat',
+  },
+  disabled: readOnly,
+}) }}
+
+<hr>
+
+{% if craft.app.getIsMultiSite() %}
+    <div id="title-container">
+        {{ forms.selectField({
+            label: '{name} Translation Method'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            instructions: 'How should {name} values be translated?'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            id: 'translation-method',
+            name: 'titleTranslationMethod',
+            options: [
+                { value: 'none', label: 'Not translatable'|t('app') },
+                { value: 'site', label: 'Translate for each site'|t('app') },
+                { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                { value: 'language', label: 'Translate for each language'|t('app') },
+                { value: 'custom', label: 'Custom…'|t('app') },
+            ]|filter,
+            value: entryType.titleTranslationMethod,
+            toggle: true,
+            targetPrefix: 'translation-method-',
+            disabled: readOnly,
+        }) }}
+
+        <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+            {{ forms.textField({
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Title'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Title'|t('app'),
+                }),
+                id: 'translation-key-format',
+                name: 'titleTranslationKeyFormat',
+                value: entryType.titleTranslationKeyFormat,
+                errors: entryType.getErrors('titleTranslationKeyFormat'),
+                data: {
+                    'error-key': 'titleTranslationKeyFormat',
+                },
+                disabled: readOnly,
+            }) }}
+        </div>
+    </div>
+{% endif %}
+
+{{ forms.textField({
+    label: 'Default Title Format'|t('app'),
+    instructions: 'What auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.'|t('app', { ex: '<code>{myCustomField}</code>' }),
+    id: 'titleFormat',
+    name: 'titleFormat',
+    class: 'code',
+    value: entryType.titleFormat,
+    errors: entryType.getErrors('titleFormat'),
+    data: {
+        'error-key': 'titleFormat',
+    },
+    disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+  label: 'Allow line breaks in titles'|t('app'),
+  name: 'allowLineBreaksInTitles',
+  on: entryType.allowLineBreaksInTitles,
+  disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Show the Slug field"|t('app'),
+    name: 'showSlugField',
+    toggle: 'slug-container',
+    reverseToggle: '#slugFormat-container, #field-layout .fld-slug-field-icon',
+    on: entryType.showSlugField,
+    disabled: readOnly,
+}) }}
+
+{% if craft.app.getIsMultiSite() %}
+    <div id="slug-container"{% if not entryType.showSlugField %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: '{name} Translation Method'|t('app', {
+                name: 'Slug'|t('app'),
+            }),
+            instructions: 'How should {name} values be translated?'|t('app', {
+                name: 'Slug'|t('app'),
+            }),
+            id: 'slug-translation-method',
+            name: 'slugTranslationMethod',
+            options: [
+                { value: 'none', label: 'Not translatable'|t('app') },
+                { value: 'site', label: 'Translate for each site'|t('app') },
+                { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                { value: 'language', label: 'Translate for each language'|t('app') },
+                { value: 'custom', label: 'Custom…'|t('app') },
+            ]|filter,
+            value: entryType.slugTranslationMethod,
+            toggle: true,
+            targetPrefix: 'slug-translation-method-',
+            disabled: readOnly,
+        }) }}
+
+        <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+            {{ forms.textField({
+                label: '{name} Translation Key Format'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                    name: 'Slug'|t('app'),
+                }),
+                id: 'slug-translation-key-format',
+                name: 'slugTranslationKeyFormat',
+                value: entryType.slugTranslationKeyFormat,
+                errors: entryType.getErrors('slugTranslationKeyFormat'),
+                data: {
+                    'error-key': 'slugTranslationKeyFormat',
+                },
+                disabled: readOnly,
+            }) }}
+        </div>
+    </div>
+{% endif %}
+
+{{ forms.lightswitchField({
+    label: "Show the Status field"|t('app'),
+    id: 'showStatusField',
+    name: 'showStatusField',
+    on: entryType.showStatusField,
+    errors: entryType.getErrors('showStatusField'),
+    data: {
+        'error-key': 'showStatusField',
+    },
+    disabled: readOnly,
+}) }}
+
+<hr>
+
+{{ forms.fieldLayoutDesignerField({
+    id: 'field-layout',
+    fieldLayout: entryType.getFieldLayout(),
+    withGeneratedFields: true,
+    withCardViewDesigner: true,
+    disabled: readOnly,
+}) }}
+
+{% if not entryType.handle %}
+    {% js "new Craft.HandleGenerator('##{'name'|namespaceInputId}', '##{'handle'|namespaceInputId}');" %}
+{% endif %}

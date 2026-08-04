@@ -64,12 +64,8 @@ class GeneralMutationResolverTest extends TestCase
             'three' => ['four', 'five'],
         ];
         $valueNormalizers = [
-            'reverseArgument' => function(string $value) {
-                return strrev($value);
-            },
-            'allCaps' => function(string $value) {
-                return strtoupper($value);
-            },
+            'reverseArgument' => fn(string $value) => strrev($value),
+            'allCaps' => fn(string $value) => strtoupper($value),
         ];
 
         $this->resolver = new EntryMutationResolver($testData, $valueNormalizers);
@@ -88,9 +84,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertSame($this->resolver->getResolutionData($testKey), $testString);
         self::assertNull($this->resolver->getResolutionData(uniqid('test', true)));
 
-        $normalizer = function($value) {
-            return strlen($value);
-        };
+        $normalizer = fn($value) => strlen($value);
 
         $this->resolver->setValueNormalizer($testKey, $normalizer);
         self::assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
@@ -129,7 +123,7 @@ class GeneralMutationResolverTest extends TestCase
     public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
-            'setFieldValue' => Expected::exactly(count($contentFields)),
+            'setFieldValueFromRequest' => Expected::exactly(count($contentFields)),
         ]);
 
         $this->resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $contentFields);
@@ -178,7 +172,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($entry->title, $arguments['title']);
     }
 
-    public function populatingElementWithDataProvider(): array
+    public static function populatingElementWithDataProvider(): array
     {
         return [
             [
@@ -264,7 +258,7 @@ class GeneralMutationResolverTest extends TestCase
 
         /// Setting values on an entry will store this for us.
         $entry = $this->make(Entry::class, [
-            'setFieldValue' => function($name, $value) use (&$values) {
+            'setFieldValueFromRequest' => function($name, $value) use (&$values) {
                 $values[$name] = $value;
             },
         ]);
@@ -311,9 +305,7 @@ class GeneralMutationResolverTest extends TestCase
         // Also mock our input type definitions
         $mutationResolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
-            'saveElement' => function($entry) {
-                return $entry;
-            },
+            'saveElement' => fn($entry) => $entry,
             'performStructureOperations' => true,
             'argumentTypeDefsByName' => [
                 'parentField' => $parentObjectType,

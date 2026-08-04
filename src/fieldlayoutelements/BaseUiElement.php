@@ -10,7 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Component;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -24,19 +24,24 @@ abstract class BaseUiElement extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    public function isMultiInstance(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function selectorHtml(): string
     {
+        $icon = $this->selectorIcon();
         $label = $this->selectorLabel();
 
-        $indicatorHtml = ($this->hasConditions()
-            ? Html::tag('div', '', [
-                'class' => ['fld-indicator'],
-                'title' => Craft::t('app', 'This element is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This element is conditional')],
-                'data' => ['icon' => 'condition'],
-                'role' => 'img',
-            ])
-            : '');
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+            'class' => ['cp-icon', 'puny', 'orange'],
+            'title' => Craft::t('app', 'This element is conditional'),
+            'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+        ]) : '';
 
         return
             Html::beginTag('div', [
@@ -46,11 +51,11 @@ abstract class BaseUiElement extends FieldLayoutElement
                 ],
             ]) .
             Html::beginTag('div', ['class' => 'fld-element-icon']) .
-            Component::iconSvg($this->selectorIcon(), $label) .
+            ($icon ? Cp::iconSvg($icon, $label) : Cp::fallbackIconSvg($label)) .
             Html::endTag('div') . // .fld-element-icon
             Html::beginTag('div', ['class' => 'field-name']) .
             Html::beginTag('div', ArrayHelper::merge(
-                ['class' => 'fld-element-label'],
+                ['class' => ['fld-element-label']],
                 $this->selectorLabelAttributes(),
             )) .
             Html::tag('h4', Html::encode($label)) .
@@ -78,7 +83,12 @@ abstract class BaseUiElement extends FieldLayoutElement
     }
 
     /**
-     * Returns the path to the widget’s SVG icon, or the actual SVG contents.
+     * Returns the UI element’s SVG icon, if it has one.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
      */

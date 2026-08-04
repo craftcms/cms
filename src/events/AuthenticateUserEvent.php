@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * Authenticate User event class.
@@ -18,9 +18,9 @@ use yii\base\Event;
 class AuthenticateUserEvent extends Event
 {
     /**
-     * @var string The password that was submitted
+     * @var string|null The password that was submitted, or null if a passkey is being used.
      */
-    public string $password;
+    public ?string $password = null;
 
     /**
      * @var bool Whether authentication should continue. If not, and the user doesn’t authenticate, set `$event->sender->authError` to something,

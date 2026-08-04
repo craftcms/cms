@@ -25,11 +25,17 @@ interface UtilityInterface extends ComponentInterface
     public static function id(): string;
 
     /**
-     * Returns the path to the utility’s SVG icon.
+     * Returns the utility’s SVG icon, if it has one.
+     *
+     * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
+     * the path to an SVG file, or raw SVG markup.
+     *
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
+     * @since 5.0.0
      */
-    public static function iconPath(): ?string;
+    public static function icon(): ?string;
 
     /**
      * Returns the number that should be shown in the utility’s nav item badge.

@@ -1,0 +1,136 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% if (name ?? false) and (renderDefaultInput ?? true) %}
+  {{ hiddenInput(name|replace('/\\[\\]$/', ''), '') }}
+{% endif -%}
+
+{% set id = id ?? "componentselect#{random()}" -%}
+{% set options = options ?? [] %}
+{% set values = values ?? (value ?? false ? [value] : []) -%}
+{% set limit = limit ?? null %}
+{% set showHandles = showHandles ?? false %}
+{% set showIndicators = showIndicators ?? false %}
+{% set showDescription = showDescription ?? false %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
+{% set showActionMenus = showActionMenus ?? true %}
+{% set hyperlinks = hyperlinks ?? false %}
+{% set withSearchInput = withSearchInput ?? (options|length > 5) %}
+{% set createAction = createAction ?? null %}
+{% set disabled = (disabled ?? false) ? true : false %}
+{% set registerJs = registerJs ?? true %}
+{% set jsClass = jsClass ?? 'Craft.ComponentSelectInput' %}
+
+{# sort the options by handle, then label #}
+{% if showHandles %}
+  {% set options = options|sort((a, b) => a is instance of('craft\\base\\Grippable') ? a.getHandle() <=> b is instance of('craft\\base\\Grippable') ? b.getHandle()) %}
+{% endif %}
+{% set options = options|sort((a, b) => a.getUiLabel() <=> b.getUiLabel()) %}
+
+{% set containerAttributes = {
+  id: id,
+  class: ['componentselect']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
+  {% tag 'ul' with {
+    class: [
+      'components',
+      'chips',
+      (inline ?? false) ? 'inline-chips' : null,
+    ]|filter,
+  } %}
+    {%- apply spaceless %}
+      {% block chips %}
+        {% for component in values %}
+          <li>
+            {% set chip = chip(component, {
+              inputName: inputName ?? name ?? null,
+              checkbox: selectable ?? false,
+              showActionMenu: showActionMenus,
+              showHandle: showHandles,
+              showIndicators: showIndicators,
+              showDescription: showDescription,
+              hyperlink: hyperlinks,
+            }) %}
+            {% if disabled %}
+              {% set chip = chip|removeClass('removable') %}
+            {% endif %}
+            {{ chip|raw }}
+          </li>
+        {% endfor %}
+      {% endblock %}
+    {% endapply -%}
+  {% endtag %}
+
+  <div class="flex flex-nowrap">
+    {% set valueIds = values|map(component => component.getId()) %}
+
+    {% set buttonAttributeClasses = ['dashed', 'add-btn'] %}
+    {% if disabled and limit and valueIds|length >= limit %}
+        {% set buttonAttributeClasses = buttonAttributeClasses|merge(['hidden']) %}
+    {% endif %}
+
+    {# the disclosureMenu already has support for description (shows below the label),
+    so the description that goes into the info icon needs to be keyed by something else - 'info' #}
+    {{ disclosureMenu(options|map(component => {
+      type: 'button',
+      label: component.getUiLabel(),
+      handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+      info: showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null,
+      icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
+      color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
+      attributes: {
+        data: {
+          type: className(component),
+          id: component.getId(),
+          handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+        },
+      },
+      liAttributes: {
+        class: {
+          hidden: component.getId() in valueIds
+        }|filter|keys,
+      },
+    }), {
+      buttonLabel: 'Choose'|t('app'),
+      buttonAttributes: {
+        class: buttonAttributeClasses,
+      },
+      omitIfEmpty: false,
+      withSearchInput,
+      disabled,
+    }) }}
+
+    {% if createAction and not disabled %}
+      {{ forms.button({
+        class: ['dashed', 'create-btn'],
+        label: 'Create'|t('app'),
+        icon: 'plus',
+      }) }}
+    {% endif %}
+  </div>
+{% endtag %}
+
+{% if not disabled and registerJs %}
+  {% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    limit,
+    showHandles,
+    showDescription,
+    sortable,
+    showActionMenus,
+    hyperlinks,
+    createAction,
+  }|merge(jsSettings ?? {}) %}
+
+  {% js %}
+    (() => {
+      new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+    })();
+  {% endjs %}
+{% endif %}

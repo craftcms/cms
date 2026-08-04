@@ -1,0 +1,27 @@
+name: 'playwright'
+type: craftcms
+docroot: web
+php_version: '8.2'
+webserver_type: nginx-fpm
+xdebug_enabled: true
+additional_hostnames: []
+additional_fqdns: []
+database:
+  type: mysql
+  version: '8.0'
+performance_mode: none
+upload_dirs:
+  - assets
+  - cpresources
+use_dns_when_possible: true
+composer_version: '2'
+nodejs_version: '20'
+corepack_enable: false
+no_project_mount: true
+hooks:
+  post-start:
+    - exec: 'rm -fr /var/www/html/.*'
+    - exec: 'rm -fr /var/www/html/*'
+    - exec: 'composer create-project --no-scripts craftcms/craft /var/www/html/'
+    - exec: "sed -i 's/create()/create()->requireMatchingUserAgentForSession(false)/g' /var/www/html/config/general.php"
+    - exec: 'rm -f /var/www/html/composer.json.default'

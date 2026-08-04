@@ -11,6 +11,9 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\helpers\Assets;
+use craft\helpers\Cp;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\Volume;
 use craft\web\Controller;
@@ -30,6 +33,8 @@ use yii\web\Response;
  */
 class VolumesController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -39,8 +44,16 @@ class VolumesController extends Controller
             return false;
         }
 
-        // All asset volume actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['volume-index', 'edit-volume'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -54,6 +67,7 @@ class VolumesController extends Controller
     {
         $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
+        $variables['readOnly'] = $this->readOnly;
 
         return $this->renderTemplate('settings/assets/volumes/_index.twig', $variables);
     }
@@ -69,7 +83,9 @@ class VolumesController extends Controller
      */
     public function actionEditVolume(?int $volumeId = null, ?Volume $volume = null): Response
     {
-        $this->requireAdmin();
+        if ($volumeId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         $volumesServices = Craft::$app->getVolumes();
 
@@ -97,25 +113,23 @@ class VolumesController extends Controller
         $allVolumes = $volumesServices->getAllVolumes();
         /** @var Collection<string> $takenFsHandles */
         $takenFsHandles = Collection::make($allVolumes)
+            ->filter(fn(Volume $volume) => !$volume->getSubpath())
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
-            ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
-                'label' => $fs->name,
+                'label' => Craft::t('site', $fs->name),
                 'value' => $fs->handle,
+                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
+            ->sortBy(fn(array $option) => $option['label'])
             ->all();
+        array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
 
-        return $this->asCpScreen()
+        $response = $this->asCpScreen()
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
             ->addCrumb(Craft::t('app', 'Volumes'), 'settings/assets')
-            ->action('volumes/save-volume')
-            ->redirectUrl('settings/assets')
-            ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
-            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
             ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
@@ -123,7 +137,25 @@ class VolumesController extends Controller
                 'typeName' => Asset::displayName(),
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
+                'readOnly' => $this->readOnly,
             ]);
+
+        if (!$this->readOnly) {
+            $response
+                ->action('volumes/save-volume')
+                ->redirectUrl('settings/assets')
+                ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/assets/volumes/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ])
+                ->editUrl($volume->getCpEditUrl());
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**
@@ -146,6 +178,11 @@ class VolumesController extends Controller
             }
         }
 
+        // prepare subpath for saving
+        $subpath = $this->request->getBodyParam('subpath');
+        if (!empty($subpath)) {
+            $subpath = FileHelper::normalizePath(ltrim(trim($subpath), '/'));
+        }
         $volume = new Volume([
             'id' => $volumeId,
             'uid' => $oldVolume->uid ?? null,
@@ -153,10 +190,13 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'subpath' => $subpath ?? null,
             'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
+            'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
+            'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
         ]);
 
         // Set the field layout

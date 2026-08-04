@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\entries;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\HasDescendantsRule;
 use craft\elements\conditions\LevelConditionRule;
 
 /**
@@ -16,16 +17,18 @@ class EntryCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        return array_merge(parent::conditionRuleTypes(), [
+        return array_merge(parent::selectableConditionRules(), [
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
+            HasDescendantsRule::class,
             LevelConditionRule::class,
             PostDateConditionRule::class,
             SavableConditionRule::class,
             SectionConditionRule::class,
+            FieldConditionRule::class,
             TypeConditionRule::class,
             ViewableConditionRule::class,
         ]);

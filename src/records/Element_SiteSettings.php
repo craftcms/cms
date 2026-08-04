@@ -17,8 +17,10 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $elementId Element ID
  * @property int $siteId Site ID
- * @property string $slug Slug
- * @property string $uri URI
+ * @property string|null $title Title
+ * @property string|null $slug Slug
+ * @property string|null $uri URI
+ * @property array|string|null $content Content
  * @property bool $enabled Enabled
  * @property Element $element Element
  * @property Site $site Site

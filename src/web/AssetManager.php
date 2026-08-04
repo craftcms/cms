@@ -24,6 +24,13 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    /**
+     * @var bool Whether asset source paths should be cached for subsequent requests.
+     * @see hash()
+     * @since 4.5.10
+     */
+    public bool $cacheSourcePaths = true;
+
     private const CACHE_TAG = 'assetmanager';
 
     /**
@@ -84,23 +91,25 @@ class AssetManager extends \yii\web\AssetManager
         $alias = Craft::alias($dir);
         $hash = sprintf('%x', crc32($alias . '|' . FileHelper::lastModifiedTime($path) . '|' . $this->linkAssets));
 
-        // Store the hash for later
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($hash, $alias) {
-            try {
-                Db::upsert(Table::RESOURCEPATHS, [
-                    'hash' => $hash,
-                    'path' => $alias,
-                ]);
-            } catch (DbException|DbConnectException) {
-                // Craft is either not installed or not updated to 3.0.3+ yet
-            }
-        });
-
-        Craft::$app->getCache()->set(
-            $this->getCacheKeyForPathHash($hash),
-            $alias,
-            dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
-        );
+        if ($this->cacheSourcePaths) {
+            // Store the hash for later
+            Craft::$app->onAfterRequest(function() use ($hash, $alias) {
+                try {
+                    Db::upsert(Table::RESOURCEPATHS, [
+                        'hash' => $hash,
+                        'path' => $alias,
+                    ]);
+                } catch (DbException|DbConnectException) {
+                    // Craft is either not installed or not updated to 3.0.3+ yet,
+                    // so cache the source path instead
+                    Craft::$app->getCache()->set(
+                        $this->getCacheKeyForPathHash($hash),
+                        $alias,
+                        dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
+                    );
+                }
+            });
+        }
 
         return $hash;
     }

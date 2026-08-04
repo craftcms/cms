@@ -35,8 +35,7 @@ abstract class BaseContentFixture extends DbFixture
     use FileFixtureTrait;
 
     /**
-     * @var string The element type this is for
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type this is for
      */
     public string $elementType;
 
@@ -116,7 +115,6 @@ abstract class BaseContentFixture extends DbFixture
      */
     protected function findElement(array $data): ?ElementInterface
     {
-        /** @var ElementInterface $class */
         $class = $this->elementType;
         $query = $class::find();
         if (isset($data['criteria'])) {

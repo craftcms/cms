@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\ElementInterface;
 
 /**
  * NewChild represents a New Child element action.
@@ -39,8 +38,6 @@ class NewChild extends ElementAction
      */
     public function setElementType(string $elementType): void
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface> $elementType */
         parent::setElementType($elementType);
 
         if (!isset($this->label)) {
@@ -68,21 +65,21 @@ class NewChild extends ElementAction
     let trigger = new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: (selectedItems) => {
+        validateSelection: (selectedItems, elementIndex) => {
             const element = selectedItems.find('.element');
             return (
                 (!$maxLevels || $maxLevels > element.data('level')) &&
                 !Garnish.hasAttr(element, 'data-disallow-new-children')
             );
         },
-        activate: \$selectedItems => {
-            const url = Craft.getUrl($newChildUrl, 'parentId=' + \$selectedItems.find('.element').data('id'));
+        activate: (selectedItems, elementIndex) => {
+            const url = Craft.getUrl($newChildUrl, 'parentId=' + selectedItems.find('.element').data('id'));
             Craft.redirectTo(url);
         },
     });
 
-    if (Craft.elementIndex.view.structureTableSort) {
-        Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+    if (Craft.currentElementIndex.view.tableSort) {
+        Craft.currentElementIndex.view.tableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
     }
 })();
 JS, [static::class, $this->maxLevels, $this->newChildUrl]);

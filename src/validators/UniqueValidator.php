@@ -50,7 +50,7 @@ class UniqueValidator extends YiiUniqueValidator
     {
         if ($targetClass = $this->targetClass) {
             // Exclude this model's row using the filter
-            /** @var ActiveRecord|string $targetClass */
+            /** @var class-string<ActiveRecord> $targetClass */
             $pks = $targetClass::primaryKey();
             if (isset($this->pk)) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;

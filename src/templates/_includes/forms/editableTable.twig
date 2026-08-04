@@ -6,12 +6,30 @@
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
 {%- set describedBy = describedBy ?? null %}
+{%- set includeRowId = includeRowId ?? false %}
 
 {%- set totalRows = rows|length %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
 {%- set allowAdd = (allowAdd ?? false) and not staticRows %}
 {%- set allowReorder = (allowReorder ?? false) and not staticRows %}
 {%- set allowDelete = (allowDelete ?? false) and not staticRows %}
+
+{% set actionMenuItems = [
+  {
+    icon: 'arrow-up',
+    label: 'Move up'|t('app'),
+    attributes: {
+      data: {action: 'moveUp'},
+    },
+  },
+  {
+    icon: 'arrow-down',
+    label: 'Move down'|t('app'),
+    attributes: {
+      data: {action: 'moveDown'},
+    },
+  },
+] %}
 
 {% if not static %}
     {{ hiddenInput(name, '') }}
@@ -60,7 +78,7 @@
     {%- endswitch %}
 {% endfor %}
 
-<span aria-live="assertive" class="visually-hidden" data-status-message></span>
+<span role="status" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     {% for col in cols %}
         <col>
@@ -70,6 +88,9 @@
     {% else %}
         {% if allowDelete %}<col>{% endif %}
         {% if allowReorder %}<col>{% endif %}
+    {% endif %}
+    {% if includeRowId %}
+        <col> {# for hidden row ID #}
     {% endif %}
     {% if cols|filter(c => (c.headingHtml ?? c.heading ?? c.info ?? '') is not same as(''))|length %}
         <thead>
@@ -85,12 +106,15 @@
                             &nbsp;
                         {%- endif %}
                         {%- if col.info is defined -%}
-                            <span class="info">{{ col.info|md|raw }}</span>
+                            <span class="info{% if static %} disabled{% endif %}"{% if static %} disabled=""{% endif %}>{{ col.info|md|raw }}</span>
                         {%- endif -%}
                     </th>
                 {% endfor %}
                 {% if (allowDelete or allowReorder) %}
                     <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
+                {% endif %}
+                {% if includeRowId %}
+                    <th class="hidden">Row ID</th>
                 {% endif %}
             </tr>
         </thead>
@@ -98,20 +122,30 @@
     <tbody>
         {% for rowId, row in rows %}
             {% set rowNumber = loop.index %}
+            {% set rowName = 'Row {index}'|t('app', {index: rowNumber}) %}
+            {% set actionBtnLabel = "#{rowName} #{'Actions'|t('app')}" %}
             <tr data-id="{{ rowId }}">
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
                     {% set value = cell.value is defined ? cell.value : cell %}
+                    {% if col.width ?? false %}
+                        {% set width = col.width|trim %}
+                        {% set width = width ends with 'px' ? width|slice(0, width|length - 2) : width %}
+                        {% set minWidth = width ends with '%' ? col.width : "#{col.width}px" %}
+                        {% set widthAttributes = " width=\"#{width}\" style=\"min-width: #{minWidth}\"" %}
+                    {% else %}
+                        {% set widthAttributes = '' %}
+                    {% endif %}
                     {% if col.type == 'heading' %}
-                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</th>
+                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</th>
                     {% elseif col.type == 'html' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</td>
+                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</td>
                     {% else %}
                         {% set headingId = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
+                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}
@@ -125,6 +159,15 @@
                                                 describedBy: describedBy,
                                             } only %}
                                         </div>
+                                    {%- case 'icon' -%}
+                                        {% include '_includes/forms/iconPicker' with {
+                                          name: cellName,
+                                          value,
+                                          small: true,
+                                          disabled: static,
+                                          labelledBy: headingId,
+                                          describedBy: describedBy,
+                                        } only %}
                                     {%- case 'color' -%}
                                         {% include "_includes/forms/color" with {
                                             name: cellName,
@@ -183,7 +226,7 @@
                                     {%- case 'autosuggest' or 'template' -%}
                                         {% include "_includes/forms/autosuggest" with {
                                             name: cellName,
-                                            suggestions: col.type == 'template' ? craft.cp.getTemplateSuggestions() : [],
+                                            suggestTemplates: col.type == 'template',
                                             suggestEnvVars: col.suggestEnvVars ?? false,
                                             suggestAliases: col.suggestAliases ?? false,
                                             value: value,
@@ -192,10 +235,31 @@
                                             describedBy: describedBy,
                                         } only %}
                                     {%- default -%}
+                                        {% if col.type == 'number' and col.locale ?? false %}
+                                            {{ hiddenInput("#{cellName}[locale]", col.locale) }}
+                                            {% set cellName = "#{cellName}[value]" %}
+                                            {% set value = value|number(locale=col.locale) %}
+                                        {% endif %}
                                         {% if static %}
-                                            <pre class="disabled">{{ value }}</pre>
+                                            <pre class="noteditable">{{ value }}</pre>
                                         {% else %}
-                                            <textarea aria-labelledby="{{ headingId }}" aria-describedby="{{ describedBy }}" name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            {% if value %}
+                                                <div class="editable-table-preview" aria-hidden="true">{{ value }}</div>
+                                            {% endif %}
+                                            {{ tag('textarea', {
+                                                name: cellName,
+                                                rows: col.rows ?? 1,
+                                                placeholder: col.placeholder ?? false,
+                                                autocomplete: isCode ? 'off' : false,
+                                                autocorrect: isCode ? 'off' : false,
+                                                autocapitalize: isCode ? 'off' : false,
+                                                spellcheck: isCode ? 'false' : false,
+                                                aria: {
+                                                    labelledby: headingId,
+                                                    describedby: describedBy,
+                                                },
+                                                html: value,
+                                            }) }}
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}
@@ -203,7 +267,21 @@
                     {% endif %}
                 {% endfor %}
                 {% if allowReorder -%}
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a></td>
+                    <td class="thin action">
+                      <div class="flex flex-nowrap">
+                        <a class="move icon" title="{{ 'Reorder'|t('app') }}"></a>
+                        {{~ disclosureMenu(actionMenuItems, {
+                          buttonAttributes: {
+                            'aria-label': actionBtnLabel,
+                            class: ['action-btn'],
+                            title: 'Actions'|t('app'),
+                            data: {
+                              'disclosure-trigger': true,
+                            },
+                          },
+                        }) }}
+                      </div>
+                    </td>
                 {%- endif -%}
                 {%- if allowDelete -%}
                     <td class="thin action">
@@ -224,6 +302,12 @@
                         }) }}
                     </td>
                 {%- endif -%}
+                {% for inputName, value in row.hiddenInputs ?? [] %}
+                    {{ hiddenInput("#{name}[#{rowId}][#{inputName}]", value) }}
+                {% endfor %}
+                {% if includeRowId and (row.rowId ?? false) %}
+                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId) }}
+                {% endif %}
             </tr>
         {% endfor %}
     </tbody>

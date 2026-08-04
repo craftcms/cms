@@ -148,8 +148,8 @@ class ModelTest extends TestCase
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => '']))->nullableBoolParam);
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => null]))->nullableBoolParam);
         self::assertSame(false, (new ExampleModel(['boolParam' => null]))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => '10']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => '10']))->boolParam);
         self::assertSame(true, (new ExampleModel(['boolParam' => true]))->boolParam);
         self::expectException(TypeError::class);
         new ExampleModel(['boolParam' => []]);
@@ -216,7 +216,7 @@ class ModelTest extends TestCase
     /**
      * @return array
      */
-    public function dateTimeAttributesDataProvider(): array
+    public static function dateTimeAttributesDataProvider(): array
     {
         return [
             // Craft defaults
@@ -231,7 +231,7 @@ class ModelTest extends TestCase
     /**
      * @return array
      */
-    public function hasErrorsDataProvider(): array
+    public static function hasErrorsDataProvider(): array
     {
         return [
             [true, 'fields[body]', 'error', 'fields.*'],

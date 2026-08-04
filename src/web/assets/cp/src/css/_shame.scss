@@ -1,7 +1,7 @@
 _:-ms-lang(x),
 .elements .tableview td.checkbox-cell input.checkbox + label,
 .elements .tableview td.checkbox-cell div.checkbox {
-  top: 16px;
+  inset-block-start: 16px;
 }
 
 _:-ms-lang(x),

@@ -3,9 +3,10 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseConditionRule;
-use craft\elements\db\ElementQueryInterface;
-use Illuminate\Support\Collection;
+use craft\base\ElementInterface;
+use craft\errors\InvalidFieldException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 
 /**
  * Empty/not-empty field condition rule.
@@ -36,6 +37,34 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     /**
      * @inheritdoc
      */
+    public function matchElement(ElementInterface $element): bool
+    {
+        try {
+            $field = $this->field();
+        } catch (InvalidConfigException) {
+            // The field doesn't exist
+            return true;
+        }
+
+        try {
+            $value = $element->getFieldValue($field->handle);
+        } catch (InvalidFieldException) {
+            // The field doesn't belong to the element's field layout
+            return false;
+        }
+
+        $isEmpty = $field->isValueEmpty($value, $element);
+
+        if ($this->operator === self::OPERATOR_EMPTY) {
+            return $isEmpty;
+        }
+
+        return !$isEmpty;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function elementQueryParam(): int|string|null
     {
         return match ($this->operator) {
@@ -50,17 +79,6 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
      */
     protected function matchFieldValue($value): bool
     {
-        /** @var ElementQueryInterface|Collection $value */
-        if ($value instanceof ElementQueryInterface) {
-            $isEmpty = !$value->exists();
-        } else {
-            $isEmpty = $value->isEmpty();
-        }
-
-        if ($this->operator === self::OPERATOR_EMPTY) {
-            return $isEmpty;
-        }
-
-        return !$isEmpty;
+        throw new NotSupportedException();
     }
 }

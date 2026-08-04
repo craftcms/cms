@@ -39,7 +39,7 @@ use yii\di\Instance;
 /**
  * Image Transforms service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->imageTransforms`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
  * @property-read ImageTransform[] $allTransforms
  * @property-read array $pendingTransformIndexIds
@@ -49,17 +49,17 @@ use yii\di\Instance;
 class ImageTransforms extends Component
 {
     /**
-     * @event AssetTransformEvent The event that is triggered before an asset transform is saved
+     * @event AssetTransformEvent The event that is triggered before an image transform is saved
      */
     public const EVENT_BEFORE_SAVE_IMAGE_TRANSFORM = 'beforeSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an asset transform is saved
+     * @event AssetTransformEvent The event that is triggered after an image transform is saved
      */
     public const EVENT_AFTER_SAVE_IMAGE_TRANSFORM = 'afterSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
+     * @event AssetTransformEvent The event that is triggered before an image transform is deleted
      */
     public const EVENT_BEFORE_DELETE_IMAGE_TRANSFORM = 'beforeDeleteImageTransform';
 
@@ -69,12 +69,12 @@ class ImageTransforms extends Component
     public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
+     * @event AssetTransformEvent The event that is triggered after an image transform is deleted
      */
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
     /**
-     * @event AssetEvent The event that is triggered when a transform is being generated for an Asset.
+     * @event AssetEvent The event that is triggered before a transform is deleted for an Asset.
      */
     public const EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS = 'beforeInvalidateAssetTransforms';
 
@@ -126,11 +126,13 @@ class ImageTransforms extends Component
     private function _transforms(): MemoizableArray
     {
         if (!isset($this->_transforms)) {
-            $transforms = [];
-            foreach ($this->_createTransformQuery()->all() as $result) {
-                $transforms[] = new ImageTransform($result);
-            }
-            $this->_transforms = new MemoizableArray($transforms);
+            $this->_transforms = new MemoizableArray(
+                $this->_createTransformQuery()->all(),
+                fn(array $result) => Craft::createObject([
+                    'class' => ImageTransform::class,
+                    ...$result,
+                ]),
+            );
         }
 
         return $this->_transforms;
@@ -232,7 +234,6 @@ class ImageTransforms extends Component
         $data = $event->newValue;
 
         $transaction = $this->db->beginTransaction();
-        $deleteTransformIndexes = false;
 
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
@@ -246,11 +247,10 @@ class ImageTransforms extends Component
             $qualityChanged = $transformRecord->quality !== $data['quality'];
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
             $fillChanged = $transformRecord->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = $transformRecord->upscale !== ($data['upscale'] ?? null);
+            $upscaleChanged = ($transformRecord->upscale !== null ? (bool)$transformRecord->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
-                $deleteTransformIndexes = true;
             }
 
             $transformRecord->mode = $data['mode'];
@@ -270,12 +270,6 @@ class ImageTransforms extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
-        }
-
-        if ($deleteTransformIndexes) {
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'transformString' => '_' . $transformRecord->handle,
-            ], [], $this->db);
         }
 
         // Clear caches
@@ -421,13 +415,12 @@ class ImageTransforms extends Component
                     throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
                 }
 
-                $transform = new ImageTransform($refTransform->toArray([
-                    'format',
-                    'interlace',
-                    'mode',
-                    'position',
-                    'quality',
-                ]));
+                $transform = Craft::createObject([
+                    'class' => ImageTransform::class,
+                        ...$refTransform->toArray(),
+                ]);
+
+                unset($transform->name, $transform->handle);
 
                 if ($sizeUnit === 'w') {
                     $transform->width = (int)$sizeValue;
@@ -464,8 +457,7 @@ class ImageTransforms extends Component
 
     /**
      * @template T of ImageTransformerInterface
-     * @param string $type
-     * @phpstan-param class-string<T> $type
+     * @param class-string<T> $type
      * @param array $config
      * @return T
      * @throws InvalidConfigException
@@ -563,13 +555,14 @@ class ImageTransforms extends Component
             ImageTransformer::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transformers,
-        ]);
+        // Fire a 'registerImageTransformers' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
+            $event = new RegisterComponentTypesEvent(['types' => $transformers]);
+            $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
+            return $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-
-        return $event->types;
+        return $transformers;
     }
 
     /**

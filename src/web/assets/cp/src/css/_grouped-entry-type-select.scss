@@ -1,0 +1,66 @@
+@charset "UTF-8";
+
+.entry-type-groups {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: var(--s);
+}
+
+.entry-type-group {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--pane-border-radius);
+  border: var(--input-border);
+  margin: 0;
+  padding: var(--s);
+  background-color: var(--white);
+
+  .entry-type-group--titlebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--m);
+    margin-block: calc(var(--s) * -1) var(--s) !important;
+    margin-inline: calc(var(--s) * -1) !important;
+    padding: var(--s);
+    border-block-end: 1px solid var(--hairline-color);
+    font-weight: bold;
+
+    .entry-type-group--actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--s);
+
+      .icon {
+        margin-block: -4px 0;
+      }
+    }
+
+    span {
+      flex: 1;
+    }
+  }
+
+  .componentselect {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .components {
+      flex: 1;
+
+      // match the height of a single entry type chip being included
+      min-height: calc(
+        var(--xs) * 2 + var(--lh) + var(--xs) + 1.2 * 0.8em + var(--xs)
+      );
+
+      .entry-type-group--caboose {
+        content: '';
+        flex: 1;
+        width: 100%;
+      }
+    }
+  }
+}

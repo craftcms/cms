@@ -27,8 +27,15 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 // Determine the paths
 // -----------------------------------------------------------------------------
 
-$findConfig = function(string $cliName, string $envName) {
-    return App::cliOption($cliName, true) ?? App::env($envName);
+$findConfig = function(string $cliName, string $envName) use ($appType) {
+    if ($appType === 'console') {
+        $value = App::cliOption($cliName, true);
+        if ($value !== null) {
+            return $value;
+        }
+    }
+
+    return App::env($envName);
 };
 
 // Set the vendor path. By default assume that it's 4 levels up from here
@@ -49,28 +56,23 @@ $testsPath = FileHelper::normalizePath($findConfig('--testsPath', 'CRAFT_TESTS_P
 // Set the environment
 // -----------------------------------------------------------------------------
 
-$environment = App::cliOption('--env', true)
-    ?? App::env('CRAFT_ENVIRONMENT')
-    ?? App::env('ENVIRONMENT')
-    ?? $_SERVER['SERVER_NAME']
-    ?? null;
+$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? App::env('ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
 
 // Load the general config
 // -----------------------------------------------------------------------------
 
 $configService = new Config();
+$configService->appType = $appType;
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-$generalConfig = $configService->getConfigFromFile('general');
+$generalConfig = $configService->getGeneral();
 
 // Validation
 // -----------------------------------------------------------------------------
 
 $createFolder = function($path) use ($generalConfig) {
-    if (!is_dir($path)) {
-        FileHelper::createDirectory($path, $generalConfig['defaultDirMode'] ?? 0775);
-    }
+    FileHelper::createDirectory($path, $generalConfig->defaultDirMode ?? 0775);
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
@@ -130,11 +132,8 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
     }
 }
 
+$createFolder($storagePath);
 $ensureFolderIsReadable($storagePath, true);
-
-// Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
 
 // Create the storage/logs/ folder if it doesn't already exist
 if (!App::isStreamLog()) {
@@ -143,7 +142,7 @@ if (!App::isStreamLog()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (App::normalizeBooleanValue(App::env('CRAFT_LOG_PHP_ERRORS')) !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -159,7 +158,7 @@ error_reporting($errorLevel);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig['devMode'] ?? false;
+$devMode = App::normalizeBooleanValue(App::env('CRAFT_DEV_MODE')) ?? $generalConfig->devMode;
 
 if ($devMode) {
     ini_set('display_errors', '1');
@@ -186,6 +185,10 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 $cmsPath = dirname(__DIR__);
 $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
 $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
+$iconsPath = $srcPath . DIRECTORY_SEPARATOR . 'icons';
+$brandIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'brands';
+$customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
+$solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
@@ -193,8 +196,8 @@ require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 Craft::setAlias('@craftcms', $cmsPath);
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
-Craft::setAlias('@craft', $srcPath);
-Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
+Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` command
+Craft::setAlias('@appicons', $solidIconsPath);
 Craft::setAlias('@dotenv', $dotenvPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
@@ -202,6 +205,52 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
+
+// Icons
+Craft::setAlias('@appicons/c-debug.svg', "$customIconsPath/c-debug.svg");
+Craft::setAlias('@appicons/c-outline.svg', "$customIconsPath/c-outline.svg");
+Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
+Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
+Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
+Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
+Craft::setAlias('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
+require $iconsPath . DIRECTORY_SEPARATOR . 'aliases.php';
+
+// Renamed icon aliases
+Craft::setAlias('@appicons/alert.svg', "$solidIconsPath/triangle-exclamation.svg");
+Craft::setAlias('@appicons/broken-image', "$solidIconsPath/image-slash.svg");
+Craft::setAlias('@appicons/buoey.svg', "$solidIconsPath/life-ring.svg");
+Craft::setAlias('@appicons/draft.svg', "$solidIconsPath/scribble.svg");
+Craft::setAlias('@appicons/entry-types', "$solidIconsPath/files.svg");
+Craft::setAlias('@appicons/excite.svg', "$solidIconsPath/certificate.svg");
+Craft::setAlias('@appicons/feed.svg', "$solidIconsPath/rss.svg");
+Craft::setAlias('@appicons/field.svg', "$solidIconsPath/pen-to-square.svg");
+Craft::setAlias('@appicons/hash.svg', "$solidIconsPath/hashtag.svg");
+Craft::setAlias('@appicons/info-circle', "$solidIconsPath/circle-info.svg");
+Craft::setAlias('@appicons/info-circle.svg', "$solidIconsPath/circle-info.svg");
+Craft::setAlias('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
+Craft::setAlias('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
+Craft::setAlias('@appicons/location.svg', "$solidIconsPath/location-dot.svg");
+Craft::setAlias('@appicons/photo.svg', "$solidIconsPath/image.svg");
+Craft::setAlias('@appicons/plugin.svg', "$solidIconsPath/plug.svg");
+Craft::setAlias('@appicons/routes.svg', "$solidIconsPath/signs-post.svg");
+Craft::setAlias('@appicons/search.svg', "$solidIconsPath/magnifying-glass.svg");
+Craft::setAlias('@appicons/shopping-cart', "$solidIconsPath/cart-shopping.svg");
+Craft::setAlias('@appicons/template.svg', "$solidIconsPath/file-code.svg");
+Craft::setAlias('@appicons/template.svg', "$solidIconsPath/file-code.svg");
+Craft::setAlias('@appicons/tip.svg', "$solidIconsPath/lightbulb.svg");
+Craft::setAlias('@appicons/tools.svg', "$solidIconsPath/screwdriver-wrench.svg");
+Craft::setAlias('@appicons/tree.svg', "$solidIconsPath/sitemap.svg");
+Craft::setAlias('@appicons/upgrade.svg', "$solidIconsPath/square-arrow-up.svg");
+Craft::setAlias('@appicons/wand.svg', "$solidIconsPath/wand-magic-sparkles.svg");
+Craft::setAlias('@appicons/world.svg', "$solidIconsPath/earth-americas.svg");
+
+// Set any custom aliases
+foreach ($generalConfig->aliases as $name => $value) {
+    if (is_string($value)) {
+        Craft::setAlias($name, $value);
+    }
+}
 
 $webUrl = App::env('CRAFT_WEB_URL');
 if ($webUrl) {
@@ -211,16 +260,6 @@ if ($webUrl) {
 $webRoot = App::env('CRAFT_WEB_ROOT');
 if ($webRoot) {
     Craft::setAlias('@webroot', $webRoot);
-}
-
-// Set any custom aliases
-$customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
-if (is_array($customAliases)) {
-    foreach ($customAliases as $name => $value) {
-        if (is_string($value)) {
-            Craft::setAlias($name, $value);
-        }
-    }
 }
 
 // Load the config
@@ -235,10 +274,33 @@ $config = ArrayHelper::merge(
         'components' => $components,
     ],
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'app.php',
-    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php",
+    require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
+);
+
+$localConfig = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
+
+$safeMode = App::normalizeBooleanValue(App::env('CRAFT_SAFE_MODE')) ?? $generalConfig->safeMode;
+
+if ($safeMode) {
+    ArrayHelper::remove($localConfig, 'bootstrap');
+    ArrayHelper::remove($localConfig, 'components');
+    ArrayHelper::remove($localConfig, 'extensions');
+    ArrayHelper::remove($localConfig, 'container');
+}
+
+$config = ArrayHelper::merge($config, $localConfig);
+
+if (function_exists('craft_modify_app_config')) {
+    craft_modify_app_config($config, $appType);
+}
+
+// Create the runtime folder if it doesn't already exist
+$runtimePath = Craft::getAlias($config['runtimePath']);
+$createFolder($runtimePath);
+$ensureFolderIsReadable($runtimePath, true);
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

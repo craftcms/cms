@@ -1,6 +1,8 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t('app') %}
 
+{% set readOnly = readOnly ?? false %}
+
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
@@ -20,57 +22,39 @@
 ] %}
 
 {% block actionButton %}
-    <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
+    {% if not readOnly %}
+        <a href="{{ url('settings/sections/new') }}" class="btn submit add icon">{{ "New section"|t('app') }}</a>
+    {% endif %}
 {% endblock %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
     <div id="sections-vue-admin-table"></div>
 {% endblock %}
 
-{% set tableData = [] %}
-{% for section in sections %}
-    {% set isSingle = section.type == 'single' and section.getEntryTypes()|length == 1 %}
-    {% set menuItems = [] %}
-
-    {% for entryTypeObject in section.getEntryTypes() %}
-        {% set menuItems = menuItems|merge([{
-            label: entryTypeObject.name|t('site'),
-            url: entryTypeObject.getCpEditUrl(),
-        }]) %}
-    {% endfor %}
-
-    {% set tableData = tableData|merge([{
-        id: section.id,
-        name: section.name|t('site')|e,
-        title: section.name|t('site'),
-        url: url('settings/sections/' ~ section.id),
-        handle: section.handle,
-        type: section.type|title|t('app')|e,
-        menu: {
-            showItems: not isSingle,
-            menuBtnTitle: 'Entry Types'|t('app'),
-            label: isSingle ? 'Edit entry type'|t('app') : 'Edit entry types'|t('app'),
-            url: isSingle ? section.getEntryTypes()[0].getCpEditUrl() : url('settings/sections/' ~ section.id ~ '/entrytypes'),
-            items: menuItems,
-        }
-    }]) %}
-{% endfor %}
-
 {% js %}
-    var columns = [
-        { name: '__slot:title', title: Craft.t('app', 'Name') },
-        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
-        { name: 'type', title: Craft.t('app', 'Type') },
-        { name: '__slot:menu', title: Craft.t('app', 'Entry Types') }
-    ];
+    (() => {
+        const columns = [
+            { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
+            { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
+            { name: 'type', title: Craft.t('app', 'Type'), sortField: true },
+        ];
 
-    new Craft.VueAdminTable({
-        columns: columns,
-        container: '#sections-vue-admin-table',
-        deleteAction: 'sections/delete-section',
-        deleteConfirmationMessage: Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?"),
-        emptyMessage: Craft.t('app', 'No sections exist yet.'),
-        tableData: {{ tableData|json_encode|raw }}
-    });
+        let config = {
+            columns,
+            container: '#sections-vue-admin-table',
+            emptyMessage: Craft.t('app', 'No sections exist yet.'),
+            tableDataEndpoint: 'sections/table-data',
+        };
+
+        {% if not readOnly %}
+            config['deleteAction'] = 'sections/delete-section';
+            config['deleteConfirmationMessage'] = Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?");
+        {% endif %}
+
+        new Craft.VueAdminTable(config);
+    })();
 {% endjs %}

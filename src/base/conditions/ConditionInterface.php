@@ -9,9 +9,10 @@ use yii\base\InvalidArgumentException;
  *
  * A base implementation is provided by [[BaseCondition]].
  *
+ * @mixin BaseCondition
+ * @phpstan-require-extends BaseCondition
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
- * @mixin BaseCondition
  */
 interface ConditionInterface
 {
@@ -31,6 +32,14 @@ interface ConditionInterface
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string;
 
     /**
+     * Returns configuration that should be maintained for the builder.
+     *
+     * @return array
+     * @since 5.1.0
+     */
+    public function getBuilderConfig(): array;
+
+    /**
      * Returns the condition’s portable config.
      *
      * @return array
@@ -38,14 +47,14 @@ interface ConditionInterface
     public function getConfig(): array;
 
     /**
-     * Returns the available rule types for this condition.
+     * Creates a condition rule instance.
      *
-     * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
-     *
-     * @return string[]|array[]
-     * @phpstan-return string[]|array{class:string}[]
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class: string}|array{type:string}|string $config The condition class or configuration array
+     * @return ConditionRuleInterface
+     * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */
-    public function getConditionRuleTypes(): array;
+    public function createConditionRule(array|string $config): ConditionRuleInterface;
 
     /**
      * Returns the selectable rules for the condition, indexed by type.

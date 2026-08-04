@@ -36,15 +36,14 @@ class SuspendUsers extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(function($type, $userId) {
-            return <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $userId) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: true,
-        validateSelection: \$selectedItems => {
-            for (let i = 0; i < \$selectedItems.length; i++) {
-                const \$element = \$selectedItems.eq(i).find('.element');
+        validateSelection: (selectedItems, elementIndex) => {
+            for (let i = 0; i < selectedItems.length; i++) {
+                const \$element = selectedItems.eq(i).find('.element');
                 if (
                     !Garnish.hasAttr(\$element, 'data-can-suspend') ||
                     Garnish.hasAttr(\$element, 'data-suspended') ||
@@ -58,8 +57,7 @@ class SuspendUsers extends ElementAction
         }
     });
 })();
-JS;
-        }, [
+JS, [
             static::class,
             Craft::$app->getUser()->getId(),
         ]);
@@ -83,7 +81,11 @@ JS;
 
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
-                return $usersService->canSuspend($currentUser, $user) && $usersService->suspendUser($user);
+                if (!$usersService->canSuspend($currentUser, $user)) {
+                    return false;
+                }
+                $usersService->suspendUser($user);
+                return true;
             } catch (Throwable) {
                 return false;
             }

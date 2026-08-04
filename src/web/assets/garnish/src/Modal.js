@@ -11,6 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 
@@ -32,6 +33,10 @@ export default Base.extend(
 
       this.setSettings(settings, Garnish.Modal.defaults);
 
+      if (!this.settings.triggerElement) {
+        this.settings.triggerElement = Garnish.getFocusedElement();
+      }
+
       // Create the shade
       this.$shade = $('<div class="' + this.settings.shadeClass + '"/>');
 
@@ -51,13 +56,13 @@ export default Base.extend(
         }
       }
 
-      if (this.settings.triggerElement) {
-        this.$triggerElement = this.settings.triggerElement;
-      } else {
-        this.$triggerElement = Garnish.getFocusedElement();
-      }
-
       Garnish.Modal.instances.push(this);
+    },
+
+    addLiveRegion: function () {
+      if (!this.$container) return;
+
+      this.$liveRegion.appendTo(this.$container);
     },
 
     setContainer: function (container) {
@@ -90,6 +95,8 @@ export default Base.extend(
         });
       }
 
+      this.addLiveRegion();
+
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
       });
@@ -112,8 +119,8 @@ export default Base.extend(
 
       if (this.$container) {
         // Move it to the end of <body> so it gets the highest sub-z-index
-        this.$shade.appendTo(Garnish.$bod);
-        this.$container.appendTo(Garnish.$bod);
+        this.$shade.appendTo(Garnish.$bod).velocity('stop');
+        this.$container.appendTo(Garnish.$bod).velocity('stop');
 
         this.$container.show();
         this.updateSizeAndPosition();
@@ -151,12 +158,13 @@ export default Base.extend(
         Garnish.hideModalBackgroundLayers();
 
         if (this.settings.hideOnEsc) {
-          Garnish.uiLayerManager.registerShortcut(
-            Garnish.ESC_KEY,
-            this.hide.bind(this)
-          );
+          Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.trigger('escape');
+            this.hide();
+          });
         }
 
+        Garnish.$bod.addClass('no-scroll');
         this.onShow();
       }
     },
@@ -190,8 +198,10 @@ export default Base.extend(
       }
 
       if (this.$container) {
-        this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
-        this.$shade.velocity('fadeOut', {
+        this.$container
+          .velocity('stop')
+          .velocity('fadeOut', {duration: Garnish.FX_DURATION});
+        this.$shade.velocity('stop').velocity('fadeOut', {
           duration: Garnish.FX_DURATION,
           complete: this.onFadeOut.bind(this),
         });
@@ -203,13 +213,41 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      this.$triggerElement.focus();
-
       this.visible = false;
+      Garnish.$bod.removeClass('no-scroll');
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
       Garnish.resetModalBackgroundLayerVisibility();
       this.onHide();
+
+      setTimeout(() => {
+        let $focusTarget = this.$triggerElement ?? this.settings.triggerElement;
+        if (typeof $focusTarget === 'function') {
+          $focusTarget = $focusTarget();
+        }
+        if (!($focusTarget instanceof jQuery)) {
+          $focusTarget = $($focusTarget);
+        }
+
+        // Check for visibility of trigger
+        if ($focusTarget?.is(':hidden')) {
+          const $disclosure = $focusTarget.closest('.menu--disclosure');
+          if ($disclosure.length) {
+            const menuId = $disclosure.attr('id');
+            $focusTarget = $(`[aria-controls="${menuId}"]`);
+          } else {
+            $focusTarget = null;
+          }
+        }
+
+        if ($focusTarget?.length) {
+          $focusTarget.focus();
+        } else {
+          console.warn(
+            'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+          );
+        }
+      }, 200);
     },
 
     onHide: function () {
@@ -226,6 +264,8 @@ export default Base.extend(
 
         this.$shade.velocity('stop');
         this.$shade.css('opacity', 0).hide();
+
+        this.onFadeOut();
       }
     },
 
@@ -372,6 +412,10 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
+      Garnish.Modal.instances = Garnish.Modal.instances.filter(
+        (o) => o !== this
+      );
+
       this.base();
     },
   },
@@ -393,7 +437,15 @@ export default Base.extend(
       triggerElement: null,
       shadeClass: 'modal-shade',
     },
+
+    /**
+     * @type {Garnish.Modal[]}
+     */
     instances: [],
+
+    /**
+     * @type {?Garnish.Modal}
+     */
     visibleModal: null,
   }
 );

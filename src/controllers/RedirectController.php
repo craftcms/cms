@@ -17,6 +17,7 @@ use yii\web\Response;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.13
+ * @deprecated in 5.6.0. `config/redirects.php` should be used instead.
  */
 class RedirectController extends Controller
 {

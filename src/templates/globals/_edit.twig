@@ -3,16 +3,20 @@
 {% set fullPageForm = true %}
 {% set retainScrollOnSaveShortcut = true %}
 
-{% hook "cp.globals.edit" %}
+{% if craft.app.getIsMultiSite() %}
+    {% set siteMenuItems = siteMenuItems(null, requestedSite) %}
+    {% set crumbs = [{
+        id: 'site-crumb',
+        icon: 'world',
+        label: requestedSite.name|t('site'),
+        menu: {
+            items: siteMenuItems,
+            label: 'Select site'|t('app')
+        },
+    }] %}
+{% endif %}
 
-{% block contextMenu %}
-    {% if craft.app.getIsMultiSite() %}
-        {% include "_elements/sitemenu" with {
-            selectedSiteId: globalSet.siteId,
-            urlFormat: cpUrl("globals/#{globalSet.handle}", {site: '{handle}'}),
-        } %}
-    {% endif %}
-{% endblock %}
+{% hook "cp.globals.edit" %}
 
 
 {% block sidebar %}

@@ -53,7 +53,7 @@ class ElementQueryTest extends TestCase
     /**
      * @return array
      */
-    public function relatedToDataProvider(): array
+    public static function relatedToDataProvider(): array
     {
         return [
             [false, ['or', ['targetElement' => 1], ['targetElement' => 2]], 3],
@@ -65,7 +65,7 @@ class ElementQueryTest extends TestCase
     /**
      * @return array
      */
-    public function normalizeOrderByDataProvider(): array
+    public static function normalizeOrderByDataProvider(): array
     {
         return [
             [['score' => SORT_DESC], 'score'],

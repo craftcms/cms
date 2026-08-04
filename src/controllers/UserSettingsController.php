@@ -8,9 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\enums\CmsEdition;
+use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -23,6 +26,8 @@ use yii\web\Response;
  */
 class UserSettingsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -32,14 +37,103 @@ class UserSettingsController extends Controller
             return false;
         }
 
-        // All user settings actions require an admin
-        $this->requireAdmin();
+
+        $viewActions = ['edit-group'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         if ($action->id !== 'save-user-settings') {
-            Craft::$app->requireEdition(Craft::Pro);
+            Craft::$app->requireEdition(CmsEdition::Team);
         }
 
         return true;
+    }
+
+    /**
+     * Renders a user group’s edit screen.
+     *
+     * @param int|null $groupId
+     * @param UserGroup|null $group
+     * @return Response
+     * @since 5.1.0
+     */
+    public function actionEditGroup(?int $groupId = null, ?UserGroup $group = null): Response
+    {
+        $this->requireCpRequest();
+
+        if (Craft::$app->edition === CmsEdition::Team) {
+            if (!$group) {
+                $group = Craft::$app->getUserGroups()->getTeamGroup();
+            }
+
+            return $this->renderTemplate('settings/users/groups/_team.twig', [
+                'group' => $group,
+                'readOnly' => $this->readOnly,
+            ]);
+        }
+
+        if (!$group) {
+            if ($groupId) {
+                $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+                if (!$group) {
+                    throw new NotFoundHttpException("Invalid group ID: $groupId");
+                }
+            } else {
+                $group = Craft::createObject(UserGroup::class);
+            }
+        }
+
+        $crumbs = [
+            ['label' => Craft::t('app', 'Settings'), 'url' => 'settings'],
+            ['label' => Craft::t('app', 'Users'), 'url' => 'settings/users'],
+            ['label' => Craft::t('app', 'User Groups'), 'url' => 'settings/users'],
+        ];
+
+        if ($group->id) {
+            $title = trim($group->name) ?: Craft::t('app', 'Edit User Group');
+        } else {
+            $title = Craft::t('app', 'Create a new user group');
+        }
+
+        $response = $this->asCpScreen()
+            ->editUrl($group->getCpEditUrl())
+            ->title($title)
+            ->crumbs($crumbs)
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/users/groups/{id}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
+            ->action('user-settings/save-group')
+            ->redirectUrl('settings/users')
+            ->contentTemplate('settings/users/groups/_edit.twig', [
+                'group' => $group,
+                'readOnly' => $this->readOnly,
+            ])
+            ->prepareScreen(function(Response $response, string $containerId) use ($group) {
+                if ($group->id) {
+                    $this->view->registerJsWithVars(fn($containerId) => <<<JS
+new Craft.ElevatedSessionForm('#' + $containerId, [
+    '.user-permissions input[type="checkbox"]:not(:checked)'
+]);
+JS, [
+                        $containerId,
+                    ]);
+                }
+            });
+
+        if ($this->readOnly) {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**
@@ -52,38 +146,37 @@ class UserSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $groupId = $this->request->getBodyParam('groupId');
-
-        if ($groupId) {
-            $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-            if (!$group) {
-                throw new BadRequestHttpException('User group not found');
-            }
+        if (Craft::$app->edition === CmsEdition::Team) {
+            $group = Craft::$app->getUserGroups()->getTeamGroup();
         } else {
-            $group = new UserGroup();
+            $groupId = $this->request->getBodyParam('groupId');
+
+            if ($groupId) {
+                $group = Craft::$app->getUserGroups()->getGroupById($groupId);
+                if (!$group) {
+                    throw new BadRequestHttpException('User group not found');
+                }
+            } else {
+                $group = new UserGroup();
+            }
+
+            $group->name = $this->request->getBodyParam('name');
+            $group->handle = $this->request->getBodyParam('handle');
+            $group->description = $this->request->getBodyParam('description');
         }
 
-        $group->name = $this->request->getBodyParam('name');
-        $group->handle = $this->request->getBodyParam('handle');
-        $group->description = $this->request->getBodyParam('description');
+        $isNewGroup = !$group->id;
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save group.'));
-
-            // Send the group back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'group' => $group,
-            ]);
-
-            return null;
+            return $this->asModelFailure($group, Craft::t('app', 'Couldn’t save group.'), 'group');
         }
 
         // Save the new permissions
         $permissions = $this->request->getBodyParam('permissions', []);
 
         // See if there are any new permissions in here
-        if ($groupId && is_array($permissions)) {
+        if (!$isNewGroup && is_array($permissions)) {
             foreach ($permissions as $permission) {
                 if (!$group->can($permission)) {
                     // Yep. This will require an elevated session
@@ -93,8 +186,10 @@ class UserSettingsController extends Controller
             }
         }
 
-        // assignNewUserGroup => assignUserGroup:<uid>
-        if (!$groupId) {
+        if (Craft::$app->edition === CmsEdition::Team) {
+            $permissions[] = 'accessCp';
+        } elseif ($isNewGroup) {
+            // assignNewUserGroup => assignUserGroup:<uid>
             $assignNewGroupKey = array_search('assignNewUserGroup', $permissions);
             if ($assignNewGroupKey !== false) {
                 $permissions[$assignNewGroupKey] = "assignUserGroup:$group->uid";
@@ -103,8 +198,11 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
-        return $this->redirectToPostedUrl($group);
+        $message = Craft::$app->edition === CmsEdition::Team
+            ? Craft::t('app', 'Permissions saved.')
+            : Craft::t('app', 'Group saved.');
+
+        return $this->asModelSuccess($group, $message, 'group');
     }
 
     /**
@@ -140,7 +238,11 @@ class UserSettingsController extends Controller
         $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
+        if (Craft::$app->edition->value >= CmsEdition::Team->value) {
+            $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
+        }
+
+        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');

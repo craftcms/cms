@@ -1,7 +1,6 @@
 {% import "_includes/forms" as forms %}
 
 {% set targetPrefix = "datetime#{random()}-" %}
-
 {{ forms.radioGroupField({
     id: 'dateTime',
     name: 'dateTime',
@@ -10,6 +9,7 @@
     toggle: true,
     targetPrefix: ".#{targetPrefix}",
     tip: value == 'showTime' ? 'Time fields are better suited for managing Time-only values.'|t('app'),
+    disabled: readOnly,
 }) }}
 
 {{ forms.selectField({
@@ -24,6 +24,7 @@
     name: 'minuteIncrement',
     options: incrementOptions,
     value: field.minuteIncrement ? field.minuteIncrement : 30,
+    disabled: readOnly,
 }) }}
 
 {{ forms.lightswitchField({
@@ -37,6 +38,7 @@
     id: 'show-time-zone',
     name: 'showTimeZone',
     on: field.showTimeZone,
+    disabled: readOnly,
 }) }}
 
 {{ forms.dateField({
@@ -50,6 +52,8 @@
     name: 'min',
     value: field.min,
     errors: field.getErrors('min'),
+    data: {'error-key': 'min'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.dateField({
@@ -63,4 +67,6 @@
     name: 'max',
     value: field.max,
     errors: field.getErrors('max'),
+    data: {'error-key': 'max'},
+    disabled: readOnly,
 }) }}

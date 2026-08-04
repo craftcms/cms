@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
+use yii\base\InvalidConfigException;
 
 /**
  * UpdateSearchIndex job
@@ -21,8 +22,7 @@ use craft\queue\BaseJob;
 class UpdateSearchIndex extends BaseJob
 {
     /**
-     * @var string The type of elements to update.
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The type of elements to update.
      */
     public string $elementType;
 
@@ -43,14 +43,27 @@ class UpdateSearchIndex extends BaseJob
     public ?array $fieldHandles = null;
 
     /**
+     * @var bool Whether to check if the element’s search indexes are queued to be updated before proceeding.
+     * @since 5.7.0
+     */
+    public bool $queued = false;
+
+    /**
      * @inheritdoc
      */
     public function execute($queue): void
     {
-        /** @var string|ElementInterface $class */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
-        $class = $this->elementType;
-        $elements = $class::find()
+        $searchService = Craft::$app->getSearch();
+
+        if ($this->queued) {
+            if (!is_int($this->elementId) || !is_int($this->siteId)) {
+                throw new InvalidConfigException('`elementId` and `siteId` must be an integer when `queued` is true.');
+            }
+            $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
+            return;
+        }
+
+        $elements = $this->elementType::find()
             ->drafts(null)
             ->provisionalDrafts(null)
             ->id($this->elementId)
@@ -58,7 +71,6 @@ class UpdateSearchIndex extends BaseJob
             ->status(null)
             ->all();
         $total = count($elements);
-        $searchService = Craft::$app->getSearch();
 
         foreach ($elements as $i => $element) {
             $this->setProgress($queue, ($i + 1) / $total);

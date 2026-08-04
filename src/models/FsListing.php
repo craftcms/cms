@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\helpers\StringHelper;
 
 /**
  * The FsListings model class.
@@ -111,6 +112,29 @@ class FsListing extends Model
     public function getUri(): string
     {
         return ($this->dirname ? "$this->dirname/" : '') . $this->basename;
+    }
+
+    /**
+     * Adjust the listing's URI by adding or removing provided string to/from the start of the URI
+     *
+     * @param string $string
+     * @param string $type Either 'sub' or 'add'
+     * @return string
+     * @since 5.0.0
+     */
+    public function getAdjustedUri(string $string = '', string $type = 'sub'): string
+    {
+        $uri = $this->getUri();
+
+        if ($type === 'sub') {
+            if (str_starts_with($uri, $string)) {
+                $uri = substr($uri, strlen($string));
+            }
+        } else {
+            $uri = ($string !== '' ? StringHelper::ensureRight($string, '/') : '') . $uri;
+        }
+
+        return $uri;
     }
 
     /**

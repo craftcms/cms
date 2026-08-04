@@ -17,6 +17,7 @@ use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -31,6 +32,8 @@ use yii\web\ServerErrorHttpException;
  */
 class SitesController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -40,8 +43,16 @@ class SitesController extends Controller
             return false;
         }
 
-        // All actions require an admin account
-        $this->requireAdmin();
+        $viewActions = ['settings-index', 'edit-site'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -56,7 +67,6 @@ class SitesController extends Controller
     public function actionSettingsIndex(?int $groupId = null): Response
     {
         $sitesService = Craft::$app->getSites();
-        $allGroups = $sitesService->getAllGroups();
 
         if ($groupId) {
             if (($group = $sitesService->getGroupById($groupId)) === null) {
@@ -86,12 +96,12 @@ class SitesController extends Controller
             'Delete {site}',
         ]);
 
-        return $this->renderTemplate('settings/sites/index.twig', compact(
-            'crumbs',
-            'allGroups',
-            'group',
-            'sites'
-        ));
+        return $this->renderTemplate('settings/sites/index.twig', [
+            'crumbs' => $crumbs,
+            'group' => $group,
+            'sites' => $sites,
+            'readOnly' => $this->readOnly,
+        ]);
     }
 
     // Groups
@@ -110,17 +120,15 @@ class SitesController extends Controller
 
         $view = Craft::$app->getView();
         $view->startJsBuffer();
-        $html = $view->namespaceInputs(function() {
-            return Cp::autosuggestFieldHtml([
-                'label' => Craft::t('app', 'Group Name'),
-                'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
-                'id' => 'name',
-                'name' => 'name',
-                'value' => $this->request->getBodyParam('name') ?? '',
-                'suggestEnvVars' => true,
-                'required' => true,
-            ]);
-        }, 'name' . StringHelper::randomString(10));
+        $html = $view->namespaceInputs(fn() => Cp::autosuggestFieldHtml([
+            'label' => Craft::t('app', 'Group Name'),
+            'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
+            'id' => 'name',
+            'name' => 'name',
+            'value' => $this->request->getBodyParam('name') ?? '',
+            'suggestEnvVars' => true,
+            'required' => true,
+        ]), 'name' . StringHelper::randomString(10));
         $js = $view->clearJsBuffer();
 
         return $this->asJson(compact('html', 'js'));
@@ -199,6 +207,10 @@ class SitesController extends Controller
      */
     public function actionEditSite(?int $siteId = null, ?Site $siteModel = null, ?int $groupId = null): Response
     {
+        if ($siteId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         $sitesService = Craft::$app->getSites();
 
         $brandNewSite = false;
@@ -236,7 +248,7 @@ class SitesController extends Controller
             $groupId = $siteModel->groupId ?? $allGroups[0]->id;
         }
 
-        $siteGroup = $sitesService->getGroupById($groupId);
+        $siteGroup = $sitesService->getGroupById($groupId, true);
 
         if ($siteGroup === null) {
             throw new NotFoundHttpException('Site group not found');
@@ -266,22 +278,6 @@ class SitesController extends Controller
             ],
         ];
 
-        $languageOptions = [];
-        $languageId = Craft::$app->getLocale()->getLanguageID();
-
-        foreach (Craft::$app->getI18n()->getAllLocales() as $locale) {
-            $languageOptions[] = [
-                'label' => $locale->getDisplayName(Craft::$app->language),
-                'value' => $locale->id,
-                'data' => [
-                    'data' => [
-                        'hint' => $locale->id,
-                        'keywords' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
-                    ],
-                ],
-            ];
-        }
-
         return $this->renderTemplate('settings/sites/_edit.twig', [
             'brandNewSite' => $brandNewSite,
             'title' => $title,
@@ -289,7 +285,7 @@ class SitesController extends Controller
             'site' => $siteModel,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
-            'languageOptions' => $languageOptions,
+            'readOnly' => $this->readOnly,
         ]);
     }
 

@@ -8,9 +8,14 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\helpers\Cp;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -18,6 +23,7 @@ use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\JsonResponseFormatter;
+use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
 
@@ -84,17 +90,18 @@ abstract class Controller extends \yii\web\Controller
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = $this->defineBehaviors();
 
-        // Give plugins a chance to modify them
-        $event = new DefineBehaviorsEvent([
-            'behaviors' => $behaviors,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        // Fire a 'defineBehaviors' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            $event = new DefineBehaviorsEvent(['behaviors' => $behaviors]);
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+            return $event->behaviors;
+        }
 
-        return $event->behaviors;
+        return $behaviors;
     }
 
     /**
@@ -268,9 +275,31 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asCpScreen(): Response
     {
+        if ($this->response->getBehavior(CpScreenResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
         $this->response->attachBehavior(CpScreenResponseBehavior::NAME, CpScreenResponseBehavior::class);
         $this->response->formatters[CpScreenResponseFormatter::FORMAT] = CpScreenResponseFormatter::class;
         $this->response->format = CpScreenResponseFormatter::FORMAT;
+        return $this->response;
+    }
+
+    /**
+     * Sends a control panel modal response.
+     *
+     * @return Response
+     * @since 5.0.0
+     */
+    public function asCpModal(): Response
+    {
+        if ($this->response->getBehavior(CpModalResponseBehavior::NAME)) {
+            return $this->response;
+        }
+
+        $this->response->attachBehavior(CpModalResponseBehavior::NAME, CpModalResponseBehavior::class);
+        $this->response->formatters[CpModalResponseFormatter::FORMAT] = CpModalResponseFormatter::class;
+        $this->response->format = CpModalResponseFormatter::FORMAT;
         return $this->response;
     }
 
@@ -330,7 +359,11 @@ abstract class Controller extends \yii\web\Controller
                     'notificationSettings' => $notificationSettings,
                 ];
             }
-            return $this->asJson($data);
+            $response = $this->asJson($data);
+            if ($this->request->isCpRequest && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
+            }
+            return $response;
         }
 
         $this->setSuccessFlash($message, $notificationSettings);
@@ -360,7 +393,7 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         array $routeParams = [],
     ): ?YiiResponse {
-        $modelName = $modelName ?? 'model';
+        $modelName ??= 'model';
         $routeParams += [$modelName => $model];
         $data += [
             'modelName' => $modelName,
@@ -393,15 +426,34 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         ?string $redirect = null,
     ): YiiResponse {
+        $modelData = $model->toArray();
+
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        if (!$isCpRequest && !static::currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
         $data += array_filter([
             'modelName' => $modelName,
-            ($modelName ?? 'model') => $model->toArray(),
+            'modelClass' => get_class($model),
+            ($modelName ?? 'model') => $modelData,
         ]);
+
+        if ($model instanceof Identifiable) {
+            $data['modelId'] = $model->getId();
+        }
+
+        $notificationSettings = [];
+        if ($isCpRequest && $model instanceof Chippable) {
+            $notificationSettings['details'] = Cp::chipHtml($model);
+        }
 
         return $this->asSuccess(
             $message,
             $data,
             $redirect ?? $this->getPostedRedirectUrl($model),
+            $notificationSettings,
         );
     }
 
@@ -436,7 +488,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @param bool $requireAdminChanges Whether the <config4:allowAdminChanges>
+     * @param bool $requireAdminChanges Whether the <config5:allowAdminChanges>
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
@@ -497,12 +549,12 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @throws BadRequestHttpException if the request is not a post request
+     * @throws MethodNotAllowedHttpException if the request is not a POST request
      */
     public function requirePostRequest(): void
     {
         if (!$this->request->getIsPost()) {
-            throw new BadRequestHttpException('Post request required');
+            throw new MethodNotAllowedHttpException('Post request required');
         }
     }
 
@@ -526,7 +578,8 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken(): void
     {
-        if (!$this->request->getHadToken()) {
+        $tokenRoute = $this->request->getTokenRoute()[0] ?? null;
+        if ($tokenRoute !== $this->getRoute()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -605,6 +658,17 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url && $object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
+        }
+
+        $params = $this->request->getBodyParam('redirectParams');
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException($e->getMessage(), previous: $e);
+            }
+
+            $url = UrlHelper::urlWithParams($url, $params);
         }
 
         return $url;

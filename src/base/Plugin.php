@@ -13,12 +13,15 @@ use craft\db\MigrationManager;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
+use ReflectionMethod;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\Module;
+use yii\web\Response;
 
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
@@ -125,6 +128,23 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Set $hasReadOnlyCpSettings to true if we're using the default getSettingsResponse()
+        if (
+            $this->hasCpSettings &&
+            !$this->hasReadOnlyCpSettings &&
+            (new ReflectionMethod($this, 'getSettingsResponse'))->getDeclaringClass()->name === self::class
+        ) {
+            $this->hasReadOnlyCpSettings = true;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getHandle(): string
     {
         return $this->id;
@@ -198,8 +218,26 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
+        return $this->settingsResponse(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsResponse(): mixed
+    {
+        return $this->settingsResponse(true);
+    }
+
+    private function settingsResponse(bool $readOnly): Response
+    {
         $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function() {
+        $settingsHtml = $view->namespaceInputs(function() use ($readOnly) {
+            if ($readOnly) {
+                // Just return the settings HTML with disabled inputs by default
+                return (string)Html::disableInputs(fn() => $this->settingsHtml());
+            }
+
             return (string)$this->settingsHtml();
         }, 'settings');
 
@@ -209,6 +247,7 @@ class Plugin extends Module implements PluginInterface
         return $controller->renderTemplate('settings/plugins/_settings.twig', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -281,11 +320,14 @@ class Plugin extends Module implements PluginInterface
      */
     public function beforeSaveSettings(): bool
     {
-        // Trigger a 'beforeSaveSettings' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_SAVE_SETTINGS, $event);
+        // Fire a 'beforeSaveSettings' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SETTINGS)) {
+            $event = new ModelEvent();
+            $this->trigger(self::EVENT_BEFORE_SAVE_SETTINGS, $event);
+            return $event->isValid;
+        }
 
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -293,7 +335,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function afterSaveSettings(): void
     {
-        // Trigger an 'afterSaveSettings' event
+        // Fire an 'afterSaveSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SETTINGS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SETTINGS);
         }

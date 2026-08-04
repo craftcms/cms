@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\errors\MutexException;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -24,7 +25,7 @@ use yii\base\Exception;
 /**
  * Structures service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getStructures()|`Craft::$app->structures`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getStructures()|`Craft::$app->getStructures()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -48,15 +49,34 @@ class Structures extends Component
     public const EVENT_AFTER_INSERT_ELEMENT = 'afterInsertElement';
 
     /**
+     * @event MoveElementEvent The event that is triggered before an element’s position is updated.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting repositioned.
+     *
+     * @since 5.9.0
+     */
+    public const EVENT_BEFORE_UPDATE_ELEMENT = 'beforeUpdateElement';
+
+    /**
+     * @event MoveElementEvent The event that is triggered after an element’s position is updated.
+     * @since 5.9.0
+     */
+    public const EVENT_AFTER_UPDATE_ELEMENT = 'afterUpdateElement';
+
+    /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      *
      * In Craft 4.5 and later, you may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the
      * element from getting moved.
+     *
+     * @deprecated in 5.9.0. [[EVENT_BEFORE_UPDATE_ELEMENT]] should be used instead.
      */
     public const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
     /**
      * @event MoveElementEvent The event that is triggered after an element is moved.
+     *
+     * @deprecated in 5.9.0. [[EVENT_AFTER_UPDATE_ELEMENT]] should be used instead.
      */
     public const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
@@ -145,7 +165,8 @@ class Structures extends Component
     /**
      * Patches an array of entries, filling in any gaps in the tree.
      *
-     * @param ElementInterface[] $elements
+     * @template T of ElementInterface
+     * @param T[] $elements
      * @since 3.6.0
      */
     public function fillGapsInElements(array &$elements): void
@@ -153,6 +174,10 @@ class Structures extends Component
         /** @var ElementInterface|null $prevElement */
         $prevElement = null;
         $patchedElements = [];
+
+        // https://github.com/craftcms/cms/issues/16085
+        // don't assume that elements are in the top to bottom order
+        usort($elements, fn(ElementInterface $a, ElementInterface $b) => $a->lft <=> $b->lft);
 
         foreach ($elements as $i => $element) {
             // Did we just skip any elements?
@@ -164,13 +189,17 @@ class Structures extends Component
                 )
             ) {
                 // Merge in any missing ancestors
-                $ancestorQuery = $element->getAncestors()
+                $ancestorQuery = $element::find()
+                    ->structureId($element->structureId)
+                    ->ancestorOf($element)
+                    ->siteId($element->siteId)
                     ->status(null);
 
                 if ($prevElement) {
                     $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
                 }
 
+                /** @var T $ancestor */
                 foreach ($ancestorQuery->all() as $ancestor) {
                     $patchedElements[] = $ancestor;
                 }
@@ -186,7 +215,8 @@ class Structures extends Component
     /**
      * Filters an array of elements down to only <= X branches.
      *
-     * @param ElementInterface[] $elements
+     * @template T of ElementInterface
+     * @param T[] $elements
      * @param int $branchLimit
      * @since 3.6.0
      */
@@ -503,7 +533,7 @@ class Structures extends Component
         $lockName = 'structure:' . $structureId;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockName, $this->mutexTimeout)) {
-            throw new Exception('Unable to acquire a lock for the structure ' . $structureId);
+            throw new MutexException($lockName, sprintf('Unable to acquire a lock for the structure %s', $structureId));
         }
 
         $elementRecord = null;
@@ -529,13 +559,13 @@ class Structures extends Component
 
         [$beforeEvent, $afterEvent] = match ($mode) {
             self::MODE_INSERT => [self::EVENT_BEFORE_INSERT_ELEMENT, self::EVENT_AFTER_INSERT_ELEMENT],
-            self::MODE_UPDATE => [self::EVENT_BEFORE_MOVE_ELEMENT, self::EVENT_AFTER_MOVE_ELEMENT],
+            self::MODE_UPDATE => [self::EVENT_BEFORE_UPDATE_ELEMENT, self::EVENT_AFTER_UPDATE_ELEMENT],
         };
 
         $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
+        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
         if ($this->hasEventHandlers($beforeEvent)) {
-            // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
             $event = new MoveElementEvent([
                 'element' => $element,
                 'structureId' => $structureId,
@@ -597,6 +627,10 @@ class Structures extends Component
             $mutex->release($lockName);
             throw $e;
         }
+
+        // Invalidate all caches for the element type
+        // (see https://github.com/craftcms/cms/issues/14846)
+        Craft::$app->getElements()->invalidateCachesForElementType($element::class);
 
         if ($this->hasEventHandlers($afterEvent)) {
             // Fire an 'afterMoveElement' event

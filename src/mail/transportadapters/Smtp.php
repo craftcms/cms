@@ -34,9 +34,9 @@ class Smtp extends BaseTransportAdapter
     public ?string $host = null;
 
     /**
-     * @var string|null The port that should be used
+     * @var int|string|null The port that should be used
      */
-    public ?string $port = null;
+    public int|string|null $port = null;
 
     /**
      * @var bool|string|null Whether to use authentication
@@ -52,18 +52,6 @@ class Smtp extends BaseTransportAdapter
      * @var string|null The password that should be used
      */
     public ?string $password = null;
-
-    /**
-     * @var string|null The encryption method that should be used, if any (ssl or tls)
-     * @deprecated in 4.3.7. All SMTP requests will use TLS whenever port 465 is used, or the port isn’t specified and OpenSSL is installed.
-     */
-    public ?string $encryptionMethod = null;
-
-    /**
-     * @var string|int The timeout duration (in seconds)
-     * @deprecated in 4.3.7.
-     */
-    public string|int $timeout = 10;
 
     /**
      * @inheritdoc
@@ -92,7 +80,6 @@ class Smtp extends BaseTransportAdapter
                     'useAuthentication',
                     'username',
                     'password',
-                    'encryptionMethod',
                 ],
             ],
         ];
@@ -123,10 +110,9 @@ class Smtp extends BaseTransportAdapter
         $rules[] = [
             ['username', 'password'],
             'required',
-            'when' => function($model) {
+            'when' => fn($model) =>
                 /** @var self $model */
-                return App::parseBooleanEnv($model->useAuthentication) ?? false;
-            },
+                App::parseBooleanEnv($model->useAuthentication) ?? false,
         ];
         return $rules;
     }
@@ -136,8 +122,22 @@ class Smtp extends BaseTransportAdapter
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings.twig', [
             'adapter' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -148,8 +148,8 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'scheme' => 'smtp',
-            'host' => App::parseEnv($this->host),
-            'port' => App::parseEnv($this->port) ?: 0,
+            'host' => App::parseEnv($this->host) ?? '',
+            'port' => $this->port ? (int) App::parseEnv($this->port) : null,
         ];
 
         if (App::parseBooleanEnv($this->useAuthentication) ?? false) {

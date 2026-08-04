@@ -8,6 +8,7 @@
         'boolean-menu': true,
         target: toggle ?? false,
         'reverse-target': reverseToggle ?? false,
+        'target-prefix': false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
@@ -16,7 +17,7 @@
         label: yesLabel ?? 'Yes'|t('app'),
         value: '1',
         data: {
-            status: 'green',
+            status: 'enabled',
         },
     },
     {

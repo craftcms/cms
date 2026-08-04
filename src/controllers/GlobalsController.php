@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -79,9 +80,9 @@ class GlobalsController extends Controller
 
         // Save it
         if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+            $this->setFailFlash(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
-            ]));
+            ])));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -107,6 +108,7 @@ class GlobalsController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         $setIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getGlobals()->reorderSets($setIds);
@@ -221,9 +223,9 @@ class GlobalsController extends Controller
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save {type}.', [
+            $this->setFailFlash(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
-            ]));
+            ])));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([

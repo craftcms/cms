@@ -1,0 +1,61 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+  label: 'Min {type}'|t('app', {
+    type: 'Addresses'|t('app'),
+  }),
+  instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+  id: 'min-addresses',
+  name: 'minAddresses',
+  value: field.minAddresses,
+  size: 3,
+  errors: field.getErrors('minAddresses'),
+  data: {'error-key': 'minAddresses'},
+  disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: 'Max {type}'|t('app', {
+    type: 'Addresses'|t('app'),
+  }),
+  instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+  id: 'max-addresses',
+  name: 'maxAddresses',
+  value: field.maxAddresses,
+  size: 3,
+  errors: field.getErrors('maxAddresses'),
+  data: {'error-key': 'maxAddresses'},
+  disabled: readOnly,
+}) }}
+
+{% embed '_includes/forms/field.twig' with {
+  label: 'View Mode'|t('app'),
+  instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
+    type: 'addresses'|t('app'),
+  }),
+} %}
+  {% block input %}
+    <div class="flex items-start gap-l fieldtoggle" data-target-prefix="view-mode--">
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/cards.svg" width="80" height="60" alt="">
+        {{ input('radio', 'viewMode', 'cards', {
+          checked: field.viewMode == 'cards',
+          disabled: readOnly,
+        }) }}
+        {{ 'Cards'|t('app') }}
+      </label>
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/index.svg" width="80" height="60" alt="">
+        {{ input('radio', 'viewMode', 'index', {
+          checked: field.viewMode == 'index',
+          disabled: readOnly,
+        }) }}
+        {{ 'Index'|t('app') }}
+      </label>
+    </div>
+  {% endblock %}
+{% endembed %}

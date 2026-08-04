@@ -7,13 +7,14 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineUserContentSummaryEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 5.10.0
  */
 class DefineUserContentSummaryEvent extends Event
 {

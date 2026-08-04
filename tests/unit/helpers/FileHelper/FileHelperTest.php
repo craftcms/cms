@@ -171,18 +171,6 @@ class FileHelperTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetMimeTypeExceptions(): void
-    {
-        if (PHP_VERSION_ID < 80100) {
-            $this->tester->expectThrowable(ErrorException::class, function() {
-                FileHelper::getMimeType('notafile');
-            });
-        }
-    }
-
-    /**
      * @dataProvider getExtensionByMimeTypeDataProvider
      *
      * @param string $expected
@@ -310,7 +298,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function normalizePathDataProvider(): array
+    public static function normalizePathDataProvider(): array
     {
         return [
             ['Im a string', 'Im a string', DIRECTORY_SEPARATOR],
@@ -324,13 +312,15 @@ class FileHelperTest extends TestCase
             [' +HostName[@SSL][@Port]+SharedFolder+Resource', ' \\HostName[@SSL][@Port]\SharedFolder\Resource', '+'],
             ['|?|C:|my_dir', '\\?\C:\my_dir', '|'],
             ['==stuff', '\\\\stuff', '='],
+            ['foo/bar', 'file://foo/bar', '/'],
+            ['foo/bar', 'file://FILE://foo/bar', '/'],
         ];
     }
 
     /**
      * @return array
      */
-    public function absolutePathDataProvider(): array
+    public static function absolutePathDataProvider(): array
     {
         return [
             ['/foo/bar', 'bar', '/foo', '/'],
@@ -347,7 +337,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function relativePathDataProvider(): array
+    public static function relativePathDataProvider(): array
     {
         return [
             ['bar/baz', '/foo/bar/baz', '/foo', '/'],
@@ -359,7 +349,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isWithinDataProvider(): array
+    public static function isWithinDataProvider(): array
     {
         return [
             [true, '/foo/bar', '/foo'],
@@ -373,7 +363,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function mimeTypeDataProvider(): array
+    public static function mimeTypeDataProvider(): array
     {
         return [
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
@@ -390,7 +380,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isSvgDataProvider(): array
+    public static function isSvgDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
@@ -407,7 +397,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isGifDataProvider(): array
+    public static function isGifDataProvider(): array
     {
         return [
             [true, dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
@@ -424,7 +414,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function isDirectoryEmptyDataProvider(): array
+    public static function isDirectoryEmptyDataProvider(): array
     {
         return [
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
@@ -436,7 +426,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function getExtensionByMimeTypeDataProvider(): array
+    public static function getExtensionByMimeTypeDataProvider(): array
     {
         return [
             ['jpg', 'image/jpeg'],
@@ -447,7 +437,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function sanitizeFilenameDataProvider(): array
+    public static function sanitizeFilenameDataProvider(): array
     {
         return [
             ['notafile', 'notafile', []],
@@ -462,7 +452,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function writeToFileDataProvider(): array
+    public static function writeToFileDataProvider(): array
     {
         $sandboxDir = __DIR__ . '/sandbox/writeto';
 
@@ -477,7 +467,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function findClosestFileDataProvider(): array
+    public static function findClosestFileDataProvider(): array
     {
         return [
             [
@@ -508,7 +498,7 @@ class FileHelperTest extends TestCase
     /**
      * @return array
      */
-    public function uniqueNameDataProvider(): array
+    public static function uniqueNameDataProvider(): array
     {
         $bigStr = StringHelper::randomString(300);
 

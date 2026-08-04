@@ -37,6 +37,13 @@ class QueueManagerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
+    public $css = [
+        'css/queue-manager.css',
+    ];
+
+    /**
+     * @inheritdoc
+     */
     public $js = [
         'queue-manager.js',
     ];
@@ -64,6 +71,7 @@ class QueueManagerAsset extends AssetBundle
                 'Job released.',
                 'Retrying all failed jobs.',
                 'ID',
+                'Class',
                 '{num, number} {num, plural, =1{second} other{seconds}}',
                 'Time to reserve',
                 'Status',

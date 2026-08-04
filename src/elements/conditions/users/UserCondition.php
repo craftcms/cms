@@ -16,9 +16,9 @@ class UserCondition extends ElementCondition
     /**
      * @inheritdoc
      */
-    protected function conditionRuleTypes(): array
+    protected function selectableConditionRules(): array
     {
-        $types = array_merge(parent::conditionRuleTypes(), [
+        $types = array_merge(parent::selectableConditionRules(), [
             AdminConditionRule::class,
             CredentialedConditionRule::class,
             EmailConditionRule::class,
@@ -30,6 +30,10 @@ class UserCondition extends ElementCondition
 
         if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $types[] = UsernameConditionRule::class;
+        }
+
+        if (Craft::$app->getIsMultiSite()) {
+            $types[] = AffiliatedSiteConditionRule::class;
         }
 
         return $types;

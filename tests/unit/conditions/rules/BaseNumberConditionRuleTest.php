@@ -28,7 +28,7 @@ class BaseNumberConditionRuleTest extends TestCase
      */
     public function testSetAttributes(array $config, ?array $expected = null): void
     {
-        $expected = $expected ?? $config;
+        $expected ??= $config;
 
         $rule = new class() extends BaseNumberConditionRule {
             public function getLabel(): string
@@ -44,7 +44,7 @@ class BaseNumberConditionRuleTest extends TestCase
         }
     }
 
-    public function setAttributesDataProvider(): array
+    public static function setAttributesDataProvider(): array
     {
         return [
             [
@@ -85,7 +85,7 @@ class BaseNumberConditionRuleTest extends TestCase
     /**
      * @return array
      */
-    public function paramValueDataProvider(): array
+    public static function paramValueDataProvider(): array
     {
         return [
             [

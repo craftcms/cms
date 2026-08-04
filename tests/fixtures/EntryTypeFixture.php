@@ -7,6 +7,7 @@
 
 namespace crafttests\fixtures;
 
+use Craft;
 use craft\records\EntryType;
 use craft\test\ActiveFixture;
 
@@ -32,5 +33,16 @@ class EntryTypeFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public $depends = [FieldLayoutFixture::class, SectionsFixture::class];
+    public function afterLoad()
+    {
+        Craft::$app->getEntries()->refreshEntryTypes();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterUnload()
+    {
+        Craft::$app->getEntries()->refreshEntryTypes();
+    }
 }

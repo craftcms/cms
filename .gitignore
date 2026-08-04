@@ -16,3 +16,5 @@ vendor/
 /bower_components
 cpresources/*
 .ddev/
+test-results/
+.claude/settings.local.json

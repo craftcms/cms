@@ -335,7 +335,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
       ],
       externals: {
         jquery: 'jQuery',
-        d3: 'd3',
         axios: 'axios',
         fabric: 'fabric',
         'element-resize-detector': 'elementResizeDetectorMaker',

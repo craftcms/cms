@@ -51,15 +51,15 @@ class View extends ElementAction
     new Craft.ElementActionTrigger({
         type: $type,
         bulk: false,
-        validateSelection: \$selectedItems => {
-            const \$element = \$selectedItems.find('.element');
+        validateSelection: (selectedItems, elementIndex) => {
+            const \$element = selectedItems.find('.element');
             return (
                 \$element.data('url') &&
                 (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
             );
         },
-        activate: \$selectedItems => {
-            window.open(\$selectedItems.find('.element').data('url'));
+        activate: (selectedItems, elementIndex) => {
+            window.open(selectedItems.find('.element').data('url'));
         },
     });
 })();

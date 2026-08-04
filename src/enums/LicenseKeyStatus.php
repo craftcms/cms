@@ -8,22 +8,17 @@
 namespace craft\enums;
 
 /**
- * The LicenseKeyStatus class is an abstract class that defines all of the license key status states that are available
- * in Craft.
- * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
+ * LicenseKeyStatus defines all possible license key statuses for Craft and plugins.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 5.0.0
  */
-abstract class LicenseKeyStatus
+enum LicenseKeyStatus: string
 {
-    public const Valid = 'valid';
-    /**
-     * @since 3.6.0
-     */
-    public const Trial = 'trial';
-    public const Invalid = 'invalid';
-    public const Mismatched = 'mismatched';
-    public const Astray = 'astray';
-    public const Unknown = 'unknown';
+    case Valid = 'valid';
+    case Trial = 'trial';
+    case Invalid = 'invalid';
+    case Mismatched = 'mismatched';
+    case Astray = 'astray';
+    case Unknown = 'unknown';
 }

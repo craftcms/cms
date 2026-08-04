@@ -9,6 +9,7 @@
     name: 'staticRows',
     on: field.staticRows,
     reverseToggle: 'dynamic-row-settings',
+    disabled: readOnly,
 }) }}
 
 <fieldset id="dynamic-row-settings"{% if field.staticRows %} class="hidden indent"{% endif %}>
@@ -19,7 +20,9 @@
         name: 'minRows',
         value: field.minRows,
         size: 3,
-        errors: field.getErrors('minRows')
+        errors: field.getErrors('minRows'),
+        data: {'error-key': 'minRows'},
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -29,7 +32,9 @@
         name: 'maxRows',
         value: field.maxRows,
         size: 3,
-        errors: field.getErrors('maxRows')
+        errors: field.getErrors('maxRows'),
+        data: {'error-key': 'maxRows'},
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -39,28 +44,10 @@
         name: 'addRowLabel',
         value: field.addRowLabel,
         size: 20,
-        errors: field.getErrors('addRowLabel')
+        errors: field.getErrors('addRowLabel'),
+        disabled: readOnly,
     }) }}
 </fieldset>
-
-{% if craft.app.db.isMysql %}
-    <hr>
-    <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
-    <div id="advanced" class="hidden">
-        {{ forms.selectField({
-            label: "Column Type"|t('app'),
-            id: 'column-type',
-            name: 'columnType',
-            instructions: "The type of column this field should get in the database."|t('app'),
-            options: [
-                { value: 'text', label: 'text (~64KB)' },
-                { value: 'mediumtext', label: 'mediumtext (~16MB)' },
-            ],
-            value: field.columnType,
-            warning: (field.id ? "Changing this may result in data loss."|t('app')),
-        }) }}
-    </div>
-{% endif %}
 
 {% for colId, column in field.columns %}
     {% if column.type == 'select' %}

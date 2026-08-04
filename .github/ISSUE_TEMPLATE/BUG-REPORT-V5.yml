@@ -1,0 +1,60 @@
+name: 'Bug Report: Craft 5'
+description: Report an issue or unexpected behavior pertaining to Craft 5
+title: '[5.x]: '
+labels:
+  - bug
+  - craft5
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a bug report! Please fill out the fields to the best of your knowledge, so we can get to the bottom of the issue as quickly as possible.
+  - type: textarea
+    id: body
+    attributes:
+      label: What happened?
+      value: |
+        ### Description
+
+
+
+        ### Steps to reproduce
+
+        1.
+
+        ### Expected behavior
+
+
+
+        ### Actual behavior
+
+    validations:
+      required: true
+  - type: input
+    id: cmsVersion
+    attributes:
+      label: Craft CMS version
+    validations:
+      required: true
+  - type: input
+    id: phpVersion
+    attributes:
+      label: PHP version
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and version
+  - type: input
+    id: db
+    attributes:
+      label: Database type and version
+  - type: input
+    id: imageDriver
+    attributes:
+      label: Image driver and version
+  - type: textarea
+    id: plugins
+    attributes:
+      label: Installed plugins and versions
+      value: |
+        -
