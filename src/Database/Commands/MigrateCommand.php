@@ -167,10 +167,9 @@ class MigrateCommand extends Command implements Isolatable
 
             $this->box(
                 $this->cyan("Total $n new $which ".Str::plural('migration', $n).' to be applied:'),
-                implode("\n", array_map(
-                    fn (string $migration) => $this->getMigrator($track)->getMigrationName($migration),
-                    $migrations,
-                ))
+                collect($migrations)
+                    ->map(fn (string $migration) => $this->getMigrator($track)->getMigrationName($migration))
+                    ->join("\n")
             );
             $this->newLine();
 

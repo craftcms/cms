@@ -1475,13 +1475,10 @@ JS, [
         }
 
         // Tell the browser to collapse any new entry IDs
-        $collapsedIds = [];
-
-        foreach ($event->elements as $entry) {
-            if ($entry instanceof Entry && $entry->collapsed) {
-                $collapsedIds[] = $entry->id;
-            }
-        }
+        $collapsedIds = Collection::make($event->elements)
+            ->filter(fn (ElementInterface $entry) => $entry instanceof Entry && $entry->collapsed)
+            ->map(fn (ElementInterface $entry) => $entry->id)
+            ->all();
 
         if (empty($collapsedIds)) {
             return;

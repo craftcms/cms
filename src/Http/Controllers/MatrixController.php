@@ -42,18 +42,18 @@ readonly class MatrixController
 
     public function defaultTableColumnOptions(Request $request): JsonResponse
     {
-        $entryTypeIds = $request->validate([
+        $request->validate([
             'entryTypeIds' => ['required', 'array'],
             'entryTypeIds.*' => ['integer'],
-        ])['entryTypeIds'];
+        ]);
 
-        $entryTypes = array_map(function (mixed $entryTypeId) {
+        $entryTypes = collect($request->array('entryTypeIds'))->map(function (mixed $entryTypeId) {
             $entryType = $this->entryTypes->getEntryTypeById((int) $entryTypeId);
 
             abort_if(is_null($entryType), 400, "Invalid entry type ID: $entryTypeId");
 
             return $entryType;
-        }, $entryTypeIds);
+        })->all();
 
         return new JsonResponse([
             'options' => Matrix::defaultTableColumnOptions($entryTypes),

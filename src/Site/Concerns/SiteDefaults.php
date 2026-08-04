@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Site\Concerns;
 
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Collection;
 
 trait SiteDefaults
 {
@@ -65,20 +66,8 @@ trait SiteDefaults
     /** @return array<string, mixed>|null */
     private function primarySiteConfig(): ?array
     {
-        return once(function (): ?array {
-            $sites = app(ProjectConfig::class)->get('sites', true);
-
-            if (! is_array($sites)) {
-                return null;
-            }
-
-            foreach ($sites as $site) {
-                if (is_array($site) && ($site['primary'] ?? false)) {
-                    return $site;
-                }
-            }
-
-            return null;
-        });
+        return once(fn () => Collection::wrap(
+            app(ProjectConfig::class)->get('sites', true) ?? []
+        )->firstWhere('primary', true));
     }
 }

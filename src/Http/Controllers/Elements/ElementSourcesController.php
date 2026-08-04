@@ -225,7 +225,9 @@ readonly class ElementSourcesController
 
         // Get the old source configs
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES.".$elementType") ?? [];
-        $oldSourceConfigs = is_array($oldSourceConfigs) ? array_column($oldSourceConfigs, null, 'key') : [];
+        $oldSourceConfigs = collect(is_array($oldSourceConfigs) ? $oldSourceConfigs : [])
+            ->keyBy('key')
+            ->all();
 
         $sourceOrder = $request->array('sourceOrder');
         $sourceSettings = $request->array('sources');

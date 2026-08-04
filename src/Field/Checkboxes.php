@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use Illuminate\Support\Collection;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -50,11 +51,7 @@ class Checkboxes extends BaseOptionsField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        if (
-            ! $this->customOptions &&
-            is_iterable($value) &&
-            array_any(is_array($value) ? $value : iterator_to_array($value), fn (OptionData $option) => ! $option->valid)
-        ) {
+        if (! $this->customOptions && is_iterable($value) && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
             DeltaRegistry::setInitialValue($this->handle, null);
         }
 

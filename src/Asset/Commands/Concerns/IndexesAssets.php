@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 use function Laravel\Prompts\select;
@@ -59,16 +60,9 @@ trait IndexesAssets
             listEmptyFolders: $this->deleteEmptyFolders,
         );
 
-        $missingRecordsByFilename = $this->emptyMissingRecordsByFilename();
-
-        foreach ($volumes as $volume) {
-            foreach ($this->processVolume($volume, $path, $startAt, $session) as $filename => $missingRecords) {
-                $missingRecordsByFilename[$filename] = [
-                    ...($missingRecordsByFilename[$filename] ?? []),
-                    ...$missingRecords,
-                ];
-            }
-        }
+        $missingRecordsByFilename = collect($volumes)
+            ->flatMap(fn (Volume $volume) => $this->processVolume($volume, $path, $startAt, $session))
+            ->all();
 
         // Manually close the indexing session.
         $session->actionRequired = true;
@@ -91,11 +85,9 @@ trait IndexesAssets
             );
 
             $this->components->bulletList(
-                array_map(
-                    fn (string $folderPath, int $folderId) => "$folderPath ($folderId)",
-                    $missingFolders,
-                    array_keys($missingFolders),
-                ),
+                collect($missingFolders)
+                    ->map(fn (string $folderPath, int $folderId) => "$folderPath ($folderId)")
+                    ->all()
             );
         }
 
@@ -152,8 +144,9 @@ trait IndexesAssets
 
         $fileList = AssetIndexer::getIndexListOnVolume($volume, $path);
 
-        $missingRecords = [];
-        $missingRecordsByFilename = $this->emptyMissingRecordsByFilename();
+        /** @var Collection<int, MissingAssetException|MissingVolumeFolderException> $missingRecords */
+        $missingRecords = Collection::make();
+        $missingRecordsByFilename = [];
 
         foreach ($fileList as $index => $item) {
             $count = $index + 1;
@@ -170,7 +163,7 @@ trait IndexesAssets
                     ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
                     : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
-                $missingRecords[] = $e;
+                $missingRecords->add($e);
 
                 if ($e instanceof MissingAssetException) {
                     $missingRecordsByFilename[$e->filename][] = $e;
@@ -190,17 +183,17 @@ trait IndexesAssets
 
         $this->newLine();
 
-        if ($this->createMissingAssets || $missingRecords === []) {
+        if ($this->createMissingAssets || $missingRecords->isEmpty()) {
             return $missingRecordsByFilename;
         }
 
-        $this->warn(count($missingRecords) === 1
+        $this->warn($missingRecords->count() === 1
             ? 'One record is missing:'
-            : count($missingRecords).' records are missing:'
+            : "{$missingRecords->count()} records are missing:"
         );
 
         $this->components->bulletList(
-            array_map(function (MissingAssetException|MissingVolumeFolderException $e) {
+            $missingRecords->map(function (MissingAssetException|MissingVolumeFolderException $e) {
                 $line = "{$e->volume->name}/{$e->indexEntry->uri}";
 
                 if ($e instanceof MissingVolumeFolderException) {
@@ -208,7 +201,8 @@ trait IndexesAssets
                 }
 
                 return $line;
-            }, $missingRecords),
+            })
+                ->all()
         );
 
         return $missingRecordsByFilename;
@@ -299,12 +293,6 @@ trait IndexesAssets
         $this->components->success('Done fixing asset locations.');
 
         return $remainingMissingFiles;
-    }
-
-    /** @return array<string, list<MissingAssetException>> */
-    private function emptyMissingRecordsByFilename(): array
-    {
-        return [];
     }
 
     /**

@@ -31,7 +31,7 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
-/** @phpstan-type SourceConfig array{sites?: array<int|string>|false, ...} */
+/** @phpstan-type SourceConfig array{sites?: array<array-key, int|string>|false, ...} */
 #[Scoped]
 class ElementSources
 {
@@ -221,26 +221,36 @@ class ElementSources
                 continue;
             }
 
-            $siteIds = [];
-            foreach ($source['sites'] ?: [] as $siteId) {
-                if (is_string($siteId) && Str::isUuid($siteId)) {
-                    try {
-                        $siteId = Sites::getSiteByUid($siteId)->id;
-                    } catch (SiteNotFoundException) {
-                        continue;
-                    }
-                } elseif (is_string($siteId)) {
-                    $siteId = (int) $siteId;
-                }
-
-                if ($siteId) {
-                    $siteIds[] = $siteId;
-                }
-            }
-            $source['sites'] = $siteIds;
+            $source['sites'] = $this->normalizeSiteIds($source['sites']);
         }
 
         return $sources;
+    }
+
+    /**
+     * @param  array<array-key, int|string>|false  $siteIds
+     * @return array<array-key, int>
+     */
+    private function normalizeSiteIds(array|false $siteIds): array
+    {
+        return collect($siteIds ?: [])
+            ->map(function (int|string $siteId) {
+                if (! is_string($siteId)) {
+                    return $siteId;
+                }
+
+                if (! Str::isUuid($siteId)) {
+                    return (int) $siteId;
+                }
+
+                try {
+                    return Sites::getSiteByUid($siteId)->id;
+                } catch (SiteNotFoundException) {
+                    return null;
+                }
+            })
+            ->filter()
+            ->all();
     }
 
     /**
@@ -608,19 +618,27 @@ class ElementSources
         // Combine duplicate attributes. If any attributes map to multiple sort
         // options and each option has a string orderBy value, cmobine them
         // with a CoalesceColumnsExpression.
-        $combined = collect();
-        foreach ($sortOptions->groupBy('attribute') as $attribute => $group) {
-            $orderBys = $group->pluck('orderBy');
-            $option = $group->first();
+        return $sortOptions
+            ->groupBy('attribute')
+            ->map($this->combineSortOptionGroup(...));
+    }
 
-            if ($orderBys->count() > 1 && $orderBys->contains(fn ($orderBy) => is_string($orderBy))) {
-                $option['orderBy'] = new Coalesce($orderBys->all());
-            }
+    /**
+     * @param  Collection<int, array<string, mixed>>  $group
+     * @return array<string, mixed>
+     */
+    private function combineSortOptionGroup(Collection $group): array
+    {
+        $orderBys = $group->pluck('orderBy');
+        $option = $group->firstOrFail();
 
-            $combined->put($attribute, $option);
+        if ($orderBys->count() === 1 || $orderBys->doesntContain(fn ($orderBy) => is_string($orderBy))) {
+            return $option;
         }
 
-        return $combined;
+        return array_merge($option, [
+            'orderBy' => new Coalesce($orderBys->all()),
+        ]);
     }
 
     /**

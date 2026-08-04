@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Generator getIndexListOnVolume(\CraftCms\Cms\Asset\Data\Volume $volume, string $directory = '')
+ * @method static \Generator<int, \CraftCms\Cms\Filesystem\Data\FsListing> getIndexListOnVolume(\CraftCms\Cms\Asset\Data\Volume $volume, string $directory = '')
  * @method static \Illuminate\Support\Collection<array-key, mixed> getExistingIndexingSessions()
  * @method static int removeCliIndexingSessions()
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession|null getIndexingSessionById(int $sessionId)
@@ -18,7 +18,7 @@ use Override;
  * @method static int storeIndexList(\Generator $indexList, int $sessionId, \CraftCms\Cms\Asset\Data\Volume $volume)
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession processIndexSession(\CraftCms\Cms\Asset\Data\IndexingSession $indexingSession)
  * @method static string[] getSkippedItemsForSession(\CraftCms\Cms\Asset\Data\IndexingSession $session)
- * @method static array<array-key, mixed> getMissingEntriesForSession(\CraftCms\Cms\Asset\Data\IndexingSession $session, string $path = '')
+ * @method static array{folders: array<int, string>, files: array<int, string>} getMissingEntriesForSession(\CraftCms\Cms\Asset\Data\IndexingSession $session, string $path = '')
  * @method static \CraftCms\Cms\Asset\Data\AssetIndexEntry|null getNextIndexEntry(\CraftCms\Cms\Asset\Data\IndexingSession $session)
  * @method static void updateIndexEntry(int $entryId, array<array-key, mixed> $data)
  * @method static \CraftCms\Cms\Asset\Elements\Asset indexFile(\CraftCms\Cms\Asset\Data\Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true)

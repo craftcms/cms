@@ -467,16 +467,16 @@ class ElementCollection extends Collection
     }
 
     /**
-     * @param  Arrayable<array-key,mixed>|iterable<array-key,mixed>  ...$items
-     * @return Collection<int,Collection<int,mixed>>
+     * @template TZipValue
+     *
+     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  $items
+     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  ...$moreItems
+     * @return Collection<int,Collection<int,TElement|TZipValue>>
      */
     #[Override]
-    public function zip($items): Collection
+    public function zip($items, ...$moreItems): Collection
     {
-        $arrayableItems = array_map($this->getArrayableItems(...), func_get_args());
-        $params = array_merge([fn () => new Collection(func_get_args()), $this->items], $arrayableItems);
-
-        return new Collection(array_map(...$params));
+        return $this->toBase()->zip($items, ...$moreItems);
     }
 
     /**

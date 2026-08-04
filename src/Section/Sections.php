@@ -678,7 +678,7 @@ class Sections
                 ->delete();
 
             DB::table(Table::SECTIONS_ENTRYTYPES)
-                ->insert(collect(array_values($data['entryTypes'] ?? []))
+                ->insert(Collection::wrap($data['entryTypes'] ?? [])
                     ->map(fn ($entryType) => EntryTypes::getEntryType($entryType))
                     ->filter()
                     ->map(fn (EntryType $entryType, int $i) => [

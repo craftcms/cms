@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Commands;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
@@ -29,11 +30,12 @@ class ListAdminsCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): void
     {
+        /** @var ElementCollection<array-key, User> $users */
         $users = User::find()
             ->admin()
             ->status(null)
             ->orderBy('username')
-            ->all();
+            ->get();
 
         $total = count($users);
 
@@ -45,7 +47,7 @@ class ListAdminsCommand extends Command
                 $generalConfig->useEmailAsUsername ? null : 'Email',
                 'Status',
             ]),
-            rows: array_map(fn (User $user) => array_filter([
+            rows: $users->map(fn (User $user) => array_filter([
                 $generalConfig->useEmailAsUsername ? $user->email : $user->username,
                 $generalConfig->useEmailAsUsername ? null : $user->email,
                 match ($user->getStatus()) {
@@ -54,7 +56,7 @@ class ListAdminsCommand extends Command
                     User::STATUS_PENDING => $this->yellow('pending'),
                     default => $this->green('active'),
                 },
-            ]), $users),
+            ]))->all(),
         );
     }
 }
