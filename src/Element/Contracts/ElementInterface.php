@@ -744,7 +744,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
      *   (`true` by default)
      */
-    /** @return array<int|array{siteId:int,propagate?:bool,enabledByDefault?:bool}> */
+    /** @return array<int|string|array{siteId:int|string,propagate?:bool,enabledByDefault?:bool}> */
     public function getSupportedSites(): array;
 
     /**
