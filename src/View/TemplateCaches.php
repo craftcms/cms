@@ -117,6 +117,24 @@ class TemplateCaches
         $duration = $this->normalizeDuration($duration, $expiration);
         $maxDuration = $this->durationFromCacheInfo($cacheInfo);
 
+        // Never store a template cache for longer than the `cacheDuration` config setting.
+        // Applied here rather than in the dependency collector, so the collected expiry date
+        // that gets stored (and propagated to parent caches) stays free of the global default.
+        //
+        // CONFLICT-REVIEW: 6.x moved this service out of `src/services` and dropped the
+        // `cacheDuration` clamp that `stopCollectingCacheInfo()` used to apply. The merged-in
+        // commit (754a4997) moved that clamp into `TemplateCaches` as
+        // `min($maxDuration, $defaultDuration)`. Ported here, but keeping the falsy-default
+        // guard that predates that commit, since a bare `min()` would (a) discard a collected
+        // expiry date when `cacheDuration` is `0`, which is documented to mean "store
+        // indefinitely", and (b) leave caches with no collected expiry unbounded — Yii's cache
+        // component supplied that fallback via its `defaultDuration`, Laravel's does not.
+        $defaultDuration = (int) Cms::config()->cacheDuration;
+
+        if ($defaultDuration) {
+            $maxDuration = $maxDuration ? min($maxDuration, $defaultDuration) : $defaultDuration;
+        }
+
         if ($maxDuration) {
             $duration = $duration ? min($duration, $maxDuration) : $maxDuration;
         }
