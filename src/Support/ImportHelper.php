@@ -162,7 +162,7 @@ class ImportHelper
 
         foreach ($map as $targetKey => $rule) {
             if (is_array($rule)) {
-                $source = self::resolveSourceForArrayRule((string) $targetKey, $rule, $rootData, $currentData, $currentBasePath);
+                $source = self::findSourceForRule((string) $targetKey, $rule, $rootData, $currentData, $currentBasePath);
 
                 if ($source === null) {
                     $nested = self::mapNode($rule, $rootData, $currentData, $currentBasePath, false);
@@ -174,14 +174,14 @@ class ImportHelper
 
                 array_push($consumedKeys, ...$source['consumed']);
 
-                if (self::isBlockTypeContainer($rule, $source['value'])) {
-                    $mapped = self::mapBlockTypeContainer($rule, $rootData, $source['value'], $source['basePath']);
+                if (self::blockLooksGroupedByType($rule, $source['value'])) {
+                    $mapped = self::mapGroupedBlocksByType($rule, $rootData, $source['value'], $source['basePath']);
                     $result[$targetKey] = $mapped['data'];
                     array_push($consumedKeys, ...$mapped['consumed']);
                 } elseif (array_is_list($source['value'])) {
                     $result[$targetKey] = array_map(
                         fn ($row) => is_array($row)
-                            ? self::mapInlineTypedRow($rule, $rootData, $row, $source['basePath'])
+                            ? self::mapRowByOwnType($rule, $rootData, $row, $source['basePath'])
                             : $row,
                         $source['value']
                     );
@@ -226,7 +226,7 @@ class ImportHelper
         ];
     }
 
-    protected static function resolveSourceForArrayRule(
+    protected static function findSourceForRule(
         string $targetKey,
         array $rule,
         array $rootData,
@@ -241,7 +241,7 @@ class ImportHelper
             ];
         }
 
-        $sourceRelativePath = self::commonRelativeSourcePath($rule, $currentBasePath);
+        $sourceRelativePath = self::sharedSourcePath($rule, $currentBasePath);
 
         if ($sourceRelativePath === null || $sourceRelativePath === '') {
             return null;
@@ -259,13 +259,13 @@ class ImportHelper
             }
         }
 
-        if (is_array($currentData) && $source = self::resolveArraySource($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
+        if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
             return $source;
         }
 
         $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
 
-        if ($source = self::resolveArraySource($rootData, $absolutePath, $absolutePath, $sourceKey)) {
+        if ($source = self::getArrayAtPath($rootData, $absolutePath, $absolutePath, $sourceKey)) {
             return $source;
         }
 
@@ -276,7 +276,7 @@ class ImportHelper
      * Resolves a dotted `$path` inside `$data` to an array value, or `null` if the path is
      * missing or doesn't resolve to an array.
      */
-    protected static function resolveArraySource(array $data, string $path, string $basePath, string $sourceKey): ?array
+    protected static function getArrayAtPath(array $data, string $path, string $basePath, string $sourceKey): ?array
     {
         $found = self::findPath($data, $path);
 
@@ -295,16 +295,16 @@ class ImportHelper
      * Maps a single row of an inline-typed (flat, `type`-per-row) block list, dispatching
      * to only the rule's submap matching the row's own `type` when the rule declares one.
      */
-    protected static function mapInlineTypedRow(array $rule, array $rootData, array $row, ?string $basePath): array
+    protected static function mapRowByOwnType(array $rule, array $rootData, array $row, ?string $basePath): array
     {
         if (array_key_exists('type', $row) && is_string($row['type']) && array_key_exists($row['type'], $rule) && is_array($rule[$row['type']])) {
-            return self::mapTypedRow($row['type'], $rule[$row['type']], $rootData, $row, $basePath);
+            return self::mapRowForType($row['type'], $rule[$row['type']], $rootData, $row, $basePath);
         }
 
         return self::mapNode($rule, $rootData, $row, $basePath, true)['data'];
     }
 
-    protected static function mapBlockTypeContainer(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
+    protected static function mapGroupedBlocksByType(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
     {
         $items = [];
         $consumedKeys = [];
@@ -324,7 +324,7 @@ class ImportHelper
 
             foreach ($sourceValue[$type] as $row) {
                 if (is_array($row)) {
-                    $items[] = self::mapTypedRow((string) $type, $typeMap, $rootData, $row, $typeBasePath);
+                    $items[] = self::mapRowForType((string) $type, $typeMap, $rootData, $row, $typeBasePath);
                 }
             }
         }
@@ -338,7 +338,7 @@ class ImportHelper
     /**
      * Maps `$row` against `$typeMap`, tagging the result with its block `$type`.
      */
-    protected static function mapTypedRow(string $type, array $typeMap, array $rootData, array $row, ?string $basePath): array
+    protected static function mapRowForType(string $type, array $typeMap, array $rootData, array $row, ?string $basePath): array
     {
         return ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $basePath, true)['data'];
     }
@@ -360,9 +360,9 @@ class ImportHelper
         ];
     }
 
-    protected static function commonRelativeSourcePath(array $map, ?string $currentBasePath): ?string
+    protected static function sharedSourcePath(array $map, ?string $currentBasePath): ?string
     {
-        $paths = self::collectRelativeLeafPaths($map, $currentBasePath);
+        $paths = self::collectLeafPaths($map, $currentBasePath);
 
         if ($paths === []) {
             return null;
@@ -394,13 +394,13 @@ class ImportHelper
         return implode('.', $common);
     }
 
-    protected static function collectRelativeLeafPaths(array $map, ?string $currentBasePath): array
+    protected static function collectLeafPaths(array $map, ?string $currentBasePath): array
     {
         $paths = [];
 
         foreach ($map as $rule) {
             if (is_array($rule)) {
-                array_push($paths, ...self::collectRelativeLeafPaths($rule, $currentBasePath));
+                array_push($paths, ...self::collectLeafPaths($rule, $currentBasePath));
             } elseif (is_string($rule)) {
                 if ($currentBasePath !== null && str_starts_with($rule, $currentBasePath.'.')) {
                     $paths[] = substr($rule, strlen($currentBasePath) + 1);
@@ -413,7 +413,7 @@ class ImportHelper
         return $paths;
     }
 
-    protected static function isBlockTypeContainer(array $rule, mixed $sourceValue): bool
+    protected static function blockLooksGroupedByType(array $rule, mixed $sourceValue): bool
     {
         if (! is_array($sourceValue) || array_is_list($sourceValue)) {
             return false;
