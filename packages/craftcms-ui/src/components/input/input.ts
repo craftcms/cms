@@ -1,6 +1,7 @@
 import {LionInput} from '@lion/ui/input.js';
 import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
+import type {PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 
 export default class CraftInput extends LionInput {
@@ -14,6 +15,21 @@ export default class CraftInput extends LionInput {
   /** Control size. */
   @property({type: String, reflect: true}) size?: 'small' | 'medium' | 'large' =
     'medium';
+
+  /** Native input size in characters. */
+  @property({type: Number, attribute: false}) inputSize?: number;
+
+  /** Native minimum value. */
+  @property({attribute: false}) min?: string | number;
+
+  /** Native maximum value. */
+  @property({attribute: false}) max?: string | number;
+
+  /** Native stepping interval. */
+  @property({attribute: false}) step?: string | number;
+
+  /** Native virtual keyboard hint. */
+  @property({attribute: false}) override inputMode = '';
 
   /** Renders the input at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
@@ -51,6 +67,49 @@ export default class CraftInput extends LionInput {
       // blow the control out of its column.
       if (this.width !== 'full') {
         this._inputNode.size = this.maxlength;
+      }
+    }
+
+    this.syncNativeAttributes();
+    this.syncAriaInvalid();
+  }
+
+  override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+
+    if (
+      changedProperties.has('inputSize') ||
+      changedProperties.has('min') ||
+      changedProperties.has('max') ||
+      changedProperties.has('step') ||
+      changedProperties.has('inputMode')
+    ) {
+      this.syncNativeAttributes();
+    }
+
+    this.syncAriaInvalid();
+  }
+
+  private syncAriaInvalid() {
+    const ariaInvalid = this.getAttribute('aria-invalid');
+
+    if (ariaInvalid !== null) {
+      this._inputNode?.setAttribute('aria-invalid', ariaInvalid);
+    }
+  }
+
+  private syncNativeAttributes() {
+    const attributes = {
+      size: this.inputSize,
+      min: this.min,
+      max: this.max,
+      step: this.step,
+      inputmode: this.inputMode,
+    };
+
+    for (const [attribute, value] of Object.entries(attributes)) {
+      if (value !== undefined) {
+        this._inputNode?.setAttribute(attribute, String(value));
       }
     }
   }
