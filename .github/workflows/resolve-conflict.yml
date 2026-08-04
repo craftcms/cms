@@ -1,0 +1,72 @@
+name: Resolve a single merge conflict
+on:
+  repository_dispatch:
+    types:
+      - resolve-merge-conflict
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  resolve-conflict:
+    name: "resolve conflicts: PR #${{ github.event.client_payload.pr }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Look up PR head branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.client_payload.pr }}
+        run: |
+          head_ref=$(gh pr view "$PR" --repo "$REPO" --json headRefName -q '.headRefName')
+          echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start merge to surface conflicts
+        env:
+          BASE: ${{ github.event.client_payload.base }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$BASE"
+          git merge --no-commit --no-ff "origin/$BASE" || true
+
+      - name: Resolve conflicts with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            This checkout has an in-progress merge from `${{ github.event.client_payload.base }}`
+            with unresolved conflicts. Run `git status` to see the conflicted files.
+
+            Resolve every conflict by editing the files directly, preserving the intent of both
+            sides wherever possible. If a conflict is ambiguous, pick the more conservative
+            resolution and leave a `# CONFLICT-REVIEW:` comment next to it explaining the choice
+            so a human reviewer can double check it.
+
+            When every conflict is resolved:
+            1. `git add` the resolved files.
+            2. `git commit --no-edit` to complete the merge.
+            3. `git push origin HEAD:${{ steps.pr.outputs.head_ref }}`.
+
+            Do not touch unrelated code, and do not merge, approve, or close the pull request —
+            a human will review and merge it.
+          claude_args: |
+            --allowedTools Bash,Read,Edit,Write
+            --max-turns 30
+
+      - name: Comment for human review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.client_payload.pr }}
+          BASE: ${{ github.event.client_payload.base }}
+        run: |
+          gh pr comment "$PR" --repo "$REPO" --body \
+            "This PR had conflicts with \`$BASE\`. Claude attempted an automatic resolution and pushed a merge commit. **Please review the merge commit carefully before approving/merging** — automated conflict resolution can silently pick the wrong side of a logic change."
+          gh pr edit "$PR" --repo "$REPO" --add-label "conflicts-auto-resolved" || true
