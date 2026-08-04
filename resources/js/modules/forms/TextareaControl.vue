@@ -39,7 +39,7 @@
   <craft-textarea
     :label="label"
     label-sr-only
-    :name="editable ? inputName(control.path) : undefined"
+    :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
@@ -53,7 +53,7 @@
   >
     <textarea
       slot="input"
-      :name="editable ? inputName(control.path) : undefined"
+      :name="editable ? inputName(control.path) : ''"
       :value="String(value ?? '')"
       :rows="control.props.rows ?? 2"
       :maxlength="control.props.maxLength"

@@ -44,7 +44,7 @@ class Color extends Control
     }
 
     #[\Override]
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return ['presets' => $this->presets];
     }

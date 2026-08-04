@@ -25,10 +25,10 @@ class Number extends Text
     }
 
     #[\Override]
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return array_filter([
-            ...parent::props(),
+            ...parent::props($value),
             'size' => $this->size,
         ], fn (mixed $value): bool => $value !== null);
     }

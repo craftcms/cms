@@ -14,9 +14,117 @@ import {
   createCpComponentRegistry,
   type CpComponentRegistration,
 } from '@/bootstrap/components';
+import {actionClient} from '@craftcms/ui';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
 import type {FormPayload} from './types';
+
+vi.mock('../markdown-field/markdown-field', () => {
+  if (!customElements.get('craft-markdown-field')) {
+    customElements.define(
+      'craft-markdown-field',
+      class extends HTMLElement {
+        private currentValue: string | null = null;
+
+        static get observedAttributes(): string[] {
+          return ['disabled', 'name'];
+        }
+
+        get value(): string {
+          return (
+            this.querySelector('textarea')?.value ??
+            this.currentValue ??
+            this.textContent ??
+            ''
+          );
+        }
+
+        set value(value: string) {
+          this.currentValue = value;
+
+          const textarea = this.querySelector('textarea');
+          if (textarea) {
+            textarea.value = value;
+          }
+        }
+
+        connectedCallback() {
+          const textarea = document.createElement('textarea');
+          textarea.value = this.value;
+          this.replaceChildren(textarea);
+          this.syncTextarea();
+        }
+
+        attributeChangedCallback() {
+          this.syncTextarea();
+        }
+
+        private syncTextarea() {
+          const textarea = this.querySelector('textarea');
+          if (textarea) {
+            textarea.name = this.getAttribute('name') ?? '';
+            textarea.disabled = this.hasAttribute('disabled');
+          }
+        }
+      }
+    );
+  }
+
+  return {};
+});
+
+vi.mock('../editable-table', () => ({
+  EditableTable: class EditableTableMock {
+    constructor(
+      id: string,
+      baseName: string,
+      columns: Record<string, {type: string}>,
+      settings: {minRows?: number | null} = {}
+    ) {
+      const body = document.querySelector<HTMLTableSectionElement>(
+        `#${id} tbody`
+      )!;
+
+      while (body.children.length < (settings.minRows ?? 0)) {
+        EditableTableMock.createRow(
+          String(body.children.length),
+          columns,
+          baseName,
+          {}
+        ).appendTo(body);
+      }
+    }
+
+    static createRow(
+      rowId: string,
+      columns: Record<string, {type: string}>,
+      baseName: string,
+      values: Record<string, unknown>
+    ) {
+      const row = document.createElement('tr');
+      row.dataset.id = rowId;
+
+      for (const [key, column] of Object.entries(columns)) {
+        const cell = row.insertCell();
+        const input = document.createElement(
+          column.type === 'checkbox' ? 'input' : 'textarea'
+        );
+        input.name = `${baseName}[${rowId}][${key}]`;
+        if (input instanceof HTMLInputElement) {
+          input.type = 'checkbox';
+          input.checked = Boolean(values[key]);
+        } else {
+          input.value = String(values[key] ?? '');
+        }
+        cell.append(input);
+      }
+
+      return {appendTo: (parent: HTMLElement) => parent.append(row)};
+    }
+
+    destroy() {}
+  },
+}));
 
 type Mutable<T> = T extends object
   ? {-readonly [Key in keyof T]: Mutable<T[Key]>}
@@ -29,6 +137,7 @@ describe('FormRenderer', () => {
   let currentPayload: Ref<FormPayload>;
   let renderer: {
     advanceBaseline: () => void;
+    currentValues: () => FormPayload['values'];
   };
 
   beforeEach(async () => {
@@ -694,6 +803,310 @@ describe('FormRenderer', () => {
       expect(container.querySelector('craft-input-color')?.modelValue).toBe(
         'ff0000'
       );
+    }
+  });
+
+  it('renders and submits composite and rich Controls', async () => {
+    const controlsPayload = structuredClone(payload) as Mutable<FormPayload>;
+    const controls = [
+      [
+        'craft:markdown',
+        'Markdown',
+        'body',
+        {
+          rows: 6,
+          placeholder: 'Write <Markdown>',
+          toolbarButtons: ['bold', 'link'],
+          showToolbar: true,
+        },
+        '<script>alert(1)</script> **Safe**',
+      ],
+      [
+        'craft:table',
+        'Table',
+        'rows',
+        {
+          columns: {
+            name: {heading: 'Name', type: 'singleline'},
+            enabled: {heading: 'Enabled', type: 'checkbox'},
+          },
+          allowAdd: true,
+          allowDelete: true,
+          allowReorder: true,
+          minRows: 2,
+        },
+        [{name: '<Row>', enabled: true}],
+      ],
+      [
+        'craft:link',
+        'Link',
+        'link',
+        {
+          types: [{id: 'url', label: 'URL', kind: 'text'}],
+          showLabelField: true,
+          advancedFields: [],
+        },
+        {type: 'url', value: 'https://craftcms.com', label: '<Craft>'},
+      ],
+      [
+        'craft:address',
+        'Address',
+        'address',
+        {
+          countryCode: 'BE',
+          fields: [
+            {
+              name: 'addressLine1',
+              label: 'Address Line 1',
+              type: 'text',
+              visible: true,
+              required: true,
+            },
+            {
+              name: 'administrativeArea',
+              label: 'Province',
+              type: 'select',
+              visible: true,
+              required: false,
+              spinner: true,
+              options: {'BE-VAN': 'Antwerp', 'BE-WBR': 'Walloon Brabant'},
+            },
+            {
+              name: 'locality',
+              label: 'City',
+              type: 'text',
+              visible: true,
+              required: true,
+            },
+          ],
+        },
+        {
+          addressLine1: 'Museumstraat 1',
+          administrativeArea: 'BE-VAN',
+          locality: 'Antwerp',
+        },
+      ],
+      ['craft:icon-picker', 'Icon', 'icon', {freeOnly: true}, 'star'],
+    ] as const;
+    controlsPayload.nodes = controls.map(([component, type, path, props]) => ({
+      type,
+      component: 'craft:field',
+      props: {label: path, instructions: null, required: false},
+      control: {
+        type,
+        component,
+        props,
+        path: ['settings', path],
+        mode: 'editable',
+        deltaGroup: ['settings', path],
+      },
+    }));
+    controlsPayload.values = {
+      settings: Object.fromEntries(
+        controls.map(([, , path, , value]) => [path, value])
+      ),
+    };
+    controlsPayload.errors = [
+      {
+        path: ['settings', 'link'],
+        messages: ['Enter a valid link.'],
+      },
+    ];
+    controlsPayload.globalErrors = [];
+    app.unmount();
+    await mount(controlsPayload);
+
+    await vi.waitFor(() => {
+      expect(
+        container.querySelector<HTMLTextAreaElement>(
+          'craft-markdown-field textarea'
+        )?.value
+      ).toBe('<script>alert(1)</script> **Safe**');
+    });
+    expect(
+      container.querySelector<HTMLTextAreaElement>(
+        'craft-markdown-field textarea'
+      )?.name
+    ).toBe('settings[body]');
+    expect(
+      container
+        .querySelector('craft-markdown-field')
+        ?.hasAttribute('sanitize-html')
+    ).toBe(true);
+    expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'textarea[name="settings[rows][0][name]"]'
+      )?.value
+    ).toBe('<Row>');
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[rows][0][enabled]"][type="checkbox"]'
+      )?.checked
+    ).toBe(true);
+    await vi.waitFor(() =>
+      expect(
+        container.querySelector<HTMLInputElement>(
+          'input[name="settings[link][value]"]'
+        )?.value
+      ).toBe('https://craftcms.com')
+    );
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[address][addressLine1]"]'
+      )?.value
+    ).toBe('Museumstraat 1');
+    expect(
+      container.querySelector<HTMLInputElement>('input[name="settings[icon]"]')
+        ?.value
+    ).toBe('star');
+    expect(container.textContent).toContain('Enter a valid link.');
+    await vi.waitFor(() =>
+      expect(
+        (renderer.currentValues().settings as Record<string, unknown>).rows
+      ).toEqual([
+        {name: '<Row>', enabled: true},
+        {name: '', enabled: false},
+      ])
+    );
+
+    const tableInput = container.querySelector<HTMLTextAreaElement>(
+      'textarea[name="settings[rows][0][name]"]'
+    )!;
+    tableInput.value = '<Changed row>';
+    tableInput.dispatchEvent(new Event('input', {bubbles: true}));
+
+    container.querySelector('craft-link-field')!.dispatchEvent(
+      new CustomEvent('apply', {
+        bubbles: true,
+        detail: {
+          defaultLabel: 'example.com',
+          href: 'https://example.com',
+          label: 'Example',
+          title: '',
+          type: 'url',
+          urlSuffix: '',
+          value: 'https://example.com',
+        },
+      })
+    );
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        rows: [
+          {name: '<Changed row>', enabled: true},
+          {name: '', enabled: false},
+        ],
+      },
+    });
+    const addressLine = container.querySelector<
+      HTMLElement & {modelValue: string}
+    >('craft-input[name="settings[address][addressLine1]"]')!;
+    addressLine.modelValue = 'Changed address';
+    addressLine.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {address: {addressLine1: 'Changed address'}},
+    });
+
+    const originalAddressFields = (
+      controlsPayload.nodes.find(
+        (node) => node.control?.component === 'craft:address'
+      )!.control!.props as {fields: Array<Record<string, unknown>>}
+    ).fields;
+    const selectLocalityFields = structuredClone(originalAddressFields);
+    Object.assign(
+      selectLocalityFields.find((field) => field.name === 'locality')!,
+      {type: 'select', options: {Brussels: 'Brussels'}, spinner: true}
+    );
+    const request = vi
+      .spyOn(actionClient, 'post')
+      .mockResolvedValueOnce({
+        data: {fieldDefinitions: originalAddressFields},
+      })
+      .mockResolvedValueOnce({
+        data: {fieldDefinitions: selectLocalityFields},
+      });
+    const administrativeArea = container.querySelector<
+      HTMLElement & {modelValue: string}
+    >('craft-select[name="settings[address][administrativeArea]"]')!;
+    administrativeArea.modelValue = 'BE-WBR';
+    administrativeArea.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    expect(request).toHaveBeenCalledWith('addresses/fields', {
+      namespace: 'settings[address]',
+      countryCode: 'BE',
+      administrativeArea: 'BE-WBR',
+    });
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {address: {locality: 'Antwerp'}},
+    });
+
+    administrativeArea.modelValue = 'BE-VAN';
+    administrativeArea.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(renderer.currentValues()).toMatchObject({
+        settings: {
+          address: {administrativeArea: 'BE-VAN', locality: null},
+        },
+      })
+    );
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(Object.fromEntries(new FormData(form))).toMatchObject({
+      'settings[link][value]': 'https://example.com',
+      'settings[address][addressLine1]': 'Changed address',
+      'settings[icon]': 'star',
+    });
+
+    for (const mode of ['readOnly', 'disabled'] as const) {
+      const nonEditable = structuredClone(controlsPayload);
+      visitControls(nonEditable.nodes, (control) => (control.mode = mode));
+      currentPayload.value = nonEditable;
+      await vi.waitFor(() =>
+        expect(Array.from(new FormData(form))).toEqual([])
+      );
+      const linkField = container.querySelector<
+        HTMLElement & {disabled: boolean}
+      >('craft-link-field')!;
+      expect(linkField.disabled).toBe(true);
+      await vi.waitFor(() =>
+        expect(
+          linkField.querySelector<HTMLElement & {disabled: boolean}>(
+            'craft-input'
+          )?.disabled
+        ).toBe(true)
+      );
+      expect(
+        container.querySelector<HTMLElement & {modelValue: unknown}>(
+          '.address-fields craft-input'
+        )?.modelValue
+      ).toBe('Museumstraat 1');
+
+      const refreshed = structuredClone(nonEditable);
+      (refreshed.values.settings as Record<string, unknown>).body =
+        'Refreshed **Markdown**';
+      (refreshed.values.settings as Record<string, unknown>).rows = [
+        {name: 'Refreshed row', enabled: false},
+      ];
+      currentPayload.value = refreshed;
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector<HTMLTextAreaElement>(
+            'craft-markdown-field textarea'
+          )?.value
+        ).toBe('Refreshed **Markdown**');
+        expect(
+          container.querySelector<HTMLTextAreaElement>('tbody textarea')?.value
+        ).toBe('Refreshed row');
+      });
     }
   });
 

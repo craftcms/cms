@@ -33,7 +33,7 @@
   <craft-select
     :label="label"
     label-sr-only
-    :name="editable ? inputName(control.path) : undefined"
+    :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :required="editable && required"
     :disabled="!editable"

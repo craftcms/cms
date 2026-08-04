@@ -120,7 +120,10 @@ class FormResolver
             throw new InvalidArgumentException("Form Control type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
         }
 
-        $props = $control->props();
+        $value = $this->has($context->values, $path)
+            ? $this->get($context->values, $path)
+            : $control->getValue();
+        $props = $control->props($value);
         $this->ensureJsonSafe($props, "Form Control [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($path === []) {
@@ -144,9 +147,6 @@ class FormResolver
             throw new InvalidArgumentException("Control delta groups must be ancestors of their paths; type [{$type}], component [{$component}], path [{$identity}].");
         }
 
-        $value = $this->has($context->values, $path)
-            ? $this->get($context->values, $path)
-            : $control->getValue();
         $this->set($this->values, $path, $value);
         $this->controlPaths[] = $path;
 

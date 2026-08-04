@@ -19,7 +19,6 @@ import {registerShortcutBehavior} from './behaviors/shortcuts';
 import {themeOptions} from './behaviors/theme';
 import {replaceMarkdownGuideButton, toolbarItems} from './behaviors/toolbar';
 import {fileUploadOptions} from './behaviors/uploads';
-import markdownIcon from '@icons/brands/markdown.svg?raw';
 import './markdown-field.css';
 
 type RenderOptions = Options & {
@@ -38,6 +37,8 @@ class MarkdownField extends LitElement {
   private linkPopoverController: LinkPopoverController | null = null;
   private previewController: PreviewController | null = null;
   private resolvedInputId: string | null = null;
+  private formValue: string | null = null;
+  private updateCharCounter: (() => void) | null = null;
 
   @property({attribute: 'asset-any-uploader', type: Boolean})
   assetAnyUploader = false;
@@ -50,6 +51,12 @@ class MarkdownField extends LitElement {
 
   @property({type: Boolean})
   disabled = false;
+
+  @property({type: Boolean})
+  required = false;
+
+  @property({attribute: 'aria-invalid', type: Boolean})
+  invalid = false;
 
   @property()
   flavor = 'gfm';
@@ -105,6 +112,16 @@ class MarkdownField extends LitElement {
   @property({attribute: 'upload-site-id'})
   uploadSiteId: number | string = '';
 
+  get value(): string {
+    return this.editor?.getValue() ?? this.formValue ?? this.textContent ?? '';
+  }
+
+  set value(value: string) {
+    this.formValue = value;
+    this.editor?.setValue(value);
+    this.updateCharCounter?.();
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
 
@@ -146,6 +163,7 @@ class MarkdownField extends LitElement {
     }
 
     this.editor = editor;
+    this.formValue = editor.getValue();
     this.editor.preview.classList.add('markdown-field-preview');
 
     const charCounterCleanup = this.addCharCounter(editor);
@@ -185,6 +203,7 @@ class MarkdownField extends LitElement {
       registerShortcutBehavior(editor, previewController),
     ];
 
+    this.syncEditorState();
     this.syncInitialFormValue(editor.textarea.name);
   }
 
@@ -223,10 +242,9 @@ class MarkdownField extends LitElement {
       spellcheck: false,
       textareaProps: this.textareaProps(inputId),
       theme: themeOptions(),
-      toolbar:
-        !this.disabled && this.showToolbar && (toolbarButtons?.length ?? 0) > 0,
+      toolbar: this.showToolbar && (toolbarButtons?.length ?? 0) > 0,
       toolbarButtons,
-      value: this.textContent ?? '',
+      value: this.value,
     };
 
     const uploadOptions = this.disabled
@@ -258,10 +276,11 @@ class MarkdownField extends LitElement {
     indicator.className = 'markdown-field-type-indicator';
     indicator.setAttribute('aria-label', t('Markdown'));
     indicator.setAttribute('role', 'img');
-    indicator.innerHTML = markdownIcon.replace(
-      '<svg ',
-      '<svg aria-hidden="true" focusable="false" '
-    );
+    const icon = document.createElement('craft-icon');
+    icon.setAttribute('name', 'markdown');
+    icon.setAttribute('family', 'brands');
+    icon.setAttribute('aria-hidden', 'true');
+    indicator.append(icon);
 
     this.footerControls(editor).appendChild(indicator);
   }
@@ -288,11 +307,13 @@ class MarkdownField extends LitElement {
     };
 
     updateCounter();
+    this.updateCharCounter = updateCounter;
     editor.textarea.addEventListener('input', updateCounter);
     this.footerControls(editor).appendChild(counter);
 
     return () => {
       editor.textarea.removeEventListener('input', updateCounter);
+      this.updateCharCounter = null;
     };
   }
 
@@ -333,6 +354,14 @@ class MarkdownField extends LitElement {
 
     if (this.disabled) {
       props.disabled = 'disabled';
+    }
+
+    if (this.required) {
+      props.required = 'required';
+    }
+
+    if (this.invalid) {
+      props['aria-invalid'] = 'true';
     }
 
     return props;
@@ -391,6 +420,8 @@ class MarkdownField extends LitElement {
   }
 
   private destroy(): void {
+    this.formValue = this.editor?.getValue() ?? this.formValue;
+
     for (const cleanup of this.cleanups) {
       cleanup();
     }
@@ -403,11 +434,37 @@ class MarkdownField extends LitElement {
     this.previewController = null;
   }
 
+  private syncEditorState(): void {
+    if (!this.editor) {
+      return;
+    }
+
+    this.editor.textarea.name = this.name ?? '';
+    this.editor.textarea.disabled = this.disabled;
+    this.editor.textarea.required = this.required;
+    if (this.invalid) {
+      this.editor.textarea.setAttribute('aria-invalid', 'true');
+    } else {
+      this.editor.textarea.removeAttribute('aria-invalid');
+    }
+    this.editor.wrapper
+      .querySelectorAll<HTMLButtonElement>('button')
+      .forEach((button) => (button.disabled = this.disabled));
+
+    if (this.disabled || !this.showToolbar) {
+      this.editor.toolbar?.hide();
+    } else {
+      this.editor.toolbar?.show();
+    }
+  }
+
   protected override createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
   protected override shouldUpdate(): boolean {
+    this.syncEditorState();
+
     return false;
   }
 }

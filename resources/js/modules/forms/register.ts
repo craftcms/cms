@@ -5,11 +5,16 @@ import ColorControl from './ColorControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
+import MarkdownControl from './MarkdownControl.vue';
 import MoneyControl from './MoneyControl.vue';
+import AddressControl from './AddressControl.vue';
+import LinkControl from './LinkControl.vue';
 import ScalarControl from './ScalarControl.vue';
 import SelectControl from './SelectControl.vue';
+import TableControl from './TableControl.vue';
 import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
+import IconPickerControl from './IconPickerControl.vue';
 
 export function registerFormComponents(
   components: Pick<CpComponentRegistry, 'register'>
@@ -28,4 +33,9 @@ export function registerFormComponents(
   components.register('craft:time', ScalarControl);
   components.register('craft:color', ColorControl);
   components.register('craft:money', MoneyControl);
+  components.register('craft:markdown', MarkdownControl);
+  components.register('craft:table', TableControl);
+  components.register('craft:link', LinkControl);
+  components.register('craft:address', AddressControl);
+  components.register('craft:icon-picker', IconPickerControl);
 }

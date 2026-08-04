@@ -121,7 +121,7 @@ abstract class Control implements ControlContract
      *
      * @return array<string, mixed>
      */
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return [];
     }

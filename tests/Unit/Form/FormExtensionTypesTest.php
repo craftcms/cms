@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Link;
+use CraftCms\Cms\Form\Controls\Markdown;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
 use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Controls\Time;
@@ -36,17 +41,22 @@ it('registers core and plugin Node and Control types separately', function () {
 
     expect($nodeTypes->types()->all())->toBe([Field::class, Group::class])
         ->and($controlTypes->types()->all())->toBe([
-            Text::class,
-            Textarea::class,
-            Select::class,
-            Lightswitch::class,
+            Address::class,
             Choice::class,
+            Color::class,
+            Date::class,
+            IconPicker::class,
+            Lightswitch::class,
+            Link::class,
+            Markdown::class,
+            Money::class,
             Number::class,
             Range::class,
-            Date::class,
+            Select::class,
+            Table::class,
+            Text::class,
+            Textarea::class,
             Time::class,
-            Color::class,
-            Money::class,
         ]);
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);

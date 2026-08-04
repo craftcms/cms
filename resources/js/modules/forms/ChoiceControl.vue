@@ -102,7 +102,7 @@
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-        : undefined
+        : ''
     "
     :disabled="!editable"
     :required="editable && required"
@@ -113,7 +113,7 @@
       :name="
         editable
           ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-          : undefined
+          : ''
       "
       :multiple="control.props.multiple"
       :disabled="!editable"
@@ -173,7 +173,7 @@
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-        : undefined
+        : ''
     "
     :required="editable && required"
     :disabled="!editable"
@@ -202,7 +202,7 @@
         :name="
           editable
             ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-            : undefined
+            : ''
         "
         :value="inputValue(option.value)"
         :checked="selected(option.value)"

@@ -105,7 +105,7 @@ class Text extends Control
     }
 
     #[\Override]
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
             'inputType' => $this->inputType !== 'text' ? $this->inputType : null,

@@ -99,7 +99,7 @@ class Lightswitch extends Control
     }
 
     #[\Override]
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
             'indeterminate' => $this->indeterminate ?: null,

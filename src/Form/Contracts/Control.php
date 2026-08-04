@@ -69,7 +69,7 @@ interface Control
     public function getMode(): ControlMode;
 
     /**
-     * Returns control-specific configuration for both renderers.
+     * Returns control-specific configuration for the resolved value and both renderers.
      *
      * Generic data such as the component name, path, value, and mode belongs
      * to the resolved control payload and should not be repeated here. Every
@@ -77,5 +77,5 @@ interface Control
      *
      * @return array<string, mixed>
      */
-    public function props(): array;
+    public function props(mixed $value = null): array;
 }

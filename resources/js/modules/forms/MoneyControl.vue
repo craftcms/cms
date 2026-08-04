@@ -53,7 +53,7 @@
     <craft-input-money
       :label="label"
       label-sr-only
-      :name="editable ? `${inputName(control.path)}[value]` : undefined"
+      :name="editable ? `${inputName(control.path)}[value]` : ''"
       .modelValue="moneyValue().value"
       :min="control.props.min"
       :max="control.props.max"

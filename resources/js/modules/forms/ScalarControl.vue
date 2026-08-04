@@ -42,7 +42,7 @@
     :label="label"
     label-sr-only
     :type="control.props.inputType"
-    :name="editable ? inputName(control.path) : undefined"
+    :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :min="control.props.min"
     :max="control.props.max"

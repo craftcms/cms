@@ -73,7 +73,7 @@ class Textarea extends Control
     }
 
     #[\Override]
-    public function props(): array
+    public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
             'rows' => $this->rows !== 2 ? $this->rows : null,
