@@ -734,7 +734,7 @@ class View extends \yii\web\View
      * The passed-in `$object` will be available to the template as an `object` variable.
      *
      * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
-     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     * full Twig output tags (e.g. `{{ object.foo }}`.
      *
      * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
      * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
@@ -743,12 +743,18 @@ class View extends \yii\web\View
      * @param mixed $object the object that should be passed into the template
      * @param array $variables any additional variables that should be available to the template
      * @param string $templateMode The template mode to use.
+     * @param string|false $escaperStrategy The escaper strategy to use (`false` by default)
      * @return string The rendered template.
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
-    {
+    public function renderObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        string $templateMode = self::TEMPLATE_MODE_SITE,
+        string|false $escaperStrategy = false,
+    ): string {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return trim($template);
@@ -765,7 +771,7 @@ class View extends \yii\web\View
             $twig->disableStrictVariables();
         }
 
-        $twig->setDefaultEscaperStrategy(false);
+        $twig->setDefaultEscaperStrategy($escaperStrategy);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
@@ -920,7 +926,7 @@ class View extends \yii\web\View
             } else {
                 $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
             }
-            return "{{ $replace|raw }}";
+            return "{{ $replace }}";
         }, $template);
 
         // Bring the objects back
