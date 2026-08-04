@@ -176,7 +176,7 @@ it('strips a non-clearable, empty nested key inside a declared container, while 
         }
     };
     $importer->matchCriteria([]);
-    $importer->clearableItems(['myMatrix' => ['fields' => ['plainText' => true]]]);
+    $importer->clearableItems(['myMatrix' => ['blockEt' => ['fields' => ['plainText' => true]]]]);
 
     $this->import->importItem($importer, [
         'title' => 'foo',
@@ -235,7 +235,7 @@ describe('nested matrix clearing', function () {
             ->className(EntryElement::class)
             ->site(Sites::getPrimarySite()->handle)
             ->matchCriteria(['title' => 'title'])
-            ->clearableItems(['myMatrix' => ['fields' => ['plainText' => true]]])
+            ->clearableItems(['myMatrix' => ['blockEt' => ['fields' => ['plainText' => true]]]])
             ->transformer(null);
 
         $this->matrixEntryData = fn (array $blocks) => [

@@ -589,14 +589,35 @@ class Import
             }
         }
 
-        if (! empty($levelCriteria)) {
-            $existingMatchCriteria = $data['matchCriteria'] ?? [];
+        $existingMatchCriteria = $data['matchCriteria'] ?? [];
+
+        if (! empty($existingMatchCriteria)) {
+            $fields = is_array($data['fields'] ?? null) ? $data['fields'] : [];
+            $existingMatchCriteria = array_map(
+                function ($value) use ($data, $fields) {
+                    if (! is_string($value)) {
+                        return $value;
+                    }
+
+                    return $data[$value] ?? $fields[$value] ?? $value;
+                },
+                $existingMatchCriteria
+            );
+        }
+
+        if (! empty($levelCriteria) || ! empty($existingMatchCriteria)) {
             $matchCriteria = array_merge($existingMatchCriteria, $levelCriteria);
             $data = ['matchCriteria' => $matchCriteria] + $data;
         }
 
-        foreach ($criteria as $key => $value) {
-            if (! is_array($value)) {
+        // walk every array-valued key present in either the data or the configured criteria, not
+        // just ones the importer's own criteria config happens to mention, so that inline
+        // matchCriteria on blocks the config doesn't cover (e.g. a container field the importer
+        // never configured matching for) still gets resolved.
+        $keys = array_unique(array_merge(array_keys($criteria), array_keys($data)));
+
+        foreach ($keys as $key) {
+            if ($key === 'matchCriteria') {
                 continue;
             }
             if (! isset($data[$key])) {
@@ -605,11 +626,22 @@ class Import
             if (! is_array($data[$key])) {
                 continue;
             }
-            if (array_is_list($data[$key]) && ! array_is_list($value)) {
+
+            $value = $criteria[$key] ?? [];
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            if (array_is_list($data[$key])) {
                 foreach ($data[$key] as &$item) {
-                    if (is_array($item) && isset($item['type'], $value[$item['type']])) {
-                        $this->resolveMatchCriteria($item, $value[$item['type']]);
+                    if (! is_array($item)) {
+                        continue;
                     }
+                    if (! isset($item['type'])) {
+                        continue;
+                    }
+                    $this->resolveMatchCriteria($item, $value[$item['type']] ?? []);
                 }
                 unset($item);
             } else {
@@ -641,8 +673,8 @@ class Import
 
             if (! empty($data[$key]) && array_is_list($data[$key]) && ! array_is_list($value)) {
                 foreach ($data[$key] as &$item) {
-                    if (is_array($item)) {
-                        $this->applyClearableItems($item, $value);
+                    if (is_array($item) && isset($item['type'], $value[$item['type']])) {
+                        $this->applyClearableItems($item, $value[$item['type']]);
                     }
                 }
                 unset($item);

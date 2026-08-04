@@ -18,6 +18,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 
 beforeEach(function () {
@@ -174,6 +175,7 @@ it('updates an existing block when match criteria matches', function () {
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    $blockId = $entry->getFieldValue('myMatrix')->one()->id;
 
     $this->import->importItem($importer, ($this->entryData)([
         [
@@ -185,8 +187,14 @@ it('updates an existing block when match criteria matches', function () {
     ]));
 
     $entry = EntryElement::find()->title('imported entry')->one();
+    $block = $entry->getFieldValue('myMatrix')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
-    expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('plainText'))->toBe('updated foo');
+    // The importer's own matchCriteria config has no entry for the myMatrix container field at all,
+    // so this relies entirely on the block's inline matchCriteria being resolved. If it isn't, the
+    // block never actually matches and a new one gets created (with the old one discarded) instead
+    // of the same block being updated in place, which the id check below would catch.
+    expect($block->id)->toBe($blockId);
+    expect($block->getFieldValue('plainText'))->toBe('updated foo');
 });
 
 it('resolves match criteria for nested blocks from the importer config, without it being inlined in the data', function () {
@@ -219,6 +227,43 @@ it('resolves match criteria for nested blocks from the importer config, without 
 
     $entry = EntryElement::find()->title('imported entry')->one();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+});
+
+it('resolves inline pointer-style match criteria against the block\'s own field value', function () {
+    $importer = (clone $this->importer)->matchCriteria([
+        'title' => 'title',
+        'myMatrix' => [
+            'secondEt' => [],
+        ],
+    ]);
+
+    $this->import->importItem($importer, ($this->entryData)([
+        [
+            'type' => 'secondEt',
+            'title' => 'block 1',
+            'matchCriteria' => ['plainText' => 'plainText'],
+            'fields' => ['plainText' => 'foo'],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+
+    // The block's title changes but its plainText value (the inline match criteria) stays the
+    // same, so if the pointer resolved correctly this should update the existing block rather
+    // than create a new one.
+    $this->import->importItem($importer, ($this->entryData)([
+        [
+            'type' => 'secondEt',
+            'title' => 'different title',
+            'matchCriteria' => ['plainText' => 'plainText'],
+            'fields' => ['plainText' => 'foo'],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+    expect($entry->getFieldValue('myMatrix')->one()->title)->toBe('different title');
 });
 
 it('creates a new block when match criteria does not match any existing block', function () {
@@ -330,15 +375,25 @@ describe('nested matrix', function () {
         $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
-        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+        $outerBlockBefore = $entry->getFieldValue('myMatrix')->one();
+        expect($outerBlockBefore->getFieldValue('myNestedMatrix')->count())->toBe(1);
+        $outerBlockId = $outerBlockBefore->id;
+        $innerBlockId = $outerBlockBefore->getFieldValue('myNestedMatrix')->one()->id;
 
         $outerBlock['fields']['myNestedMatrix'][0]['fields']['plainText'] = 'updated nested foo';
 
         $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
 
         $entry = EntryElement::find()->title('imported entry')->one();
-        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+        $outerBlockAfter = $entry->getFieldValue('myMatrix')->one();
+        $innerBlocks = $outerBlockAfter->getFieldValue('myNestedMatrix');
+        // Neither level has an importer-config matchCriteria entry (only inline matchCriteria is
+        // provided), so this only stays as the same rows if both levels' inline matchCriteria
+        // actually got resolved and used for matching, rather than a fresh outer/inner block pair
+        // being created and the old ones discarded.
+        expect($outerBlockAfter->id)->toBe($outerBlockId);
         expect($innerBlocks->count())->toBe(1)
+            ->and($innerBlocks->one()->id)->toBe($innerBlockId)
             ->and($innerBlocks->one()->getFieldValue('plainText'))->toBe('updated nested foo');
     });
 
@@ -381,6 +436,54 @@ describe('nested matrix', function () {
         $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
         expect($innerBlocks->count())->toBe(1)
             ->and($innerBlocks->one()->getFieldValue('plainText'))->toBe('updated nested foo');
+    });
+
+    it('resolves inline pointer-style match criteria for a doubly-nested block', function () {
+        $importer = (clone $this->importer)->matchCriteria([
+            'title' => 'title',
+            'myMatrix' => [
+                'thirdEt' => [
+                    'title' => 'title',
+                    'fields' => [
+                        'myNestedMatrix' => [
+                            'firstEt' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $outerBlock = [
+            'type' => 'thirdEt',
+            'title' => 'outer block 1',
+            'fields' => [
+                'plainText' => 'outer text',
+                'myNestedMatrix' => [
+                    [
+                        'type' => 'firstEt',
+                        'title' => 'inner block 1',
+                        'matchCriteria' => ['plainText' => 'plainText'],
+                        'fields' => ['plainText' => 'nested foo'],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix')->count())->toBe(1);
+
+        // Title changes but the inline-matched plainText value stays the same, so the existing
+        // inner block should be updated (not duplicated) if the pointer resolved correctly.
+        $outerBlock['fields']['myNestedMatrix'][0]['title'] = 'renamed inner block';
+
+        $this->import->importItem($importer, ($this->entryData)([$outerBlock]));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        $innerBlocks = $entry->getFieldValue('myMatrix')->one()->getFieldValue('myNestedMatrix');
+        expect($innerBlocks->count())->toBe(1)
+            ->and($innerBlocks->one()->title)->toBe('renamed inner block');
     });
 
     it('creates a new nested block when match criteria does not match any existing nested block', function () {
@@ -474,4 +577,140 @@ it('accepts the sortOrder/entries keyed input format', function () {
     $entry = EntryElement::find()->title('imported entry')->one();
 
     expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+});
+
+describe('raw grouped/flat data through the full pipeline', function () {
+    it('imports grouped-by-type raw data end-to-end, matching and clearing correctly', function () {
+        $map = [
+            'title' => 'title',
+            'sectionId' => 'sectionId',
+            'typeId' => 'typeId',
+            'myMatrix' => [
+                'secondEt' => [
+                    'title' => 'myMatrix.secondEt.title',
+                    'fields' => ['plainText' => 'myMatrix.secondEt.plainText'],
+                ],
+                'firstEt' => [
+                    'title' => 'myMatrix.firstEt.title',
+                    'fields' => ['plainText' => 'myMatrix.firstEt.plainText'],
+                ],
+            ],
+        ];
+
+        $importer = (clone $this->importer)
+            ->matchCriteria([
+                'title' => 'title',
+                'myMatrix' => [
+                    'secondEt' => ['title' => 'title'],
+                    'firstEt' => ['title' => 'title'],
+                ],
+            ])
+            ->clearableItems([
+                'myMatrix' => [
+                    'secondEt' => ['fields' => ['plainText' => true]],
+                    'firstEt' => ['fields' => ['plainText' => true]],
+                ],
+            ]);
+
+        $rawData = [
+            'title' => 'imported entry',
+            'sectionId' => $this->section->handle,
+            'typeId' => $this->entryType->handle,
+            'myMatrix' => [
+                'secondEt' => [
+                    ['title' => 'block 1', 'plainText' => 'foo'],
+                ],
+                'firstEt' => [
+                    ['title' => 'block 2', 'plainText' => 'bar'],
+                ],
+            ],
+        ];
+
+        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+
+        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
+        $block1Id = $block1->id;
+        expect($block1->getFieldValue('plainText'))->toBe('foo');
+
+        // Re-import block 1 with plainText omitted from the source entirely - since it's marked
+        // clearable, it should be cleared to null on the SAME block (matched by title), not left
+        // untouched on a freshly created duplicate.
+        $rawData['myMatrix']['secondEt'][0] = ['title' => 'block 1'];
+
+        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
+        expect($block1->id)->toBe($block1Id);
+        expect($block1->getFieldValue('plainText'))->toBeNull();
+    });
+
+    it('imports flat own-type-per-row raw data end-to-end, matching and clearing correctly', function () {
+        $map = [
+            'title' => 'title',
+            'sectionId' => 'sectionId',
+            'typeId' => 'typeId',
+            'myMatrix' => [
+                'secondEt' => [
+                    'title' => 'myMatrix.title',
+                    'fields' => ['plainText' => 'myMatrix.plainText'],
+                ],
+                'firstEt' => [
+                    'title' => 'myMatrix.title',
+                    'fields' => ['plainText' => 'myMatrix.plainText'],
+                ],
+            ],
+        ];
+
+        $importer = (clone $this->importer)
+            ->matchCriteria([
+                'title' => 'title',
+                'myMatrix' => [
+                    'secondEt' => ['title' => 'title'],
+                    'firstEt' => ['title' => 'title'],
+                ],
+            ])
+            ->clearableItems([
+                'myMatrix' => [
+                    'secondEt' => ['fields' => ['plainText' => true]],
+                    'firstEt' => ['fields' => ['plainText' => true]],
+                ],
+            ]);
+
+        $rawData = [
+            'title' => 'imported entry',
+            'sectionId' => $this->section->handle,
+            'typeId' => $this->entryType->handle,
+            'myMatrix' => [
+                ['type' => 'secondEt', 'title' => 'block 1', 'plainText' => 'foo'],
+                ['type' => 'firstEt', 'title' => 'block 2', 'plainText' => 'bar'],
+            ],
+        ];
+
+        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+
+        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
+        $block1Id = $block1->id;
+        expect($block1->getFieldValue('plainText'))->toBe('foo');
+
+        // Re-import block 1 with plainText omitted from the source entirely - since it's marked
+        // clearable, it should be cleared to null on the SAME block (matched by title), not left
+        // untouched on a freshly created duplicate.
+        $rawData['myMatrix'][0] = ['type' => 'secondEt', 'title' => 'block 1'];
+
+        $this->import->importItem($importer, ImportHelper::remapData($map, $rawData));
+
+        $entry = EntryElement::find()->title('imported entry')->one();
+        expect($entry->getFieldValue('myMatrix')->count())->toBe(2);
+        $block1 = $entry->getFieldValue('myMatrix')->status(null)->title('block 1')->one();
+        expect($block1->id)->toBe($block1Id);
+        expect($block1->getFieldValue('plainText'))->toBeNull();
+    });
 });
