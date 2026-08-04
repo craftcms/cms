@@ -774,6 +774,11 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        // Even if they have administrateUsers permissions, only and admin should be able to activate another admin
+        if ($user->admin) {
+            $this->requireAdmin(false);
+        }
+
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
@@ -1084,6 +1089,11 @@ class UsersController extends Controller
 
         if (!$user) {
             $this->_noUserExists();
+        }
+
+        // Even if they have administrateUsers permissions, only and admin should be able to activate another admin
+        if ($user->admin) {
+            $this->requireAdmin(false);
         }
 
         try {
@@ -1633,6 +1643,11 @@ JS);
                         ->email(Db::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
                         ->one();
+
+                    if ($user) {
+                        // ignore their previous admin status, if they had it
+                        $user->admin = false;
+                    }
                 }
             }
 
@@ -2195,7 +2210,7 @@ JS);
         if (!$user->getIsCurrent()) {
             $this->requirePermission('administrateUsers');
 
-            // Even if you have administrateUsers permissions, only and admin should be able to deactivate another admin.
+            // Even if they have administrateUsers permissions, only and admin should be able to deactivate another admin
             if ($user->admin) {
                 $this->requireAdmin(false);
             }

@@ -15,6 +15,7 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -132,7 +133,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // Config normalization
         if (array_key_exists('elements', $config)) {
             if (is_string($config['elements'])) {
-                $config['elements'] = Json::decode($config['elements']);
+                $config['elements'] = Component::cleanseConfig(Json::decode($config['elements']));
             }
             if (!is_array($config['elements'])) {
                 unset($config['elements']);

@@ -19,12 +19,15 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\Site;
 use craft\services\Gql as GqlService;
+use GraphQL\Error\Error;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use GraphQL\Utils\AST;
 
 /**
  * Class Gql
@@ -663,5 +666,24 @@ class Gql
         }
         $tok = trim($tok);
         return in_array($tok, ['__schema', '__type']);
+    }
+
+    /**
+     * Returns whether the selected GraphQL operation is a mutation.
+     *
+     * @param string $query
+     * @param string|null $operationName
+     * @return bool
+     * @since 5.10.12
+     */
+    public static function isMutation(string $query, ?string $operationName = null): bool
+    {
+        try {
+            $document = Parser::parse($query);
+        } catch (Error) {
+            return false;
+        }
+
+        return AST::getOperationAST($document, $operationName)?->operation === 'mutation';
     }
 }

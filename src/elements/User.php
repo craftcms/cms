@@ -1461,14 +1461,14 @@ class User extends Element implements IdentityInterface
             $keyValid = false;
         }
 
-        $updatedPublicKeyCredentialSource = Session::remove($authService->passkeyCredSourceParam);
+        $updatedCredentialRecord = Session::remove($authService->passkeyCredSourceParam);
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
             return false;
         }
 
-        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedPublicKeyCredentialSource);
+        $authService->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
 
         $this->authError = $this->_getAuthError();
         return !isset($this->authError);
@@ -2056,7 +2056,7 @@ XML;
                                 ],
                             ];
                         }
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (!$this->admin || $currentUser->admin)) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$this->password) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
@@ -2114,7 +2114,7 @@ XML;
                                 'userId' => $this->id,
                             ],
                         ];
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (!$this->admin || $currentUser->admin)) {
                             $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy password reset URL…'), $view);
                         }
                     }

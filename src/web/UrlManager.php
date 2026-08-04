@@ -470,9 +470,23 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
-        $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? Craft::$app->getConfig()->getGeneral()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
-            : null;
+        return match ($request->getPathInfo()) {
+            '.well-known/change-password' => $this->_changePasswordRoute(),
+            '.well-known/passkey-endpoints' => $this->_passkeyEndpointsRoute(),
+            default => false,
+        };
+    }
+
+    /**
+     * Returns the route for `.well-known/change-password` requests, per
+     * https://w3c.github.io/webappsec-change-password-url/.
+     *
+     * @return array|false
+     */
+    private function _changePasswordRoute(): array|false
+    {
+        $redirectUri = Craft::$app->getConfig()->getGeneral()
+            ->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle);
 
         if (App::devMode()) {
             Craft::debug([
@@ -493,6 +507,25 @@ class UrlManager extends \yii\web\UrlManager
                 'statusCode' => 302,
             ],
         ];
+    }
+
+    /**
+     * Returns the route for `.well-known/passkey-endpoints` requests, per
+     * https://www.w3.org/TR/passkey-endpoints/.
+     *
+     * @return array
+     */
+    private function _passkeyEndpointsRoute(): array
+    {
+        if (App::devMode()) {
+            Craft::debug([
+                'rule' => 'Discoverable passkey endpoints',
+                'match' => true,
+                'parent' => null,
+            ], __METHOD__);
+        }
+
+        return ['well-known/passkey-endpoints'];
     }
 
     /**

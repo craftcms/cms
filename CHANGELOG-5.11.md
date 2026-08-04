@@ -5,9 +5,12 @@
 - Added `craft\web\DbSession`, which should be used instead of `yii\web\DbSession` to prevent “headers already sent” warnings from getting logged. ([#19139](https://github.com/craftcms/cms/issues/19139))
 
 ### Extensibility
-- Added `craft\helpers\UrlHelper::removeParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
 - Added `craft\helpers\UrlHelper::removeAllParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
+- Added `craft\helpers\UrlHelper::removeParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
+- Added `craft\services\Elements::reorderNestedElements()`. ([#19321](https://github.com/craftcms/cms/issues/19321))
 - The `$params` argument of `craft\helpers\UrlHelper::url()` now accepts `false` to remove all params from the passed-in URL. ([#19102](https://github.com/craftcms/cms/pull/19102))
 
 ### System
+- Added support for `.well-known/passkey-endpoints` requests. ([#19364](https://github.com/craftcms/cms/pull/19364))
 - Updated Twig to 3.28.
+- Updated yii2-debug to 2.1.28.

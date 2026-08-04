@@ -2214,6 +2214,12 @@ SQL)->execute();
             throw new Exception('Attempting to move a nested element.');
         }
 
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (!in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
+        }
+
         // Ensure all fields have been normalized
         $entry->getFieldValues();
 
@@ -2361,9 +2367,12 @@ SQL)->execute();
                 'not in',
                 'entryId',
                 (new Query())
-                    ->select(['entryId'])
-                    ->from(Table::ENTRIES_AUTHORS)
-                    ->where(['authorId' => $newUserId]),
+                    ->from(
+                        (new Query())
+                            ->select(['entryId'])
+                            ->from(['ea2' => Table::ENTRIES_AUTHORS])
+                            ->where(['authorId' => $newUserId])
+                    ),
             ],
         ], [], false);
 

@@ -226,7 +226,6 @@ class Volume extends Model implements
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
-            'url' => Craft::t('app', 'URL'),
             'fsHandle' => Craft::t('app', 'Asset Filesystem'),
             'subpath' => Craft::t('app', 'Subpath'),
             'transformFsHandle' => Craft::t('app', 'Transform Filesystem'),
