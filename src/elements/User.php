@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
+use craft\base\NestedElementManagerProviderInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Restore;
@@ -86,7 +87,7 @@ use yii\web\IdentityInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class User extends Element implements IdentityInterface
+class User extends Element implements IdentityInterface, NestedElementManagerProviderInterface
 {
     use NameTrait;
 
@@ -2732,6 +2733,17 @@ JS, [
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNestedElementManager(string $attribute): ?NestedElementManager
+    {
+        return match ($attribute) {
+            'addresses' => $this->getAddressManager(),
+            default => null,
+        };
     }
 
     /**

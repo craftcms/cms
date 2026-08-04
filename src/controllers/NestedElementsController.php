@@ -10,11 +10,13 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
+use craft\base\NestedElementManagerProviderInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\Db;
 use craft\web\Controller;
+use http\Exception\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -65,8 +67,16 @@ class NestedElementsController extends Controller
             throw new ForbiddenHttpException('User is not authorized to perform this action');
         }
 
-        // Set the nested elements for the action
-        $this->nestedElements = $this->owner->$attribute;
+        if ($this->owner instanceof NestedElementManagerProviderInterface) {
+            $manager = $this->owner->getNestedElementManager($attribute);
+            if (!$manager) {
+                throw new InvalidArgumentException('Owner does not provide a nested element manager for the given attribute');
+            }
+
+            $this->nestedElements = $manager->getValue($owner, true);
+        } else {
+            $this->nestedElements = $this->owner->$attribute;
+        }
 
         return true;
     }

@@ -181,7 +181,13 @@ class NestedElementManager extends Component
         return call_user_func($this->queryFactory, $owner);
     }
 
-    private function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
+    /**
+     * @param ElementInterface $owner
+     * @param bool $fetchAll
+     * @return ElementQueryInterface|ElementCollection
+     * @throws \craft\errors\InvalidFieldException
+     */
+    public function getValue(ElementInterface $owner, bool $fetchAll = false): ElementQueryInterface|ElementCollection
     {
         if (isset($this->valueGetter)) {
             return call_user_func($this->valueGetter, $owner, $fetchAll);
@@ -213,7 +219,12 @@ class NestedElementManager extends Component
         return $query;
     }
 
-    private function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
+    /**
+     * @param ElementInterface $owner
+     * @param ElementQueryInterface|ElementCollection $value
+     * @return void
+     */
+    public function setValue(ElementInterface $owner, ElementQueryInterface|ElementCollection $value): void
     {
         if ($this->valueSetter === false) {
             return;
