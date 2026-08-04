@@ -1,0 +1,7 @@
+{% set id = id ?? "fieldselect#{random()}" -%}
+
+{% include '_includes/forms/componentSelect.twig' with {
+  options: options ?? craft.app.fields.getAllFields(),
+  showHandles: true,
+  createAction: (create ?? false) ? 'fields/edit-field' : null,
+} %}

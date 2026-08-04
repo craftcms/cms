@@ -11,6 +11,8 @@ use craft\web\AssetBundle;
 
 /**
  * Picturefill asset bundle.
+ *
+ * @deprecated in 5.8.0
  */
 class PicturefillAsset extends AssetBundle
 {

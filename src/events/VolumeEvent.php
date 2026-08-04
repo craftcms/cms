@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\Volume;
-use yii\base\Event;
 
 /**
  * VolumeEvent class.

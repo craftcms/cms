@@ -19,6 +19,8 @@
     columnsTable: null,
     defaultsTable: null,
 
+    staticRows: false,
+
     init: function (
       columnsTableName,
       defaultsTableName,
@@ -26,11 +28,13 @@
       defaults,
       columnSettings,
       dropdownSettingsHtml,
-      dropdownSettingsCols
+      dropdownSettingsCols,
+      staticRows
     ) {
       this.columnsTableName = columnsTableName;
       this.defaultsTableName = defaultsTableName;
       this.columnsData = columnsData;
+      this.staticRows = staticRows ?? false;
 
       this.columnsTableId = Craft.formatInputId(this.columnsTableName);
       this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
@@ -66,6 +70,7 @@
           allowAdd: true,
           allowReorder: true,
           allowDelete: true,
+          lazyInitRows: false,
           onAddRow: this.onAddColumn.bind(this),
           onDeleteRow: this.reconstructDefaultsTable.bind(this),
         }
@@ -82,6 +87,8 @@
           allowAdd: true,
           allowReorder: true,
           allowDelete: true,
+          staticRows: this.staticRows,
+          includeRowId: true,
         }
       );
     },
@@ -127,15 +134,21 @@
       }
 
       // Add in the dropdown options
-      for (let colId in this.columnsData) {
-        if (
-          this.columnsData.hasOwnProperty(colId) &&
-          this.columnsData[colId].type === 'select'
-        ) {
-          const rowObj = this.columnsTable.$tbody
-            .find('tr[data-id="' + colId + '"]')
-            .data('editable-table-row');
-          this.columnsData[colId].options = rowObj.options || [];
+      for (const colId in this.columnsData) {
+        if (this.columnsData.hasOwnProperty(colId)) {
+          switch (this.columnsData[colId].type) {
+            case 'select':
+              const rowObj = this.columnsTable.getRowObj(
+                this.columnsTable.$tbody.find(`tr[data-id="${colId}"]`)
+              );
+              this.columnsData[colId].options = rowObj.options || [];
+              break;
+            case 'heading':
+              // Replace with singleline
+              this.columnsData[colId].type = 'singleline';
+              this.columnsData[colId].class = 'heading';
+              break;
+          }
         }
       }
 
@@ -150,31 +163,36 @@
         }
       }
 
-      let theadHtml = '<thead>' + '<tr>';
-
-      for (let colId in this.columnsData) {
-        if (!this.columnsData.hasOwnProperty(colId)) {
-          continue;
-        }
-
-        theadHtml +=
-          '<th scope="col">' +
-          (this.columnsData[colId].heading
-            ? this.columnsData[colId].heading
-            : '&nbsp;') +
-          '</th>';
-      }
-
-      theadHtml += '<th colspan="2"></th>' + '</tr>' + '</thead>';
-
       const $table = $('<table/>', {
         id: this.defaultsTableId,
         class: 'editable fullwidth',
-      }).append(theadHtml);
+      });
+
+      if (Object.values(this.columnsData).some((c) => c.heading !== '')) {
+        let theadHtml = '';
+
+        for (const colId in this.columnsData) {
+          if (!this.columnsData.hasOwnProperty(colId)) {
+            continue;
+          }
+
+          theadHtml +=
+            '<th scope="col">' +
+            (this.columnsData[colId].heading
+              ? Craft.escapeHtml(this.columnsData[colId].heading)
+              : '&nbsp;') +
+            '</th>';
+        }
+
+        if (theadHtml !== '') {
+          theadHtml += '<th colspan="2"></th>';
+          $table.append(`<thead><tr>${theadHtml}</tr></thead>`);
+        }
+      }
 
       const $tbody = $('<tbody/>').appendTo($table);
 
-      for (let rowId in defaults) {
+      for (const rowId in defaults) {
         if (!defaults.hasOwnProperty(rowId)) {
           continue;
         }
@@ -185,6 +203,8 @@
           this.defaultsTableName,
           defaults[rowId],
           true,
+          true,
+          false,
           true
         ).appendTo($tbody);
       }
@@ -210,8 +230,10 @@
       }
 
       this.fieldSettings.initColumnSettingInputs(this.$tbody);
-      this.sorter.settings.onSortChange =
-        this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      if (this.sorter) {
+        this.sorter.settings.onSortChange =
+          this.fieldSettings.reconstructDefaultsTable.bind(this.fieldSettings);
+      }
       return true;
     },
 
@@ -241,9 +263,9 @@
       this.$settingsBtn = $typeCell.find('.settings');
 
       if (!this.$settingsBtn.length) {
-        this.$settingsBtn = $('<a/>', {
+        this.$settingsBtn = $('<button/>', {
           class: 'settings light invisible',
-          role: 'button',
+          type: 'button',
           'data-icon': 'settings',
         });
         $('<div/>', {class: 'flex flex-nowrap'})
@@ -326,7 +348,7 @@
       }
 
       setTimeout(() => {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus');
+        this.optionsTable.$tbody.find('textarea').first().focus();
       }, 100);
     },
 

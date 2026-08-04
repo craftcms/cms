@@ -1,0 +1,205 @@
+{% set id = id ?? "menu-#{random()}" %}
+{% set withButton = withButton ?? false %}
+{% set buttonSpinner = buttonSpinner ?? false %}
+{% set withSearchInput = withSearchInput ?? false %}
+{% set disabled = disabled ?? false %}
+
+{% set hasSelected = items|map(i => (i.items ?? [i]))|flatten(1)|contains('selected') %}
+
+{% macro itemType(item) %}
+  {%- if item.type ?? false %}
+    {{- item.type }}
+  {%- elseif item.url ?? false %}
+    {{- 'link' }}
+  {%- elseif item.hr ?? false %}
+    {{- 'hr' }}
+  {%- elseif item.heading ?? item.items ?? false %}
+    {{- 'group' }}
+  {%- else %}
+    {{- 'button' }}
+  {%- endif %}
+{%- endmacro %}
+
+{% macro color(color) %}
+  {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
+{% endmacro %}
+
+{% macro item(item, menuId) %}
+  {% set type = _self.itemType(item) %}
+  {% set id = item.id ?? "menu-item-#{random()}" %}
+  {% tag 'li' with {
+    class: {
+      hidden: item.hidden ?? false,
+    }|filter|keys,
+  }|merge(item.liAttributes ?? {}) %}
+    {% set selected = item.selected ?? false %}
+    {% tag (type == 'button' ? 'button' : 'a') with {
+      id: id,
+      class: {
+        'menu-item': true,
+        sel: selected,
+        error: item.destructive ?? false,
+        formsubmit: item.action ?? false,
+        disabled: item.disabled ?? false,
+      }|filter|keys,
+      href: type == 'button' ? null : url(item.url),
+      data: {
+        destructive: item.destructive ?? null,
+        action: item.action ?? null,
+        params: item.params ?? null,
+        confirm: item.confirm ?? null,
+        redirect: (item.redirect ?? false) ? item.redirect|hash : null,
+        'require-elevated-session': item.requireElevatedSession ?? false,
+        form: (item.action ?? false) ? 'false' : null,
+      }|filter,
+    }|merge(item.attributes ?? {}, recursive=true) %}
+      {%- apply spaceless %}
+        {% if item.icon ?? false %}
+          {{ tag('span', {
+            class: [
+              'icon',
+              _self.color(item.color ?? null),
+            ]|filter,
+            html: iconSvg(item.icon),
+          }) }}
+        {% endif %}
+        {% if item.status ?? false -%}
+          {{ statusIndicator(item.status) }}
+        {%- endif -%}
+        <span class="menu-item-label inline-flex flex-col items-start gap-2xs">
+          {{ item.label ?? item.html|raw }}
+          {% if item.description is defined %}
+            <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
+          {% elseif item.handle is defined %}
+            <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
+          {% endif %}
+        </span>
+        {% if selected %}
+          <span class="visually-hidden">, selected</span>
+        {% endif %}
+        {% if item.info is defined and item.info is not empty %}
+          <span class="info">{{ item.info|e|cpmd }}</span>
+        {% endif %}
+      {% endapply -%}
+    {% endtag %}
+  {% endtag %}
+  {% if type == 'link' %}
+    {% js %}
+      $('#{{ id|namespaceInputId }}').on('keydown', (ev) => {
+        if (ev.keyCode === Garnish.SPACE_KEY) {
+          ev.currentTarget.click();
+        }
+      });
+    {% endjs %}
+  {% endif %}
+  {% js %}
+    $('#{{ id|namespaceInputId }}').on('activate', () => {
+      setTimeout(() => {
+        $('#{{ menuId|namespaceInputId }}').data('disclosureMenu').hide();
+      }, 1);
+    });
+  {% endjs %}
+{% endmacro %}
+
+{% if withButton %}
+  {% if html ?? false %}
+    {{ html|raw }}
+  {% elseif label ?? false %}
+    <span>{{ label }}</span>
+  {% endif %}
+
+  {% tag 'button' with {
+    class: ['btn', 'menubtn'],
+    type: 'button',
+    aria: {
+      controls: id,
+      label: hiddenLabel ?? null
+    },
+    data: {
+      'disclosure-trigger': true,
+    },
+    disabled: disabled ?? false,
+  }|merge(buttonAttributes ?? {}, recursive=true) %}
+    {%- apply spaceless %}
+      {% if buttonSpinner %}
+        <div role="status" class="visually-hidden"></div>
+      {% endif %}
+      {{ (buttonLabel or buttonHtml) ? tag('div', {
+        class: 'label',
+        text: buttonLabel ?? null,
+        html: buttonHtml ?? null,
+      }) }}
+      {% if buttonSpinner %}
+        <div class="spinner spinner-absolute">
+          <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>
+        </div>
+      {% endif %}
+    {% endapply -%}
+  {% endtag %}
+{% endif %}
+
+{% tag 'div' with {
+  id: id,
+  class: (class ?? [])|explodeClass|merge(['menu', 'menu--disclosure']),
+  data: {
+    'with-search-input': withSearchInput,
+  },
+} %}
+  {% block menu %}
+    {% set ulStarted = false %}
+    {% for item in items %}
+      {% set headingTag = item.headingTag ?? 'h3' %}
+      {% set type = _self.itemType(item) %}
+      {% if type in ['hr', 'group'] %}
+        {% if ulStarted %}
+          {{ '</ul>'|raw }}
+          {% set ulStarted = false %}
+        {% endif %}
+
+        {% if type == 'hr' %}
+          {{ tag('hr', {
+            class: (item.padded ?? true) ? 'padded' : null,
+          }) }}
+        {% else %}
+          {% tag 'div' with {
+            class: {
+              'menu-group': true,
+              hidden: item.hidden ?? false,
+            }|filter|keys
+          } %}
+            {% if item.heading is defined %}
+              {% tag headingTag with {
+                class: {
+                  h6: true,
+                  padded: item.padded ?? true,
+                }|filter|keys,
+              }|merge(item.headingAttributes ??{}, recursive=true) %}
+                {{ item.heading }}
+              {% endtag %}
+            {% endif %}
+            {% tag 'ul' with {
+              class: {
+                padded: hasSelected,
+              }|filter|keys,
+            }|merge(item.listAttributes ?? {}, recursive=true) %}
+              {% for groupItem in item.items %}
+                {{ _self.item(groupItem, id) }}
+              {% endfor %}
+            {% endtag %}
+          {% endtag %}
+        {% endif %}
+      {% else %}
+        {% if not ulStarted %}
+          {% if hasSelected %}
+            {{ '<ul class="padded">'|raw }}
+          {% else %}
+            {{ '<ul>'|raw }}
+          {% endif %}
+          {% set ulStarted = true %}
+        {% endif %}
+        {{ _self.item(item, id) }}
+      {% endif %}
+    {% endfor %}
+    {% if ulStarted %}{{ '</ul>'|raw }}{% endif %}
+  {% endblock %}
+{% endtag %}

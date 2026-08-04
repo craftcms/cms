@@ -10,20 +10,26 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
+use craft\elements\Address;
+use craft\elements\Entry;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\helpers\Db;
+use craft\models\Site;
 use craft\models\UserGroup;
-use yii\db\Connection;
+use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
  *
+ * @template TKey of array-key
+ * @template TElement of User
+ * @extends ElementQuery<TKey,TElement>
+ *
  * @property-write string|string[]|UserGroup|null $group The user group(s) that resulting users must belong to
- * @method User[]|array all($db = null)
- * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path users.md
@@ -44,7 +50,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['users.username' => SORT_ASC];
+    protected array $defaultOrderBy;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -128,15 +134,15 @@ class UserQuery extends ElementQuery
      * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with control panel access
+     * // fetch users who can access the front end when the system is offline
      * $admins = \craft\elements\User::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with control panel access #}
+     * {# fetch users who can access the front end when the system is offline #}
      * {% set admins = craft.users()
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      * @used-by can()
@@ -195,10 +201,24 @@ class UserQuery extends ElementQuery
     public mixed $lastName = null;
 
     /**
+     * @var mixed The site(s) that resulting users must be affiliated with.
+     * @used-by affiliatedSiteId()
+     * @since 5.6.0
+     */
+    public mixed $affiliatedSiteId = null;
+
+    /**
      * @var mixed The date that the resulting users must have last logged in.
      * @used-by lastLoginDate()
      */
     public mixed $lastLoginDate = null;
+
+    /**
+     * @var Entry|null The entry that the resulting users must be the author of.
+     * @used-by authorOf()
+     * @since 5.0.0
+     */
+    public ?Entry $authorOf = null;
 
     /**
      * @var bool Whether the users’ groups should be eager-loaded.
@@ -219,6 +239,20 @@ class UserQuery extends ElementQuery
      * @since 3.6.0
      */
     public bool $withGroups = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(string $elementType, array $config = [])
+    {
+        parent::__construct($elementType, $config);
+
+        $this->defaultOrderBy = [
+            new Expression('CASE WHEN [[users.username]] IS NULL THEN 1 ELSE 0 END ASC'),
+            'users.active' => SORT_DESC,
+            'users.pending' => SORT_DESC,
+        ];
+    }
 
     /**
      * @inheritdoc
@@ -252,10 +286,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $admin
      */
-    public function admin(bool $value = true): self
+    public function admin(bool $value = true): static
     {
         $this->admin = $value;
         return $this;
@@ -281,11 +315,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $authors
      * @since 4.0.0
      */
-    public function authors(?bool $value = true): self
+    public function authors(?bool $value = true): static
     {
         $this->authors = $value;
         return $this;
@@ -311,11 +345,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool|null $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $assetUploaders
      * @since 4.0.0
      */
-    public function assetUploaders(?bool $value = true): self
+    public function assetUploaders(?bool $value = true): static
     {
         $this->assetUploaders = $value;
         return $this;
@@ -341,10 +375,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $hasPhoto
      */
-    public function hasPhoto(bool $value = true): self
+    public function hasPhoto(bool $value = true): static
     {
         $this->hasPhoto = $value;
         return $this;
@@ -353,29 +387,29 @@ class UserQuery extends ElementQuery
     /**
      * Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
      *
-     * See [User Management](https://craftcms.com/docs/4.x/user-management.html) for a full list of available user permissions defined by Craft.
+     * See [User Management](https://craftcms.com/docs/5.x/system/user-management.html) for a full list of available user permissions defined by Craft.
      *
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the control panel #}
+     * {# Fetch users who can access the front end when the system is offline #}
      * {% set {elements-var} = {twig-method}
-     *   .can('accessCp')
+     *   .can('accessSiteWhenSystemIsOff')
      *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the control panel
+     * // Fetch users who can access the front end when the system is offline
      * ${elements-var} = {element-class}::find()
-     *     ->can('accessCp')
+     *     ->can('accessSiteWhenSystemIsOff')
      *     ->all();
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $can
      */
-    public function can(mixed $value): self
+    public function can(mixed $value): static
     {
         $this->can = $value;
         return $this;
@@ -412,29 +446,27 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function group(mixed $value): self
+    public function group(mixed $value): static
     {
         // If the value is a group handle, swap it with the user group
         if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
             $value = $group;
         }
 
-        if (Db::normalizeParam($value, function($item) {
-            return $item instanceof UserGroup ? $item->id : null;
-        })) {
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
             $this->groupId = $value;
         } else {
-            $glue = Db::extractGlue($value);
+            $operator = QueryParam::extractOperator($value);
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-            if ($this->groupId && $glue !== null) {
-                array_unshift($this->groupId, $glue);
+            if ($this->groupId && $operator !== null) {
+                array_unshift($this->groupId, $operator);
             }
         }
 
@@ -471,10 +503,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $groupId
      */
-    public function groupId(mixed $value): self
+    public function groupId(mixed $value): static
     {
         $this->groupId = $value;
         return $this;
@@ -508,10 +540,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $email
      */
-    public function email(mixed $value): self
+    public function email(mixed $value): static
     {
         $this->email = $value;
         return $this;
@@ -550,10 +582,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $username
      */
-    public function username(mixed $value): self
+    public function username(mixed $value): static
     {
         $this->username = $value;
         return $this;
@@ -586,11 +618,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $fullName
      * @since 4.0.0
      */
-    public function fullName(mixed $value): self
+    public function fullName(mixed $value): static
     {
         $this->fullName = $value;
         return $this;
@@ -623,10 +655,10 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $firstName
      */
-    public function firstName(mixed $value): self
+    public function firstName(mixed $value): static
     {
         $this->firstName = $value;
         return $this;
@@ -659,12 +691,128 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastName
      */
-    public function lastName(mixed $value): self
+    public function lastName(mixed $value): static
     {
         $this->lastName = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the users’ affiliated sites.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches users…
+     * | - | -
+     * | `'foo'` | affiliated with the site with a handle of `foo`.
+     * | `['foo', 'bar']` | affiliated with a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not affiliated with a site with a handle of `foo` or `bar`.
+     * | a [[Site]] object | affiliated with the site represented by the object.
+     * | `'*'` | affiliated with any site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch users affiliated with the Foo site #}
+     * {% set {elements-var} = {twig-method}
+     *   .affiliatedSite('foo')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch users affiliated with the Foo site
+     * ${elements-var} = {php-method}
+     *     ->affiliatedSite('foo')
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @uses $affiliatedSiteId
+     * @since 5.6.0
+     */
+    public function affiliatedSite(mixed $value): static
+    {
+        if ($value === null) {
+            $this->affiliatedSiteId = null;
+        } elseif ($value === '*') {
+            $this->affiliatedSiteId = Craft::$app->getSites()->getAllSiteIds();
+        } elseif ($value instanceof Site) {
+            $this->affiliatedSiteId = $value->id;
+        } elseif (is_string($value)) {
+            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            if (!$site) {
+                throw new InvalidArgumentException('Invalid site handle: ' . $value);
+            }
+            $this->affiliatedSiteId = $site->id;
+        } else {
+            if ($not = (strtolower(reset($value)) === 'not')) {
+                array_shift($value);
+            }
+            $this->affiliatedSiteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (in_array($site->handle, $value, true) === !$not) {
+                    $this->affiliatedSiteId[] = $site->id;
+                }
+            }
+            if (empty($this->affiliatedSiteId)) {
+                throw new InvalidArgumentException('Invalid affiliatedSite param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the users’ affiliated sites, per the site’s ID(s).
+     *
+     * Possible values include:
+     *
+     *  | Value | Fetches users…
+     *  | - | -
+     *  | `1` | affiliated with the site with an ID of `1`.
+     *  | `[1, 2]` | affiliated with a site with an ID of `1` or `2`.
+     *  | `['not', 1, 2]` | not affiliated with a site with an ID of `1` or `2`.
+     *  | `'*'` | affiliated with any site.
+     *
+     *  ---
+     *
+     *  ```twig
+     *  {# Fetch users affiliated with the site with an ID of 1 #}
+     *  {% set {elements-var} = {twig-method}
+     *    .affiliatedSiteId(1)
+     *    .all() %}
+     *  ```
+     *
+     *  ```php
+     *  // Fetch users affiliated with the site with an ID of 1
+     *  ${elements-var} = {php-method}
+     *      ->affiliatedSiteId(1)
+     *      ->all();
+     *  ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @uses $affiliatedSiteId
+     * @since 5.6.0
+     */
+    public function affiliatedSiteId(mixed $value): static
+    {
+        if (is_array($value) && strtolower(reset($value)) === 'not') {
+            array_shift($value);
+            $this->affiliatedSiteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (!in_array($site->id, $value)) {
+                    $this->affiliatedSiteId[] = $site->id;
+                }
+            }
+        } else {
+            $this->affiliatedSiteId = $value;
+        }
+
         return $this;
     }
 
@@ -701,12 +849,26 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $lastLoginDate
      */
-    public function lastLoginDate(mixed $value): self
+    public function lastLoginDate(mixed $value): static
     {
         $this->lastLoginDate = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to users who are the author of the given entry.
+     *
+     * @param Entry|null $value
+     * @return static self reference
+     * @uses $authorOf
+     * @since 5.0.0
+     */
+    public function authorOf(?Entry $value): static
+    {
+        $this->authorOf = $value;
         return $this;
     }
 
@@ -742,9 +904,9 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status(array|string|null $value): self
+    public function status(array|string|null $value): static
     {
-        /** @var self */
+        /** @var static */
         return parent::status($value);
     }
 
@@ -776,11 +938,11 @@ class UserQuery extends ElementQuery
      * ```
      *
      * @param bool $value The property value (defaults to true)
-     * @return self self reference
+     * @return static self reference
      * @uses $withGroups
      * @since 3.6.0
      */
-    public function withGroups(bool $value = true): self
+    public function withGroups(bool $value = true): static
     {
         $this->withGroups = $value;
         return $this;
@@ -791,6 +953,10 @@ class UserQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        if (!parent::beforePrepare()) {
+            return false;
+        }
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -798,7 +964,7 @@ class UserQuery extends ElementQuery
 
         $this->joinElementTable(Table::USERS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'users.photoId',
             'users.pending',
             'users.locked',
@@ -816,8 +982,13 @@ class UserQuery extends ElementQuery
 
         // todo: cleanup after next breakpoint
         $db = Craft::$app->getDb();
+        $affiliatedSiteColumnExists = $db->columnExists(Table::USERS, 'affiliatedSiteId');
         $activeColumnExists = $db->columnExists(Table::USERS, 'active');
         $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
+
+        if ($affiliatedSiteColumnExists) {
+            $this->query->addSelect('users.affiliatedSiteId');
+        }
 
         if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
@@ -835,7 +1006,7 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere([
                 $this->authors ? 'exists' : 'not exists',
                 (new Query())
-                    ->from(Table::ENTRIES)
+                    ->from(Table::ENTRIES_AUTHORS)
                     ->where(['authorId' => new Expression('[[elements.id]]')]),
             ]);
         }
@@ -927,11 +1098,41 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 
+        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Craft::$app->getIsMultiSite()) {
+            $this->subQuery->andWhere(['users.affiliatedSiteId' => $this->affiliatedSiteId]);
+        }
+
         if ($this->lastLoginDate) {
             $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
-        return parent::beforePrepare();
+        if ($this->authorOf) {
+            if (!$this->authorOf->id) {
+                throw new QueryAbortedException();
+            }
+            $this->subQuery->andWhere(['exists', (new Query())
+                ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                ->where(['entryId' => $this->authorOf->id])
+                ->andWhere('[[entries_authors.authorId]] = [[users.id]]'),
+            ]);
+        }
+
+        // If there's a custom orderBy, make sure we're showing active, non-pending accounts first
+        if (
+            is_array($this->orderBy) &&
+            empty($this->query->orderBy) &&
+            (
+                count($this->orderBy) !== 1 ||
+                !($this->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+            )
+        ) {
+            $this->orderBy = array_merge($this->orderBy, [
+                'users.active' => SORT_DESC,
+                'users.pending' => SORT_DESC,
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -1028,7 +1229,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->getEdition() === Craft::Pro) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= CmsEdition::Pro->value) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

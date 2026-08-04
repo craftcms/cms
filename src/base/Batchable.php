@@ -14,7 +14,7 @@ use Countable;
  * provide items which can be counted and accessed in slices.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
+ * @since 4.4.0
  */
 interface Batchable extends Countable
 {

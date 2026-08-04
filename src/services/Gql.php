@@ -8,11 +8,15 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface as BaseElementInterface;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\elements\User;
+use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
@@ -30,7 +34,9 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
 use craft\gql\directives\ParseRefs;
+use craft\gql\directives\StripTags;
 use craft\gql\directives\Transform;
+use craft\gql\directives\Trim;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -39,7 +45,6 @@ use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\mutations\Asset as AssetMutation;
@@ -66,19 +71,23 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use GraphQL\Utils\TypeInfo;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
@@ -89,12 +98,13 @@ use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\UnknownMethodException;
 use yii\caching\TagDependency;
 
 /**
  * GraphQL service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->gql`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->getGql()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
@@ -105,7 +115,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -125,7 +135,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -151,7 +161,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -176,7 +186,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -327,9 +337,16 @@ class Gql extends Component
     private ?GqlSchema $_schema = null;
 
     /**
-     * @var array Cache of content fields by element class
+     * @var array Content arguments by element class
+     * @see getOrSetContentArguments()
      */
-    private array $_contentFieldCache = [];
+    private array $_contentArguments = [];
+
+    /**
+     * @var array Custom field arguments by field layout UUID
+     * @see getFieldLayoutArguments()
+     */
+    private array $_fieldArguments = [];
 
     /**
      * @var TypeManager|null GQL type manager
@@ -370,13 +387,25 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+
+                // but we always have to add the InputObjectType mutation args
+                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                    if (isset($item['args'])) {
+                        foreach ($item['args'] as $arg) {
+                            if ($arg instanceof InputObjectType) {
+                                TypeInfo::extractTypes($arg);
+                            }
+                        }
+                    }
+                }
+
                 return $this->_schemaDef;
             }
 
@@ -395,7 +424,7 @@ class Gql extends Component
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
             } catch (Throwable $exception) {
-                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage());
+                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage(), previous: $exception);
             }
         }
 
@@ -439,14 +468,17 @@ class Gql extends Component
             $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
-        $event = new DefineGqlValidationRulesEvent([
-            'validationRules' => $validationRules,
-            'debug' => $debug,
-        ]);
+        // Fire a 'defineGqlValidationRules' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
+            $event = new DefineGqlValidationRulesEvent([
+                'validationRules' => $validationRules,
+                'debug' => $debug,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
+            $validationRules = $event->validationRules;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
-
-        return array_values($event->validationRules);
+        return array_values($validationRules);
     }
 
     /**
@@ -467,47 +499,60 @@ class Gql extends Component
         ?string $operationName = null,
         bool $debugMode = false,
     ): array {
-        $event = new ExecuteGqlQueryEvent([
-            'schemaId' => $schema->id,
-            'query' => $query,
-            'variables' => $variables,
-            'operationName' => $operationName,
-            'context' => [
-                'conditionBuilder' => Craft::createObject([
-                    'class' => ElementQueryConditionBuilder::class,
-                ]),
-                'argumentManager' => Craft::createObject([
-                    'class' => ArgumentManager::class,
-                ]),
-            ],
-        ]);
+        $context = [
+            'conditionBuilder' => Craft::createObject([
+                'class' => ElementQueryConditionBuilder::class,
+            ]),
+            'argumentManager' => Craft::createObject([
+                'class' => ArgumentManager::class,
+            ]),
+        ];
 
-        $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
+        // Fire a 'beforeExecuteGqlQuery' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_EXECUTE_GQL_QUERY)) {
+            $event = new ExecuteGqlQueryEvent([
+                'schemaId' => $schema->id,
+                'query' => $query,
+                'variables' => $variables,
+                'operationName' => $operationName,
+                'context' => $context,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
+            $query = $event->query;
+            $rootValue = $event->rootValue;
+            $variables = $event->variables;
+            $operationName = $event->operationName;
+            $context = $event->context;
+            $result = $event->result;
+        } else {
+            $result = $rootValue = null;
+        }
 
-        if ($event->result === null) {
+        if ($result === null) {
             $cacheKey = $this->_getCacheKey(
                 $schema,
-                $event->query,
-                $event->rootValue,
-                $event->variables,
-                $event->operationName
+                $query,
+                $rootValue,
+                $variables,
+                $operationName,
             );
 
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
-                $event->result = $cachedResult;
+                $result = $cachedResult;
             } else {
-                $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
+                $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
+                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
-                $event->result = GraphQL::executeQuery(
+                $result = GraphQL::executeQuery(
                     $schemaDef,
-                    $event->query,
-                    $event->rootValue,
-                    $event->context,
-                    $event->variables,
-                    $event->operationName,
+                    $query,
+                    $rootValue,
+                    $context,
+                    $variables,
+                    $operationName,
                     null,
                     $this->getValidationRules($debugMode, $isIntrospectionQuery)
                 )
@@ -516,15 +561,47 @@ class Gql extends Component
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($event->result['errors']) && $cacheKey) {
-                    $this->setCachedResult($cacheKey, $event->result, $dep, $duration);
+                if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
+                    $this->setCachedResult($cacheKey, $result, $dep, $duration);
                 }
             }
         }
 
-        $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
+        // Fire an 'afterExecuteGqlQuery' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_EXECUTE_GQL_QUERY)) {
+            $event = new ExecuteGqlQueryEvent([
+                'schemaId' => $schema->id,
+                'query' => $query,
+                'variables' => $variables,
+                'operationName' => $operationName,
+                'context' => $context,
+                'rootValue' => $rootValue,
+                'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
+            ]);
+            $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
+            $result = $event->result;
+        }
 
-        return $event->result ?? [];
+        return $result ?? [];
+    }
+
+    private function shouldCache(array $result): bool
+    {
+        foreach ($result as $value) {
+            if (is_string($value)) {
+                if (str_contains(stripslashes($value), 'assets/generate-transform')) {
+                    return false;
+                }
+            } elseif (is_array($value)) {
+                if (!$this->shouldCache($value)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -589,7 +666,6 @@ class Gql extends Component
      * Sets the active GraphQL schema.
      *
      * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
-     * @throws Exception
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
@@ -646,70 +722,51 @@ class Gql extends Component
         $mutations = [];
 
         // Sites
-        $components = $this->_getSiteSchemaComponents();
         $label = Craft::t('app', 'Sites');
-        $queries[$label] = $components['query'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->siteSchemaComponents();
 
         // Elements
-        $components = $this->_getElementSchemaComponents();
         $label = Craft::t('app', 'All elements');
-        $queries[$label] = $components['query'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->elementSchemaComponents();
 
         // Entries
-        // ---------------------------------------------------------------------
-        $components = $this->_getSectionSchemaComponents();
         $label = Craft::t('app', 'Entries');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->entrySchemaComponents();
 
         // Assets
-        // ---------------------------------------------------------------------
-        $components = $this->_getVolumeSchemaComponents();
         $label = Craft::t('app', 'Assets');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->assetSchemaComponents();
 
         // Global Sets
-        // ---------------------------------------------------------------------
-        $components = $this->_getGlobalSetSchemaComponents();
-        $label = Craft::t('app', 'Global sets');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        $label = Craft::t('app', 'Global Sets');
+        [$queries[$label], $mutations[$label]] = $this->globalSetSchemaComponents();
 
         // Users
-        // ---------------------------------------------------------------------
-        $components = $this->_getUserSchemaComponents();
         $label = Craft::t('app', 'Users');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
         // Categories
-        // ---------------------------------------------------------------------
-        $components = $this->_getCategorySchemaComponents();
         $label = Craft::t('app', 'Categories');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->categorySchemaComponents();
 
         // Tags
-        // ---------------------------------------------------------------------
-        $components = $this->_getTagSchemaComponents();
         $label = Craft::t('app', 'Tags');
-        $queries[$label] = $components['query'] ?? [];
-        $mutations[$label] = $components['mutation'] ?? [];
+        [$queries[$label], $mutations[$label]] = $this->tagSchemaComponents();
 
-        // Let plugins customize them and add new ones
-        // ---------------------------------------------------------------------
-
-        $event = new RegisterGqlSchemaComponentsEvent([
-            'queries' => $queries,
-            'mutations' => $mutations,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
+        // Fire a 'registerGqlSchemaComponents' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
+            $event = new RegisterGqlSchemaComponentsEvent([
+                'queries' => $queries,
+                'mutations' => $mutations,
+            ]);
+            $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
+            $queries = $event->queries;
+            $mutations = $event->mutations;
+        }
 
         return [
-            'queries' => $event->queries,
-            'mutations' => $event->mutations,
+            'queries' => $queries,
+            'mutations' => $mutations,
         ];
     }
 
@@ -720,7 +777,7 @@ class Gql extends Component
     {
         $this->_schema = null;
         $this->_schemaDef = null;
-        $this->_contentFieldCache = [];
+        $this->_contentArguments = [];
         $this->_typeDefinitions = [];
         TypeLoader::flush();
         GqlEntityRegistry::flush();
@@ -987,7 +1044,7 @@ class Gql extends Component
             $schemaRecord->uid = $schemaUid;
             $schemaRecord->name = $data['name'];
             $schemaRecord->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaRecord->scope = (!empty($data['scope']) && is_array($data['scope'])) ? Json::encode($data['scope']) : [];
+            $schemaRecord->scope = ($data['scope'] ?? false) ?: [];
 
             // Save the schema record
             $schemaRecord->save(false);
@@ -1135,40 +1192,160 @@ class Gql extends Component
         return $schemas;
     }
 
+    /**
+     * Returns the content arguments
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param callable $setter
+     * @phpstan-param callable():array $setter
+     * @return array
+     * @since 5.0.0
+     */
+    public function getOrSetContentArguments(string $elementType, callable $setter): array
+    {
+        if (!isset($this->_contentArguments[$elementType])) {
+            $this->_contentArguments[$elementType] = $setter();
+        }
+        return $this->_contentArguments[$elementType];
+    }
 
     /**
-     * Return the content arguments based on an element class and contexts for it.
+     * Returns arguments for fields in the given field layout.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return array
+     * @since 5.6.0
+     */
+    public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
+    {
+        if (!isset($fieldLayout->type)) {
+            throw new InvalidArgumentException('Field layout is missing its element type.');
+        }
+
+        if (!isset($this->_fieldArguments[$fieldLayout->uid])) {
+            $this->_fieldArguments[$fieldLayout->uid] =
+                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
+                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
+        }
+
+        return $this->_fieldArguments[$fieldLayout->uid];
+    }
+
+    /**
+     * Returns the content arguments for a given element type and field layouts.
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param FieldLayout[] $fieldLayouts
+     * @return array
+     * @since 5.0.0
+     */
+    public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
+    {
+        $fields = [];
+        $generatedFields = [];
+        $handledFieldLayouts = [];
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            // avoid checking the same field layout more than once
+            if (isset($fieldLayout->uid)) {
+                if (isset($handledFieldLayouts[$fieldLayout->uid])) {
+                    continue;
+                }
+                $handledFieldLayouts[$fieldLayout->uid] = true;
+            }
+
+            array_push($fields, ...$fieldLayout->getCustomFields());
+            array_push($generatedFields, ...$fieldLayout->getGeneratedFields());
+        }
+
+        return $this->defineContentArgumentsForFields($elementType, $fields) +
+            $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
+    }
+
+    /**
+     * Returns the content arguments for a given element type and custom fields.
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param FieldInterface[] $fields
+     * @return array
+     * @since 5.0.0
+     */
+    public function defineContentArgumentsForFields(string $elementType, array $fields): array
+    {
+        $arguments = [];
+        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+
+        foreach ($fields as $field) {
+            if (
+                !isset($arguments[$field->handle]) &&
+                !$field instanceof GqlInlineFragmentFieldInterface &&
+                !method_exists($elementQuery, $field->handle)
+            ) {
+                $arguments[$field->handle] = $field->getContentGqlQueryArgumentType();
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * Returns the content arguments for a given element type and generated fields.
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param array $fields
+     * @return array
+     * @since 5.8.0
+     */
+    public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
+    {
+        $arguments = [];
+        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+
+        foreach ($fields as $field) {
+            $handle = $field['handle'] ?? '';
+            if (
+                $handle !== '' &&
+                !isset($arguments[$handle]) &&
+                !method_exists($elementQuery, $handle)
+            ) {
+                $arguments[$handle] = [
+                    'name' => $handle,
+                    'type' => Type::listOf(QueryArgument::getType()),
+                ];
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * Returns the content arguments for an element class based on the given contexts.
      *
      * @param array $contexts
-     * @param string $elementType
-     * @phpstan-param class-string<\craft\base\ElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
-        /** @var string|BaseElementInterface $elementType */
-        /** @phpstan-var class-string<BaseElementInterface>|BaseElementInterface $elementType */
-        if (!array_key_exists($elementType, $this->_contentFieldCache)) {
-            $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
-            $contentArguments = [];
+        return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
+            $fields = [];
+            $generatedFields = [];
 
             foreach ($contexts as $context) {
-                if (!GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
-                    continue;
-                }
-
-                foreach ($context->getCustomFields() as $contentField) {
-                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
-                        $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
+                if (GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
+                    $layout = $context->getFieldLayout();
+                    try {
+                        array_push($fields, ...$layout->getCustomFields());
+                        array_push($generatedFields, ...$layout->getGeneratedFields());
+                    } catch (UnknownMethodException) {
                     }
                 }
             }
 
-            $this->_contentFieldCache[$elementType] = $contentArguments;
-        }
-
-        return $this->_contentFieldCache[$elementType];
+            return $this->defineContentArgumentsForFields($elementType, $fields) +
+                $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
+        });
     }
 
     /**
@@ -1191,8 +1368,11 @@ class Gql extends Component
                 $originException = $nextException;
             }
 
-            // If devMode enabled, substitute the original exception here.
-            if ($devMode && !empty($originException->getMessage())) {
+            // If devMode enabled or exception is safe to show, substitute the original exception here.
+            if (
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())) &&
+                !empty($originException->getMessage())
+            ) {
                 $error = $originException;
             } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message
@@ -1253,7 +1433,7 @@ class Gql extends Component
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
@@ -1286,7 +1466,7 @@ class Gql extends Component
      */
     private function _registerGqlTypes(): array
     {
-        $typeList = [
+        $types = [
             // Scalars
             DateTime::class,
             Number::class,
@@ -1296,7 +1476,6 @@ class Gql extends Component
             AddressInterface::class,
             ElementInterface::class,
             EntryInterface::class,
-            MatrixBlockInterface::class,
             AssetInterface::class,
             UserInterface::class,
             GlobalSetInterface::class,
@@ -1304,19 +1483,19 @@ class Gql extends Component
             TagInterface::class,
         ];
 
-        $event = new RegisterGqlTypesEvent([
-            'types' => $typeList,
-        ]);
+        // Fire a 'registerGqlTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
+            $event = new RegisterGqlTypesEvent(['types' => $types]);
+            $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
+            $types = $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
-
-        foreach ($event->types as $type) {
-            /** @var string|SingularTypeInterface $type */
-            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+        foreach ($types as $type) {
+            /** @var class-string<SingularTypeInterface> $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
-        return $event->types;
+        return $types;
     }
 
     /**
@@ -1336,16 +1515,17 @@ class Gql extends Component
             TagQuery::getQueries(),
         ];
 
+        // Flatten them
+        $queries = array_merge(...$queryList);
 
-        $event = new RegisterGqlQueriesEvent([
-            'queries' => array_merge(...$queryList),
-        ]);
+        // Fire a 'registerGqlQueries' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
+            $event = new RegisterGqlQueriesEvent(['queries' => $queries]);
+            $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
+            $queries = $event->queries;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
-
-        TypeLoader::registerType('Query', function() use ($event) {
-            return call_user_func(Query::class . '::getType', $event->queries);
-        });
+        TypeLoader::registerType('Query', fn() => call_user_func(Query::class . '::getType', $queries));
     }
 
     /**
@@ -1363,66 +1543,65 @@ class Gql extends Component
             AssetMutation::getMutations(),
         ];
 
-        $event = new RegisterGqlMutationsEvent([
-            'mutations' => array_merge(...$mutationList),
-        ]);
+        // Flatten them
+        $mutations = array_merge(...$mutationList);
 
-        $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
+        // Fire a 'registerGqlMutations' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
+            $event = new RegisterGqlMutationsEvent(['mutations' => $mutations]);
+            $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
+            $mutations = $event->mutations;
+        }
 
-        TypeLoader::registerType('Mutation', function() use ($event) {
-            return call_user_func(Mutation::class . '::getType', $event->mutations);
-        });
+        TypeLoader::registerType('Mutation', fn() => call_user_func(Mutation::class . '::getType', $mutations));
     }
 
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
+        /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
             // Directives
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
+            StripTags::class,
+            Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
+
+            if (
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
-        $event = new RegisterGqlDirectivesEvent([
-            'directives' => $directiveClasses,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
+        // Fire a 'registerGqlDirectives' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
+            $event = new RegisterGqlDirectivesEvent(['directives' => $directiveClasses]);
+            $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
+            $directiveClasses = $event->directives;
+        }
 
         $directives = GraphQL::getStandardDirectives();
 
-        foreach ($event->directives as $directive) {
-            /** @var Directive $directive */
-            $directives[] = $directive::create();
+        foreach ($directiveClasses as $class) {
+            /** @var class-string<Directive> $class */
+            $directives[] = $class::create();
         }
 
         return $directives;
-    }
-
-    /**
-     * Return element schema components.
-     *
-     * @return array
-     */
-    private function _getElementSchemaComponents(): array
-    {
-        return [
-            'query' => [
-                'elements.drafts:read' => ['label' => Craft::t('app', 'Allow listing element drafts')],
-                'elements.revisions:read' => ['label' => Craft::t('app', 'Allow listing element revisions')],
-                'elements.inactive:read' => ['label' => Craft::t('app', 'Allow listing non-live and otherwise inactive elements.')],
-            ],
-        ];
     }
 
     /**
@@ -1430,76 +1609,147 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getSiteSchemaComponents(): array
+    private function siteSchemaComponents(): array
     {
         $sites = Craft::$app->getSites()->getAllSites(true);
-        $query = [];
+        $queryComponents = [];
 
         foreach ($sites as $site) {
-            $query["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
+            $queryComponents["sites.{$site->uid}:read"] = [
+                'label' => Craft::t('app', 'Query for elements in the “{site}” site', [
+                    'site' => $site->name,
+                ]),
+            ];
         }
 
-        return [
-            'query' => $query,
-        ];
+        return [$queryComponents, []];
     }
 
-
     /**
-     * Return section permissions.
+     * Return element schema components.
      *
      * @return array
      */
-    private function _getSectionSchemaComponents(): array
+    private function elementSchemaComponents(): array
     {
-        $sortedEntryTypes = [];
+        $queryComponents = [
+            'elements.drafts:read' => [
+                'label' => Craft::t('app', 'Query for element drafts'),
+            ],
+            'elements.revisions:read' => [
+                'label' => Craft::t('app', 'Query for element revisions'),
+            ],
+            'elements.inactive:read' => [
+                'label' => Craft::t('app', 'Query for non-enabled elements'),
+            ],
+        ];
 
-        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
-            $sortedEntryTypes[$entryType->sectionId][] = $entryType;
-        }
+        return [$queryComponents, []];
+    }
 
+    /**
+     * Return the available schema components for entries.
+     *
+     * @return array
+     */
+    private function entrySchemaComponents(): array
+    {
         $queryComponents = [];
         $mutationComponents = [];
 
-        if (!empty($sortedEntryTypes)) {
-            foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                if (!isset($sortedEntryTypes[$section->id])) {
-                    continue;
-                }
+        $entriesService = Craft::$app->getEntries();
+        $singles = $entriesService->getSectionsByType(Section::TYPE_SINGLE);
 
-                $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
-                $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
-
-                foreach ($sortedEntryTypes[$section->id] as $entryType) {
-                    $suffix = 'entrytypes.' . $entryType->uid;
-
-                    if ($section->type == Section::TYPE_SINGLE) {
-                        $mutate['nested'][$suffix . ':save'] = ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])];
-                    } else {
-                        $mutate['nested'][$suffix . ':edit'] = [
-                            'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                            'nested' => [
-                                $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                            ],
-                        ];
-                    }
-
-                    $query['nested'][$suffix . ':read'] = [
-                        'label' => Craft::t('app', 'View entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                    ];
-                }
-
-                $queryComponents['sections.' . $section->uid . ':read'] = $query;
-                $mutationComponents['sections.' . $section->uid . ':edit'] = $mutate;
-            }
+        foreach ($singles as $section) {
+            $name = Craft::t('site', $section->name);
+            $prefix = "sections.$section->uid";
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'Query for the “{name}” entry', ['name' => $name]),
+            ];
+            $mutationComponents["$prefix:save"] = [
+                'label' => Craft::t('app', 'Save the “{section}” entry', ['section' => $name]),
+            ];
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        foreach ($entriesService->getAllSections() as $section) {
+            if ($section->type === Section::TYPE_SINGLE) {
+                continue;
+            }
+
+            $name = Craft::t('site', $section->name);
+            $prefix = "sections.$section->uid";
+
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'Query for entries in the “{name}” section', ['name' => $name]),
+            ];
+
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit entries in the “{name}” section', ['name' => $name]),
+                'nested' => [
+                    "$prefix:create" => [
+                        'label' => Craft::t('app', 'Create entries in the “{section}” section', ['section' => $name]),
+                    ],
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save entries in the “{section}” section', ['section' => $name]),
+                    ],
+                    "$prefix:delete" => [
+                        'label' => Craft::t('app', 'Delete entries in the “{section}” section', ['section' => $name]),
+                    ],
+                ],
+            ];
+        }
+
+        // Add components for fields that manage nested entries
+        $fieldsService = Craft::$app->getFields();
+        /** @var ElementContainerFieldInterface[] $fields */
+        $fields = array_merge(...array_map(
+            fn(string $type) => $fieldsService->getFieldsByType($type),
+            $fieldsService->getNestedEntryFieldTypes(),
+        ));
+        usort($fields, fn(ElementContainerFieldInterface $a, ElementContainerFieldInterface $b) =>
+            $a::displayName() <=> $b::displayName());
+
+        foreach ($fields as $field) {
+            $name = Craft::t('site', $field->name);
+            $type = $field::displayName();
+            $prefix = "nestedentryfields.$field->uid";
+
+            $queryComponents["$prefix:read"] = [
+                'label' => Craft::t('app', 'Query for entries in the “{name}” {type} field', [
+                    'name' => $name,
+                    'type' => $type,
+                ]),
+            ];
+
+            $mutationComponents["$prefix:edit"] = [
+                'label' => Craft::t('app', 'Edit entries in the “{name}” {type} field', [
+                    'name' => $name,
+                    'type' => $type,
+                ]),
+                'nested' => [
+                    "$prefix:create" => [
+                        'label' => Craft::t('app', 'Create entries in the “{section}” {type} field', [
+                            'section' => $name, // todo: change to 'name'
+                            'type' => $type,
+                        ]),
+                    ],
+                    "$prefix:save" => [
+                        'label' => Craft::t('app', 'Save entries in the “{section}” {type} field', [
+                            'section' => $name, // todo: change to 'name'
+                            'type' => $type,
+                        ]),
+                    ],
+                    "$prefix:delete" => [
+                        'label' => Craft::t('app', 'Delete entries in the “{section}” {type} field', [
+                            'section' => $name, // todo: change to 'name'
+                            'type' => $type,
+                        ]),
+                    ],
+                ],
+            ];
+        }
+
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1507,7 +1757,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getVolumeSchemaComponents(): array
+    private function assetSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1516,23 +1766,29 @@ class Gql extends Component
 
         if (!empty($volumes)) {
             foreach ($volumes as $volume) {
-                $suffix = 'volumes.' . $volume->uid;
-                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
-                $mutationComponents[$suffix . ':edit'] = [
-                    'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)]),
+                $name = Craft::t('site', $volume->name);
+                $prefix = "volumes.$volume->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for assets in the “{name}” volume', ['name' => $name]),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => $name]),
                     'nested' => [
-                        $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                        $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                        $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                        "$prefix:create" => [
+                            'label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => $name]),
+                        ],
+                        "$prefix:save" => [
+                            'label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => $name]),
+                        ],
+                        "$prefix:delete" => [
+                            'label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => $name]),
+                        ],
                     ],
                 ];
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1540,7 +1796,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getGlobalSetSchemaComponents(): array
+    private function globalSetSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1549,16 +1805,50 @@ class Gql extends Component
 
         if (!empty($globalSets)) {
             foreach ($globalSets as $globalSet) {
-                $suffix = 'globalsets.' . $globalSet->uid;
-                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
-                $mutationComponents[$suffix . ':edit'] = ['label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => Craft::t('site', $globalSet->name)])];
+                $name = Craft::t('site', $globalSet->name);
+                $prefix = "globalsets.$globalSet->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for the “{name}” global set', ['name' => $name]),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => $name]),
+                ];
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
+    }
+
+    /**
+     * Return user permissions.
+     *
+     * @return array
+     */
+    private function userSchemaComponents(): array
+    {
+        $queryComponents = [];
+
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            $queryComponents['usergroups.solo:read'] = [
+                'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
+            ];
+        } else {
+            $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+            $queryComponents['usergroups.everyone:read'] = [
+                'label' => Craft::t('app', 'Query for users'),
+            ];
+
+            foreach ($userGroups as $userGroup) {
+                $name = Craft::t('site', $userGroup->name);
+                $prefix = "usergroups.$userGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                ];
+            }
+        }
+
+        return [$queryComponents, []];
     }
 
     /**
@@ -1566,7 +1856,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getCategorySchemaComponents(): array
+    private function categorySchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1575,22 +1865,26 @@ class Gql extends Component
 
         if (!empty($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroup) {
-                $suffix = 'categorygroups.' . $categoryGroup->uid;
-                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];
-                $mutationComponents[$suffix . ':edit'] = [
-                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
+                $name = Craft::t('site', $categoryGroup->name);
+                $prefix = "categorygroups.$categoryGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for categories in the “{name}” category group', ['name' => $name]),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
                     'nested' => [
-                        $suffix . ':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
-                        $suffix . ':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
+                        "$prefix:save" => [
+                            'label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
+                        ],
+                        "$prefix:delete" => [
+                            'label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => $name]),
+                        ],
                     ],
                 ];
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**
@@ -1598,7 +1892,7 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getTagSchemaComponents(): array
+    private function tagSchemaComponents(): array
     {
         $queryComponents = [];
         $mutationComponents = [];
@@ -1607,44 +1901,26 @@ class Gql extends Component
 
         if (!empty($tagGroups)) {
             foreach ($tagGroups as $tagGroup) {
-                $suffix = 'taggroups.' . $tagGroup->uid;
-                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)])];
-                $mutationComponents[$suffix . ':edit'] = [
-                    'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
+                $name = Craft::t('site', $tagGroup->name);
+                $prefix = "taggroups.$tagGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for tags in the “{name}” tag group', ['name' => $name]),
+                ];
+                $mutationComponents["$prefix:edit"] = [
+                    'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
                     'nested' => [
-                        $suffix . ':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
-                        $suffix . ':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
+                        "$prefix:save" => [
+                            'label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                        ],
+                        "$prefix:delete" => [
+                            'label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                        ],
                     ],
                 ];
             }
         }
 
-        return [
-            'query' => $queryComponents,
-            'mutation' => $mutationComponents,
-        ];
-    }
-
-    /**
-     * Return user permissions.
-     *
-     * @return array
-     */
-    private function _getUserSchemaComponents(): array
-    {
-        $queryComponents = [];
-        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
-
-        $queryComponents['usergroups.everyone:read'] = ['label' => Craft::t('app', 'View all users')];
-
-        foreach ($userGroups as $userGroup) {
-            $suffix = 'usergroups.' . $userGroup->uid;
-            $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
-        }
-
-        return [
-            'query' => $queryComponents,
-        ];
+        return [$queryComponents, $mutationComponents];
     }
 
     /**

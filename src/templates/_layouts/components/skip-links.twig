@@ -1,0 +1,32 @@
+{% set orientation = craft.app.locale.getOrientation() -%}
+
+{% set links = [
+  {
+    label: 'Skip to main section'|t('app'),
+    url: '#main',
+  },
+  {
+    label: orientation == 'ltr' ? 'Skip to left sidebar'|t('app') : 'Skip to right sidebar'|t('app'),
+    url: '#sidebar-container',
+  },
+  {
+    label: 'Skip to content'|t('app'),
+    url: '#content-container',
+  },
+  {
+    label: orientation == 'ltr' ? 'Skip to right sidebar'|t('app') : 'Skip to left sidebar'|t('app'),
+    url: '#details-container',
+  },
+] %}
+
+<ul id="global-skip-links">
+  {% for link in links %}
+    <li>
+      {{ tag ('a', {
+        text: link.label,
+        href: link.url,
+        class: 'skip-link skip-link--global btn',
+      }) }}
+    </li>
+  {% endfor %}
+</ul>

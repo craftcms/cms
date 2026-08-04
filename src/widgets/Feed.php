@@ -33,7 +33,7 @@ class Feed extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/feed.svg');
+        return 'rss';
     }
 
     /**
@@ -101,7 +101,14 @@ class Feed extends Widget
     public function getBodyHtml(): ?string
     {
         // See if it's already cached
-        $data = Craft::$app->getCache()->get("feed:$this->url");
+        $userId = Craft::$app->getUser()->getId();
+
+        if ($userId) {
+            $key = sprintf('feed:%s:%s',  $userId, $this->url);
+            $data = Craft::$app->getCache()->get($key);
+        } else {
+            $data = null;
+        }
 
         if ($data) {
             $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);

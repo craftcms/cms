@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\image\Svg;
 use craft\services\Images;
 use craft\test\TestCase;
 use Imagick;
@@ -48,6 +49,22 @@ class ImagesTest extends TestCase
     public function testCheckMemoryForImage(bool $expected, string $filePath): void
     {
         self::assertSame($expected, $this->images->checkMemoryForImage($this->path . $filePath));
+    }
+
+    /**
+     *
+     */
+    public function testLoadImageSvg(): void
+    {
+        $path = $this->path . 'svg-pcts.svg';
+        /** @var Svg $image */
+        $image = $this->images->loadImage($path);
+        $this->assertSame(4167, $image->getWidth());
+        $this->assertSame(4167, $image->getHeight());
+        $this->assertSame(
+            str_replace('width="100%" height="100%"', 'width="4167px" height="4167px"', file_get_contents($path)),
+            $image->getSvgString(),
+        );
     }
 
     /**
@@ -172,7 +189,7 @@ class ImagesTest extends TestCase
      * @return array
      * @todo Can we get this to fail?
      */
-    public function checkMemoryForImageDataProvider(): array
+    public static function checkMemoryForImageDataProvider(): array
     {
         return [
             [true, 'craft-logo.svg'],
@@ -208,7 +225,7 @@ class ImagesTest extends TestCase
      */
     private function _skipIfNoImagick()
     {
-        if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
+        if (!($this->images->getIsImagick())) {
             $this->markTestSkipped('Need Imagick to test this function.');
         }
     }

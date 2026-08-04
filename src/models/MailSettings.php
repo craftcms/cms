@@ -13,6 +13,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\validators\TemplateValidator;
+use yii\validators\EmailValidator;
 
 /**
  * MailSettings Model class.
@@ -44,8 +45,13 @@ class MailSettings extends Model
     public ?string $template = null;
 
     /**
-     * @var string|null The transport type that should be used
-     * @phpstan-var class-string<TransportAdapterInterface>|null
+     * @var array Site-specific overrides
+     * @since 5.6.0
+     */
+    public array $siteOverrides = [];
+
+    /**
+     * @var class-string<TransportAdapterInterface>|null The transport type that should be used
      */
     public ?string $transportType = Sendmail::class;
 
@@ -83,6 +89,7 @@ class MailSettings extends Model
             'fromName' => Craft::t('app', 'Sender Name'),
             'template' => Craft::t('app', 'HTML Email Template'),
             'transportType' => Craft::t('app', 'Transport Type'),
+            'siteOverrides' => Craft::t('app', 'Site Overrides'),
         ];
     }
 
@@ -96,6 +103,39 @@ class MailSettings extends Model
         $rules[] = [['fromEmail', 'replyToEmail'], 'email'];
         $rules[] = [['template'], TemplateValidator::class];
 
+        $rules[] = [['siteOverrides'], function() {
+            $sitesService = Craft::$app->getSites();
+            foreach ($this->siteOverrides as $siteUid => $overrides) {
+                foreach (['fromEmail', 'replyToEmail'] as $key) {
+                    if (isset($overrides[$key]) && !str_starts_with($overrides[$key], '$')) {
+                        $validator = new EmailValidator([
+                            'message' => Craft::t('yii', '{attribute} is not a valid email address.', [
+                                'attribute' => sprintf(
+                                    '%s - %s',
+                                    $sitesService->getSiteByUid($siteUid)->getUiLabel(),
+                                    $this->attributeLabels()[$key],
+                                ),
+                            ]),
+                        ]);
+                        if (!$validator->validate($overrides[$key], $error)) {
+                            $this->addError('siteOverrides', $error);
+                        }
+                    }
+                }
+            }
+        }];
+
         return $rules;
+    }
+
+    /**
+     * Sets the site overrides.
+     *
+     * @param array $siteOverrides
+     * @since 5.6.0
+     */
+    public function setSiteOverrides(array $siteOverrides): void
+    {
+        $this->siteOverrides = array_filter(array_map(fn(array $overrides) => array_filter($overrides), $siteOverrides));
     }
 }

@@ -78,6 +78,16 @@ class User extends ElementArguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results based on the user group the users belong to.',
             ],
+            'affiliatedSite' => [
+                'name' => 'affiliatedSite',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Determines which site(s) the users should be affiliated with.',
+            ],
+            'affiliatedSiteId' => [
+                'name' => 'affiliatedSiteId',
+                'type' => Type::listOf(QueryArgument::getType()),
+                'description' => 'Determines which site(s) the users should be affiliated with.',
+            ],
         ]);
     }
 

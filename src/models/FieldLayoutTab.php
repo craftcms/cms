@@ -11,13 +11,13 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
@@ -44,6 +44,25 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         static::updateConfig($config);
         return new self($config);
+    }
+
+    /**
+     * Returns the label HTML that should be displayed within field layout designers.
+     *
+     * @return string
+     * @since 5.1.0
+     */
+    public function labelHtml(): string
+    {
+        return
+            Html::tag('h3', Html::encode($this->name), [
+                'class' => 'fld-tab__name',
+            ]) .
+            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+            ]) : '');
     }
 
     /**
@@ -104,7 +123,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      * @see getElements()
      * @see setElements()
      */
-    private array $_elements;
+    private array $_elements = [];
 
     /**
      * @inheritdoc
@@ -114,7 +133,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // Config normalization
         if (array_key_exists('elements', $config)) {
             if (is_string($config['elements'])) {
-                $config['elements'] = Json::decode($config['elements']);
+                $config['elements'] = Component::cleanseConfig(Json::decode($config['elements']));
             }
             if (!is_array($config['elements'])) {
                 unset($config['elements']);
@@ -122,38 +141,6 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        if (!isset($this->_elements) && isset($this->id)) {
-            // No element configs for this tab yet, so create the elements ourselves
-            $fieldsService = Craft::$app->getFields();
-            $layoutElements = [];
-
-            $fieldInfo = (new Query())
-                ->select(['fieldId', 'required'])
-                ->from([Table::FIELDLAYOUTFIELDS])
-                ->where(['tabId' => $this->id])
-                ->orderBy(['sortOrder' => SORT_ASC])
-                ->all();
-
-            foreach ($fieldInfo as $row) {
-                $field = $fieldsService->getFieldById($row['fieldId']);
-                if ($field) {
-                    $layoutElements[] = new CustomField($field, [
-                        'required' => $row['required'],
-                    ]);
-                }
-            }
-
-            $this->setElements($layoutElements);
-        }
     }
 
     /**
@@ -176,6 +163,14 @@ class FieldLayoutTab extends FieldLayoutComponent
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
+    {
+        return true;
     }
 
     /**
@@ -267,7 +262,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getElements(): array
     {
-        return $this->_elements ?? [];
+        return $this->_elements;
     }
 
     /**
@@ -280,6 +275,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function setElements(array $elements): void
     {
         $fieldsService = Craft::$app->getFields();
+        $pluginsService = Craft::$app->getPlugins();
         $this->_elements = [];
 
         foreach ($elements as $layoutElement) {
@@ -296,8 +292,17 @@ class FieldLayoutTab extends FieldLayoutComponent
                 }
             }
 
-            $layoutElement->setLayout($this->getLayout());
-            $this->_elements[] = $layoutElement;
+            // if layout element belongs to a plugin, ensure the plugin is installed
+            $pluginHandle = $pluginsService->getPluginHandleByClass($layoutElement::class);
+            if ($pluginHandle === null || $pluginsService->isPluginEnabled($pluginHandle)) {
+                $layoutElement->setLayout($this->getLayout());
+                $this->_elements[] = $layoutElement;
+            }
+        }
+
+        // Clear caches
+        if (isset($this->_layout)) {
+            $this->_layout->reset();
         }
     }
 
@@ -308,7 +313,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
-        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        $asciiName = isset($this->name) ? StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en')) : '';
 
         if ($asciiName === '') {
             // Use md5() as a fallback
@@ -318,8 +323,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // ensure unique tab id even if there are multiple tabs with the same name
         $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
 
-        // Use two dashes here in case a tab name starts with “Tab”
-        return "tab$tabOrder--$asciiName";
+        return Html::id("tab$tabOrder-$asciiName");
     }
 
     /**

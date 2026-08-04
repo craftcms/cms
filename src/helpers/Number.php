@@ -38,11 +38,7 @@ class Number
             9 => Craft::t('app', 'nine'),
         ];
 
-        if (isset($numberWordMap[$num])) {
-            return $numberWordMap[$num];
-        }
-
-        return (string)$num;
+        return $numberWordMap[$num] ?? (string)$num;
     }
 
 

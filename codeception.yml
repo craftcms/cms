@@ -4,6 +4,7 @@ paths:
   log: tests/_output
   data: tests/_data
   support: tests/_support
+  output: tests/_output
   envs: tests/_envs
 bootstrap: _bootstrap.php
 settings:
@@ -48,9 +49,9 @@ modules:
 groups:
   base: [tests/unit/base]
   behaviors: [tests/unit/behaviors]
-  composer: [tests/unit/composer]
   db: [tests/unit/db]
   elements: [tests/unit/elements]
+  filters: [tests/unit/filters]
   helpers: [tests/unit/helpers]
   mail: [tests/unit/mail]
   search: [tests/unit/search]

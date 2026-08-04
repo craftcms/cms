@@ -41,7 +41,7 @@ class Number extends ScalarType implements SingularTypeInterface
      */
     public static function getType(): Number
     {
-        return GqlEntityRegistry::getEntity(static::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
+        return GqlEntityRegistry::getOrCreate(static::getName(), fn() => new self());
     }
 
     /**

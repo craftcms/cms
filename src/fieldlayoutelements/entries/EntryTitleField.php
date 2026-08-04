@@ -11,8 +11,9 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -26,13 +27,32 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    protected function selectorInnerHtml(): string
+    public bool $mandatory = false;
+
+    /**
+     * @inheritdoc
+     */
+    public bool $requirable = true;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
     {
-        return
-            Html::tag('span', '', [
-                'class' => ['fld-title-field-icon', 'fld-field-hidden', 'hidden'],
-            ]) .
-            parent::selectorInnerHtml();
+        $this->required = ArrayHelper::remove($config, 'required', $this->required);
+        unset($config['requirable']);
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['requirable']);
+        $fields['required'] = 'required';
+        return $fields;
     }
 
     /**
@@ -41,7 +61,7 @@ class EntryTitleField extends TitleField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
 
         return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -53,7 +73,7 @@ class EntryTitleField extends TitleField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
 
         return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
@@ -65,11 +85,31 @@ class EntryTitleField extends TitleField
     public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Entry) {
-            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
 
-        if (!$element->getType()->hasTitleField && !$element->hasErrors('title')) {
+        $entryType = $element->getType();
+
+        if (!$entryType->hasTitleField) {
             return null;
+        }
+
+        if ($entryType->allowLineBreaksInTitles) {
+            return Cp::textareaHtml([
+                'class' => 'nicetext',
+                'id' => $this->id(),
+                'describedBy' => $this->describedBy($element, $static),
+                'rows' => 2,
+                'name' => $this->name ?? $this->attribute(),
+                'value' => $this->value($element),
+                'maxlength' => $this->maxlength,
+                'autofocus' => $this->autofocus,
+                'disabled' => $static || $this->disabled,
+                'readonly' => $this->readonly,
+                'required' => !$static && $this->required,
+                'title' => $this->title,
+                'placeholder' => $this->placeholder,
+            ]);
         }
 
         return parent::inputHtml($element, $static);

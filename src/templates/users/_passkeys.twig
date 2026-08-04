@@ -1,0 +1,17 @@
+{% import '_includes/forms.twig' as forms %}
+
+<h2>{{ 'Passkeys'|t('app') }}</h2>
+<p>{{ 'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'|t('app')|widont }}</p>
+
+<div id="passkeys" class="pane tablepane hairline" tabindex="-1">
+  {% include 'users/_passkeys-table.twig' %}
+</div>
+
+{{ forms.button({
+  name: 'addSecurityKey',
+  id: 'add-passkey-btn',
+  label: 'Add a passkey'|t('app'),
+  spinner: true,
+}) }}
+
+<div id="passkey-errors" class="hidden"></div>

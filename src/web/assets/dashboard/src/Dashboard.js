@@ -45,6 +45,9 @@ import './dashboard.scss';
             this.handleNewWidgetOptionSelect(event);
           }
         });
+
+        // trigger element thumb loader for widgets
+        this.$grid.trigger('scroll');
       });
     },
 
@@ -550,7 +553,7 @@ import './dashboard.scss';
       );
     },
 
-    update: function (response) {
+    async update(response) {
       if (!this.$back) {
         this.initBackUi();
       }
@@ -614,8 +617,10 @@ import './dashboard.scss';
       }
 
       Craft.initUiElements(this.$bodyContainer);
-      Craft.appendHeadHtml(response.headHtml);
-      Craft.appendBodyHtml(response.bodyHtml);
+      await Craft.appendHeadHtml(response.headHtml);
+      await Craft.appendBodyHtml(response.bodyHtml);
+
+      Craft.cp.elementThumbLoader.load(this.$bodyContainer);
 
       this.setSettingsHtml(response.info.settingsHtml, function () {
         eval(response.info.settingsJs);
@@ -647,7 +652,7 @@ import './dashboard.scss';
 
       // Focus on the first input
       setTimeout(() => {
-        this.$settingsForm.find(':focusable:first').trigger('focus');
+        this.$settingsForm.find(':focusable:first').focus();
       }, 1);
     },
 
@@ -682,6 +687,7 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="' +
           Craft.t('app', 'Reorder') +
           '" role="button"></a></td>' +
+          '<td class="widgetmanagerhud-col-actions thin actions-container"></td>' +
           '<td class="thin"><a class="delete icon" tabindex="0" type="button" title="' +
           Craft.t('app', 'Delete') +
           '" role="button" aria-label="' +
@@ -699,7 +705,6 @@ import './dashboard.scss';
           return window.dashboard.grid.totalCols;
         },
         step: 1,
-        label: Craft.t('app', 'Number of columns'),
         describedBy: this.getWidgetLabelId(),
         valueLabel: (colspan) => {
           return Craft.t(

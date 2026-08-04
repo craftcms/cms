@@ -8,12 +8,13 @@
 namespace craft\web;
 
 use Craft;
+use craft\errors\ExitException;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use Throwable;
 use yii\base\Component;
-use yii\base\ExitException;
+use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidConfigException;
 use yii\web\ResponseFormatterInterface;
 
@@ -55,14 +56,18 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         try {
             $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
         } catch (Throwable $e) {
-            if (!$e->getPrevious() instanceof ExitException) {
-                // Bail on the template response
-                $response->format = Response::FORMAT_HTML;
-                throw $e;
+            $previous = $e->getPrevious();
+            if ($previous instanceof YiiExitException) {
+                // Something called Craft::$app->end()
+                if ($previous instanceof ExitException && $previous->output !== null) {
+                    echo $previous->output;
+                }
+                return;
             }
 
-            // Something called Craft::$app->end()
-            return;
+            // Bail on the template response
+            $response->format = Response::FORMAT_HTML;
+            throw $e;
         }
 
         $headers = $response->getHeaders();

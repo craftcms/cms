@@ -24,7 +24,7 @@ class UsernameValidator extends Validator
     public function validateValue($value): ?array
     {
         // Don't allow whitespace in the username
-        if (preg_match('/\s+/', $value)) {
+        if ($value !== null && preg_match('/\s+/', $value)) {
             return [Craft::t('app', '{attribute} cannot contain spaces.'), []];
         }
 

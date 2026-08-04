@@ -9,7 +9,9 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
+use craft\elements\Category;
 use craft\helpers\StringHelper;
+use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
@@ -44,7 +46,7 @@ class ProjectConfigTest extends TestCase
         'dateModified' => 1609452000,
     ];
 
-    protected array $external = [
+    protected static array $external = [
         'aa' => 'bb',
         'bb' => [
             'vc' => 'dd',
@@ -79,17 +81,15 @@ class ProjectConfigTest extends TestCase
      */
     protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
-        $internal = $internal ?? $this->internal;
-        $external = $external ?? $this->external;
+        $internal ??= $this->internal;
+        $external ??= static::$external;
 
         $mockConfig = [
-            'getExternalConfig' => function() use ($external) {
-                return new ReadOnlyProjectConfigData($external);
-            },
+            'getExternalConfig' => fn() => new ReadOnlyProjectConfigData($external),
             'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,
-            'updateYamlFiles' => true,
+            'writeYamlFiles' => true,
             'updateConfigVersion' => true,
         ];
         $mockConfig = array_merge($mockConfig, $additionalConfig);
@@ -218,6 +218,69 @@ class ProjectConfigTest extends TestCase
         $pc->saveModifiedConfigData();
     }
 
+    public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void
+    {
+        $projectConfig = new ProjectConfig();
+        $internalConfig = new ReadOnlyProjectConfigData([], $projectConfig);
+        $currentWorkingConfig = new ProjectConfigData([], $projectConfig);
+
+        $internalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_internalConfig');
+        $internalConfigProperty->setValue($projectConfig, $internalConfig);
+
+        $currentWorkingConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_currentWorkingConfig');
+        $currentWorkingConfigProperty->setValue($projectConfig, $currentWorkingConfig);
+
+        $incomingConfig = [
+            'elementSources' => [
+                'craft\\elements\\Category' => [[
+                    'defaultSort' => ['structure', 'asc'],
+                    'tableAttributes' => ['link'],
+                    'type' => 'native',
+                    'key' => 'group:bedad454-861f-4d7f-b0f6-40ce023cffc5',
+                    'disabled' => false,
+                ]],
+            ],
+            'sections' => [
+                'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                    'siteSettings' => [
+                        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' => [
+                            'hasUrls' => true,
+                            'uriFormat' => 'test/{slug}',
+                            'template' => 'test/_entry',
+                            'enabledByDefault' => true,
+                        ],
+                    ],
+                    'entryTypes' => ['cccccccc-cccc-cccc-cccc-cccccccccccc'],
+                ],
+            ],
+        ];
+
+        $externalConfig = new ReadOnlyProjectConfigData($incomingConfig, $projectConfig);
+        $externalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_externalConfig');
+        $externalConfigProperty->setValue($projectConfig, $externalConfig);
+
+        $originalProjectConfig = Craft::$app->getProjectConfig();
+        $originalElementSources = Craft::$app->getElementSources();
+        $handlerWasCalled = false;
+
+        Craft::$app->set('projectConfig', $projectConfig);
+        Craft::$app->set('elementSources', new \craft\services\ElementSources());
+
+        $projectConfig->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', function() use (&$handlerWasCalled) {
+            $handlerWasCalled = true;
+            Craft::$app->getElementSources()->getSources(Category::class);
+        });
+
+        try {
+            $projectConfig->applyConfigChanges($incomingConfig);
+        } finally {
+            Craft::$app->set('projectConfig', $originalProjectConfig);
+            Craft::$app->set('elementSources', $originalElementSources);
+        }
+
+        self::assertTrue($handlerWasCalled);
+    }
+
     public function getConfigProvider(): array
     {
         return [
@@ -271,7 +334,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function getValueDataProvider(): array
+    public static function getValueDataProvider(): array
     {
         return [
             ['a', false, 'b'],
@@ -281,11 +344,11 @@ class ProjectConfigTest extends TestCase
             ['b.c', false, 'd'],
             ['ee.1', true, 22],
             ['ee', true, [11, 22, 33]],
-            [null, true, $this->external],
+            [null, true, static::$external],
         ];
     }
 
-    public function setValueDataProvider(): array
+    public static function setValueDataProvider(): array
     {
         return [
             ['a', 'bar'],

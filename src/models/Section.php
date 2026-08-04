@@ -8,17 +8,23 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
+use craft\base\CpEditable;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\db\Schema;
 
 /**
  * Section model class.
@@ -29,7 +35,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model
+class Section extends Model implements Chippable, CpEditable, Iconic
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -46,6 +52,15 @@ class Section extends Model
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_END = 'end';
+
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getSectionById($id);
+    }
 
     /**
      * @var int|null ID
@@ -68,9 +83,21 @@ class Section extends Model
     public ?string $handle = null;
 
     /**
-     * @var string|null Type
+     * @var self::TYPE_*|null Type
      */
     public ?string $type = null;
+
+    /**
+     * @var int Min authors
+     * @since 5.10.0
+     */
+    public int $minAuthors = 1;
+
+    /**
+     * @var int|null Max authors
+     * @since 5.0.0
+     */
+    public int|null $maxAuthors = 1;
 
     /**
      * @var int|null Max levels
@@ -83,23 +110,23 @@ class Section extends Model
     public bool $enableVersioning = true;
 
     /**
-     * @var string Propagation method
-     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
+     * @var PropagationMethod Propagation method
      *
      * This will be set to one of the following:
      *
-     * - `none` – Only save entries in the site they were created in
-     * - `siteGroup` – Save entries to other sites in the same site group
-     * - `language` – Save entries to other sites with the same language
-     * - `all` – Save entries to all sites enabled for this section
+     *  - [[PropagationMethod::None]] – Only save entries in the site they were created in
+     *  - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
+     *  - [[PropagationMethod::Language]] – Save entries to other sites with the same language
+     *  - [[PropagationMethod::Custom]] – Let each entry choose which sites it should be saved to
+     *  - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
      */
-    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
+    public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     /**
      * @var string Default placement
-     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
+     * @phpstan-var self::DEFAULT_PLACEMENT_*
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
@@ -125,6 +152,11 @@ class Section extends Model
     private ?array $_entryTypes = null;
 
     /**
+     * @see page()
+     */
+    private string|false $page;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -133,7 +165,7 @@ class Section extends Model
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
-                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                        'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
                 ],
@@ -146,12 +178,31 @@ class Section extends Model
     /**
      * @inheritdoc
      */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'type' => Craft::t('app', 'Section Type'),
+            'entryTypes' => $this->type === self::TYPE_SINGLE
+                ? Craft::t('app', 'Entry Type')
+                : Craft::t('app', 'Entry Types'),
         ];
     }
 
@@ -161,7 +212,22 @@ class Section extends Model
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
+        $rules[] = [
+            ['maxLevels', 'minAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
+        $rules[] = [
+            ['maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => $this->minAuthors,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -170,17 +236,8 @@ class Section extends Model
                 self::TYPE_STRUCTURE,
             ],
         ];
-        $rules[] = [
-            ['propagationMethod'], 'in', 'range' => [
-                self::PROPAGATION_METHOD_NONE,
-                self::PROPAGATION_METHOD_SITE_GROUP,
-                self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL,
-                self::PROPAGATION_METHOD_CUSTOM,
-            ],
-        ];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
+        $rules[] = [['handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
@@ -263,7 +320,7 @@ class Section extends Model
         }
 
         // Set them with setSiteSettings() so they get indexed by site ID and setSection() gets called on them
-        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id));
+        $this->setSiteSettings(Craft::$app->getEntries()->getSectionSiteSettings($this->id));
 
         return $this->_siteSettings;
     }
@@ -275,7 +332,10 @@ class Section extends Model
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
+        $this->_siteSettings = ArrayHelper::index(
+            $siteSettings,
+            fn(Section_SiteSettings $siteSettings) => $siteSettings->siteId,
+        );
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
@@ -323,7 +383,7 @@ class Section extends Model
             return [];
         }
 
-        $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
+        $this->_entryTypes = Craft::$app->getEntries()->getEntryTypesBySectionId($this->id);
 
         return $this->_entryTypes;
     }
@@ -336,7 +396,11 @@ class Section extends Model
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = $entryTypes;
+        $entriesService = Craft::$app->getEntries();
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -350,8 +414,60 @@ class Section extends Model
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
+            $this->propagationMethod !== PropagationMethod::None
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/sections/$this->id");
+    }
+
+    /**
+     * Returns the section’s control panel index page URI.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+        return sprintf(
+            'content/%s/%s',
+            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $this->type === self::TYPE_SINGLE ? 'singles' : $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     *
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getPage(): ?string
+    {
+        if (!isset($this->page)) {
+            $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey, withDisabled: true);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return 'newspaper';
     }
 
     /**
@@ -366,14 +482,17 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
-            'propagationMethod' => $this->propagationMethod,
+            'minAuthors' => $this->minAuthors,
+            'maxAuthors' => $this->maxAuthors,
+            'propagationMethod' => $this->propagationMethod->value,
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

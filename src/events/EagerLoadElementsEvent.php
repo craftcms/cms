@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\elements\db\EagerLoadPlan;
-use yii\base\Event;
 
 /**
  * Eager-load event class
@@ -20,8 +20,7 @@ use yii\base\Event;
 class EagerLoadElementsEvent extends Event
 {
     /**
-     * @var string The source element type
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The source element type
      */
     public string $elementType;
 

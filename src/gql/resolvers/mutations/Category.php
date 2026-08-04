@@ -84,22 +84,24 @@ class Category extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $categoryId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         $category = $elementService->getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
-            return;
+            return false;
         }
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
-        $elementService->deleteElementById($categoryId);
+        return $elementService->deleteElementById($categoryId, hardDelete: $hardDelete);
     }
 }

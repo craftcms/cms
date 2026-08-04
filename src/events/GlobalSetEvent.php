@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\GlobalSet;
-use yii\base\Event;
 
 /**
  * Global Set event class.

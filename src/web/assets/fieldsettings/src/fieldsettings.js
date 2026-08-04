@@ -7,7 +7,6 @@
       $container: null,
       namespace: null,
       currentType: null,
-      typeSettings: null,
 
       _cancelToken: null,
       _ignoreFailedRequest: false,
@@ -16,8 +15,7 @@
         this.$toggle = $(toggle);
         this.$container = $(container);
         this.namespace = namespace;
-        this.currentType = this.$toggle.val();
-        this.typeSettings = {};
+        this.currentType = this.$toggle.data('value');
         this.setSettings(settings, Craft.FieldSettingsToggle.defaults);
         this.addListener(this.$toggle, 'change', 'handleToggleChange');
       },
@@ -32,17 +30,12 @@
           });
         }
 
-        // Save & detach the current settings
-        this.typeSettings[this.currentType] = this.$container
-          .children()
-          .detach();
+        const oldType = this.currentType;
+        const settings = $('<form/>')
+          .append(this.$container.clone())
+          .serialize();
 
-        this.currentType = this.$toggle.val();
-
-        if (typeof this.typeSettings[this.currentType] !== 'undefined') {
-          this.typeSettings[this.currentType].appendTo(this.$container);
-          return;
-        }
+        this.currentType = this.$toggle.data('value');
 
         // Show a spinner
         this.$container.html(
@@ -54,11 +47,17 @@
 
         let data = {
           type: this.currentType,
+          oldType,
+          settings,
         };
         if (this.namespace) {
           data.namespace = this.namespace.replace(
             /__TYPE__/g,
-            this.currentType
+            Craft.formatInputId(this.currentType)
+          );
+          data.oldNamespace = this.namespace.replace(
+            /__TYPE__/g,
+            Craft.formatInputId(oldType)
           );
         }
 
@@ -66,7 +65,7 @@
           cancelToken: this._cancelToken.token,
           data: data,
         })
-          .then((response) => {
+          .then(async (response) => {
             let $settings = $(response.data.settingsHtml || '');
             if (this.settings.wrapWithTypeClassDiv) {
               $settings = $('<div/>', {
@@ -75,12 +74,12 @@
             }
             this.$container.html('').append($settings);
             Craft.initUiElements(this.$container);
-            Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendBodyHtml(response.data.bodyHtml);
+            await Craft.appendHeadHtml(response.data.headHtml);
+            await Craft.appendBodyHtml(response.data.bodyHtml);
           })
-          .catch(() => {
+          .catch((e) => {
             if (!this._ignoreFailedRequest) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
               this.$container.html('');
             }
           });

@@ -128,6 +128,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.trigger('beforeEnter');
+      this.trigger('beforeOpen');
 
       $(document.activeElement).trigger('blur');
 
@@ -135,20 +136,20 @@ Craft.LivePreview = Garnish.Base.extend(
         this.$shade = $('<div/>', {class: 'modal-shade dark'}).appendTo(
           Garnish.$bod
         );
+        this.$editorContainer = $('<div/>', {
+          class: 'lp-editor-container',
+        }).appendTo(Garnish.$bod);
         this.$previewContainer = $('<div/>', {
           class: 'lp-preview-container',
         }).appendTo(Garnish.$bod);
         this.$iframeContainer = $('<div/>', {
           class: 'lp-iframe-container',
         }).appendTo(this.$previewContainer);
-        this.$editorContainer = $('<div/>', {
-          class: 'lp-editor-container',
-        }).appendTo(Garnish.$bod);
 
         var $editorHeader = $('<header/>', {class: 'flex'}).appendTo(
           this.$editorContainer
         );
-        this.$editor = $('<form/>', {class: 'lp-editor'}).appendTo(
+        this.$editor = $('<form/>', {class: 'lp-content'}).appendTo(
           this.$editorContainer
         );
         this.$dragHandle = $('<div/>', {class: 'lp-draghandle'}).appendTo(
@@ -221,6 +222,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
       this.inPreviewMode = true;
       this.trigger('enter');
+      this.trigger('open');
     },
 
     createToken: function () {
@@ -274,6 +276,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.trigger('beforeExit');
+      this.trigger('beforeClose');
 
       $('html').removeClass('noscroll');
 
@@ -308,6 +311,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
       this.inPreviewMode = false;
       this.trigger('exit');
+      this.trigger('close');
     },
 
     moveFieldsBack: function () {
@@ -477,6 +481,7 @@ Craft.LivePreview = Garnish.Base.extend(
       }
 
       this.updateWidths();
+      this.trigger('drag');
     },
 
     _onDragStop: function () {
@@ -503,6 +508,14 @@ Craft.LivePreview = Garnish.Base.extend(
       previewUrl: null,
       previewAction: null,
       previewParams: {},
+    },
+
+    getActive: function () {
+      for (const preview of Craft.LivePreview.instances) {
+        if (preview.inPreviewMode) {
+          return preview;
+        }
+      }
     },
   }
 );

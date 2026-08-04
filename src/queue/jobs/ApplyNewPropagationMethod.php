@@ -14,11 +14,10 @@ use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\db\Table;
 use craft\errors\UnsupportedSiteException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
 use Throwable;
 
@@ -30,11 +29,10 @@ use Throwable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.8
  */
-class ApplyNewPropagationMethod extends BaseBatchedJob
+class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type to use
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type to use
      */
     public string $elementType;
 
@@ -52,10 +50,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
             ->site('*')
             ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
             ->unique()
@@ -91,17 +86,21 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
 
         // See what sites the element should exist in going forward
         /** @var ElementInterface $item */
-        $newSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($item), 'siteId');
+        $newSiteIds = array_map(
+            fn(array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($item),
+        );
 
         // What other sites are there?
         $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
 
         if (empty($otherSiteIds)) {
+            $this->resaveItem($item);
             return;
         }
 
         // Load the element in any sites that it's about to be deleted for
-        $otherSiteElements = $item::find()
+        $query = $item::find()
             ->id($item->id)
             ->siteId($otherSiteIds)
             ->structureId($item->structureId)
@@ -109,10 +108,16 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
             ->drafts(null)
             ->provisionalDrafts(null)
             ->orderBy([])
-            ->indexBy('siteId')
-            ->all();
+            ->indexBy('siteId');
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $otherSiteElements = $query->all();
 
         if (empty($otherSiteElements)) {
+            $this->resaveItem($item);
             return;
         }
 
@@ -120,7 +125,7 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
         Db::update(Table::ELEMENTS_SITES, [
             'uri' => null,
         ], [
-            'id' => ArrayHelper::getColumn($otherSiteElements, 'siteSettingsId'),
+            'id' => array_map(fn(ElementInterface $element) => $element->siteSettingsId, $otherSiteElements),
         ], [], false);
 
         // Duplicate those elements so their content can live on
@@ -179,22 +184,17 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
             }
 
             // This may support more than just the site it was saved in
-            $newElementSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($newElement), 'siteId');
+            $newElementSiteIds = array_map(
+                fn(array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($newElement),
+            );
             foreach ($newElementSiteIds as $newElementSiteId) {
                 unset($otherSiteElements[$newElementSiteId]);
                 $this->duplicatedElementIds[$item->id][$newElementSiteId] = $newElement->id;
             }
         }
 
-        // Now resave the original element
-        $item->setScenario(Element::SCENARIO_ESSENTIALS);
-        $item->resaving = true;
-
-        try {
-            $elementsService->saveElement($item, updateSearchIndex: false);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        $this->resaveItem($item);
     }
 
     /**
@@ -203,5 +203,24 @@ class ApplyNewPropagationMethod extends BaseBatchedJob
     protected function defaultDescription(): ?string
     {
         return Translation::prep('app', 'Applying new propagation method to elements');
+    }
+
+    /**
+     * Resave item that's being processed.
+     *
+     * @param mixed $item
+     * @return void
+     */
+    private function resaveItem(mixed $item): void
+    {
+        // Now resave the original element
+        $item->setScenario(Element::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        try {
+            Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+        }
     }
 }

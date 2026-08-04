@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
 use craft\console\Controller;
@@ -21,8 +20,10 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
+use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -176,8 +177,8 @@ EOD;
     /**
      * Generates an application ID and security key (if they don’t exist), and saves them in the `.env` file.
      *
-     * @since 4.2.7
      * @return int
+     * @since 4.2.7
      */
     public function actionKeys(): int
     {
@@ -251,9 +252,7 @@ EOD;
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
-            'validator' => function(string $input) {
-                return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
-            },
+            'validator' => fn(string $input) => in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]),
         ]);
         $this->_useEnvDefaults = !$envDriver || $envDriver === $this->driver;
 
@@ -268,9 +267,7 @@ EOD;
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
             'default' => $this->port ?? $this->_envDefault('CRAFT_DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
-            'validator' => function(string $input): bool {
-                return is_numeric($input);
-            },
+            'validator' => fn(string $input): bool => is_numeric($input),
         ]);
 
         userCredentials:
@@ -290,7 +287,6 @@ EOD;
             }
         }
 
-        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -328,7 +324,6 @@ EOD;
 
         test:
 
-        /** @phpstan-ignore-next-line */
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
@@ -524,6 +519,37 @@ EOD;
     }
 
     /**
+     * Creates database tables for storing message translations. (EXPERIMENTAL!)
+     *
+     * @return int
+     * @since 4.5.0
+     */
+    public function actionMessageTables(): int
+    {
+        $db = Craft::$app->getDb();
+        if ($db->tableExists('{{%source_message}}')) {
+            $this->stdout("The `source_message` table already exists.\n", Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+        if ($db->tableExists('{{%message}}')) {
+            $this->stdout("The `message` table already exists.\n", Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        require Craft::getAlias('@vendor/yiisoft/yii2/i18n/migrations/m150207_210500_i18n_init.php');
+        /** @phpstan-ignore-next-line */
+        $migration = new m150207_210500_i18n_init();
+        /** @phpstan-ignore-next-line */
+        if ($migration->up() === false) {
+            $this->stderr("An error occurred while creating the `source_message` and `message` tables.\n", Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout("The `source_message` and `message` tables were created successfully.\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Creates a database table for storing DB caches.
      *
      * @return int
@@ -547,6 +573,62 @@ EOD;
     }
 
     /**
+     * Prepares the Craft install to be deployed to Craft Cloud.
+     *
+     * @return int
+     * @since 4.5.0
+     */
+    public function actionCloud(): int
+    {
+        if (!$this->interactive) {
+            $this->stderr("The setup/cloud command must be run interactively.\n");
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $moduleInstalled = class_exists('craft\cloud\Module');
+        $message = $this->markdownToAnsi(sprintf('%s the `craftcms/cloud` extension …',
+            $moduleInstalled ? 'Updating' : 'Installing',
+        ));
+        $this->stdout(" → $message\n\n");
+
+        Craft::$app->getComposer()->install([
+            'craftcms/cloud' => '^3',
+        ], function($type, $buffer) {
+            if ($type === Process::ERR) {
+                $this->stderr($buffer);
+            } else {
+                $this->stdout($buffer);
+            }
+        });
+
+        $message = sprintf('Extension %s', $moduleInstalled ? 'updated' : 'installed');
+        $this->stdout("\n ✓ $message\n" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+
+        $message = $this->markdownToAnsi('Running `cloud/setup` …');
+        $this->stdout(" → $message\n\n");
+
+        try {
+            $script = $this->request->getScriptFile();
+        } catch (InvalidConfigException $e) {
+            $this->stdout('Error determining the `craft` executable: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $process = new Process([
+            App::phpExecutable() ?? 'php',
+            $script,
+            'cloud/setup',
+        ]);
+        $process->setTty(true);
+        $process->setTimeout(null);
+        $process->mustRun();
+
+        $this->stdout("\n ✓ The install is now prepared for Craft Cloud\n", Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Outputs a terminal command.
      *
      * @param string $command
@@ -554,7 +636,7 @@ EOD;
     private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
-        if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
+        if (!App::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
             if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));

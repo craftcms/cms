@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
@@ -60,7 +59,10 @@ class Asset extends Mutation
         if ($createDeleteMutation) {
             $mutationList['deleteAsset'] = [
                 'name' => 'deleteAsset',
-                'args' => ['id' => Type::nonNull(Type::int())],
+                'args' => [
+                    'id' => Type::nonNull(Type::int()),
+                    'hardDelete' => Type::boolean(),
+                ],
                 'resolve' => [Craft::createObject(AssetResolver::class), 'deleteAsset'],
                 'description' => 'Delete an asset.',
                 'type' => Type::boolean(),
@@ -79,7 +81,6 @@ class Asset extends Mutation
      */
     public static function createSaveMutation(Volume $volume): array
     {
-        $mutationName = AssetElement::gqlMutationNameByContext($volume);
         $mutationArguments = AssetMutationArguments::getArguments();
         $generatedType = AssetType::generateType($volume);
 
@@ -91,7 +92,7 @@ class Asset extends Mutation
         $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 
         return [
-            'name' => $mutationName,
+            'name' => "save_{$volume->handle}_Asset",
             'description' => 'Save an asset.',
             'args' => $mutationArguments,
             'resolve' => [$resolver, 'saveAsset'],

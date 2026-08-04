@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use yii\helpers\Markdown;
+use craft\helpers\Markdown;
 
 /**
  * Tip represents an author tip UI element that can be included in field layouts.
@@ -46,10 +46,10 @@ class Tip extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        if ($this->tip) {
+        $tip = trim($this->tip);
+        if ($tip !== '') {
             return $this->tip;
         }
-
         return $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
     }
 
@@ -58,7 +58,15 @@ class Tip extends BaseUiElement
      */
     protected function selectorIcon(): ?string
     {
-        return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
+        return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasSettings()
+    {
+        return true;
     }
 
     /**
@@ -89,6 +97,12 @@ class Tip extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
+        $tip = trim($this->tip);
+
+        if ($tip === '') {
+            return null;
+        }
+
         if (!$this->uid) {
             $this->dismissible = false;
         }
@@ -96,12 +110,17 @@ class Tip extends BaseUiElement
         $id = sprintf('tip%s', mt_rand());
         $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 
-        $classes = [$this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING];
+        $classes = [
+            'pane',
+            'mb-0',
+            $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING,
+        ];
+
         if ($this->dismissible) {
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));
+        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)), 'pre-encoded');
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',
@@ -130,18 +149,18 @@ JAVASCRIPT;
             $js = null;
         }
 
-        $html = "<div id=\"$id\" class=\"readable\">" .
-            "<blockquote class=\"note " . implode(' ', $classes) . "\">" .
-                $closeBtn .
-                $tip .
-            "</blockquote>" .
-            '</div>';
+        $html = Html::tag('div', $closeBtn . $tip, [
+            'class' => $classes,
+        ]);
 
         if ($js) {
             $html .= "<script>$js</script>";
         }
 
-        return $html;
+        return Html::tag('div', $html, [
+            ...$this->containerAttributes($element, $static),
+            'id' => $id,
+        ]);
     }
 
     /**

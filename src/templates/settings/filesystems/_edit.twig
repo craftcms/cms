@@ -1,6 +1,10 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
+{% set readOnly = readOnly ?? false %}
+
+{% if not readOnly and oldHandle %}
+    {{ hiddenInput('oldHandle', oldHandle) }}
+{% endif %}
 
 {{ forms.textField({
     first: true,
@@ -8,9 +12,11 @@
     id: 'name',
     name: 'name',
     value: (filesystem is defined ? filesystem.name : null),
-    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
     autofocus: true,
     required: true,
+    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
+    data: {'error-key': 'name'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -22,32 +28,11 @@
     autocorrect: false,
     autocapitalize: false,
     value: (filesystem is defined ? filesystem.handle : null),
-    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
     required: true,
+    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
+    data: {'error-key': 'handle'},
+    disabled: readOnly,
 }) }}
-
-{{ forms.lightswitchField({
-    label: 'Files in this filesystem have public URLs'|t('app'),
-    name: 'hasUrls',
-    on:   filesystem.hasUrls,
-    toggle: "url-field"
-}) }}
-
-<div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
-    {{ forms.autosuggestField({
-        label: "Base URL"|t('app'),
-        instructions: "The base URL to the files in this filesystem."|t('app'),
-        id: 'url',
-        class: ['ltr', 'fs-url'],
-        name: 'url',
-        suggestEnvVars: true,
-        suggestAliases: true,
-        value: (filesystem is defined ? filesystem.url : null),
-        errors: (filesystem is defined ? filesystem.getErrors('url') : null),
-        required: true,
-        placeholder: "//example.com/path/to/folder"
-    }) }}
-</div>
 
 <hr>
 
@@ -59,22 +44,30 @@
         name: 'type',
         options: fsOptions,
         value: className(filesystem),
-        toggle: true
+        toggle: true,
+        disabled: readOnly,
     }) }}
 {% endif %}
 
 {% for fsType in fsTypes %}
     {% set isCurrent = (fsType == className(filesystem)) %}
+    {% set fs = isCurrent ? filesystem : fsInstances[fsType] %}
+    {% set classes = [] %}
+    {% if not isCurrent %}
+        {% set classes = classes|merge(['hidden']) %}
+    {% endif %}
 
-    <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-        {% namespace 'types['~fsType~']' %}
-            {% if isCurrent %}
-                {{ filesystem.getSettingsHtml()|raw }}
-            {% else %}
-                {{ fsInstances[fsType].getSettingsHtml()|raw }}
-            {% endif %}
+    {% tag 'div' with {
+        id: fsType|id,
+        class: classes,
+    } %}
+        {% namespace 'types['~fsType|id~']' %}
+            {% autoescape false %}
+                {{ _self.fsUrlFields(fs, readOnly) }}
+                {{ readOnly ? fs.getReadOnlySettingsHtml() : fs.getSettingsHtml() }}
+            {% endautoescape %}
         {% endnamespace %}
-    </div>
+    {% endtag %}
 {% endfor %}
 
 
@@ -83,3 +76,37 @@
         new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
     {% endjs %}
 {% endif %}
+
+
+{% macro fsUrlFields(filesystem, disabled) %}
+    {% if filesystem.getShowHasUrlSetting() %}
+        {{ forms.lightswitchField({
+            label: 'Files in this filesystem have public URLs'|t('app'),
+            name: 'hasUrls',
+            id: 'has-urls',
+            on:   filesystem.hasUrls,
+            toggle: filesystem.getShowUrlSetting() ? "url-field-container" : null,
+            disabled: disabled,
+        }) }}
+    {% endif %}
+
+    {% if filesystem.getShowUrlSetting() %}
+        <div id="url-field-container" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
+            {{ forms.autosuggestField({
+                label: "Base URL"|t('app'),
+                instructions: "The base URL to the files in this filesystem."|t('app'),
+                id: 'url',
+                class: ['ltr', 'fs-url'],
+                name: 'url',
+                suggestEnvVars: true,
+                suggestAliases: true,
+                value: (filesystem is defined ? filesystem.url : null),
+                required: true,
+                placeholder: "//example.com/path/to/folder",
+                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+                data: {'error-key': 'url'},
+                disabled: disabled,
+            }) }}
+        </div>
+    {% endif %}
+{% endmacro %}

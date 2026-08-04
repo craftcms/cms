@@ -7,7 +7,9 @@
 
 namespace craft\errors;
 
+use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ArrayHelper;
 
 /**
  * InvalidElementException represents an exception caused by setting an invalid element.
@@ -23,7 +25,12 @@ class InvalidElementException extends ElementException
     public function __construct(ElementInterface $element, ?string $message = null, int $code = 0)
     {
         if ($message === null) {
-            $message = "The element “{$element}” is invalid.";
+            $error = ArrayHelper::firstValue($element->getFirstErrors());
+            $message = $error
+                ? str_replace('*', '', $error)
+                : Craft::t('app', 'The {type} is invalid.', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
         }
 
         parent::__construct($element, $message, $code);

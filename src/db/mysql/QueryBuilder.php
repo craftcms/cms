@@ -9,6 +9,8 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
+use craft\helpers\Db;
+use craft\helpers\Json;
 use yii\base\NotSupportedException;
 
 /**
@@ -47,10 +49,10 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         // Use the default charset and collation
         $dbConfig = Craft::$app->getConfig()->getDb();
         if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
-            $options .= " DEFAULT CHARACTER SET = $dbConfig->charset";
+            $options .= " DEFAULT CHARACTER SET = {$dbConfig->getCharset()}";
         }
-        if ($dbConfig->collation !== null && !preg_match('/\bCOLLATE\b/i', $options)) {
-            $options .= " DEFAULT COLLATE = $dbConfig->collation";
+        if (!preg_match('/\bCOLLATE\b/i', $options)) {
+            $options .= sprintf(' DEFAULT COLLATE = %s', $dbConfig->collation ?? Db::defaultCollation($this->db));
         }
 
         return parent::createTable($table, $columns, $options);
@@ -153,5 +155,42 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         return $sql;
+    }
+
+    /**
+     * Builds the SQL expression used to extract a value from a JSON column.
+     *
+     * @param string $column The column name to extract from
+     * @param string[] $path The path to the value to extract
+     * @return string
+     * @since 5.0.0
+     */
+    public function jsonExtract(string $column, array $path): string
+    {
+        $column = $this->db->quoteColumnName($column);
+        $path = $this->db->quoteValue(
+            sprintf('$.%s', implode('.', array_map(fn(string $seg) => sprintf('"%s"', $seg), $path)))
+        );
+
+        // Maria doesn't support ->/->> operators :(
+        if ($this->db->getIsMaria()) {
+            return "JSON_UNQUOTE(JSON_EXTRACT($column, $path))";
+        }
+
+        return "($column->>$path)";
+    }
+
+    /**
+     * Builds the SQL expression used to check whether a given value is contained by a target JSON value.
+     *
+     * @param string $targetSql SQL that expresses the JSON value
+     * @param mixed $value The value to check for (**not** JSON-encoded)
+     * @return string
+     * @since 5.0.0
+     */
+    public function jsonContains(string $targetSql, mixed $value): string
+    {
+        $value = $this->db->quoteValue(Json::encode($value));
+        return "JSON_CONTAINS($targetSql, $value)";
     }
 }

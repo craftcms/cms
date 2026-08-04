@@ -1,0 +1,43 @@
+{% set allowOverrides = allowOverrides ?? false %}
+
+{% embed '_includes/forms/componentSelect.twig' with {
+  options: options ?? craft.app.entries.getAllEntryTypes(),
+  showHandles: true,
+  showIndicators: showIndicators ?? allowOverrides,
+  showDescription: showDescription ?? allowOverrides,
+  createAction: (create ?? false) ? 'entry-types/edit' : null,
+  jsClass: jsClass ?? 'Craft.EntryTypeSelectInput',
+  jsSettings: {
+    allowOverrides,
+  }|merge(jsSettings ?? {}),
+} %}
+  {% block chips %}
+    {% for entryType in values %}
+      {% set overrides = allowOverrides ? {
+        name: entryType.original and entryType.name != entryType.original.name ? entryType.name : null,
+        handle: entryType.original and entryType.handle != entryType.original.handle ? entryType.handle : null,
+        description: entryType.original and entryType.description != entryType.original.description ? entryType.description : null,
+      }|filter : {} %}
+      <li>
+        {% set chip = chip(entryType, {
+          inputName: inputName ?? name ?? null,
+          inputValue: allowOverrides ? {
+            id: entryType.id,
+            group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
+          }|filter|merge(overrides)|json_encode : null,
+          checkbox: selectable ?? false,
+          showActionMenu: showActionMenus,
+          showHandle: showHandles,
+          showIndicators: showIndicators,
+          showDescription: showDescription,
+          hyperlink: hyperlinks,
+          overrides,
+        }) %}
+        {% if disabled %}
+          {% set chip = chip|removeClass('removable') %}
+        {% endif %}
+        {{ chip|raw }}
+      </li>
+    {% endfor %}
+  {% endblock %}
+{% endembed %}

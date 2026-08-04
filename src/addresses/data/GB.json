@@ -1,0 +1,877 @@
+{
+  "extraLocale": "cy",
+  "subdivisions": {
+    "Cambridgeshire": {
+      "name": "Cambridgeshire",
+      "local_name": "Cambridgeshire"
+    },
+    "Cumbria": {
+      "name": "Cumbria",
+      "local_name": "Cumbria"
+    },
+    "Derbyshire": {
+      "name": "Derbyshire",
+      "local_name": "Derbyshire"
+    },
+    "Devon": {
+      "name": "Devon",
+      "local_name": "Devon"
+    },
+    "Dorset": {
+      "name": "Dorset",
+      "local_name": "Dorset"
+    },
+    "East Sussex": {
+      "name": "East Sussex",
+      "local_name": "East Sussex"
+    },
+    "Essex": {
+      "name": "Essex",
+      "local_name": "Essex"
+    },
+    "Gloucestershire": {
+      "name": "Gloucestershire",
+      "local_name": "Gloucestershire"
+    },
+    "Hampshire": {
+      "name": "Hampshire",
+      "local_name": "Hampshire"
+    },
+    "Hertfordshire": {
+      "name": "Hertfordshire",
+      "local_name": "Hertfordshire"
+    },
+    "Kent": {
+      "name": "Kent",
+      "local_name": "Kent"
+    },
+    "Lancashire": {
+      "name": "Lancashire",
+      "local_name": "Lancashire"
+    },
+    "Leicestershire": {
+      "name": "Leicestershire",
+      "local_name": "Leicestershire"
+    },
+    "Lincolnshire": {
+      "name": "Lincolnshire",
+      "local_name": "Lincolnshire"
+    },
+    "Norfolk": {
+      "name": "Norfolk",
+      "local_name": "Norfolk"
+    },
+    "North Yorkshire": {
+      "name": "North Yorkshire",
+      "local_name": "North Yorkshire"
+    },
+    "Nottinghamshire": {
+      "name": "Nottinghamshire",
+      "local_name": "Nottinghamshire"
+    },
+    "Oxfordshire": {
+      "name": "Oxfordshire",
+      "local_name": "Oxfordshire"
+    },
+    "Somerset": {
+      "name": "Somerset",
+      "local_name": "Somerset"
+    },
+    "Staffordshire": {
+      "name": "Staffordshire",
+      "local_name": "Staffordshire"
+    },
+    "Suffolk": {
+      "name": "Suffolk",
+      "local_name": "Suffolk"
+    },
+    "Surrey": {
+      "name": "Surrey",
+      "local_name": "Surrey"
+    },
+    "Warwickshire": {
+      "name": "Warwickshire",
+      "local_name": "Warwickshire"
+    },
+    "West Sussex": {
+      "name": "West Sussex",
+      "local_name": "West Sussex"
+    },
+    "Westmorland and Furness": {
+      "name": "Westmorland and Furness",
+      "local_name": "Westmorland a Furness"
+    },
+    "Worcestershire": {
+      "name": "Worcestershire",
+      "local_name": "Worcestershire"
+    },
+    "London, City of": {
+      "name": "London, City of",
+      "local_name": "London, City of"
+    },
+    "Barking and Dagenham": {
+      "name": "Barking and Dagenham",
+      "local_name": "Barking and Dagenham"
+    },
+    "Barnet": {
+      "name": "Barnet",
+      "local_name": "Barnet"
+    },
+    "Bexley": {
+      "name": "Bexley",
+      "local_name": "Bexley"
+    },
+    "Brent": {
+      "name": "Brent",
+      "local_name": "Brent"
+    },
+    "Bromley": {
+      "name": "Bromley",
+      "local_name": "Bromley"
+    },
+    "Camden": {
+      "name": "Camden",
+      "local_name": "Camden"
+    },
+    "Croydon": {
+      "name": "Croydon",
+      "local_name": "Croydon"
+    },
+    "Ealing": {
+      "name": "Ealing",
+      "local_name": "Ealing"
+    },
+    "Enfield": {
+      "name": "Enfield",
+      "local_name": "Enfield"
+    },
+    "Greenwich": {
+      "name": "Greenwich",
+      "local_name": "Greenwich"
+    },
+    "Hackney": {
+      "name": "Hackney",
+      "local_name": "Hackney"
+    },
+    "Hammersmith and Fulham": {
+      "name": "Hammersmith and Fulham",
+      "local_name": "Hammersmith and Fulham"
+    },
+    "Haringey": {
+      "name": "Haringey",
+      "local_name": "Haringey"
+    },
+    "Harrow": {
+      "name": "Harrow",
+      "local_name": "Harrow"
+    },
+    "Havering": {
+      "name": "Havering",
+      "local_name": "Havering"
+    },
+    "Hillingdon": {
+      "name": "Hillingdon",
+      "local_name": "Hillingdon"
+    },
+    "Hounslow": {
+      "name": "Hounslow",
+      "local_name": "Hounslow"
+    },
+    "Islington": {
+      "name": "Islington",
+      "local_name": "Islington"
+    },
+    "Kensington and Chelsea": {
+      "name": "Kensington and Chelsea",
+      "local_name": "Kensington and Chelsea"
+    },
+    "Kingston upon Thames": {
+      "name": "Kingston upon Thames",
+      "local_name": "Kingston upon Thames"
+    },
+    "Lambeth": {
+      "name": "Lambeth",
+      "local_name": "Lambeth"
+    },
+    "Lewisham": {
+      "name": "Lewisham",
+      "local_name": "Lewisham"
+    },
+    "Merton": {
+      "name": "Merton",
+      "local_name": "Merton"
+    },
+    "Newham": {
+      "name": "Newham",
+      "local_name": "Newham"
+    },
+    "Redbridge": {
+      "name": "Redbridge",
+      "local_name": "Redbridge"
+    },
+    "Richmond upon Thames": {
+      "name": "Richmond upon Thames",
+      "local_name": "Richmond upon Thames"
+    },
+    "Southwark": {
+      "name": "Southwark",
+      "local_name": "Southwark"
+    },
+    "Sutton": {
+      "name": "Sutton",
+      "local_name": "Sutton"
+    },
+    "Tower Hamlets": {
+      "name": "Tower Hamlets",
+      "local_name": "Tower Hamlets"
+    },
+    "Waltham Forest": {
+      "name": "Waltham Forest",
+      "local_name": "Waltham Forest"
+    },
+    "Wandsworth": {
+      "name": "Wandsworth",
+      "local_name": "Wandsworth"
+    },
+    "Westminster": {
+      "name": "Westminster",
+      "local_name": "Westminster"
+    },
+    "Barnsley": {
+      "name": "Barnsley",
+      "local_name": "Barnsley"
+    },
+    "Birmingham": {
+      "name": "Birmingham",
+      "local_name": "Birmingham"
+    },
+    "Bolton": {
+      "name": "Bolton",
+      "local_name": "Bolton"
+    },
+    "Bradford": {
+      "name": "Bradford",
+      "local_name": "Bradford"
+    },
+    "Bury": {
+      "name": "Bury",
+      "local_name": "Bury"
+    },
+    "Calderdale": {
+      "name": "Calderdale",
+      "local_name": "Calderdale"
+    },
+    "Coventry": {
+      "name": "Coventry",
+      "local_name": "Coventry"
+    },
+    "Doncaster": {
+      "name": "Doncaster",
+      "local_name": "Doncaster"
+    },
+    "Dudley": {
+      "name": "Dudley",
+      "local_name": "Dudley"
+    },
+    "Gateshead": {
+      "name": "Gateshead",
+      "local_name": "Gateshead"
+    },
+    "Kirklees": {
+      "name": "Kirklees",
+      "local_name": "Kirklees"
+    },
+    "Knowsley": {
+      "name": "Knowsley",
+      "local_name": "Knowsley"
+    },
+    "Leeds": {
+      "name": "Leeds",
+      "local_name": "Leeds"
+    },
+    "Liverpool": {
+      "name": "Liverpool",
+      "local_name": "Liverpool"
+    },
+    "Manchester": {
+      "name": "Manchester",
+      "local_name": "Manchester"
+    },
+    "Newcastle upon Tyne": {
+      "name": "Newcastle upon Tyne",
+      "local_name": "Newcastle upon Tyne"
+    },
+    "North Tyneside": {
+      "name": "North Tyneside",
+      "local_name": "North Tyneside"
+    },
+    "Oldham": {
+      "name": "Oldham",
+      "local_name": "Oldham"
+    },
+    "Rochdale": {
+      "name": "Rochdale",
+      "local_name": "Rochdale"
+    },
+    "Rotherham": {
+      "name": "Rotherham",
+      "local_name": "Rotherham"
+    },
+    "St. Helens": {
+      "name": "St. Helens",
+      "local_name": "St. Helens"
+    },
+    "Salford": {
+      "name": "Salford",
+      "local_name": "Salford"
+    },
+    "Sandwell": {
+      "name": "Sandwell",
+      "local_name": "Sandwell"
+    },
+    "Sefton": {
+      "name": "Sefton",
+      "local_name": "Sefton"
+    },
+    "Sheffield": {
+      "name": "Sheffield",
+      "local_name": "Sheffield"
+    },
+    "Solihull": {
+      "name": "Solihull",
+      "local_name": "Solihull"
+    },
+    "South Tyneside": {
+      "name": "South Tyneside",
+      "local_name": "South Tyneside"
+    },
+    "Stockport": {
+      "name": "Stockport",
+      "local_name": "Stockport"
+    },
+    "Sunderland": {
+      "name": "Sunderland",
+      "local_name": "Sunderland"
+    },
+    "Tameside": {
+      "name": "Tameside",
+      "local_name": "Tameside"
+    },
+    "Trafford": {
+      "name": "Trafford",
+      "local_name": "Trafford"
+    },
+    "Wakefield": {
+      "name": "Wakefield",
+      "local_name": "Wakefield"
+    },
+    "Walsall": {
+      "name": "Walsall",
+      "local_name": "Walsall"
+    },
+    "Wigan": {
+      "name": "Wigan",
+      "local_name": "Wigan"
+    },
+    "Wirral": {
+      "name": "Wirral",
+      "local_name": "Wirral"
+    },
+    "Wolverhampton": {
+      "name": "Wolverhampton",
+      "local_name": "Wolverhampton"
+    },
+    "Bath and North East Somerset": {
+      "name": "Bath and North East Somerset",
+      "local_name": "Bath and North East Somerset"
+    },
+    "Bedford": {
+      "name": "Bedford",
+      "local_name": "Bedford"
+    },
+    "Blackburn with Darwen": {
+      "name": "Blackburn with Darwen",
+      "local_name": "Blackburn with Darwen"
+    },
+    "Blackpool": {
+      "name": "Blackpool",
+      "local_name": "Blackpool"
+    },
+    "Bournemouth, Christchurch and Poole": {
+      "name": "Bournemouth, Christchurch and Poole",
+      "local_name": "Bournemouth, Christchurch and Poole"
+    },
+    "Bracknell Forest": {
+      "name": "Bracknell Forest",
+      "local_name": "Bracknell Forest"
+    },
+    "Brighton and Hove": {
+      "name": "Brighton and Hove",
+      "local_name": "Brighton and Hove"
+    },
+    "Bristol, City of": {
+      "name": "Bristol, City of",
+      "local_name": "Bristol, City of"
+    },
+    "Buckinghamshire": {
+      "name": "Buckinghamshire",
+      "local_name": "Buckinghamshire"
+    },
+    "Central Bedfordshire": {
+      "name": "Central Bedfordshire",
+      "local_name": "Central Bedfordshire"
+    },
+    "Cheshire East": {
+      "name": "Cheshire East",
+      "local_name": "Cheshire East"
+    },
+    "Cheshire West and Chester": {
+      "name": "Cheshire West and Chester",
+      "local_name": "Cheshire West and Chester"
+    },
+    "Cornwall": {
+      "name": "Cornwall",
+      "local_name": "Cornwall"
+    },
+    "Darlington": {
+      "name": "Darlington",
+      "local_name": "Darlington"
+    },
+    "Derby": {
+      "name": "Derby",
+      "local_name": "Derby"
+    },
+    "Durham, County": {
+      "name": "Durham, County",
+      "local_name": "Durham, County"
+    },
+    "East Riding of Yorkshire": {
+      "name": "East Riding of Yorkshire",
+      "local_name": "East Riding of Yorkshire"
+    },
+    "Halton": {
+      "name": "Halton",
+      "local_name": "Halton"
+    },
+    "Hartlepool": {
+      "name": "Hartlepool",
+      "local_name": "Hartlepool"
+    },
+    "Herefordshire": {
+      "name": "Herefordshire",
+      "local_name": "Herefordshire"
+    },
+    "Isle of Wight": {
+      "name": "Isle of Wight",
+      "local_name": "Isle of Wight"
+    },
+    "Isles of Scilly": {
+      "name": "Isles of Scilly",
+      "local_name": "Isles of Scilly"
+    },
+    "Kingston upon Hull": {
+      "name": "Kingston upon Hull",
+      "local_name": "Kingston upon Hull"
+    },
+    "Leicester": {
+      "name": "Leicester",
+      "local_name": "Leicester"
+    },
+    "Luton": {
+      "name": "Luton",
+      "local_name": "Luton"
+    },
+    "Medway": {
+      "name": "Medway",
+      "local_name": "Medway"
+    },
+    "Middlesbrough": {
+      "name": "Middlesbrough",
+      "local_name": "Middlesbrough"
+    },
+    "Milton Keynes": {
+      "name": "Milton Keynes",
+      "local_name": "Milton Keynes"
+    },
+    "North East Lincolnshire": {
+      "name": "North East Lincolnshire",
+      "local_name": "North East Lincolnshire"
+    },
+    "North Lincolnshire": {
+      "name": "North Lincolnshire",
+      "local_name": "North Lincolnshire"
+    },
+    "North Northamptonshire": {
+      "name": "North Northamptonshire",
+      "local_name": "North Northamptonshire"
+    },
+    "North Somerset": {
+      "name": "North Somerset",
+      "local_name": "North Somerset"
+    },
+    "Northumberland": {
+      "name": "Northumberland",
+      "local_name": "Northumberland"
+    },
+    "Nottingham": {
+      "name": "Nottingham",
+      "local_name": "Nottingham"
+    },
+    "Peterborough": {
+      "name": "Peterborough",
+      "local_name": "Peterborough"
+    },
+    "Plymouth": {
+      "name": "Plymouth",
+      "local_name": "Plymouth"
+    },
+    "Portsmouth": {
+      "name": "Portsmouth",
+      "local_name": "Portsmouth"
+    },
+    "Reading": {
+      "name": "Reading",
+      "local_name": "Reading"
+    },
+    "Redcar and Cleveland": {
+      "name": "Redcar and Cleveland",
+      "local_name": "Redcar and Cleveland"
+    },
+    "Rutland": {
+      "name": "Rutland",
+      "local_name": "Rutland"
+    },
+    "Shropshire": {
+      "name": "Shropshire",
+      "local_name": "Shropshire"
+    },
+    "Slough": {
+      "name": "Slough",
+      "local_name": "Slough"
+    },
+    "South Gloucestershire": {
+      "name": "South Gloucestershire",
+      "local_name": "South Gloucestershire"
+    },
+    "Southampton": {
+      "name": "Southampton",
+      "local_name": "Southampton"
+    },
+    "Southend-on-Sea": {
+      "name": "Southend-on-Sea",
+      "local_name": "Southend-on-Sea"
+    },
+    "Stockton-on-Tees": {
+      "name": "Stockton-on-Tees",
+      "local_name": "Stockton-on-Tees"
+    },
+    "Stoke-on-Trent": {
+      "name": "Stoke-on-Trent",
+      "local_name": "Stoke-on-Trent"
+    },
+    "Swindon": {
+      "name": "Swindon",
+      "local_name": "Swindon"
+    },
+    "Telford and Wrekin": {
+      "name": "Telford and Wrekin",
+      "local_name": "Telford and Wrekin"
+    },
+    "Thurrock": {
+      "name": "Thurrock",
+      "local_name": "Thurrock"
+    },
+    "Torbay": {
+      "name": "Torbay",
+      "local_name": "Torbay"
+    },
+    "Warrington": {
+      "name": "Warrington",
+      "local_name": "Warrington"
+    },
+    "West Berkshire": {
+      "name": "West Berkshire",
+      "local_name": "West Berkshire"
+    },
+    "West Northamptonshire": {
+      "name": "West Northamptonshire",
+      "local_name": "West Northamptonshire"
+    },
+    "Wiltshire": {
+      "name": "Wiltshire",
+      "local_name": "Wiltshire"
+    },
+    "Windsor and Maidenhead": {
+      "name": "Windsor and Maidenhead",
+      "local_name": "Windsor and Maidenhead"
+    },
+    "Wokingham": {
+      "name": "Wokingham",
+      "local_name": "Wokingham"
+    },
+    "York": {
+      "name": "York",
+      "local_name": "York"
+    },
+    "Antrim and Newtownabbey": {
+      "name": "Antrim and Newtownabbey",
+      "local_name": "Antrim and Newtownabbey"
+    },
+    "Ards and North Down": {
+      "name": "Ards and North Down",
+      "local_name": "Ards and North Down"
+    },
+    "Armagh City, Banbridge and Craigavon": {
+      "name": "Armagh City, Banbridge and Craigavon",
+      "local_name": "Armagh City, Banbridge and Craigavon"
+    },
+    "Belfast City": {
+      "name": "Belfast City",
+      "local_name": "Belfast City"
+    },
+    "Causeway Coast and Glens": {
+      "name": "Causeway Coast and Glens",
+      "local_name": "Causeway Coast and Glens"
+    },
+    "Derry and Strabane": {
+      "name": "Derry and Strabane",
+      "local_name": "Derry and Strabane"
+    },
+    "Fermanagh and Omagh": {
+      "name": "Fermanagh and Omagh",
+      "local_name": "Fermanagh and Omagh"
+    },
+    "Lisburn and Castlereagh": {
+      "name": "Lisburn and Castlereagh",
+      "local_name": "Lisburn and Castlereagh"
+    },
+    "Mid and East Antrim": {
+      "name": "Mid and East Antrim",
+      "local_name": "Mid and East Antrim"
+    },
+    "Mid-Ulster": {
+      "name": "Mid-Ulster",
+      "local_name": "Mid-Ulster"
+    },
+    "Newry, Mourne and Down": {
+      "name": "Newry, Mourne and Down",
+      "local_name": "Newry, Mourne and Down"
+    },
+    "Aberdeen City": {
+      "name": "Aberdeen City",
+      "local_name": "Aberdeen City"
+    },
+    "Aberdeenshire": {
+      "name": "Aberdeenshire",
+      "local_name": "Sir Aberdein"
+    },
+    "Angus": {
+      "name": "Angus",
+      "local_name": "Angus"
+    },
+    "Argyll and Bute": {
+      "name": "Argyll and Bute",
+      "local_name": "Argyll a Bute"
+    },
+    "Clackmannanshire": {
+      "name": "Clackmannanshire",
+      "local_name": "Clackmannanshire"
+    },
+    "Dumfries and Galloway": {
+      "name": "Dumfries and Galloway",
+      "local_name": "Dumfries and Galloway"
+    },
+    "Dundee City": {
+      "name": "Dundee City",
+      "local_name": "Dundee City"
+    },
+    "East Ayrshire": {
+      "name": "East Ayrshire",
+      "local_name": "East Ayrshire"
+    },
+    "East Dunbartonshire": {
+      "name": "East Dunbartonshire",
+      "local_name": "East Dunbartonshire"
+    },
+    "East Lothian": {
+      "name": "East Lothian",
+      "local_name": "East Lothian"
+    },
+    "East Renfrewshire": {
+      "name": "East Renfrewshire",
+      "local_name": "East Renfrewshire"
+    },
+    "Edinburgh, City of": {
+      "name": "Edinburgh, City of",
+      "local_name": "Edinburgh, City of"
+    },
+    "Eilean Siar": {
+      "name": "Eilean Siar",
+      "local_name": "Eilean Siar"
+    },
+    "Falkirk": {
+      "name": "Falkirk",
+      "local_name": "Falkirk"
+    },
+    "Fife": {
+      "name": "Fife",
+      "local_name": "Fife"
+    },
+    "Glasgow City": {
+      "name": "Glasgow City",
+      "local_name": "Glasgow City"
+    },
+    "Highland": {
+      "name": "Highland",
+      "local_name": "Highland"
+    },
+    "Inverclyde": {
+      "name": "Inverclyde",
+      "local_name": "Inverclyde"
+    },
+    "Midlothian": {
+      "name": "Midlothian",
+      "local_name": "Midlothian"
+    },
+    "Moray": {
+      "name": "Moray",
+      "local_name": "Moray"
+    },
+    "North Ayrshire": {
+      "name": "North Ayrshire",
+      "local_name": "North Ayrshire"
+    },
+    "North Lanarkshire": {
+      "name": "North Lanarkshire",
+      "local_name": "North Lanarkshire"
+    },
+    "Orkney Islands": {
+      "name": "Orkney Islands",
+      "local_name": "Orkney Islands"
+    },
+    "Perth and Kinross": {
+      "name": "Perth and Kinross",
+      "local_name": "Perth and Kinross"
+    },
+    "Renfrewshire": {
+      "name": "Renfrewshire",
+      "local_name": "Renfrewshire"
+    },
+    "Scottish Borders": {
+      "name": "Scottish Borders",
+      "local_name": "Scottish Borders"
+    },
+    "Shetland Islands": {
+      "name": "Shetland Islands",
+      "local_name": "Shetland Islands"
+    },
+    "South Ayrshire": {
+      "name": "South Ayrshire",
+      "local_name": "South Ayrshire"
+    },
+    "South Lanarkshire": {
+      "name": "South Lanarkshire",
+      "local_name": "South Lanarkshire"
+    },
+    "Stirling": {
+      "name": "Stirling",
+      "local_name": "Stirling"
+    },
+    "West Dunbartonshire": {
+      "name": "West Dunbartonshire",
+      "local_name": "West Dunbartonshire"
+    },
+    "West Lothian": {
+      "name": "West Lothian",
+      "local_name": "West Lothian"
+    },
+    "Blaenau Gwent": {
+      "name": "Blaenau Gwent",
+      "local_name": "Blaenau Gwent"
+    },
+    "Bridgend": {
+      "name": "Bridgend",
+      "local_name": "Pen-y-bont ar Ogwr"
+    },
+    "Caerphilly": {
+      "name": "Caerphilly",
+      "local_name": "Caerffili"
+    },
+    "Cardiff": {
+      "name": "Cardiff",
+      "local_name": "Caerdydd"
+    },
+    "Carmarthenshire": {
+      "name": "Carmarthenshire",
+      "local_name": "Sir Gaerfyrddin"
+    },
+    "Ceredigion": {
+      "name": "Ceredigion",
+      "local_name": "Sir Ceredigion"
+    },
+    "Conwy": {
+      "name": "Conwy",
+      "local_name": "Conwy"
+    },
+    "Denbighshire": {
+      "name": "Denbighshire",
+      "local_name": "Sir Ddinbych"
+    },
+    "Flintshire": {
+      "name": "Flintshire",
+      "local_name": "Sir y Fflint"
+    },
+    "Gwynedd": {
+      "name": "Gwynedd",
+      "local_name": "Gwynedd"
+    },
+    "Isle of Anglesey": {
+      "name": "Isle of Anglesey",
+      "local_name": "Sir Ynys Môn"
+    },
+    "Merthyr Tydfil": {
+      "name": "Merthyr Tydfil",
+      "local_name": "Merthyr Tudful"
+    },
+    "Monmouthshire": {
+      "name": "Monmouthshire",
+      "local_name": "Sir Fynwy"
+    },
+    "Neath Port Talbot": {
+      "name": "Neath Port Talbot",
+      "local_name": "Castell-nedd Port Talbot"
+    },
+    "Newport": {
+      "name": "Newport",
+      "local_name": "Casnewydd"
+    },
+    "Pembrokeshire": {
+      "name": "Pembrokeshire",
+      "local_name": "Sir Benfro"
+    },
+    "Powys": {
+      "name": "Powys",
+      "local_name": "Powys"
+    },
+    "Rhondda Cynon Taff": {
+      "name": "Rhondda Cynon Taff",
+      "local_name": "Rhondda CynonTaf"
+    },
+    "Swansea": {
+      "name": "Swansea",
+      "local_name": "Abertawe"
+    },
+    "Torfaen": {
+      "name": "Torfaen",
+      "local_name": "Tor-faen"
+    },
+    "Vale of Glamorgan, The": {
+      "name": "Vale of Glamorgan, The",
+      "local_name": "Bro Morgannwg"
+    },
+    "Wrexham": {
+      "name": "Wrexham",
+      "local_name": "Wrecsam"
+    }
+  }
+}

@@ -14,12 +14,13 @@
     td,
     th {
       border: 1px solid #dfe2e5;
-      padding: 6px 13px;
+      padding-block: 6px;
+      padding-inline: 13px;
     }
 
     tr {
       background-color: var(--white);
-      border-top: 1px solid #c6cbd1;
+      border-block-start: 1px solid #c6cbd1;
     }
 
     tr:nth-child(2n) {

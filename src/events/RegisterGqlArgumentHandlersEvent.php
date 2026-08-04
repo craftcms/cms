@@ -7,7 +7,8 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
+use craft\gql\base\ArgumentHandlerInterface;
 
 /**
  * RegisterGqlArgumentHandlersEvent class.
@@ -18,7 +19,7 @@ use yii\base\Event;
 class RegisterGqlArgumentHandlersEvent extends Event
 {
     /**
-     * @var array[] List of Argument handler class names.
+     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface> List of Argument handler class names.
      */
     public array $handlers = [];
 }

@@ -8,10 +8,14 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\PreviewableFieldInterface;
+use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
+use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
@@ -26,7 +30,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements PreviewableFieldInterface, SortableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -39,9 +43,25 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function icon(): string
+    {
+        return 'clock';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function phpType(): string
     {
         return sprintf('\\%s|null', DateTime::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function dbType(): string
+    {
+        return Schema::TYPE_STRING;
     }
 
     /**
@@ -95,7 +115,6 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     {
         $rules = parent::defineRules();
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], TimeValidator::class, 'min' => $this->min];
 
         return $rules;
     }
@@ -103,15 +122,20 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentColumnType(): string
+    public function getSettingsHtml(): ?string
     {
-        return Schema::TYPE_TIME;
+        return $this->settingsHtml(false);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): ?string
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
     {
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
@@ -121,6 +145,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
             'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -135,15 +160,15 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/time.twig', [
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
-            'minTime' => $this->min,
-            'maxTime' => $this->max,
+            'minTime' => DateTimeHelper::timeToSeconds($this->min),
+            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
             'minuteIncrement' => $this->minuteIncrement,
         ]);
     }
@@ -169,7 +194,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
@@ -181,7 +206,18 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new DateTime();
+        }
+        return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$value) {
             return null;
@@ -205,10 +241,27 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValueForDb(mixed $value, ?ElementInterface $element): mixed
+    {
+        // Bypass Db::prepareDateForDb()
+        return $this->serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EmptyFieldConditionRule::class;
     }
 
     /**

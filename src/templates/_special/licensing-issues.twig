@@ -1,0 +1,112 @@
+{% extends '_layouts/base' %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set bodyClass = 'licensing-issues' %}
+{% set title = 'License purchase required.'|t('app') %}
+
+{% do view.registerTranslations('app', [
+  'Continue to the control panel',
+  'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}',
+]) %}
+
+{% block body %}
+  <div id="licensing-issues" class="pane">
+    <div class="readable">
+      <h1>
+        {{ 'License purchase required.'|t('app') }}
+      </h1>
+
+      <p>
+        {{ 'The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:'|t('app', {
+          total: issues|length,
+        }) }}
+      </p>
+
+      <ul>
+        {% for issue in issues %}
+          <li>{{ issue[1] }}</li>
+        {% endfor %}
+      </ul>
+
+      <div class="buttons">
+        <div class="flex mb-0">
+          {% set linkText = 'Resolve now'|t('app') %}
+          {{ tag('a', {
+            class: ['btn', 'link-btn'],
+            href: cartUrl,
+            target: '_blank',
+            text: linkText,
+            aria: {label: linkText},
+          }) }}
+          <span>
+            {{ 'or <a href="{url}">try before buying</a>'|t('app', {
+              url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
+            })|raw }}
+          </span>
+        </div>
+
+        {{ forms.button({
+          id: 'refresh-btn',
+          icon: 'refresh',
+          label: 'Refresh'|t('app'),
+          class: 'hairline',
+          spinner: true,
+        }) }}
+      </div>
+    </div>
+  </div>
+  <p id="continue" class="light" role="timer"></p>
+{% endblock %}
+
+{% css %}
+  html {
+    height: 100%;
+  }
+{% endcss %}
+
+{% js %}
+  const $refreshBtn = $('#refresh-btn');
+  $refreshBtn.on('click', async () => {
+    $refreshBtn.addClass('loading');
+    try {
+      await Craft.sendApiRequest('GET', 'ping');
+      location.reload();
+    } finally {
+      $refreshBtn.removeClass('loading');
+    }
+  });
+
+  let duration = {{ duration|json_encode|raw }};
+  const hash = {{ hash|json_encode|raw }};
+  const $continue = $('#continue');
+  const updateContinue = async () => {
+    if (duration) {
+      const message = Craft.t('app', 'Continue to the control panel in {duration, number} {duration, plural, =1{second} other{seconds}}…', {
+        duration,
+      });
+      $continue.text(message);
+      setTimeout(() => {
+        duration--;
+        updateContinue();
+      }, 1000);
+    } else {
+      await Craft.sendActionRequest('POST', 'app/set-license-shun-cookie', {
+        data: {
+          hash,
+        },
+      });
+      $continue
+        .empty()
+        .removeAttr('role')
+        .attr('aria-live', 'polite')
+        .append($('<a/>', {
+          text: Craft.t('app', 'Continue to the control panel'),
+          class: 'go',
+          href: document.location.href,
+        }));
+    }
+  };
+
+  updateContinue();
+{% endjs %}

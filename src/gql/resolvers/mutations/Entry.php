@@ -9,19 +9,21 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\behaviors\DraftBehavior;
-use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
-use craft\helpers\Db;
+use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\Site;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Entry
@@ -52,17 +54,38 @@ class Entry extends ElementMutationResolver
 
         // If saving an entry for a site and the enabled status is provided, honor it.
         if (array_key_exists('enabled', $arguments)) {
-            if (!empty($arguments['siteId'])) {
-                $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
-                // Set the global status to true if it's currently disabled,
-                // and we're enabling entry for a site
-                if ($arguments['enabled'] && !$entry->enabled) {
+            try {
+                $showStatusField = $entry->getType()->showStatusField;
+            } catch (InvalidConfigException) {
+                $showStatusField = true;
+            }
+
+            if ($showStatusField) {
+                if (!empty($arguments['siteId'])) {
+                    $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
+                    // Set the global status to true if it's currently disabled,
+                    // and we're enabling entry for a site
+                    if ($arguments['enabled'] && !$entry->enabled) {
+                        $entry->enabled = $arguments['enabled'];
+                    }
+                } else {
                     $entry->enabled = $arguments['enabled'];
                 }
-            } else {
-                $entry->enabled = $arguments['enabled'];
             }
             unset($arguments['enabled']);
+        }
+
+        // If saving an entry the slug is provided, check if we should allow changing it.
+        if (array_key_exists('slug', $arguments)) {
+            try {
+                $showSlugField = $entry->getType()->showSlugField;
+            } catch (InvalidConfigException) {
+                $showSlugField = true;
+            }
+
+            if (!$showSlugField) {
+                unset($arguments['slug']);
+            }
         }
 
         // TODO refactor saving draft to its own method in 4.0
@@ -73,7 +96,14 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -85,6 +115,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -98,25 +131,31 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
+        $hardDelete = $arguments['hardDelete'] ?? false;
+
+        if ($siteId) {
+            $this->requireAllowedSite($siteId);
+        }
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
-            return;
+            return false;
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
+        $section = $entry->getSection();
+        $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
     /**
@@ -140,8 +179,16 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
+        $section = $entry->getSection();
+        $field = $entry->getField();
+
+        if ($section) {
+            $this->requireSchemaAction("sections.$section->uid", 'save');
+        } elseif ($field) {
+            $this->requireSchemaAction("nestedentryfields.$field->uid", 'save');
+        } else {
+            throw new Error('Unable to perform the action.');
+        }
 
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
@@ -178,8 +225,16 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->getTypeId());
-        $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
+        $section = $draft->getSection();
+        $field = $draft->getField();
+
+        if ($section) {
+            $this->requireSchemaAction("sections.$section->uid", 'save');
+        } elseif ($field) {
+            $this->requireSchemaAction("nestedentryfields.$field->uid", 'save');
+        } else {
+            throw new Error('Unable to perform the action.');
+        }
 
         /** @var EntryElement $draft */
         $draft = Craft::$app->getDrafts()->applyDraft($draft);
@@ -196,22 +251,46 @@ class Entry extends ElementMutationResolver
      */
     protected function getEntryElement(array $arguments): EntryElement
     {
-        /** @var Section $section */
+        /** @var Section|null $section */
         $section = $this->getResolutionData('section');
+        /** @var ElementContainerFieldInterface|null $field */
+        $field = $this->getResolutionData('field');
         /** @var EntryType $entryType */
         $entryType = $this->getResolutionData('entryType');
 
         // Figure out whether the mutation is about an already saved entry
-        $canIdentify = $section->type === Section::TYPE_SINGLE || !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
+        $canIdentify = (
+            $section?->type === Section::TYPE_SINGLE ||
+            !empty($arguments['id']) ||
+            !empty($arguments['uid']) ||
+            !empty($arguments['draftId'])
+        );
 
         // Check if relevant schema is present
-        $this->requireSchemaAction('entrytypes.' . $entryType->uid, $canIdentify ? 'save' : 'create');
+        $action = $canIdentify ? 'save' : 'create';
+        if ($section) {
+            $this->requireSchemaAction("sections.$section->uid", $action);
+        } elseif ($field) {
+            $this->requireSchemaAction("nestedentryfields.$field->uid", $action);
+        } else {
+            throw new Error('Unable to perform the action.');
+        }
 
         $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
+            if (isset($arguments['siteId'])) {
+                $this->requireAllowedSite($arguments['siteId']);
+                $siteId = $arguments['siteId'];
+            } else {
+                $siteId = array_map(fn(Site $site) => $site->id, Gql::getAllowedSites());
+                $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+                if (in_array($primarySiteId, $siteId)) {
+                    $siteId = $primarySiteId;
+                }
+            }
+
             // Prepare the element query
-            $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
             $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
@@ -225,12 +304,19 @@ class Entry extends ElementMutationResolver
             $entry = $elementService->createElement(EntryElement::class);
         }
 
-        // If they are identifying a specific entry, don't allow changing the section ID.
-        if ($canIdentify && $entry->sectionId !== $section->id) {
-            throw new Error('Impossible to change the section of an existing entry');
+        // If they are identifying a specific entry, don't allow changing the section/field ID.
+        if ($canIdentify) {
+            if ($section) {
+                if ($entry->sectionId !== $section->id) {
+                    throw new Error('Impossible to change the section of an existing entry');
+                }
+            } elseif ($entry->fieldId !== $field->id) {
+                throw new Error('Impossible to change the field of an existing entry');
+            }
         }
 
-        $entry->sectionId = $section->id;
+        $entry->sectionId = $section?->id;
+        $entry->fieldId = $field?->id;
 
         // Null the field layout ID in case the entry type changes.
         if ($entry->getTypeId() !== $entryType->id) {
@@ -251,18 +337,24 @@ class Entry extends ElementMutationResolver
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
-        /** @var Section $section */
+        /** @var Section|null $section */
         $section = $this->getResolutionData('section');
+        /** @var ElementContainerFieldInterface|null $field */
+        $field = $this->getResolutionData('field');
         /** @var EntryType $entryType */
         $entryType = $this->getResolutionData('entryType');
 
+        if ($field) {
+            // nested entries won’t be queried if a field param isn’t set
+            $entryQuery->fieldId($field->id);
+        }
         if (!empty($arguments['draftId'])) {
             $entryQuery->draftId($arguments['draftId']);
 
             if (array_key_exists('provisional', $arguments)) {
                 $entryQuery->provisionalDrafts($arguments['provisional']);
             }
-        } elseif ($section->type === Section::TYPE_SINGLE) {
+        } elseif ($section?->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
         } elseif (!empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);

@@ -50,7 +50,7 @@ class CraftSupport extends Widget
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@appicons/buoey.svg');
+        return 'life-ring';
     }
 
     /**
@@ -110,11 +110,9 @@ class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(function($id, $settings) {
-            return <<<JS
+        $view->registerJsWithVars(fn($id, $settings) => <<<JS
 new Craft.CraftSupportWidget($id, $settings);
-JS;
-        }, [
+JS, [
             $this->id,
             [
                 'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),
@@ -122,7 +120,7 @@ JS;
                     'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
                     'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
                     'body' => $body,
-                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->getEditionName()),
+                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->edition->name),
                     'phpVersion' => App::phpVersion(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
                     'db' => sprintf('%s %s', $dbDriver, App::normalizeVersion($db->getSchema()->getServerVersion())),
@@ -139,10 +137,6 @@ JS;
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,
-            'buoeyIcon' => file_get_contents($iconsDir . '/buoey.svg'),
-            'bullhornIcon' => file_get_contents($iconsDir . '/bullhorn.svg'),
-            'seIcon' => file_get_contents($iconsDir . '/craft-stack-exchange.svg'),
-            'ghIcon' => file_get_contents($iconsDir . '/github.svg'),
             'showBackupOption' => $showBackupOption,
             'bundleUrl' => $assetBundle->baseUrl,
         ]);

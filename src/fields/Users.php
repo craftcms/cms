@@ -40,6 +40,14 @@ class Users extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public static function icon(): string
+    {
+        return 'user-group';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function elementType(): string
     {
         return User::class;
@@ -56,7 +64,7 @@ class Users extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function valueType(): string
+    public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', UserQuery::class, ElementCollection::class, User::class);
     }
@@ -93,7 +101,7 @@ class Users extends BaseRelationField
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $userGroupUids = $allowedEntities['usergroups'] ?? [];
 
-        if (in_array('everyone', $userGroupUids, false)) {
+        if (in_array('everyone', $userGroupUids, false) || in_array('solo', $userGroupUids, false)) {
             return [];
         }
 

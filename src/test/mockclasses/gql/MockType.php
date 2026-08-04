@@ -22,7 +22,7 @@ class MockType extends ScalarType
      */
     public static function getType(): MockType
     {
-        return GqlEntityRegistry::getEntity(self::getName()) ?: GqlEntityRegistry::createEntity(self::getName(), new self());
+        return GqlEntityRegistry::getOrCreate(self::getName(), fn() => new self());
     }
 
     /**

@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\FieldLayout;
-use yii\base\Event;
 
 /**
  * RegisterElementFieldLayoutsEvent class.
@@ -19,9 +19,9 @@ use yii\base\Event;
 class RegisterElementFieldLayoutsEvent extends Event
 {
     /**
-     * @var string The selected source’s key
+     * @var string|null The selected source’s key
      */
-    public string $source;
+    public ?string $source = null;
 
     /**
      * @var FieldLayout[] List of all of the field layouts associated with elements from the given source

@@ -10,6 +10,8 @@ namespace craft\behaviors;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutProviderInterface;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -26,8 +28,7 @@ use yii\base\Model;
 class FieldLayoutBehavior extends Behavior
 {
     /**
-     * @var string|null The element type that the field layout will be associated with
-     * @phpstan-var class-string<ElementInterface>|null
+     * @var class-string<ElementInterface>|null The element type that the field layout will be associated with
      */
     public ?string $elementType = null;
 
@@ -115,13 +116,27 @@ class FieldLayoutBehavior extends Behavior
         try {
             $id = $this->getFieldLayoutId();
         } catch (InvalidConfigException) {
-            return $this->_fieldLayout = new FieldLayout([
+            $id = null;
+        }
+
+        if ($id) {
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($id, true);
+            if (!$fieldLayout) {
+                throw new InvalidConfigException('Invalid field layout ID: ' . $id);
+            }
+        } else {
+            $fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);
         }
 
-        if (($fieldLayout = Craft::$app->getFields()->getLayoutById($id)) === null) {
-            throw new InvalidConfigException('Invalid field layout ID: ' . $id);
+        if ($this->owner instanceof EntryType) {
+            // Set the provider to the original entry type, so it uses the original provider handle
+            // (see https://github.com/craftcms/cms/pull/17213)
+            // todo: FieldLayoutProviderInterface could define a getProvider() method
+            $fieldLayout->provider = $this->owner->original ?? $this->owner;
+        } elseif ($this->owner instanceof FieldLayoutProviderInterface) {
+            $fieldLayout->provider = $this->owner;
         }
 
         return $this->_fieldLayout = $fieldLayout;

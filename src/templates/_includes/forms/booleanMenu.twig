@@ -8,6 +8,7 @@
         'boolean-menu': true,
         target: toggle ?? false,
         'reverse-target': reverseToggle ?? false,
+        'target-prefix': false,
     },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
@@ -16,18 +17,14 @@
         label: yesLabel ?? 'Yes'|t('app'),
         value: '1',
         data: {
-            data: {
-                status: 'green',
-            },
+            status: 'enabled',
         },
     },
     {
         label: noLabel ?? 'No'|t('app'),
         value: '0',
         data: {
-            data: {
-                status: 'white',
-            },
+            status: 'white',
         },
     },
 ] %}
@@ -38,4 +35,5 @@
 
 {% include '_includes/forms/selectize' with {
     includeEnvVars: false,
+    value: value ?? '0',
 }%}

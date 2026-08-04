@@ -114,26 +114,38 @@ const getters = {
     const trials = [];
 
     // CMS trial
+    const cmsTeamEdition = cmsEditions.find(
+      (edition) => edition.handle === 'team'
+    );
     const cmsProEdition = cmsEditions.find(
       (edition) => edition.handle === 'pro'
     );
-    const cmsProEditionIndex = getCmsEditionIndex(cmsProEdition.handle);
+    const cmsTeamEditionIndex = getCmsEditionIndex(cmsTeamEdition.handle);
 
-    if (
-      cmsProEdition &&
-      licensedEdition < cmsProEditionIndex &&
-      licensedEdition < CraftEdition
-    ) {
-      trials.push({
-        type: 'cms-edition',
-        name: 'Craft',
-        iconUrl: craftLogo,
-        editionHandle: 'pro',
-        editionName: 'Pro',
-        price: cmsProEdition.price,
-        navigateTo: '/upgrade-craft',
-        showEditionBadge: true,
-      });
+    if (licensedEdition < CraftEdition) {
+      if (cmsTeamEdition && CraftEdition === cmsTeamEditionIndex) {
+        trials.push({
+          type: 'cms-edition',
+          name: 'Craft',
+          iconUrl: craftLogo,
+          editionHandle: 'team',
+          editionName: 'Team',
+          price: cmsTeamEdition.price,
+          navigateTo: '/upgrade-craft',
+          showEditionBadge: true,
+        });
+      } else if (cmsProEdition) {
+        trials.push({
+          type: 'cms-edition',
+          name: 'Craft',
+          iconUrl: craftLogo,
+          editionHandle: 'pro',
+          editionName: 'Pro',
+          price: cmsProEdition.price,
+          navigateTo: '/upgrade-craft',
+          showEditionBadge: true,
+        });
+      }
     }
 
     // Plugin trials
@@ -412,7 +424,7 @@ const actions = {
       const pluginHandles = [];
       const pluginLicenseInfo = rootState.craft.pluginLicenseInfo;
 
-      for (let pluginHandle in pluginLicenseInfo) {
+      for (const pluginHandle in pluginLicenseInfo) {
         if (
           Object.prototype.hasOwnProperty.call(
             pluginLicenseInfo,
@@ -448,7 +460,11 @@ const actions = {
               continue;
             }
 
-            if (info.licenseKey && info.edition === info.licensedEdition) {
+            if (
+              !info.isTrial &&
+              info.licenseKey &&
+              info.edition === info.licensedEdition
+            ) {
               continue;
             }
 

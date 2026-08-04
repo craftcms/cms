@@ -1,0 +1,63 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set id = id ?? "selectize#{random()}" %}
+{% set value = value ?? null %}
+{% set small = small ?? false %}
+{% set static = static ?? false %}
+
+{% set hasValue = value or value is same as('0') %}
+
+{% tag 'div' with {
+  id,
+  class: {
+    'icon-picker': true,
+    small,
+  }|filter|keys,
+} %}
+  {% tag 'div' with {
+    class: {
+      'icon-picker--icon': true,
+      small,
+    }|filter|keys,
+    title: hasValue ? value : false,
+    role: hasValue ? 'img' : false,
+    lang: craft.app.getTargetLanguage() starts with 'en' ? false : 'en',
+    aria: {
+      label: hasValue ? value : false,
+    },
+  } %}
+    {% if hasValue %}
+      {{ svg("@appicons/#{value}.svg") }}
+    {% endif %}
+  {% endtag %}
+
+  {% if not static %}
+    {{ forms.button({
+      class: {
+        'icon-picker--choose-btn': true,
+        small,
+        hidden: hasValue and small,
+      }|filter|keys,
+      label: hasValue ? 'Change'|t('app') : 'Choose'|t('app'),
+    }) }}
+
+    {{ forms.button({
+      class: {
+        'icon-picker--remove-btn': true,
+        small,
+        hidden: not hasValue,
+      }|filter|keys,
+      label: 'Remove'|t('app'),
+    }) }}
+
+    {% if name ?? false %}
+      {{ hiddenInput(name, value ?? '') }}
+    {% endif %}
+  {% endif %}
+{% endtag %}
+
+{% js %}
+  new Craft.IconPicker('#{{ id|namespaceInputId }}', {
+    freeOnly: {{ (freeOnly ?? false)|json_encode }},
+  });
+{% endjs %}

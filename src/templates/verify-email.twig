@@ -1,0 +1,18 @@
+{% extends "_layouts/message" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = 'Verify your email address'|t('app') %}
+
+{% block message %}
+  <form method="post" accept-charset="UTF-8">
+    {{ hiddenInput('uid', id) }}
+    {{ hiddenInput('code', code) }}
+    {{ csrfInput() }}
+
+    <h2 class="first">{{ 'Verify your email address'|t('app') }}</h2>
+
+    <div class="buttons">
+      <button class="btn submit" type="submit">{{ 'Verify'|t('app') }}</button>
+    </div>
+  </form>
+{% endblock %}

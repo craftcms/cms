@@ -9,12 +9,12 @@ namespace craft\gql\directives;
 
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Markdown as MarkdownHelper;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use yii\helpers\Markdown as MarkdownHelper;
 
 /**
  * Markdown GraphQL Directive
@@ -32,12 +32,10 @@ class Markdown extends Directive
      */
     public static function create(): GqlDirective
     {
-        if ($type = GqlEntityRegistry::getEntity(self::name())) {
-            return $type;
-        }
+        $typeName = static::name();
 
-        return GqlEntityRegistry::createEntity(static::name(), new self([
-            'name' => static::name(),
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new self([
+            'name' => $typeName,
             'locations' => [
                 DirectiveLocation::FIELD,
             ],

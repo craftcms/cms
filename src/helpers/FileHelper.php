@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
@@ -16,7 +17,6 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
 use UnexpectedValueException;
-use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -54,7 +54,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Remove any file protocol wrappers
-        $path = StringHelper::removeLeft($path, 'file://');
+        $path = preg_replace('/^(file:\\/\\/)*/i', '', $path);
 
         // Is this a UNC network share path?
         $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
@@ -133,7 +133,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $from = static::absolutePath($from, ds: $ds);
         }
 
-        return $from . $ds . $to;
+        return static::normalizePath($from . $ds . $to, $ds);
     }
 
     /**
@@ -254,17 +254,14 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // Remove invisible chars from the filename
         // https://github.com/craftcms/cms/issues/12741
-        // Remove soft hyphens (00ad), no break (0083),
-        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
-        // invisible times (2062), invisible comma (2063), invisible plus (2064),
-        // zero width non-brak space (feff) in the name
-        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+        $filename = preg_replace(StringHelper::invisibleCharsRegex(), '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
             $filename = StringHelper::replaceMb4($filename, '');
         }
@@ -366,10 +363,19 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
-        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        try {
+            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        } catch (ErrorException $e) {
+            $mimeType = null;
+        }
 
-        // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
+        if (
+            // Be forgiving of SVG files, etc., that don't have an XML declaration
+            // also, if we're not supposed to check the extension, but the extension is mp3 and the reported mime type is application/octet-stream,
+            // check by extension anyway
+            ($checkExtension || (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'mp3')) &&
+            ($mimeType === null || !static::canTrustMimeType($mimeType))
+        ) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
@@ -461,6 +467,28 @@ class FileHelper extends \yii\helpers\FileHelper
                 static::createDirectory($dir);
             } else {
                 throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
+            }
+        }
+
+        if (!static::isWritable($file)) {
+            throw new ErrorException("The file path \"$file\" is not writable.");
+        }
+
+        if (function_exists('disk_free_space')) {
+            $freeBytes = disk_free_space($dir);
+
+            if ($freeBytes === false) {
+                Craft::warning("Could not determine the free disk space for \"$dir\".");
+            } else {
+                $bytes = StringHelper::byteLength($contents);
+                if ($bytes > $freeBytes) {
+                    throw new ErrorException(sprintf(
+                        "Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+                        $file,
+                        $freeBytes,
+                        $bytes,
+                    ));
+                }
             }
         }
 
@@ -582,7 +610,7 @@ class FileHelper extends \yii\helpers\FileHelper
                         static::removeDirectory($path, $options);
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
-                        if (strpos($e->getMessage(), 'No such file or directory') === false) {
+                        if (!str_contains($e->getMessage(), 'No such file or directory')) {
                             Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }
@@ -726,10 +754,10 @@ class FileHelper extends \yii\helpers\FileHelper
             $mutex = Craft::$app->getMutex();
             $name = uniqid('test_lock', true);
             if (!$mutex->acquire($name)) {
-                throw new Exception('Unable to acquire test lock.');
+                throw new MutexException($name, 'Unable to acquire test lock.');
             }
             if (!$mutex->release($name)) {
-                throw new Exception('Unable to release test lock.');
+                throw new MutexException($name, 'Unable to release test lock.');
             }
             self::$_useFileLocks = true;
         } catch (Throwable $e) {
@@ -854,11 +882,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * Return a file extension for the given MIME type.
      *
      * @param string $mimeType
+     * @param bool $preferShort
+     * @param string|null $magicFile
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType(string $mimeType): string
+    public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
         // cover the ambiguous, web-friendly MIME types up front
         switch (strtolower($mimeType)) {
@@ -881,7 +911,7 @@ class FileHelper extends \yii\helpers\FileHelper
             case 'video/quicktime': return 'mov';
         }
 
-        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+        $extensions = self::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
             throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
@@ -898,11 +928,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        self::$_filesToBeDeleted[] = $filename;
-
-        if (count(self::$_filesToBeDeleted) === 1) {
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [static::class, 'deleteQueuedFiles']);
+        if (empty(self::$_filesToBeDeleted)) {
+            register_shutdown_function([static::class, 'deleteQueuedFiles']);
         }
+
+        self::$_filesToBeDeleted[] = $filename;
     }
 
     /**
@@ -917,6 +947,8 @@ class FileHelper extends \yii\helpers\FileHelper
                 self::unlink($source);
             }
         }
+
+        self::$_filesToBeDeleted = [];
     }
 
     /**

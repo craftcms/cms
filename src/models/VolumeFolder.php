@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\Model;
 use craft\helpers\Html;
 use yii\base\InvalidConfigException;
@@ -54,6 +55,13 @@ class VolumeFolder extends Model
     public ?string $uid = null;
 
     /**
+     * @var FsInterface|null
+     * @see getFs()
+     * @see setFs()
+     */
+    private ?FsInterface $_fs = null;
+
+    /**
      * @var VolumeFolder[]|null
      */
     private ?array $_children = null;
@@ -84,6 +92,8 @@ class VolumeFolder extends Model
     }
 
     /**
+     * Returns the volume this folder belongs to.
+     *
      * @return Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
@@ -98,6 +108,28 @@ class VolumeFolder extends Model
         }
 
         return $volume;
+    }
+
+    /**
+     * Return the filesystem this folder belongs to.
+     *
+     * @return FsInterface
+     * @since 5.0.0
+     */
+    public function getFs(): FsInterface
+    {
+        return $this->_fs ?? $this->getVolume()->getFs();
+    }
+
+    /**
+     * Sets the filesystem this folder belongs to.
+     *
+     * @param FsInterface $fs
+     * @since 5.0.0
+     */
+    public function setFs(FsInterface $fs): void
+    {
+        $this->_fs = $fs;
     }
 
     /**
@@ -139,7 +171,7 @@ class VolumeFolder extends Model
                 'handle' => $volume->handle,
             ];
         } else {
-            $canRename = $canCreate & $userSession->checkPermission("deleteAssets:$volume->uid");
+            $canRename = $canCreate && $userSession->checkPermission("deleteAssets:$volume->uid");
 
             $info += [
                 'key' => "folder:$this->uid",
@@ -203,11 +235,7 @@ class VolumeFolder extends Model
      */
     public function getChildren(): array
     {
-        if (isset($this->_children)) {
-            return $this->_children;
-        }
-
-        return $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+        return $this->_children ?? ($this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]));
     }
 
     /**

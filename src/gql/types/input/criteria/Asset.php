@@ -26,11 +26,9 @@ class Asset extends InputObjectType
     {
         $typeName = 'AssetCriteriaInput';
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return AssetArguments::getArguments();
-            },
+            'fields' => fn() => AssetArguments::getArguments(),
         ]));
     }
 }

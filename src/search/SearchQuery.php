@@ -155,8 +155,8 @@ class SearchQuery
             // overriding whatever the default subLeft/subRight term options are.
             // (see https://github.com/craftcms/cms/discussions/10613)
             if ($term->subLeft || $term->subRight) {
-                $term->subLeft = $term->subLeft ?? false;
-                $term->subRight = $term->subRight ?? false;
+                $term->subLeft ??= false;
+                $term->subRight ??= false;
             }
 
             // Now apply the default options
@@ -170,7 +170,6 @@ class SearchQuery
 
             if ($appendToPrevious) {
                 /** @noinspection PhpUndefinedVariableInspection */
-                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

@@ -19,39 +19,56 @@ import './Money.scss';
           .find('.clear-btn');
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
+        this.$field.on('blur', $.proxy(this, 'onBlur'));
         this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
-        this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
-
-        if (this.$field.val() != '') {
-          this.updateInputMask();
+        if (this.$clearBtn) {
+          this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
         }
+
+        this.updateInputMask();
+
+        this.$field.data('money-input', this);
       },
 
       showClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
+
         this.$clearBtn.removeClass('hidden');
       },
 
       hideClearBtn: function () {
+        if (!this.$clearBtn) {
+          return;
+        }
         this.$clearBtn.addClass('hidden');
       },
 
       onClearBtnClick: function (ev) {
         ev.preventDefault();
-        this.hideClearBtn();
         this.removeInputMask();
 
         this.$field.removeAttr('placeholder');
         this.$field.val('');
         this.$field.trigger('keyup');
+        this.$field.focus();
       },
 
       onFocus: function () {
         this.updateInputMask();
       },
 
+      onBlur: function () {
+        this.updateInputMask();
+      },
+
       onKeyUp: function () {
         if (this.$field.val() !== '') {
           this.$field.removeClass('money-placeholder');
+          this.showClearBtn();
+        } else {
+          this.hideClearBtn();
         }
       },
 
@@ -60,9 +77,9 @@ import './Money.scss';
       },
 
       updateInputMask: function () {
-        this.showClearBtn();
         const opts = {
           digits: this.settings.decimals,
+          placeholder: this.settings.placeholder,
           groupSeparator: this.settings.groupSeparator,
           radixPoint: this.settings.decimalSeparator,
         };
@@ -79,10 +96,11 @@ import './Money.scss';
         decimalSeparator: '.',
         groupSeparator: ',',
         decimals: 2,
+        placeholder: '0',
         maskOptions: {
           alias: 'currency',
           autoGroup: false,
-          clearMaskOnLostFocus: false,
+          clearMaskOnLostFocus: true,
           digits: 2,
           digitsOptional: false,
           groupSeparator: ',',

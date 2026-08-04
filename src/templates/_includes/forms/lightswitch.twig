@@ -23,7 +23,7 @@
         indeterminate ? 'indeterminate' : null,
         small ? 'small' : null,
         toggle or reverseToggle ? 'fieldtoggle' : null,
-        disabled ? 'disabled' : null,
+        disabled ? 'noteditable' : null,
     ]|filter,
     data: {
         value: value != '1' ? value : false,
@@ -38,6 +38,7 @@
         labelledby: labelledBy ?? labelId ?? false,
         describedby: [describedBy ?? null, hasLabels ? descriptionId : null]|filter|join(' ') ?: false,
     },
+    disabled: disabled ?? false
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

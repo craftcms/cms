@@ -1,0 +1,29 @@
+{% requireAdmin %}
+
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = 'Address Fields'|t('app') %}
+
+{% set crumbs = [
+  { label: 'Settings'|t('app'), url: url('settings') }
+] %}
+
+
+{% block content %}
+  <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
+    {{ actionInput('addresses/save-field-layout') }}
+    {{ csrfInput() }}
+
+    {{ forms.fieldLayoutDesignerField({
+      first: true,
+      fieldLayout: fieldLayout ?? craft.app.addresses.getFieldLayout(),
+      withGeneratedFields: true,
+      withCardViewDesigner: true,
+    }) }}
+
+    <div class="buttons">
+      <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+    </div>
+  </form>
+{% endblock %}

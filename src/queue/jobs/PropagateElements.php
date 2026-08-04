@@ -14,7 +14,7 @@ use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
-use craft\queue\BaseBatchedJob;
+use craft\queue\BaseBatchedElementJob;
 
 /**
  * PropagateElements job
@@ -22,11 +22,10 @@ use craft\queue\BaseBatchedJob;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.13
  */
-class PropagateElements extends BaseBatchedJob
+class PropagateElements extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type that should be propagated
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type that should be propagated
      */
     public string $elementType;
 
@@ -41,6 +40,12 @@ class PropagateElements extends BaseBatchedJob
      * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
     public array|int|null $siteId = null;
+
+    /**
+     * @var bool Whether this is for a newly-added site.
+     * @since 5.6.10
+     */
+    public bool $isNewSite = false;
 
     /**
      * @inheritdoc
@@ -59,10 +64,10 @@ class PropagateElements extends BaseBatchedJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
             ->offset(null)
             ->limit(null)
             ->orderBy(['elements.id' => SORT_ASC]);
@@ -82,6 +87,7 @@ class PropagateElements extends BaseBatchedJob
         /** @var ElementInterface $item */
         $item->setScenario(Element::SCENARIO_ESSENTIALS);
         $item->newSiteIds = [];
+        $item->isNewSite = $this->isNewSite;
         $supportedSiteIds = array_map(fn($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($item));
         $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
         $elementsService = Craft::$app->getElements();
@@ -106,11 +112,10 @@ class PropagateElements extends BaseBatchedJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
         return Translation::prep('app', 'Propagating {type}', [
-            'type' => $this->totalItems() == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
+            'type' => $this->totalItems() == 1
+                ? $this->elementType::lowerDisplayName()
+                : $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 }

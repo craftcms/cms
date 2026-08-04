@@ -6,9 +6,9 @@
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
     orientation,
-    not (currentUser.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false) ? 'reduce-focus-visibility',
     (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
     (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
@@ -55,7 +55,9 @@
 </head>
 <body {{ attr(bodyAttributes) }}>
     {{ beginBody() }}
+    {% include '_layouts/components/global-live-region' %}
     {% block body %}{% endblock %}
+    {% include '_layouts/components/notifications' %}
     {% block foot %}{% endblock %}
     {{ endBody() }}
 </body>

@@ -51,8 +51,7 @@ class Search
         if ($processCharMap) {
             $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
 
-            $elisions = self::_getElisions();
-            $str = str_replace($elisions, '', $str);
+            $str = preg_replace(self::_getElisionsRegex(), '', $str);
 
             // Remove punctuation and diacritics
             $punctuation = self::_getPunctuation();
@@ -60,42 +59,47 @@ class Search
         }
 
         // Remove ignore-words?
-        if (is_array($ignore) && !empty($ignore)) {
+        if (!empty($ignore)) {
             foreach ($ignore as $word) {
                 $word = preg_quote(static::normalizeKeywords($word, [], true, $language), '/');
                 $str = preg_replace("/\b$word\b/u", '', $str);
             }
         }
 
+        // Get rid of invisible Unicode special characters
+        // (see https://github.com/craftcms/cms/issues/16430)
+        $str = preg_replace(StringHelper::invisibleCharsRegex(), '', $str);
+
         // Strip out new lines and superfluous spaces
         return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));
     }
 
     /**
-     * Returns an array of elisions to remove from search keywords.
+     * Returns a regex pattern for elisions.
      *
-     * @return array
+     * @return string
      */
-    private static function _getElisions(): array
+    private static function _getElisionsRegex(): string
     {
-        static $elisions = [];
+        static $elisions = null;
 
-        if (empty($elisions)) {
-            $elisions = [
-                "l'",
-                "m'",
-                "t'",
-                "qu'",
-                "n'",
-                "s'",
-                "j'",
-                "d'",
-                "c'",
-                "jusqu'",
-                "quoiqu'",
-                "lorsqu'",
-                "puisqu'",
+        if (!$elisions) {
+            $elisionsArr = [
+                'l',
+                'm',
+                't',
+                'qu',
+                'n',
+                's',
+                'j',
+                'd',
+                'c',
+                'jusqu',
+                'quoiqu',
+                'lorsqu',
+                'puisqu',
             ];
+            $elisions = sprintf('/\b(%s)\'/', implode('|', $elisionsArr));
         }
 
         return $elisions;

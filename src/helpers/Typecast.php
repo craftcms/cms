@@ -8,8 +8,10 @@
 
 namespace craft\helpers;
 
+use BackedEnum;
 use DateTime;
-use ReflectionException;
+use DateTimeInterface;
+use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
@@ -27,18 +29,19 @@ final class Typecast
     private const TYPE_FLOAT = 'float';
     private const TYPE_INT = 'int';
     private const TYPE_INT_FLOAT = 'int|float';
+    private const TYPE_INT_STRING = 'int|string';
     private const TYPE_STRING = 'string';
     private const TYPE_ARRAY = 'array';
     private const TYPE_NULL = 'null';
     private const TYPE_DATETIME = DateTime::class;
+    private const TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
 
     private static array $types = [];
 
     /**
      * Typecasts the given property values based on their type declarations.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param array $properties The property values
      */
     public static function properties(string $class, array &$properties): void
@@ -51,8 +54,7 @@ final class Typecast
     /**
      * Typecasts the given property value based on its type declaration.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param string $property The property name
      * @param mixed $value The property value
      */
@@ -72,17 +74,25 @@ final class Typecast
 
         switch ($typeName) {
             case self::TYPE_BOOL:
+                if ($value === null || is_scalar($value)) {
+                    $value = App::normalizeBooleanValue($value);
+                    if ($value === null && !$allowsNull) {
+                        $value = false;
+                    }
+                }
+                return;
             case self::TYPE_FLOAT:
             case self::TYPE_INT:
             case self::TYPE_INT_FLOAT:
+            case self::TYPE_INT_STRING:
             case self::TYPE_STRING:
                 if ($value === null || is_scalar($value)) {
-                    /** @phpstan-var self::TYPE_BOOL|self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_STRING $typeName */
+                    /** @phpstan-var self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
                     $value = match ($typeName) {
-                        self::TYPE_BOOL => (bool)$value,
                         self::TYPE_FLOAT => (float)$value,
                         self::TYPE_INT => (int)$value,
                         self::TYPE_INT_FLOAT => Number::toIntOrFloat($value ?? 0),
+                        self::TYPE_INT_STRING => is_int($value) || ($value === (string)(int)$value) ? (int)$value : $value,
                         self::TYPE_STRING => (string)$value,
                     };
                 }
@@ -110,7 +120,13 @@ final class Typecast
                 }
                 return;
             case self::TYPE_DATETIME:
-                if ($value instanceof DateTime) {
+            case self::TYPE_DATETIMEINTERFACE:
+                /** @phpstan-ignore-next-line */
+                $expected = match ($typeName) {
+                    self::TYPE_DATETIME => DateTime::class,
+                    self::TYPE_DATETIMEINTERFACE => DateTimeInterface::class,
+                };
+                if ($value instanceof $expected) {
                     return;
                 }
                 $date = DateTimeHelper::toDateTime($value);
@@ -118,44 +134,67 @@ final class Typecast
                     $value = $date ?: null;
                 }
                 return;
+            default:
+                if (
+                    is_scalar($value) &&
+                    is_subclass_of($typeName, BackedEnum::class)
+                ) {
+                    /** @var BackedEnum $typeName */
+                    $value = $typeName::from($value);
+                }
         }
     }
 
     private static function propertyType(string $class, string $property): array|false
     {
-        if (!isset(self::$types[$class][$property])) {
-            self::$types[$class][$property] = self::_propertyType($class, $property);
+        if (!isset(self::$types[$class])) {
+            self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property];
+        return self::$types[$class][$property] ?? false;
     }
 
-    private static function _propertyType(string $class, string $property): array|false
+    private static function resolveClassTypes(string $class): void
     {
-        try {
-            $ref = new ReflectionProperty($class, $property);
-        } catch (ReflectionException) {
-            // The property doesn’t exist
-            return false;
-        }
+        self::$types[$class] = [];
 
-        if (!$ref->isPublic() || $ref->isStatic()) {
-            return false;
-        }
+        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
 
-        $type = $ref->getType();
-
-        if ($type instanceof ReflectionNamedType) {
-            return [$type->getName(), $type->allowsNull()];
-        }
-
-        if ($type instanceof ReflectionUnionType) {
-            // Special case for int|float
-            $names = array_map(fn(ReflectionNamedType $type) => $type->getName(), $type->getTypes());
-            sort($names);
-            if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
-                return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
+        foreach ($properties as $ref) {
+            if ($ref->isStatic()) {
+                continue;
             }
+
+            $type = $ref->getType();
+
+            if ($type instanceof ReflectionNamedType) {
+                self::$types[$class][$ref->getName()] = [$type->getName(), $type->allowsNull()];
+            } elseif ($type instanceof ReflectionUnionType) {
+                $resolved = self::resolveUnionType($type);
+
+                if ($resolved !== false) {
+                    self::$types[$class][$ref->getName()] = $resolved;
+                }
+            }
+        }
+    }
+
+    private static function resolveUnionType(ReflectionUnionType $type): array|false
+    {
+        $names = array_map(fn(ReflectionNamedType $t) => $t->getName(), $type->getTypes());
+
+        sort($names);
+
+        $allowsNull = in_array(self::TYPE_NULL, $names);
+
+        // Special case for int|float
+        if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
+            return [self::TYPE_INT_FLOAT, $allowsNull];
+        }
+
+        // Special case for int|string
+        if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
+            return [self::TYPE_INT_STRING, $allowsNull];
         }
 
         return false;

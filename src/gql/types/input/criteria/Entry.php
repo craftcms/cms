@@ -26,11 +26,12 @@ class Entry extends InputObjectType
     {
         $typeName = 'EntryCriteriaInput';
 
-        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return EntryArguments::getArguments();
-            },
+            'fields' => fn() => [
+                ...EntryArguments::getArguments(),
+                ...EntryArguments::getContentArguments(),
+            ],
         ]));
     }
 }

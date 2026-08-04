@@ -24,8 +24,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     }
 
     /**
-     * @var string
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface>
      */
     protected string $elementType;
 
@@ -42,7 +41,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
      */
     public function getFilename(): string
     {
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType;
         return $elementType::pluralLowerDisplayName();
     }

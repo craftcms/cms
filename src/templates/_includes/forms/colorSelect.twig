@@ -1,0 +1,39 @@
+{% set id = id ?? "fs#{random()}" %}
+{% set value = value ?? null %}
+{% set withBlankOption = withBlankOption ?? true %}
+
+{% set options = (options ?? [
+  {label: 'Red'|t('app'), value: 'red'},
+  {label: 'Orange'|t('app'), value: 'orange'},
+  {label: 'Amber'|t('app'), value: 'amber'},
+  {label: 'Yellow'|t('app'), value: 'yellow'},
+  {label: 'Lime'|t('app'), value: 'lime'},
+  {label: 'Green'|t('app'), value: 'green'},
+  {label: 'Emerald'|t('app'), value: 'emerald'},
+  {label: 'Teal'|t('app'), value: 'teal'},
+  {label: 'Cyan'|t('app'), value: 'cyan'},
+  {label: 'Sky'|t('app'), value: 'sky'},
+  {label: 'Blue'|t('app'), value: 'blue'},
+  {label: 'Indigo'|t('app'), value: 'indigo'},
+  {label: 'Violet'|t('app'), value: 'violet'},
+  {label: 'Purple'|t('app'), value: 'purple'},
+  {label: 'Fuchsia'|t('app'), value: 'fuchsia'},
+  {label: 'Pink'|t('app'), value: 'pink'},
+  {label: 'Rose'|t('app'), value: 'rose'},
+])|map(o => not (o.value starts with('_')) ? o|merge({data: {color: o.value}}) : o) %}
+
+{% if withBlankOption %}
+  {% set options = options|unshift({label: 'No color'|t('app'), value: '__blank__', data: {color: ''}}) %}
+{% endif %}
+
+{% if value is instance of ('craft\\enums\\Color') %}
+  {% set value = value.value %}
+{% endif %}
+
+{% include '_includes/forms/selectize' with {
+  options,
+  selectizeOptions: {
+    allowEmptyOption: withBlankOption,
+  },
+  value: value ?: (withBlankOption ? '__blank__' : null),
+} %}

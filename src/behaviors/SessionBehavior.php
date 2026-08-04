@@ -24,6 +24,8 @@ use yii\web\AssetBundle;
  */
 class SessionBehavior extends Behavior
 {
+    private const AUTH_LOCK_NAME = 'authAccess';
+
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
@@ -62,7 +64,6 @@ class SessionBehavior extends Behavior
                     'icon' => 'info',
                     'iconLabel' => Craft::t('app', 'Notice'),
                 ]);
-            $this->owner->setFlash('cp-notice', $message);
         } else {
             $this->owner->setFlash('notice', $message);
         }
@@ -72,8 +73,8 @@ class SessionBehavior extends Behavior
      * Stores a success message in the user’s flash data.
      *
      * The message will be stored on the session, and can be retrieved by calling
-     * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
-     * Only one flash notice can be stored at a time.
+     * [[getFlash()|`getFlash('success')`]] or [[getAllFlashes()]].
+     * Only one flash success message can be stored at a time.
      *
      * @param string $message The message
      * @param array $settings The control panel notification settings
@@ -87,8 +88,7 @@ class SessionBehavior extends Behavior
                     'iconLabel' => Craft::t('app', 'Success'),
                 ]);
         } else {
-            // todo: switch to `success` in Craft 5
-            $this->owner->setFlash('notice', $message);
+            $this->owner->setFlash('success', $message);
         }
     }
 
@@ -140,8 +140,7 @@ class SessionBehavior extends Behavior
             return $this->_getNotificationFlashMessage('success');
         }
 
-        // todo: switch to `success` in Craft 5
-        return $this->owner->getFlash('notice');
+        return $this->owner->getFlash('success');
     }
 
     /**
@@ -174,8 +173,7 @@ class SessionBehavior extends Behavior
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $name the class name of the asset bundle
-     * @phpstan-param class-string<AssetBundle> $name
+     * @param class-string<AssetBundle> $name the class name of the asset bundle
      * @param int|null $position if set, this forces a minimum position for javascript files.
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
@@ -250,7 +248,7 @@ class SessionBehavior extends Behavior
 
         $jsonMessage = Json::encode($message);
         $this->addJsFlash(<<<JS
-if (Craft.broadcaster) {
+if (Craft?.broadcaster) {
     Craft.broadcaster.postMessage($jsonMessage);
 }
 JS
@@ -267,11 +265,18 @@ JS
      */
     public function authorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
 
         if (!in_array($action, $access, true)) {
             $access[] = $action;
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 
@@ -282,12 +287,19 @@ JS
      */
     public function deauthorize(string $action): void
     {
+        $mutex = Craft::$app->getMutex();
+        $locked = $mutex->acquire(self::AUTH_LOCK_NAME, 5);
+
         $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
             $this->owner->set($this->authAccessParam, $access);
+        }
+
+        if ($locked) {
+            $mutex->release(self::AUTH_LOCK_NAME);
         }
     }
 

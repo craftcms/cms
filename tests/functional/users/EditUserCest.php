@@ -9,6 +9,7 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
+use craft\enums\CmsEdition;
 use FunctionalTester;
 
 /**
@@ -28,7 +29,7 @@ class EditUserCest
     /**
      * @var User|null
      */
-    public ?User $currentUser;
+    public ?User $currentUser = null;
 
     /**
      * @param FunctionalTester $I
@@ -42,7 +43,7 @@ class EditUserCest
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->edition = CmsEdition::Pro;
     }
 
     /**
@@ -54,7 +55,7 @@ class EditUserCest
 
         $I->see('My Account');
 
-        $I->submitForm('#userform', [
+        $I->submitForm('#main-form', [
             'fullName' => 'IM A CHANGED FULLNAME',
         ]);
 

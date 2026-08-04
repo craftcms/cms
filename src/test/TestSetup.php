@@ -28,7 +28,6 @@ use craft\services\Assets;
 use craft\services\Categories;
 use craft\services\Composer;
 use craft\services\Config;
-use craft\services\Content;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Elements;
@@ -38,7 +37,6 @@ use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Images;
 use craft\services\ImageTransforms;
-use craft\services\Matrix;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
@@ -46,7 +44,6 @@ use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
-use craft\services\Sections;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -137,9 +134,7 @@ class TestSetup
         $_REQUEST = [];
 
         UploadedFile::reset();
-        if (method_exists(Event::class, 'offAll')) {
-            Event::offAll();
-        }
+        Event::offAll();
 
         Craft::setLogger(null);
 
@@ -172,8 +167,7 @@ class TestSetup
     }
 
     /**
-     * @param string $class
-     * @phpstan-param class-string<Migration> $class
+     * @param class-string<Migration>|string $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      * @return bool
@@ -232,7 +226,6 @@ class TestSetup
         Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
-        Craft::setAlias('@craft', CraftTest::normalizePathSeparators(Craft::getAlias('@craft')));
         Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
         Craft::setAlias('@config', CraftTest::normalizePathSeparators(Craft::getAlias('@config')));
         Craft::setAlias('@contentMigrations', CraftTest::normalizePathSeparators(Craft::getAlias('@contentMigrations')));
@@ -300,8 +293,7 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return string
-     * @phpstan-return class-string<ConsoleApplication|WebApplication>
+     * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -323,6 +315,7 @@ class TestSetup
 
         $configPath = realpath(CRAFT_CONFIG_PATH);
         $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
+        $rootPath = realpath(CRAFT_ROOT_PATH);
         $storagePath = realpath(CRAFT_STORAGE_PATH);
         $templatesPath = realpath(CRAFT_TEMPLATES_PATH);
         $testsPath = realpath(CRAFT_TESTS_PATH);
@@ -332,7 +325,7 @@ class TestSetup
         ini_set('log_errors', '1');
         ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
-        error_reporting(E_ALL);
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
         ini_set('display_errors', '1');
         defined('YII_DEBUG') || define('YII_DEBUG', true);
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
@@ -351,10 +344,10 @@ class TestSetup
         Craft::setAlias('@vendor', $vendorPath);
         Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@craft', $srcPath);
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
+        Craft::setAlias('@root', $rootPath);
         Craft::setAlias('@storage', $storagePath);
         Craft::setAlias('@templates', $templatesPath);
         Craft::setAlias('@tests', $testsPath);
@@ -460,7 +453,7 @@ class TestSetup
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
@@ -496,21 +489,20 @@ class TestSetup
             'site' => $site,
         ]);
 
-        $migration->safeUp();
+        $migration->up(true);
     }
 
     /**
      * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param string|null $moduleClass
-     * @phpstan-param class-string<T>|null $moduleClass
+     * @param class-string<T>|null $moduleClass
      * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $moduleClass = $moduleClass ?? self::appClass();
+        $moduleClass ??= self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
         $mockApp = self::getMock($test, $moduleClass);
@@ -549,8 +541,7 @@ class TestSetup
     /**
      * @template T
      * @param CodeceptionTestCase $test
-     * @param string $class
-     * @phpstan-param class-string<T> $class
+     * @param class-string<T> $class
      * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
@@ -576,7 +567,6 @@ class TestSetup
             [Categories::class, ['getCategories', 'categories']],
             [Composer::class, ['getComposer', 'composer']],
             [Config::class, ['getConfig', 'config']],
-            [Content::class, ['getContent', 'content']],
             [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
@@ -589,7 +579,6 @@ class TestSetup
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
             [Mailer::class, ['getMailer', 'mailer']],
-            [Matrix::class, ['getMatrix', 'matrix']],
             [MigrationManager::class, ['getMigrator', 'migrator']],
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],
@@ -600,7 +589,6 @@ class TestSetup
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],
-            [Sections::class, ['getSections', 'sections']],
             [Sites::class, ['getSites', 'sites']],
             [Structures::class, ['getStructures', 'structures']],
             [SystemMessages::class, ['getSystemMessages', 'systemMessages']],

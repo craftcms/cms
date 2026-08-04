@@ -45,7 +45,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
-        this.settings.batchSize && $elements.length == this.settings.batchSize
+        this.elementIndex.settings.batchSize &&
+          $elements.length == this.elementIndex.settings.batchSize
       );
 
       // Load thumbnails
@@ -54,30 +55,41 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (this.settings.selectable) {
         this.elementSelect = new Garnish.Select(
           this.$elementContainer,
-          $(
-            $elements
-              .toArray()
-              .filter((element) => this.canSelectElement($(element)))
-          ),
+          this.filterSelectableElements($elements),
           {
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
-            handle:
-              this.settings.context === 'index'
-                ? '.checkbox, .element:first'
-                : null,
-            filter: ':not(a):not(.toggle)',
+            filter: (target) => {
+              return !$(target).closest(
+                'a[href],.toggle,.btn,[role=button],.move,craft-copy-attribute'
+              ).length;
+            },
             checkboxMode: this.settings.checkboxMode,
+            waitForDoubleClicks: this.settings.waitForDoubleClicks,
             onSelectionChange: this.onSelectionChange.bind(this),
           }
         );
 
+        this.updateInitialViewForSelectedElements($elements);
+
         this._handleEnableElements = (ev) => {
-          this.elementSelect.addItems(ev.elements);
+          this.elementSelect.addItems(
+            this.filterSelectableElements($(ev.elements))
+          );
+
+          for (let i = 0; i < $(ev.elements).length; i++) {
+            const $element = $(ev.elements).eq(i);
+            this.enableFocusableElements($element);
+          }
         };
 
         this._handleDisableElements = (ev) => {
           this.elementSelect.removeItems(ev.elements);
+
+          for (let i = 0; i < $(ev.elements).length; i++) {
+            const $element = $(ev.elements).eq(i);
+            this.disableFocusableElements($element);
+          }
         };
 
         this.elementIndex.on('enableElements', this._handleEnableElements);
@@ -85,29 +97,43 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
 
       // Enable inline element editing if this is an index page
-      if (this.settings.context === 'index') {
+      if (this.elementIndex.isAdministrative) {
         this._handleElementEditing = (ev) => {
-          var $target = $(ev.target);
-
-          if ($target.prop('nodeName') === 'A') {
-            // Let the link do its thing
+          if (
+            this.elementIndex.inlineEditing ||
+            $(ev.target).closest('a[href],button,[role=button],.move').length
+          ) {
+            // Let the link/button/move handle do its thing
             return;
           }
 
-          var $element;
-
-          if ($target.hasClass('element')) {
-            $element = $target;
-          } else {
-            $element = $target.closest('.element');
-
+          const $target = $(ev.target);
+          let $element = $target.closest('.element');
+          if (!$element.length) {
+            $element = $target.closest('tr').find('.element:first');
             if (!$element.length) {
               return;
             }
           }
 
-          if (Garnish.hasAttr($element, 'data-editable')) {
-            Craft.createElementEditor($element.data('type'), $element);
+          if (
+            Garnish.hasAttr($element, 'data-editable') &&
+            !$element.closest('.elementselect').length
+          ) {
+            const slideout = Craft.createElementEditor(
+              $element.data('type'),
+              $element,
+              {
+                onLoad:
+                  this.elementIndex.settings.context === 'embedded-index'
+                    ? () => {
+                        slideout.elementEditor.on('update', () => {
+                          Craft.Preview.refresh();
+                        });
+                      }
+                    : null,
+              }
+            );
           }
         };
 
@@ -123,8 +149,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Give sub-classes a chance to do post-initialization stuff here
       this.afterInit();
 
-      // Set up lazy-loading
-      if (this.settings.batchSize) {
+      // Set up $scroller for reordering
+      if (
+        (!this.elementIndex.paginated ||
+          this.elementIndex.settings.context === 'embedded-index') &&
+        this.elementIndex.settings.batchSize
+      ) {
         if (this.settings.context === 'index') {
           this.$scroller = Garnish.$scrollContainer;
         } else {
@@ -132,9 +162,87 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         }
 
         this.$scroller.scrollTop(0);
-        this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
-        this.maybeLoadMore();
+
+        // and if we're not in a paginated view, set up lazy-loading
+        if (!this.elementIndex.paginated) {
+          this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+          this.maybeLoadMore();
+        }
       }
+    },
+
+    /**
+     * Updates the initial view for selected elements
+     * @param $elements
+     */
+    updateInitialViewForSelectedElements: function ($elements) {
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        if ($element.hasClass('disabled')) {
+          // mark as checked
+          this.getElementCheckbox($element).attr({
+            'aria-checked': 'true',
+          });
+
+          // remove other focusable elements from the tab order
+          this.disableFocusableElements($element);
+          continue;
+        }
+
+        if (!this.canSelectElement($element)) {
+          $element.find('.checkbox').remove();
+        }
+      }
+    },
+
+    /**
+     * Returns selectable elements
+     * @param $elements Elements to filter
+     * @returns {jQuery} A jQuery object containing the selectable elements
+     */
+    filterSelectableElements: function ($elements) {
+      const selectable = [];
+
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+
+        if (this.canSelectElement($element)) {
+          selectable.push($element[0]);
+        }
+      }
+
+      return $(selectable);
+    },
+
+    /**
+     * Removes all focusable elements inside the given container from the focus order
+     * @param $container
+     */
+    disableFocusableElements: function ($container) {
+      const disabledAttributes = {
+        tabindex: '-1',
+        'data-focusable': true,
+      };
+      // Disable all focusable elements inside the disabled elements
+      const $focusable = Garnish.getKeyboardFocusableElements($container);
+
+      if ($focusable.length) {
+        $focusable.attr(disabledAttributes);
+      }
+      this.getElementCheckbox($container).attr(disabledAttributes);
+    },
+
+    /**
+     * Moves all focusable elements inside the given container into the default focus order
+     * @param $container
+     */
+    enableFocusableElements: function ($container) {
+      const $focusableElements = $container.find('[data-focusable]');
+
+      if (!$focusableElements.length) return;
+
+      $focusableElements.removeAttr('tabindex data-focusable');
+      this.getElementCheckbox($container).attr('tabindex', '0');
     },
 
     canSelectElement: function ($element) {
@@ -148,7 +256,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementContainer: function () {
-      throw 'Classes that extend Craft.BaseElementIndexView must supply a getElementContainer() method.';
+      return this.$container;
     },
 
     afterInit: function () {},
@@ -190,7 +298,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       let ids = [];
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
-          ids.push($selectedElements.eq(i).data('id'));
+          const id = $selectedElements.eq(i).data('id');
+          if (id) {
+            ids.push(id);
+          }
         }
       }
       return ids;
@@ -220,6 +331,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
+    selectElementsById: function (ids) {
+      for (const id of ids) {
+        this.selectElementById(id);
+      }
+    },
+
     selectAllElements: function () {
       this.elementSelect.selectAll();
     },
@@ -229,7 +346,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     getElementCheckbox: function (element) {
-      return $(element).find('[role="checkbox"]');
+      return $(element).find('.checkbox');
     },
 
     isVerticalList: function () {
@@ -265,7 +382,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      * Returns whether the user has reached the bottom of the scroll area.
      */
     canLoadMore: function () {
-      if (!this.getMorePending() || !this.settings.batchSize) {
+      if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
         return false;
       }
 
@@ -297,7 +414,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       if (
         !this.getMorePending() ||
         this.loadingMore ||
-        !this.settings.batchSize
+        !this.elementIndex.settings.batchSize
       ) {
         return;
       }
@@ -309,23 +426,37 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       Craft.sendActionRequest('POST', this.settings.loadMoreElementsAction, {
         data: this.getLoadMoreParams(),
       })
-        .then((response) => {
+        .then(async (response) => {
           this.loadingMore = false;
           this.$loadingMoreSpinner.addClass('hidden');
 
+          if (this.isAdministrative) {
+            // set Craft.currentElementIndex for actions
+            Craft.currentElementIndex = this;
+          }
+
           let $newElements = $(response.data.html);
 
+          if (this.elementIndex.selectable) {
+            const role = this.elementIndex.multiSelect ? 'checkbox' : 'radio';
+            $newElements.find('.checkbox').attr('role', role);
+          }
+
           this.appendElements($newElements);
-          Craft.appendHeadHtml(response.data.headHtml);
-          Craft.appendBodyHtml(response.data.bodyHtml);
+          await Craft.appendHeadHtml(response.data.headHtml);
+          await Craft.appendBodyHtml(response.data.bodyHtml);
 
           if (this.elementSelect) {
-            this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
+            this.elementSelect.addItems(
+              this.filterSelectableElements($newElements)
+            );
             this.elementIndex.updateActionTriggers();
           }
 
           this.setTotalVisible(this.getTotalVisible() + $newElements.length);
-          this.setMorePending($newElements.length == this.settings.batchSize);
+          this.setMorePending(
+            $newElements.length == this.elementIndex.settings.batchSize
+          );
 
           // Is there room to load more right now?
           this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
@@ -360,17 +491,6 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
-
-      // Update checkboxes
-      if (this.settings.checkboxMode) {
-        const $items = this.elementSelect.$items.each((index, item) => {
-          if (this.elementSelect.isSelected(item)) {
-            this.getElementCheckbox(item).attr('aria-checked', 'true');
-          } else {
-            this.getElementCheckbox(item).attr('aria-checked', 'false');
-          }
-        });
-      }
     },
 
     disable: function () {
@@ -410,9 +530,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       multiSelect: false,
       canSelectElement: null,
       checkboxMode: false,
+      waitForDoubleClicks: false,
+      sortable: false,
       loadMoreElementsAction: 'element-indexes/get-more-elements',
       onAppendElements: $.noop,
       onSelectionChange: $.noop,
+      onSortChange: $.noop,
     },
   }
 );

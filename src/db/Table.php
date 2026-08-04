@@ -23,10 +23,11 @@ abstract class Table
     /** @since 4.0.0 */
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
-    /** @since 4.0.0 */
-    public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
-    /** @since 4.0.0 */
-    public const IMAGETRANSFORMS = '{{%imagetransforms}}';
+    public const ASSETS_SITES = '{{%assets_sites}}';
+    /** @since 5.0 */
+    public const AUTHENTICATOR = '{{%authenticator}}';
+    /** @since 5.7.0 */
+    public const BULKOPEVENTS = '{{%bulkopevents}}';
     /** @since 3.4.14 */
     public const CACHE = '{{%cache}}';
     public const CATEGORIES = '{{%categories}}';
@@ -36,35 +37,36 @@ abstract class Table
     public const CHANGEDATTRIBUTES = '{{%changedattributes}}';
     /** @since 3.4.0 */
     public const CHANGEDFIELDS = '{{%changedfields}}';
-    public const CONTENT = '{{%content}}';
+    /** @since 5.8.0 */
+    public const CONTENTBLOCKS = '{{%contentblocks}}';
     public const CRAFTIDTOKENS = '{{%craftidtokens}}';
     public const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
     public const DRAFTS = '{{%drafts}}';
+    /** @since 4.5.0 */
+    public const ELEMENTACTIVITY = '{{%elementactivity}}';
     public const ELEMENTS = '{{%elements}}';
+    /** @since 5.0.0 */
+    public const ELEMENTS_BULKOPS = '{{%elements_bulkops}}';
+    /** @since 5.0.0 */
+    public const ELEMENTS_OWNERS = '{{%elements_owners}}';
     public const ELEMENTS_SITES = '{{%elements_sites}}';
-    public const RESOURCEPATHS = '{{%resourcepaths}}';
-    /** @since 3.2.0 */
-    public const REVISIONS = '{{%revisions}}';
-    public const SEQUENCES = '{{%sequences}}';
-    public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
+    /** @since 5.0.0 */
+    public const ENTRIES_AUTHORS = '{{%entries_authors}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
-    public const FIELDGROUPS = '{{%fieldgroups}}';
-    public const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
     public const FIELDLAYOUTS = '{{%fieldlayouts}}';
-    public const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     public const FIELDS = '{{%fields}}';
     public const GLOBALSETS = '{{%globalsets}}';
     /** @since 3.3.0 */
     public const GQLSCHEMAS = '{{%gqlschemas}}';
     /** @since 3.4.0 */
     public const GQLTOKENS = '{{%gqltokens}}';
-    public const INFO = '{{%info}}';
-    public const MATRIXBLOCKS = '{{%matrixblocks}}';
     /** @since 4.0.0 */
-    public const MATRIXBLOCKS_OWNERS = '{{%matrixblocks_owners}}';
-    public const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
+    public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
+    /** @since 4.0.0 */
+    public const IMAGETRANSFORMS = '{{%imagetransforms}}';
+    public const INFO = '{{%info}}';
     public const MIGRATIONS = '{{%migrations}}';
     /** @since 3.4.0 */
     public const PHPSESSIONS = '{{%phpsessions}}';
@@ -72,15 +74,31 @@ abstract class Table
     /** @since 3.4.0 */
     public const PROJECTCONFIG = '{{%projectconfig}}';
     public const QUEUE = '{{%queue}}';
+    /** @since 5.0 */
+    public const RECOVERYCODES = '{{%recoverycodes}}';
     public const RELATIONS = '{{%relations}}';
+    public const RESOURCEPATHS = '{{%resourcepaths}}';
+    /** @since 3.2.0 */
+    public const REVISIONS = '{{%revisions}}';
+    public const SEARCHINDEX = '{{%searchindex}}';
+    /** @since 5.7.0 */
+    public const SEARCHINDEXQUEUE = '{{%searchindexqueue}}';
+    /** @since 5.7.0 */
+    public const SEARCHINDEXQUEUE_FIELDS = '{{%searchindexqueue_fields}}';
     public const SECTIONS = '{{%sections}}';
+    /** @since 5.0.0 */
+    public const SECTIONS_ENTRYTYPES = '{{%sections_entrytypes}}';
     public const SECTIONS_SITES = '{{%sections_sites}}';
+    public const SEQUENCES = '{{%sequences}}';
     public const SESSIONS = '{{%sessions}}';
     public const SHUNNEDMESSAGES = '{{%shunnedmessages}}';
-    public const SITES = '{{%sites}}';
     public const SITEGROUPS = '{{%sitegroups}}';
+    public const SITES = '{{%sites}}';
+    /** @since 5.3.0 */
+    public const SSO_IDENTITIES = '{{%sso_identities}}';
     public const STRUCTUREELEMENTS = '{{%structureelements}}';
     public const STRUCTURES = '{{%structures}}';
+    public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const TAGGROUPS = '{{%taggroups}}';
     public const TAGS = '{{%tags}}';
     public const TOKENS = '{{%tokens}}';
@@ -93,6 +111,7 @@ abstract class Table
     public const USERS = '{{%users}}';
     public const VOLUMEFOLDERS = '{{%volumefolders}}';
     public const VOLUMES = '{{%volumes}}';
+    /** @since 5.0 */
+    public const WEBAUTHN = '{{%webauthn}}';
     public const WIDGETS = '{{%widgets}}';
-    public const SEARCHINDEX = '{{%searchindex}}';
 }
