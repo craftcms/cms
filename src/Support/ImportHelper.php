@@ -145,11 +145,18 @@ class ImportHelper
         return [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray];
     }
 
+    /**
+     * Rebuilds raw import data into the shape described by the map.
+     */
     public static function remapData(array $map, array $data): array
     {
         return self::mapNode($map, $data, $data, null, true)['data'];
     }
 
+    /**
+     * Maps one level of `$map` against `$currentData`, following each rule and recursing into
+     * nested maps or lists.
+     */
     protected static function mapNode(
         array $map,
         array $rootData,
@@ -161,10 +168,12 @@ class ImportHelper
         $consumedKeys = [];
 
         foreach ($map as $targetKey => $rule) {
+            // The rule is itself a nested map, so work out what part of the data it should read from.
             if (is_array($rule)) {
                 $source = self::findSourceForRule((string) $targetKey, $rule, $rootData, $currentData, $currentBasePath);
 
                 if ($source === null) {
+                    // No direct source found, so recurse into the map as a plain nested object instead.
                     $nested = self::mapNode($rule, $rootData, $currentData, $currentBasePath, false);
                     $result[$targetKey] = $nested['data'];
                     array_push($consumedKeys, ...$nested['consumed']);
@@ -175,10 +184,12 @@ class ImportHelper
                 array_push($consumedKeys, ...$source['consumed']);
 
                 if (self::blockLooksGroupedByType($rule, $source['value'])) {
+                    // The source groups rows by block type, e.g. {typeA: [...], typeB: [...]}.
                     $mapped = self::mapGroupedBlocksByType($rule, $rootData, $source['value'], $source['basePath']);
                     $result[$targetKey] = $mapped['data'];
                     array_push($consumedKeys, ...$mapped['consumed']);
                 } elseif (array_is_list($source['value'])) {
+                    // The source is a flat list, so map each row on its own.
                     $result[$targetKey] = array_map(
                         fn ($row) => is_array($row)
                             ? self::mapRowByOwnType($rule, $rootData, $row, $source['basePath'])
@@ -186,6 +197,7 @@ class ImportHelper
                         $source['value']
                     );
                 } else {
+                    // The source is a single nested object, so map it directly.
                     $result[$targetKey] = self::mapNode($rule, $rootData, $source['value'], $source['basePath'], true)['data'];
                 }
 
@@ -193,12 +205,13 @@ class ImportHelper
             }
 
             if ($rule === null) {
-                // $result[$targetKey] = null;
+                // A null rule means: don't set this field at all.
 
                 continue;
             }
 
             if ($rule === '""') {
+                // '""' is a special marker meaning: set this field to an empty string.
                 $result[$targetKey] = '';
 
                 continue;
@@ -226,6 +239,10 @@ class ImportHelper
         ];
     }
 
+    /**
+     * Works out what raw data a nested rule should read from, and whether it's a list of rows,
+     * a type-grouped set, or a single group.
+     */
     protected static function findSourceForRule(
         string $targetKey,
         array $rule,
@@ -233,6 +250,7 @@ class ImportHelper
         mixed $currentData,
         ?string $currentBasePath
     ): ?array {
+        // If the current data already has a key with this exact name, use it directly.
         if (is_array($currentData) && array_key_exists($targetKey, $currentData) && is_array($currentData[$targetKey])) {
             return [
                 'value' => $currentData[$targetKey],
@@ -241,6 +259,7 @@ class ImportHelper
             ];
         }
 
+        // Otherwise, work out the shared path implied by the rule's own values.
         $sourceRelativePath = self::sharedSourcePath($rule, $currentBasePath);
 
         if ($sourceRelativePath === null || $sourceRelativePath === '') {
@@ -259,6 +278,7 @@ class ImportHelper
             }
         }
 
+        // Try the current data first, then fall back to the root data.
         if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
             return $source;
         }
@@ -304,12 +324,17 @@ class ImportHelper
         return self::mapNode($rule, $rootData, $row, $basePath, true)['data'];
     }
 
+    /**
+     * Maps a raw value that's grouped by block type (each type holding its own list of rows)
+     * into one flat list of mapped rows.
+     */
     protected static function mapGroupedBlocksByType(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
     {
         $items = [];
         $consumedKeys = [];
 
         foreach ($blockTypeMap as $type => $typeMap) {
+            // Skip a type if the source doesn't have a matching list of rows for it.
             if (! isset($sourceValue[$type])) {
                 continue;
             }
@@ -343,8 +368,12 @@ class ImportHelper
         return ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $basePath, true)['data'];
     }
 
+    /**
+     * Reads a single value out of the data for a plain (non-array) rule.
+     */
     protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
     {
+        // The rule path is relative to where we are, so strip the shared prefix off first.
         if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
             $relativePath = substr($path, strlen($currentBasePath) + 1);
 
@@ -354,12 +383,17 @@ class ImportHelper
             ];
         }
 
+        // The rule path didn't match our position, so read it straight from the root.
         return [
             'value' => self::findPath($rootData, $path)['value'],
             'consumed' => $currentBasePath === null ? explode('.', $path)[0] : null,
         ];
     }
 
+    /**
+     * Finds the path that all of a rule's leaf values share, so a nested map can be resolved
+     * to one source.
+     */
     protected static function sharedSourcePath(array $map, ?string $currentBasePath): ?string
     {
         $paths = self::collectLeafPaths($map, $currentBasePath);
@@ -370,6 +404,7 @@ class ImportHelper
 
         $common = explode('.', (string) array_shift($paths));
 
+        // Narrow the shared path down to what every leaf path has in common.
         foreach ($paths as $path) {
             $parts = explode('.', (string) $path);
             $next = [];
@@ -385,6 +420,7 @@ class ImportHelper
             $common = $next;
         }
 
+        // If part of the shared path is itself a key in the map, stop there — that key needs its own resolution.
         foreach ($common as $index => $part) {
             if (array_key_exists($part, $map)) {
                 return $index === 0 ? null : implode('.', array_slice($common, 0, $index));
@@ -394,6 +430,9 @@ class ImportHelper
         return implode('.', $common);
     }
 
+    /**
+     * Collects every leaf (string) rule path inside a map, relative to the current base path.
+     */
     protected static function collectLeafPaths(array $map, ?string $currentBasePath): array
     {
         $paths = [];
@@ -402,6 +441,7 @@ class ImportHelper
             if (is_array($rule)) {
                 array_push($paths, ...self::collectLeafPaths($rule, $currentBasePath));
             } elseif (is_string($rule)) {
+                // Only keep leaf paths that fall under the current base path (or all of them, if we're at the root).
                 if ($currentBasePath !== null && str_starts_with($rule, $currentBasePath.'.')) {
                     $paths[] = substr($rule, strlen($currentBasePath) + 1);
                 } elseif ($currentBasePath === null) {
@@ -413,8 +453,13 @@ class ImportHelper
         return $paths;
     }
 
+    /**
+     * Checks whether a raw value looks like it's grouped by block type, rather than being a
+     * block's own set of fields.
+     */
     protected static function blockLooksGroupedByType(array $rule, mixed $sourceValue): bool
     {
+        // A flat list of rows (each with its own type) isn't grouped by type.
         if (! is_array($sourceValue) || array_is_list($sourceValue)) {
             return false;
         }
@@ -449,6 +494,9 @@ class ImportHelper
         return ['found' => true, 'value' => $current];
     }
 
+    /**
+     * Joins a base path and a key into one dotted path.
+     */
     protected static function pathJoin(?string $basePath, string $key): string
     {
         return $basePath === null || $basePath === '' ? $key : $basePath.'.'.$key;
