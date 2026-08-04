@@ -1385,6 +1385,14 @@ JS, [
         return $entryType;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
