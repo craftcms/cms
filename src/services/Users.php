@@ -1580,6 +1580,10 @@ class Users extends Component
             return false;
         }
 
+        if ($suspendee->getHasSsoIdentity()) {
+            return false;
+        }
+
         return true;
     }
 

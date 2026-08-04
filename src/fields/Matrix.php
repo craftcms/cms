@@ -28,6 +28,7 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
@@ -42,6 +43,7 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -774,7 +776,7 @@ class Matrix extends Field implements
                     CancelableEvent $event,
                     EntryQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -880,13 +882,25 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function actionMenuItems(): array
     {
-        $items = match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-            self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-            default => [],
-        };
+        if ($this->maxEntries !== 1) {
+            $items = match ($this->viewMode) {
+                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+                default => [],
+            };
+        } else {
+            $items = [];
+        }
 
         $parentItems = parent::actionMenuItems();
 
@@ -929,11 +943,7 @@ class Matrix extends Field implements
   const expandBtn = $('#' + $expandAllId);
   const collapseBtn = $('#' + $collapseAllId);
   const menu = expandBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
+  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
   expandBtn.on('activate', () => {
     getBlocks().each((i, block) => {
@@ -949,18 +959,8 @@ class Matrix extends Field implements
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
-      let expandLabel, collapseLabel;
-      if (blocks.is('.sel')) {
-        expandLabel = Craft.t('app', 'Expand selected blocks');
-        collapseLabel = Craft.t('app', 'Collapse selected blocks');
-      } else {
-        expandLabel = Craft.t('app', 'Expand all blocks');
-        collapseLabel = Craft.t('app', 'Collapse all blocks');
-      }
-      expandBtn.find('.menu-item-label').text(expandLabel);
-      collapseBtn.find('.menu-item-label').text(collapseLabel);
       disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
       disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
@@ -972,82 +972,7 @@ JS, [
             $view->namespaceInputId($this->getInputId()),
         ]);
 
-        // Copy
-        if ($this->maxEntries !== 1) {
-            $items[] = ['type' => 'hr'];
-
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-
-            $baseInfo = Json::encode([
-                'type' => Entry::class,
-                'fieldId' => $this->id,
-            ]);
-
-            $view->registerJsWithVars(fn($copyAllId, $fieldId, $type) => <<<JS
-(() => {
-  const copyBtn = $('#' + $copyAllId);
-  const field = $('#' + $fieldId);
-  const menu = copyBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
-  
-  if (field.length) {
-    copyBtn.on('activate', () => {
-      const elementInfo = [];
-      getBlocks().each((i, element) => {
-        element = $(element);
-        elementInfo.push(Object.assign({
-            id: element.data('id'),
-            draftId: element.data('draftId'),
-            revisionId: element.data('revisionId'),
-            ownerId: element.data('ownerId'),
-            siteId: element.data('siteId'),
-          }, $baseInfo));
-      });
-      Craft.cp.copyElements(elementInfo);
-    });
-  } else {
-    setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(copyBtn[0]);
-    }, 1);
-  }
-  
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
-      let blocks = getBlocks();
-      let copyLabel;
-      if (blocks.is('.sel')) {
-        copyLabel = Craft.t('app', 'Copy selected {type}', {
-          type: $type,
-        });
-      } else {
-        copyLabel = Craft.t('app', 'Copy all {type}', {
-          type: $type,
-        });
-      }
-      copyBtn.find('.menu-item-label').text(copyLabel);
-      disclosureMenu.toggleItem(copyBtn[0], !!blocks.length);
-    });
-  }, 1);
-})();
-JS, [
-                $view->namespaceInputId($copyAllId),
-                $view->namespaceInputId($this->getInputId()),
-                Entry::pluralLowerDisplayName(),
-            ]);
-        }
+        $items[] = $this->copyAction(Craft::t('app', 'blocks'), ' > .blocks > .matrixblock');
 
         return $items;
     }
@@ -1055,51 +980,76 @@ JS, [
     private function cardViewActionMenuItems(): array
     {
         $items = [];
-        $view = Craft::$app->getView();
 
-        // Copy all
-        if ($this->maxEntries !== 1) {
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-
-
-            $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
-(() => {
-  const copyBtn = $('#' + $copyAllId);
-  const field = $('#' + $fieldId);
-  if (field.length) {
-    copyBtn.on('activate', () => {
-      Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
-    });
-  } else {
-    setTimeout(() => {
-      const menu = copyBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyBtn[0]);
-    }, 1);
-  }
-})();
-JS, [
-                $view->namespaceInputId($copyAllId),
-                $view->namespaceInputId($this->getInputId()),
-            ]);
-        }
+        // Copy
+        $items[] = $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            ' > .nested-element-cards > .elements > li > .element',
+        );
 
         return $items;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTranslationDescription(?ElementInterface $element): ?string
+    private function copyAction(string $type, string $entrySelector): array
     {
-        return $this->entryManager()->getTranslationDescription($element);
+        $view = Craft::$app->getView();
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        $baseInfo = Json::encode([
+            'type' => Entry::class,
+            'fieldId' => $this->id,
+        ]);
+
+        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getEntries = () => field.find($entrySelector);
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getEntries().toArray().map((element) => {
+      element = $(element);
+      return {
+          ... $baseInfo,
+          id: element.data('id'),
+          draftId: element.data('draftId'),
+          revisionId: element.data('revisionId'),
+          ownerId: element.data('ownerId'),
+          siteId: element.data('siteId'),
+        };
+    }));
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      btn.toggleClass('disabled', !getEntries().length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+            $entrySelector,
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => ColorEnum::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => $type,
+            ])),
+        ];
     }
 
     /**
@@ -1261,6 +1211,7 @@ JS;
         if (!$static) {
             $entryTypeIdsJs = Json::encode(array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes));
             $config += [
+                'selectable' => true,
                 'sortable' => true,
                 'canCreate' => true,
                 'canPaste' => <<<JS
@@ -1304,19 +1255,17 @@ JS,
             ]),
             'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
                 $entryType->hasTitleField ||
-                $entryType->titleFormat
+                $entryType->titleFormat ||
+                ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}')
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
             'defaultViewMode' => $this->defaultIndexViewMode,
+            'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
+            // field layouts are needed in the read-only (static) mode
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
+            'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        if (!$static) {
-            $config += [
-                'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
-            ];
-        }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
     }
@@ -1378,13 +1327,12 @@ JS,
             $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
+                /** @var Entry $entry */
                 $entry->setOwner($element);
 
-                /** @var Entry $entry */
-                if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
-                ) {
+                if (!$entry->enabled) {
+                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                } else {
                     $entry->setScenario($scenario);
                 }
 
@@ -1489,6 +1437,9 @@ JS,
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn(EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
@@ -1544,6 +1495,16 @@ JS,
             'args' => $arguments,
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
         ];
     }
 
@@ -1694,9 +1655,8 @@ JS,
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($entries as $entry) {
@@ -1752,8 +1712,7 @@ JS,
             /** @var Entry[] $oldEntriesById */
             $oldEntriesById = Entry::find()
                 ->fieldId($this->id)
-                ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->owner($element)
                 ->drafts(null)
                 ->status(null)
                 ->indexBy($uids ? 'uid' : 'id')
@@ -1844,7 +1803,7 @@ JS,
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
-                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (

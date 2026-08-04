@@ -69,6 +69,7 @@ class Template
      * @param string $name
      * @return bool
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallbackExists(string $name): bool
     {
@@ -81,6 +82,7 @@ class Template
      * @param string $name
      * @throws UnknownPropertyException if `$name` isn’t defined as a fallback variable.
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallback(string $name): mixed
     {
@@ -400,14 +402,18 @@ class Template
      * @param string[] $handles
      * @since 4.4.0
      */
-    public static function preloadSingles(array $handles): void
+    public static function preloadSingles(array $handles, ?array &$context = null): void
     {
         // Ignore handles that are defined Twig globals
         $globals = Craft::$app->view->getTwig()->getGlobals();
         $handles = array_diff($handles, array_keys($globals));
 
         if (!empty($handles)) {
-            self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            $singles = Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            self::$_fallbacks += $singles;
+            if ($context !== null) {
+                $context += $singles;
+            }
         }
     }
 }

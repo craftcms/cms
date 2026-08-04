@@ -2019,56 +2019,91 @@ $.extend(Craft, {
 
   _existingCss: null,
   _existingJs: null,
+  _appendHtmlQueue: null,
 
   _appendHtml: async function (html, $parent) {
     if (!html) {
       return;
     }
 
-    const nodes = $.parseHTML(html.trim(), true).filter((node) => {
+    /**
+     * Separate scripts from other nodes to bypass jQuery's internal
+     * script handling, which uses sync XHR (jQuery._evalUrl) and
+     * silently falls back to async for cross-origin URLs, breaking
+     * execution order.
+     *
+     * @see https://github.com/jquery/jquery/issues/4801
+     * @see https://github.com/jquery/jquery/issues/1895
+     */
+    const scriptNodes = [];
+    const otherNodes = [];
+
+    for (const node of $.parseHTML(html.trim(), true)) {
+      // Deduplicate CSS
       if (node.nodeName === 'LINK' && node.href) {
         if (!this._existingCss) {
           this._existingCss = $('link[href]')
             .toArray()
             .map((n) => n.href.replace(/&/g, '&amp;'));
         }
-
         if (this._existingCss.includes(node.href)) {
-          return false;
+          continue;
         }
-
         this._existingCss.push(node.href);
-        return true;
       }
 
-      if (node.nodeName === 'SCRIPT' && node.src) {
-        if (!this._existingJs) {
-          this._existingJs = $('script[src]')
-            .toArray()
-            .map((n) => n.src.replace(/&/g, '&amp;'));
+      // Deduplicate and separate scripts
+      if (node.nodeName === 'SCRIPT') {
+        if (node.src) {
+          if (!this._existingJs) {
+            this._existingJs = $('script[src]')
+              .toArray()
+              .map((n) => n.src.replace(/&/g, '&amp;'));
+          }
+          if (this._existingJs.includes(node.src)) {
+            continue;
+          }
+          this._existingJs.push(node.src);
         }
-
-        // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
-        if (
-          node.src.startsWith(this.resourceBaseUrl) &&
-          !this.isSameHost(node.src)
-        ) {
-          node.src = this.getActionUrl('app/resource-js', {
-            url: node.src,
-          });
-        }
-
-        if (this._existingJs.includes(node.src)) {
-          return false;
-        }
-
-        this._existingJs.push(node.src);
+        scriptNodes.push(node);
+        continue;
       }
 
-      return true;
-    });
+      otherNodes.push(node);
+    }
 
-    $parent.append(nodes);
+    if (otherNodes.length) {
+      $parent.append(otherNodes);
+    }
+
+    // Load scripts sequentially via native <script> insertion to
+    // preserve execution order without requiring CORS.
+    const parentEl = $parent[0];
+    for (const scriptNode of scriptNodes) {
+      const scriptEl = document.createElement('script');
+
+      for (const attr of scriptNode.attributes) {
+        scriptEl.setAttribute(attr.name, attr.value);
+      }
+
+      if (scriptEl.src) {
+        await new Promise((resolve) => {
+          scriptEl.onload = scriptEl.onerror = resolve;
+          parentEl.appendChild(scriptEl);
+        });
+      } else {
+        scriptEl.textContent = scriptNode.textContent;
+        parentEl.appendChild(scriptEl);
+      }
+    }
+  },
+
+  _queueAppendHtml: function (html, $parent) {
+    const append = () => this._appendHtml(html, $parent);
+    this._appendHtmlQueue = (this._appendHtmlQueue || Promise.resolve())
+      .catch(() => {})
+      .then(append);
+    return this._appendHtmlQueue;
   },
 
   /**
@@ -2077,8 +2112,8 @@ $.extend(Craft, {
    * @param {string} html
    * @returns {Promise}
    */
-  appendHeadHtml: async function (html) {
-    await this._appendHtml(html, $('head'));
+  appendHeadHtml: function (html) {
+    return this._queueAppendHtml(html, $('head'));
   },
 
   /**
@@ -2087,8 +2122,8 @@ $.extend(Craft, {
    * @param {string} html
    * @returns {Promise}
    */
-  appendBodyHtml: async function (html) {
-    await this._appendHtml(html, Garnish.$bod);
+  appendBodyHtml: function (html) {
+    return this._queueAppendHtml(html, Garnish.$bod);
   },
 
   /**
@@ -2100,7 +2135,7 @@ $.extend(Craft, {
     console.warn(
       'Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.'
     );
-    this.appendBodyHtml(html);
+    return this.appendBodyHtml(html);
   },
 
   /**
@@ -2150,15 +2185,18 @@ $.extend(Craft, {
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
-    $('a', $container).each(function () {
-      if (
-        this.hostname.length &&
-        this.hostname !== location.hostname &&
-        typeof $(this).attr('target') === 'undefined'
-      ) {
-        $(this).attr('rel', 'noopener').attr('target', '_blank');
-      }
-    });
+    // ignore items in contenteditable divs (like redactor or ckeditor fields)
+    $('a', $container)
+      .not('[contenteditable="true"] a')
+      .each(function () {
+        if (
+          this.hostname.length &&
+          this.hostname !== location.hostname &&
+          typeof $(this).attr('target') === 'undefined'
+        ) {
+          $(this).attr('rel', 'noopener').attr('target', '_blank');
+        }
+      });
   },
 
   _elementIndexClasses: {},
@@ -2388,7 +2426,7 @@ $.extend(Craft, {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
     return document.cookie.replace(
       new RegExp(
-        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
+        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}_${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
       ),
       '$1'
     );
@@ -2410,7 +2448,7 @@ $.extend(Craft, {
    */
   setCookie: function (name, value, options) {
     options = $.extend({}, this.defaultCookieOptions, options);
-    let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(
+    let cookie = `Craft-${Craft.systemUid}_${name}=${encodeURIComponent(
       value
     )}`;
     if (options.path) {
@@ -2902,45 +2940,53 @@ $.extend(Craft, {
     await this.animateAll([[element, css]]);
   },
 
+  transitionQueue: null,
+
   animateAll: function (animations) {
-    return new Promise((resolve, reject) => {
-      for (let i = 0; i < animations.length; i++) {
-        if ((!animations[i][0]) instanceof jQuery) {
-          animations[i][0] = $(animations[i][0]);
-        }
-      }
+    if (!Craft.transitionQueue) {
+      Craft.transitionQueue = new Craft.Queue();
+    }
 
-      if (!document.startViewTransition) {
-        // fallback to Velocity
+    return Craft.transitionQueue.push(() => {
+      return new Promise((resolve, reject) => {
         for (let i = 0; i < animations.length; i++) {
-          const [$element, css] = animations[i];
-          $element.velocity(
-            css,
-            Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
-            i === animations.length - 1 ? resolve : null
-          );
+          if ((!animations[i][0]) instanceof jQuery) {
+            animations[i][0] = $(animations[i][0]);
+          }
         }
-        return;
-      }
 
-      for (const [$element] of animations) {
-        if ($element.css('view-transition-name') === 'none') {
-          $element.css(
-            'view-transition-name',
-            `vt-${Math.floor(Math.random() * 100000)}`
-          );
+        if (!document.startViewTransition) {
+          // fallback to Velocity
+          for (let i = 0; i < animations.length; i++) {
+            const [$element, css] = animations[i];
+            $element.velocity(
+              css,
+              Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
+              i === animations.length - 1 ? resolve : null
+            );
+          }
+          return;
         }
-      }
 
-      const transition = document.startViewTransition(() => {
-        for (const [$element, css] of animations) {
-          $element.css(css);
+        for (const [$element] of animations) {
+          if ($element.css('view-transition-name') === 'none') {
+            $element.css(
+              'view-transition-name',
+              `vt-${Math.floor(Math.random() * 100000)}`
+            );
+          }
         }
-      });
 
-      transition.finished.then(resolve).catch((e) => {
-        console.warn(e);
-        resolve();
+        const transition = document.startViewTransition(() => {
+          for (const [$element, css] of animations) {
+            $element.css(css);
+          }
+        });
+
+        transition.finished.then(resolve).catch((e) => {
+          console.warn(e);
+          resolve();
+        });
       });
     });
   },
@@ -2985,8 +3031,13 @@ if (typeof BroadcastChannel !== 'undefined') {
   });
 
   Craft.messageReceiver.addEventListener('message', (ev) => {
-    if (ev.data.event === 'saveElement') {
-      Craft.refreshElementInstances(ev.data.id);
+    switch (ev.data.event) {
+      case 'saveElement':
+        Craft.refreshElementInstances(ev.data.id);
+        break;
+      case 'deleteDraft':
+        Craft.refreshElementInstances(ev.data.canonicalId);
+        break;
     }
   });
 }
@@ -3089,7 +3140,9 @@ $.extend($.fn, {
   checkboxselect: function () {
     return this.each(function () {
       if (!$.data(this, 'checkboxSelect')) {
-        new Garnish.CheckboxSelect(this);
+        new Garnish.CheckboxSelect(this, {
+          storageKey: this.getAttribute('data-storage-key'),
+        });
       }
     });
   },

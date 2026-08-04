@@ -385,6 +385,7 @@ class NestedElementManager extends Component
         $config += [
             'showInGrid' => false,
             'prevalidate' => false,
+            'selectable' => false,
         ];
 
         return $this->createView(
@@ -399,7 +400,11 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
+                    'bulkDeleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+                        'type' => $this->elementType::pluralLowerDisplayName(),
+                    ]),
                     'showInGrid' => $config['showInGrid'],
+                    'selectable' => $config['selectable'],
                 ];
 
                 $html = Html::beginTag('div', options: [
@@ -439,6 +444,7 @@ class NestedElementManager extends Component
                         fn(ElementInterface $element) => Cp::elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
+                            'selectable' => $config['selectable'],
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
                         ]),
@@ -843,7 +849,9 @@ JS, [
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
-                    $element->resaving = $owner->resaving;
+                    // Only set $resaving=true if the element isn’t new.
+                    // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
+                    $element->resaving = $owner->resaving && $element->id;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
@@ -859,7 +867,7 @@ JS, [
                     ) {
                         /** @var NestedElementInterface $canonical */
                         $canonical = $element->getCanonical(true);
-                        if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
+                        if (ElementHelper::belongsToCanonicalOwner($canonical, $owner)) {
                             Craft::$app->getDrafts()->removeDraftData($element);
                             Db::delete(Table::ELEMENTS_OWNERS, [
                                 'elementId' => $canonical->id,
@@ -961,7 +969,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || in_array($localizedOwner->siteId, $owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -1068,18 +1076,19 @@ JS, [
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            // Only set the canonicalId if the target owner element is a derivative
+            // and if the target's canonical element is not the same as target element, see
+            // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    // Only set the canonicalId if the target owner element is a derivative
-                    // and if the target's canonical element is not the same as target element, see
-                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
+                    'resaving' => false,
                     'sortOrder' => $element->getSortOrder(),
                 ];
 
@@ -1087,7 +1096,20 @@ JS, [
                     $newAttributes['siteId'] = $target->siteId;
                 }
 
-                if ($target->updatingFromDerivative && $element->getIsDerivative()) {
+                /** @var NestedElementInterface $canonical */
+                $canonical = $element->getCanonical(true);
+
+                if (
+                    $target->updatingFromDerivative &&
+                    $element->getIsDerivative() &&
+                    (
+                        ElementHelper::isRevision($source) ||
+                        (
+                            $element->getPrimaryOwnerId() === $source->id &&
+                            $canonical->getPrimaryOwnerId() === $target->id
+                        )
+                    )
+                ) {
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
@@ -1106,7 +1128,12 @@ JS, [
                             'sortOrder' => $element->getSortOrder(),
                         ], updateTimestamp: false);
                     } else {
-                        $newElementId = $element->getCanonicalId();
+                        // if the canonical element is owned by the target element, then go with its ID
+                        if ($canonical->getOwnerId() === $target->id) {
+                            $newElementId = $element->getCanonicalId();
+                        } else {
+                            $newElementId = $element->id;
+                        }
                     }
                 } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element
@@ -1217,12 +1244,36 @@ JS, [
         );
 
         /** @var NestedElementInterface[] $elements */
-        $elements = $this->nestedElementQuery($canonical)
-            ->siteId($siteIds)
-            ->preferSites([$canonical->siteId])
-            ->unique()
-            ->status(null)
-            ->all();
+        $elements = [];
+        $processedElementIds = [];
+
+        foreach ($siteIds as $siteId) {
+            if ($siteId === $canonical->siteId) {
+                $owner = $canonical;
+            } else {
+                $owner = $canonical::find()
+                    ->id($canonical->id)
+                    ->siteId($siteId)
+                    ->status(null)
+                    ->one();
+
+                if ($owner === null) {
+                    continue;
+                }
+            }
+
+            $siteElements = $this->nestedElementQuery($owner)
+                ->status(null)
+                ->all();
+
+            /** @var NestedElementInterface $element */
+            foreach ($siteElements as $element) {
+                if (!isset($processedElementIds[$element->id])) {
+                    $processedElementIds[$element->id] = true;
+                    $elements[] = $element;
+                }
+            }
+        }
 
         $revisionsService = Craft::$app->getRevisions();
         $elementRevisionIds = [];
@@ -1319,19 +1370,21 @@ JS, [
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
                             $elementsService->deleteElement($derivativeElement);
                         }
-                    } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
+                    } elseif (
+                        !$derivativeElement->trashed &&
+                        $derivativeElement::trackChanges() &&
+                        ElementHelper::isOutdated($derivativeElement)
+                    ) {
                         // Merge the upstream changes into the derivative nested element
                         $elementsService->mergeCanonicalChanges($derivativeElement);
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
-                    // This is a new element, so duplicate it into the derivative owner
-                    $elementsService->duplicateElement($canonicalElement, [
-                        'canonicalId' => $canonicalElement->id,
-                        'primaryOwner' => $owner,
-                        'owner' => $localizedOwners[$canonicalElement->siteId],
-                        'siteId' => $canonicalElement->siteId,
-                        'propagating' => false,
-                    ]);
+                    // This is a new nested element, so duplicate its ownership into the derivative
+                    Db::upsert(Table::ELEMENTS_OWNERS, [
+                        'elementId' => $canonicalElement->id,
+                        'ownerId' => $owner->id,
+                        'sortOrder' => $canonicalElement->getSortOrder(),
+                    ], false);
                 }
             }
 

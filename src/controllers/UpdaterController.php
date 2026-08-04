@@ -395,7 +395,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something
-        $toVersion = App::normalizeVersion($toVersion);
+        $toVersion = App::normalizeVersion(ltrim($toVersion, '^'));
         $fromVersion = App::normalizeVersion($fromVersion);
 
         return Comparator::greaterThan($toVersion, $fromVersion);

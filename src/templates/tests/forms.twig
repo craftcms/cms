@@ -95,43 +95,43 @@
     <div>
         <h2 id="lightswitches">Lightswitches</h2>
         {{ forms.lightswitchField({
-            label: 'Default'|t('app'),
+            label: 'Default',
             on: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Small'|t('app'),
+            label: 'Small',
             small: true,
             on: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Default'|t('app'),
+            label: 'Default',
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Small'|t('app'),
+            label: 'Small',
             small: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Disabled'|t('app'),
+            label: 'Disabled',
             disabled: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Indeterminate'|t('app'),
+            label: 'Indeterminate',
             indeterminate: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Indeterminate (small)'|t('app'),
+            label: 'Indeterminate (small)',
             indeterminate: true,
             small: true,
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'With Labels'|t('app'),
+            label: 'With Labels',
             on: true,
             onLabel: 'On',
             offLabel: 'Off'
@@ -139,15 +139,15 @@
 
         <div class="pane">
             {{ forms.lightswitchField({
-                label: 'With Background'|t('app'),
+                label: 'With Background',
                 on: true,
             }) }}
             {{ forms.lightswitchField({
-                label: 'With Background'|t('app'),
+                label: 'With Background',
                 on: false,
             }) }}
             {{ forms.lightswitchField({
-                label: 'Disabled'|t('app'),
+                label: 'Disabled',
                 disabled: true,
             }) }}
         </div>
@@ -177,5 +177,3 @@ $content.append(Craft.ui.createCheckboxSelectField({
   showAllOption: false,
 }));
 {% endjs %}
-
-

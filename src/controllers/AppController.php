@@ -29,7 +29,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Search;
-use craft\helpers\Session;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -107,27 +106,6 @@ class AppController extends Controller
         $this->response->format = Response::FORMAT_RAW;
         $this->response->data = '';
         return $this->response;
-    }
-
-    /**
-     * Loads the given JavaScript resource URL and returns it.
-     *
-     * @param string $url
-     * @return Response
-     */
-    public function actionResourceJs(string $url): Response
-    {
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
-            throw new BadRequestHttpException("$url does not appear to be a resource URL");
-        }
-
-        // Close the PHP session in case this takes a while
-        Session::close();
-
-        $response = Craft::createGuzzleClient()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
     }
 
     /**
@@ -799,6 +777,11 @@ class AppController extends Controller
                 $query
                     ->fieldId($fieldId)
                     ->ownerId($ownerId);
+            }
+
+            // if we have revisionId, then we might need to look through soft-deleted elements too
+            if (isset($criterion['revisionId'])) {
+                $query->trashed(null);
             }
 
             $elements = $query->all();

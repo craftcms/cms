@@ -17,6 +17,7 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * UserGroup model class.
@@ -38,22 +39,26 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
     /**
      * @var int|null ID
      */
+    #[AllowedInSandbox]
     public ?int $id = null;
 
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var string|null Description
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public ?string $description = null;
 
     /**
@@ -158,6 +163,7 @@ JS, [
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [

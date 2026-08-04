@@ -11,6 +11,7 @@ use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\Html;
+use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
@@ -177,10 +178,14 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyCreationOptions(static::currentUser());
+
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -194,10 +199,15 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyRequestOptions();
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
+
+        SessionHelper::set($authService->passkeyRequestOptionsParam, $serializedData);
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 

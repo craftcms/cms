@@ -14,6 +14,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Search;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -59,11 +60,14 @@ class ElementSearchController extends Controller
             ->limit(5);
 
         if ($criteria) {
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
+
             Craft::configure($query, Component::cleanseConfig($criteria));
         }
 
         if ($conditionConfig) {
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            $condition = Craft::$app->getConditions()->createCondition(Component::cleanseConfig($conditionConfig));
 
             if ($condition instanceof ElementCondition) {
                 $referenceElementId = $this->request->getBodyParam('referenceElementId');

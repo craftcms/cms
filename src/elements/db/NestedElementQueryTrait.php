@@ -51,6 +51,7 @@ trait NestedElementQueryTrait
     /**
      * @var ElementInterface|null The owner element specified by [[owner()]].
      * @used-by owner()
+     * @used-by primaryOwner()
      */
     private ?ElementInterface $_owner = null;
 
@@ -128,6 +129,7 @@ trait NestedElementQueryTrait
     public function primaryOwnerId(mixed $value): static
     {
         $this->primaryOwnerId = $value;
+        $this->_owner = null;
         return $this;
     }
 
@@ -139,7 +141,10 @@ trait NestedElementQueryTrait
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
         $this->primaryOwnerId = [$primaryOwner->id];
-        $this->siteId = $primaryOwner->siteId;
+        $this->_owner = $primaryOwner;
+        if ($this->elementType::isLocalized()) {
+            $this->siteId = $primaryOwner->siteId;
+        }
         return $this;
     }
 
@@ -163,8 +168,10 @@ trait NestedElementQueryTrait
     public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
-        $this->siteId = $owner->siteId;
         $this->_owner = $owner;
+        if ($this->elementType::isLocalized()) {
+            $this->siteId = $owner->siteId;
+        }
         return $this;
     }
 
@@ -304,6 +311,10 @@ trait NestedElementQueryTrait
     {
         if (isset($this->_owner)) {
             $row['owner'] = $this->_owner;
+
+            if (isset($row['primaryOwnerId']) && $row['primaryOwnerId'] == $this->_owner->id) {
+                $row['primaryOwner'] = $this->_owner;
+            }
         }
 
         return parent::createElement($row);

@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
 use craft\helpers\Db;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -77,6 +78,7 @@ trait NestedElementTrait
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**
@@ -368,8 +370,8 @@ trait NestedElementTrait
         $field = null;
 
         try {
-            $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId);
-        } catch (InvalidConfigException $e) {
+            $field = $this->getOwner()?->getFieldLayout()?->getFieldById($this->fieldId);
+        } catch (InvalidConfigException) {
             // carry on as we might still be able to get the field by ID
         }
 
@@ -513,24 +515,38 @@ trait NestedElementTrait
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
-        $ownerIds = array_unique([
-            $this->getPrimaryOwnerId(),
-            $ownerId,
-        ]);
-
         if (!$isNew) {
             Db::delete(Table::ELEMENTS_OWNERS, [
                 'elementId' => $this->id,
-                'ownerId' => $ownerIds,
+                'ownerId' => $ownerId,
             ]);
         }
 
-        foreach ($ownerIds as $ownerId) {
-            Db::insert(Table::ELEMENTS_OWNERS, [
-                'elementId' => $this->id,
-                'ownerId' => $ownerId,
-                'sortOrder' => $this->sortOrder,
-            ]);
+        Db::insert(Table::ELEMENTS_OWNERS, [
+            'elementId' => $this->id,
+            'ownerId' => $ownerId,
+            'sortOrder' => $this->sortOrder,
+        ]);
+
+        // make sure we're also storing ownership for the primary owner
+        // (see https://github.com/craftcms/cms/pull/16933)
+        $primaryOwnerId = $this->getPrimaryOwnerId();
+        if ($primaryOwnerId !== $ownerId) {
+            $exists = (new Query())
+                ->from(Table::ELEMENTS_OWNERS)
+                ->where([
+                    'elementId' => $this->id,
+                    'ownerId' => $primaryOwnerId,
+                ])
+                ->exists();
+
+            if (!$exists) {
+                Db::insert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $primaryOwnerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            }
         }
     }
 }

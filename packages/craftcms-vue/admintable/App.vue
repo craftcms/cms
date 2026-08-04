@@ -17,6 +17,7 @@
             :enabled="checks.length ? true : false"
             :error="action.error"
             :ajax="action.ajax"
+            :handle-click="action.handleClick ?? true"
             v-on:reload="reload"
             v-on:click="handleActionClick"
           >

@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Class OptionData
@@ -20,34 +21,40 @@ class OptionData implements Serializable
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $label = null;
 
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $value = null;
 
     /**
      * @var bool
      */
+    #[AllowedInSandbox]
     public bool $selected;
 
     /**
      * @var bool
      * @since 3.5.10
      */
+    #[AllowedInSandbox]
     public bool $valid;
 
     /**
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $icon = null;
 
     /**
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $color = null;
 
     /**

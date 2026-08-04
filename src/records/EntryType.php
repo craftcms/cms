@@ -28,6 +28,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $titleTranslationMethod Title translation method
  * @property string|null $titleTranslationKeyFormat Title translation key format
  * @property string|null $titleFormat Title format
+ * @property bool $allowLineBreaksInTitles Allow line breaks in titles
  * @property bool $showSlugField Whether to show the Slug field
  * @property string $slugTranslationMethod Slug translation method
  * @property string|null $slugTranslationKeyFormat Slug translation key format

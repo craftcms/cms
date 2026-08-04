@@ -4,6 +4,7 @@
   label: 'Entry Types'|t('app'),
   instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
   id: 'entry-types',
+  disabled: readOnly,
 } %}
   {% block input %}
     {% import "_includes/forms" as forms %}
@@ -30,6 +31,7 @@
               id: "entry-type-select-#{random()}",
               values: entryTypes,
               includeGroupInValues: true,
+              disabled: readOnly,
             })) }}
           {% endtag %}
         {% endfor %}

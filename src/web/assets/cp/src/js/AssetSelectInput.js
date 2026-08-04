@@ -222,10 +222,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
             instances: [
               {
                 context: 'field',
-                ui: ['list', 'large'].includes(this.settings.viewMode)
+                ui: ['list', 'list-inline', 'large', 'thumbs'].includes(
+                  this.settings.viewMode
+                )
                   ? 'chip'
                   : 'card',
-                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+                size: ['large', 'thumbs'].includes(this.settings.viewMode)
+                  ? 'large'
+                  : 'small',
                 showActionMenu: this.settings.showActionMenu,
               },
             ],

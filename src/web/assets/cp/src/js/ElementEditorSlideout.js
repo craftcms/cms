@@ -110,24 +110,24 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         params.elementId = this.$element.data('id');
       }
 
-      if (this.settings.draftId) {
-        params.draftId = this.settings.draftId;
+      if (this.settings.draftId !== null) {
+        params.draftId = this.settings.draftId || null; // could be false
       } else if (this.$element?.data('draft-id')) {
         params.draftId = this.$element.data('draft-id');
-      } else if (this.settings.revisionId) {
-        params.revisionId = this.settings.revisionId;
+      } else if (this.settings.revisionId !== null) {
+        params.revisionId = this.settings.revisionId || null; // could be false
       } else if (this.$element?.data('revision-id')) {
         params.revisionId = this.$element.data('revision-id');
       }
 
-      if (this.settings.fieldId) {
-        params.fieldId = this.settings.fieldId;
+      if (this.settings.fieldId !== null) {
+        params.fieldId = this.settings.fieldId || null; // could be false
       } else if (this.$element?.data('field-id')) {
         params.fieldId = this.$element.data('field-id');
       }
 
-      if (this.settings.ownerId) {
-        params.ownerId = this.settings.ownerId;
+      if (this.settings.ownerId !== null) {
+        params.ownerId = this.settings.ownerId || null; // could be false
       } else if (this.$element?.data('owner-id')) {
         params.ownerId = this.$element.data('owner-id');
       }
@@ -145,6 +145,12 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       return params;
     },
 
+    reload: function () {
+      this.elementEditor?.destroy();
+      delete this.elementEditor;
+      this.base();
+    },
+
     handleSubmit: async function (ev) {
       if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;
@@ -156,8 +162,10 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       ev.stopPropagation();
       ev.stopImmediatePropagation();
 
+      this.showSubmitSpinner();
       await this.settings.onBeforeSubmit();
       this.elementEditor.handleSubmit(ev);
+      this.hideSubmitSpinner();
     },
 
     handleSubmitError: function (e) {

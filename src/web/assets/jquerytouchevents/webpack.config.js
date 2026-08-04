@@ -10,9 +10,7 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: require.resolve(
-              '@benmajor/jquery-touch-events/src/jquery.mobile-events.min.js'
-            ),
+            from: require.resolve('@benmajor/jquery-touch-events/src/jquery.mobile-events.min.js'),
             to: 'jquery.mobile-events.js',
           },
         ],

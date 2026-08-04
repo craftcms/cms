@@ -442,7 +442,7 @@ class UpdateController extends Controller
             return;
         }
 
-        $requirements[$update->packageName] = $to;
+        $requirements[$update->packageName] = "^$to";
         $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status, $update->phpConstraint];
 
         // Has the package name changed?

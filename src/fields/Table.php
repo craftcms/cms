@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
@@ -19,7 +20,9 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
@@ -38,8 +41,10 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
+    private static array $typeOptions;
+
     /**
      * @inheritdoc
      */
@@ -62,6 +67,31 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (!isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => Craft::t('app', 'Checkbox'),
+                'color' => Craft::t('app', 'Color'),
+                'date' => Craft::t('app', 'Date'),
+                'select' => Craft::t('app', 'Dropdown'),
+                'email' => Craft::t('app', 'Email'),
+                'heading' => Craft::t('app', 'Row heading'),
+                'lightswitch' => Craft::t('app', 'Lightswitch'),
+                'multiline' => Craft::t('app', 'Multi-line text'),
+                'number' => Craft::t('app', 'Number'),
+                'singleline' => Craft::t('app', 'Single-line text'),
+                'time' => Craft::t('app', 'Time'),
+                'url' => Craft::t('app', 'URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -149,9 +179,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (!empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
@@ -203,7 +234,13 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
      */
     public function validateColumns(): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (!isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if ($col['handle']) {
                 $error = null;
 
@@ -262,24 +299,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
     private function settingsHtml(bool $readOnly): string
     {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
-
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -301,7 +320,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
@@ -378,7 +397,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $columns,
-            'rows' => $this->defaults,
+            'rows' => array_map(function(array $row) {
+                // make sure the row has a UUID
+                $row['rowId'] ??= StringHelper::uuid();
+                return $row;
+            }, $this->defaults ?? []),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,
@@ -417,6 +440,14 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): ?array
+    {
+        return $this->defaults;
     }
 
     /**
@@ -489,7 +520,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         foreach ($defaults as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if ($col['type'] === 'heading' && isset($row[$colId])) {
-                    $row[$colId] = Craft::t('site', $row[$colId]);
+                    $row[$colId] = Craft::t('site', $row[$colId], language: $element?->getLanguage());
                 }
             }
         }
@@ -509,7 +540,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (!empty($order)) {
@@ -766,13 +797,20 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
             case 'multiline':
             case 'singleline':
-                if ($value !== null) {
-                    if (!$fromRequest) {
-                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
-                    }
-                    return trim(preg_replace('/\R/u', "\n", $value));
+                if ($value === null) {
+                    return null;
                 }
-                // no break
+                if (!$fromRequest) {
+                    $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                }
+                return trim(StringHelper::convertLineBreaks($value));
+
+            case 'number':
+                if (isset($value['locale'], $value['value'])) {
+                    return Localization::normalizeNumber($value['value'], $value['locale']);
+                }
+                break;
+
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -830,8 +868,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             return '';
         }
 
-        // Translate the column headings and dropdown option labels
-        foreach ($this->columns as &$column) {
+        // Translate the column headings and dropdown option labels,
+        // and configure number columns with the active formatting locale
+        $columns = [];
+        $locale = Craft::$app->getFormattingLocale()->id;
+
+        foreach ($this->columns as $colId => $column) {
             if (!empty($column['heading'])) {
                 $column['heading'] = Craft::t('site', $column['heading']);
             }
@@ -840,8 +882,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                     $option['label'] = Craft::t('site', $option['label']);
                 });
             }
+            if ($column['type'] === 'number') {
+                $column['locale'] = $locale;
+            }
+            $columns[$colId] = $column;
         }
-        unset($column);
 
         if (!is_array($value)) {
             $value = [];
@@ -850,11 +895,14 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         // Explicitly set each cell value to an array with a 'value' key
         $checkForErrors = $element && $element->hasErrors($this->handle);
         foreach ($value as &$row) {
-            foreach ($this->columns as $colId => $col) {
+            foreach ($columns as $colId => $col) {
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
-                        'value' => $row[$colId],
+                        'value' => match ($col['type']) {
+                            'heading' => Html::encode($row[$colId]),
+                            default => $row[$colId],
+                        },
                         'hasErrors' => $hasErrors,
                     ];
                 }
@@ -872,7 +920,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
-            'cols' => $this->columns,
+            'cols' => $columns,
             'rows' => $value,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,

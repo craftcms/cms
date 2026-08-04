@@ -12,38 +12,42 @@ class CraftDisclosure extends HTMLElement {
   }
 
   get target() {
-    return document.getElementById(this.trigger.getAttribute('aria-controls'));
+    const trigger = this.trigger;
+    if (trigger) {
+      return document.getElementById(trigger.getAttribute('aria-controls'));
+    }
   }
 
   connectedCallback() {
-    if (!this.trigger) {
+    const trigger = this.trigger;
+    if (!trigger) {
       console.error(`craft-disclosure elements must include a button`, this);
       return;
     }
 
     if (!this.target) {
       console.error(
-        `No target with id ${this.trigger.getAttribute(
+        `No target with id ${trigger.getAttribute(
           'aria-controls'
         )} found for disclosure. `,
-        this.trigger
+        trigger
       );
       return;
     }
 
     this.storageKey =
       this.getAttribute('storage-key') ||
-      `disclosure:${this.trigger.getAttribute('aria-controls')}`;
+      `disclosure:${trigger.getAttribute('aria-controls')}`;
     this.storageMode = this.getAttribute('storage-mode') || 'localStorage';
     this.persist = this.hasAttribute('persist');
 
     this.state = this.getInitialState();
 
-    if (!this.trigger.getAttribute('aria-expanded')) {
-      this.trigger.setAttribute('aria-expanded', 'false');
+    if (!trigger.getAttribute('aria-expanded')) {
+      trigger.setAttribute('aria-expanded', 'false');
     }
 
-    this.trigger.addEventListener('click', this.toggle.bind(this));
+    trigger.addEventListener('click', this.toggle.bind(this));
 
     this.state === 'expanded' ? this.open() : this.close();
   }
@@ -98,9 +102,15 @@ class CraftDisclosure extends HTMLElement {
   }
 
   handleOpen = () => {
-    this.trigger.setAttribute('aria-expanded', 'true');
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+    }
     this.expanded = true;
-    this.target.dataset.state = 'expanded';
+    if (target) {
+      target.dataset.state = 'expanded';
+    }
     this.dispatchEvent(new CustomEvent('open'));
 
     this.storeState('expanded');
@@ -111,9 +121,15 @@ class CraftDisclosure extends HTMLElement {
   }
 
   handleClose = () => {
-    this.trigger.setAttribute('aria-expanded', 'false');
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+    }
     this.expanded = false;
-    this.target.dataset.state = 'collapsed';
+    if (target) {
+      target.dataset.state = 'collapsed';
+    }
     this.dispatchEvent(new CustomEvent('close'));
 
     this.storeState('collapsed');

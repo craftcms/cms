@@ -115,7 +115,6 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         $rules = parent::defineRules();
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], TimeValidator::class, 'min' => $this->min];
 
         return $rules;
     }
@@ -168,8 +167,8 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
-            'minTime' => $this->min,
-            'maxTime' => $this->max,
+            'minTime' => DateTimeHelper::timeToSeconds($this->min),
+            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
             'minuteIncrement' => $this->minuteIncrement,
         ]);
     }

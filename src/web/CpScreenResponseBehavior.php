@@ -16,7 +16,7 @@ use yii\base\Behavior;
 /**
  * Control panel screen response behavior.
  *
- * @property Response $owner
+ * @extends Behavior<Response>
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

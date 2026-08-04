@@ -243,7 +243,6 @@ class Plugins extends Component
                 // If the plugin’s version just changed, make sure the old version is >= the min allowed version
                 if (
                     $hasVersionChanged &&
-                    isset($plugin->minVersionRequired) &&
                     $plugin->minVersionRequired &&
                     !str_starts_with($row['version'], 'dev-') &&
                     !str_ends_with($row['version'], '-dev') &&
@@ -740,7 +739,9 @@ class Plugins extends Component
 
         // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
-        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
+        $pluginSettings = $pluginSettings
+            ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray(array_keys($settings)))
+            : [];
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
 
         $plugin->afterSaveSettings();

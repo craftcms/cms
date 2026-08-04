@@ -17,6 +17,8 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -46,6 +48,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
+use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -234,12 +237,50 @@ class App
         // …${VAR}…
         $value = self::parseNestedEnv($value);
 
+        // $VAR
+        if (preg_match('/^\$(\w+)$/', $value, $m)) {
+            $result = self::env($m[1]);
+
+            if (is_bool($result)) {
+                return $result;
+            }
+
+            $result = (string)$result;
+
+            if ($result === '') {
+                return null;
+            }
+
+            // the value could itself reference an alias (e.g. `@root/storage/rebrand`)
+            if (str_starts_with($result, '@')) {
+                $result = Craft::getAlias($result, false) ?: $result;
+            }
+
+            return $result;
+        }
+
         // …/$VAR/…
-        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', fn($m) => static::env($m[1]), $value);
+        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', function($m) {
+            $result = self::env($m[1]);
+
+            if (is_bool($result)) {
+                return $result ? 'true' : 'false';
+            }
+
+            // todo: remove this in v6
+            if ($result === '') {
+                $result = '__EMPTY__';
+            }
+
+            return (string)$result;
+        }, $value);
 
         if ($value === '') {
             return null;
         }
+
+        // todo: remove this in v6
+        $value = str_replace('__EMPTY__', '', $value);
 
         if (str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;
@@ -264,23 +305,11 @@ class App
      */
     public static function parseBooleanEnv(mixed $value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
+        if (is_string($value)) {
+            $value = static::parseEnv($value);
         }
 
-        if ($value === 0 || $value === 1) {
-            return (bool)$value;
-        }
-
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        $value = static::parseEnv($value);
-        if ($value === null) {
-            return null;
-        }
-        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return static::normalizeBooleanValue($value);
     }
 
     /**
@@ -484,6 +513,32 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Normalizes a boolean environment variable/constant name/CLI command option.
+     *
+     * Truthy/falsy values include `on`/`off`, `yes`/`no`, `1`/`0`, and `true`/`false` (case-insensitive).
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 5.9.11
+     */
+    public static function normalizeBooleanValue(mixed $value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if ($value === 0 || $value === 1) {
+            return (bool)$value;
+        }
+
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
@@ -868,7 +923,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+        return static::normalizeBooleanValue(static::env('CRAFT_EPHEMERAL')) ?? false;
     }
 
     /**
@@ -889,7 +944,7 @@ class App
      */
     public static function isStreamLog(): bool
     {
-        return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
+        return static::normalizeBooleanValue(static::env('CRAFT_STREAM_LOG')) ?? false;
     }
 
     /**
@@ -1233,15 +1288,12 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'trustedHosts' => $generalConfig->trustedHosts,
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => static::parseBooleanEnv('$CRAFT_CP'),
+            'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')),
         ];
-
-        if ($generalConfig->trustedHosts !== null) {
-            $config['trustedHosts'] = $generalConfig->trustedHosts;
-        }
 
         if ($generalConfig->secureHeaders !== null) {
             $config['secureHeaders'] = $generalConfig->secureHeaders;
@@ -1327,17 +1379,34 @@ class App
     /**
      * Returns all known licensing issues.
      *
-     * @param bool $withUnresolvables
+     * @param string[]|bool|null $only The issue types to return
      * @param bool $fetch
      * @return array{0:string,1:string,2:array|null}[]
      * @internal
      */
-    public static function licensingIssues(bool $withUnresolvables = true, bool $fetch = false): array
+    public static function licensingIssues(array|bool|null $only = null, bool $fetch = false): array
     {
-        $user = Craft::$app->getUser()->getIdentity();
-        if (!$user) {
-            return [];
+        // maintain BC support for $withUnresolvables
+        // todo: remove support for true/false
+        if (is_bool($only)) {
+            if ($only) {
+                $only = null;
+            } else {
+                $only = [
+                    LicenseKeyStatus::Trial->value,
+                    LicenseKeyStatus::Astray->value,
+                    'wrong_edition',
+                ];
+            }
         }
+
+        $only ??= [
+            LicenseKeyStatus::Invalid->value,
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Mismatched->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ];
 
         $updatesService = Craft::$app->getUpdates();
         $cache = Craft::$app->getCache();
@@ -1396,16 +1465,20 @@ class App
 
             $isMultiEdition = count($editions) > 1;
 
-            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
+            if (
+                $licenseInfo['status'] === LicenseKeyStatus::Invalid->value &&
+                in_array(LicenseKeyStatus::Invalid->value, $only)
+            ) {
                 // invalid license
-                if ($withUnresolvables) {
-                    $issues[] = [
-                        $name,
-                        Craft::t('app', 'The {name} license is invalid.', ['name' => $name]),
-                        null,
-                    ];
-                }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
+                $issues[] = [
+                    $name,
+                    Craft::t('app', 'The {name} license is invalid.', ['name' => $name]),
+                    null,
+                ];
+            } elseif (
+                $licenseInfo['status'] === LicenseKeyStatus::Trial->value &&
+                in_array(LicenseKeyStatus::Trial->value, $only)
+            ) {
                 // trial license
                 $issues[] = [
                     $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
@@ -1417,58 +1490,62 @@ class App
                         'edition' => $currentEdition,
                     ]),
                 ];
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
-                if ($withUnresolvables) {
-                    if ($isCraft) {
-                        // wrong domain. ignore if the cache wasn't saved from the same host name we're currently on
-                        $request = Craft::$app->getRequest();
-                        if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
-                            $licensedDomain = $cache->get('licensedDomain');
-                            $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
-                                'rel' => 'noopener',
-                                'target' => '_blank',
+            } elseif (
+                $licenseInfo['status'] === LicenseKeyStatus::Mismatched->value &&
+                in_array(LicenseKeyStatus::Mismatched->value, $only)
+            ) {
+                if ($isCraft) {
+                    // wrong domain. ignore if the cache wasn't saved from the same host name we're currently on
+                    $request = Craft::$app->getRequest();
+                    if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
+                        $licensedDomain = $cache->get('licensedDomain');
+                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                            'rel' => 'noopener',
+                            'target' => '_blank',
+                        ]);
+
+                        if (defined('CRAFT_LICENSE_KEY')) {
+                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                'domain' => $domainLink,
                             ]);
+                        } else {
+                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 
-                            if (defined('CRAFT_LICENSE_KEY')) {
-                                $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
-                                    'domain' => $domainLink,
-                                ]);
-                            } else {
-                                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
-
-                                // If the license key path starts with the root project path, trim the project path off
-                                $rootPath = Craft::getAlias('@root');
-                                if (str_starts_with($keyPath, $rootPath . '/')) {
-                                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
-                                }
-
-                                $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
-                                    'file' => $keyPath,
-                                    'domain' => $domainLink,
-                                ]);
+                            // If the license key path starts with the root project path, trim the project path off
+                            $rootPath = Craft::getAlias('@root');
+                            if (str_starts_with($keyPath, $rootPath . '/')) {
+                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
                             }
 
-                            $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
-                                'class' => 'go',
+                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                'file' => $keyPath,
+                                'domain' => $domainLink,
                             ]);
-                            $issues[] = [$name, "$message $learnMoreLink", null];
                         }
-                    } else {
-                        // wrong Craft install
-                        $issues[] = [
-                            $name,
-                            Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
-                                'name' => $name,
-                                'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
-                                'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
-                                    ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
-                                    : "https://plugins.craftcms.com/$handle",
-                            ]),
-                            null,
-                        ];
+
+                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                            'class' => 'go',
+                        ]);
+                        $issues[] = [$name, "$message $learnMoreLink", null];
                     }
+                } else {
+                    // wrong Craft install
+                    $issues[] = [
+                        $name,
+                        Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
+                            'name' => $name,
+                            'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
+                            'buyUrl' => Craft::$app->getUser()->getIsAdmin() && $generalConfig->allowAdminChanges
+                                ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
+                                : "https://plugins.craftcms.com/$handle",
+                        ]),
+                        null,
+                    ];
                 }
-            } elseif ($licenseInfo['edition'] !== $currentEdition) {
+            } elseif (
+                $licenseInfo['edition'] !== $currentEdition &&
+                in_array('wrong_edition', $only)
+            ) {
                 // wrong edition
                 $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
                     'name' => $name,
@@ -1488,7 +1565,10 @@ class App
                         ],
                     ];
                 }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
+            } elseif (
+                $licenseInfo['status'] === LicenseKeyStatus::Astray->value &&
+                in_array(LicenseKeyStatus::Astray->value, $only)
+            ) {
                 // updated too far
                 $issues[] = [
                     sprintf('%s %s', $name, $version),
@@ -1547,6 +1627,71 @@ class App
     {
         foreach ($properties as $name => $value) {
             $object->$name = $value;
+        }
+    }
+
+    /**
+     * Returns the path for a CP resource by its URI.
+     *
+     * @param string $uri
+     * @return string
+     * @throws InvalidArgumentException
+     * @since 5.9.15
+     */
+    public static function resourcePathByUri(string $uri): string
+    {
+        if (!Path::ensurePathIsContained($uri)) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $assetManager = Craft::$app->getAssetManager();
+
+        // If the file already exists, return that
+        $path = "$assetManager->basePath/$uri";
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        // Otherwise, publish it
+        $slash = strpos($uri, '/');
+        $hash = substr($uri, 0, $slash);
+        $sourcePath = self::resourceSourcePathByHash($hash, $assetManager);
+
+        if (!$sourcePath) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $filePath = substr($uri, strlen($hash) + 1);
+
+        // Publish the directory
+        [$publishedDir] = $assetManager->publish(Craft::getAlias($sourcePath));
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new InvalidArgumentException("$filePath does not exist.");
+        }
+
+        return $publishedPath;
+    }
+
+    /**
+     * Returns the source path for a CP resource by its hash.
+     *
+     * @param string $hash
+     * @return string|false
+     * @since 4.17.9
+     */
+    private static function resourceSourcePathByHash(string $hash, AssetManager $assetManager): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get($assetManager->getCacheKeyForPathHash($hash));
         }
     }
 }

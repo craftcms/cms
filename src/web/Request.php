@@ -207,6 +207,12 @@ class Request extends \yii\web\Request
     public ?string $_token = null;
 
     /**
+     * @var array|null
+     * @see getTokenRoute()
+     */
+    public ?array $_tokenRoute = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -295,9 +301,8 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
-
         // Trim off any leading path segments that are part of the base URL
-        if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
+        elseif ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
             $basePath = $this->_normalizePath($basePath);
 
             // If Craft is running from a subfolder, chop the subfolder path off of the base path first
@@ -524,6 +529,20 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the route the request’s token resolves to.
+     *
+     * @return array|null The route, or `null` if there isn’t one.
+     * @see getToken())
+     * @see Tokens::createToken()
+     * @since 5.9.12
+     */
+    public function getTokenRoute(): ?array
+    {
+        $this->_findToken();
+        return $this->_tokenRoute;
+    }
+
+    /**
      * Sets the token value.
      *
      * @param string|null $token
@@ -558,13 +577,29 @@ class Request extends \yii\web\Request
             return;
         }
 
-        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
-        $this->_hasInvalidToken = $token && !preg_match('/^[A-Za-z0-9_-]+$/', $token);
+        $this->_hadToken = false;
+        $this->_hasInvalidToken = false;
 
-        if (!$this->_hasInvalidToken) {
-            $this->_token = $token;
-            $this->_hadToken = $token !== null;
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+
+        if (!$token) {
+            return;
         }
+
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $token)) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_tokenRoute = Craft::$app->getTokens()->getTokenRoute($token) ?: null;
+
+        if (!$this->_tokenRoute) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_token = $token;
+        $this->_hadToken = true;
     }
 
     /**
@@ -685,6 +720,17 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the `x-craft-preview` param value, if passed.
+     *
+     * @return string|null
+     * @since 5.10.6
+     */
+    public function getPreviewParam(): ?string
+    {
+        return $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview') ?? $this->getHeaders()->get('X-Craft-Preview-Token');
+    }
+
+    /**
      * Returns whether this is an element preview request.
      *
      * ::: tip
@@ -705,7 +751,7 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        $previewParamValue = $this->getPreviewParam();
         if (!$previewParamValue) {
             return false;
         }
@@ -1384,8 +1430,31 @@ class Request extends \yii\web\Request
      */
     public function accepts(string $contentType): bool
     {
+        return $this->acceptsInternal($contentType, $this->getAcceptableContentTypes());
+    }
+
+    /**
+     * Returns whether the request primarily wants a given content type.
+     *
+     * @since 5.9.11
+     */
+    public function wants(string $contentType): bool
+    {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
+        if (empty($acceptableContentTypes)) {
+            return false;
+        }
+
+        $firstType = array_key_first($acceptableContentTypes);
+
+        return $this->acceptsInternal($contentType, [
+            $firstType => $acceptableContentTypes[$firstType],
+        ]);
+    }
+
+    private function acceptsInternal(string $contentType, array $acceptableContentTypes): bool
+    {
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
@@ -1422,6 +1491,17 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request primarily wants a JSON response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsJson(): bool
+    {
+        return $this->wants('application/json') || $this->wants('application/*+json');
+    }
+
+    /**
      * Returns whether the request will accept an image response.
      *
      * @return bool
@@ -1430,6 +1510,17 @@ class Request extends \yii\web\Request
     public function getAcceptsImage(): bool
     {
         return $this->accepts('image/*');
+    }
+
+    /**
+     * Returns whether the request primarily wants an image response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsImage(): bool
+    {
+        return $this->wants('image/*');
     }
 
     /**
@@ -1760,12 +1851,14 @@ class Request extends \yii\web\Request
             $this->_isLoginRequest = false;
         }
 
+        // Avoid infinite recursion if something else calls checkIfActionRequest() in the process
+        // (see https://github.com/craftcms/cms/issues/18605)
+        $this->_checkedRequestType = true;
+
         // If there's a token on the request, then that should take precedence over everything else
         if (!$checkToken || $this->getToken() === null) {
             $this->_isActionRequest = $this->_checkIfActionRequestInternal($checkSpecialPaths);
         }
-
-        $this->_checkedRequestType = true;
     }
 
     private function _checkIfActionRequestInternal(bool $checkSpecialPaths): bool

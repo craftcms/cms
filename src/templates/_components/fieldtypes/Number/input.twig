@@ -6,6 +6,7 @@
 {%- set suffix = field.suffix ?? false %}
 {%- set hasPrefix = prefix is not same as(false) %}
 {%- set hasSuffix = suffix is not same as(false) %}
+{%- set currencyLabel = currencyLabel ?? false %}
 
 {% if formatNumber %}
     {{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
@@ -25,10 +26,10 @@
 <div class="flex">
     {% if hasPrefix %}
         <div aria-hidden="true">
-            {{ prefix|t('site')|md(inlineOnly=true)|raw }}
+            {{ prefix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
-    <div>
+    <div class="number-container">
         {% set config = {
             type: field.step ? 'number' : 'text',
             id: id,
@@ -47,11 +48,17 @@
             }) %}
         {% endif %}
 
+        {% if currencyLabel %}
+            <div class="number-currency-label">
+                <span>{{ currencyLabel }}</span>
+            </div>
+        {% endif %}
+
         {{ text(config) }}
     </div>
     {% if hasSuffix %}
         <div aria-hidden="true">
-            {{ suffix|t('site')|md(inlineOnly=true)|raw }}
+            {{ suffix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
 </div>

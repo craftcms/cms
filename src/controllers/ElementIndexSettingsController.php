@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -307,9 +308,13 @@ class ElementIndexSettingsController extends BaseElementsController
                 }
 
                 if ($isCustom) {
+                    $conditionConfig = $postedSettings['condition'];
+                    if (is_array($conditionConfig)) {
+                        $conditionConfig = Component::cleanseConfig($conditionConfig);
+                    }
                     $sourceConfig += [
                         'label' => $postedSettings['label'],
-                        'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                        'condition' => $conditionsService->createCondition($conditionConfig)->getConfig(),
                     ];
 
                     if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
@@ -349,13 +354,13 @@ class ElementIndexSettingsController extends BaseElementsController
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
-        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);
-
+        $sourcesService = Craft::$app->getElementSources();
+        $sourcesService->saveSources($elementType, $newSourceConfigs);
         if ($multiPage) {
-            $projectConfig->set(
-                sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
-                array_map('array_filter', $pageSettings),
-            );
+            $sourcesService->savePageSettings($elementType, array_map(
+                fn(array $settings) => array_filter($settings, fn($setting) => $setting !== null && $setting !== ''),
+                $pageSettings,
+            ));
         }
 
         Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));

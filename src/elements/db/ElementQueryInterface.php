@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\ElementCollection;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -1664,6 +1665,16 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
     public function ids(?Connection $db = null): array;
+
+    /**
+     * Executes the query and returns the IDs of the resulting elements as a collection.
+     *
+     * @param Connection|null $db The database connection used to generate the SQL statement.
+     * If this parameter is not given, the `db` application component will be used.
+     * @return Collection<int> The resulting element IDs as a collection.
+     * @since 5.10.0
+     */
+    public function collectIds(?Connection $db = null): Collection;
 
     /**
      * Converts a found row into an element instance.

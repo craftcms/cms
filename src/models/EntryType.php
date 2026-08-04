@@ -124,6 +124,12 @@ class EntryType extends Model implements
     public ?string $titleFormat = null;
 
     /**
+     * @var bool Whether line breaks should be allowed in titles
+     * @since 5.9.0
+     */
+    public bool $allowLineBreaksInTitles = false;
+
+    /**
      * @var bool Whether to show the Slug field
      * @since 5.0.0
      */
@@ -339,6 +345,7 @@ JS, [
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [
@@ -462,6 +469,7 @@ JS, [
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,
+            'allowLineBreaksInTitles' => $this->allowLineBreaksInTitles,
             'showSlugField' => $this->showSlugField,
             'slugTranslationMethod' => $this->slugTranslationMethod,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,

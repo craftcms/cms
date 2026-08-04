@@ -9,13 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
 use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\enums\LicenseKeyStatus;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -35,9 +35,7 @@ use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\db\Exception as DbException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -100,10 +98,6 @@ class Application extends \yii\web\Application
         $this->_preInit();
 
         parent::init();
-
-        if (!App::isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
 
         $this->_postInit();
 
@@ -187,9 +181,10 @@ class Application extends \yii\web\Application
             $response = $this->getResponse();
             $headers = $response->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
+            $hasPreviewParam = $request->getPreviewParam() !== null;
 
-            // Set no-cache headers for all action and CP requests
-            if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
+            // Set no-cache headers for all action/CP/preview requests
+            if ($request->getIsActionRequest() || $request->getIsCpRequest() || $hasPreviewParam) {
                 $response->setNoCacheHeaders();
             }
 
@@ -198,12 +193,12 @@ class Application extends \yii\web\Application
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
-            // Tell bots not to index/follow control panel and tokenized pages
+            // Tell bots not to index/follow control panel and tokenized/preview requests
             if (
                 $generalConfig->disallowRobots ||
                 $isCpRequest ||
                 $request->getToken() !== null ||
-                $request->getIsPreview() ||
+                $hasPreviewParam ||
                 ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
             ) {
                 $headers->set('X-Robots-Tag', 'none');
@@ -308,7 +303,11 @@ class Application extends \yii\web\Application
 
                     if ($isCpRequest && !$this->getCanTestEditions()) {
                         // Are there are any licensing issues cached?
-                        $licenseIssues = App::licensingIssues(false);
+                        $licenseIssues = App::licensingIssues([
+                            LicenseKeyStatus::Trial->value,
+                            LicenseKeyStatus::Astray->value,
+                            'wrong_edition',
+                        ]);
                         if (!empty($licenseIssues)) {
                             $hash = App::licensingIssuesHash($licenseIssues);
                             if ($this->_showLicensingIssuesScreen($hash)) {
@@ -388,28 +387,6 @@ class Application extends \yii\web\Application
         }
 
         return $component;
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws ErrorException
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = $this->getConfig()->getGeneral();
-
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
-
-        if ($resourceBasePath === false) {
-            return;
-        }
-
-        if (!@FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
-        }
     }
 
     /**
@@ -538,25 +515,11 @@ class Application extends \yii\web\Application
         }
 
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
-        $slash = strpos($resourceUri, '/');
-        $hash = substr($resourceUri, 0, $slash);
-        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        if (!$sourcePath) {
-            return;
-        }
-
-        $filePath = substr($resourceUri, strlen($hash) + 1);
-        if (!Path::ensurePathIsContained($filePath)) {
-            throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
-        }
-
-        // Publish the directory
-        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
-
-        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
-        if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException("$filePath does not exist.");
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
         $response = $this->getResponse();
@@ -571,20 +534,6 @@ class Application extends \yii\web\Application
             'inline' => true,
         ]);
         $this->end();
-    }
-
-    private function resourceSourcePathByHash(string $hash): string|false
-    {
-        try {
-            return (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException) {
-            // Craft isn't installed yet. See if it's cached as a fallback.
-            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
-        }
     }
 
     /**

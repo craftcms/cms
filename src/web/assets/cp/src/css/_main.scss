@@ -697,6 +697,7 @@ h3,
 .h3 {
   margin-block: 14px;
   margin-inline: 0;
+  font-size: 14px;
   font-weight: bold;
   line-height: 1.2;
 }
@@ -1904,6 +1905,10 @@ ul.icons {
 
 .items-stretch {
   align-items: stretch;
+}
+
+.gap-0 {
+  gap: 0;
 }
 
 .gap-2xs {
@@ -3520,9 +3525,9 @@ table {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
+    border-radius: var(--radius-lg);
     color: var(--custom-text-color, var(--text-color));
   }
 
@@ -3600,7 +3605,6 @@ table {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
@@ -3727,9 +3731,15 @@ table {
     svg {
       display: block;
       flex-shrink: 0;
-      border-radius: var(--radius-sm);
       max-width: 100%;
       max-height: 100%;
+    }
+
+    &:not(.cp-icon) {
+      img,
+      svg {
+        border-radius: var(--radius-sm);
+      }
     }
 
     svg {
@@ -4142,6 +4152,10 @@ table {
 
 .element-index {
   .source-path {
+    // see https://github.com/craftcms/cms/issues/18876
+    position: relative;
+    z-index: 1;
+
     background-color: var(--gray-050);
     border-radius: 3px;
 
@@ -4251,6 +4265,8 @@ table {
   }
 
   &.pane {
+    overflow: auto;
+
     .toolbar {
       position: relative;
       z-index: 2;
@@ -4302,6 +4318,10 @@ table {
 
 .elements {
   position: relative;
+
+  .update-spinner {
+    inset-block-start: 50%;
+  }
 
   &:not(.busy) {
     .update-spinner {
@@ -5736,6 +5756,57 @@ table.data tbody tr:not(.disabled).active-drop-target {
     box-shadow: none;
   }
 
+  &.tip,
+  &.warning {
+    padding-inline-start: 50px;
+
+    &::before {
+      @include mixins.icon;
+      opacity: 1;
+      position: absolute;
+      inset-block-start: var(--pane-padding);
+      inset-inline-start: 18px;
+      font-size: 18px;
+      width: 24px;
+    }
+
+    &.dismissible {
+      padding-inline-end: 48px;
+    }
+
+    .tip-dismiss-btn {
+      position: absolute;
+      inset-block-start: 23px;
+      inset-inline-end: 18px;
+
+      & + p {
+        margin-block-start: 0;
+      }
+    }
+  }
+
+  &.tip {
+    border-color: var(--sky-600) !important;
+    background-color: var(--sky-050) !important;
+    color: var(--fg-notice);
+
+    &::before {
+      content: 'lightbulb';
+      color: var(--fg-notice);
+    }
+  }
+
+  &.warning {
+    border-color: var(--amber-600) !important;
+    background-color: var(--amber-050) !important;
+    color: var(--fg-warning);
+
+    &::before {
+      content: 'alert';
+      color: var(--fg-warning);
+    }
+  }
+
   &.padding-xs {
     --pane-padding: var(--xs);
   }
@@ -6477,7 +6548,7 @@ $min2ColWidth: 400px;
   pointer-events: none;
 
   &.so-lp {
-    position: absolute;
+    position: fixed;
     inset-block-start: var(--m);
     inset-inline-start: var(--m);
     width: calc(100% - var(--m) * 2);
@@ -6536,7 +6607,7 @@ $min2ColWidth: 400px;
       transition:
         inset-inline-start linear 250ms,
         inset-inline-end linear 250ms;
-      will-change: inset-inline-start, inset-inline-end;
+      will-change: transform;
     }
   }
 
@@ -7493,6 +7564,44 @@ $min2ColWidth: 400px;
   }
 }
 
+/* element deletion modal */
+.element-deletion-modal {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+
+  .body {
+    flex: 1;
+    height: calc(100% - 44px);
+    overflow: auto;
+
+    .edm-blockers {
+      margin-inline: calc(var(--pane-padding) * -1);
+      border-block-start: var(--hr-border);
+
+      .edm-blocker {
+        padding: var(--pane-padding);
+
+        &:nth-child(odd) {
+          background-color: var(--secondary-pane-bg);
+        }
+      }
+
+      .edm-details {
+        .element-index {
+          border-color: var(--border-hairline-dark) !important;
+          background-color: var(--white) !important;
+          max-height: 272px;
+        }
+      }
+
+      .edm-blocker-resolved-message {
+        margin-block-start: var(--s);
+      }
+    }
+  }
+}
+
 /* delete user modal */
 .deleteusermodal {
   .content-summary {
@@ -7577,12 +7686,12 @@ $min2ColWidth: 400px;
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   @include mixins.menu-styles;
 }
 
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   padding: 0;
 }
 
@@ -8296,8 +8405,21 @@ fieldset {
   }
 }
 
+.read-only-badge {
+  font-size: calc(11rem / 16);
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding-block: 0;
+  padding-inline: 0.25em;
+  line-height: 1.45;
+}
+
 .field > .instructions,
 .markdown,
+.warning.pane,
+.tip.pane,
   // BC
 .field > .heading > .instructions,
 .checkboxfield .instructions {
@@ -9310,13 +9432,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 
@@ -9844,6 +9965,29 @@ body.licensing-issues {
   & > .buttons {
     margin-block-start: 0;
     height: 30px;
+  }
+}
+
+/* number field */
+.number-container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+
+  .number-currency-label {
+    @include mixins.input-styles;
+    border-inline-end: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    align-items: center;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    height: 100%;
+    padding-block: 6px;
+    padding-inline: 9px;
+    white-space: nowrap;
   }
 }
 

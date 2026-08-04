@@ -188,6 +188,7 @@ abstract class BaseRelationField extends Field implements
         }
 
         if (!empty($value)) {
+            $siteId = ElementQuery::$activeQuery?->siteId;
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -196,7 +197,7 @@ abstract class BaseRelationField extends Field implements
             $condition = $parser->parse([
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ]);
+            ], $siteId !== '*' ? $siteId : null);
             if ($condition !== false) {
                 $conditions[] = $condition;
             }
@@ -807,37 +808,35 @@ JS, [
                     CancelableEvent $event,
                     ElementQuery $query,
                 ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
                                 [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ]
-                            );
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
 
-                            if (
-                                $this->sortable &&
-                                !$this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            count($query->orderBy ?? []) === 1 &&
+                            ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+                        ) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
                     }
                 },
@@ -858,7 +857,7 @@ JS, [
         return $query;
     }
 
-    private function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    private function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;
@@ -945,14 +944,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element): bool
-    {
-        return $this->localizeRelations;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -1003,6 +994,8 @@ JS, [
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }
@@ -1364,7 +1357,14 @@ JS, [
                 'structure-id' => $s['structureId'] ?? null,
             ],
         ], $this->availableSources());
-        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
+
+        ArrayHelper::multisort(
+            $options,
+            fn(array $option) => $option['value'] === '*' ? 0 : $option['label'],
+            SORT_ASC,
+            SORT_NATURAL | SORT_FLAG_CASE,
+        );
+
         return $options;
     }
 
@@ -1601,6 +1601,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1617,6 +1619,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1629,7 +1632,7 @@ JS, [
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }

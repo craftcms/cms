@@ -98,10 +98,24 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
-        if ($fs instanceof LocalFsInterface && $index->fileExists !== $fs->fileExists($uri)) {
-            // Flip it and save it
-            $index->fileExists = !$index->fileExists;
-            $this->storeTransformIndexData($index);
+        if ($fs instanceof LocalFsInterface) {
+            $fileExists = $fs->fileExists($uri);
+
+            // if the file exists on disk, make sure it's not stale
+            if (
+                $fileExists &&
+                !$index->fileExists &&
+                $imageTransform->parameterChangeTime &&
+                $fs->getDateModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
+            ) {
+                $fileExists = false;
+            }
+
+            if ($fileExists !== $index->fileExists) {
+                // Flip it and save it
+                $index->fileExists = !$index->fileExists;
+                $this->storeTransformIndexData($index);
+            }
         }
 
         if (!$index->fileExists) {
@@ -152,7 +166,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index);
+                    $this->generateTransform($index, $asset);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -435,9 +449,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * @throws ImageTransformException
      */
-    private function generateTransform(ImageTransformIndex $index): void
+    private function generateTransform(ImageTransformIndex $index, ?Asset $asset = null): void
     {
-        $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
+        $asset ??= Craft::$app->getAssets()->getAssetById($index->assetId);
 
         if (!$asset) {
             throw new ImageTransformException('Asset not found - ' . $index->assetId);

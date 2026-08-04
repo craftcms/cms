@@ -33,6 +33,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\elements\deletionblockers\RelationDeletionBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
@@ -47,6 +48,7 @@ use craft\events\DefineAltActionsEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
+use craft\events\DefineElementDeletionBlockersEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\DefineMetadataEvent;
@@ -72,6 +74,7 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -79,6 +82,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -90,6 +94,7 @@ use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowableInSandbox;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
@@ -97,12 +102,11 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
-use Throwable;
 use Traversable;
+use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use UnitEnum;
 use yii\base\ArrayableTrait;
-use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -159,7 +163,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements ElementInterface, AllowableInSandbox
 {
     use ElementTrait;
     use ArrayableTrait {
@@ -756,6 +760,24 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_AFTER_PROPAGATE = 'afterPropagate';
 
     /**
+     * @event DefineElementDeletionBlockersEvent The event that is triggered when defining any blockers that should prevent a user from being deleted
+     *
+     * ---
+     * ```php
+     * use craft\elements\User;
+     * use craft\events\DefineUserDeletionBlockersEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(User::class, User::EVENT_DEFINE_DELETION_BLOCKERS, function(DefineElementDeletionBlockersEvent $event) {
+     *     $event->blockers[] = // ...
+     * });
+     * ```
+     *
+     * @since 5.10.0
+     */
+    public const EVENT_DEFINE_DELETION_BLOCKERS = 'defineDeletionBlockers';
+
+    /**
      * @event ModelEvent The event that is triggered before the element is deleted.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting deleted.
@@ -812,6 +834,11 @@ abstract class Element extends Component implements ElementInterface
      * ```
      */
     public const EVENT_RENDER = 'render';
+
+    /**
+     * @see sources()
+     */
+    private static array $sources = [];
 
     /**
      * @inheritdoc
@@ -981,19 +1008,22 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources(string $context): array
     {
-        $sources = static::defineSources($context);
+        if (!isset(self::$sources[static::class][$context])) {
+            // Memoize the results immediately, in case sources() gets called again via the event
+            self::$sources[static::class][$context] = static::defineSources($context);
 
-        // Fire a 'registerSources' event
-        if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
-            $event = new RegisterElementSourcesEvent([
-                'context' => $context,
-                'sources' => $sources,
-            ]);
-            Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
-            return $event->sources;
+            // Fire a 'registerSources' event
+            if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
+                $event = new RegisterElementSourcesEvent([
+                    'context' => $context,
+                    'sources' => self::$sources[static::class][$context],
+                ]);
+                Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+                self::$sources[static::class][$context] = $event->sources;
+            }
         }
 
-        return $sources;
+        return self::$sources[static::class][$context];
     }
 
     /**
@@ -1278,6 +1308,7 @@ abstract class Element extends Component implements ElementInterface
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
             'tableName' => static::pluralDisplayName(),
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+            'returnUrl' => $viewState['returnUrl'] ?? null,
         ];
 
         $db = Craft::$app->getDb();
@@ -1319,9 +1350,10 @@ abstract class Element extends Component implements ElementInterface
         if ($viewState['mode'] === 'table') {
             // Get the table columns
             $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
-                static::class,
-                $sourceKey,
-                $viewState['tableColumns'] ?? null
+                elementType: static::class,
+                sourceKey: $sourceKey,
+                customAttributes: $viewState['tableColumns'] ?? null,
+                fieldLayouts: $viewState['fieldLayouts'] ?? null,
             );
 
             // Prepare the element query for each of the table attributes
@@ -2207,6 +2239,36 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
+    {
+        $blockers = [
+            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete, [
+                'elementIndexSettings' => [
+                    'defaultTableColumns' => [
+                        ['section'],
+                    ],
+                    'defaultSort' => ['section', 'asc'],
+                ],
+            ]),
+        ];
+
+        // Fire a 'defineDeletionBlockers' event
+        if (Event::hasHandlers(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS)) {
+            $event = new DefineElementDeletionBlockersEvent([
+                'elements' => $elements,
+                'hardDelete' => $hardDelete,
+                'blockers' => $blockers,
+            ]);
+            Event::trigger(static::class, self::EVENT_DEFINE_DELETION_BLOCKERS, $event);
+            $blockers = $event->blockers;
+        }
+
+        return $blockers;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function baseGqlType(): Type
     {
         return ElementGqlType::getType();
@@ -2391,7 +2453,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var bool
      */
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @var string|null
@@ -2589,17 +2651,13 @@ abstract class Element extends Component implements ElementInterface
             return (string)$this->title;
         }
 
-        try {
-            if (!$this->id || $this->getIsUnpublishedDraft()) {
-                return Craft::t('app', 'New {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]);
-            }
-
-            return sprintf('%s %s', static::displayName(), $this->id);
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        if (!$this->id || $this->getIsUnpublishedDraft()) {
+            return Craft::t('app', 'New {type}', [
+                'type' => static::lowerDisplayName(),
+            ]);
         }
+
+        return sprintf('%s %s', static::displayName(), $this->id);
     }
 
     /**
@@ -2620,7 +2678,13 @@ abstract class Element extends Component implements ElementInterface
             return $this->fieldByHandle(substr($name, 6)) !== null;
         }
 
-        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
+        return (
+            $name === 'title' ||
+            isset($this->_generatedFieldValues[$name]) ||
+            $this->hasEagerLoadedElements($name) ||
+            parent::__isset($name) ||
+            $this->fieldByHandle($name)
+        );
     }
 
     /**
@@ -2688,6 +2752,30 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineBehaviors(): array
     {
         return [
@@ -2712,7 +2800,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
 
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
@@ -2849,14 +2937,21 @@ abstract class Element extends Component implements ElementInterface
     {
         $attributes = $this->getAttributes();
 
-        // Include custom fields
-        $fieldLayout = $this->getFieldLayout();
+        // Include custom fields, unless this is coming from Twig’s SandboxExtension
+        // (see https://github.com/craftcms/cms/issues/19004)
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, limit: 3);
+        if (!(
+            ($backtrace[2]['class'] ?? null) === SandboxExtension::class &&
+            $backtrace[2]['function'] === 'doEnsureToStringAllowed'
+        )) {
+            $fieldLayout = $this->getFieldLayout();
 
-        if ($fieldLayout !== null) {
-            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                $field = $layoutElement->getField();
-                if (!isset($attributes[$field->handle])) {
-                    $attributes[$field->handle] = $this->getFieldValue($field->handle);
+            if ($fieldLayout !== null) {
+                foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                    $field = $layoutElement->getField();
+                    if (!isset($attributes[$field->handle])) {
+                        $attributes[$field->handle] = $this->getFieldValue($field->handle);
+                    }
                 }
             }
         }
@@ -2938,6 +3033,12 @@ abstract class Element extends Component implements ElementInterface
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             'when' => fn() => $this->shouldValidateTitle(),
         ];
+        $rules[] = [
+            ['title'],
+            function() {
+                $this->title = StringHelper::convertLineBreaks($this->title);
+            },
+        ];
 
         if (static::hasUris()) {
             try {
@@ -2992,7 +3093,7 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
-            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
+            $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
 
             foreach ($layoutElements as $layoutElement) {
                 $field = $layoutElement->getField();
@@ -3413,7 +3514,7 @@ abstract class Element extends Component implements ElementInterface
             $event = new DefineAttributeKeywordsEvent(['attribute' => $attribute]);
             $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
             if ($event->handled) {
-                return $event->keywords ?? '';
+                return $event->keywords;
             }
         }
 
@@ -3632,21 +3733,12 @@ abstract class Element extends Component implements ElementInterface
     {
         $this->viewMode = 'cards';
         $html = '';
+        $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
 
-        foreach ($this->getFieldLayout()?->getCardBodyElements($this) ?? [] as $item) {
-            if ($item instanceof BaseField) {
-                $itemHtml = $item->previewHtml($this);
-            } elseif (is_array($item) && isset($item['html'])) {
-                $itemHtml = $item['html'];
-            } else {
-                $itemHtml = $this->getAttributeHtml($item['value']);
-            }
-
-            if ($itemHtml !== '') {
-                $html .= Html::tag('div', $itemHtml, [
-                    'class' => 'card-attribute-preview',
-                ]);
-            }
+        foreach ($cardElements as $item) {
+            $html .= Html::tag('div', $item['html'], [
+                'class' => 'card-attribute-preview',
+            ]);
         }
 
         return $html;
@@ -3695,11 +3787,9 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
-        if ($this instanceof NestedElementInterface) {
-            $authorized = $this->getField()?->canSaveElement($this, $user);
-            if ($authorized !== null) {
-                return $authorized;
-            }
+        $authorized = $this->canSaveNestedElement($user);
+        if ($authorized !== null) {
+            return $authorized;
         }
 
         // Fire an 'authorizeSave' event
@@ -3710,6 +3800,30 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return false;
+    }
+
+    private function canSaveNestedElement(User $user): ?bool
+    {
+        if (!$this instanceof NestedElementInterface) {
+            return null;
+        }
+
+        $field = $this->getField();
+        if (!$field) {
+            return null;
+        }
+
+        $authorized = $field->canSaveElement($this, $user);
+        if (!$authorized) {
+            return $authorized; // could be false or null
+        }
+
+        if (!isset($field->layoutElement)) {
+            return true;
+        }
+
+        $owner = $this->getOwner();
+        return $owner ? $field->layoutElement->editable($owner) : true;
     }
 
     /**
@@ -3917,12 +4031,20 @@ abstract class Element extends Component implements ElementInterface
         $elementsService = Craft::$app->getElements();
         $canSaveCanonical = $elementsService->canSaveCanonical($this);
 
+        $returnUrl = Craft::$app->getRequest()->getQueryParam('returnUrl');
+        $redirectParams = array_filter([
+            'returnUrl' => $returnUrl,
+        ]);
+
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
                     ? Craft::t('app', 'Create and continue editing')
                     : Craft::t('app', 'Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
+                'params' => array_filter([
+                    'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
+                ]),
                 'shortcut' => true,
                 'retainScroll' => true,
                 'eventData' => ['autosave' => false],
@@ -3939,7 +4061,10 @@ abstract class Element extends Component implements ElementInterface
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
+                    'params' => [
+                        'addAnother' => 1,
+                        'returnUrl' => $returnUrl,
+                    ],
                 ];
             }
 
@@ -3964,9 +4089,19 @@ abstract class Element extends Component implements ElementInterface
                     'params' => [
                         'asUnpublishedDraft' => true,
                         'deleteProvisionalDraft' => true,
+                        'redirectParams' => !empty($redirectParams) ? Json::encode($redirectParams) : null,
                     ],
                 ];
             }
+        }
+
+        if ($this->getIsDraft() && !$this->getIsUnpublishedDraft() && !$this->isProvisionalDraft) {
+            $altActions[] = [
+                'label' => Craft::t('app', 'Save as a new {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]),
+                'action' => 'elements/duplicate',
+            ];
         }
 
         // Fire a 'defineAltActions' event
@@ -4213,22 +4348,47 @@ JS, [
 
             // Delete
             if ($canDeleteCanonical) {
+                $view = Craft::$app->getView();
+                $deleteId = sprintf('action-delete-%s', mt_rand());
                 $items[] = [
+                    'id' => $deleteId,
                     'icon' => 'trash',
                     'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
-                    'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
-                    'params' => [
-                        'elementId' => $this->getCanonicalId(),
-                        'siteId' => $this->siteId,
-                    ],
-                    'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
-                    ]),
-                    'destructive' => true,
                 ];
+
+                $view->registerJsWithVars(fn(
+                    $id,
+                    $elementType,
+                    $elementId,
+                    $siteId,
+                    $ownerId,
+                    $confirmationMessage,
+                    $redirect,
+                ) => <<<JS
+$('#' + $id).on('activate', async () => {
+  new Craft.ElementDeletionManager($elementType, [$elementId], {
+    siteId: $siteId,
+    ownerId: $ownerId,
+    confirmationMessage: $confirmationMessage,
+    onSuccess: () => {
+      document.location.href = $redirect;
+    },
+  });
+});
+JS,
+                    [
+                        $view->namespaceInputId($deleteId),
+                        static::class,
+                        $this->getCanonicalId(),
+                        $this->siteId,
+                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        ]),
+                        "$redirectUrl#",
+                    ]);
             }
         } elseif ($isDraft && $canDeleteDraft) {
             // Delete draft for site
@@ -4346,9 +4506,9 @@ JS, [
      */
     public function getThumbHtml(int $size): ?string
     {
-        $thumbField = $this->getFieldLayout()?->getThumbField();
-        if ($thumbField) {
-            $thumbHtml = $thumbField->thumbHtml($this, $size);
+        $fieldLayout = $this->getFieldLayout();
+        if ($fieldLayout?->thumbFieldKey) {
+            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size);
             if ($thumbHtml) {
                 return $thumbHtml;
             }
@@ -4973,16 +5133,14 @@ JS, [
 
     /**
      * @inheritdoc
-     * @phpstan-ignore-next-line
+     * @param string|int $offset
      */
     public function offsetExists($offset): bool
     {
         return (
             $offset === 'title' ||
-            /** @phpstan-ignore-next-line */
             ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
             parent::offsetExists($offset) ||
-            /** @phpstan-ignore-next-line */
             $this->fieldByHandle($offset)
         );
     }
@@ -5278,7 +5436,7 @@ JS, [
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
         // If the element is fully initialized, mark the value as dirty
-        if ($this->_initialized) {
+        if ($this->_trackDirtyFields) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
@@ -5306,6 +5464,14 @@ JS, [
         $value = $field->normalizeValueFromRequest($value, $this);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void
+    {
+        $this->_trackDirtyFields = $enabled;
     }
 
     /**
@@ -5894,6 +6060,14 @@ JS, [
      */
     protected function attributeHtml(string $attribute): string
     {
+        if (str_starts_with($attribute, 'contentBlock:')) {
+            return $this->contentBlockAttributeHtml($attribute);
+        }
+
+        if (str_starts_with($attribute, 'generatedField:')) {
+            return $this->generatedFieldAttributeHtml($attribute);
+        }
+
         switch ($attribute) {
             case 'id':
                 return (string)$this->getCanonicalId();
@@ -5972,7 +6146,7 @@ JS, [
                     return '';
                 }
 
-                return Html::encode($this->slug);
+                return Html::encode($this->slug ?? '');
 
             case 'revisionNotes':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6034,7 +6208,7 @@ JS, [
                             } catch (FieldNotFoundException) {
                             }
                         }
-                        $field ??= null;
+                        $field ??= $this->_getFieldFromAlternativeLayouts($uid) ?? null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -6060,6 +6234,135 @@ JS, [
         }
     }
 
+    private function contentBlockAttributeHtml(string $attribute): string
+    {
+        $parts = explode('.', $attribute);
+        $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
+
+        $field = null;
+        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+        if ($layoutElement instanceof CustomField) {
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+            }
+        }
+
+        if (!$field instanceof ContentBlockField) {
+            $field = $this->_contentBlockFieldFromLayoutElementUid($uid);
+        }
+
+        if (!$field instanceof ContentBlockField) {
+            return '';
+        }
+
+        $block = $this->getFieldValue($field->handle);
+        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+    }
+
+    /**
+     * Returns the Content Block field referenced by a table attribute key.
+     *
+     * Content Block table attributes are deduplicated across the layouts of an element source (see
+     * [[\craft\services\ElementSources::getTableAttributesForFieldLayouts()]]), so the layout element
+     * UID in the key may belong to a different entry type’s layout than this element’s. This resolves
+     * it to the matching instance — by field UID and effective handle — in this element’s own layout.
+     *
+     * (Separate from [[_getFieldFromAlternativeLayouts()]], which matches on the raw handle override
+     * and so can’t resolve Content Blocks that keep their default handle.)
+     *
+     * @param string $layoutElementUid
+     * @return ContentBlockField|null
+     */
+    private function _contentBlockFieldFromLayoutElementUid(string $layoutElementUid): ?ContentBlockField
+    {
+        // Find the Content Block field + effective handle that the UID refers to,
+        // in any of this element type’s layouts
+        $fieldUid = null;
+        $handle = null;
+        foreach (Craft::$app->getFields()->getLayoutsByType(static::class) as $fieldLayout) {
+            $layoutElement = $fieldLayout->getElementByUid($layoutElementUid);
+            if (!$layoutElement instanceof CustomField) {
+                continue;
+            }
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                continue;
+            }
+            if ($field instanceof ContentBlockField) {
+                $fieldUid = $field->uid;
+                $handle = $field->handle;
+            }
+            break;
+        }
+
+        if ($fieldUid === null) {
+            return null;
+        }
+
+        // Return the matching Content Block instance in this element’s own layout
+        foreach ($this->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (
+                $field instanceof ContentBlockField &&
+                $field->uid === $fieldUid &&
+                $field->handle === $handle
+            ) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    private function generatedFieldAttributeHtml(string $attribute): string
+    {
+        $uid = StringHelper::removeLeft($attribute, 'generatedField:');
+        return $this->getGeneratedFieldValues()[$uid] ?? '';
+    }
+
+    /**
+     * Find field instance that matches the instance UID from another layout.
+     *
+     * @param $layoutElementUid
+     * @return FieldInterface|null
+     */
+    private function _getFieldFromAlternativeLayouts($layoutElementUid): ?FieldInterface
+    {
+        $currentLayout = $this->getFieldLayout();
+
+        // get all field layouts for this element type sans the layout used by this element
+        $fieldLayouts = Collection::make(Craft::$app->getFields()->getLayoutsByType(static::class))
+            ->filter(fn($fieldLayout) => $fieldLayout->uid !== $currentLayout?->uid);
+
+        if ($fieldLayouts->isEmpty()) {
+            return null;
+        }
+
+        // find the layout that has this element UID and get its handle
+        $handle = null;
+        foreach ($fieldLayouts as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->uid === $layoutElementUid) {
+                    // get its handle
+                    $handle = $field->layoutElement->handle;
+                    break 2;
+                }
+            }
+        }
+
+        // and now find the layout element by handle in this element's layout
+        if ($handle) {
+            foreach ($currentLayout->getCustomFields() as $field) {
+                if ($field->layoutElement->handle === $handle) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Returns the HTML that should be shown for a given attribute’s inline input.
      *
@@ -6074,7 +6377,7 @@ JS, [
         $field = null;
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
-            $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+            $field = $this->getFieldLayout()?->getFieldByUid($fieldUid);
         } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
             $instanceUid = $matches[1];
             $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
@@ -6084,23 +6387,31 @@ JS, [
                 } catch (FieldNotFoundException) {
                 }
             }
+
+            $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
         }
 
         if ($field !== null) {
             if ($field instanceof InlineEditableFieldInterface) {
-                // Was this field value eager-loaded?
-                if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                    $value = $this->getEagerLoadedElements($field->handle);
-                } else {
-                    // The field might not actually belong to this element
-                    try {
-                        $value = $this->getFieldValue($field->handle);
-                    } catch (InvalidFieldException) {
-                        return '';
+                $layoutElement = $field->layoutElement;
+                // if the layout element should be visible and editable in the "normal" edit form
+                // proceed with showing the input html, otherwise show the standard attribute html
+                /** @var CustomField $layoutElement */
+                if ($layoutElement && $layoutElement->showInForm($this) && $layoutElement->editable($this)) {
+                    // Was this field value eager-loaded?
+                    if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                        $value = $this->getEagerLoadedElements($field->handle);
+                    } else {
+                        // The field might not actually belong to this element
+                        try {
+                            $value = $this->getFieldValue($field->handle);
+                        } catch (InvalidFieldException) {
+                            return '';
+                        }
                     }
-                }
 
-                return $field->getInlineInputHtml($value, $this);
+                    return $field->getInlineInputHtml($value, $this);
+                }
             }
 
             return $this->getAttributeHtml($attribute);
@@ -6172,7 +6483,7 @@ JS, [
      */
     protected function slugFieldHtml(bool $static): string
     {
-        $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
@@ -6234,7 +6545,7 @@ JS, [
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()),
+                'label' => Html::encode(Craft::t('site', $this->getSite()->getName())),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
@@ -6339,10 +6650,10 @@ JS, [
             },
         ], $metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
-                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
+                ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true)
                 : false,
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
@@ -6430,6 +6741,13 @@ JS, [
                 'isNew' => $isNew,
             ]));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterAssignedId(): void
+    {
     }
 
     private function updateRelations(bool $isNew): void
@@ -6760,9 +7078,12 @@ JS, [
             throw new InvalidFieldException($fieldHandle);
         }
 
+        // Mark the field as normalized up front to prevent infinite recursion,
+        // if the field's normalizeValue() method ends up calling renderObjectTemplate() on the element, etc.
+        $this->_normalizedFieldValues[$fieldHandle] = true;
+
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
-        $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     /**

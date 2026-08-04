@@ -54,12 +54,16 @@ class ElementHelper
     /**
      * Returns whether the given slug is temporary.
      *
-     * @param string $slug
+     * @param string|null $slug
      * @return bool
      * @since 3.2.2
      */
-    public static function isTempSlug(string $slug): bool
+    public static function isTempSlug(?string $slug): bool
     {
+        if ($slug === null) {
+            return false;
+        }
+
         return str_starts_with($slug, '__temp_');
     }
 
@@ -574,6 +578,29 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the given nested element primarily belongs to the given owner element’s canonical element.
+     *
+     * @param NestedElementInterface $element
+     * @param ElementInterface $owner
+     * @return bool
+     * @since 5.10.0
+     */
+    public static function belongsToCanonicalOwner(NestedElementInterface $element, ElementInterface $owner): bool
+    {
+        $ownerId = $element->getPrimaryOwnerId();
+        if ($ownerId === $owner->getCanonicalId()) {
+            return true;
+        }
+
+        if ($owner->getIsCanonical()) {
+            return false;
+        }
+
+        // try again with the owner's canonical element, in case it is also a derivative
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a derivative of another element.
      *
      * @param ElementInterface $element
@@ -818,7 +845,7 @@ class ElementHelper
         if ($value instanceof DateTime) {
             $formatter = Craft::$app->getFormatter();
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
+                'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT, true),
             ]);
         }
 
@@ -977,6 +1004,24 @@ class ElementHelper
     }
 
     /**
+     * Returns a generic URL for viewing an element’s revisions.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.9.7
+     */
+    public static function elementRevisionsUrl(ElementInterface $element): string
+    {
+        $url = sprintf('revisions/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -991,6 +1036,7 @@ class ElementHelper
             'download' => $action->isDownload(),
             'name' => $action->getTriggerLabel(),
             'trigger' => $action->getTriggerHtml(),
+            'triggerId' => $action->getTriggerId(),
             'confirm' => $action->getConfirmationMessage(),
             'settings' => $action->getSettings() ?: null,
         ];
@@ -1077,7 +1123,9 @@ class ElementHelper
                 $element->hasProvisionalChanges = true;
 
                 foreach ($draft->getModifiedAttributes() as $name) {
-                    $element->$name = $draft->$name;
+                    if ($element->canSetProperty($name)) {
+                        $element->$name = $draft->$name;
+                    }
                 }
 
                 foreach ($draft->getModifiedFields() as $handle) {
@@ -1150,5 +1198,31 @@ class ElementHelper
     public static function setProvisionalDraftUser(?UserElement $user): void
     {
         self::$provisionalDraftUser = $user;
+    }
+
+    /**
+     * Removes values from a posted element query criteria, which would typically not be user-editable.
+     *
+     * @param array $criteria
+     * @return array
+     * @since 5.9.9
+     */
+    public static function cleanseQueryCriteria(array $criteria): array
+    {
+        unset(
+            $criteria['where'],
+            $criteria['orderBy'],
+            $criteria['indexBy'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['from'],
+            $criteria['groupBy'],
+            $criteria['join'],
+            $criteria['having'],
+            $criteria['union'],
+            $criteria['withQueries'],
+            $criteria['params'],
+        );
+        return $criteria;
     }
 }

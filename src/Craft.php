@@ -56,8 +56,7 @@ class Craft extends Yii
     /**
      * @inheritdoc
      * @template T
-     * @param class-string<T>|array|callable $type
-     * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
+     * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>}|callable():T $type
      * @param array $params
      * @return T
      */

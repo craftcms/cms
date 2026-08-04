@@ -626,7 +626,10 @@ class Db
                 // If this is a textual column type, also check for empty strings
                 if (
                     ($columnType === null && $isMysql) ||
-                    ($columnType !== null && static::isTextualColumnType($columnType))
+                    (
+                        $columnType !== null &&
+                        ($columnType === Schema::TYPE_JSON || static::isTextualColumnType($columnType))
+                    )
                 ) {
                     $valCondition = [
                         'or',
@@ -707,7 +710,17 @@ class Db
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+            $c = ['not', self::_inCondition($caseColumn, $notInVals)];
+
+            if ($columnType === Schema::TYPE_JSON) {
+                $c = [
+                    'or',
+                    [$column => null],
+                    $c,
+                ];
+            }
+
+            $condition[] = $c;
         }
 
         // Skip the glue if there's only one condition

@@ -387,7 +387,7 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
@@ -561,7 +561,7 @@ class Gql extends Component
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($result['errors']) && $cacheKey) {
+                if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
                     $this->setCachedResult($cacheKey, $result, $dep, $duration);
                 }
             }
@@ -577,12 +577,31 @@ class Gql extends Component
                 'context' => $context,
                 'rootValue' => $rootValue,
                 'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
             ]);
             $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
             $result = $event->result;
         }
 
         return $result ?? [];
+    }
+
+    private function shouldCache(array $result): bool
+    {
+        foreach ($result as $value) {
+            if (is_string($value)) {
+                if (str_contains(stripslashes($value), 'assets/generate-transform')) {
+                    return false;
+                }
+            } elseif (is_array($value)) {
+                if (!$this->shouldCache($value)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -1351,8 +1370,7 @@ class Gql extends Component
 
             // If devMode enabled or exception is safe to show, substitute the original exception here.
             if (
-                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
-                ) &&
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())) &&
                 !empty($originException->getMessage())
             ) {
                 $error = $originException;
@@ -1415,7 +1433,7 @@ class Gql extends Component
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
@@ -1541,9 +1559,10 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
@@ -1551,13 +1570,21 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
             StripTags::class,
             Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
+
+            if (
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
         // Fire a 'registerGqlDirectives' event

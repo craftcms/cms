@@ -170,7 +170,7 @@ class Connection extends \yii\db\Connection
      */
     public function open(): void
     {
-        if (App::env('CRAFT_NO_DB')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_DB'))) {
             throw new DbConnectException('Craft CMS can’t connect to the database.');
         }
 

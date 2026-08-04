@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\FixedOrderExpression;
@@ -1128,8 +1129,7 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
+        $config = ComponentHelper::cleanseConfig($config);
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -1235,9 +1235,10 @@ class Fields extends Component
      * Deletes a field layout(s) by its ID.
      *
      * @param int|int[] $layoutId The field layout’s ID
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (!$layoutId) {
             return false;
@@ -1247,7 +1248,7 @@ class Fields extends Component
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1258,9 +1259,10 @@ class Fields extends Component
      * Deletes a field layout.
      *
      * @param FieldLayout $layout The field layout
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
@@ -1269,9 +1271,15 @@ class Fields extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
-            ->execute();
+        if ($hardDelete) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        } else {
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
@@ -1536,7 +1544,7 @@ class Fields extends Component
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
@@ -1560,11 +1568,12 @@ class Fields extends Component
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle', 'instructions', 'type'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 

@@ -20,10 +20,14 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
+use CraftCms\UrlValidator\UrlValidationException;
+use CraftCms\UrlValidator\UrlValidator;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -40,6 +44,8 @@ class Asset extends ElementMutationResolver
     protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     private ?string $filename = null;
+
+    private UrlValidator $urlValidator;
 
     /**
      * Save an asset using the passed arguments.
@@ -72,6 +78,10 @@ class Asset extends ElementMutationResolver
 
             if (!$asset) {
                 throw new Error('No such asset exists');
+            }
+
+            if ($asset->volumeId !== $volume->id) {
+                $this->requireSchemaAction('volumes.' . $asset->getVolume()->uid, 'save');
             }
         } else {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'create');
@@ -148,6 +158,7 @@ class Asset extends ElementMutationResolver
     public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         /** @var AssetElement|null $asset */
@@ -160,7 +171,7 @@ class Asset extends ElementMutationResolver
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
-        return $elementService->deleteElementById($assetId);
+        return $elementService->deleteElementById($assetId, hardDelete: $hardDelete);
     }
 
     /**
@@ -231,7 +242,9 @@ class Asset extends ElementMutationResolver
                 }
 
                 if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                    throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                    throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                        'extension' => $extension,
+                    ]));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -242,15 +255,6 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
-            // make sure the hostname is alphanumeric and not an IP address
-            $hostname = parse_url($url, PHP_URL_HOST);
-            if (
-                !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
-                filter_var($hostname, FILTER_VALIDATE_IP)
-            ) {
-                throw new UserError("$url contains an invalid hostname.");
-            }
-
             if (empty($fileInformation['filename'])) {
                 $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
             } else {
@@ -259,12 +263,22 @@ class Asset extends ElementMutationResolver
 
             $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
             }
 
-            // Download the file
+            // Validate the URL and resolve it to a known-good set of IPs *before*
+            // opening any connection (guards against SSRF + DNS rebinding).
+            try {
+                $ips = $this->urlValidator()->validate($url);
+            } catch (UrlValidationException $e) {
+                throw new UserError("$url is invalid.", previous: $e);
+            }
+
+            // Download the file, pinning the connection to the validated IPs
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $this->downloadUrl($url, $ips, $tempPath);
         }
 
         if (!$tempPath || !$filename) {
@@ -282,6 +296,42 @@ class Asset extends ElementMutationResolver
         $asset->avoidFilenameConflicts = true;
 
         return true;
+    }
+
+    private function urlValidator(): UrlValidator
+    {
+        return $this->urlValidator ??= new UrlValidator();
+    }
+
+    /**
+     * Downloads a remote file to a temp path, pinning the connection to a set of
+     * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
+     * different (potentially internal) address between validation and download.
+     *
+     * @throws UserError if the connection still resolves to a disallowed IP
+     */
+    private function downloadUrl(string $url, array $ips, string $tempPath): void
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        $port = parse_url($url, PHP_URL_PORT)
+            ?? (strtolower((string)parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
+
+        $this->createGuzzleClient()->request('GET', $url, [
+            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::SINK => $tempPath,
+            // Pin the connection to the IPs we already validated, so cURL doesn’t
+            // re-resolve the hostname to a different address (DNS rebinding).
+            'curl' => [
+                CURLOPT_RESOLVE => ["$host:$port:" . implode(',', $ips)],
+            ],
+            RequestOptions::ON_STATS => function(TransferStats $stats) use ($url) {
+                // Validate the IP again, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
+                $ip = $stats->getHandlerStat('primary_ip');
+                if ($ip && !$this->urlValidator()->validateIp($ip)) {
+                    throw new UserError("$url is invalid.");
+                }
+            },
+        ]);
     }
 
     /**

@@ -66,6 +66,12 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $source = null;
 
     /**
+     * @var FieldLayout[]|null
+     * @since 5.9.18
+     */
+    protected ?array $fieldLayouts = null;
+
+    /**
      * @var ElementConditionInterface|null
      * @since 4.0.0
      */
@@ -114,6 +120,7 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
+        $this->fieldLayouts = $this->fieldLayouts();
         $this->condition = $this->condition();
 
         if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
@@ -173,28 +180,38 @@ class ElementIndexesController extends BaseElementsController
     {
         $elementSources = Craft::$app->getElementSources();
 
-        $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
-            ->map(fn(array $option) => [
-                'label' => $option['label'],
-                'attr' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
+        if ($this->sourceKey) {
+            $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+                ->map(fn(array $option) => [
+                    'label' => $option['label'],
+                    'attr' => $option['attribute'] ?? $option['orderBy'],
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
 
-        $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute, string $key) => [
-                ...$attribute,
-                'attr' => $key,
-            ])
-            ->values()
-            ->all();
+            $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+                ->map(fn(array $attribute, string $key) => [
+                    ...$attribute,
+                    'attr' => $key,
+                ])
+                ->values()
+                ->all();
 
-        $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute) => $attribute[0])
-            ->filter(fn(string $attribute) => $attribute !== 'title')
-            ->values()
-            ->all();
+            $defaultTableColumns = Collection::make($elementSources->getTableAttributes(
+                elementType: $this->elementType,
+                sourceKey: $this->sourceKey,
+                fieldLayouts: $this->fieldLayouts
+            ))
+                ->map(fn(array $attribute) => $attribute[0])
+                ->filter(fn(string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        } else {
+            $sortOptions = [];
+            $tableColumns = [];
+            $defaultTableColumns = [];
+        }
 
         return $this->asJson(compact(
             'sortOptions',
@@ -467,25 +484,24 @@ class ElementIndexesController extends BaseElementsController
         $id = $this->request->getRequiredBodyParam('id');
         $conditionConfig = $this->request->getBodyParam('conditionConfig');
         $serialized = $this->request->getBodyParam('serialized');
-        $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
         $conditionsService = Craft::$app->getConditions();
+
+        if (!$conditionConfig && $serialized) {
+            parse_str($serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'];
+        }
 
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
             $condition = $conditionsService->createCondition($conditionConfig);
-        } elseif ($serialized) {
-            parse_str($serialized, $conditionConfig);
-            /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig['condition']);
         } else {
-            /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
         }
 
-        if (!empty($fieldLayouts)) {
-            $condition->setFieldLayouts(array_map(fn(array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
+        if (!empty($this->fieldLayouts)) {
+            $condition->setFieldLayouts($this->fieldLayouts);
         }
 
         $condition->mainTag = 'div';
@@ -582,11 +598,15 @@ class ElementIndexesController extends BaseElementsController
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributes($attributes);
+                $element->setAttributesFromRequest($attributes);
                 $element->setScenario($scenario);
             }
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
+
+            if (!$elementsService->canSave($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to save this element.');
+            }
 
             if ($element->getIsUnpublishedDraft()) {
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -673,6 +693,20 @@ class ElementIndexesController extends BaseElementsController
         return $source;
     }
 
+    private function fieldLayouts(): ?array
+    {
+        $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
+
+        if (empty($fieldLayouts)) {
+            return null;
+        }
+
+        return array_map(
+            fn(array $config) => FieldLayout::createFromConfig($config),
+            Component::cleanseConfig($fieldLayouts),
+        );
+    }
+
     /**
      * Returns the current view state.
      *
@@ -729,6 +763,9 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
+
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
             Craft::configure($query, Component::cleanseConfig($criteria));
             return true;
@@ -845,10 +882,21 @@ class ElementIndexesController extends BaseElementsController
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
 
         if ($this->sourceKey) {
+            // get the return URL with `?` replaced with a token
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                $returnUrl = str_replace('?', ':QS:', $returnUrl);
+            }
+
             $responseData['html'] = $this->elementType::indexHtml(
                 $this->elementQuery,
                 $disabledElementIds,
-                $this->viewState,
+                [
+                    ...$this->viewState,
+                    'fieldLayouts' => $this->fieldLayouts,
+                    'returnUrl' => $returnUrl,
+                ],
                 $this->sourceKey,
                 $this->context,
                 $includeContainer,
@@ -1035,9 +1083,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $attributes = Craft::$app->getElementSources()->getTableAttributes(
-            $this->elementType,
-            $this->sourceKey,
-            $this->viewState['tableColumns'] ?? null,
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            customAttributes: $this->viewState['tableColumns'] ?? null,
+            fieldLayouts: $this->fieldLayouts,
         );
         $attributeHtml = [];
 

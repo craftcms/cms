@@ -80,7 +80,8 @@ class UrlHelper
     /**
      * Returns a query string based on the given params.
      *
-     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     * Param names and values will be encoded, except for `{` and `}` characters.
+     * Path param values will also preserve `/` characters.
      *
      * @param array $params
      * @return string
@@ -96,12 +97,17 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
-            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
+            $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
+
+            // Preserve the long-standing `?p=actions/foo` format, even though the encoded value should resolve the same.
+            if ($n === $pathParam) {
+                $v = str_replace('%2F', '/', $v);
+            }
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
         return implode('&', $params);
@@ -579,18 +585,27 @@ class UrlHelper
      *
      * @return string|null
      * @since 5.9.0
+     * @deprecated in 5.10.0
      */
     public static function cpReferralUrl(): ?string
     {
         $referrer = Craft::$app->getRequest()->getReferrer();
 
-        // Make sure it didn't refer itself
-        if ($referrer === Craft::$app->getRequest()->getFullUri()) {
+        if ($referrer === null) {
             return null;
         }
 
         // Make sure the CP referred it
         if (!str_starts_with($referrer, self::baseCpUrl())) {
+            return null;
+        }
+
+        // to ensure we're comparing uris strip base cp url and query string from the referrer first
+        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, self::baseCpUrl()), '/');
+        $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
+
+        // Make sure it didn't refer itself
+        if ($referrerFullUri === Craft::$app->getRequest()->getFullUri()) {
             return null;
         }
 
@@ -681,9 +696,15 @@ class UrlHelper
                 $params[$generalConfig->siteToken] = $siteToken;
             }
             if ($request->getIsSiteRequest()) {
-                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                if (
+                    $addToken &&
+                    !isset($params[$generalConfig->tokenParam]) &&
+                    ($token = $request->getToken()) !== null &&
+                    Craft::$app->getTokens()->getRemainingTokenUsages($token) !== 0
+                ) {
                     $params[$generalConfig->tokenParam] = $token;
                 }
+
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&

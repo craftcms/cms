@@ -120,7 +120,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             Garnish.hasAttr($element, 'data-editable') &&
             !$element.closest('.elementselect').length
           ) {
-            Craft.createElementEditor($element.data('type'), $element);
+            const slideout = Craft.createElementEditor(
+              $element.data('type'),
+              $element,
+              {
+                onLoad:
+                  this.elementIndex.settings.context === 'embedded-index'
+                    ? () => {
+                        slideout.elementEditor.on('update', () => {
+                          Craft.Preview.refresh();
+                        });
+                      }
+                    : null,
+              }
+            );
           }
         };
 
@@ -315,6 +328,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         return true;
       } else {
         return false;
+      }
+    },
+
+    selectElementsById: function (ids) {
+      for (const id of ids) {
+        this.selectElementById(id);
       }
     },
 
