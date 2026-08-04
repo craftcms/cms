@@ -85,6 +85,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          set -o pipefail
           cat > /tmp/prompt.md <<'PROMPT_EOF'
           This checkout has an in-progress merge from `${{ github.ref_name }}` with unresolved
           conflicts. Run `git status` to see the conflicted files.
@@ -101,19 +102,34 @@ jobs:
 
           Do not touch unrelated code, and do not merge, approve, or close the pull request —
           a human will review and merge it.
+
+          Finish by summarizing, in a few sentences, which conflicts you found and how you
+          resolved each one, highlighting any ambiguous conflicts that need extra attention —
+          this summary is posted to the PR for human review.
           PROMPT_EOF
 
           claude -p \
             --dangerously-skip-permissions \
             --allowedTools "Bash,Edit,Read,Write" \
             --max-turns 30 \
-            "$(cat /tmp/prompt.md)"
+            "$(cat /tmp/prompt.md)" | tee /tmp/claude-response.md
 
       - name: Comment for human review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          gh pr comment "${{ matrix.pr }}" --repo "$REPO" --body \
-            "This PR had conflicts with \`${{ github.ref_name }}\`. Claude attempted an automatic resolution and pushed a merge commit. **Please review the merge commit carefully before approving/merging** — automated conflict resolution can silently pick the wrong side of a logic change."
+          {
+            echo "This PR had conflicts with \`${{ github.ref_name }}\`. Claude attempted an automatic resolution and pushed a merge commit. **Please review the merge commit carefully before approving/merging.**"
+            echo
+            echo "<details><summary>Claude's response</summary>"
+            echo "<blockquote>"
+            echo
+            cat /tmp/claude-response.md
+            echo
+            echo "</blockquote>"
+            echo "</details>"
+          } > /tmp/comment.md
+
+          gh pr comment "${{ matrix.pr }}" --repo "$REPO" --body-file /tmp/comment.md
           gh pr edit "${{ matrix.pr }}" --repo "$REPO" --add-label "conflicts-auto-resolved" || true
