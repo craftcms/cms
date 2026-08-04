@@ -132,6 +132,23 @@ describe('renderObjectTemplate', function () {
 
         expect($twig->isStrictVariables())->toBe($wasStrict);
     });
+
+    it('does not escape output by default', function () {
+        $object = (object) ['value' => '<script>alert(1)</script>'];
+
+        $result = $this->manager->renderObjectTemplate('{value}@1', $object);
+
+        expect($result)->toBe('<script>alert(1)</script>@1');
+    });
+
+    it('escapes output when an escaper strategy is given', function () {
+        // Use a unique template so it doesn't share a compiled template with the unescaped case above.
+        $object = (object) ['value' => '<script>alert(1)</script>'];
+
+        $result = $this->manager->renderObjectTemplate('{value}@2', $object, escaperStrategy: 'html');
+
+        expect($result)->toBe('&lt;script&gt;alert(1)&lt;/script&gt;@2');
+    });
 });
 
 describe('normalizeObjectTemplate', function () {
@@ -140,9 +157,9 @@ describe('normalizeObjectTemplate', function () {
 
         expect($result)->toBe($expected);
     })->with([
-        'simple property' => ['{title}', '{{ (_variables.title ?? object.title)|raw }}'],
-        'property with filter' => ['{title|upper}', '{{ (_variables.title ?? object.title)|upper|raw }}'],
-        'function call' => ['{clone()}', '{{ clone()|raw }}'],
+        'simple property' => ['{title}', '{{ (_variables.title ?? object.title) }}'],
+        'property with filter' => ['{title|upper}', '{{ (_variables.title ?? object.title)|upper }}'],
+        'function call' => ['{clone()}', '{{ clone() }}'],
     ]);
 
     it('leaves twig tags unchanged', function (string $template) {

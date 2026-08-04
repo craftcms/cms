@@ -605,6 +605,8 @@ class NestedElementManager extends Component
         ];
 
         if (! $config['static'] && ($config['sortable'] ?? false)) {
+            $this->authorizeNestedElementReordering($owner, $attribute);
+
             foreach ([
                 new ChangeSortOrder($owner, $attribute),
                 new MoveUp($owner, $attribute),
@@ -689,13 +691,28 @@ class NestedElementManager extends Component
      */
     private function authorizeNestedElementManagement(ElementInterface $owner, string $attribute): void
     {
-        $authorizedOwnerId = $owner->id;
+        SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $this->authorizedOwnerId($owner), $attribute));
+    }
+
+    /**
+     * Grants the session authorization the nested-element reorder endpoint requires
+     * for this owner/attribute. Only relevant when the field is sortable, since
+     * {@see authorizeNestedElementManagement()}'s authorization is not sufficient
+     * to allow reordering on its own.
+     */
+    private function authorizeNestedElementReordering(ElementInterface $owner, string $attribute): void
+    {
+        SessionAuth::authorize(sprintf('reorderNestedElements::%s::%s', $this->authorizedOwnerId($owner), $attribute));
+    }
+
+    private function authorizedOwnerId(ElementInterface $owner): int
+    {
         if ($owner->isProvisionalDraft && $owner->draftCreatorId === currentUser()?->getCraftUserId()) {
             /** @var ElementInterface $owner */
-            $authorizedOwnerId = $owner->getCanonicalId();
+            return $owner->getCanonicalId();
         }
 
-        SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        return $owner->id;
     }
 
     /**

@@ -35,6 +35,7 @@ interface TwigRendererInterface extends TemplateRendererInterface
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string;
 
     public function renderSandboxedObjectTemplate(
