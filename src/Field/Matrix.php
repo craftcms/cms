@@ -1854,7 +1854,7 @@ JS, [
             $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement);
         }
 
-        // if we have a predefined sort order and entries were not a list - use that prefefined sortOrder
+        // if we have a predefined sort order and entries were not a list - use that predefined sortOrder
         if (! empty($value['sortOrder']) && ! $arrayIsList) {
             $normalizedValue['sortOrder'] = $value['sortOrder'];
             // todo (iwona): this doesn't seem needed;
