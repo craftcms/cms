@@ -12,6 +12,16 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -127,6 +137,54 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         return $this->settingsHtml(false);
     }
 
+    public function settingsForm(): Form
+    {
+        return Form::make([
+            FormField::make()
+                ->label(t('UI Mode'))
+                ->instructions(t('How the field should be presented in the control panel.'))
+                ->control(Select::make('uiMode')->value($this->uiMode)->options([
+                    ['label' => t('Normal'), 'value' => 'normal'],
+                    ['label' => t('Enlarged'), 'value' => 'enlarged'],
+                ])),
+            FormField::make()
+                ->label(t('Placeholder Text'))
+                ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
+                ->control(Text::make(['placeholder'])->value($this->placeholder)),
+            Group::make('plain-text-field-limit', [
+                FormField::make()
+                    ->label(t('Maximum'))
+                    ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
+                    ->control(Text::make('fieldLimit')
+                        ->value($this->charLimit ?? $this->byteLimit)
+                        ->inputType('number')
+                        ->min(1)),
+                FormField::make()
+                    ->label(t('Unit'))
+                    ->control(Select::make(['limitUnit'])
+                        ->value($this->byteLimit ? 'bytes' : 'chars')
+                        ->options([
+                            ['label' => t('Characters'), 'value' => 'chars'],
+                            ['label' => t('Bytes'), 'value' => 'bytes'],
+                        ])),
+            ])->label(t('Field Limit')),
+            Group::make('plain-text-behavior', [
+                FormField::make()
+                    ->label(t('Use a monospaced font'))
+                    ->control(Lightswitch::make('code')->value($this->code)),
+                FormField::make()
+                    ->label(t('Allow line breaks'))
+                    ->control(Lightswitch::make(['multiline'])->value($this->multiline)),
+            ]),
+            FormField::make()
+                ->label(t('Initial Rows'))
+                ->control(Text::make('initialRows')
+                    ->value($this->initialRows)
+                    ->inputType('number')
+                    ->min(1)),
+        ]);
+    }
+
     #[Override]
     public function getReadOnlySettingsHtml(): string
     {
@@ -135,10 +193,20 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
 
     private function settingsHtml(bool $readOnly): string
     {
-        return template('_components/fieldtypes/PlainText/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-        ]);
+        $errors = $this->errors()->getMessages();
+        $fieldLimitErrors = array_merge($errors['charLimit'] ?? [], $errors['byteLimit'] ?? []);
+        unset($errors['charLimit'], $errors['byteLimit']);
+
+        if ($fieldLimitErrors !== []) {
+            $errors['fieldLimit'] = $fieldLimitErrors;
+        }
+
+        $payload = app(FormResolver::class)->resolve($this->settingsForm(), new FormContext(
+            errors: $errors,
+            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        ));
+
+        return app(FormHtmlRenderer::class)->render($payload);
     }
 
     #[Override]
