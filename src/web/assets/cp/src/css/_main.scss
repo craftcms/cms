@@ -3525,9 +3525,9 @@ table {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
+    border-radius: var(--radius-lg);
     color: var(--custom-text-color, var(--text-color));
   }
 
@@ -3605,7 +3605,6 @@ table {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
@@ -4215,12 +4214,6 @@ table {
     }
   }
 
-  .elements {
-    margin: calc(var(--pane-padding) * -1);
-    padding: var(--pane-padding);
-    overflow: auto;
-  }
-
   &.main {
     .source-path {
       margin-block: calc(var(--padding) * -1 + 2px) 24px;
@@ -4272,6 +4265,8 @@ table {
   }
 
   &.pane {
+    overflow: auto;
+
     .toolbar {
       position: relative;
       z-index: 2;
@@ -4324,6 +4319,10 @@ table {
 .elements {
   position: relative;
 
+  .update-spinner {
+    inset-block-start: 50%;
+  }
+
   &:not(.busy) {
     .update-spinner {
       display: none;
@@ -4339,7 +4338,10 @@ table {
       font-size: 0;
       position: absolute;
       z-index: 100;
-      inset: var(--pane-padding);
+      inset-block-start: 0;
+      inset-inline-start: calc(var(--pane-padding, 24px) * -1);
+      width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
+      height: 100%;
       background: color.adjust(mixins.$white, $alpha: -0.25);
       border-radius: var(--radius-lg);
     }
@@ -7589,10 +7591,7 @@ $min2ColWidth: 400px;
         .element-index {
           border-color: var(--border-hairline-dark) !important;
           background-color: var(--white) !important;
-
-          .elements {
-            max-height: 220px;
-          }
+          max-height: 272px;
         }
       }
 
@@ -7687,12 +7686,12 @@ $min2ColWidth: 400px;
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   @include mixins.menu-styles;
 }
 
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   padding: 0;
 }
 
@@ -9433,13 +9432,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 

@@ -94,6 +94,7 @@ use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
+use craft\web\twig\AllowableInSandbox;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
@@ -162,7 +163,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Element extends Component implements ElementInterface
+abstract class Element extends Component implements ElementInterface, AllowableInSandbox
 {
     use ElementTrait;
     use ArrayableTrait {
@@ -2751,6 +2752,30 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        // Allow field handles
+        if (
+            $this->hasEagerLoadedElements($property) ||
+            $this->fieldByHandle($property) !== null
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineBehaviors(): array
     {
         return [
@@ -4356,7 +4381,7 @@ JS,
                     [
                         $view->namespaceInputId($deleteId),
                         static::class,
-                        $this->id,
+                        $this->getCanonicalId(),
                         $this->siteId,
                         $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                         Craft::t('app', 'Are you sure you want to delete this {type}?', [
@@ -6121,7 +6146,7 @@ JS,
                     return '';
                 }
 
-                return Html::encode($this->slug);
+                return Html::encode($this->slug ?? '');
 
             case 'revisionNotes':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6213,16 +6238,18 @@ JS,
     {
         $parts = explode('.', $attribute);
         $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
-        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
 
-        if (!$layoutElement instanceof CustomField) {
-            return '';
+        $field = null;
+        $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
+        if ($layoutElement instanceof CustomField) {
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+            }
         }
 
-        try {
-            $field = $layoutElement->getField();
-        } catch (FieldNotFoundException) {
-            return '';
+        if (!$field instanceof ContentBlockField) {
+            $field = $this->_contentBlockFieldFromLayoutElementUid($uid);
         }
 
         if (!$field instanceof ContentBlockField) {
@@ -6230,7 +6257,62 @@ JS,
         }
 
         $block = $this->getFieldValue($field->handle);
-        return $block->getAttributeHtml(implode('.', $parts));
+        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+    }
+
+    /**
+     * Returns the Content Block field referenced by a table attribute key.
+     *
+     * Content Block table attributes are deduplicated across the layouts of an element source (see
+     * [[\craft\services\ElementSources::getTableAttributesForFieldLayouts()]]), so the layout element
+     * UID in the key may belong to a different entry type’s layout than this element’s. This resolves
+     * it to the matching instance — by field UID and effective handle — in this element’s own layout.
+     *
+     * (Separate from [[_getFieldFromAlternativeLayouts()]], which matches on the raw handle override
+     * and so can’t resolve Content Blocks that keep their default handle.)
+     *
+     * @param string $layoutElementUid
+     * @return ContentBlockField|null
+     */
+    private function _contentBlockFieldFromLayoutElementUid(string $layoutElementUid): ?ContentBlockField
+    {
+        // Find the Content Block field + effective handle that the UID refers to,
+        // in any of this element type’s layouts
+        $fieldUid = null;
+        $handle = null;
+        foreach (Craft::$app->getFields()->getLayoutsByType(static::class) as $fieldLayout) {
+            $layoutElement = $fieldLayout->getElementByUid($layoutElementUid);
+            if (!$layoutElement instanceof CustomField) {
+                continue;
+            }
+            try {
+                $field = $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                continue;
+            }
+            if ($field instanceof ContentBlockField) {
+                $fieldUid = $field->uid;
+                $handle = $field->handle;
+            }
+            break;
+        }
+
+        if ($fieldUid === null) {
+            return null;
+        }
+
+        // Return the matching Content Block instance in this element’s own layout
+        foreach ($this->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (
+                $field instanceof ContentBlockField &&
+                $field->uid === $fieldUid &&
+                $field->handle === $handle
+            ) {
+                return $field;
+            }
+        }
+
+        return null;
     }
 
     private function generatedFieldAttributeHtml(string $attribute): string
@@ -6401,7 +6483,7 @@ JS,
      */
     protected function slugFieldHtml(bool $static): string
     {
-        $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
@@ -6463,7 +6545,7 @@ JS,
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()),
+                'label' => Html::encode(Craft::t('site', $this->getSite()->getName())),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
@@ -6996,9 +7078,12 @@ JS,
             throw new InvalidFieldException($fieldHandle);
         }
 
+        // Mark the field as normalized up front to prevent infinite recursion,
+        // if the field's normalizeValue() method ends up calling renderObjectTemplate() on the element, etc.
+        $this->_normalizedFieldValues[$fieldHandle] = true;
+
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
-        $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     /**

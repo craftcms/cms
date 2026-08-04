@@ -237,6 +237,28 @@ class App
         // …${VAR}…
         $value = self::parseNestedEnv($value);
 
+        // $VAR
+        if (preg_match('/^\$(\w+)$/', $value, $m)) {
+            $result = self::env($m[1]);
+
+            if (is_bool($result)) {
+                return $result;
+            }
+
+            $result = (string)$result;
+
+            if ($result === '') {
+                return null;
+            }
+
+            // the value could itself reference an alias (e.g. `@root/storage/rebrand`)
+            if (str_starts_with($result, '@')) {
+                $result = Craft::getAlias($result, false) ?: $result;
+            }
+
+            return $result;
+        }
+
         // …/$VAR/…
         $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', function($m) {
             $result = self::env($m[1]);

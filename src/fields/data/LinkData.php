@@ -35,55 +35,62 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-#[AllowedInSandbox]
 class LinkData extends BaseObject implements Serializable
 {
     /**
      * @var string|null The link’s URL suffix value.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $urlSuffix = null;
 
     /**
      * @var string|null The link’s `target` attribute.
      * @since 5.5.0
      */
+    #[AllowedInSandbox]
     public ?string $target = null;
 
     /**
      * @var string|null The link’s `title` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $title = null;
 
     /**
      * @var string|null The link’s `class` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $class = null;
 
     /**
      * @var string|null The link’s `id` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $id = null;
 
     /**
      * @var string|null The link’s `rel` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $rel = null;
 
     /**
      * @var string|null The link’s `aria-label` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $ariaLabel = null;
 
     /**
      * @var bool Whether the link should have a `download` attribute.
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public bool $download = false;
 
     private string $renderedValue;
@@ -108,6 +115,7 @@ class LinkData extends BaseObject implements Serializable
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getType(): string
     {
         return $this->linkType::id();
@@ -116,6 +124,7 @@ class LinkData extends BaseObject implements Serializable
     /**
      * Returns the link value.
      */
+    #[AllowedInSandbox]
     public function getValue(): string
     {
         if (!isset($this->renderedValue)) {
@@ -130,6 +139,7 @@ class LinkData extends BaseObject implements Serializable
      * @param bool $anyStatus Whether to return a value regardless of the linked element’s status
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getUrl(bool $anyStatus = true): string
     {
         $url = $this->getValue();
@@ -154,6 +164,7 @@ class LinkData extends BaseObject implements Serializable
      * @param bool|null $custom Whether to return the custom label
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getLabel(?bool $custom = null): ?string
     {
         if ($custom || (isset($this->label) && $custom === null)) {
@@ -181,6 +192,7 @@ class LinkData extends BaseObject implements Serializable
      * @return string|null
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public function getFilename(bool $custom = true): ?string
     {
         return $custom ? $this->filename : $this->linkType->filename($this->value);
@@ -202,6 +214,7 @@ class LinkData extends BaseObject implements Serializable
      *
      * @return Markup
      */
+    #[AllowedInSandbox]
     public function getLink(): Markup
     {
         $attributes = $this->getAttributes();
@@ -225,6 +238,7 @@ class LinkData extends BaseObject implements Serializable
      * @return array|null
      * @since 5.9.0
      */
+    #[AllowedInSandbox]
     public function getAttributes(): ?array
     {
         $url = $this->getUrl();
@@ -253,6 +267,7 @@ class LinkData extends BaseObject implements Serializable
      * @return ElementQueryInterface|null
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getElementQuery(): ?ElementQueryInterface
     {
         if (!$this->linkType instanceof BaseElementLinkType) {
@@ -266,6 +281,7 @@ class LinkData extends BaseObject implements Serializable
      *
      * @return ElementInterface|null
      */
+    #[AllowedInSandbox]
     public function getElement(): ?ElementInterface
     {
         if (!$this->linkType instanceof BaseElementLinkType) {

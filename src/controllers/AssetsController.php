@@ -22,6 +22,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
+use craft\events\SaveAssetImageEvent;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -69,6 +70,16 @@ use ZipArchive;
 class AssetsController extends Controller
 {
     use AssetsControllerTrait;
+
+    /**
+     * @event SaveAssetImageEvent The event that is triggered before an edited asset image is saved.
+     *
+     * Event handlers may set [[SaveAssetImageEvent::handled]] to `true` in order to skip
+     * Craft's native image editor save implementation.
+     *
+     * @since 5.10.6
+     */
+    public const EVENT_BEFORE_SAVE_IMAGE = 'beforeSaveImage';
 
     /**
      * @inheritdoc
@@ -460,6 +471,11 @@ class AssetsController extends Controller
                     ->folderId($sourceAsset->folderId)
                     ->filename(Db::escapeParam($targetFilename))
                     ->one();
+
+                if ($assetToReplace) {
+                    $this->requireVolumePermissionByAsset('replaceFiles', $assetToReplace);
+                    $this->requirePeerVolumePermissionByAsset('replacePeerFiles', $assetToReplace);
+                }
             }
 
             // If we have an actual asset for which to replace the file, just do it.
@@ -700,6 +716,10 @@ class AssetsController extends Controller
 
             // If there's a conflicting asset, then merge and replace the file.
             if ($conflictingAsset) {
+                $this->requireVolumePermissionByAsset('deleteAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('savePeerAssets', $conflictingAsset);
+                $this->requirePeerVolumePermissionByAsset('deletePeerAssets', $conflictingAsset);
+
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
@@ -975,7 +995,27 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('Invalid cropping parameters passed');
         }
 
-        // TODO Fire an event for any other image editing takers.
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE)) {
+            $event = new SaveAssetImageEvent([
+                'asset' => $asset,
+                'replace' => (bool)$replace,
+                'viewportRotation' => $viewportRotation,
+                'imageRotation' => $imageRotation,
+                'cropData' => $cropData,
+                'focalPoint' => $focalPoint,
+                'imageDimensions' => $imageDimensions,
+                'flipData' => $flipData,
+                'zoom' => $zoom,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE, $event);
+
+            if ($event->handled) {
+                return $this->asSuccess(data: array_filter([
+                    'newAssetId' => $event->newAssetId,
+                ]));
+            }
+        }
+
         $transformer = new ImageTransformer();
 
         $originalImageWidth = $asset->width;
@@ -1530,6 +1570,23 @@ class AssetsController extends Controller
                 ['id' => $assetIds],
                 ['folderId' => array_unique($folderIds)],
             ]);
+
+        // make sure the user has permission to move each of these assets
+        $volumeIds = (clone $query)
+            ->select(['volumeId'])
+            ->groupBy(['volumeId'])
+            ->column();
+
+        $volumesService = Craft::$app->getVolumes();
+
+        foreach ($volumeIds as $volumeId) {
+            $volume = $volumesService->getVolumeById($volumeId);
+            if ($volume) {
+                $this->requireVolumePermission('savePeerAssets', $volume->uid);
+                $this->requireVolumePermission('deletePeerAssets', $volume->uid);
+            }
+        }
+
         $count = (int)$query->count();
         $totalSize = (int)$query->sum('[[size]]');
 

@@ -13,7 +13,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\records\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredentialUserEntity;
 
 /**
@@ -25,18 +25,18 @@ use Webauthn\PublicKeyCredentialUserEntity;
 class CredentialRepository
 {
     /**
-     * Finds a webauthn record in the database for given id and returns the PublicKeyCredentialSource for its credential value.
+     * Finds a webauthn record in the database for given id and returns the CredentialRecord for its credential value.
      */
-    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?PublicKeyCredentialSource
+    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?CredentialRecord
     {
         $record = $this->_findByCredentialId($publicKeyCredentialId);
 
         if ($record) {
             $serializer = Craft::$app->getAuth()->webauthnServer()->getSerializer();
 
-            $publicKeyCredentialSource = $serializer->deserialize(
+            $credentialRecord = $serializer->deserialize(
                 $record->credential,
-                PublicKeyCredentialSource::class,
+                CredentialRecord::class,
                 'json',
             );
 
@@ -45,17 +45,17 @@ class CredentialRepository
             // so, if we failed to log user in based on the handle mismatch exception, we'll try again but using the encoded (old) handle
             if ($checkOldUserHandle) {
                 $credential = Json::decodeIfJson($record->credential);
-                $publicKeyCredentialSource->userHandle = $credential['userHandle'];
+                $credentialRecord->userHandle = $credential['userHandle'];
             }
 
-            return $publicKeyCredentialSource;
+            return $credentialRecord;
         }
 
         return null;
     }
 
     /**
-     * Finds all webauthn records for given user and returns an array of PublicKeyCredentialSources for their credential values.
+     * Finds all webauthn records for given user and returns an array of CredentialRecords for their credential values.
      */
     public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
     {
@@ -69,7 +69,7 @@ class CredentialRepository
             foreach ($records as $record) {
                 $keySources[] = $serializer->deserialize(
                     $record->credential,
-                    PublicKeyCredentialSource::class,
+                    CredentialRecord::class,
                     'json',
                 );
             }
@@ -81,12 +81,12 @@ class CredentialRepository
     /**
      * Save credential source with name
      *
-     * @param PublicKeyCredentialSource $publicKeyCredentialSource
+     * @param CredentialRecord $credentialRecord
      * @param string|null $credentialName
      */
-    public function savedNamedCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource, ?string $credentialName = null): void
+    public function savedNamedCredentialSource(CredentialRecord $credentialRecord, ?string $credentialName = null): void
     {
-        $publicKeyCredentialId = $publicKeyCredentialSource->publicKeyCredentialId;
+        $publicKeyCredentialId = $credentialRecord->publicKeyCredentialId;
         $record = $this->_findByCredentialId($publicKeyCredentialId);
 
         if (!$record) {
@@ -97,16 +97,16 @@ class CredentialRepository
         }
 
         $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
-        $record->credential = Craft::$app->getAuth()->webauthnServer()->getSerializer()->serialize($publicKeyCredentialSource, 'json');
+        $record->credential = Craft::$app->getAuth()->webauthnServer()->getSerializer()->serialize($credentialRecord, 'json');
         $record->save();
     }
 
     /**
      * Saves credential source in the database
      */
-    public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
+    public function saveCredentialSource(CredentialRecord $credentialRecord): void
     {
-        $this->savedNamedCredentialSource($publicKeyCredentialSource);
+        $this->savedNamedCredentialSource($credentialRecord);
     }
 
     /**

@@ -1370,8 +1370,7 @@ class Gql extends Component
 
             // If devMode enabled or exception is safe to show, substitute the original exception here.
             if (
-                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
-                ) &&
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())) &&
                 !empty($originException->getMessage())
             ) {
                 $error = $originException;
@@ -1434,7 +1433,7 @@ class Gql extends Component
         }
 
         // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 

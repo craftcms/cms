@@ -58,6 +58,7 @@ class ElementSelectorModalsController extends BaseElementsController
                 'context' => $this->context(),
                 'registerJs' => false,
                 'showSiteMenu' => $this->request->getParam('showSiteMenu', 'auto'),
+                'siteIds' => $this->request->getParam('siteIds'),
                 'showStatusMenu' => $hasStatuses,
                 'sources' => $this->request->getParam('sources'),
                 'statuses' => $statuses ?? null,

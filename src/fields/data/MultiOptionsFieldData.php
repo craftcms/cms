@@ -16,7 +16,6 @@ use craft\web\twig\AllowedInSandbox;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[AllowedInSandbox]
 class MultiOptionsFieldData extends ArrayObject
 {
     /**
@@ -29,6 +28,7 @@ class MultiOptionsFieldData extends ArrayObject
      *
      * @return OptionData[]
      */
+    #[AllowedInSandbox]
     public function getOptions(): array
     {
         return $this->_options;
@@ -48,6 +48,7 @@ class MultiOptionsFieldData extends ArrayObject
      * @param mixed $value
      * @return bool
      */
+    #[AllowedInSandbox]
     public function contains(mixed $value): bool
     {
         $value = (string)$value;

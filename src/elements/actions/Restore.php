@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 
 /**
  * Restore represents a Restore element action.
@@ -112,7 +113,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
-        foreach ($query->all() as $element) {
+        foreach (Db::each($query) as $element) {
             if (!$elementsService->canSave($element, $user)) {
                 continue;
             }

@@ -10,6 +10,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use stdClass;
+use Throwable;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
@@ -113,12 +114,24 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     {
         if ($parse && is_string($this->_elementIds)) {
             $elementIds = App::parseEnv($this->_elementIds);
-            if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
-                $referenceElement = $this->condition->referenceElement;
-            } else {
-                $referenceElement = new stdClass();
+
+            // Only allow combining env & Twig parsing for simple env vars
+            if (
+                $elementIds === $this->_elementIds ||
+                preg_match('/^\$\{?\w+}?$/', trim($this->_elementIds))
+            ) {
+                if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
+                    $referenceElement = $this->condition->referenceElement;
+                } else {
+                    $referenceElement = new stdClass();
+                }
+
+                try {
+                    $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
+                } catch (Throwable) {
+                }
             }
-            $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
+
             return array_values(array_filter(array_map(
                 fn(string $elementId) => (int)trim($elementId),
                 explode(',', $elementIds),

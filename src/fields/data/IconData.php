@@ -16,7 +16,6 @@ use craft\web\twig\AllowedInSandbox;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.8.0
  */
-#[AllowedInSandbox]
 class IconData implements Serializable
 {
     /**
@@ -26,7 +25,9 @@ class IconData implements Serializable
      * @param string[] $styles The Font Awesome styles the icon is available in
      */
     public function __construct(
+        #[AllowedInSandbox]
         public string $name,
+        #[AllowedInSandbox]
         public array $styles,
     ) {
     }

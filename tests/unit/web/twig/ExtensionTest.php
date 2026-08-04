@@ -199,6 +199,55 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testNullSafeOperator(): void
+    {
+        // property access on null short-circuits instead of erroring
+        $this->testRenderResult(
+            '',
+            '{{ user?.name }}',
+            ['user' => null]
+        );
+
+        // method call on null short-circuits
+        $this->testRenderResult(
+            '',
+            '{{ user?.getName() }}',
+            ['user' => null]
+        );
+
+        // chained null-safe access short-circuits at the first null
+        $this->testRenderResult(
+            '',
+            '{{ user?.profile?.name }}',
+            ['user' => null]
+        );
+
+        // non-null case still resolves normally
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.name }}',
+            ['user' => ['name' => 'Bob']]
+        );
+
+        // non-null case still resolves normally for method calls
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.getName() }}',
+            [
+                'user' => new class() {
+                    public function getName(): string
+                    {
+                        return 'Bob';
+                    }
+                },
+            ]
+        );
+    }
+
+    /**
      *
      */
     public function testEmptyTest(): void

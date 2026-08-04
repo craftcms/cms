@@ -75,6 +75,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
@@ -2063,7 +2064,7 @@ class Elements extends Component
                     // Now propagate $mainClone to any sites the source element didn’t already exist in
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
-                            $siteClone = $element->getIsDraft() && !$element->getIsUnpublishedDraft() ? null : false;
+                            $siteClone = $element->getIsDerivative() ? null : false;
                             if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 /** @phpstan-ignore-next-line */
                                 throw $siteClone
@@ -2955,6 +2956,10 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
+            if (!isset($users[$result['userId']])) {
+                continue;
+            }
+
             $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
@@ -3498,11 +3503,16 @@ class Elements extends Component
                         $query->offset = null;
                         $query->limit = null;
 
-                        // The mapping criteria should take precedence here
-                        // (see https://github.com/craftcms/cms/pull/18704)
+                        // The mapping criteria should take precedence here, except for `siteId`/`site`
+                        // (see https://github.com/craftcms/cms/pull/18704 and https://github.com/craftcms/cms/issues/18588)
+                        $siteParams = ['siteId', 'site'];
+                        $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
+                        $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
+
                         $criteria = array_merge(
+                            $siteCriteria,
                             $plan->criteria,
-                            $map['criteria'] ?? [],
+                            $otherCriteria,
                         );
 
                         // Save the offset & limit params for later
