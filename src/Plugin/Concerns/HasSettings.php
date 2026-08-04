@@ -1,0 +1,127 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Plugin\Concerns;
+
+use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
+
+use function CraftCms\Cms\pageTemplate;
+
+/**
+ * @mixin Plugin
+ *
+ * @internal
+ */
+trait HasSettings
+{
+    /** @var bool Whether the plugin has a settings page in the control panel */
+    public bool $hasCpSettings = false;
+
+    /**
+     * @var bool Whether the plugin supports a read-only settings page in the control panel, which
+     *           can be shown when admin changes are disallowed.
+     */
+    public bool $hasReadOnlyCpSettings = false;
+
+    /**
+     * @var Validatable|bool|null The model used to store the plugin’s settings
+     *
+     * @see getSettings()
+     */
+    private bool|null|Validatable $settings = null;
+
+    public function getSettings(): ?Validatable
+    {
+        if (! isset($this->settings)) {
+            $this->settings = $this->createSettingsModel() ?: false;
+        }
+
+        return $this->settings ?: null;
+    }
+
+    public function setSettings(array $settings): void
+    {
+        if (($model = $this->getSettings()) === null) {
+            Log::warning('Attempting to set settings on a plugin that doesn\'t have settings: '.$this->handle);
+
+            return;
+        }
+
+        $model->setAttributes($settings);
+    }
+
+    /**
+     * Override this to return a custom FormRequest class for plugin settings saves.
+     *
+     * Returning `null` keeps the default behavior, where only the settings model's
+     * validation rules are applied.
+     *
+     * @return class-string<FormRequest>
+     */
+    public function getSettingsRequestClass(): ?string
+    {
+        return null;
+    }
+
+    public function getSettingsResponse(): mixed
+    {
+        return $this->settingsResponse(false);
+    }
+
+    public function getReadOnlySettingsResponse(): mixed
+    {
+        return $this->settingsResponse(true);
+    }
+
+    private function settingsResponse(bool $readOnly): mixed
+    {
+        $settingsHtml = InputNamespace::namespaceInputs(function () use ($readOnly) {
+            if ($readOnly) {
+                // Just return the settings HTML with disabled inputs by default
+                return (string) Html::disableInputs(fn () => $this->settingsHtml());
+            }
+
+            return (string) $this->settingsHtml();
+        }, 'settings');
+
+        return response(pageTemplate('settings/plugins/_settings', [
+            'plugin' => $this,
+            'settingsHtml' => $settingsHtml,
+            'readOnly' => $readOnly,
+        ]));
+    }
+
+    public function beforeSaveSettings(): bool
+    {
+        return true;
+    }
+
+    public function afterSaveSettings(): void
+    {
+        // carry on
+    }
+
+    /**
+     * Creates and returns the model used to store the plugin’s settings.
+     */
+    protected function createSettingsModel(): ?Validatable
+    {
+        return null;
+    }
+
+    /**
+     * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
+     *
+     * @return string|null The rendered settings HTML
+     */
+    protected function settingsHtml(): ?string
+    {
+        return null;
+    }
+}

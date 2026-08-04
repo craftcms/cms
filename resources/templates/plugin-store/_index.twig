@@ -1,0 +1,15 @@
+{% extends "_layouts/cp" %}
+
+{% set title = 'Plugin Store'|t('app') %}
+
+{% block actionButton %}
+    <div id="pluginstore-actions-spinner" class="spinner lg hidden"></div>
+
+    <div id="pluginstore-actions" class="hidden">
+        <a id="cart-button" role="button" tabindex="0">{{ iconSvg('cart-shopping') }} <span class="badge">0</span></a>
+    </div>
+{% endblock %}
+
+{% set content %}
+    <div id="app"></div>
+{% endset %}

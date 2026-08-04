@@ -1,0 +1,19 @@
+{% set staticEmail = staticEmail ?? null %}
+
+{% set generalConfig = config('craft.general') %}
+{% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? AuthMethods.getRememberedUsername() : '') %}
+
+<craft-login-form {{ attr({
+  action: action ?? null,
+  'show-reset-password': showResetPassword ?? false,
+  'show-remember-me': showRememberMeCheckbox ?? false,
+  'static-email': staticEmail,
+  'username': username,
+  'initial-error': initialError ?? null,
+  'use-email-as-username': generalConfig.useEmailAsUsername
+}) }}>
+  <div slot="alternative-methods">
+    {{ (oauthLoginButtons ?? [])|join|raw }}
+    {% hook 'cp.login.alternative-login-methods' %}
+  </div>
+</craft-login-form>

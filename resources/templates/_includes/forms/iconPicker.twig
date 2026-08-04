@@ -1,0 +1,22 @@
+{# Renders a <craft-icon-picker> web component, which mounts the Vue IconPicker
+   (resources/js/common/form/IconPicker.vue) on legacy CP surfaces — replacing the
+   old `.icon-picker` markup + the `Craft.IconPicker` jQuery widget.
+
+   The component renders its own form-postable control (a craft-input with a
+   hidden input + name). Labeling comes from a wrapping craft-field legend (the
+   `iconPickerField` macro sets `fieldset: true`) or from `labelledBy` (label-less
+   editable-table cells). `static` maps to the component's disabled state.
+
+   @TODO `small` (editable-table cells) isn't a component prop yet — see
+   resources/js/modules/icon-picker/README.md. #}
+
+{% set value = value ?? null %}
+
+{% tag 'craft-icon-picker' with {
+  name: name ?? false,
+  value: value ?: false,
+  'free-only': freeOnly ?? false,
+  disabled: (static ?? false) or (disabled ?? false),
+  'labelled-by': labelledBy ?? false,
+  'described-by': describedBy ?? false,
+} %}{% endtag %}

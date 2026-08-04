@@ -1,0 +1,176 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\Nodes;
+
+use CraftCms\Cms\Support\Template as TemplateHelper;
+use Override;
+use Twig\Compiler;
+use Twig\Extension\SandboxExtension;
+use Twig\Node\Expression\GetAttrExpression;
+use Twig\Node\Node;
+use Twig\Template;
+
+/**
+ * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to
+ * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
+ */
+class GetAttrNode extends GetAttrExpression
+{
+    /**
+     * @param  array  $nodes  An array of named nodes
+     * @param  array  $attributes  An array of attributes (should not be nodes)
+     * @param  int  $lineno  The line number
+     *
+     * @noinspection PhpMissingParentConstructorInspection
+     */
+    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0)
+    {
+        // Skip parent::__construct()
+        Node::__construct($nodes, $attributes, $lineno);
+    }
+
+    #[Override]
+    public function compile(Compiler $compiler): void
+    {
+        // The following code is based on GetAttrExpression::compile().
+        // Differences noted below with `DIFF` comments.
+
+        $env = $compiler->getEnvironment();
+        $arrayAccessSandbox = false;
+
+        // optimize array calls
+        if (
+            $this->getAttribute('optimizable')
+            && (! $env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
+            && ! $this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
+            && $this->getAttribute('type') === Template::ARRAY_CALL
+        ) {
+            $var = '$'.$compiler->getVarName();
+            $compiler
+                ->raw('(('.$var.' = ')
+                ->subcompile($this->getNode('node'))
+                ->raw(') && is_array(')
+                ->raw($var);
+
+            if (! $env->hasExtension(SandboxExtension::class)) {
+                $compiler
+                    ->raw(') || ')
+                    ->raw($var)
+                    ->raw(' instanceof ArrayAccess ? (')
+                    ->raw($var)
+                    ->raw('[(string)') // DIFF: `(string)` added
+                    ->subcompile($this->getNode('attribute'))
+                    ->raw('] ?? null) : null)');
+
+                return;
+            }
+
+            $arrayAccessSandbox = true;
+
+            $compiler
+                ->raw(') || ')
+                ->raw($var)
+                ->raw(' instanceof ArrayAccess && in_array(')
+                ->raw($var.'::class')
+                ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
+                ->raw($var)
+                ->raw('[(string)') // DIFF: `(string)` added
+                ->subcompile($this->getNode('attribute'))
+                ->raw('] ?? null) : ');
+        }
+
+        if ($this->getAttribute('ignore_strict_check')) {
+            $this->getNode('node')->setAttribute('ignore_strict_check', true);
+        }
+
+        // DIFF: null-safe (`?.`) short-circuit support, ported from GetAttrExpression::compile()
+        $nullSafe = $this->getAttribute('null_safe');
+
+        if (null === $nullSafeNode = $nullSafe ? $this : null) {
+            $node = $this->getNode('node');
+            while ($node instanceof self) {
+                if ($node->getAttribute('null_safe')) {
+                    $nullSafeNode = $node;
+                    break;
+                }
+                $node = $node->getNode('node');
+            }
+        }
+
+        $isShortCircuited = false;
+        if ($nullSafeNode !== null && ! $nullSafeNode->isShortCircuited()) {
+            $compiler
+                ->raw('((null === ('.$nullSafeNode->getVarName($compiler).' = ')
+                ->subcompile($nullSafeNode->getNode('node'))
+                ->raw(')) ? null : ');
+
+            $nullSafeNode->markAsShortCircuited();
+            $isShortCircuited = true;
+        }
+
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
+        $compiler->raw(TemplateHelper::class.'::attribute($this->env, $this->source, ');
+
+        if ($nullSafe) {
+            $compiler->raw($this->getVarName($compiler));
+        } else {
+            $compiler->subcompile($this->getNode('node'));
+        }
+
+        $compiler
+            ->raw(', ')
+            ->subcompile($this->getNode('attribute'));
+
+        if ($this->hasNode('arguments')) {
+            $compiler->raw(', ')->subcompile($this->getNode('arguments'));
+        } else {
+            $compiler->raw(', []');
+        }
+
+        $compiler->raw(', ')
+            ->repr($this->getAttribute('type'))
+            ->raw(', ')->repr($this->isDefinedTestEnabled()) // DIFF: $this->definedTest is private
+            ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
+            ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
+            ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
+            ->raw(')');
+
+        if ($arrayAccessSandbox) {
+            $compiler->raw(')');
+        }
+
+        if ($isShortCircuited) {
+            $compiler->raw(')');
+        }
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function isShortCircuited(): bool
+    {
+        return $this->getAttribute('is_short_circuited');
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function markAsShortCircuited(): void
+    {
+        $this->setAttribute('is_short_circuited', true);
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function getVarName(Compiler $compiler): string
+    {
+        if ($this->getAttribute('var_name') === null) {
+            $this->setAttribute('var_name', $compiler->getVarName());
+        }
+
+        return '$'.$this->getAttribute('var_name');
+    }
+}

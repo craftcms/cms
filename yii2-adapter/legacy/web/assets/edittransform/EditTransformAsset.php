@@ -1,0 +1,28 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\web\assets\edittransform;
+
+use craft\web\AssetBundle;
+use craft\web\assets\cp\CpAsset;
+
+/**
+ * Asset bundle for the Edit Transform page
+ * @deprecated 6.0.0
+ */
+class EditTransformAsset extends AssetBundle
+{
+    public $sourcePath = '@cmsAssets/resources/legacy/edittransform/dist';
+
+    public $depends = [
+        CpAsset::class,
+    ];
+
+    public $css = [
+        'css/transforms.css',
+    ];
+}

@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\FieldLayout\LayoutElements;
+
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\Support\Html;
+use Override;
+
+use function CraftCms\Cms\t;
+
+/**
+ * LineBreak represents a line break UI element can be included in field layouts.
+ */
+class LineBreak extends FieldLayoutElement
+{
+    public static function make(): static
+    {
+        return app(static::class);
+    }
+
+    #[Override]
+    public function isMultiInstance(): bool
+    {
+        return true;
+    }
+
+    public function selectorHtml(): string
+    {
+        $label = t('Line Break');
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Icons::svg('diamond'), [
+            'class' => ['cp-icon', 'puny', 'orange'],
+            'title' => t('This element is conditional'),
+            'aria' => ['label' => t('This element is conditional')],
+        ]) : '';
+
+        return <<<HTML
+<div>
+  <div class="fld-br">
+    <div class="fld-br__label">
+      <span>$label</span>
+      $indicatorHtml
+    </div>
+  </div>
+</div>
+HTML;
+    }
+
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return Html::tag('div', '', ['class' => 'line-break']);
+    }
+}

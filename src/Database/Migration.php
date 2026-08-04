@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Database;
+
+use Illuminate\Console\Concerns\InteractsWithIO;
+use Illuminate\Console\OutputStyle;
+use Illuminate\Console\View\Components\Factory;
+use Illuminate\Database\Migrations\Migration as LaravelMigration;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\NullOutput;
+
+abstract class Migration extends LaravelMigration
+{
+    use InteractsWithIO;
+
+    protected bool $silent = false;
+
+    public function __construct()
+    {
+        $this->input = new ArrayInput([]);
+        $this->output = new OutputStyle($this->input, new ConsoleOutput);
+        $this->components = new Factory($this->output);
+    }
+
+    public function silent(): self
+    {
+        $this->silent = true;
+        $this->output = new OutputStyle($this->input, new NullOutput);
+        $this->components = new Factory($this->output);
+
+        return $this;
+    }
+}

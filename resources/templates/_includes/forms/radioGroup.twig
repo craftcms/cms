@@ -1,0 +1,14 @@
+{# Renders a radio group from the legacy radioGroup variables (`id`, `name`,
+   `options`, `value`, `toggle`, `targetPrefix`, `disabled`, `describedBy`,
+   `autofocus`, `class`, `containerAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in
+   FormFields::radioGroupFromConfig(); this template only handles the `attr`
+   block. #}
+
+{%- set containerAttributes = containerAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{ craft.cp.radioGroup(_context)|raw }}

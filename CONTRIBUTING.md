@@ -61,11 +61,61 @@ Once the VuePress dev server is up and running, you’ll be able to view the doc
 
 We manage Craft’s Control Panel translations with [Crowdin](https://crowdin.com/project/craft-cms).
 
-If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) folder if you prefer. 
+If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [resources/translations/](https://github.com/craftcms/cms/tree/develop/resources/translations) folder if you prefer. 
 
 ## Core Enhancements
 
 If you would like to work on a new core feature or improvement, first create a [GitHub issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
+
+## Control Panel Front End
+
+In order to work on the control panel front end, run `npm run dev`. On first run, this ensures the build artifacts the dev server depends on exist (building them if they don't), then starts the Vite development server together with the `@craftcms/ui` watcher, with output from each prefixed so you can tell them apart.
+
+That covers most control panel work. If you also need to edit files under `packages/craftcms-legacy`, run `npm run dev:legacy` instead, which additionally starts the legacy webpack watcher.
+
+If getting into the weeds is your thing, more detail on these pieces is provided below.
+
+### Control Panel Assets
+
+The source files specific to the control panel live in the `resources` folder. Production builds are written to the local `cms-assets` package so they can be published through `craftcms/cms-assets`. To develop assets for the control panel, there are two commands:
+```shell
+# Run the Vite development server
+npm run dev
+
+# Build assets for production
+npm run build
+```
+
+### `@craftcms/ui` package
+
+The control panel is largely backed by web components that live in the `@craftcms/ui` package within the `packages/craftcms-ui` directory. Like other packages, it has its own build process that can be run independently of the control panel.
+```shell
+# Run the build in watch mode. Assets will be rebuilt on every change
+npm run dev:ui
+
+# Run the build for production
+npm run build:ui
+```
+
+In practice, you rarely work on one without the other, which is why `npm run dev` runs both together.
+
+### `@craftcms/garnish` package
+
+`@craftcms/garnish` doesn't need its own watcher during development. The Vite dev server resolves it directly from source in `packages/craftcms-garnish/src`, so changes show up immediately. Production builds (and typechecking) use its built `dist` output instead, produced by `npm run build:garnish` or `npm run build:all`.
+
+### Legacy Bundles
+
+> [!NOTE]  
+> Updating the legacy bundles should be a rare occurrence. Avoid when possible.
+
+All the styles and scripts used to support the control panel up until Craft 5 live in the [yii2-adapter](https://github.com/craftcms/yii2-adapter) package. That package has its own NPM dependencies and build process, but because it's common to have that package symlinked into your Craft 6 project, you're able to run the build scripts via the `build:bundles` command.
+```sh
+# Build assets for production
+npm run build:bundles
+
+# Run dev server to develop a specific package
+npm run dev:bundles -- -- --config-name=cp
+```
 
 ## Pull Requests
 

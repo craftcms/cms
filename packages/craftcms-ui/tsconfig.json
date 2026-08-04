@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["vite/client", "jquery"],
+    "paths": {
+      "@src/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

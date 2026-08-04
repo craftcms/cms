@@ -1,0 +1,1 @@
+CraftCms\Cms\Support\Template::preloadSingles(['homepage', 'about', 'contact'], $context);

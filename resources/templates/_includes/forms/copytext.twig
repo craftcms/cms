@@ -1,0 +1,9 @@
+{# Renders a <craft-input-copy> web component from the legacy copytext
+   variables (`id`, `name`, `value`, `copy-value`/`copyValue`, `monospace`,
+   `disabled`, `class`, `labelledBy`, `describedBy`, `inputAttributes`).
+
+   The legacy-to-component mapping lives in FormFields::copytextFromConfig();
+   the native input renders in the light DOM as the component's form control,
+   and the copy button is slotted into the suffix by the web component itself. #}
+
+{{- craft.cp.copytext(_context)|raw -}}

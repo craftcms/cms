@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Asset\Commands;
+
+use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Command;
+
+class CleanupAssetIndexesCommand extends Command
+{
+    use CraftCommand;
+
+    #[\Override]
+    protected $signature = 'craft:index-assets:cleanup';
+
+    #[\Override]
+    protected $description = 'Removes all CLI indexing sessions.';
+
+    #[\Override]
+    protected $aliases = ['index-assets/cleanup'];
+
+    public function handle(): void
+    {
+        $total = AssetIndexer::removeCliIndexingSessions();
+
+        $this->components->success("Removed {$total} CLI indexing ".Str::plural('session', $total));
+    }
+}

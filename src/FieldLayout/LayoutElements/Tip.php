@@ -1,0 +1,178 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\FieldLayout\LayoutElements;
+
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Html;
+use Override;
+
+use function CraftCms\Cms\t;
+
+class Tip extends BaseUiElement
+{
+    public const string STYLE_TIP = 'tip';
+
+    public const string STYLE_WARNING = 'warning';
+
+    public string $tip = '';
+
+    /**
+     * @var bool Whether the tip can be dismissed by user
+     */
+    public bool $dismissible = false;
+
+    /**
+     * @var self::STYLE_TIP|self::STYLE_WARNING The tip style (`tip` or `warning`)
+     */
+    public string $style = self::STYLE_TIP;
+
+    public static function make(string $tip): static
+    {
+        return app(static::class)->tip($tip);
+    }
+
+    public function tip(string $tip): static
+    {
+        $this->tip = $tip;
+
+        return $this;
+    }
+
+    public function dismissible(bool $dismissible = true): static
+    {
+        $this->dismissible = $dismissible;
+
+        return $this;
+    }
+
+    public function warning(bool $warning = true): static
+    {
+        $this->style = $warning ? self::STYLE_WARNING : self::STYLE_TIP;
+
+        return $this;
+    }
+
+    protected function selectorLabel(): string
+    {
+        $tip = trim($this->tip);
+
+        if ($tip !== '') {
+            return $this->tip;
+        }
+
+        return $this->_isTip() ? t('Tip') : t('Warning');
+    }
+
+    protected function selectorIcon(): ?string
+    {
+        return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
+    }
+
+    #[Override]
+    public function hasSettings(): bool
+    {
+        return true;
+    }
+
+    protected function settingsHtml(): ?string
+    {
+        return
+            FormFields::textareaFieldHtml([
+                'label' => $this->_isTip() ? t('Tip') : t('Warning'),
+                'instructions' => t('Can contain Markdown formatting.'),
+                'class' => ['nicetext'],
+                'id' => 'tip',
+                'name' => 'tip',
+                'value' => $this->tip,
+            ]).
+            FormFields::lightswitchFieldHtml([
+                'label' => t('Can be dismissed?'),
+                'instructions' => t('Whether this can be dismissed by a user and not shown again.'),
+                'id' => 'dismissible',
+                'name' => 'dismissible',
+                'on' => $this->dismissible,
+            ]);
+    }
+
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        $tip = trim($this->tip);
+
+        if ($tip === '') {
+            return null;
+        }
+
+        if (! $this->uid) {
+            $this->dismissible = false;
+        }
+
+        $id = sprintf('tip%s', mt_rand());
+        $namespacedId = InputNamespace::namespaceId($id);
+
+        $classes = [
+            'pane',
+            'mb-0',
+            $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING,
+        ];
+
+        if ($this->dismissible) {
+            $classes[] = 'dismissible';
+        }
+
+        $tip = Markdown::parse(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
+        $closeBtn = $this->dismissible
+            ? Html::button('', [
+                'class' => 'tip-dismiss-btn',
+                'title' => t('Dismiss'),
+                'aria' => [
+                    'label' => t('Dismiss'),
+                ],
+                'data' => [
+                    'icon' => 'remove',
+                ],
+            ])
+            : '';
+
+        if ($this->dismissible) {
+            $key = sprintf('Craft-%s.dismissedTips', Cms::systemUid());
+            $js = <<<JAVASCRIPT
+if (
+  typeof localStorage !== 'undefined' &&
+  typeof localStorage['$key'] !== 'undefined' &&
+  JSON.parse(localStorage['$key']).includes('$this->uid')
+) {
+  document.getElementById('$namespacedId').remove();
+}
+JAVASCRIPT;
+        } else {
+            $js = null;
+        }
+
+        $html = Html::tag('div', $closeBtn.$tip, [
+            'class' => $classes,
+        ]);
+
+        if ($js) {
+            $html .= "<script>$js</script>";
+        }
+
+        return Html::tag('div', $html, [
+            ...$this->containerAttributes($element, $static),
+            'id' => $id,
+        ]);
+    }
+
+    /**
+     * Returns whether this should have a tip style.
+     */
+    private function _isTip(): bool
+    {
+        return $this->style !== self::STYLE_WARNING;
+    }
+}

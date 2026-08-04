@@ -1,0 +1,76 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\filters;
+
+use Craft;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Facades\Auth;
+use yii\base\InvalidConfigException;
+use yii\filters\auth\HttpBasicAuth;
+
+/**
+ * Filter for adding basic HTTP authentication with static credentials to site requests.
+ *
+ * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-auth-httpbasicauth
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.5.0
+ * @deprecated 6.0.0 use the `auth.basic` middleware instead. @see https://laravel.com/docs/12.x/authentication#http-basic-authentication
+ */
+class BasicHttpAuthStatic extends HttpBasicAuth
+{
+    use SiteFilterTrait, BasicHttpAuthTrait;
+
+    public ?string $username = null;
+    public ?string $password = null;
+
+    /**
+     * @inheritdoc
+     */
+    public $realm;
+
+    /**
+     * @inheritDoc
+     */
+    public function __construct($config = [])
+    {
+        parent::__construct($config + [
+            'username' => Env::get('CRAFT_HTTP_BASIC_AUTH_USERNAME'),
+            'password' => Env::get('CRAFT_HTTP_BASIC_AUTH_PASSWORD'),
+            'realm' => Cms::systemName(),
+        ]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function beforeAction($action): bool
+    {
+        if (!$this->username || !$this->password) {
+            throw new InvalidConfigException('Basic authentication is not configured.');
+        }
+
+        $currentUser = Auth::user();
+
+        if ($currentUser) {
+            return true;
+        }
+
+        [$username, $password] = Craft::$app->getRequest()->getAuthCredentials();
+
+        if ($username === $this->username && $password === $this->password) {
+            return true;
+        }
+
+        $response = Craft::$app->getResponse();
+        $this->challenge($response);
+        $this->handleFailure($response);
+
+        return false;
+    }
+}

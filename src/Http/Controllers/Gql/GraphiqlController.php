@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Http\Controllers\Gql;
+
+use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Url;
+use Illuminate\Http\Request;
+use InvalidArgumentException;
+
+use function CraftCms\Cms\t;
+
+readonly class GraphiqlController extends GqlController
+{
+    public function __construct(
+        private Gql $gql,
+    ) {
+        $this->ensureGqlEnabled();
+    }
+
+    public function __invoke(Request $request): CpScreenResponse
+    {
+        // Ensure the public schema exists
+        $this->gql->getPublicSchema();
+
+        $schemaUid = $request->query('schemaUid');
+
+        if ($schemaUid && $schemaUid !== '*') {
+            try {
+                $selectedSchema = $this->gql->getSchemaByUid($schemaUid);
+            } catch (InvalidArgumentException) {
+                abort(400, 'Invalid schema UID.');
+            }
+
+            abort_if(is_null($selectedSchema), 400, 'Invalid schema UID.');
+
+            SessionAuth::authorize("graphql-schema:$schemaUid");
+        } else {
+            $selectedSchema = GqlHelper::createFullAccessSchema();
+        }
+
+        $schemas = [[
+            'label' => t('Full Schema'),
+            'value' => '*',
+        ]];
+
+        foreach ($this->gql->getSchemas() as $schema) {
+            $schemas[] = [
+                'label' => $schema->name,
+                'value' => $schema->uid,
+            ];
+        }
+
+        return new CpScreenResponse()
+            ->title(t('Explore the GraphQL API'))
+            ->selectedSubnavItem('explore')
+            ->crumbs([
+                ['label' => 'GraphQL', 'url' => 'graphql/explore'],
+                ['label' => 'GraphiQL'],
+            ])
+            ->inertiaPage('graphql/Explore', [
+                'endpoint' => Url::actionUrl('graphql/api'),
+                'exploreUrl' => Url::cpUrl('graphql/explore'),
+                'schemaOptions' => $schemas,
+                'selectedSchema' => [
+                    'name' => $selectedSchema->name,
+                    'schema' => $selectedSchema->uid,
+                ],
+            ]);
+    }
+}

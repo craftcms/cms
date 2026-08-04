@@ -1,0 +1,102 @@
+{% requireEdition CraftTeam %}
+
+
+{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\UserPermissionsAsset") %}
+
+{% set wrapperClass = "user-permissions-#{random()}" %}
+
+{% set disabled = disabled ?? false %}
+
+{% macro permissionList(subject, groupPermissions, permissions, id, disabled, oldPermissions) %}
+    {% from "_includes/forms" import checkbox %}
+    {% from _self import permissionList %}
+
+    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
+        {% for permission in permissions %}
+            {% set isInGroupPermissions = permission.key|lower in groupPermissions %}
+
+            {% if (isInGroupPermissions) %}
+                {% set checked = true %}
+            {% elseif oldPermissions is not null %}
+                {% set checked = permission.key in oldPermissions %}
+            {% else %}
+                {% if subject %}
+                    {% if Request.actionSegments() == ['users', 'save-user'] %}
+                        {% set checked = permission.key in Request.input('permissions', []) %}
+                    {% else %}
+                        {% set checked = subject.can(permission.key) %}
+                    {% endif %}
+                {% else %}
+                    {% set checked = false %}
+                {% endif %}
+            {% endif %}
+
+            <li>
+                {{ checkbox({
+                    label: permission.label,
+                    name: 'permissions[]',
+                    value: permission.key,
+                    checked: checked,
+                    class: isInGroupPermissions ? 'group-permission',
+                    disabled: disabled or isInGroupPermissions,
+                }) }}
+
+                {% if permission.info ?? false %}
+                    <craft-info-icon>{{ permission.info }}</craft-info-icon>
+                {% endif %}
+
+                {% if permission.warning ?? false %}
+                    <div class="info warning">{{ permission.warning }}</div>
+                {% endif %}
+
+                {% if permission.nested ?? false %}
+                    {{ permissionList(subject, groupPermissions, permission.nested, permission.key~'-nested', disabled or not checked, oldPermissions) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% from _self import permissionList %}
+{% set oldPermissions = session('_old_input') ? old('permissions', []) : null %}
+
+{% for group in permissions %}
+    {% set headingId = "content-heading-#{random()}" %}
+
+    {# Include a placeholder for the user group being created? #}
+    {% if (includeGroupPlaceholder ?? false) and group.permissions.has('viewUsers') and group.permissions.viewUsers.nested.has('editUsers') %}
+        {% do group.permissions.viewUsers.nested.editUsers.nested.add(create('\\CraftCms\\Cms\\User\\Data\\Permission', {
+            key: 'assignNewUserGroup',
+            label: 'Assign users to this group'|t('app')
+        })) %}
+    {% endif %}
+
+    <div class="user-permissions {{ wrapperClass }}">
+        {{ tag('h3', {
+            id: headingId,
+            class: {
+                'mt-0': loop.first,
+            }|filter|keys,
+            text: group.heading,
+        }) }}
+        {% if not disabled %}
+            {{ tag('button', {
+                type: 'button',
+                class: {
+                    'select-all': true,
+                    'mt-0': loop.first,
+                }|filter|keys,
+                aria: {
+                    describedby: headingId,
+                },
+            }) }}
+        {% endif %}
+        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled, oldPermissions) }}
+    </div>
+{% endfor %}
+
+{% js %}
+    $('.{{ wrapperClass }}').each((i, wrapper) => {
+        new Craft.UserPermissions(wrapper);
+    });
+{% endjs %}

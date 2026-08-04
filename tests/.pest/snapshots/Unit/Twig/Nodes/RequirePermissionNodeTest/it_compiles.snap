@@ -1,0 +1,2 @@
+// line 1
+Illuminate\Support\Facades\Gate::authorize("editEntries");

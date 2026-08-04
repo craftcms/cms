@@ -1,0 +1,3 @@
+scripts/plop/templates/**/*.hbs
+**/dist
+**/storybook-static

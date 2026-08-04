@@ -38,8 +38,6 @@
     "css-minimizer-webpack-plugin": "^5.0.1",
     "dotenv": "^16.3.1",
     "dotenv-webpack": "^8.0.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-vue": "^9.19.2",
     "expose-loader": "^4.1.0",
     "glob": "^10.3.10",
     "json-minimizer-webpack-plugin": "^4.0.0",
