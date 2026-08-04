@@ -204,7 +204,6 @@
     border: 1px solid var(--c-color-neutral-border-quiet);
   }
 
-
   .thumbsview > li:has(a.thumb-tile) {
     &:hover {
       background-color: var(--c-color-neutral-fill-quiet);
