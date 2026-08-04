@@ -1,0 +1,27 @@
+{
+  "$schema": "https://laravel-ide.com/schema/laravel-ide-v2.json",
+  "completions": [
+    {
+      "complete": "directoryFiles",
+      "options": {
+        "directory": "/resources"
+      },
+      "condition": [
+        {
+          "functionNames": ["craftAsset"],
+          "parameters": [1]
+        }
+      ]
+    },
+    {
+      "complete": "inertiaPage",
+      "condition": [
+        {
+          "methodNames": ["inertiaPage"],
+          "classFqn": ["\\CraftCms\\Cms\\Http\\Responses\\CpScreenResponse"],
+          "parameters": [1]
+        }
+      ]
+    }
+  ]
+}

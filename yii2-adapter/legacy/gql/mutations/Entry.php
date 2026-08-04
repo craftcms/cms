@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+namespace craft\gql\mutations;
+
+/**
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Mutations\Entry} instead.
+ */
+class Entry extends \CraftCms\Cms\Gql\Mutations\Entry
+{
+}

@@ -1,0 +1,179 @@
+{% extends "_layouts/cp" %}
+{% set title = "Form Tests" %}
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    <h2>Checkboxes</h2>
+    {{ forms.checkboxSelectField({
+        label: "Checkbox select with “All” option",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        showAllOption: true,
+    }) }}
+
+    {{ forms.checkboxSelectField({
+        label: "Checkbox select without “All” option",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        showAllOption: false,
+    }) }}
+
+    {{ forms.checkboxGroupField({
+        label: "Checkbox group",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        values: ['one', 'three'],
+    }) }}
+
+    <h2>Radio Buttons</h2>
+    {{ forms.radioGroupField({
+        label: "Radio button group",
+        name: 'radioGroup',
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        value: 'two',
+    }) }}
+
+    <h2>Money</h2>
+    {{ forms.moneyField({
+        label: "Money field",
+        name: 'money',
+    }) }}
+
+    <h2>Multi-select</h2>
+
+    {{ forms.multiselectField({
+        label: "Multi-select",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        values: ['one', 'three'],
+    }) }}
+
+    <h2>Auto Suggest</h2>
+
+    {{ forms.autosuggestField({
+        label: 'Autosuggest One',
+        id: 'app1',
+        placeholder: "Type ‘o’…",
+        suggestions: [
+            {data: ['One', 'Two', 'Three', 'Four', 'Five']},
+        ],
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: 'Autosuggest Two',
+        id: 'app2',
+        placeholder: "Type a letter…",
+        suggestions: [
+            {data: ['Alexander', 'Amaretto', 'Americano', 'Apple Martini', 'Apple Schnapps', 'Apricot Brandy', 'B-52', 'Bacardi Cocktail', 'Banana Daiquiri', 'Beer', 'Beer1', 'Beer2', 'Beer3', 'Bellini', 'Black Russian', 'Bloody Mary', 'Blue Curaçao', 'Blue Hawaii', 'Bourbon', 'Brandy', 'Brandy Alexander', 'Brandy Egg Nog', 'Bronx', 'Cachaça', 'Caipirinha', 'Campari', 'Champagne', 'Champagne', 'Champagne Cooler', 'ChampagneWithStrawberry', 'Cherry Brandy', 'Christmas Cocktail', 'Club Soda', 'Coconut Cream', 'Cognac', 'Cointreau', 'Coke', 'Cosmopolitan', 'Cosmopolitan', 'Cranberry Juice', 'Cream', 'Crème de Cacao', 'Crème de Cassis', 'Crème de Yvette', 'Cuba Libre', 'Daiquiri', 'Demerara Rum', 'Drambuie', 'Dry Vermouth', 'Egg Yolk', 'Espresso', 'Espresso Martini', 'EspressoMartini1', 'EspressoMartini2', 'French Connection', 'Galliano Liqueur', 'Gibson', 'Gimlet', 'Gin', 'Gin and Tonic', 'Gin Fizz', 'Gin Rickey', 'GinAndTonic1', 'GinAndTonic2', 'GinAndTonic3', 'Ginger Ale', 'Godfather', 'Godmother', 'Golden Cadillac', 'Gomme Syrup', 'Grand Marnier', 'Grapefruit', 'Green Chartreuse', 'Grenadine', 'Harvey Wallbanger', 'Ice Pick', 'Iced Tea', 'Irish Whiskey', 'Japanese Slipper', 'John Collins', 'Kahlúa', 'Kamikaze', 'Kir', 'Kir Royale', 'Kirsch', 'Lemon Juice', 'Lime Juice', 'Long Island Iced Tea', 'Mai Kai Martini', 'MaiKaiMartini1', 'MaiKaiMartini2', 'Manhattan', 'Margarita', 'Martini', 'Midori', 'Midori Splice', 'Milk', 'Mimosa', 'Mojito', 'Mojito', 'Negroni', 'Orange Juice', 'Passion Fruit Juice', 'Peach Brandy', 'Peach Puree', 'Pineapple Juice', 'Piña Colada', 'Port', 'Porto Flip', 'Red Wine', 'Rob Roy', 'Rusty Nail', 'Salty Dog', 'Scotch', 'Screwdriver', 'Sex on the Beach', 'Shots', 'Simple Syrup', 'Singapore Sling', 'Sloe Gin', 'Sweet & Sour Mix', 'Sweet Vermouth', 'TahoeDrink', 'Tequila', 'Tequila', 'Tequila Sunrise', 'Tomato Juice', 'Tonic Water', 'Triple Sec', 'Vodka', 'Vodka', 'Vodka Citron', 'VodkaMidoriSplice', 'Water', 'Whiskey', 'Whiskey Sour', 'Whiskey1', 'Whiskey2', 'WhiskeySour1', 'WhiskeySour2', 'White Rum', 'White Russian', 'White Wine', 'Wine1', 'Wine2', 'Yellow Chartreuse']},
+        ],
+    }) }}
+
+    {{ forms.radioGroup({
+        id: 'test',
+        options: [
+            {label: 'Foo', value: 'foo'},
+        ]
+    }) }}
+
+    <hr/>
+    <div>
+        <h2 id="lightswitches">Lightswitches</h2>
+        {{ forms.lightswitchField({
+            label: 'Default',
+            on: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Small',
+            small: true,
+            on: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Default',
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Small',
+            small: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Disabled',
+            disabled: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Indeterminate',
+            indeterminate: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Indeterminate (small)',
+            indeterminate: true,
+            small: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'With Labels',
+            on: true,
+            onLabel: 'On',
+            offLabel: 'Off'
+        }) }}
+
+        <div class="pane">
+            {{ forms.lightswitchField({
+                label: 'With Background',
+                on: true,
+            }) }}
+            {{ forms.lightswitchField({
+                label: 'With Background',
+                on: false,
+            }) }}
+            {{ forms.lightswitchField({
+                label: 'Disabled',
+                disabled: true,
+            }) }}
+        </div>
+    <hr/>
+{% endblock %}
+
+{% js %}
+var $content = $('#content');
+
+$content.append(Craft.ui.createCheckboxSelectField({
+  label: 'Checkbox select with “All” option (JS)',
+  options: [
+    {value: 'one', label: 'One'},
+    {value: 'two', label: 'Two'},
+    {value: 'three', label: 'Three'},
+  ],
+  showAllOption: true,
+}));
+
+$content.append(Craft.ui.createCheckboxSelectField({
+  label: 'Checkbox select without “All” option (JS)',
+  options: [
+    {value: 'one', label: 'One'},
+    {value: 'two', label: 'Two'},
+    {value: 'three', label: 'Three'},
+  ],
+  showAllOption: false,
+}));
+{% endjs %}

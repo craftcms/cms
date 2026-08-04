@@ -1,0 +1,4 @@
+// line 1
+if (Illuminate\Support\Facades\Auth::check()) {
+    redirect(Illuminate\Support\Facades\URL::returnUrl())->throwResponse();
+}

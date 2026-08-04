@@ -1,0 +1,32 @@
+{%- set disabled = disabled ?? false %}
+{%- set editorMinHeight = max(settings.rows, 1) * 21 + 20 %}
+{%- set editorStyle = '--markdown-field-min-height: ' ~ editorMinHeight ~ 'px;' %}
+
+<div class="markdown-field">
+    <craft-markdown-field
+        id="{{ id }}"
+        name="{{ name }}"
+        class="markdown-field-editor"
+        style="{{ editorStyle }}"
+        flavor="{{ settings.flavor }}"
+        rows="{{ settings.rows }}"
+        upload-site-id="{{ settings.uploadSiteId }}"
+        toolbar-buttons="{{ settings.toolbarButtons|json_encode|e('html_attr') }}"
+        link-types="{{ settings.linkTypes|json_encode|e('html_attr') }}"
+        link-advanced-fields="{{ settings.linkAdvancedFields|json_encode|e('html_attr') }}"
+        asset-sources="{{ settings.assetSources|json_encode|e('html_attr') }}"
+        {% if settings.encode %}encode{% endif %}
+        {% if settings.sanitizeHtml %}sanitize-html{% endif %}
+        {% if settings.showToolbar %}show-toolbar{% endif %}
+        {% if settings.showLinkLabelField %}show-link-label-field{% endif %}
+        {% if settings.showStats %}show-stats{% endif %}
+        {% if settings.inlineOnly %}inline-only{% endif %}
+        {% if settings.placeholder is not empty %}placeholder="{{ settings.placeholder }}"{% endif %}
+        {% if settings.htmlSanitizer is not empty %}html-sanitizer="{{ settings.htmlSanitizer }}"{% endif %}
+        {% if settings.maxLength %}max-length="{{ settings.maxLength }}"{% endif %}
+        {% if settings.describedBy is not empty %}described-by="{{ settings.describedBy }}"{% endif %}
+        {% if settings.uploadFolderId %}upload-folder-id="{{ settings.uploadFolderId }}"{% endif %}
+        {% if settings.assetCriteria.uploaderId is defined and settings.assetCriteria.uploaderId is null %}asset-any-uploader{% endif %}
+        {% if disabled %}disabled{% endif %}
+    >{{ settings.value }}</craft-markdown-field>
+</div>

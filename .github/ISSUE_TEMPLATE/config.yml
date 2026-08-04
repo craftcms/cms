@@ -33,9 +33,9 @@ contact_links:
   - name: 'Bug Report: Craft Console / Plugin Store'
     url: https://github.com/craftcms/console/issues/new/choose
     about: Create a bug report for Craft Console or the Plugin Store
-  - name: 'Bug Report: Craft Cloud'
-    url: https://craftcms.com/contact
-    about: Create a bug report for Craft Cloud
+  - name: 'Bug Report: Craft Cloud extension'
+    url: https://github.com/craftcms/cloud-extension-yii2/issues/new/choose
+    about: Create a bug report for the Craft Cloud extension
   - name: 'Bug Report: Craft Commerce'
     url: https://github.com/craftcms/commerce/issues/new/choose
     about: Create a bug report for Craft Commerce

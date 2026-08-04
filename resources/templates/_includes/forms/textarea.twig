@@ -1,0 +1,15 @@
+{# Renders a <craft-textarea> web component from the legacy textarea
+   variables (`id`, `class`, `inputmode`, `rows`, `cols`, `name`, `maxlength`,
+   `autofocus`, `disabled`, `readonly`, `title`, `placeholder`, `value`,
+   `describedBy`, `showCharsLeft`, `inputAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in FormFields::textareaFromConfig();
+   the native textarea renders in the light DOM as the component's form
+   control. #}
+
+{%- set inputAttributes = inputAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{- craft.cp.textarea(_context)|raw -}}

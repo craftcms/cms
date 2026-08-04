@@ -1,0 +1,22 @@
+{% extends "_layouts/cp" %}
+{% set title = "Autosuggest" %}
+{% import '_includes/forms' as forms %}
+
+
+{% block content %}
+  {{ forms.autosuggestField({
+    first: true,
+    label: "Name"|t('app'),
+    instructions: "What this site will be called in the control panel."|t('app'),
+    id: 'name',
+    name: 'name',
+    value: '',
+    suggestEnvVars: true,
+    errors: [],
+    autofocus: true,
+    required: true,
+    disabled: false,
+  }) }}
+{% endblock %}
+
+

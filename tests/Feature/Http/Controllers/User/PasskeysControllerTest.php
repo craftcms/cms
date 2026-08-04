@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
+
+use function CraftCms\Cms\t;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+    Session::passwordConfirmed();
+});
+
+it('requires login for index', function () {
+    auth()->logout();
+
+    get(action([PasskeysController::class, 'index']))
+        ->assertRedirect();
+});
+
+test('index', function () {
+    get(action([PasskeysController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Passkeys')
+            ->has('passkeys'));
+});
+
+describe('creationOptions', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertUnauthorized();
+    });
+
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+
+        postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertStatus(423);
+    });
+
+    it('returns passkey creation options', function () {
+        postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertOk()
+            ->assertJsonStructure(['options']);
+    });
+
+    it('returns WebAuthn options with required fields', function () {
+        $response = postJson(action([PasskeysController::class, 'creationOptions']))
+            ->assertOk()
+            ->json();
+
+        $options = Json::decode($response['options']);
+
+        expect($options)->toBeArray();
+        expect($options)->toHaveKeys(['challenge', 'rp', 'user']);
+    });
+});
+
+describe('verifyCreation', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'verifyCreation']))
+            ->assertUnauthorized();
+    });
+
+    it('requires password confirmation', function () {
+        Session::forget('auth.password_confirmed_at');
+
+        postJson(action([PasskeysController::class, 'verifyCreation']))
+            ->assertStatus(423);
+    });
+
+    it('validates credentials parameter is required', function () {
+        postJson(action([PasskeysController::class, 'verifyCreation']), [])
+            ->assertJsonValidationErrorFor('credentials');
+    });
+
+    it('returns failure for invalid credentials', function () {
+        postJson(action([PasskeysController::class, 'verifyCreation']), [
+            'credentials' => json_encode(['invalid' => 'data']),
+            'credentialName' => 'Test Passkey',
+        ])
+            ->assertStatus(400)
+            ->assertJson(['message' => 'Passkey creation failed.']);
+    });
+});
+
+describe('delete', function () {
+    it('requires login', function () {
+        auth()->logout();
+
+        postJson(action([PasskeysController::class, 'delete']))
+            ->assertUnauthorized();
+    });
+
+    it('validates uid parameter is required', function () {
+        postJson(action([PasskeysController::class, 'delete']), [])
+            ->assertJsonValidationErrorFor('uid');
+    });
+
+    it('returns a success message', function () {
+        // This test would need a real passkey to delete; for now we just verify
+        // the response shape when the passkey doesn't exist.
+        postJson(action([PasskeysController::class, 'delete']), [
+            'uid' => 'non-existent-uid',
+        ])
+            ->assertOk()
+            ->assertJsonStructure(['message']);
+    });
+});

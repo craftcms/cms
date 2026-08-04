@@ -1,0 +1,16 @@
+{# Renders a <craft-checkbox> web component from the legacy checkbox
+   variables (`id`, `name`, `value`, `checked`, `label`/`checkboxLabel`,
+   `labelId`, `info`, `icon`, `color`, `custom`, `autofocus`, `disabled`,
+   `toggle`/`reverseToggle`/`targetPrefix`, `labelledBy`/`describedBy`,
+   `class`, `aria`, `data`, `inputAttributes` and an `attr` block).
+
+   The legacy-to-component mapping lives in
+   FormFields::checkboxFromConfig(); the native input, label, always-post
+   hidden input and custom-option input all render in the light DOM. #}
+
+{%- set inputAttributes = inputAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{- craft.cp.checkbox(_context)|raw -}}

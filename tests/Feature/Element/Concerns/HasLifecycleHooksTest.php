@@ -1,0 +1,166 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
+use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestored;
+use CraftCms\Cms\Element\Events\ElementLifecycleRestoring;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaved;
+use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+    $entryModel = EntryModel::factory()->create();
+    $this->entry = Entry::findOne($entryModel->id);
+});
+
+test('beforeSave triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleSaving $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeSave(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeSave event can prevent save', function () {
+    Event::listen(function (ElementLifecycleSaving $event) {
+        $event->isValid = false;
+    });
+
+    // Prevent revision
+    $this->entry->id = null;
+
+    $result = $this->entry->beforeSave(false);
+
+    expect($result)->toBeFalse();
+});
+
+test('beforeSave event receives isNew parameter', function () {
+    $receivedIsNew = [];
+    Event::listen(function (ElementLifecycleSaving $event) use (&$receivedIsNew) {
+        $receivedIsNew[] = $event->isNew;
+    });
+
+    $this->entry->beforeSave(true);
+
+    expect(count($receivedIsNew))->toBeGreaterThan(0);
+});
+
+test('afterSave triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleSaved $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterSave event receives isNew parameter', function () {
+    $receivedIsNew = null;
+    Event::listen(function (ElementLifecycleSaved $event) use (&$receivedIsNew) {
+        $receivedIsNew = $event->isNew;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($receivedIsNew)->toBeFalse();
+});
+
+test('afterPropagate triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterPropagate event receives isNew parameter', function () {
+    $receivedIsNew = [];
+    Event::listen(function (ElementLifecyclePropagated $event) use (&$receivedIsNew) {
+        $receivedIsNew[] = $event->isNew;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect(count($receivedIsNew))->toBeGreaterThan(0);
+});
+
+test('beforeDelete triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleDeleting $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeDelete();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeDelete event can prevent delete', function () {
+    Event::listen(function (ElementLifecycleDeleting $event) {
+        $event->isValid = false;
+    });
+
+    $result = $this->entry->beforeDelete();
+
+    expect($result)->toBeFalse();
+});
+
+test('afterDelete triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleDeleted $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterDelete();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeRestore triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleRestoring $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeRestore();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeRestore event can prevent restore', function () {
+    Event::listen(function (ElementLifecycleRestoring $event) {
+        $event->isValid = false;
+    });
+
+    $result = $this->entry->beforeRestore();
+
+    expect($result)->toBeFalse();
+});
+
+test('afterRestore triggers event', function () {
+    $triggered = false;
+    Event::listen(function (ElementLifecycleRestored $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterRestore();
+
+    expect($triggered)->toBeTrue();
+});

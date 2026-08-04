@@ -1,0 +1,13 @@
+{% if elements is not empty %}
+  <div class="header px-s">
+    <span class="selectallcontainer">
+        <span>{{ 'Select all'|t('app') }}</span>
+    </span>
+  </div>
+  <ul class="thumbsview">
+    {% include "_elements/thumbsview/elements" %}
+  </ul>
+  <div class="clear"></div>
+{% else %}
+  <div class="zilch small">{{ 'Nothing yet.'|t('app') }}</div>
+{% endif %}

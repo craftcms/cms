@@ -1,0 +1,20 @@
+.preview-focal-point {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgb(255 255 255 / 80%);
+  background: rgb(0 0 0 / 50%);
+  position: absolute;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.preview-focal-point .inner {
+  position: absolute;
+  width: 0;
+  height: 0;
+  inset-inline-start: 6px;
+  inset-block-start: 6px;
+  background: rgb(255 255 255 / 80%);
+  border: 2px solid rgb(255 255 255 / 80%);
+  border-radius: 4px;
+}

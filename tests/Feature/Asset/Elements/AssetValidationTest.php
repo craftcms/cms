@@ -1,0 +1,170 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
+
+describe('Required field validation', function () {
+    test('filename validation', function (string $value, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->filename = $value;
+
+        $asset->validate(['filename']);
+
+        expect($asset->errors()->has('filename'))->toBe($expectError);
+    })->with([
+        'empty string is invalid' => ['', true],
+        'valid filename is valid' => ['valid-file.jpg', false],
+    ]);
+
+    test('kind validation', function (mixed $value, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->kind = $value;
+
+        $asset->validate(['kind']);
+
+        expect($asset->errors()->has('kind'))->toBe($expectError);
+    })->with([
+        'null is invalid' => [null, true],
+        'empty string is invalid' => ['', true],
+        'KIND_IMAGE is valid' => [FileKind::Image->value, false],
+    ]);
+});
+
+describe('String length validation', function () {
+    test('kind length validation', function (int $length, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->kind = str_repeat('a', $length);
+
+        $asset->validate(['kind']);
+
+        expect($asset->errors()->has('kind'))->toBe($expectError);
+    })->with([
+        '50 chars is valid' => [50, false],
+        '51 chars is invalid' => [51, true],
+    ]);
+});
+
+describe('Title validation on SCENARIO_CREATE', function () {
+    test('title length validation on create scenario', function (int $length, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->title = str_repeat('a', $length);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+
+        $asset->validate(['title']);
+
+        expect($asset->errors()->has('title'))->toBe($expectError);
+    })->with([
+        '255 chars is valid' => [255, false],
+        '256 chars is invalid' => [256, true],
+    ]);
+});
+
+describe('Safe attribute validation', function () {
+    test('alt accepts string with special chars', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->alt = 'Some alternative text with special characters: <>&"';
+
+        $asset->validate(['alt']);
+
+        expect($asset->errors()->has('alt'))->toBeFalse();
+    });
+});
+
+describe('Scenario-specific required validation', function () {
+    test('newLocation is required on specific scenarios', function (string $scenario, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->ruleset->useScenario($scenario);
+        $asset->newLocation = null;
+
+        $asset->validate(['newLocation']);
+
+        expect($asset->errors()->has('newLocation'))->toBe($expectError);
+    })->with([
+        'SCENARIO_CREATE requires newLocation' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_MOVE requires newLocation' => [AssetRules::SCENARIO_MOVE, true],
+        'SCENARIO_FILEOPS requires newLocation' => [AssetRules::SCENARIO_FILEOPS, true],
+        'default scenario does not require newLocation' => [AssetRules::SCENARIO_DEFAULT, false],
+    ]);
+
+    test('tempFilePath is required on specific scenarios', function (string $scenario, bool $expectError) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->ruleset->useScenario($scenario);
+        $asset->tempFilePath = null;
+
+        $asset->validate(['tempFilePath']);
+
+        expect($asset->errors()->has('tempFilePath'))->toBe($expectError);
+    })->with([
+        'SCENARIO_CREATE requires tempFilePath' => [AssetRules::SCENARIO_CREATE, true],
+        'SCENARIO_REPLACE requires tempFilePath' => [AssetRules::SCENARIO_REPLACE, true],
+        'default scenario does not require tempFilePath' => [AssetRules::SCENARIO_DEFAULT, false],
+        'SCENARIO_MOVE does not require tempFilePath' => [AssetRules::SCENARIO_MOVE, false],
+    ]);
+});
+
+describe('SCENARIO_INDEX validation', function () {
+    test('SCENARIO_INDEX has empty validation attributes', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
+
+        $activeAttributes = array_keys($asset->getRules());
+
+        expect($activeAttributes)->toBe([]);
+    });
+
+    test('validation passes with invalid values on SCENARIO_INDEX', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->kind = '';
+        $asset->filename = '';
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
+
+        $asset->validate();
+
+        expect($asset->errors()->isEmpty())->toBeTrue();
+    });
+});
+
+describe('Edge cases', function () {
+    test('unicode characters are handled in alt text', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->alt = 'Image of 山 mountain';
+
+        $asset->validate(['alt']);
+
+        expect($asset->errors()->has('alt'))->toBeFalse();
+    });
+
+    test('special characters in filenames', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->filename = 'my-image_2024.01.jpg';
+
+        $asset->validate(['filename']);
+
+        expect($asset->errors()->has('filename'))->toBeFalse();
+    });
+
+    test('multiple validation errors can be collected', function () {
+        $asset = AssetModel::factory()->createElement();
+        $asset->filename = '';
+        $asset->kind = '';
+
+        $asset->validate(['filename', 'kind']);
+
+        expect($asset->errors()->has('filename'))->toBeTrue();
+        expect($asset->errors()->has('kind'))->toBeTrue();
+    });
+
+    test('valid asset kinds are accepted', function (string $kind) {
+        $asset = AssetModel::factory()->createElement();
+        $asset->kind = $kind;
+
+        $asset->validate(['kind']);
+
+        expect($asset->errors()->has('kind'))->toBeFalse();
+    })->with([
+        'KIND_IMAGE' => [FileKind::Image->value],
+    ]);
+});

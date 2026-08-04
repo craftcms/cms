@@ -1,0 +1,16 @@
+{# Renders a checkbox select from the legacy checkboxSelect variables (`id`,
+   `name`, `options`, `values`, `showAllOption`, `allLabel`, `allValue`,
+   `sortable`, `storageKey`, `disabled`, `describedBy`, `targetPrefix`,
+   `autofocus`, `class`, `containerAttributes` and an `attr` block).
+
+   The legacy-to-component mapping — including the sortable pre-ordering of
+   options by the `values` order — lives in
+   FormFields::checkboxSelectFromConfig(); this template only handles the
+   `attr` block. #}
+
+{%- set containerAttributes = containerAttributes ?? {} %}
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{ craft.cp.checkboxSelect(_context)|raw }}

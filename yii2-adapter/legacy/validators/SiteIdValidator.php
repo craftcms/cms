@@ -1,0 +1,40 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\validators;
+
+use CraftCms\Cms\Support\Facades\Sites;
+use yii\validators\Validator;
+use function CraftCms\Cms\t;
+
+/**
+ * Will validate that the given attribute is a valid site ID.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ */
+class SiteIdValidator extends Validator
+{
+    /**
+     * @var bool|null $allowDisabled Whether to allow disabled sites.
+     * @since 3.7.32
+     */
+    public ?bool $allowDisabled = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function validateAttribute($model, $attribute): void
+    {
+        $siteId = $model->$attribute;
+
+        if ($siteId && !Sites::getAllSiteIds($this->allowDisabled)->contains($siteId)) {
+            $message = t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
+            $this->addError($model, $attribute, $message);
+        }
+    }
+}

@@ -1,0 +1,4 @@
+# Packages
+/packages/*
+/resources/legacy/*
+/resources/build/*

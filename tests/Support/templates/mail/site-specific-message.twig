@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="{{ language }}">
+<body data-template="site-specific-message">
+<h1>{{ subject }}</h1>
+<div class="text-body">{{ textBody }}</div>
+<div class="html-body">{{ htmlBody|raw }}</div>
+<div class="meta">{{ emailKey }}|{{ language }}|{{ user.email }}</div>
+</body>
+</html>

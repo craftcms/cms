@@ -1,0 +1,7 @@
+{% set id = id ?? "fieldselect#{random()}" -%}
+
+{% include '_includes/forms/componentSelect.twig' with {
+    options: options ?? Fields.getAllFields().all(),
+    showHandles: true,
+    createAction: (create ?? false) ? cpUrl('settings/fields/edit') : null,
+} %}

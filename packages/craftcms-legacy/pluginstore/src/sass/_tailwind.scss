@@ -1,0 +1,15 @@
+/* Add stuff that’s missing because we’re not using preflight */
+
+html {
+  @apply tw-box-border;
+}
+
+*,
+::after,
+::before {
+  box-sizing: inherit;
+}
+
+img {
+  @apply tw-max-w-full tw-h-auto;
+}

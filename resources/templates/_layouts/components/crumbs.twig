@@ -1,0 +1,65 @@
+<div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
+  <button id="primary-nav-toggle" class="nav-toggle" title="{{ 'Show nav'|t('app') }}" aria-label="{{ 'Show nav'|t('app') }}" aria-expanded="false" aria-controls="global-sidebar" aria-haspopup="true"></button>
+  {% if crumbs %}
+    <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
+      <ul id="crumb-list">
+        {% for crumb in crumbs %}
+          {% set hasMenuItems = (crumb.menu.items ?? [])|length %}
+          {% if hasMenuItems %}
+            {% set crumb = findCrumb(crumb.menu.items)|merge(crumb) %}
+          {% endif %}
+
+          {% tag 'li' with {
+            class: {
+              crumb: true,
+              current: crumb.current ?? false,
+            }|filter|keys,
+          } %}
+            {% if crumb.html is defined %}
+              {{ crumb.html|raw }}
+            {% else %}
+              {% set labelId = "crumb-label#{random()}" %}
+
+              {% tag 'a' with {
+                class: 'crumb-link',
+                id: crumb.id ?? null,
+                href: crumb.url is defined ? url(crumb.url) : null,
+                aria: {
+                  label: crumb.ariaLabel ?? false,
+                },
+              } %}
+                {% if crumb.icon is defined %}
+                  {% set iconAltText = crumb.iconAltText ?? null %}
+                  <span class="cp-icon puny">{{ iconSvg(crumb.icon, altText: iconAltText) }}</span>
+                {% endif %}
+
+                <span>{{ crumb.label ?? crumb.html|raw }}</span>
+              {% endtag %}
+
+              {% if hasMenuItems %}
+                {% set menuId = crumb.id is defined ? "#{crumb.id}-menu" : "crumb-menu#{random()}" %}
+                {% set menuLabel = crumb.menu.label ?? null %}
+                {{ tag('button', {
+                  class: ['btn', 'menubtn'],
+                  type: 'button',
+                  aria: {
+                    label: menuLabel,
+                    controls: menuId,
+                    describedby: menuLabel ? null : labelId,
+                  },
+                  data: {
+                    'disclosure-trigger': true,
+                  },
+                }) }}
+                {{ disclosureMenu(crumb.menu.items, {
+                  id: menuId,
+                  withButton: false,
+                }) }}
+              {% endif %}
+            {% endif %}
+          {% endtag %}
+        {% endfor %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>

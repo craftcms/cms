@@ -4,10 +4,48 @@ const _require = (id) =>
   require(require.resolve(id, {paths: [require.main.path]}));
 
 const path = require('path');
+const fs = require('fs');
+
+/**
+ * Resolves the root directory of a package in a monorepo.
+ * Works around Node.js exports restrictions that prevent using require.resolve
+ * to get package internal files.
+ *
+ * @param {string} pkg - Package name (e.g., 'vue', 'vue-router')
+ * @returns {string} - Absolute path to package root directory
+ */
+const resolvePackageDir = (pkg) => {
+  try {
+    const mainPath = require.resolve(pkg);
+    const searchString = `node_modules/${pkg}`;
+    const pkgIndex = mainPath.lastIndexOf(searchString);
+    if (pkgIndex !== -1) {
+      return mainPath.substring(0, pkgIndex + searchString.length);
+    }
+  } catch (e) {
+    // Fall through to alternative resolution
+  }
+  const nodeModulesPath = path.resolve(process.cwd(), 'node_modules', pkg);
+  if (fs.existsSync(path.join(nodeModulesPath, 'package.json'))) {
+    return nodeModulesPath;
+  }
+  throw new Error(`Could not find package root for ${pkg}`);
+};
+
+/**
+ * Resolves a specific file within a package.
+ *
+ * @param {string} pkg - Package name (e.g., 'vue')
+ * @param {string} file - Relative path to file within package (e.g., 'dist/vue.min.js')
+ * @returns {string} - Absolute path to the file
+ */
+const resolvePackageFile = (pkg, file) => {
+  return path.join(resolvePackageDir(pkg), file);
+};
+
 const glob = require('glob');
 const {merge} = require('webpack-merge');
 const dotenv = require('dotenv');
-const fs = require('fs');
 const yargs = require('yargs/yargs');
 const {hideBin} = require('yargs/helpers');
 const argv = yargs(hideBin(process.argv)).argv;
@@ -88,7 +126,7 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
 
   if (!watchPaths) {
     watchPaths = [
-      path.join(rootPath, 'src/templates'),
+      path.join(rootPath, 'resources/templates'),
       path.join(context, 'dist'),
     ];
   }
@@ -245,6 +283,17 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
       devtool: 'source-map',
       resolve: {
         extensions: ['.wasm', '.ts', '.tsx', '.mjs', '.js', '.json', '.vue'],
+        // Never match the "development" exports condition: workspace packages
+        // (e.g. @craftcms/ui) map it to their TypeScript source for Vite's dev
+        // server. The legacy webpack build must always consume built output.
+        conditionNames: [
+          'webpack',
+          'browser',
+          'module',
+          'import',
+          'require',
+          'default',
+        ],
       },
       module: {
         rules: [
@@ -335,7 +384,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
       ],
       externals: {
         jquery: 'jQuery',
-        d3: 'd3',
         axios: 'axios',
         fabric: 'fabric',
         'element-resize-detector': 'elementResizeDetectorMaker',
@@ -423,4 +471,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
 module.exports = {
   getConfig,
   getConfigs,
+  resolvePackageDir,
+  resolvePackageFile,
 };

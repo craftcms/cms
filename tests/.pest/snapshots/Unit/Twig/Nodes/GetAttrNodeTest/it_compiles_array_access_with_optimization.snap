@@ -1,0 +1,2 @@
+(($_v0 = // line 1
+($context["data"] ?? null)) && is_array($_v0) || $_v0 instanceof ArrayAccess ? ($_v0[(string)"key"] ?? null) : null)

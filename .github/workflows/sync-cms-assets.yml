@@ -1,0 +1,82 @@
+name: Sync CMS Assets
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 6.x
+      - feature/icons-to-cms-assets
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync CMS assets
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '24'
+          cache: true
+
+      - name: Install frontend dependencies
+        run: vp install --frozen-lockfile
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Copy icons
+        run: php ./scripts/copyicons.php
+
+      - name: Build assets
+        run: |
+          rm -rf cms-assets/resources/build
+          rm -rf cms-assets/resources/legacy
+          vp run build:all
+
+          test -f cms-assets/resources/build/manifest.json || { echo "::error::Missing cms-assets/resources/build/manifest.json"; exit 1; }
+          test -f cms-assets/resources/legacy/cp/dist/cp.js || { echo "::error::Missing cms-assets/resources/legacy/cp/dist/cp.js"; exit 1; }
+          test -f cms-assets/resources/legacy/cp/dist/css/cp.css || { echo "::error::Missing cms-assets/resources/legacy/cp/dist/css/cp.css"; exit 1; }
+          test -f cms-assets/resources/icons/index.php || { echo "::error::Missing cms-assets/resources/icons/index.php"; exit 1; }
+
+      - name: Monorepo Split
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: danharrin/monorepo-split-github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        with:
+          package_directory: 'cms-assets'
+          repository_organization: 'craftcms'
+          repository_name: 'cms-assets'
+          branch: ${{ github.head_ref || github.ref_name }}
+          user_name: 'shinybrad'
+          user_email: 'shinybrad@pixelandtonic.com'
+
+      - name: Monorepo Split
+        if: "startsWith(github.ref, 'refs/tags/')"
+        uses: danharrin/monorepo-split-github-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        with:
+          tag: ${{ github.ref_name }}
+          package_directory: 'cms-assets'
+          repository_organization: 'craftcms'
+          repository_name: 'cms-assets'
+          branch: '6.x'
+          user_name: 'shinybrad'
+          user_email: 'shinybrad@pixelandtonic.com'

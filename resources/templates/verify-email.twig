@@ -1,0 +1,13 @@
+{% extends "_layouts/message" %}
+
+{% set title = 'Verify your email address'|t('app') %}
+
+{% block message %}
+  {% set verificationErrors = errors.get('code') ?: errors.get('uid') %}
+
+  <craft-verify-email-form {{ attr({
+    uid: uid,
+    code: code,
+    'initial-error': verificationErrors ? verificationErrors|first : null,
+  }) }}></craft-verify-email-form>
+{% endblock %}

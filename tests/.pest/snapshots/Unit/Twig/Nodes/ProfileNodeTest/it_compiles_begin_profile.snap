@@ -1,0 +1,1 @@
+app('CraftCms\Cms\View\TemplateProfiler')->beginProfile("template", "index.twig");

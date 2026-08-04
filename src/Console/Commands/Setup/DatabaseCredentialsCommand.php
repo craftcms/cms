@@ -1,0 +1,311 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Console\Commands\Setup;
+
+use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Database\ConnectionConfig;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Attributes\Aliases;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
+use Illuminate\Console\Command;
+use Illuminate\Database\Connection;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Laravel\Prompts\Support\Logger;
+use PDOException;
+use RuntimeException;
+
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\password;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
+
+#[Aliases(['setup/db-creds', 'setup:db', 'setup/db'])]
+#[Description('Stores new DB connection settings to the `.env` file.')]
+#[Signature('craft:setup:db-creds
+        {--driver= : The database driver to use. Either `\'mysql\'` for MySQL, `\'mariadb\'` for MariaDB, `\'pgsql\'` for PostgreSQL, or `\'sqlite\'` for SQLite.}
+        {--host= : The database server name or IP address. Usually `\'localhost\'` or `\'127.0.0.1\'`.}
+        {--port= : The database server port. Defaults to 3306 for MySQL and MariaDB and 5432 for PostgreSQL.}
+        {--username= : The database username to connect with.}
+        {--password= : The database password to connect with.}
+        {--database= : The name of the database to select, or the SQLite database file path.}
+        {--schema= : The schema that Postgres is configured to use by default (PostgreSQL only).}
+        {--prefix= : The table prefix to add to all database tables. This can be no more than 5 characters, and must be all lowercase.}
+    ')]
+class DatabaseCredentialsCommand extends Command
+{
+    use CraftCommand;
+
+    private const string BadUserCredentials = 'bad-user-credentials';
+
+    private string $driver;
+
+    private ?string $host = null;
+
+    private ?int $port = null;
+
+    private ?string $user = null;
+
+    private ?string $password = null;
+
+    private string $database;
+
+    private string $schema;
+
+    private string $prefix;
+
+    public function handle(): int
+    {
+        top:
+
+        $envDriver = Config::get('database.default') ?? Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER'));
+        $this->driver = $this->option('driver') ?? select(
+            label: 'Which database driver are you using?',
+            options: [
+                'mysql' => 'MySQL',
+                'mariadb' => 'MariaDB',
+                'pgsql' => 'PostgreSQL',
+                'sqlite' => 'SQLite',
+            ],
+            default: $this->driver ?? $envDriver,
+            validate: [Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')]
+        );
+
+        if ($this->driver !== 'sqlite') {
+            $this->host = $this->option('host') ?? strtolower(text(
+                label: 'Database server name or IP address:',
+                default: $this->host ?? Config::get("database.connections.{$this->driver}.host") ?? Env::get('DB_HOST', Env::get('CRAFT_DB_SERVER', '127.0.0.1')),
+                required: true,
+            ));
+
+            $this->port = (int) ($this->option('port') ?? text(
+                label: 'Database port:',
+                default: (string) ($this->port
+                    ?? Config::get("database.connections.{$this->driver}.port")
+                    ?? Env::get('DB_PORT', Env::get('CRAFT_DB_PORT', in_array($this->driver, ['mysql', 'mariadb']) ? '3306' : '5432'))),
+                required: true,
+            ));
+        }
+
+        $this->promptUserCredentials();
+
+        if (! $this->input->isInteractive() && ! $this->option('database')) {
+            error('The --database option must be set.');
+
+            return self::FAILURE;
+        }
+
+        $this->database = $this->option('database') ?? text(
+            label: $this->driver === 'sqlite' ? 'SQLite database file path:' : 'Database name:',
+            default: $this->database ?? Config::get("database.connections.{$this->driver}.database") ?? Env::get('DB_DATABASE', Env::get('CRAFT_DB_NAME')),
+            required: true,
+        );
+
+        if ($this->driver === 'pgsql') {
+            $this->schema = $this->option('schema') ?? text(
+                label: 'Database schema:',
+                default: $this->schema ?? Config::get("database.connections.{$this->driver}.schema") ?? Env::get('DB_SCHEMA', Env::get('CRAFT_DB_SCHEMA', 'public')),
+                required: true,
+            );
+        }
+
+        $this->prefix = $this->option('prefix') ?? text(
+            label: 'Database table prefix:',
+            default: $this->prefix ?? Config::get("database.connections.{$this->driver}.prefix") ?? Env::get('DB_PREFIX', Env::get('CRAFT_DB_PREFIX', '')),
+            validate: ['max:5'],
+            transform: function ($value) {
+                if (! $value) {
+                    return $value;
+                }
+
+                return Str::finish($value, '_');
+            }
+        );
+
+        $config = [];
+
+        startTest:
+
+        $result = PromptTask::run('Testing database credentials...', function (Logger $logger) use (&$config) {
+            test:
+
+            $config = ConnectionConfig::normalize(array_filter([
+                'driver' => $this->driver,
+                'host' => $this->host,
+                'port' => $this->port,
+                'username' => $this->user,
+                'password' => $this->password,
+                'database' => $this->database,
+                'prefix' => $this->prefix,
+                'schema' => $this->schema ?? null,
+            ], fn (mixed $value) => ! is_null($value) && $value !== ''));
+
+            if ($this->driver === 'sqlite') {
+                $this->database = $config['database'];
+                ConnectionConfig::ensureSqliteDatabaseFile($this->database);
+            }
+
+            try {
+                /** @var Connection $connection */
+                $connection = DB::build($config);
+                $connection->getPdo();
+            } catch (SQLiteDatabaseDoesNotExistException $e) {
+                $logger->error('Failed: '.$e->getMessage());
+
+                return false;
+            } catch (PDOException $e) {
+                // Error codes:
+                // 7:    Name or service not known (server)
+                // 7:    could not connect to server (port)
+                // 7:    password authentication failed (username)
+                // 7:    no password supplied (password)
+                // 1045: Access denied for user (username, password)
+                // 1049: Unknown database (database)
+                // 2002: Connection timed out (server)
+                $logger->error('Failed: '.$e->getMessage());
+
+                // Test some common issues
+                $message = $e->getMessage();
+
+                if ($this->host === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+                    // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
+                    // try 127.0.0.1 instead...
+                    $logger->warning('Trying with 127.0.0.1 instead of localhost ... ');
+                    $this->host = '127.0.0.1';
+                    goto test;
+                }
+
+                if ($this->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+                    // try 8889 instead (default MAMP port)...
+                    $logger->warning('Trying with port 8889 instead of 3306 ... ');
+                    $this->port = 8889;
+                    goto test;
+                }
+
+                if (
+                    str_contains($message, 'Access denied for user') ||
+                    str_contains($message, 'no password supplied') ||
+                    str_contains($message, 'password authentication failed for user') ||
+                    str_contains($message, "role \"$this->user\" does not exist")
+                ) {
+                    $logger->warning('Try with a different username and/or password.');
+
+                    return self::BadUserCredentials;
+                }
+
+                return false;
+            } catch (RuntimeException $e) {
+                $logger->error('Failed: '.$e->getMessage());
+
+                return false;
+            }
+
+            $logger->success('Success!');
+
+            return true;
+        }, keepSummary: true, output: $this->output);
+
+        if ($result === self::BadUserCredentials) {
+            $this->promptUserCredentials();
+            goto startTest;
+        }
+
+        if ($result === false) {
+            if (! $this->input->isInteractive()) {
+                return self::FAILURE;
+            }
+
+            goto top;
+        }
+
+        PromptTask::run('Saving database credentials to your .env file...', function (Logger $logger) {
+            $path = app()->environmentFilePath();
+
+            if (! is_null(Env::get('DB_URL'))) {
+                $url = $this->driver === 'sqlite'
+                    ? "sqlite:///$this->database"
+                    : "$this->driver://$this->user:$this->password@$this->host:$this->port/$this->database";
+
+                Env::writeVariable('DB_URL', $url, app()->environmentFilePath(), true);
+            } else {
+                Env::writeVariable('DB_CONNECTION', $this->driver, $path, true);
+                Env::writeVariable('DB_DATABASE', $this->database, $path, true);
+
+                if ($this->driver === 'sqlite') {
+                    Env::writeVariable('DB_FOREIGN_KEYS', 'true', $path, true);
+
+                    foreach (['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_SCHEMA'] as $variable) {
+                        Env::removeVariable($variable, $path);
+                    }
+                } else {
+                    Env::writeVariable('DB_HOST', $this->host, $path, true);
+                    Env::writeVariable('DB_PORT', $this->port, $path, true);
+                    Env::writeVariable('DB_USERNAME', $this->user, $path, true);
+                    Env::writeVariable('DB_PASSWORD', $this->password, $path, true);
+                }
+
+                if ($this->prefix) {
+                    Env::writeVariable('DB_PREFIX', $this->prefix, $path, true);
+                }
+
+                if ($this->driver === 'pgsql' && isset($this->schema)) {
+                    Env::writeVariable('DB_SCHEMA', $this->schema, $path, true);
+                }
+            }
+
+            $logger->success('Database credentials saved successfully.');
+        }, keepSummary: true, output: $this->output);
+
+        Config::set('database.default', $this->driver);
+        Config::set("database.connections.{$this->driver}", $config);
+        DB::purge($this->driver);
+        DB::setDefaultConnection($this->driver);
+        DB::reconnect($this->driver);
+
+        if ($this->driver === 'sqlite') {
+            ConnectionConfig::useDefaultConnectionForBulkOps(DB::connection());
+        } else {
+            Config::set('database.connections.db2', $config);
+            DB::purge('db2');
+            DB::reconnect('db2');
+        }
+
+        return self::SUCCESS;
+    }
+
+    private function promptUserCredentials(): void
+    {
+        if ($this->driver === 'sqlite') {
+            return;
+        }
+
+        $this->user = $this->option('username') ?? text(
+            label: 'Database username:',
+            default: $this->user
+                ?? Config::get("database.connections.{$this->driver}.username")
+                ?? Env::get('DB_USERNAME', Env::get('CRAFT_DB_USER', 'root')),
+        );
+
+        if ($this->password = $this->option('password')) {
+            return;
+        }
+
+        $envPassword = Config::get("database.connections.{$this->driver}.password") ?? Env::get('DB_PASSWORD', Env::get('CRAFT_DB_PASSWORD'));
+
+        if ($envPassword && confirm('Use the password provided by $DB_PASSWORD?')) {
+            $this->password = $envPassword;
+
+            return;
+        }
+
+        $this->password = password(label: 'Database password:');
+    }
+}

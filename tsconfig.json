@@ -1,4 +1,21 @@
 {
-  "extends": "@craftcms/webpack/tsconfig.json",
-  "include": ["src/web/assets/*/src/**/*.ts"]
+  "extends": "@total-typescript/tsconfig/bundler/dom/app",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "paths": {
+      "@/*": ["./resources/js/*"],
+      "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
+      "@icons/*": ["./cms-assets/resources/icons/*"],
+      "@public/*": ["./resources/public/*"],
+      "@routes/*": ["./resources/js/routes/craft/*"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": [
+    "resources/js/**/*.ts",
+    "resources/js/**/*.d.ts",
+    "resources/js/**/*.vue"
+  ],
+  "exclude": ["node_modules"]
 }

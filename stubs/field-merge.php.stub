@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * This view is used by app/console/controllers/MigrateController.php.
+ *
+ * The following variables are available in this view:
+ */
+/** @var string $persistingFieldUid */
+/** @var string $outgoingFieldUid */
+
+echo "<?php\n";
+?>
+
+use CraftCms\Cms\Database\Migrations\BaseFieldMergeMigration;
+
+return new class extends BaseFieldMergeMigration
+{
+    public string $persistingFieldUid = '<?= $persistingFieldUid ?>';
+    public string $outgoingFieldUid = '<?= $outgoingFieldUid ?>';
+};

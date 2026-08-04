@@ -1,0 +1,830 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\services;
+
+use Craft;
+use craft\db\Query;
+use craft\db\Table;
+use craft\events\IndexKeywordsEvent;
+use craft\events\SearchEvent;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Search\Events\KeywordsIndexing;
+use CraftCms\Cms\Search\Events\SearchResultsResolving;
+use CraftCms\Cms\Search\Events\SearchScoresResolving;
+use CraftCms\Cms\Search\Events\SearchStarting;
+use CraftCms\Cms\Search\Search as LaravelSearch;
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
+use CraftCms\Cms\Support\Search as SearchHelper;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use WeakMap;
+use yii\base\Component;
+use yii\db\Expression;
+
+/**
+ * Search service.
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->getSearch()`]].
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
+ */
+class Search extends Component
+{
+    /** @var WeakMap<ElementQueryInterface,array<string,int>>|null */
+    private static ?WeakMap $legacyScores = null;
+
+    /**
+     * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
+     *
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the attribute/field's keywords from being indexed.
+     *
+     * @since 4.2.0
+     */
+    public const EVENT_BEFORE_INDEX_KEYWORDS = 'beforeIndexKeywords';
+
+    /**
+     * @event SearchEvent The event that is triggered before a search is performed.
+     */
+    public const EVENT_BEFORE_SEARCH = 'beforeSearch';
+
+    /**
+     * @event SearchEvent The event that is triggered after a search is performed.
+     *
+     * Any modifications to [[SearchEvent::$scores]] will be respected.
+     */
+    public const EVENT_AFTER_SEARCH = 'afterSearch';
+
+    /**
+     * @event SearchEvent The event that is triggered before the results are scored.
+     *
+     * Any modifications to [[SearchEvent::$results]] will be respected when results are scored.
+     *
+     * Event handlers can set [[SearchEvent::$scores]] to override the resulting element scores returned by [[searchElements()]].
+     *
+     * @since 4.3.0
+     */
+    public const EVENT_BEFORE_SCORE_RESULTS = 'beforeScoreResults';
+
+    /**
+     * @var bool Whether fulltext searches should be used ever. (MySQL only.)
+     * @since 3.4.10
+     */
+    public bool $useFullText = true;
+
+    /**
+     * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
+     */
+    public ?int $minFullTextWordLength = null;
+
+    /**
+     * @var SearchQueryTerm[]
+     */
+    private array $_terms;
+
+    /**
+     * @var SearchQueryTerm[][]
+     */
+    private array $_groups;
+
+    /**
+     * @var bool
+     */
+    private bool $_isMysql;
+
+    /**
+     * @var array|null
+     * @see _isSupportedFullTextWord()
+     */
+    private ?array $_mysqlStopWords = null;
+
+    /**
+     * @var int Because the `keywords` column in the search index table is a
+     * B-TREE index on Postgres, you can get an "index row size exceeds maximum
+     * for index" error with a lot of data. This value is a hard limit to
+     * truncate search index data for a single row in Postgres.
+     */
+    public int $maxPostgresKeywordLength = 2450;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        $this->_isMysql = Craft::$app->getDb()->getIsMysql();
+
+        if ($this->_isMysql && !isset($this->minFullTextWordLength)) {
+            $this->minFullTextWordLength = 4;
+        }
+    }
+
+    /**
+     * Indexes the attributes of a given element defined by its element type.
+     *
+     * @param ElementInterface $element
+     * @param string[]|null $fieldHandles The field handles that should be indexed,
+     * or `null` if all fields should be indexed.
+     * @return bool Whether the indexing was a success.
+     */
+    public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
+    {
+        return app(LaravelSearch::class)->indexElementAttributes($element, $fieldHandles);
+    }
+
+    /**
+     * Queues up an element to be indexed.
+     *
+     * @param ElementInterface $element
+     * @param string[] $fieldHandles
+     * @since 5.7.0
+     */
+    public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
+    {
+        app(LaravelSearch::class)->queueIndexElement($element, $fieldHandles);
+    }
+
+    /**
+     * Indexes the attributes of a given element, only if it's queued.
+     *
+     * @param int $elementId
+     * @param int $siteId
+     * @param class-string<ElementInterface>|null $elementType
+     * @since 5.7.0
+     */
+    public function indexElementIfQueued(int $elementId, int $siteId, ?string $elementType = null): void
+    {
+        app(LaravelSearch::class)->indexElementIfQueued($elementId, $siteId, $elementType);
+    }
+
+    /**
+     * Returns whether we should search for the resulting elements up front via [[searchElements()]],
+     * rather than supply a subquery which should be applied to the main element query via [[createDbQuery()]].
+     *
+     * If the element query is being ordered by `score`, [[searchElements()]] will be called regardless of
+     * what this returns.
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @return bool
+     * @since 4.8.0
+     */
+    public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool
+    {
+        return app(LaravelSearch::class)->shouldCallSearchElements($elementQuery);
+    }
+
+    /**
+     * Searches for elements that match the given element query.
+     *
+     * @param ElementQueryInterface $elementQuery The element query being executed
+     * @return array<string,int> The element scores (descending) indexed by element ID and site ID (e.g. `'100-1'`).
+     * @since 3.7.14
+     */
+    public function searchElements(ElementQueryInterface $elementQuery): array
+    {
+        return app(LaravelSearch::class)->searchElements($elementQuery);
+    }
+
+    /**
+     * Returns a database query which will fetch results for a given search query.
+     *
+     * @param string|array|SearchQuery $searchQuery The search term to filter the resulting elements by.
+     * @param ElementQueryInterface $elementQuery The element query being executed
+     * @return Query|false
+     * @since 4.6.0
+     */
+    public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQueryInterface $elementQuery): Query|false
+    {
+        $searchQuery = $this->normalizeSearchQuery($searchQuery);
+
+        // Get tokens for query
+        $this->_terms = [];
+        $this->_groups = [];
+
+        // Set Terms and Groups based on tokens
+        foreach ($searchQuery->getTokens() as $obj) {
+            if ($obj instanceof SearchQueryTermGroup) {
+                $this->_groups[] = $obj->terms;
+            } else {
+                $this->_terms[] = $obj;
+            }
+        }
+
+        if ($elementQuery->customFields !== null) {
+            $customFields = new MemoizableArray($elementQuery->customFields);
+        } else {
+            $customFields = null;
+        }
+
+        // Get where clause from tokens, bail out if no valid query is there
+        $where = $this->_getWhereClause($elementQuery->siteId, $customFields);
+
+        if (empty($where)) {
+            return false;
+        }
+
+        $query = (new Query())
+            ->from([Table::SEARCHINDEX])
+            ->where(new Expression($where));
+
+        if ($elementQuery->siteId !== null) {
+            $query->andWhere(['siteId' => $elementQuery->siteId]);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Normalizes a `search` param into a [[SearchQuery]] object.
+     *
+     * @param string|array|SearchQuery $searchQuery
+     * @return SearchQuery
+     * @since 4.4.0
+     */
+    public function normalizeSearchQuery(string|array|SearchQuery $searchQuery): SearchQuery
+    {
+        if ($searchQuery instanceof SearchQuery) {
+            return $searchQuery;
+        }
+
+        if (is_string($searchQuery)) {
+            return new SearchQuery($searchQuery, Cms::config()->defaultSearchTermOptions);
+        }
+
+        $options = array_merge($searchQuery);
+        $searchQuery = Arr::pull($options, 'query');
+        $options = array_merge(Cms::config()->defaultSearchTermOptions, $options);
+        return new SearchQuery($searchQuery, $options);
+    }
+
+    /**
+     * Deletes any search indexes that belong to elements that don't exist anymore.
+     *
+     * @since 3.2.10
+     */
+    public function deleteOrphanedIndexes(): void
+    {
+        app(LaravelSearch::class)->deleteOrphanedIndexes();
+    }
+
+    /**
+     * Deletes any search index jobs that belong to elements that don't exist anymore.
+     *
+     * @since 5.9.0
+     */
+    public function deleteOrphanedIndexJobs(): void
+    {
+        app(LaravelSearch::class)->deleteOrphanedIndexJobs();
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(KeywordsIndexing::class, function(KeywordsIndexing $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
+                $yiiEvent = new IndexKeywordsEvent([
+                    'element' => $event->element,
+                    'attribute' => $event->attribute,
+                    'fieldId' => $event->fieldId,
+                    'keywords' => $event->keywords,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $yiiEvent);
+
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
+                }
+
+                $event->keywords = $yiiEvent->keywords;
+            }
+        });
+
+        Event::listen(SearchStarting::class, function(SearchStarting $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                ]));
+            }
+        });
+
+        Event::listen(SearchResultsResolving::class, function(SearchResultsResolving $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
+                $yiiEvent = new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                    'results' => $event->results,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $yiiEvent);
+
+                if ($yiiEvent->scores !== null) {
+                    self::$legacyScores ??= new WeakMap();
+                    self::$legacyScores[$event->elementQuery] = $yiiEvent->scores;
+                }
+
+                if ($yiiEvent->results !== null) {
+                    $event->results = $yiiEvent->results;
+                }
+            }
+        });
+
+        Event::listen(SearchScoresResolving::class, function(SearchScoresResolving $event) {
+            if (isset(self::$legacyScores[$event->elementQuery])) {
+                $event->scores = self::$legacyScores[$event->elementQuery];
+                unset(self::$legacyScores[$event->elementQuery]);
+            }
+
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+                $yiiEvent = new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                    'results' => $event->results,
+                    'scores' => $event->scores,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_AFTER_SEARCH, $yiiEvent);
+
+                if ($yiiEvent->scores !== null) {
+                    $event->scores = $yiiEvent->scores;
+                }
+            }
+        });
+    }
+
+    /**
+     * Get the complete where clause for current tokens
+     *
+     * @param int|int[]|null $siteId The site ID(s) to search within
+     * @param MemoizableArray<FieldInterface>|null $customFields
+     * @return string|false
+     */
+    private function _getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): string|false
+    {
+        $where = [];
+
+        // Add the regular terms to the WHERE clause
+        if (!empty($this->_terms)) {
+            $condition = $this->_processTokens($this->_terms, true, $siteId, $customFields);
+
+            if ($condition === false) {
+                return false;
+            }
+
+            $where[] = $condition;
+        }
+
+        // Add each group to the where clause
+        foreach ($this->_groups as $group) {
+            $condition = $this->_processTokens($group, false, $siteId, $customFields);
+
+            if ($condition === false) {
+                return false;
+            }
+
+            $where[] = $condition;
+        }
+
+        // And combine everything with AND
+        return implode(' AND ', $where);
+    }
+
+    /**
+     * Generates partial WHERE clause for search from given tokens
+     *
+     * @param array $tokens
+     * @param bool $inclusive
+     * @param int|int[]|null $siteId
+     * @param MemoizableArray<FieldInterface>|null $customFields
+     * @return string|false
+     */
+    private function _processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): string|false
+    {
+        $glue = $inclusive ? ' AND ' : ' OR ';
+        $where = [];
+        $words = [];
+
+        $db = Craft::$app->getDb();
+
+        foreach ($tokens as $obj) {
+            // Get SQL and/or keywords
+            [$sql, $keywords] = $this->_getSqlFromTerm($obj, $siteId, $customFields);
+
+            if ($sql === false && $inclusive) {
+                return false;
+            }
+
+            // If we have SQL, just add that
+            if ($sql) {
+                $where[] = $sql;
+            } // No SQL but keywords, save them for later
+            elseif ($keywords !== null && $keywords !== '') {
+                if ($inclusive && $db->getIsMysql()) {
+                    $keywords = '+' . $keywords;
+                }
+
+                $words[] = $keywords;
+            }
+        }
+
+        // If we collected full-text words, combine them into one
+        if (!empty($words)) {
+            $where[] = $this->_sqlFullText($words, true, $glue);
+        }
+
+        // If we have valid where clauses now, stringify them
+        if (!empty($where)) {
+            // Implode WHERE clause to a string
+            $where = implode($glue, $where);
+
+            // And group together for non-inclusive queries
+            if (!$inclusive) {
+                $where = "($where)";
+            }
+        } else {
+            // If the tokens didn't produce a valid where clause,
+            // make sure we return false
+            $where = false;
+        }
+
+        return $where;
+    }
+
+    /**
+     * Generates a piece of WHERE clause for fallback (LIKE) search from search term
+     * or returns keywords to use in a full text search clause
+     *
+     * @param SearchQueryTerm $term
+     * @param int|int[]|null $siteId
+     * @param MemoizableArray<FieldInterface>|null $customFields
+     * @return array
+     */
+    private function _getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
+    {
+        // Initiate return value
+        $sql = null;
+        $keywords = null;
+        $isMysql = Craft::$app->getDb()->getIsMysql();
+
+        // Check for other attributes
+        if ($term->attribute !== null) {
+            // Is attribute a valid fieldId?
+            $fieldId = $this->_getFieldIdFromAttribute($term->attribute, $customFields);
+
+            if (!empty($fieldId)) {
+                $attr = 'fieldId';
+                $val = $fieldId;
+            } else {
+                $attr = 'attribute';
+                $val = strtolower($term->attribute);
+            }
+
+            // Use subselect for attributes
+            if (is_array($val)) {
+                $where = [];
+                foreach ($val as $v) {
+                    $where[] = $this->_sqlWhere($attr, '=', $v);
+                }
+                $subSelect = '(' . implode(' OR ', $where) . ')';
+            } else {
+                $subSelect = $this->_sqlWhere($attr, '=', $val);
+            }
+        } else {
+            $subSelect = null;
+        }
+
+        // Sanitize term
+        if ($term->term !== null) {
+            $keywords = $this->_normalizeTerm($term->term, $siteId);
+
+            // Make sure that it didn't result in an empty string (e.g. if they entered '&')
+            // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
+            if ($keywords !== '' || $term->subLeft) {
+                // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
+                $pgsqlPhrase = Craft::$app->getDb()->getIsPgsql() && $term->phrase;
+                if ($pgsqlPhrase && $term->exact) {
+                    $sql = $this->_sqlPhraseExactMatch($keywords);
+                } elseif (!$pgsqlPhrase && $this->_doFullTextSearch($keywords, $term)) {
+                    if ($term->subRight) {
+                        if ($isMysql) {
+                            $keywords .= '*';
+                        } else {
+                            $keywords .= ':*';
+                        }
+                    }
+
+                    // Add quotes for exact match
+                    if ($isMysql && str_contains($keywords, ' ')) {
+                        if (Str::take($keywords, 1) === '*') {
+                            $keywords = Str::insert($keywords, '"', 1);
+                        } else {
+                            $keywords = '"' . $keywords;
+                        }
+
+                        if (Str::take($keywords, -1) === '*') {
+                            $keywords = Str::insert($keywords, '"', Str::length($keywords) - 1);
+                        } else {
+                            $keywords .= '"';
+                        }
+                    }
+
+                    // Determine prefix for the full-text keyword
+                    if ($term->exclude) {
+                        $keywords = '-' . $keywords;
+                    }
+
+                    // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
+                    if ($subSelect !== null) {
+                        // If there is a subselect, create the full text SQL bit
+                        $sql = $this->_sqlFullText($keywords);
+                    }
+                } else {
+                    // Create LIKE clause from term
+                    if ($term->exact) {
+                        // Create exact clause from term
+                        $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+                        $keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+                    } else {
+                        // Create LIKE clause from term
+                        $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+                        $keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
+                    }
+
+                    // Generate the SQL
+                    $sql = $this->_sqlWhere('keywords', $operator, $keywords);
+                }
+            }
+        } elseif ($term->subLeft) {
+            // Support for attribute:* syntax to just check if something has *any* keyword value.
+            $sql = $this->_sqlWhere('keywords', '!=', '');
+        }
+
+        // If we have a where clause in the subselect, add the keyword bit to it.
+        if ($subSelect !== null && $sql !== null) {
+            $sql = $this->_sqlSubSelect($subSelect . ' AND ' . $sql, $siteId);
+
+            // We need to reset keywords even if the subselect ended up in no results.
+            $keywords = null;
+        }
+
+        return [$sql, $keywords];
+    }
+
+    /**
+     * Normalize term from tokens, keep a record for cache.
+     *
+     * @param string $term
+     * @param int|int[]|null $siteId
+     * @return string
+     */
+    private function _normalizeTerm(string $term, array|int|null $siteId = null): string
+    {
+        static $terms = [];
+
+        if (!array_key_exists($term, $terms)) {
+            if ($siteId && !is_array($siteId)) {
+                $site = Sites::getSiteById($siteId);
+            }
+            $terms[$term] = SearchHelper::normalizeKeywords($term, [], true, isset($site) ? $site->getLanguage() : null);
+        }
+
+        return $terms[$term];
+    }
+
+    /**
+     * Get the fieldId for given attribute or `null` for unmatched.
+     *
+     * @param string $attribute
+     * @param MemoizableArray<FieldInterface>|null $customFields
+     * @return int|int[]|null
+     */
+    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
+    {
+        if ($customFields !== null) {
+            return array_map(
+                fn(FieldInterface $field) => $field->id,
+                $customFields->where('handle', $attribute)->all(),
+            );
+        }
+
+        $field = app(Fields::class)->getFieldByHandle($attribute);
+        return $field->id ?? null;
+    }
+
+    /**
+     * Get SQL bit for simple WHERE clause
+     *
+     * @param string $key The attribute.
+     * @param string $oper The operator.
+     * @param string|int $val The value.
+     * @return string
+     */
+    private function _sqlWhere(string $key, string $oper, string|int $val): string
+    {
+        $key = Craft::$app->getDb()->quoteColumnName($key);
+
+        return sprintf("(%s %s '%s')", $key, $oper, $val);
+    }
+
+    /**
+     * Get SQL necessary for a full text search.
+     *
+     * @param mixed $val String or Array of keywords
+     * @param bool $bool Use In Boolean Mode or not
+     * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
+     * @return string
+     */
+    private function _sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
+    {
+        $db = Craft::$app->getDb();
+
+        if ($db->getIsMysql()) {
+            return sprintf("MATCH(%s) AGAINST('%s'%s)", $db->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
+        }
+
+        // SQLite doesn't support full-text search; fall back to LIKE on the keywords column
+        if (DB::isSqlite()) {
+            $likeGlue = $glue === ' AND ' ? ' AND ' : ' OR ';
+            $parts = [];
+            foreach ((array)$val as $word) {
+                // Strip trailing :* (prefix search marker) since LIKE handles it with %
+                $word = rtrim($word, ':*');
+                // Strip leading - (exclude marker) — exclusion handled elsewhere
+                $word = ltrim($word, '-+');
+                $col = $db->quoteColumnName('keywords');
+                $parts[] = "$col LIKE '% $word%'";
+            }
+            return implode($likeGlue, $parts);
+        }
+
+        if ($glue === ' AND ') {
+            $glue = ' & ';
+        } else {
+            $glue = ' | ';
+        }
+
+        if (is_array($val)) {
+            foreach ($val as $key => $value) {
+                if (str_contains($value, ' ')) {
+                    $temp = explode(' ', $value);
+                    $temp = implode(' & ', $temp);
+                    $val[$key] = $temp;
+                }
+            }
+        } else {
+            // If where here, it's a single string with punctuation that's been stripped out (i.e. "multi-site").
+            // We can assume "and".
+            if (str_contains($val, ' ')) {
+                $val = str_replace(' ', ' & ', $val);
+            }
+        }
+
+        return sprintf("%s @@ '%s'::tsquery", $db->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
+    }
+
+    /**
+     * Get SQL bit for sub-selects.
+     *
+     * @param string $where
+     * @param int|int[]|null $siteId
+     * @return string|false
+     */
+    private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
+    {
+        $elementIds = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
+            ->whereRaw($where)
+            ->when(
+                $siteId !== null,
+                fn(Builder $query) => $query->whereIn('siteId', Arr::wrap($siteId)),
+            )
+            ->pluck('elementId');
+
+        if ($elementIds->isNotEmpty()) {
+            return Craft::$app->getDb()->quoteColumnName('elementId') . ' IN (' . $elementIds->join(', ') . ')';
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether or not to do a full text search or not.
+     *
+     * @param string $keywords
+     * @param SearchQueryTerm $term
+     * @return bool
+     */
+    private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
+    {
+        return
+            $this->useFullText &&
+            $keywords !== '' &&
+            !$term->subLeft &&
+            !$term->exact &&
+            !$term->exclude &&
+            $this->_isSupportedFullTextWord($keywords) &&
+            // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
+            // Related issue: https://github.com/craftcms/cms/issues/3862
+            !str_contains($keywords, ' ');
+    }
+
+    /**
+     * This method will return PostgreSQL specific SQL necessary to find an exact phrase search.
+     *
+     * @param string $val The phrase or exact value to search for.
+     * @return string The SQL to perform the search.
+     */
+    private function _sqlPhraseExactMatch(string $val): string
+    {
+        $db = Craft::$app->getDb();
+
+        // SQLite doesn't support tsquery; use LIKE for an exact phrase match
+        if (DB::isSqlite()) {
+            return sprintf("%s LIKE ' %s '", $db->quoteColumnName('keywords'), $val);
+        }
+
+        $ftVal = implode(' & ', explode(' ', $val));
+        return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $val);
+    }
+
+    /**
+     * @param string $keyword
+     * @return bool
+     */
+    private function _isSupportedFullTextWord(string $keyword): bool
+    {
+        if (!$this->_isMysql) {
+            return true;
+        }
+
+        if ($this->minFullTextWordLength && strlen($keyword) < $this->minFullTextWordLength) {
+            return false;
+        }
+
+        if (!isset($this->_mysqlStopWords)) {
+            $this->_mysqlStopWords = [];
+            // todo: make this list smaller when we start requiring MySQL 5.6+ and can start forcing the searchindex table to use InnoDB
+            $stopWords = [
+                'able', 'about', 'above', 'according', 'accordingly', 'across', 'actually', 'after', 'afterwards', 'again', 'against', 'all', 'allow',
+                'allows', 'almost', 'alone', 'along', 'already', 'also', 'although', 'always', 'am', 'among', 'amongst', 'an', 'and', 'another',
+                'any', 'anybody', 'anyhow', 'anyone', 'anything', 'anyway', 'anyways', 'anywhere', 'apart', 'appear', 'appreciate', 'appropriate',
+                'are', 'around', 'as', 'aside', 'ask', 'asking', 'associated', 'at', 'available', 'away', 'awfully', 'be', 'became', 'because',
+                'become', 'becomes', 'becoming', 'been', 'before', 'beforehand', 'behind', 'being', 'believe', 'below', 'beside', 'besides', 'best',
+                'better', 'between', 'beyond', 'both', 'brief', 'but', 'by', 'came', 'can', 'cannot', 'cant', 'cause', 'causes', 'certain',
+                'certainly', 'changes', 'clearly', 'co', 'com', 'come', 'comes', 'concerning', 'consequently', 'consider', 'considering', 'contain',
+                'containing', 'contains', 'corresponding', 'could', 'course', 'currently', 'definitely', 'described', 'despite', 'did', 'different',
+                'do', 'does', 'doing', 'done', 'down', 'downwards', 'during', 'each', 'edu', 'eg', 'eight', 'either', 'else', 'elsewhere', 'enough',
+                'entirely', 'especially', 'et', 'etc', 'even', 'ever', 'every', 'everybody', 'everyone', 'everything', 'everywhere', 'ex', 'exactly',
+                'example', 'except', 'far', 'few', 'fifth', 'first', 'five', 'followed', 'following', 'follows', 'for', 'former', 'formerly', 'forth',
+                'four', 'from', 'further', 'furthermore', 'get', 'gets', 'getting', 'given', 'gives', 'go', 'goes', 'going', 'gone', 'got', 'gotten',
+                'greetings', 'had', 'happens', 'hardly', 'has', 'have', 'having', 'he', 'hello', 'help', 'hence', 'her', 'here', 'hereafter',
+                'hereby', 'herein', 'hereupon', 'hers', 'herself', 'hi', 'him', 'himself', 'his', 'hither', 'hopefully', 'how', 'howbeit', 'however',
+                'ie', 'if', 'ignored', 'immediate', 'in', 'inasmuch', 'inc', 'indeed', 'indicate', 'indicated', 'indicates', 'inner', 'insofar',
+                'instead', 'into', 'inward', 'is', 'it', 'its', 'itself', 'just', 'keep', 'keeps', 'kept', 'know', 'known', 'knows', 'last', 'lately',
+                'later', 'latter', 'latterly', 'least', 'less', 'lest', 'let', 'like', 'liked', 'likely', 'little', 'look', 'looking', 'looks', 'ltd',
+                'mainly', 'many', 'may', 'maybe', 'me', 'mean', 'meanwhile', 'merely', 'might', 'more', 'moreover', 'most', 'mostly', 'much', 'must',
+                'my', 'myself', 'name', 'namely', 'nd', 'near', 'nearly', 'necessary', 'need', 'needs', 'neither', 'never', 'nevertheless', 'new',
+                'next', 'nine', 'no', 'nobody', 'non', 'none', 'noone', 'nor', 'normally', 'not', 'nothing', 'novel', 'now', 'nowhere', 'obviously',
+                'of', 'off', 'often', 'oh', 'ok', 'okay', 'old', 'on', 'once', 'one', 'ones', 'only', 'onto', 'or', 'other', 'others', 'otherwise',
+                'ought', 'our', 'ours', 'ourselves', 'out', 'outside', 'over', 'overall', 'own', 'particular', 'particularly', 'per', 'perhaps',
+                'placed', 'please', 'plus', 'possible', 'presumably', 'probably', 'provides', 'que', 'quite', 'qv', 'rather', 'rd', 're', 'really',
+                'reasonably', 'regarding', 'regardless', 'regards', 'relatively', 'respectively', 'right', 'said', 'same', 'saw', 'say', 'saying',
+                'says', 'second', 'secondly', 'see', 'seeing', 'seem', 'seemed', 'seeming', 'seems', 'seen', 'self', 'selves', 'sensible', 'sent',
+                'serious', 'seriously', 'seven', 'several', 'shall', 'she', 'should', 'since', 'six', 'so', 'some', 'somebody', 'somehow', 'someone',
+                'something', 'sometime', 'sometimes', 'somewhat', 'somewhere', 'soon', 'sorry', 'specified', 'specify', 'specifying', 'still', 'sub',
+                'such', 'sup', 'sure', 'take', 'taken', 'tell', 'tends', 'th', 'than', 'thank', 'thanks', 'thanx', 'that', 'thats', 'the', 'their',
+                'theirs', 'them', 'themselves', 'then', 'thence', 'there', 'thereafter', 'thereby', 'therefore', 'therein', 'theres', 'thereupon',
+                'these', 'they', 'think', 'third', 'this', 'thorough', 'thoroughly', 'those', 'though', 'three', 'through', 'throughout', 'thru',
+                'thus', 'to', 'together', 'too', 'took', 'toward', 'towards', 'tried', 'tries', 'truly', 'try', 'trying', 'twice', 'two', 'un',
+                'under', 'unfortunately', 'unless', 'unlikely', 'until', 'unto', 'up', 'upon', 'us', 'use', 'used', 'useful', 'uses', 'using',
+                'usually', 'value', 'various', 'very', 'via', 'viz', 'vs', 'want', 'wants', 'was', 'way', 'we', 'welcome', 'well', 'went', 'were',
+                'what', 'whatever', 'when', 'whence', 'whenever', 'where', 'whereafter', 'whereas', 'whereby', 'wherein', 'whereupon', 'wherever',
+                'whether', 'which', 'while', 'whither', 'who', 'whoever', 'whole', 'whom', 'whose', 'why', 'will', 'willing', 'wish', 'with',
+                'within', 'without', 'wonder', 'would', 'yes', 'yet', 'you', 'your', 'yours', 'yourself', 'yourselves', 'zero',
+            ];
+            foreach ($stopWords as $word) {
+                if (!$this->minFullTextWordLength || strlen($word) >= $this->minFullTextWordLength) {
+                    $this->_mysqlStopWords[$word] = true;
+                }
+            }
+        }
+
+        return !isset($this->_mysqlStopWords[$keyword]);
+    }
+}

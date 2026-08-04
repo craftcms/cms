@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 4.x
+      - main
+      - 6.x
   pull_request:
 permissions:
   contents: read
@@ -15,10 +16,15 @@ jobs:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      craft_version: '4'
-      jobs: '["ecs", "prettier", "phpstan", "tests"]'
+      php_version: '8.5'
+      craft_version: '6'
+      node_version: '22'
+      jobs: '["ecs", "phpstan", "tests"]'
+      working_directory: 'yii2-adapter'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_CRAFT_WEBHOOK_URL }}
+      packagist_username: ${{ secrets.PACKAGIST_USERNAME }}
+      packagist_token: ${{ secrets.PACKAGIST_TOKEN }}

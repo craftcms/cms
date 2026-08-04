@@ -1,0 +1,203 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Jobs;
+
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Queue\BatchedJob;
+use CraftCms\Cms\Structure\Enums\Mode;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Override;
+use Throwable;
+
+/**
+ * Applies a new propagation method to elements, duplicating them for sites
+ * where they would have been deleted in the process.
+ */
+class ApplyNewPropagationMethod extends BatchedJob
+{
+    /**
+     * Tracks duplicated element IDs across batches.
+     *
+     * @var array<int, array<int, int>>
+     *
+     * @internal
+     */
+    public array $duplicatedElementIds = [];
+
+    /**
+     * Creates a new ApplyNewPropagationMethod job.
+     *
+     * @param  class-string<ElementInterface>  $elementType  The element type to process.
+     * @param  array<string, mixed>|null  $criteria  The element criteria.
+     */
+    public function __construct(
+        private readonly string $elementType,
+        private readonly ?array $criteria = null,
+        protected ?string $description = null,
+    ) {
+        parent::__construct();
+    }
+
+    protected function getQuery(): Builder
+    {
+        $query = $this->elementType::find()
+            ->site('*')
+            ->preferSites([Sites::getPrimarySite()->id])
+            ->unique()
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->orderBy('elements.id');
+
+        if (! empty($this->criteria)) {
+            Typecast::configure($query, $this->criteria);
+        }
+
+        return $query;
+    }
+
+    protected function processItem(mixed $item): void
+    {
+        try {
+            if (ElementHelper::isRevision($item)) {
+                return;
+            }
+        } catch (Throwable) {
+            return;
+        }
+
+        $allSiteIds = Sites::getAllSiteIds()->all();
+
+        // See what sites the element should exist in going forward
+        /** @var ElementInterface $item */
+        $newSiteIds = array_map(
+            fn (array $siteInfo) => $siteInfo['siteId'],
+            ElementHelper::supportedSitesForElement($item),
+        );
+
+        // What other sites are there?
+        $otherSiteIds = array_diff($allSiteIds, $newSiteIds);
+
+        if (empty($otherSiteIds)) {
+            $this->resaveItem($item);
+
+            return;
+        }
+
+        // Load the element in any sites that it's about to be deleted for
+        $query = $item::find()
+            ->id($item->id)
+            ->siteId($otherSiteIds)
+            ->structureId($item->structureId)
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->reorder()
+            ->indexBy('siteId');
+
+        if (! empty($this->criteria)) {
+            Typecast::configure($query, $this->criteria);
+        }
+
+        $otherSiteElements = $query->all();
+
+        if (empty($otherSiteElements)) {
+            $this->resaveItem($item);
+
+            return;
+        }
+
+        // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
+        DB::table(Table::ELEMENTS_SITES)
+            ->whereIn('id', array_map(fn (ElementInterface $element) => $element->siteSettingsId, $otherSiteElements))
+            ->update(['uri' => null]);
+
+        // Duplicate those elements so their content can live on
+        while (! empty($otherSiteElements)) {
+            /** @var ElementInterface $otherSiteElement */
+            $otherSiteElement = array_pop($otherSiteElements);
+
+            $newElement = Elements::duplicateElement($otherSiteElement, [], false);
+
+            // Should we add the clone to the source element's structure?
+            if (
+                $item->structureId &&
+                $item->root &&
+                ! $newElement->root &&
+                $newElement->structureId == $item->structureId
+            ) {
+                // If this is a root level element, insert the duplicate after the source
+                if ($item->level == 1) {
+                    Structures::moveAfter($item->structureId, $newElement, $item, Mode::Insert);
+                } else {
+                    // Append the clone to the source's parent
+                    $parentId = $item::find()
+                        ->site('*')
+                        ->ancestorOf($item->id)
+                        ->ancestorDist(1)
+                        ->unique()
+                        ->status(null)
+                        ->drafts(null)
+                        ->provisionalDrafts(null)
+                        ->select(['elements.id'])
+                        ->value('id');
+
+                    if ($parentId !== null) {
+                        // If we've cloned the parent, use the clone's ID instead
+                        if (isset($this->duplicatedElementIds[$parentId][$newElement->siteId])) {
+                            $parentId = $this->duplicatedElementIds[$parentId][$newElement->siteId];
+                        }
+
+                        Structures::append($item->structureId, $newElement, $parentId, Mode::Insert);
+                    } else {
+                        // Just append it to the root
+                        Structures::appendToRoot($item->structureId, $newElement, Mode::Insert);
+                    }
+                }
+            }
+
+            // This may support more than just the site it was saved in
+            $newElementSiteIds = array_map(
+                fn (array $siteInfo) => $siteInfo['siteId'],
+                ElementHelper::supportedSitesForElement($newElement),
+            );
+
+            foreach ($newElementSiteIds as $newElementSiteId) {
+                unset($otherSiteElements[$newElementSiteId]);
+                $this->duplicatedElementIds[$item->id][$newElementSiteId] = $newElement->id;
+            }
+        }
+
+        $this->resaveItem($item);
+    }
+
+    #[Override]
+    protected function defaultDescription(): string
+    {
+        return I18N::prep('Applying new propagation method to elements');
+    }
+
+    private function resaveItem(ElementInterface $item): void
+    {
+        $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        $item->resaving = true;
+
+        try {
+            Elements::saveElement($item, updateSearchIndex: false, saveContent: true);
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+}

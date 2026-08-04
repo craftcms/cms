@@ -1,0 +1,71 @@
+name: facades
+
+on:
+  push:
+    branches:
+      - main
+      - '*.x'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: true
+
+    name: Facade DocBlocks
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          extensions: :php-psr
+          tools: composer:v2
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: |
+            composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
+            composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress -W
+
+      - name: Update facade docblocks
+        run: |
+          mapfile -t facades < <(find src/Support/Facades -name '*.php' -type f | sort)
+          facade_classes=()
+
+          for facade in "${facades[@]}"; do
+            facade_classes+=("CraftCms\\Cms\\Support\\Facades\\$(basename "$facade" .php)")
+          done
+
+          php -f vendor/bin/facade.php -- "${facade_classes[@]}"
+          vendor/bin/pint "${facades[@]}"
+
+      - name: Commit facade docblocks
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: Update facade docblocks
+          file_pattern: src/

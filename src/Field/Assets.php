@@ -1,0 +1,1018 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Field;
+
+use Closure;
+use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
+use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
+use GraphQL\Type\Definition\Type;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Override;
+use Symfony\Component\Mime\MimeTypes;
+
+use function CraftCms\Cms\t;
+
+/**
+ * Assets represents an Assets field.
+ */
+class Assets extends BaseRelationField
+{
+    public const string PREVIEW_MODE_FULL = 'full';
+
+    public const string PREVIEW_MODE_THUMBS = 'thumbs';
+
+    #[Override]
+    public static function displayName(): string
+    {
+        return t('Assets');
+    }
+
+    #[Override]
+    public static function icon(): string
+    {
+        return 'image';
+    }
+
+    public static function elementType(): string
+    {
+        return Asset::class;
+    }
+
+    #[Override]
+    protected static function canShowSiteMenu(): bool
+    {
+        return false;
+    }
+
+    #[Override]
+    public static function defaultSelectionLabel(): string
+    {
+        return t('Add an asset');
+    }
+
+    #[Override]
+    public static function phpType(): string
+    {
+        return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
+    }
+
+    /**
+     * @var bool Whether assets should be restricted to a single location.
+     */
+    public bool $restrictLocation = false;
+
+    /**
+     * @var string|null The source key where assets can be selected from, if assets are restricted.
+     */
+    public ?string $restrictedLocationSource = null;
+
+    /**
+     * @var string|null The subpath where assets can be selected from, if assets are restricted.
+     */
+    public ?string $restrictedLocationSubpath = null;
+
+    /**
+     * @var bool Whether assets can be selected from subfolders, if assets are restricted.
+     */
+    public bool $allowSubfolders = false;
+
+    /**
+     * @var string|null The subpath where assets should be uploaded to by default, if assets are restricted and subfolders are allowed.
+     */
+    public ?string $restrictedDefaultUploadSubpath = null;
+
+    /**
+     * @var string|null The source where assets should be uploaded by default, if assets aren’t restricted.
+     */
+    public ?string $defaultUploadLocationSource = null;
+
+    /**
+     * @var string|null The subpath where assets should be uploaded by default, if assets aren’t restricted.
+     */
+    public ?string $defaultUploadLocationSubpath = null;
+
+    /**
+     * @var bool Whether it should be possible to upload files directly to the field.
+     */
+    public bool $allowUploads = true;
+
+    /**
+     * @var bool Whether the available assets should be restricted to
+     *           [[allowedKinds]]
+     */
+    public bool $restrictFiles = false;
+
+    /**
+     * @var array|null The file kinds that the field should be restricted to
+     *                 (only used if [[restrictFiles]] is true)
+     */
+    public ?array $allowedKinds = null;
+
+    /**
+     * @var bool Whether to show input sources for volumes the user doesn’t have permission to view.
+     */
+    public bool $showUnpermittedVolumes = false;
+
+    /**
+     * @var bool Whether to show files the user doesn’t have permission to view, per the
+     *           “View files uploaded by other users” permission.
+     */
+    public bool $showUnpermittedFiles = false;
+
+    /**
+     * @var string How related assets should be presented within element index views.
+     *
+     * @phpstan-var self::PREVIEW_MODE_FULL|self::PREVIEW_MODE_THUMBS
+     */
+    public string $previewMode = self::PREVIEW_MODE_FULL;
+
+    #[Override]
+    protected bool $allowLargeThumbsView = true;
+
+    #[Override]
+    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
+
+    #[Override]
+    protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
+
+    #[Override]
+    protected ?string $inputJsClass = 'Craft.AssetSelectInput';
+
+    /**
+     * @var array|null References for files uploaded as data strings for this field.
+     */
+    private ?array $_uploadedDataFiles = null;
+
+    public function __construct(array $config = [])
+    {
+        // Rename old settings
+        $oldSettings = [
+            'useSingleFolder' => 'restrictLocation',
+            'singleUploadLocationSource' => 'restrictedLocationSource',
+            'singleUploadLocationSubpath' => 'restrictedLocationSubpath',
+        ];
+        foreach ($oldSettings as $old => $new) {
+            if (array_key_exists($old, $config)) {
+                $config[$new] = Arr::pull($config, $old);
+            }
+        }
+
+        // Default showUnpermittedVolumes to true for existing Assets fields
+        if (isset($config['id']) && ! isset($config['showUnpermittedVolumes'])) {
+            $config['showUnpermittedVolumes'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    #[Override]
+    public function getRules(): array
+    {
+        return array_merge(parent::getRules(), [
+            'restrictFiles' => 'boolean',
+            'allowedKinds' => Rule::when(fn ($input) => $input->restrictFiles, ['required'], ['nullable']),
+            'previewMode' => Rule::in([self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS]),
+        ]);
+    }
+
+    #[Override]
+    public function getSourceOptions(): array
+    {
+        $sourceOptions = [];
+
+        foreach (Asset::sources('settings') as $volume) {
+            if (! isset($volume['heading'])) {
+                $sourceOptions[] = [
+                    'label' => $volume['label'],
+                    'value' => $volume['key'],
+                ];
+            }
+        }
+
+        return $sourceOptions;
+    }
+
+    /**
+     * Returns the available file kind options for the settings
+     */
+    public function getFileKindOptions(): array
+    {
+        $fileKindOptions = [];
+
+        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
+            $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
+        }
+
+        return $fileKindOptions;
+    }
+
+    #[Override]
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    {
+        try {
+            return parent::inputHtml($value, $element, $inline);
+        } catch (InvalidSubpathException) {
+            return Html::tag('p', t('This field’s target subfolder path is invalid: {path}', [
+                'path' => '<code>'.$this->restrictedLocationSubpath.'</code>',
+            ]), [
+                'class' => ['warning', 'with-icon'],
+            ]);
+        } catch (InvalidFsException $e) {
+            return Html::tag('p', $e->getMessage(), [
+                'class' => ['warning', 'with-icon'],
+            ]);
+        }
+    }
+
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
+    {
+        $rules = parent::getElementRules($element);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
+
+        return $rules;
+    }
+
+    /**
+     * Validates the files to make sure they are one of the allowed file kinds.
+     */
+    public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
+    {
+        // Make sure the field restricts file types
+        if (! $this->restrictFiles) {
+            return;
+        }
+
+        $filenames = [];
+
+        // Get all the value's assets' filenames
+        foreach ($value->all() as $asset) {
+            /** @var Asset $asset */
+            $filenames[] = $asset->getFilename();
+        }
+
+        // Get any uploaded filenames
+        $uploadedFiles = $this->_getUploadedFiles($element);
+        foreach ($uploadedFiles as $file) {
+            $filenames[] = $file['filename'];
+        }
+
+        // Now make sure that they all check out
+        $allowedExtensions = $this->_getAllowedExtensions();
+        foreach ($filenames as $filename) {
+            if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+                $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
+                    'filename' => $filename,
+                ]));
+            }
+        }
+    }
+
+    /**
+     * Validates the files to make sure they are under the allowed max file size.
+     */
+    public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
+    {
+        $maxSize = Cms::config()->maxUploadFileSize;
+
+        $filenames = [];
+
+        // Get any uploaded filenames
+        $uploadedFiles = $this->_getUploadedFiles($element);
+        foreach ($uploadedFiles as $file) {
+            switch ($file['type']) {
+                case 'data':
+                    if (strlen((string) $file['data']) > $maxSize) {
+                        $filenames[] = $file['filename'];
+                    }
+                    break;
+                case 'file':
+                case 'upload':
+                    if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
+                        $filenames[] = $file['filename'];
+                    }
+                    break;
+            }
+        }
+
+        foreach ($filenames as $filename) {
+            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
+                'filename' => $filename,
+            ]));
+        }
+    }
+
+    #[Override]
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        // If data strings are passed along, make sure the array keys are retained.
+        if (is_array($value) && ! empty($value['data'])) {
+            $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
+            unset($value['data'], $value['filename']);
+
+            /** @var class-string<Asset> $class */
+            $class = self::elementType();
+            $query = $class::find();
+
+            $targetSite = $this->targetSiteId($element);
+            if ($this->targetSiteId) {
+                $query->siteId($targetSite);
+            } else {
+                $query
+                    ->site('*')
+                    ->unique()
+                    ->preferSites([$targetSite]);
+            }
+
+            $query
+                ->id(array_values(array_filter($value)))
+                ->fixedOrder();
+
+            if ($this->allowLimit && $this->maxRelations) {
+                $query->limit($this->maxRelations);
+            }
+
+            return $query;
+        }
+
+        return parent::normalizeValue($value, $element);
+    }
+
+    #[Override]
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        return parent::isValueEmpty($value, $element) && empty($this->_getUploadedFiles($element));
+    }
+
+    /**
+     * Resolve source path for uploading for this field.
+     */
+    public function resolveDynamicPathToFolderId(?ElementInterface $element = null): int
+    {
+        return $this->_uploadFolder($element)->id;
+    }
+
+    #[Override]
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryAssets($schema);
+    }
+
+    #[Override]
+    public function getContentGqlType(): array
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::nonNull(Type::listOf(AssetInterface::getType())),
+            'args' => AssetArguments::getArguments(),
+            'resolve' => AssetResolver::class.'::resolve',
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+        ];
+    }
+
+    #[Override]
+    protected function previewHtml(ElementCollection $elements): string
+    {
+        return app(PreviewHtml::class)->elementPreviewHtml(
+            $elements->all(),
+            showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
+        );
+    }
+
+    #[Override]
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $asset = new Asset;
+        $asset->title = t('Related {type} Title', ['type' => $asset->displayName()]);
+
+        if ($this->restrictFiles) {
+            $extensions = $this->_getAllowedExtensions();
+            $filename = 'test.'.$extensions[0];
+        } else {
+            $filename = 'test.txt';
+        }
+
+        $asset->filename = $filename;
+        $collection = new ElementCollection([$asset]);
+
+        return $this->previewHtml($collection);
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    #[Override]
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
+    {
+        // Only handle file uploads for the initial site
+        if (! $element->propagating) {
+            // No special treatment for revisions
+            $rootElement = $element->getRootOwner();
+            if (! $rootElement->getIsRevision()) {
+                // Figure out what we're working with and set up some initial variables.
+                $isCanonical = $rootElement->getIsCanonical();
+                $query = $element->getFieldValue($this->handle);
+                $getUploadFolderId = function () use ($element, $isCanonical, &$_targetFolderId): int {
+                    return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+                };
+
+                // Were there any uploaded files?
+                $uploadedFiles = $this->_getUploadedFiles($element);
+
+                if (! empty($uploadedFiles)) {
+                    $uploadFolderId = $getUploadFolderId();
+
+                    // Convert them to assets
+                    $assetIds = [];
+
+                    foreach ($uploadedFiles as $file) {
+                        $tempPath = AssetsHelper::tempFilePath($file['filename']);
+                        switch ($file['type']) {
+                            case 'data':
+                                File::writeToFile($tempPath, $file['data']);
+                                break;
+                            case 'file':
+                                rename($file['path'], $tempPath);
+                                break;
+                            case 'upload':
+                                move_uploaded_file($file['path'], $tempPath);
+                                break;
+                        }
+
+                        $uploadFolder = Folders::getFolderById($uploadFolderId);
+                        $asset = new Asset;
+                        $asset->tempFilePath = $tempPath;
+                        $asset->setFilename($file['filename']);
+                        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
+                        $asset->newFolderId = $uploadFolderId;
+                        $asset->setVolumeId($uploadFolder->volumeId);
+                        $asset->uploaderId = Auth::id();
+                        $asset->avoidFilenameConflicts = true;
+                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+
+                        if (Elements::saveElement($asset)) {
+                            $assetIds[] = $asset->id;
+                        } else {
+                            Log::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), [__METHOD__]);
+                        }
+                    }
+
+                    if (! empty($assetIds)) {
+                        // Add the newly uploaded IDs to the mix.
+                        if (is_array($query->id)) {
+                            $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                        } elseif (isset($query->where['elements.id']) && Arr::isNumeric($query->where['elements.id'])) {
+                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
+                        } else {
+                            $query = $this->normalizeValue($assetIds, $element);
+                        }
+
+                        $element->setFieldValue($this->handle, $query);
+
+                        // Make sure that all traces of processed files are removed.
+                        $this->_uploadedDataFiles = null;
+                    }
+                }
+            }
+        }
+
+        return parent::beforeElementSave($element, $isNew);
+    }
+
+    #[Override]
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // No special treatment for revisions
+        $rootElement = $element->getRootOwner();
+        if (! $rootElement->getIsRevision()) {
+            // Figure out what we're working with and set up some initial variables.
+            $isCanonical = $rootElement->getIsCanonical();
+            $query = $element->getFieldValue($this->handle);
+
+            $getUploadFolderId = function () use ($element, $isCanonical, &$_targetFolderId): int {
+                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+            };
+
+            if (! $element->propagating || $this->localizeRelations) {
+                // Are there any related assets?
+                /** @var AssetQuery $query */
+                /** @var Asset[] $assets */
+                $assets = $query->all();
+
+                if (! empty($assets)) {
+                    // Only enforce the restricted asset location for canonical elements
+                    if ($this->restrictLocation && $isCanonical) {
+                        if (! $this->allowSubfolders) {
+                            $rootRestrictedFolderId = $getUploadFolderId();
+                        } else {
+                            $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
+                        }
+
+                        $assetsToMove = array_filter($assets, function (Asset $asset) use ($rootRestrictedFolderId) {
+                            if ($asset->folderId === $rootRestrictedFolderId) {
+                                return false;
+                            }
+                            if (! $this->allowSubfolders) {
+                                return true;
+                            }
+                            $rootRestrictedFolder = Folders::getFolderById($rootRestrictedFolderId);
+
+                            return
+                                $asset->volumeId !== $rootRestrictedFolder->volumeId ||
+                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder->path);
+                        });
+                    } else {
+                        // Find the files with temp sources and just move those.
+                        /** @var Asset[] $assetsToMove */
+                        $assetsToMove = AssetsService::createTempAssetQuery()
+                            ->id(array_map(fn (Asset $asset) => $asset->id, $assets))
+                            ->all();
+                    }
+
+                    if (! empty($assetsToMove)) {
+                        $uploadFolder = Folders::getFolderById($getUploadFolderId());
+
+                        // Resolve all conflicts by keeping both
+                        foreach ($assetsToMove as $asset) {
+                            $asset->avoidFilenameConflicts = true;
+                            try {
+                                AssetsService::moveAsset($asset, $uploadFolder);
+                            } catch (FsObjectNotFoundException $e) {
+                                // Don't freak out about that.
+                                Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
+                                report($e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        parent::afterElementSave($element, $isNew);
+    }
+
+    #[Override]
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        $volumeUids = $allowedEntities['volumes'] ?? [];
+
+        if (empty($volumeUids)) {
+            return null;
+        }
+
+        $volumeIds = array_filter(array_map(function (string $uid) {
+            $volume = Volumes::getVolumeByUid($uid);
+
+            return $volume->id ?? null;
+        }, $volumeUids));
+
+        return [
+            'volumeId' => $volumeIds,
+        ];
+    }
+
+    #[Override]
+    public function getInputSources(?ElementInterface $element = null): array
+    {
+        $folder = $this->_uploadFolder($element, false, false);
+        SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+
+        if ($this->restrictLocation) {
+            if (! $this->showUnpermittedVolumes) {
+                // Make sure they have permission to view the volume
+                // (Use restrictedLocationSource here because the actual folder could belong to a temp volume)
+                $volume = $this->_volumeBySourceKey($this->restrictedLocationSource);
+
+                if (! $volume || ! Gate::check("viewAssets:$volume->uid")) {
+                    return [];
+                }
+            }
+
+            $sources = [$this->_sourceKeyByFolder($folder)];
+
+            if ($this->allowSubfolders) {
+                $userFolder = AssetsService::getUserTemporaryUploadFolder();
+                if ($userFolder->id !== $folder->id) {
+                    $sources[] = $this->_sourceKeyByFolder($userFolder);
+                }
+            }
+
+            return $sources;
+        }
+
+        if (is_array($this->sources)) {
+            $sources = array_merge($this->sources);
+        } else {
+            $sources = [];
+            foreach (ElementSources::getSources(Asset::class) as $source) {
+                if ($source['type'] !== ElementSources::TYPE_HEADING) {
+                    $sources[] = $source['key'];
+                }
+            }
+        }
+
+        // Now enforce the showUnpermittedVolumes setting
+        if (! $this->showUnpermittedVolumes && ! empty($sources)) {
+            return Collection::make($sources)
+                ->filter(function (string $source) {
+                    // If it’s not a volume folder, let it through
+                    if (! str_starts_with($source, 'volume:')) {
+                        return true;
+                    }
+
+                    // Only show it if they have permission to view it, or if it's the temp volume
+                    $volumeUid = explode(':', $source)[1];
+                    if (Gate::check("viewAssets:$volumeUid")) {
+                        return true;
+                    }
+
+                    $volume = Volumes::getVolumeByUid($volumeUid);
+
+                    return $volume?->isTemporary() ?? false;
+                })
+                ->values()
+                ->all();
+        }
+
+        return $sources;
+    }
+
+    #[Override]
+    protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
+    {
+        $variables = parent::inputTemplateVariables($value, $element);
+
+        $uploadVolume = $this->_uploadVolume();
+        $variables['fsType'] = $uploadVolume?->sourceFilesystemType();
+        $variables['showFolders'] = ! $this->restrictLocation || $this->allowSubfolders;
+        $variables['canUpload'] = (
+            $this->allowUploads &&
+            $uploadVolume &&
+            Gate::check("saveAssets:$uploadVolume->uid")
+        );
+        $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
+
+        if ($this->restrictLocation && ! $this->allowSubfolders) {
+            $variables['showSourcePath'] = false;
+        }
+
+        if (! $this->restrictLocation || $this->allowSubfolders) {
+            $uploadFolder = $this->_uploadFolder($element, false);
+            if ($uploadFolder->volumeId) {
+                // If the location is restricted, don't go passed the base source folder
+                $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
+                $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
+                $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
+                $variables['defaultSourcePath'] = array_map(fn (VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders);
+            }
+        }
+
+        if (isset($variables['searchCriteria'])) {
+            // Include subfolders in the inline search results
+            $variables['searchCriteria']['includeSubfolders'] = true;
+        }
+
+        return $variables;
+    }
+
+    #[Override]
+    public function getInputSelectionCriteria(): array
+    {
+        $criteria = parent::getInputSelectionCriteria();
+        $criteria['kind'] = ($this->restrictFiles && ! empty($this->allowedKinds)) ? $this->allowedKinds : [];
+
+        if ($this->showUnpermittedFiles) {
+            $criteria['uploaderId'] = null;
+        }
+
+        return $criteria;
+    }
+
+    protected function createSelectionCondition(): ElementCondition
+    {
+        $condition = Asset::createCondition();
+        $condition->queryParams = ['volume', 'volumeId', 'kind'];
+
+        return $condition;
+    }
+
+    #[Override]
+    protected function showSearchInput(?ElementInterface $element): bool
+    {
+        if (! $this->showSearchInput || $this->sources === '*') {
+            return false;
+        }
+
+        $sources = $this->getInputSources($element);
+        $sources = Arr::reject($sources, fn (string $source) => $source === 'temp');
+
+        return count($sources) === 1;
+    }
+
+    /**
+     * Returns any files that were uploaded to the field.
+     */
+    private function _getUploadedFiles(ElementInterface $element): array
+    {
+        $files = [];
+
+        if (ElementHelper::isRevision($element)) {
+            return $files;
+        }
+
+        // Grab data strings
+        if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
+            foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-\.]+);base64,(?<data>.+)/i', (string) $dataString, $matches)) {
+                    $mimeType = $matches['type'];
+                    $data = base64_decode($matches['data']);
+
+                    if (! $data) {
+                        continue;
+                    }
+
+                    if (! empty($this->_uploadedDataFiles['filename'][$index])) {
+                        $filename = $this->_uploadedDataFiles['filename'][$index];
+                    } else {
+                        $extensions = MimeTypes::getDefault()->getExtensions(strtolower($mimeType));
+
+                        if (empty($extensions)) {
+                            continue;
+                        }
+
+                        $filename = 'Uploaded_file.'.reset($extensions);
+                    }
+
+                    $files[] = [
+                        'filename' => $filename,
+                        'mimeType' => $mimeType,
+                        'data' => $data,
+                        'type' => 'data',
+                    ];
+                }
+            }
+        }
+
+        // See if we have uploaded file(s).
+        $paramName = $this->requestParamName($element);
+
+        if ($paramName !== null) {
+            $uploadedFiles = request()->file($paramName, []);
+
+            if ($uploadedFiles instanceof UploadedFile) {
+                $uploadedFiles = [$uploadedFiles];
+            }
+
+            foreach (Arr::flatten($uploadedFiles) as $uploadedFile) {
+                if (! $uploadedFile instanceof UploadedFile) {
+                    continue;
+                }
+
+                $files[] = [
+                    'filename' => $uploadedFile->getClientOriginalName(),
+                    'mimeType' => $uploadedFile->getMimeType(),
+                    'path' => $uploadedFile->path(),
+                    'type' => 'upload',
+                ];
+            }
+        }
+
+        $event = new AssetsUploadedFilesLocating(
+            field: $this,
+            element: $element,
+            files: $files,
+        );
+
+        event($event);
+
+        return $event->files;
+    }
+
+    /**
+     * Finds a volume folder by a source key and (dynamic?) subpath.
+     *
+     * @param  bool  $createDynamicFolders  whether missing folders should be created in the process
+     *
+     * @throws InvalidSubpathException if the subpath cannot be parsed in full
+     * @throws InvalidFsException if the volume root folder doesn’t exist
+     */
+    private function _findFolder(string $sourceKey, ?string $subpath, ?ElementInterface $element, bool $createDynamicFolders): VolumeFolder
+    {
+        // Make sure the volume and root folder actually exist
+        $volume = $this->_volumeBySourceKey($sourceKey);
+        if (! $volume) {
+            throw new InvalidFsException("Invalid source key: $sourceKey");
+        }
+
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath, $element);
+
+        // Ensure that the folder exists
+        if (! $folder) {
+            if (! $createDynamicFolders) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            $folder = Folders::ensureFolderByFullPathAndVolume($subpath, $volume);
+        }
+
+        return $folder;
+    }
+
+    /**
+     * Get a list of allowed extensions for a list of file kinds.
+     */
+    private function _getAllowedExtensions(): array
+    {
+        if (! is_array($this->allowedKinds)) {
+            return [];
+        }
+
+        $extensions = [];
+        $allKinds = AssetsHelper::getFileKinds();
+
+        foreach ($this->allowedKinds as $allowedKind) {
+            foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
+                $extensions[] = $ext;
+            }
+        }
+
+        return $extensions;
+    }
+
+    /**
+     * Returns the upload folder that should be used for an element.
+     *
+     * @param  bool  $createDynamicFolders  whether missing folders should be created in the process
+     * @param  bool  $resolveSubtreeDefaultLocation  Whether the folder should resolve to the default upload location for subtree fields.
+     *
+     * @throws InvalidSubpathException if the folder subpath is not valid
+     * @throws InvalidFsException if there's a problem with the field's volume configuration
+     */
+    private function _uploadFolder(
+        ?ElementInterface $element = null,
+        bool $createDynamicFolders = true,
+        bool $resolveSubtreeDefaultLocation = true,
+    ): VolumeFolder {
+        if ($this->restrictLocation) {
+            $uploadVolume = $this->restrictedLocationSource;
+            $subpath = $this->restrictedLocationSubpath;
+
+            if ($this->allowSubfolders && $resolveSubtreeDefaultLocation) {
+                $subpath = implode('/', Arr::whereNotEmpty(array_map(fn ($segment) => trim($segment, '/'), [
+                    $subpath ?? '',
+                    $this->restrictedDefaultUploadSubpath ?? '',
+                ])));
+                $settingName = fn () => t('Default Upload Location');
+            } else {
+                $settingName = fn () => t('Asset Location');
+            }
+        } else {
+            $uploadVolume = $this->defaultUploadLocationSource;
+            $subpath = $this->defaultUploadLocationSubpath;
+            $settingName = fn () => t('Default Upload Location');
+        }
+
+        try {
+            if (! $uploadVolume) {
+                throw new InvalidFsException;
+            }
+
+            return $this->_findFolder($uploadVolume, $subpath, $element, $createDynamicFolders);
+        } catch (InvalidFsException $e) {
+            throw new InvalidFsException(t('The {field} field’s {setting} setting is set to an invalid volume.', [
+                'field' => $this->name,
+                'setting' => $settingName(),
+            ]), 0, $e);
+        } catch (InvalidSubpathException $e) {
+            // If this is a new/disabled/draft element, the subpath probably just contained a token that returned null, like {id}
+            // so use the user’s upload folder instead
+            if (
+                $element === null ||
+                ! $element->id ||
+                ! $element->enabled ||
+                ! $createDynamicFolders ||
+                ElementHelper::isDraft($element)
+            ) {
+                return AssetsService::getUserTemporaryUploadFolder();
+            }
+
+            // Existing element, so this is just a bad subpath
+            throw new InvalidSubpathException($e->subpath, t('The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).', [
+                'field' => $this->name,
+                'setting' => $settingName(),
+                'subpath' => $e->subpath,
+            ]), 0, $e);
+        }
+    }
+
+    /**
+     * Returns a volume via its source key.
+     */
+    public function _volumeBySourceKey(?string $sourceKey): ?Volume
+    {
+        if (! $sourceKey) {
+            return null;
+        }
+
+        $parts = explode(':', $sourceKey, 2);
+
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        return Volumes::getVolumeByUid($parts[1]);
+    }
+
+    /**
+     * Returns the target upload volume for the field.
+     */
+    private function _uploadVolume(): ?Volume
+    {
+        if ($this->restrictLocation) {
+            return $this->_volumeBySourceKey($this->restrictedLocationSource);
+        }
+
+        return $this->_volumeBySourceKey($this->defaultUploadLocationSource);
+    }
+
+    /**
+     * Returns the full source key for a folder, in the form of `volume:UID/folder:UID/...`.
+     */
+    private function _sourceKeyByFolder(VolumeFolder $folder): string
+    {
+        if (! $folder->volumeId) {
+            // Probably the user's temp folder
+            return 'temp';
+        }
+
+        $segments = array_map(function (VolumeFolder $folder) {
+            if ($folder->parentId) {
+                return "folder:$folder->uid";
+            }
+
+            return sprintf('volume:%s', $folder->getVolume()->uid);
+        }, $this->_folderWithAncestors($folder));
+
+        return implode('/', $segments);
+    }
+
+    /**
+     * Returns the given folder along with each of its ancestors.
+     *
+     * @return VolumeFolder[]
+     */
+    private function _folderWithAncestors(VolumeFolder $folder, ?VolumeFolder $untilFolder = null): array
+    {
+        $folders = [$folder];
+
+        while ($folder->parentId && $folder->volumeId !== null && (! $untilFolder || $folder->id !== $untilFolder->id)) {
+            $folder = $folder->getParent();
+            array_unshift($folders, $folder);
+        }
+
+        return $folders;
+    }
+}

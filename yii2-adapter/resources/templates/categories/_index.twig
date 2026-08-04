@@ -1,0 +1,10 @@
+{% extends "_layouts/elementindex" %}
+{% set title = "Categories"|t('app') %}
+{% set elementType = 'craft\\elements\\Category' %}
+
+
+{% if groupHandle is defined %}
+    {% js %}
+        window.defaultGroupHandle = '{{ groupHandle }}';
+    {% endjs %}
+{% endif %}
