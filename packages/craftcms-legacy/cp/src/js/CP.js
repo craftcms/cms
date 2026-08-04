@@ -8,7 +8,7 @@
  */
 Craft.CP = Garnish.Base.extend(
   {
-    elementThumbLoader: null,
+    _elementThumbLoader: null,
     animationBlocker: null,
     authManager: null,
     announcerTimeout: null,
@@ -90,9 +90,14 @@ Craft.CP = Garnish.Base.extend(
       return Craft.QueueService.getInstance();
     },
 
-    init: function () {
-      this.elementThumbLoader = new Craft.ElementThumbLoader();
+    get elementThumbLoader() {
+      if (!this._elementThumbLoader) {
+        this._elementThumbLoader = new Craft.ElementThumbLoader();
+      }
+      return this._elementThumbLoader;
+    },
 
+    init: function () {
       // Is this session going to expire?
       if (Craft.remainingSessionTime !== 0) {
         this.authManager = new Craft.AuthManager();
@@ -392,8 +397,12 @@ Craft.CP = Garnish.Base.extend(
         observer.observe(footer);
       }
 
-      // Load any element thumbs
-      this.elementThumbLoader.load(this.$pageContainer);
+      // Load any element thumbs.
+      // (Deferred until after the Vite-side `modules/element-thumb-loader` shim
+      // has had a chance to load.)
+      setTimeout(() => {
+        this.elementThumbLoader.load(this.$pageContainer);
+      }, 500);
 
       // Add notification close listeners
       this.on('notificationClose', () => {
