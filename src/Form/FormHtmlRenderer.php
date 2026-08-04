@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form;
 
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
+use RuntimeException;
+use Throwable;
 
 class FormHtmlRenderer
 {
+    public function __construct(
+        private readonly FormNodeTypes $nodeTypes,
+        private readonly FormControlTypes $controlTypes,
+    ) {}
+
     public function render(FormPayload $payload): string
     {
         return $this->globalErrors($payload->globalErrors).$this->renderNodes($payload->nodes, $payload);
@@ -29,12 +34,20 @@ class FormHtmlRenderer
     private function renderNode(NodePayload $node, FormPayload $payload): string
     {
         $type = $node->type;
+        $identity = $node->uid ?? implode('.', $node->control->path);
 
-        if (! is_a($type, Node::class, true)) {
-            throw new InvalidArgumentException("Unsupported Form Node type [{$type}].");
+        if ($this->nodeTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("Form Node type [{$type}] with component [{$node->component}] at [{$identity}] is not registered.");
         }
 
-        return $type::renderHtml($node, $payload, $this);
+        try {
+            return $type::renderHtml($node, $payload, $this);
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Failed to render Form Node [{$type}] with component [{$node->component}] at [{$identity}]: {$exception->getMessage()}",
+                previous: $exception,
+            );
+        }
     }
 
     /** @param array<string, mixed> $values */
@@ -59,12 +72,20 @@ class FormHtmlRenderer
         ];
 
         $type = $control->type;
+        $identity = implode('.', $control->path);
 
-        if (! is_a($type, Control::class, true)) {
-            throw new InvalidArgumentException("Unsupported Form Control type [{$type}].");
+        if ($this->controlTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("Form Control type [{$type}] with component [{$control->component}] at [{$identity}] is not registered.");
         }
 
-        return $type::renderHtml($control, $value, $attributes, $this);
+        try {
+            return $type::renderHtml($control, $value, $attributes, $this);
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Failed to render Form Control [{$type}] with component [{$control->component}] at [{$identity}]: {$exception->getMessage()}",
+                previous: $exception,
+            );
+        }
     }
 
     /** @param list<string> $path */

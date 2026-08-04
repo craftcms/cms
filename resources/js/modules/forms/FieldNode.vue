@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
-  import {computed, getCurrentInstance} from 'vue';
+  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
+  import {FormFailure} from './runtime';
   import type {
     FormChange,
     FormChangeKind,
@@ -23,6 +24,7 @@
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
   }>();
+  const invalidate = inject(FormFailure)!;
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
   const component = computed(() => {
@@ -30,12 +32,24 @@
 
     if (!component) {
       throw new Error(
-        `Form Control component is not registered: ${control.value.component}`
+        `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: component is not registered.`
       );
     }
 
     return component;
   });
+
+  onErrorCaptured((error) => {
+    invalidate(
+      `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${errorMessage(error)}`
+    );
+
+    return false;
+  });
+
+  function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
   const editable = computed(() => control.value.mode === 'editable');
   const controlErrors = computed(() =>
     props.errors.flatMap((error) =>

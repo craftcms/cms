@@ -1,4 +1,8 @@
 import {Validator} from '@lion/ui/form-core.js';
+import type {InjectionKey} from 'vue';
+
+export const FormFailure: InjectionKey<(message: string) => void> =
+  Symbol('FormFailure');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import {computed, getCurrentInstance} from 'vue';
+  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
+  import {FormFailure} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   defineOptions({name: 'FormNode'});
@@ -13,18 +14,35 @@
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
   }>();
+  const invalidate = inject(FormFailure)!;
   const components = getCurrentInstance()!.appContext.components;
   const component = computed(() => {
     const component = components[props.node.component];
 
     if (!component) {
       throw new Error(
-        `Form Node component is not registered: ${props.node.component}`
+        `Failed to render Form Node [${props.node.type}] with component [${props.node.component}] at [${identity()}]: component is not registered.`
       );
     }
 
     return component;
   });
+
+  onErrorCaptured((error) => {
+    invalidate(
+      `Failed to render Form Node [${props.node.type}] with component [${props.node.component}] at [${identity()}]: ${errorMessage(error)}`
+    );
+
+    return false;
+  });
+
+  function identity(): string {
+    return props.node.uid ?? props.node.control?.path.join('.') ?? 'unknown';
+  }
+
+  function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+  }
 </script>
 
 <template>

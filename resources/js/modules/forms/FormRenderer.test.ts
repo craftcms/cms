@@ -5,11 +5,15 @@ import {
   nextTick,
   ref,
   shallowRef,
-  type Component,
   type Ref,
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import payload from '../../../../tests/Fixtures/Form/plain-text-settings.json';
+import {registerTestPluginFormComponents} from '../../../../tests/TestClasses/TestPlugin/resources/js/register-form-components';
+import {
+  createCpComponentRegistry,
+  type CpComponentRegistration,
+} from '@/bootstrap/components';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
 import type {FormPayload} from './types';
@@ -82,18 +86,96 @@ describe('FormRenderer', () => {
     expect(container.querySelector('label')?.textContent).toBe('UI-Modus');
   });
 
-  it('fails loudly when a payload component is not registered', () => {
+  it('invalidates the complete Form when a payload component is not registered', async () => {
     const invalid = structuredClone(payload) as Mutable<FormPayload>;
     invalid.nodes[0]!.component = 'craft:missing';
-    const invalidApp = createApp(FormRenderer, {payload: invalid});
-    registerFormComponents({
-      register: (name, component) => invalidApp.component(name, component),
+    app.unmount();
+    await mount(invalid);
+
+    const submission = new Event('submit', {cancelable: true});
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'craft:missing'
+    );
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      invalid.nodes[0]!.type
+    );
+    expect(container.querySelector('input')).toBeNull();
+    expect(form.dispatchEvent(submission)).toBe(false);
+  });
+
+  it('renders and submits test plugin Node and Control types', async () => {
+    const pluginPayload = structuredClone(payload) as Mutable<FormPayload>;
+    pluginPayload.nodes[0] = {
+      type: 'CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\src\\Form\\Nodes\\Notice',
+      component: 'test-plugin:notice',
+      props: {message: 'Provided by the test plugin'},
+      uid: 'plugin-notice',
+      children: [],
+    };
+    pluginPayload.nodes[1]!.control!.type =
+      'CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\src\\Form\\Controls\\Slug';
+    pluginPayload.nodes[1]!.control!.component = 'test-plugin:slug';
+    pluginPayload.nodes[1]!.control!.props = {placeholder: 'plugin-slug'};
+    app.unmount();
+    await mount(pluginPayload, {
+      registerComponents: registerTestPluginFormComponents,
     });
 
-    expect(() => invalidApp.mount(document.createElement('div'))).toThrow(
-      'Form Node component is not registered: craft:missing'
-    );
+    const input = container.querySelector<HTMLInputElement>(
+      '[data-test-plugin-control]'
+    )!;
+
+    expect(
+      container.querySelector('[data-test-plugin-notice]')?.textContent
+    ).toContain('Provided by the test plugin');
+    expect(input.name).toBe('settings[placeholder]');
+    expect(input.placeholder).toBe('plugin-slug');
+    input.value = 'plugin-submitted';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+    expect(Object.fromEntries(new FormData(form))).toMatchObject({
+      'settings[placeholder]': 'plugin-submitted',
+    });
   });
+
+  it.each([
+    [
+      'loader failures',
+      () => Promise.reject(new Error('Test plugin loader failed.')),
+      'Test plugin loader failed.',
+    ],
+    [
+      'renderer exceptions',
+      defineComponent({
+        setup() {
+          throw new Error('Test plugin renderer failed.');
+        },
+      }),
+      'Test plugin renderer failed.',
+    ],
+  ] as Array<[string, CpComponentRegistration, string]>)(
+    'invalidates the complete Form on %s',
+    async (_, component, message) => {
+      const invalid = structuredClone(payload) as Mutable<FormPayload>;
+      invalid.nodes[0]!.component = 'test-plugin:broken';
+      app.unmount();
+      await mount(invalid, {
+        components: {'test-plugin:broken': component},
+      });
+
+      await vi.waitFor(() => {
+        expect(
+          container.querySelector('[role="alert"]')?.textContent
+        ).toContain(message);
+      });
+
+      const submission = new Event('submit', {cancelable: true});
+
+      expect(container.querySelector('input')).toBeNull();
+      expect(form.dispatchEvent(submission)).toBe(false);
+    }
+  );
 
   it('keeps the ordinary nested submission shape after edits', async () => {
     const placeholder = container.querySelector<HTMLInputElement>(
@@ -394,7 +476,13 @@ describe('FormRenderer', () => {
     options: {
       refresh?: (values: FormPayload['values']) => Promise<FormPayload>;
       onMutation?: (mutation: FormPayload['values']) => void;
-      components?: Record<string, Component>;
+      components?: Record<string, CpComponentRegistration>;
+      registerComponents?: (
+        components: Pick<
+          ReturnType<typeof createCpComponentRegistry>,
+          'register'
+        >
+      ) => void;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(formPayload);
@@ -408,12 +496,13 @@ describe('FormRenderer', () => {
           'onUpdate:mutation': options.onMutation,
         }),
     });
-    registerFormComponents({
-      register: (name, component) => app.component(name, component),
-    });
+    const components = createCpComponentRegistry();
+    registerFormComponents(components);
+    options.registerComponents?.(components);
     Object.entries(options.components ?? {}).forEach(([name, component]) =>
-      app.component(name, component)
+      components.register(name, component)
     );
+    components.install(app);
     app.mount(container);
     await nextTick();
     renderer = rendererRef.value;

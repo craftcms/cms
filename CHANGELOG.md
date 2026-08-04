@@ -9,6 +9,7 @@
 - Added support for configuring field layout field instruction positions.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
 - Added the renderer-neutral `CraftCms\Cms\Form` APIs, with shared PHP and Vue rendering for Plain Text field settings.
+- Added `CraftCms\Cms\Form\FormNodeTypes` and `CraftCms\Cms\Form\FormControlTypes`, enabling plugins to register custom Form types for the PHP and Vue renderers.
 - Added refreshable Form scopes with value reconciliation and changed-only submission to the Inertia field settings screen.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))

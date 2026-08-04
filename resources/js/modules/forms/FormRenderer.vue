@@ -1,13 +1,19 @@
 <script setup lang="ts">
   import {
+    computed,
     nextTick,
+    onErrorCaptured,
     onBeforeUnmount,
+    provide,
     reactive,
+    ref,
     shallowRef,
     toRaw,
     watch,
   } from 'vue';
+  import {useEventListener} from '@vueuse/core';
   import FormNode from './FormNode.vue';
+  import {FormFailure} from './runtime';
   import type {
     FormChange,
     FormControlPayload,
@@ -24,6 +30,9 @@
     (event: 'update:mutation', mutation: FormPayload['values']): void;
   }>();
   const payload = shallowRef(props.payload);
+  const root = ref<HTMLElement>();
+  const renderError = ref<string>();
+  const hostForm = computed(() => root.value?.closest('form'));
   const values = reactive(structuredClone(props.payload.values));
   let baseline = structuredClone(props.payload.values);
   let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -32,6 +41,19 @@
   const knownControlPaths = new Map<string, string[]>();
   const touchedPaths = new Set<string>();
   rememberControlPaths(props.payload.nodes);
+  provide(FormFailure, invalidate);
+
+  useEventListener(hostForm, 'submit', (event) => {
+    if (renderError.value) {
+      event.preventDefault();
+    }
+  });
+
+  onErrorCaptured((error) => {
+    invalidate(error instanceof Error ? error.message : String(error));
+
+    return false;
+  });
 
   watch(
     () => props.payload,
@@ -78,6 +100,7 @@
   }
 
   function reconcile(refreshed: FormPayload): void {
+    renderError.value = undefined;
     const focusedPath = document.activeElement?.closest<HTMLElement>(
       '[data-form-control-path]'
     )?.dataset.formControlPath;
@@ -134,6 +157,10 @@
 
   function emitMutation(): void {
     emit('update:mutation', mutation());
+  }
+
+  function invalidate(message: string): void {
+    renderError.value ??= message;
   }
 
   function advanceBaseline(): void {
@@ -277,16 +304,20 @@
 </script>
 
 <template>
-  <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
-    <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
-  </ul>
-  <FormNode
-    v-for="node in payload.nodes"
-    :key="node.uid ?? node.control?.path.join('.')"
-    :node="node"
-    :values="values"
-    :errors="errors ?? payload.errors"
-    :touched-paths="touchedPaths"
-    @change="onChange"
-  />
+  <span ref="root" hidden></span>
+  <p v-if="renderError" role="alert">{{ renderError }}</p>
+  <template v-else>
+    <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
+      <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
+    </ul>
+    <FormNode
+      v-for="node in payload.nodes"
+      :key="node.uid ?? node.control?.path.join('.')"
+      :node="node"
+      :values="values"
+      :errors="errors ?? payload.errors"
+      :touched-paths="touchedPaths"
+      @change="onChange"
+    />
+  </template>
 </template>

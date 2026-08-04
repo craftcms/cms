@@ -22,13 +22,18 @@ class FormResolver
     /** @var array<string, mixed> */
     private array $values = [];
 
+    public function __construct(
+        private readonly FormNodeTypes $nodeTypes,
+        private readonly FormControlTypes $controlTypes,
+    ) {}
+
     /** @throws JsonException */
     public function resolve(Form $form, FormContext $context): FormPayload
     {
         $this->controlPaths = [];
         $this->nodeUids = [];
         $this->values = [];
-        $namespace = $this->normalizePath($context->namespace);
+        $namespace = $this->normalizePath($context->namespace, 'Form context');
         $nodes = array_map(
             fn (Node $node): NodePayload => $this->resolveNode($node, $context, $namespace),
             $form->nodes(),
@@ -55,19 +60,29 @@ class FormResolver
     private function resolveNode(Node $node, FormContext $context, array $namespace): NodePayload
     {
         $type = $node::class;
+        $component = $node->component();
         $control = $node->getControl();
+        $uid = $node->uid();
+        $controlIdentity = $control === null ? 'unknown' : $this->pathIdentity($control->path());
+        $identity = $control === null
+            ? ($uid === null || $uid === '' ? 'unknown' : $uid)
+            : implode('.', [...$namespace, $controlIdentity]);
+
+        if ($this->nodeTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("Form Node type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
+        }
+
         $children = $node->children();
-        $uid = null;
+        $props = $node->props();
+        $this->ensureJsonSafe($props, "Form Node [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($control === null) {
-            $uid = $node->uid();
-
             if ($uid === null || $uid === '') {
-                throw new InvalidArgumentException("Pathless Node [{$type}] requires a stable UID.");
+                throw new InvalidArgumentException("Form Node [{$type}] with component [{$component}] at [{$identity}] requires a stable UID.");
             }
 
             if (in_array($uid, $this->nodeUids, true)) {
-                throw new InvalidArgumentException("Duplicate Node UID [{$uid}].");
+                throw new InvalidArgumentException("Duplicate Node UID [{$uid}] for Form Node [{$type}] with component [{$component}].");
             }
 
             $this->nodeUids[] = $uid;
@@ -75,8 +90,8 @@ class FormResolver
 
         return new NodePayload(
             type: $type,
-            component: $node->component(),
-            props: $node->props(),
+            component: $component,
+            props: $props,
             uid: $uid,
             control: $control !== null ? $this->resolveControl($control, $context, $namespace) : null,
             children: $control === null || $children !== []
@@ -94,24 +109,39 @@ class FormResolver
     private function resolveControl(Control $control, FormContext $context, array $namespace): ControlPayload
     {
         $type = $control::class;
-        $path = [...$namespace, ...$this->normalizePath($control->path())];
+        $component = $control->component();
+        $path = [...$namespace, ...$this->normalizePath(
+            $control->path(),
+            "Form Control [{$type}] with component [{$component}] at [unknown]",
+        )];
+        $identity = implode('.', $path);
+
+        if ($this->controlTypes->types()->doesntContain($type)) {
+            throw new InvalidArgumentException("Form Control type [{$type}] with component [{$component}] at [{$identity}] is not registered.");
+        }
+
+        $props = $control->props();
+        $this->ensureJsonSafe($props, "Form Control [{$type}] with component [{$component}] at [{$identity}] properties");
 
         if ($path === []) {
-            throw new InvalidArgumentException("Control [{$type}] requires a path.");
+            throw new InvalidArgumentException("Control [{$type}] requires a path; component [{$component}], identity [unknown].");
         }
 
         if (in_array($path, $this->controlPaths, true)) {
-            throw new InvalidArgumentException('Duplicate Control path ['.implode('.', $path).'].');
+            throw new InvalidArgumentException("Duplicate Control path [{$identity}] for type [{$type}] with component [{$component}].");
         }
 
         $mode = $context->mode === ControlMode::Editable ? $control->getMode() : $context->mode;
         $deltaGroup = $control->getDeltaGroup();
         $deltaGroup = $deltaGroup === null
             ? $path
-            : [...$namespace, ...$this->normalizePath($deltaGroup)];
+            : [...$namespace, ...$this->normalizePath(
+                $deltaGroup,
+                "Form Control [{$type}] with component [{$component}] at [{$identity}] delta group",
+            )];
 
         if (array_slice($path, 0, count($deltaGroup)) !== $deltaGroup) {
-            throw new InvalidArgumentException('Control delta groups must be ancestors of their paths.');
+            throw new InvalidArgumentException("Control delta groups must be ancestors of their paths; type [{$type}], component [{$component}], path [{$identity}].");
         }
 
         $value = $this->has($context->values, $path)
@@ -122,8 +152,8 @@ class FormResolver
 
         return new ControlPayload(
             type: $type,
-            component: $control->component(),
-            props: $control->props(),
+            component: $component,
+            props: $props,
             path: $path,
             mode: $mode,
             deltaGroup: $deltaGroup,
@@ -140,7 +170,7 @@ class FormResolver
         $globalErrors = $context->globalErrors;
 
         foreach ($context->errors as $path => $messages) {
-            $absolutePath = [...$namespace, ...$this->normalizePath((string) $path)];
+            $absolutePath = [...$namespace, ...$this->normalizePath((string) $path, 'Form error')];
             $messages = is_array($messages) ? array_values($messages) : [$messages];
 
             $ownerPath = $this->owningControlPath($absolutePath);
@@ -178,17 +208,33 @@ class FormResolver
     }
 
     /** @param string|list<string> $path @return list<string> */
-    private function normalizePath(string|array $path): array
+    private function normalizePath(string|array $path, string $location): array
     {
         $segments = is_string($path) ? ($path === '' ? [] : explode('.', $path)) : array_values($path);
 
         foreach ($segments as $segment) {
             if (! is_string($segment) || $segment === '') {
-                throw new InvalidArgumentException('Form paths must contain non-empty string segments.');
+                throw new InvalidArgumentException("{$location} paths must contain non-empty string segments.");
             }
         }
 
         return $segments;
+    }
+
+    /** @param string|list<string> $path */
+    private function pathIdentity(string|array $path): string
+    {
+        if (is_string($path)) {
+            return $path === '' ? 'unknown' : $path;
+        }
+
+        foreach ($path as $segment) {
+            if (! is_string($segment) || $segment === '') {
+                return 'unknown';
+            }
+        }
+
+        return $path === [] ? 'unknown' : implode('.', $path);
     }
 
     /** @param array<string, mixed> $values @param list<string> $path */
@@ -229,6 +275,25 @@ class FormResolver
 
             $current[$segment] ??= [];
             $current = &$current[$segment];
+        }
+    }
+
+    private function ensureJsonSafe(mixed $value, string $location): void
+    {
+        if (is_float($value) && ! is_finite($value)) {
+            throw new InvalidArgumentException("{$location} must be JSON-safe.");
+        }
+
+        if ($value === null || is_scalar($value)) {
+            return;
+        }
+
+        if (! is_array($value)) {
+            throw new InvalidArgumentException("{$location} must be JSON-safe.");
+        }
+
+        foreach ($value as $child) {
+            $this->ensureJsonSafe($child, $location);
         }
     }
 }
