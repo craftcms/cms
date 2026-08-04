@@ -5,13 +5,12 @@ import styles from './button-group.styles.js';
 
 /**
  * @summary Wrapper component used to group a set of buttons together.
- * When `name` is set, the group behaves as a radio input: one button is
- * selected at a time and the selected value is submitted with the form.
+ * When `name` is set, the selected value is submitted with the form. Set
+ * `multiple` to allow more than one selected button.
  *
  * @slot - The default slot.
  *
- * @fires change - Fired when the selected value changes (radio mode only).
- *   `event.detail.value` contains the new value.
+ * @fires change - Fired when the selected value changes.
  */
 export default class CraftButtonGroup extends LitElement {
   static override styles: CSSResultGroup = [styles];
@@ -24,11 +23,14 @@ export default class CraftButtonGroup extends LitElement {
     this._internals = this.attachInternals();
   }
 
-  /** Form field name. When set, enables radio mode. */
+  /** Form field name. When set, enables selection mode. */
   @property({reflect: true}) name: string;
 
-  /** The currently selected value (radio mode only). */
+  /** The currently selected value in single-selection mode. */
   @property({reflect: true}) value: string;
+
+  /** Whether multiple buttons can be selected. */
+  @property({reflect: true, type: Boolean}) multiple = false;
 
   override firstUpdated(changed: PropertyValues) {
     super.firstUpdated(changed);
@@ -38,14 +40,14 @@ export default class CraftButtonGroup extends LitElement {
   }
 
   override updated(changed: PropertyValues) {
-    if (changed.has('name')) {
+    if (changed.has('name') || changed.has('multiple')) {
       if (this.name) {
         this._setupRadioMode();
       } else {
         this._teardownRadioMode();
       }
     }
-    if (changed.has('value') && this.name) {
+    if ((changed.has('value') || changed.has('multiple')) && this.name) {
       this._syncChildren();
     }
   }
@@ -56,7 +58,7 @@ export default class CraftButtonGroup extends LitElement {
   }
 
   private _setupRadioMode() {
-    this.setAttribute('role', 'radiogroup');
+    this.setAttribute('role', this.multiple ? 'group' : 'radiogroup');
     this.removeEventListener('click', this._handleClick);
     this.addEventListener('click', this._handleClick);
     this._syncChildren();
@@ -73,6 +75,19 @@ export default class CraftButtonGroup extends LitElement {
     ) as Element | undefined;
 
     if (!button) return;
+
+    if (this.multiple) {
+      button.toggleAttribute('active');
+      this._syncChildren();
+      this.dispatchEvent(
+        new CustomEvent('change', {
+          bubbles: true,
+          composed: true,
+          detail: {values: this._selectedValues()},
+        })
+      );
+      return;
+    }
 
     const newValue = button.getAttribute('value') ?? '';
     if (newValue === this.value) return;
@@ -94,11 +109,33 @@ export default class CraftButtonGroup extends LitElement {
       if (btn.getAttribute('type') !== 'button') {
         btn.setAttribute('type', 'button');
       }
-      const isSelected = btn.getAttribute('value') === this.value;
-      btn.toggleAttribute('active', isSelected);
+      const isSelected = this.multiple
+        ? btn.hasAttribute('active')
+        : btn.getAttribute('value') === this.value;
+      if (!this.multiple) {
+        btn.toggleAttribute('active', isSelected);
+      }
       btn.setAttribute('aria-pressed', String(isSelected));
     });
-    this._internals.setFormValue(this.value ?? null);
+
+    if (!this.multiple) {
+      this._internals.setFormValue(this.value ?? null);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append(this.name, '');
+    this._selectedValues().forEach((value) => {
+      formData.append(`${this.name}[]`, value);
+    });
+    this._internals.setFormValue(formData);
+  }
+
+  private _selectedValues(): string[] {
+    return Array.from(
+      this.querySelectorAll<Element>('craft-button[active]'),
+      (button) => button.getAttribute('value') ?? ''
+    );
   }
 
   override render() {

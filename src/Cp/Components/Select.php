@@ -17,10 +17,13 @@ class Select extends ViewComponent
 
     protected ?string $name = null;
 
-    protected string|int|float|bool|null $value = null;
+    /** @var string|int|float|bool|list<string|int|float|bool>|null */
+    protected string|int|float|bool|array|null $value = null;
 
-    /** @var list<array{label: string, value: string|int|float|bool}> */
+    /** @var list<array{label: string, value: string|int|float|bool, disabled?: bool}> */
     protected array $options = [];
+
+    protected bool $multiple = false;
 
     protected ?string $label = null;
 
@@ -47,14 +50,15 @@ class Select extends ViewComponent
         return $this;
     }
 
-    public function value(string|int|float|bool|null $value): static
+    /** @param string|int|float|bool|list<string|int|float|bool>|null $value */
+    public function value(string|int|float|bool|array|null $value): static
     {
         $this->value = $value;
 
         return $this;
     }
 
-    /** @param list<array{label: string, value: string|int|float|bool}> $options */
+    /** @param list<array{label: string, value: string|int|float|bool, disabled?: bool}> $options */
     public function options(array $options): static
     {
         $this->options = $options;
@@ -65,6 +69,13 @@ class Select extends ViewComponent
     public function label(?string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
 
         return $this;
     }
@@ -124,10 +135,12 @@ class Select extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
+        $values = array_map(strval(...), is_array($this->value) ? $this->value : [$this->value]);
         $options = implode('', array_map(
             fn (array $option): string => Html::tag('option', Html::encode($option['label']), [
-                'value' => $option['value'],
-                'selected' => (string) $option['value'] === (string) $this->value,
+                'value' => (string) $option['value'],
+                'selected' => in_array((string) $option['value'], $values, true),
+                'disabled' => $option['disabled'] ?? false,
             ]),
             $this->options,
         ));
@@ -136,6 +149,7 @@ class Select extends ViewComponent
             'slot' => 'input',
             'id' => $this->getId(),
             'name' => $this->name,
+            'multiple' => $this->multiple,
             'disabled' => $this->isDisabled(),
             'required' => $this->required,
             'aria' => ['describedby' => $this->describedBy],
