@@ -255,6 +255,34 @@ it('produces no items for block types in the map that are absent from source', f
     expect($result['blocks'])->toHaveCount(1);
 });
 
+it('dispatches each row of a nested inline-typed container to only its matching sibling type', function () {
+    $data = [
+        'fields' => [
+            'plainText' => 'foo3',
+            'innerMatrix' => [
+                ['type' => 'simple2', 'title' => 'nested 1', 'fields' => ['plainText' => 'bar']],
+                ['type' => 'simple', 'title' => 'nested 2', 'fields' => ['plainText' => 'baz'], 'matchCriteria' => ['title' => 'title']],
+            ],
+        ],
+    ];
+    $map = [
+        'fields' => [
+            'plainText' => null,
+            'innerMatrix' => [
+                'simple' => ['title' => 'fields.innerMatrix.title', 'fields' => ['plainText' => 'fields.innerMatrix.fields.plainText']],
+                'simple2' => ['title' => 'fields.innerMatrix.title', 'fields' => ['plainText' => 'fields.innerMatrix.fields.plainText']],
+            ],
+        ],
+    ];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['fields']['innerMatrix'])->toBe([
+        ['type' => 'simple2', 'title' => 'nested 1', 'fields' => ['plainText' => 'bar']],
+        ['type' => 'simple', 'title' => 'nested 2', 'fields' => ['plainText' => 'baz'], 'matchCriteria' => ['title' => 'title']],
+    ]);
+});
+
 // remapData – path resolution
 
 it('resolves a rule path relative to the current base path', function () {

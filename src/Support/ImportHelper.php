@@ -181,7 +181,7 @@ class ImportHelper
                 } elseif (array_is_list($source['value'])) {
                     $result[$targetKey] = array_map(
                         fn ($row) => is_array($row)
-                            ? self::mapNode($rule, $rootData, $row, $source['basePath'], true)['data']
+                            ? self::mapInlineTypedRow($rule, $rootData, $row, $source['basePath'])
                             : $row,
                         $source['value']
                     );
@@ -288,6 +288,19 @@ class ImportHelper
         return null;
     }
 
+    /**
+     * Maps a single row of an inline-typed (flat, `type`-per-row) block list, dispatching
+     * to only the rule's submap matching the row's own `type` when the rule declares one.
+     */
+    protected static function mapInlineTypedRow(array $rule, array $rootData, array $row, ?string $basePath): array
+    {
+        if (array_key_exists('type', $row) && is_string($row['type']) && array_key_exists($row['type'], $rule) && is_array($rule[$row['type']])) {
+            return ['type' => $row['type']] + self::mapNode($rule[$row['type']], $rootData, $row, $basePath, true)['data'];
+        }
+
+        return self::mapNode($rule, $rootData, $row, $basePath, true)['data'];
+    }
+
     protected static function mapBlockTypeContainer(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
     {
         $items = [];
@@ -392,6 +405,13 @@ class ImportHelper
     protected static function isBlockTypeContainer(array $rule, mixed $sourceValue): bool
     {
         if (! is_array($sourceValue) || array_is_list($sourceValue)) {
+            return false;
+        }
+
+        // A genuine block-type map only ever declares type submaps at its top level; a mix of
+        // scalar/null field rules alongside a submap means this is a block's own fields map
+        // (one of which happens to be a nested container field), not a type-dispatch map.
+        if (array_any($rule, fn ($childRule) => ! is_array($childRule))) {
             return false;
         }
 
