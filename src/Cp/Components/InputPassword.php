@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
-
 /**
  * PHP counterpart to the `<craft-input-password>` web component — a text input
  * with a built-in show/hide reveal toggle, the modern replacement for the
@@ -24,7 +22,7 @@ use Closure;
 class InputPassword extends Input
 {
     #[\Override]
-    protected string|Closure $type = 'password';
+    protected string $type = 'password';
 
     #[\Override]
     protected function tagName(): string

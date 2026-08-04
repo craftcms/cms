@@ -136,12 +136,3 @@ describe('host attributes', function () {
             ->and($html)->toMatch('/<craft-textarea[^>]* readonly/');
     });
 });
-
-it('evaluates closures with injection', function () {
-    $html = Textarea::make()
-        ->id('i')
-        ->value(fn (Textarea $textarea): string => 'computed')
-        ->toHtml();
-
-    expect($html)->toContain('>computed</textarea>');
-});

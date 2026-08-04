@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -203,13 +202,13 @@ it('configures persisted layout options fluently', function () {
     $layout = new FieldLayout;
 
     $layout
-        ->generatedFields(fn () => [[
+        ->generatedFields([[
             'uid' => 'generated-field',
             'name' => 'Summary',
         ]])
-        ->cardView(fn (FieldLayout $component) => ['generatedField:'.$component->getGeneratedFields()[0]['uid']])
-        ->thumbFieldKey(fn () => 'layoutElement:thumbnail')
-        ->cardThumbAlignment(fn () => 'start');
+        ->cardView(['generatedField:generated-field'])
+        ->thumbFieldKey('layoutElement:thumbnail')
+        ->cardThumbAlignment('start');
 
     expect($layout->getGeneratedFields())->toBe([[
         'uid' => 'generated-field',
@@ -218,29 +217,6 @@ it('configures persisted layout options fluently', function () {
         ->and($layout->getCardView())->toBe(['generatedField:generated-field'])
         ->and($layout->thumbFieldKey)->toBe('layoutElement:thumbnail')
         ->and($layout->getCardThumbAlignment())->toBe('start');
-});
-
-it('evaluates fluent closure values eagerly with dependency injection', function () {
-    $label = 'Teaser';
-    $field = CustomField::make(fluentField())
-        ->label(fn () => $label)
-        ->required(fn (GeneralConfig $config) => $config instanceof GeneralConfig)
-        ->width(fn (CustomField $component) => $component->attribute() === 'body' ? 50 : 100);
-    $label = 'Changed';
-    $layout = new FieldLayout;
-    $layout->tab(
-        fn () => 'SEO',
-        fn (FieldLayoutTab $tab) => $tab
-            ->name(fn (FieldLayoutTab $component) => $component->name)
-            ->add($field)
-            ->heading(fn (Heading $component) => $component instanceof Heading ? 'SEO' : 'Content'),
-    );
-
-    expect($field->label())->toBe('Teaser')
-        ->and($field->required)->toBeTrue()
-        ->and($field->width)->toBe(50)
-        ->and($layout->getTab('SEO')->getElements()[1]->heading)->toBe('SEO')
-        ->and($layout->getConfig())->toBeArray();
 });
 
 it('rejects invalid constrained fluent values', function () {

@@ -349,7 +349,7 @@ class Blocker extends Base {
               response = await Craft.sendActionRequest('POST', action.action, {
                 data: {
                   elementIds: this.manager.elementIds,
-                  ...(action.params || {}),
+                  ...action.params,
                 },
               });
             } finally {

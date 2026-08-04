@@ -4,6 +4,7 @@ import {html, LitElement} from 'lit';
 import type {CSSResultGroup} from 'lit';
 import styles from './copy-button.styles.js';
 import '../tooltip/tooltip.js';
+import type CraftTooltip from '../tooltip/tooltip.js';
 import '../visually-hidden/visually-hidden.js';
 
 const animations = {
@@ -43,6 +44,7 @@ export default class CraftCopyButton extends LitElement {
   @query('slot[name="copy-icon"]') copyIconEl!: HTMLSlotElement;
   @query('slot[name="success-icon"]') successIconEl!: HTMLSlotElement;
   @query('slot[name="error-icon"]') errorIconEl!: HTMLSlotElement;
+  @query('craft-tooltip') tooltipEl!: CraftTooltip;
 
   /** Value to copy on click */
   @property({type: String}) value = '';
@@ -92,6 +94,8 @@ export default class CraftCopyButton extends LitElement {
     const statusIcon =
       status === 'success' ? this.successIconEl : this.errorIconEl;
     this.tooltipLabel = status === 'success' ? 'Copied' : 'Copy failed';
+    await this.updateComplete;
+    this.tooltipEl?.repositionOverlay();
 
     // Animate the copy icon out
     await statusIcon.animate(
@@ -127,6 +131,7 @@ export default class CraftCopyButton extends LitElement {
 
       this.status = 'rest';
       this.tooltipLabel = 'Copy';
+      this.tooltipEl?.hide();
     }, this.feedbackDuration);
   }
   override connectedCallback() {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 
@@ -28,11 +27,11 @@ class ButtonGroup extends ViewComponent
     use HasDisabled;
     use HasId;
 
-    protected string|Closure|null $labelledBy = null;
+    protected ?string $labelledBy = null;
 
-    protected string|Closure|null $name = null;
+    protected ?string $name = null;
 
-    protected string|Closure|null $value = null;
+    protected ?string $value = null;
 
     protected function tagName(): string
     {
@@ -42,16 +41,16 @@ class ButtonGroup extends ViewComponent
     /**
      * The grouped buttons (default slot).
      *
-     * @param  iterable<array-key, mixed>|Closure  $buttons
+     * @param  iterable<array-key, mixed>  $buttons
      */
-    public function buttons(iterable|Closure $buttons): static
+    public function buttons(iterable $buttons): static
     {
         $this->slots[static::DEFAULT_SLOT] = $buttons;
 
         return $this;
     }
 
-    public function labelledBy(string|Closure|null $labelledBy): static
+    public function labelledBy(?string $labelledBy): static
     {
         $this->labelledBy = $labelledBy;
 
@@ -59,7 +58,7 @@ class ButtonGroup extends ViewComponent
     }
 
     /** Renders a hidden input posting the selected value under this name. */
-    public function name(string|Closure|null $name): static
+    public function name(?string $name): static
     {
         $this->name = $name;
 
@@ -67,7 +66,7 @@ class ButtonGroup extends ViewComponent
     }
 
     /** The currently selected value, posted by the hidden input. */
-    public function value(string|Closure|null $value): static
+    public function value(?string $value): static
     {
         $this->value = $value;
 
@@ -86,11 +85,11 @@ class ButtonGroup extends ViewComponent
     {
         return [
             'id' => $this->getId(),
-            'name' => $this->evaluate($this->name),
-            'value' => $this->evaluate($this->value),
+            'name' => $this->name,
+            'value' => $this->value,
             'role' => 'group',
             'aria' => [
-                'labelledby' => $this->evaluate($this->labelledBy),
+                'labelledby' => $this->labelledBy,
             ],
         ];
     }

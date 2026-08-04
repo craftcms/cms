@@ -6,6 +6,7 @@
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
   type CardElement = Record<any, any>;
 
@@ -44,6 +45,27 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
+  const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
+
+  // Folder cards (asset index) navigate into the folder on click, except when
+  // the click lands on an interactive control (the select checkbox, a link, …).
+  // Other cards fall through to the normal click-to-select behavior.
+  function onCardClick(element: CardElement, event: MouseEvent) {
+    if (!isFolderRow(element)) {
+      selectRowFromEvent(rowFor(element.id), event);
+      return;
+    }
+
+    if (
+      (event.target as HTMLElement).closest(
+        'a[href], button, input, craft-checkbox'
+      )
+    ) {
+      return;
+    }
+    navigateToFolder(element.folderUrl);
+  }
+
   function focusCardByIndex(index: number, el: HTMLElement) {
     const list = el.closest('ul.card-grid');
     const items = list?.querySelectorAll<HTMLElement>(':scope > li[tabindex]');
@@ -60,10 +82,16 @@
     const last = props.data!.length - 1;
     switch (event.key) {
       case ' ':
-      case 'Enter':
+      case 'Enter': {
         event.preventDefault();
+        const element = props.data!.find((el) => el.id === id);
+        if (element && isFolderRow(element)) {
+          navigateToFolder(element.folderUrl);
+          break;
+        }
         toggleRow(rowFor(id));
         break;
+      }
       case 'ArrowRight':
       case 'ArrowDown': {
         event.preventDefault();
@@ -109,11 +137,15 @@
       <li
         v-for="(element, cardIdx) in data"
         :key="element.id"
-        :data-id="element.id"
+        v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
-        @click="selectRowFromEvent(rowFor(element.id), $event)"
+        @click="onCardClick(element, $event)"
         @keydown="onCardKeydown(element.id, cardIdx, $event)"
-        :class="{element: true, sel: rowFor(element.id)?.getIsSelected()}"
+        :class="{
+          element: true,
+          'element--folder': isFolderRow(element),
+          sel: rowFor(element.id)?.getIsSelected(),
+        }"
       >
         <craft-card
           v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
@@ -160,10 +192,35 @@
   }
 
   .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     padding: var(--c-spacing-md);
   }
 
   .card-grid > li {
     position: relative;
+  }
+
+  .card-grid > li.element--folder {
+    cursor: pointer;
+  }
+
+  // craft-thumbnail defaults its own size via :host, so the card thumbnail
+  // renders at the tiny default instead of filling its 120px column. Match the
+  // thumbnail view (and Craft 5's 120px card thumb column).
+  .card-grid :deep(craft-thumbnail) {
+    --c-thumbnail-size: 120px;
+  }
+
+  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size;
+  // scale them up to match.
+  .card-grid :deep(.card-main .thumb) {
+    width: 72px;
+    height: 72px;
+  }
+
+  .card-grid :deep(.card-main .thumb svg) {
+    width: 100%;
+    height: 100%;
   }
 </style>

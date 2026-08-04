@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Html\ContentHtml;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;
@@ -28,55 +26,52 @@ use function CraftCms\Cms\t;
  *         ->label(t('Handle'))
  *         ->required()
  *         ->instructions(t('How you’ll refer to this field in the templates.'))
- *         ->input(fn () => FormFields::textHtml(['name' => 'handle']))
+ *         ->input(FormFields::textHtml(['name' => 'handle']))
  *         ->errors($model->errors()->get('handle'));
- *
- * Every setter accepts a literal value or a Closure evaluated at render time
- * (with dependency injection — see {@see EvaluatesClosures}).
  */
 class Field extends ViewComponent
 {
     use HasDisabled;
     use HasId;
 
-    protected string|Htmlable|Stringable|ViewComponent|Closure|null $label = null;
+    protected string|Htmlable|Stringable|ViewComponent|null $label = null;
 
-    protected string|Htmlable|Stringable|ViewComponent|Closure|null $input = null;
+    protected string|Htmlable|Stringable|ViewComponent|null $input = null;
 
-    protected string|Stringable|Closure|null $instructions = null;
+    protected string|Stringable|null $instructions = null;
 
-    protected string|Closure $instructionsPosition = 'before';
+    protected string $instructionsPosition = 'before';
 
-    protected bool|Closure $required = false;
+    protected bool $required = false;
 
-    protected bool|Closure $translatable = false;
+    protected bool $translatable = false;
 
-    protected string|Closure|null $translationDescription = null;
+    protected ?string $translationDescription = null;
 
-    protected bool|Closure $fieldset = false;
+    protected bool $fieldset = false;
 
-    protected string|Closure|null $status = null;
+    protected ?string $status = null;
 
-    protected string|Closure|null $statusLabel = null;
+    protected ?string $statusLabel = null;
 
-    protected string|Closure|null $orientation = null;
+    protected ?string $orientation = null;
 
-    protected bool|Closure $readOnly = false;
+    protected bool $readOnly = false;
 
-    protected string|Closure|null $width = null;
+    protected ?string $width = null;
 
-    protected string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix = null;
+    protected string|Htmlable|Stringable|ViewComponent|null $headingPrefix = null;
 
-    protected string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix = null;
+    protected string|Htmlable|Stringable|ViewComponent|null $headingSuffix = null;
 
-    /** @var array<array-key, string>|Closure */
-    protected array|Closure $errors = [];
+    /** @var array<array-key, string> */
+    protected array $errors = [];
 
-    protected string|Stringable|Closure|null $tip = null;
+    protected string|Stringable|null $tip = null;
 
-    protected string|Stringable|Closure|null $warning = null;
+    protected string|Stringable|null $warning = null;
 
-    protected string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra = null;
+    protected string|Htmlable|Stringable|ViewComponent|null $labelExtra = null;
 
     protected function tagName(): string
     {
@@ -84,7 +79,7 @@ class Field extends ViewComponent
     }
 
     /** A string renders as the `label` attribute; markup or a component renders into the label slot. */
-    public function label(string|Htmlable|Stringable|ViewComponent|Closure|null $label): static
+    public function label(string|Htmlable|Stringable|ViewComponent|null $label): static
     {
         $this->label = $label;
 
@@ -96,7 +91,7 @@ class Field extends ViewComponent
      * `FormFields`), and should have a single root element so the `slot`
      * attribute lands on the control itself rather than a wrapper.
      */
-    public function input(string|Htmlable|Stringable|ViewComponent|Closure|null $input): static
+    public function input(string|Htmlable|Stringable|ViewComponent|null $input): static
     {
         $this->input = $input;
 
@@ -104,29 +99,29 @@ class Field extends ViewComponent
     }
 
     /** Field instructions; supports the same markdown as the Twig field macro. */
-    public function instructions(string|Stringable|Closure|null $instructions): static
+    public function instructions(string|Stringable|null $instructions): static
     {
         $this->instructions = $instructions;
 
         return $this;
     }
 
-    /** @param 'before'|'after'|Closure $position Relative to the input. */
-    public function instructionsPosition(string|Closure $position): static
+    /** @param 'before'|'after' $position Relative to the input. */
+    public function instructionsPosition(string $position): static
     {
         $this->instructionsPosition = $position;
 
         return $this;
     }
 
-    public function required(bool|Closure $required = true): static
+    public function required(bool $required = true): static
     {
         $this->required = $required;
 
         return $this;
     }
 
-    public function translatable(bool|Closure $translatable = true, string|Closure|null $description = null): static
+    public function translatable(bool $translatable = true, ?string $description = null): static
     {
         $this->translatable = $translatable;
 
@@ -138,14 +133,14 @@ class Field extends ViewComponent
     }
 
     /** Renders the label as a group legend (`role="group"`) instead of a `<label>`. */
-    public function fieldset(bool|Closure $fieldset = true): static
+    public function fieldset(bool $fieldset = true): static
     {
         $this->fieldset = $fieldset;
 
         return $this;
     }
 
-    public function status(string|Closure|null $status, string|Closure|null $label = null): static
+    public function status(?string $status, ?string $label = null): static
     {
         $this->status = $status;
 
@@ -156,8 +151,8 @@ class Field extends ViewComponent
         return $this;
     }
 
-    /** @param 'ltr'|'rtl'|Closure|null $orientation */
-    public function orientation(string|Closure|null $orientation): static
+    /** @param 'ltr'|'rtl'|null $orientation */
+    public function orientation(?string $orientation): static
     {
         $this->orientation = $orientation;
 
@@ -165,7 +160,7 @@ class Field extends ViewComponent
     }
 
     /** Marks the field read-only (renders the "Read Only" badge). */
-    public function readOnly(bool|Closure $readOnly = true): static
+    public function readOnly(bool $readOnly = true): static
     {
         $this->readOnly = $readOnly;
 
@@ -173,7 +168,7 @@ class Field extends ViewComponent
     }
 
     /** Heading content rendered before the label. Strings are trusted HTML. */
-    public function headingPrefix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingPrefix): static
+    public function headingPrefix(string|Htmlable|Stringable|ViewComponent|null $headingPrefix): static
     {
         $this->headingPrefix = $headingPrefix;
 
@@ -181,15 +176,15 @@ class Field extends ViewComponent
     }
 
     /** Heading content rendered after the label extras. Strings are trusted HTML. */
-    public function headingSuffix(string|Htmlable|Stringable|ViewComponent|Closure|null $headingSuffix): static
+    public function headingSuffix(string|Htmlable|Stringable|ViewComponent|null $headingSuffix): static
     {
         $this->headingSuffix = $headingSuffix;
 
         return $this;
     }
 
-    /** @param array<array-key, string>|Closure $errors Plain-text messages; encoded on render. */
-    public function errors(array|Closure $errors): static
+    /** @param array<array-key, string> $errors Plain-text messages; encoded on render. */
+    public function errors(array $errors): static
     {
         $this->errors = $errors;
 
@@ -197,7 +192,7 @@ class Field extends ViewComponent
     }
 
     /** Tip notice; supports inline markdown. */
-    public function tip(string|Stringable|Closure|null $tip): static
+    public function tip(string|Stringable|null $tip): static
     {
         $this->tip = $tip;
 
@@ -205,7 +200,7 @@ class Field extends ViewComponent
     }
 
     /** Warning notice; supports inline markdown. */
-    public function warning(string|Stringable|Closure|null $warning): static
+    public function warning(string|Stringable|null $warning): static
     {
         $this->warning = $warning;
 
@@ -213,7 +208,7 @@ class Field extends ViewComponent
     }
 
     /** Extra heading content (handle-copy buttons, action menus). Strings are trusted HTML. */
-    public function labelExtra(string|Htmlable|Stringable|ViewComponent|Closure|null $labelExtra): static
+    public function labelExtra(string|Htmlable|Stringable|ViewComponent|null $labelExtra): static
     {
         $this->labelExtra = $labelExtra;
 
@@ -226,9 +221,9 @@ class Field extends ViewComponent
      * shrinks it to the control's width. `full` spans the column despite a
      * `maxlength`; `auto` shrinks without one.
      *
-     * @param  'full'|'auto'|Closure|null  $width
+     * @param  'full'|'auto'|null  $width
      */
-    public function width(string|Closure|null $width): static
+    public function width(?string $width): static
     {
         $this->width = $width;
 
@@ -238,43 +233,40 @@ class Field extends ViewComponent
     #[Override]
     protected function hostAttributes(): array
     {
-        $label = $this->evaluate($this->label);
-
         return [
             'id' => $this->getId(),
-            'label' => is_string($label)
-            || ($label instanceof Stringable && ! $label instanceof Htmlable && ! $label instanceof Markup)
-                ? $label
+            'label' => is_string($this->label)
+            || ($this->label instanceof Stringable && ! $this->label instanceof Htmlable && ! $this->label instanceof Markup)
+                ? $this->label
                 : null,
-            'required' => (bool) $this->evaluate($this->required),
-            'translatable' => (bool) $this->evaluate($this->translatable),
-            'translation-description' => $this->evaluate($this->translationDescription),
-            'fieldset' => (bool) $this->evaluate($this->fieldset),
-            'status' => $this->evaluate($this->status),
-            'status-label' => $this->evaluate($this->statusLabel),
-            'orientation' => $this->evaluate($this->orientation),
-            'width' => $this->evaluate($this->width),
-            'readonly' => (bool) $this->evaluate($this->readOnly),
+            'required' => $this->required,
+            'translatable' => $this->translatable,
+            'translation-description' => $this->translationDescription,
+            'fieldset' => $this->fieldset,
+            'status' => $this->status,
+            'status-label' => $this->statusLabel,
+            'orientation' => $this->orientation,
+            'width' => $this->width,
+            'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
-            'has-errors' => $this->evaluatedErrors() !== [],
-            'instructions-position' => $this->evaluate($this->instructionsPosition) === 'after' ? 'after' : null,
+            'has-errors' => $this->normalizedErrors() !== [],
+            'instructions-position' => $this->instructionsPosition === 'after' ? 'after' : null,
         ];
     }
 
     #[Override]
     protected function renderSlots(): string
     {
-        $label = $this->evaluate($this->label);
-        $instructions = (string) ($this->evaluate($this->instructions) ?? '');
-        $tip = (string) ($this->evaluate($this->tip) ?? '');
-        $warning = (string) ($this->evaluate($this->warning) ?? '');
-        $errors = $this->evaluatedErrors();
+        $instructions = (string) ($this->instructions ?? '');
+        $tip = (string) ($this->tip ?? '');
+        $warning = (string) ($this->warning ?? '');
+        $errors = $this->normalizedErrors();
 
         return implode('', array_filter([
-            $label instanceof Htmlable || $label instanceof Markup
-                ? $this->renderSlot('label', $label)
+            $this->label instanceof Htmlable || $this->label instanceof Markup
+                ? $this->renderSlot('label', $this->label)
                 : '',
-            $this->renderSlot('input', $this->trustedHtml($this->evaluate($this->input))),
+            $this->renderSlot('input', $this->trustedHtml($this->input)),
             $instructions !== ''
                 ? $this->renderSlot('help-text', new HtmlString(
                     Html::tag('div', app(ContentHtml::class)->parseMarkdown($instructions)),
@@ -282,18 +274,18 @@ class Field extends ViewComponent
                 : '',
             $tip !== '' ? $this->renderSlot('tip', new HtmlString($this->parseNotice($tip))) : '',
             $warning !== '' ? $this->renderSlot('warning', new HtmlString($this->parseNotice($warning))) : '',
-            $this->renderSlot('label-extra', $this->trustedHtml($this->evaluate($this->labelExtra))),
-            $this->renderSlot('heading-prefix', $this->trustedHtml($this->evaluate($this->headingPrefix))),
-            $this->renderSlot('heading-suffix', $this->trustedHtml($this->evaluate($this->headingSuffix))),
+            $this->renderSlot('label-extra', $this->trustedHtml($this->labelExtra)),
+            $this->renderSlot('heading-prefix', $this->trustedHtml($this->headingPrefix)),
+            $this->renderSlot('heading-suffix', $this->trustedHtml($this->headingSuffix)),
             $errors !== [] ? $this->renderSlot('feedback', new HtmlString($this->errorListHtml($errors))) : '',
             parent::renderSlots(),
         ]));
     }
 
     /** @return array<array-key, string> */
-    protected function evaluatedErrors(): array
+    protected function normalizedErrors(): array
     {
-        return array_values(array_filter((array) $this->evaluate($this->errors)));
+        return array_values(array_filter($this->errors));
     }
 
     /** @param array<array-key, string> $errors */
