@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.13.1 - 2026-08-04
 
 - Fixed a bug where sanitized SVGs wouldn’t render. ([#19368](https://github.com/craftcms/cms/issues/19368))
 
