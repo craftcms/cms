@@ -45,6 +45,10 @@
   function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
   }
+
+  function onChange(change: FormChange | CustomEvent<FormChange>): void {
+    emit('change', change instanceof CustomEvent ? change.detail : change);
+  }
 </script>
 
 <template>
@@ -56,6 +60,6 @@
     :touched-paths="touchedPaths"
     :scope="scope"
     :refreshable="refreshable"
-    @change="emit('change', $event)"
+    @change="onChange"
   />
 </template>

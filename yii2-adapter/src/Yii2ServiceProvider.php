@@ -15,6 +15,8 @@ use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
+use CraftCms\Cms\Form\FormControlTypes;
+use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
@@ -43,6 +45,8 @@ use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
+use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlDirectives;
@@ -107,6 +111,8 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
+        $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
          * Load the legacy fallback route from booted() so it registers after
          * the CMS package's own Route::fallback(), ensuring that unmatched
