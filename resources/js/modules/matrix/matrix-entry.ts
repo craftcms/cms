@@ -188,12 +188,13 @@ export class MatrixEntry extends Base {
 
     this.visibleLayoutElements = this.dataJson('visible-layout-elements');
     this.staticLayoutElements = this.dataJson('static-layout-elements');
-
-    setTimeout(() => {
-      this.formObserver = new (craft().FormObserver)(container, (data) => {
-        this.updateFieldLayout(data);
-      });
-    }, 1);
+    if (container.hasAttribute('data-field-layout-id')) {
+      setTimeout(() => {
+        this.formObserver = new (craft().FormObserver)(container, (data) => {
+          this.updateFieldLayout(data);
+        });
+      }, 1);
+    }
   }
 
   /** Reads a JSON-ish data attribute the way jQuery `.data()` did. */
@@ -362,9 +363,9 @@ export class MatrixEntry extends Base {
     }
 
     // Remember that?
-    if (!this.isNew) {
+    if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.rememberCollapsedEntryId(this.id!);
-    } else {
+    } else if (!this.matrix.settings!.formControl) {
       if (!this.collapsedInput) {
         this.collapsedInput = document.createElement('input');
         this.collapsedInput.type = 'hidden';
@@ -511,9 +512,9 @@ export class MatrixEntry extends Base {
     heightAnimation.finished.then(finishExpand).catch(() => {});
 
     // Remember that?
-    if (!this.isNew) {
+    if (!this.matrix.settings!.formControl && !this.isNew) {
       MatrixInput.forgetCollapsedEntryId(this.id!);
-    } else if (this.collapsedInput) {
+    } else if (!this.matrix.settings!.formControl && this.collapsedInput) {
       this.collapsedInput.value = '';
     }
 
@@ -703,6 +704,14 @@ export class MatrixEntry extends Base {
 
   selfDestruct(): void {
     this.destroy();
+
+    if (this.matrix.settings!.formControl) {
+      this.container.remove();
+      this.matrix.updateAddEntryBtn();
+      this.matrix.trigger('entryDeleted', {$entry: this.container});
+
+      return;
+    }
 
     // Remove any inputs from the form data
     for (const el of this.container.querySelectorAll('[name]')) {

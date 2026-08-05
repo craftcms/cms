@@ -16,6 +16,9 @@ import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
+import MatrixControl from './MatrixControl.vue';
+import ContentBlockControl from './ContentBlockControl.vue';
+import './content-block-input';
 
 export function registerFormComponents(
   components: Pick<CpComponentRegistry, 'register'>
@@ -40,4 +43,6 @@ export function registerFormComponents(
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
+  components.register('craft:matrix', MatrixControl);
+  components.register('craft:content-block', ContentBlockControl);
 }

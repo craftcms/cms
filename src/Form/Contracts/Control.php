@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form\Contracts;
 
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 
 interface Control
@@ -78,4 +79,11 @@ interface Control
      * @return array<string, mixed>
      */
     public function props(mixed $value = null): array;
+
+    /**
+     * Returns Forms owned by this Control, scoped relative to its path.
+     *
+     * @return list<array{scope: string|list<string>, form: Form, refreshable: bool}>
+     */
+    public function nestedForms(mixed $value = null): array;
 }

@@ -56,6 +56,7 @@ export interface MatrixInputSettings extends GarnishBaseSettings {
    * the auto-added entries still register as changes).
    */
   addDefaultEntries: {type: string; count: number} | null;
+  formControl: boolean;
 }
 
 /** The jQuery `'fast'` duration the legacy velocity calls used. */
@@ -77,7 +78,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     siteId: null,
     staticEntries: false,
     addDefaultEntries: null,
+    formControl: false,
   };
+
+  entryFactory: ((type: string) => HTMLElement) | null = null;
 
   static get collapsedEntryStorageKey(): string {
     return `Craft-${craft().systemUid}.MatrixInput.collapsedEntries`;
@@ -121,7 +125,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   entryTypes: MatrixEntryType[];
   entryTypesByHandle: Record<string, MatrixEntryType> = {};
   inputNamePrefix: string;
-  inputIdPrefix: string;
 
   container: HTMLElement | null = null;
   form: HTMLElement | null = null;
@@ -150,7 +153,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     this.id = id;
     this.entryTypes = entryTypes;
     this.inputNamePrefix = inputNamePrefix;
-    this.inputIdPrefix = craft().formatInputId(inputNamePrefix);
 
     // see if settings was actually set to the maxEntries value
     if (typeof settings === 'number') {
@@ -183,10 +185,12 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     const entries = this.entryElements();
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
+    const collapsedEntries = this.settings!.formControl
+      ? []
+      : MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    if (craft().hasMousePointerEvents()) {
+    if (this.settings!.formControl || craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
@@ -224,18 +228,20 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     // `Garnish.Select` has no modern port yet — see ./interop.
-    this.entrySelect = new (legacyGarnish().Select)(
-      this.entriesContainer,
-      entries,
-      {
-        multi: true,
-        vertical: true,
-        handle: '> .actions > .checkbox, > .titlebar',
-        filter: (target: unknown) =>
-          !(target as HTMLElement).closest?.('.tab-label'),
-        checkboxMode: true,
-      }
-    );
+    if (!this.settings!.formControl) {
+      this.entrySelect = new (legacyGarnish().Select)(
+        this.entriesContainer,
+        entries,
+        {
+          multi: true,
+          vertical: true,
+          handle: '> .actions > .checkbox, > .titlebar',
+          filter: (target: unknown) =>
+            !(target as HTMLElement).closest?.('.tab-label'),
+          checkboxMode: true,
+        }
+      );
+    }
 
     for (const container of entries) {
       const entry = new MatrixEntry(this, container);
@@ -244,7 +250,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       }
     }
 
-    if (this.addEntryBtn) {
+    if (this.addEntryBtn && !this.settings!.formControl) {
       this.addListener(this.addEntryBtn, 'activate', async () => {
         const btn = this.addEntryBtn!;
         if (btn.classList.contains('loading')) {
@@ -260,7 +266,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    for (const btn of this.addEntryMenuBtns) {
+    for (const btn of this.settings!.formControl ? [] : this.addEntryMenuBtns) {
       // The disclosure menu is initialized by the legacy bundle and stored in
       // jQuery data; its container holds the per-type buttons.
       const menu = jqData(btn, 'disclosureMenu') as
@@ -322,15 +328,17 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    craft().cp.onCopyElements((elementInfo, buttonLabel) => {
-      this.updatePasteBtn(elementInfo);
-      if (this.pasteBtn && buttonLabel) {
-        const label = this.pasteBtn.querySelector('.label');
-        if (label) {
-          label.textContent = buttonLabel;
+    if (!this.settings!.formControl) {
+      craft().cp.onCopyElements((elementInfo, buttonLabel) => {
+        this.updatePasteBtn(elementInfo);
+        if (this.pasteBtn && buttonLabel) {
+          const label = this.pasteBtn.querySelector('.label');
+          if (label) {
+            label.textContent = buttonLabel;
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /** The field's current top-level `.matrixblock` elements. */
@@ -357,6 +365,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   canPaste(elementInfo: CopiedElementInfo[]): boolean {
+    if (this.settings!.formControl) {
+      return false;
+    }
+
     if (!this.canAddMoreEntries(elementInfo.length)) {
       return false;
     }
@@ -486,6 +498,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   updatePasteBtn(elementInfo: CopiedElementInfo[] | null = null): void {
+    if (this.settings!.formControl) {
+      return;
+    }
+
     elementInfo = elementInfo || craft().cp.getCopiedElements();
     if (this.canPaste(elementInfo)) {
       if (!this.pasteBtn) {
@@ -528,6 +544,24 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   ): Promise<void> {
     if (!this.canAddMoreEntries()) {
       this.updateStatusMessage();
+      return;
+    }
+
+    if (this.entryFactory) {
+      const entry = this.entryFactory(type);
+
+      if (insertBefore?.isConnected) {
+        insertBefore.before(entry);
+      } else {
+        this.entriesContainer?.append(entry);
+      }
+
+      new MatrixEntry(this, entry);
+      this.entrySort?.addItems(entry);
+      this.entrySelect?.addItems(entry);
+      this.updateAddEntryBtn();
+      this.trigger('entryAdded', {$entry: entry});
+
       return;
     }
 

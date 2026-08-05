@@ -9,12 +9,14 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
 use CraftCms\Cms\Form\Controls\Markdown;
+use CraftCms\Cms\Form\Controls\Matrix;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
@@ -39,12 +41,14 @@ class FormControlTypes extends TypeRegistry
         Address::class,
         Choice::class,
         Color::class,
+        ContentBlock::class,
         Date::class,
         ElementSelect::class,
         IconPicker::class,
         Lightswitch::class,
         Link::class,
         Markdown::class,
+        Matrix::class,
         Money::class,
         Number::class,
         Range::class,

@@ -12,6 +12,8 @@ use Throwable;
 
 class FormHtmlRenderer
 {
+    private ?FormPayload $payload = null;
+
     public function __construct(
         private readonly FormNodeTypes $nodeTypes,
         private readonly FormControlTypes $controlTypes,
@@ -19,7 +21,13 @@ class FormHtmlRenderer
 
     public function render(FormPayload $payload): string
     {
-        return $this->globalErrors($payload->globalErrors).$this->renderNodes($payload->nodes, $payload);
+        $this->payload = $payload;
+
+        try {
+            return $this->globalErrors($payload->globalErrors).$this->renderNodes($payload->nodes, $payload);
+        } finally {
+            $this->payload = null;
+        }
     }
 
     /** @param list<NodePayload> $nodes */
@@ -29,6 +37,15 @@ class FormHtmlRenderer
             fn (NodePayload $node): string => $this->renderNode($node, $payload),
             $nodes,
         ));
+    }
+
+    public function renderNestedForm(NestedFormPayload $form): string
+    {
+        if ($this->payload === null) {
+            throw new RuntimeException('Nested Forms can only be rendered within a Form payload.');
+        }
+
+        return $this->renderNodes($form->nodes, $this->payload);
     }
 
     private function renderNode(NodePayload $node, FormPayload $payload): string

@@ -20,6 +20,8 @@
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
+    scope: string[];
+    refreshable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
@@ -81,6 +83,8 @@
     emit('change', {
       kind,
       path: control.value.path,
+      scope: props.scope,
+      refreshable: props.refreshable,
     });
   }
 
@@ -110,10 +114,16 @@
       :editable="editable"
       :invalid="controlErrors.length > 0"
       :required="Boolean(node.props.required)"
+      :values="values"
+      :errors="errors"
+      :touched-paths="touchedPaths"
+      :form-scope="scope"
+      :form-refreshable="refreshable"
       :aria-invalid="controlErrors.length ? 'true' : undefined"
       :data-form-control-path="JSON.stringify(control.path)"
       :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
       @update:value="setValue"
+      @change="emit('change', $event)"
     />
     <ul v-if="controlErrors.length" slot="feedback" class="error-list">
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>

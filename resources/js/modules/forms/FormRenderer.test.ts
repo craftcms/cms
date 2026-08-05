@@ -407,7 +407,7 @@ describe('FormRenderer', () => {
     vi.useFakeTimers();
     const refresh = vi.fn(async (values: FormPayload['values']) => ({
       ...payload,
-      values,
+      values: {settings: values},
     })) as unknown as (values: FormPayload['values']) => Promise<FormPayload>;
     app.unmount();
     const refreshable = structuredClone(payload) as Mutable<FormPayload>;
@@ -426,9 +426,10 @@ describe('FormRenderer', () => {
     await vi.advanceTimersByTimeAsync(1);
 
     expect(refresh).toHaveBeenCalledOnce();
-    expect(refresh).toHaveBeenCalledWith({
-      settings: expect.objectContaining({placeholder: 'Changed in Vue'}),
-    });
+    expect(refresh).toHaveBeenCalledWith(
+      expect.objectContaining({placeholder: 'Changed in Vue'}),
+      ['settings']
+    );
 
     placeholder.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
@@ -1285,6 +1286,204 @@ describe('FormRenderer', () => {
     }
   });
 
+  it('edits nested Controls as one ordered atomic mutation', async () => {
+    vi.useFakeTimers();
+    let mutation: FormPayload['values'] = {};
+    const nested = structuredClone(payload) as Mutable<FormPayload>;
+    const textControl = (uid: string, path: string) => ({
+      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+      component: 'craft:text',
+      props: {inputType: 'text'},
+      path: ['settings', 'matrix', 'entries', uid, path],
+      mode: 'editable' as const,
+      deltaGroup: ['settings', 'matrix'],
+      forms: [],
+    });
+    const fieldNode = (
+      label: string,
+      control: ReturnType<typeof textControl> | Record<string, unknown>
+    ) => ({
+      type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label, instructions: null, required: false},
+      control,
+    });
+    const firstScope = ['settings', 'matrix', 'entries', 'block-a'];
+    const secondScope = ['settings', 'matrix', 'entries', 'block-b'];
+    const contentScope = [...firstScope, 'content'];
+    nested.refreshable = false;
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {
+            'block-a': {
+              type: 'text',
+              heading: 'First',
+              content: {body: 'Nested body'},
+            },
+            'block-b': {type: 'text', heading: 'Second'},
+          },
+          sortOrder: ['block-a', 'block-b'],
+        },
+      },
+    };
+    nested.nodes = [
+      fieldNode('Content', {
+        type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+        component: 'craft:matrix',
+        props: {
+          entryTypes: [{value: 'text', label: 'Text'}],
+          addLabel: 'Add an entry',
+          minEntries: null,
+          maxEntries: null,
+        },
+        path: ['settings', 'matrix'],
+        mode: 'editable',
+        deltaGroup: ['settings', 'matrix'],
+        forms: [
+          {
+            scope: firstScope,
+            refreshable: true,
+            nodes: [
+              fieldNode('Heading', textControl('block-a', 'heading')),
+              fieldNode('Content block', {
+                type: 'CraftCms\\Cms\\Form\\Controls\\ContentBlock',
+                component: 'craft:content-block',
+                props: {
+                  addLabel: 'Add content',
+                  clearLabel: 'Clear content',
+                  emptyLabel: 'No content.',
+                },
+                path: [...firstScope, 'content'],
+                mode: 'editable',
+                deltaGroup: ['settings', 'matrix'],
+                forms: [
+                  {
+                    scope: contentScope,
+                    refreshable: true,
+                    nodes: [
+                      fieldNode('Body', {
+                        ...textControl('block-a', 'body'),
+                        path: [...contentScope, 'body'],
+                      }),
+                    ],
+                  },
+                ],
+              }),
+            ],
+          },
+          {
+            scope: secondScope,
+            refreshable: true,
+            nodes: [fieldNode('Heading', textControl('block-b', 'heading'))],
+          },
+        ],
+      }),
+    ] as Mutable<FormPayload>['nodes'];
+    nested.errors = [
+      {path: [...contentScope, 'body'], messages: ['Body is invalid.']},
+    ];
+    const firstForm = nested.nodes[0]!.control!.forms![0]!;
+    const refresh = vi.fn(
+      async (_values: FormPayload['values'], scope?: string[]) => ({
+        ...nested,
+        scope: scope!,
+        refreshable: firstForm.refreshable,
+        nodes: firstForm.nodes,
+      })
+    );
+    app.unmount();
+    await mount(nested, {
+      refresh,
+      onMutation: (value) => (mutation = value),
+    });
+
+    expect(container.querySelectorAll('.matrixblock')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-content-block]')).toHaveLength(1);
+    expect(container.textContent).toContain('Body is invalid.');
+    const heading = container.querySelector<HTMLInputElement>(
+      'input[name="settings[matrix][entries][block-a][heading]"]'
+    )!;
+    heading.value = 'Changed';
+    heading.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).toEqual({
+      settings: {
+        matrix: {
+          entries: {
+            'block-a': {
+              type: 'text',
+              heading: 'Changed',
+              content: {body: 'Nested body'},
+            },
+            'block-b': {type: 'text', heading: 'Second'},
+          },
+          sortOrder: ['block-a', 'block-b'],
+        },
+      },
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(refresh).toHaveBeenCalledWith(expect.any(Object), firstScope);
+
+    const reorder = container.querySelectorAll('craft-reorder-button')[1]!;
+    reorder.dispatchEvent(
+      new CustomEvent('reorder', {
+        bubbles: true,
+        composed: true,
+        detail: {direction: 'up'},
+      })
+    );
+    await nextTick();
+    expect(
+      (renderer.currentValues().settings as Record<string, any>).matrix
+        .sortOrder
+    ).toEqual(['block-b', 'block-a']);
+
+    container
+      .querySelector<HTMLElement>('[data-form-matrix-add="text"]')!
+      .click();
+    await nextTick();
+    const addedMatrix = (
+      renderer.currentValues().settings as Record<string, any>
+    ).matrix;
+    const addedUid = addedMatrix.sortOrder.at(-1);
+    expect(addedMatrix.entries[addedUid]).toEqual({type: 'text'});
+    expect(
+      (mutation.settings as Record<string, any>).matrix.sortOrder
+    ).toContain(addedUid);
+
+    const clearContent = [...container.querySelectorAll('craft-button')].find(
+      (button) => button.textContent?.includes('Clear content')
+    )!;
+    clearContent.click();
+    await nextTick();
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        matrix: {entries: {'block-a': {content: null}}},
+      },
+    });
+
+    while (
+      container.querySelector<HTMLElement>(
+        '.matrixblock craft-button[data-form-matrix-remove]'
+      )
+    ) {
+      container
+        .querySelector<HTMLElement>(
+          '.matrixblock craft-button[data-form-matrix-remove]'
+        )!
+        .click();
+      await nextTick();
+    }
+
+    expect(mutation).toEqual({
+      settings: {matrix: {entries: {}, sortOrder: []}},
+    });
+    expect(new FormData(form).get('settings[matrix]')).toBe('');
+    vi.useRealTimers();
+  });
+
   it.each(['readOnly', 'disabled'] as const)(
     'displays values without names in %s mode',
     async (mode) => {
@@ -1303,7 +1502,10 @@ describe('FormRenderer', () => {
   async function mount(
     formPayload: FormPayload,
     options: {
-      refresh?: (values: FormPayload['values']) => Promise<FormPayload>;
+      refresh?: (
+        values: FormPayload['values'],
+        scope?: string[]
+      ) => Promise<FormPayload>;
       onMutation?: (mutation: FormPayload['values']) => void;
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
@@ -1347,6 +1549,9 @@ function visitControls(
   for (const node of nodes) {
     if (node.control) {
       visit(node.control);
+      node.control.forms?.forEach((form) =>
+        visitControls(form.nodes as Mutable<FormPayload>['nodes'], visit)
+      );
     }
 
     if (node.children) {

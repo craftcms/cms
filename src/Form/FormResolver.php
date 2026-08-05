@@ -57,8 +57,13 @@ class FormResolver
     /**
      * @param  list<string>  $namespace
      */
-    private function resolveNode(Node $node, FormContext $context, array $namespace): NodePayload
-    {
+    private function resolveNode(
+        Node $node,
+        FormContext $context,
+        array $namespace,
+        ?array $inheritedDeltaGroup = null,
+        ?ControlMode $inheritedMode = null,
+    ): NodePayload {
         $type = $node::class;
         $component = $node->component();
         $control = $node->getControl();
@@ -81,11 +86,13 @@ class FormResolver
                 throw new InvalidArgumentException("Form Node [{$type}] with component [{$component}] at [{$identity}] requires a stable UID.");
             }
 
-            if (in_array($uid, $this->nodeUids, true)) {
+            $scopedUid = Json::encode([...$namespace, $uid], JSON_THROW_ON_ERROR);
+
+            if (in_array($scopedUid, $this->nodeUids, true)) {
                 throw new InvalidArgumentException("Duplicate Node UID [{$uid}] for Form Node [{$type}] with component [{$component}].");
             }
 
-            $this->nodeUids[] = $uid;
+            $this->nodeUids[] = $scopedUid;
         }
 
         return new NodePayload(
@@ -93,10 +100,22 @@ class FormResolver
             component: $component,
             props: $props,
             uid: $uid,
-            control: $control !== null ? $this->resolveControl($control, $context, $namespace) : null,
+            control: $control !== null ? $this->resolveControl(
+                $control,
+                $context,
+                $namespace,
+                $inheritedDeltaGroup,
+                $inheritedMode,
+            ) : null,
             children: $control === null || $children !== []
                 ? array_map(
-                    fn (Node $child): NodePayload => $this->resolveNode($child, $context, $namespace),
+                    fn (Node $child): NodePayload => $this->resolveNode(
+                        $child,
+                        $context,
+                        $namespace,
+                        $inheritedDeltaGroup,
+                        $inheritedMode,
+                    ),
                     $children,
                 )
                 : null,
@@ -106,8 +125,13 @@ class FormResolver
     /**
      * @param  list<string>  $namespace
      */
-    private function resolveControl(Control $control, FormContext $context, array $namespace): ControlPayload
-    {
+    private function resolveControl(
+        Control $control,
+        FormContext $context,
+        array $namespace,
+        ?array $inheritedDeltaGroup = null,
+        ?ControlMode $inheritedMode = null,
+    ): ControlPayload {
         $type = $control::class;
         $component = $control->component();
         $path = [...$namespace, ...$this->normalizePath(
@@ -134,14 +158,14 @@ class FormResolver
             throw new InvalidArgumentException("Duplicate Control path [{$identity}] for type [{$type}] with component [{$component}].");
         }
 
-        $mode = $context->mode === ControlMode::Editable ? $control->getMode() : $context->mode;
+        $mode = $inheritedMode ?? ($context->mode === ControlMode::Editable ? $control->getMode() : $context->mode);
         $deltaGroup = $control->getDeltaGroup();
-        $deltaGroup = $deltaGroup === null
+        $deltaGroup = $inheritedDeltaGroup ?? ($deltaGroup === null
             ? $path
             : [...$namespace, ...$this->normalizePath(
                 $deltaGroup,
                 "Form Control [{$type}] with component [{$component}] at [{$identity}] delta group",
-            )];
+            )]);
 
         if (array_slice($path, 0, count($deltaGroup)) !== $deltaGroup) {
             throw new InvalidArgumentException("Control delta groups must be ancestors of their paths; type [{$type}], component [{$component}], path [{$identity}].");
@@ -150,6 +174,32 @@ class FormResolver
         $this->set($this->values, $path, $value);
         $this->controlPaths[] = $path;
 
+        $forms = array_map(function (array $definition) use ($context, $path, $deltaGroup, $mode, $type, $component, $identity): NestedFormPayload {
+            if (! isset($definition['scope'], $definition['form'], $definition['refreshable']) || ! $definition['form'] instanceof Form || ! is_bool($definition['refreshable'])) {
+                throw new InvalidArgumentException("Nested Forms for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
+            }
+
+            $scope = [...$path, ...$this->normalizePath(
+                $definition['scope'],
+                "Nested Form for Control [{$type}] with component [{$component}] at [{$identity}]",
+            )];
+
+            return new NestedFormPayload(
+                scope: $scope,
+                refreshable: $definition['refreshable'],
+                nodes: array_map(
+                    fn (Node $node): NodePayload => $this->resolveNode(
+                        $node,
+                        $context,
+                        $scope,
+                        $deltaGroup,
+                        $mode === ControlMode::Editable ? null : $mode,
+                    ),
+                    $definition['form']->nodes(),
+                ),
+            );
+        }, $control->nestedForms($value));
+
         return new ControlPayload(
             type: $type,
             component: $component,
@@ -157,6 +207,7 @@ class FormResolver
             path: $path,
             mode: $mode,
             deltaGroup: $deltaGroup,
+            forms: $forms,
         );
     }
 

@@ -10,6 +10,8 @@
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
+    scope: string[];
+    refreshable: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
@@ -52,6 +54,8 @@
     :values="values"
     :errors="errors"
     :touched-paths="touchedPaths"
+    :scope="scope"
+    :refreshable="refreshable"
     @change="emit('change', $event)"
   />
 </template>

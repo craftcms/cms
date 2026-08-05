@@ -177,7 +177,7 @@
     const {data} = await actionClient.post(renderSettings().url, {
       type: form.type,
       oldType: form.type,
-      values: values.settings,
+      values,
     });
 
     if (!data.form) {

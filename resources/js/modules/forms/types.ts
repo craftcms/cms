@@ -5,7 +5,10 @@ type GeneratedFormControlPayload = NonNullable<
 >;
 
 export type FormControlPayload<Props extends object = Record<string, unknown>> =
-  Omit<GeneratedFormControlPayload, 'props'> & {props: Props};
+  Omit<GeneratedFormControlPayload, 'props' | 'forms'> & {
+    props: Props;
+    forms?: NestedFormPayload[];
+  };
 
 export type FormNodePayload<
   Props extends object = Record<string, unknown>,
@@ -23,9 +26,17 @@ export type FormPayload<
   nodes: FormNodePayload<NodeProps, ControlProps>[];
 };
 
+export type NestedFormPayload = {
+  scope: string[];
+  refreshable: boolean;
+  nodes: FormNodePayload[];
+};
+
 export type FormChangeKind = 'discrete' | 'typing';
 
 export type FormChange = {
   kind: FormChangeKind;
   path: string[];
+  scope?: string[];
+  refreshable?: boolean;
 };

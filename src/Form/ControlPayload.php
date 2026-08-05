@@ -16,6 +16,7 @@ readonly class ControlPayload implements JsonSerializable
      * @param  array<string, mixed>  $props
      * @param  list<string>  $path
      * @param  list<string>  $deltaGroup
+     * @param  list<NestedFormPayload>  $forms
      */
     public function __construct(
         public string $type,
@@ -25,6 +26,7 @@ readonly class ControlPayload implements JsonSerializable
         public array $path,
         public ControlMode $mode,
         public array $deltaGroup,
+        public array $forms = [],
     ) {}
 
     /** @return array<string, mixed> */
@@ -37,6 +39,9 @@ readonly class ControlPayload implements JsonSerializable
             'path' => $this->path,
             'mode' => $this->mode->value,
             'deltaGroup' => $this->deltaGroup,
-        ];
+        ] + ($this->forms === [] ? [] : ['forms' => array_map(
+            fn (NestedFormPayload $form): array => $form->jsonSerialize(),
+            $this->forms,
+        )]);
     }
 }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\Contracts\Control as ControlContract;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 
 abstract class Control implements ControlContract
 {
@@ -122,6 +123,14 @@ abstract class Control implements ControlContract
      * @return array<string, mixed>
      */
     public function props(mixed $value = null): array
+    {
+        return [];
+    }
+
+    /**
+     * @return list<array{scope: string|list<string>, form: Form, refreshable: bool}>
+     */
+    public function nestedForms(mixed $value = null): array
     {
         return [];
     }

@@ -23,7 +23,10 @@
 
   const props = defineProps<{
     payload: FormPayload;
-    refresh?: (values: FormPayload['values']) => Promise<FormPayload>;
+    refresh?: (
+      values: FormPayload['values'],
+      scope?: string[]
+    ) => Promise<FormPayload>;
     errors?: FormPayload['errors'];
   }>();
   const emit = defineEmits<{
@@ -35,9 +38,14 @@
   const hostForm = computed(() => root.value?.closest('form'));
   const values = reactive(structuredClone(props.payload.values));
   let baseline = structuredClone(props.payload.values);
-  let refreshTimer: ReturnType<typeof setTimeout> | undefined;
-  let latestRequest = 0;
-  let lastRefreshValues = canonical(values);
+  const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const refreshVersions = new Map<string, number>();
+  const lastRefreshValues = new Map([
+    [
+      JSON.stringify(props.payload.scope),
+      canonical(valueAt(values, props.payload.scope)),
+    ],
+  ]);
   const knownControlPaths = new Map<string, string[]>();
   const touchedPaths = new Set<string>();
   rememberControlPaths(props.payload.nodes);
@@ -59,47 +67,73 @@
     () => props.payload,
     (refreshed) => reconcile(refreshed)
   );
-  onBeforeUnmount(() => clearTimeout(refreshTimer));
+  onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
   function onChange(change: FormChange): void {
-    latestRequest++;
     touchedPaths.add(JSON.stringify(change.path));
     emitMutation();
 
-    if (!props.refresh || !payload.value.refreshable) {
+    const scope = change.scope ?? payload.value.scope;
+    const refreshable = change.refreshable ?? payload.value.refreshable;
+    const key = JSON.stringify(scope);
+    refreshVersions.set(key, (refreshVersions.get(key) ?? 0) + 1);
+
+    if (!props.refresh || !refreshable) {
       return;
     }
 
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(
-      requestRefresh,
-      change.kind === 'typing' ? 1000 : 100
+    clearTimeout(refreshTimers.get(key));
+    refreshTimers.set(
+      key,
+      setTimeout(
+        () => requestRefresh(scope),
+        change.kind === 'typing' ? 1000 : 100
+      )
     );
   }
 
-  async function requestRefresh(): Promise<void> {
-    const snapshot = structuredClone(toRaw(values));
+  async function requestRefresh(scope: string[]): Promise<void> {
+    const snapshot = structuredClone(toRaw(valueAt(values, scope)));
+
+    if (!isRecord(snapshot)) {
+      throw new Error(
+        `Form scope [${scope.join('.')}] must contain an object.`
+      );
+    }
+
+    const key = JSON.stringify(scope);
     const serialized = canonical(snapshot);
 
-    if (serialized === lastRefreshValues) {
+    if (serialized === lastRefreshValues.get(key)) {
       return;
     }
 
-    lastRefreshValues = serialized;
-    const request = ++latestRequest;
+    lastRefreshValues.set(key, serialized);
+    const request = (refreshVersions.get(key) ?? 0) + 1;
+    refreshVersions.set(key, request);
 
     try {
-      const refreshed = await props.refresh!(snapshot);
+      const refreshed = await props.refresh!(snapshot, scope);
 
-      if (request === latestRequest) {
-        reconcile(refreshed);
+      if (request === refreshVersions.get(key)) {
+        reconcile(refreshed, scope);
       }
     } catch {
+      lastRefreshValues.delete(key);
       // The current presentation and values are already the last valid state.
     }
   }
 
-  function reconcile(refreshed: FormPayload): void {
+  function reconcile(
+    refreshed: FormPayload,
+    scope: string[] = payload.value.scope
+  ): void {
+    if (!pathsMatch(refreshed.scope, scope)) {
+      throw new Error(
+        `Refreshed Form scope [${refreshed.scope.join('.')}] does not match [${scope.join('.')}].`
+      );
+    }
+
     renderError.value = undefined;
     const focusedPath = document.activeElement?.closest<HTMLElement>(
       '[data-form-control-path]'
@@ -112,7 +146,28 @@
         setValue(values, control.path, valueAt(refreshed.values, control.path));
       }
     });
-    payload.value = refreshed;
+    if (pathsMatch(scope, payload.value.scope)) {
+      payload.value = refreshed;
+    } else {
+      const current = structuredClone(payload.value);
+      const nested = findNestedForm(current.nodes, scope);
+
+      if (!nested) {
+        throw new Error(
+          `Refreshed Form scope [${scope.join('.')}] was not found.`
+        );
+      }
+
+      nested.nodes = refreshed.nodes;
+      nested.refreshable = refreshed.refreshable;
+      payload.value = {
+        ...current,
+        errors: [
+          ...current.errors.filter((error) => !isWithin(error.path, scope)),
+          ...refreshed.errors,
+        ],
+      };
+    }
     emitMutation();
 
     if (focusedPath) {
@@ -181,6 +236,7 @@
     for (const node of nodes) {
       if (node.control) {
         visit(node.control);
+        node.control.forms?.forEach((form) => visitControls(form.nodes, visit));
       }
 
       if (node.children) {
@@ -193,6 +249,31 @@
     visitControls(nodes, (control) =>
       knownControlPaths.set(JSON.stringify(control.path), control.path)
     );
+  }
+
+  function findNestedForm(
+    nodes: FormNodePayload[],
+    scope: string[]
+  ): NonNullable<FormControlPayload['forms']>[number] | undefined {
+    for (const node of nodes) {
+      for (const form of node.control?.forms ?? []) {
+        if (pathsMatch(form.scope, scope)) {
+          return form;
+        }
+
+        const nested = findNestedForm(form.nodes, scope);
+
+        if (nested) {
+          return nested;
+        }
+      }
+
+      const nested = findNestedForm(node.children ?? [], scope);
+
+      if (nested) {
+        return nested;
+      }
+    }
   }
 
   function groupValue(
@@ -301,6 +382,17 @@
         .map((key) => [key, canonicalValue(value[key])])
     );
   }
+
+  function pathsMatch(left: string[], right: string[]): boolean {
+    return (
+      left.length === right.length &&
+      left.every((segment, index) => segment === right[index])
+    );
+  }
+
+  function isWithin(path: string[], scope: string[]): boolean {
+    return scope.every((segment, index) => path[index] === segment);
+  }
 </script>
 
 <template>
@@ -317,6 +409,8 @@
       :values="values"
       :errors="errors ?? payload.errors"
       :touched-paths="touchedPaths"
+      :scope="payload.scope"
+      :refreshable="payload.refreshable"
       @change="onChange"
     />
   </template>
