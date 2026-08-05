@@ -13,6 +13,7 @@
     _runId = 0;
     _form = null;
     _error = null;
+    _errors = [];
 
     set node(node) {
       this.control = node?.control ?? null;
@@ -26,6 +27,8 @@
 
       if (fragmentKey === this._fragmentKey) {
         this._control = control;
+        applyMode(this, control?.mode);
+        this.renderErrors();
 
         return;
       }
@@ -50,6 +53,11 @@
 
     set values(values) {
       this._values = values;
+    }
+
+    set errors(errors) {
+      this._errors = Array.isArray(errors) ? errors : [];
+      this.renderErrors();
     }
 
     set value(value) {
@@ -156,7 +164,9 @@
           return;
         }
 
+        applyMode(this, this._control?.mode);
         restoreFormInputs(this, this.currentValue());
+        this.renderErrors();
         window.Craft?.initUiElements?.(this);
       } catch (error) {
         if (runId === this._runId) {
@@ -238,11 +248,55 @@
       this.querySelector('[data-legacy-html-error]')?.remove();
     }
 
+    renderErrors() {
+      this.querySelector('[data-legacy-form-errors]')?.remove();
+      this.removeAttribute('aria-invalid');
+
+      const path = this._control?.path ?? [];
+      const errors = this._errors.flatMap((error) =>
+        pathsMatch(error?.path, path) ? (error.messages ?? []) : []
+      );
+
+      if (!errors.length) {
+        return;
+      }
+
+      const list = document.createElement('ul');
+      list.dataset.legacyFormErrors = '';
+      list.className = 'error-list';
+      list.setAttribute('role', 'alert');
+      errors.forEach((error) => {
+        const item = document.createElement('li');
+        item.textContent = String(error);
+        list.appendChild(item);
+      });
+      this.setAttribute('aria-invalid', 'true');
+      this.appendChild(list);
+    }
+
     dispose() {
       while (this._disposers.length) {
         this._disposers.pop()?.();
       }
     }
+  }
+
+  function applyMode(root, mode) {
+    if (mode !== 'disabled') {
+      return;
+    }
+
+    root
+      .querySelectorAll('input, select, textarea, button')
+      .forEach((control) => (control.disabled = true));
+  }
+
+  function pathsMatch(left, right) {
+    return (
+      Array.isArray(left) &&
+      left.length === right.length &&
+      left.every((segment, index) => segment === right[index])
+    );
   }
 
   async function appendHtml(html, parent) {

@@ -116,29 +116,116 @@ describe('Legacy HTML Form Control', () => {
   });
 
   it('preserves captured disabled values during hydration', async () => {
-    const {container} = await mount({
-      html: '<input name="settings[title]" value="Captured" disabled>',
-      headHtml: '',
-      bodyHtml: '',
-    });
+    const {container} = await mount(
+      {
+        html: '<input name="settings[title]" value="Captured">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {mode: 'disabled', values: {__legacy: {}}}
+    );
 
+    await vi.waitFor(() => {
+      const input = container.querySelector<HTMLInputElement>(
+        '[name="settings[title]"]'
+      );
+
+      expect(input?.value).toBe('Captured');
+      expect(input?.disabled).toBe(true);
+    });
+  });
+
+  it('renders Form errors owned by a legacy input root', async () => {
+    const {container} = await mount(
+      {
+        html: '<input name="settings[title]" value="Original">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        errors: [{path: ['__legacy'], messages: ['Title is invalid.']}],
+      }
+    );
+
+    expect(container.querySelector('[aria-invalid="true"]')).not.toBeNull();
     expect(
-      container.querySelector<HTMLInputElement>('[name="settings[title]"]')
-        ?.value
-    ).toBe('Captured');
+      container.querySelector('[data-legacy-form-errors]')?.textContent
+    ).toContain('Title is invalid.');
+  });
+
+  it('refreshes through the shared Form scope protocol', async () => {
+    vi.useFakeTimers();
+    const refresh = vi.fn();
+    const {container} = await mount(
+      {
+        html: '<input name="nested[block][settings][title]" value="Original">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        refreshable: true,
+        refresh,
+        scope: ['nested', 'block'],
+        path: ['nested', 'block', '__legacyFieldLayout', 'legacy-element'],
+        namespace: 'nested[block]',
+        values: {
+          nested: {
+            block: {
+              __legacyFieldLayout: {
+                'legacy-element': {
+                  'nested[block][settings][title]': 'Original',
+                },
+              },
+            },
+          },
+        },
+      }
+    );
+    const input = container.querySelector<HTMLInputElement>(
+      '[name="nested[block][settings][title]"]'
+    )!;
+
+    input.value = 'Edited';
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(refresh).toHaveBeenCalledWith(
+      {
+        __legacyFieldLayout: {
+          'legacy-element': {
+            'nested[block][settings][title]': 'Edited',
+          },
+        },
+      },
+      ['nested', 'block']
+    );
+    vi.useRealTimers();
   });
 });
 
-async function mount(fragment: {
-  html: string;
-  headHtml: string;
-  bodyHtml: string;
-}) {
+async function mount(
+  fragment: {
+    html: string;
+    headHtml: string;
+    bodyHtml: string;
+  },
+  options: {
+    refreshable?: boolean;
+    refresh?: (values: FormPayload['values'], scope: string[]) => void;
+    scope?: string[];
+    path?: string[];
+    namespace?: string;
+    values?: FormPayload['values'];
+    errors?: FormPayload['errors'];
+    mode?: 'editable' | 'readOnly' | 'disabled';
+  } = {}
+) {
   const registry = createCpComponentRegistry();
   const mutation = ref<Record<string, unknown>>({});
   const payload: FormPayload = {
-    scope: [],
-    refreshable: false,
+    scope: options.scope ?? [],
+    refreshable: options.refreshable ?? false,
     nodes: [
       {
         type: 'CraftCms\\Yii2Adapter\\Form\\Nodes\\LegacyHtmlField',
@@ -147,15 +234,15 @@ async function mount(fragment: {
         control: {
           type: 'CraftCms\\Yii2Adapter\\Form\\Controls\\LegacyHtmlControl',
           component: 'craft-legacy:html',
-          props: {fragment, namespace: 'settings'},
-          path: ['__legacy'],
-          mode: 'editable',
-          deltaGroup: ['__legacy'],
+          props: {fragment, namespace: options.namespace ?? 'settings'},
+          path: options.path ?? ['__legacy'],
+          mode: options.mode ?? 'editable',
+          deltaGroup: options.path ?? ['__legacy'],
         },
       },
     ],
-    values: {__legacy: {'settings[title]': 'Original'}},
-    errors: [],
+    values: options.values ?? {__legacy: {'settings[title]': 'Original'}},
+    errors: options.errors ?? [],
     globalErrors: [],
   };
 
@@ -175,6 +262,13 @@ async function mount(fragment: {
       return () =>
         h(FormRenderer, {
           payload,
+          refresh: options.refresh
+            ? async (values: FormPayload['values'], scope: string[]) => {
+                options.refresh!(values, scope);
+
+                return payload;
+              }
+            : undefined,
           'onUpdate:mutation': (value: Record<string, unknown>) => {
             mutation.value = value;
           },

@@ -379,6 +379,7 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Twig\Nodes\NavItem_Node;
 use CraftCms\Cms\Twig\Nodes\NavItemNode;
+use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutElement as LegacyFieldLayoutElement;
 
 class ClassAliases
 {
@@ -655,7 +656,7 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Field\LinkTypes\Sms::class, Sms::class);
         class_alias(\CraftCms\Cms\Field\LinkTypes\Url::class, Url::class);
         class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutComponent::class, FieldLayoutComponent::class);
-        class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutElement::class, FieldLayoutElement::class);
+        class_alias(LegacyFieldLayoutElement::class, FieldLayoutElement::class);
         class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutForm::class, FieldLayoutForm::class);
         class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutFormTab::class, FieldLayoutFormTab::class);
         class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutTab::class, FieldLayoutTab::class);
