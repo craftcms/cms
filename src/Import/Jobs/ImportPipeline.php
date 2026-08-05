@@ -16,8 +16,8 @@ class ImportPipeline extends Job
     /**
      * Promotes steps and run, then calls the parent constructor.
      *
-     * @param array $steps The steps to run in this pipeline.
-     * @param ImportRun $run The import run this pipeline belongs to.
+     * @param  array  $steps  The steps to run in this pipeline.
+     * @param  ImportRun  $run  The import run this pipeline belongs to.
      */
     public function __construct(
         public array $steps,
@@ -40,7 +40,9 @@ class ImportPipeline extends Job
             $steps[] = Bus::batch([$step['job']])->name($step['name'] ?? 'Importing step data')->allowFailures();
         }
 
-        Bus::chain($steps)->dispatch();
+        if (! empty($steps)) {
+            Bus::chain($steps)->dispatch();
+        }
     }
 
     #[Override]

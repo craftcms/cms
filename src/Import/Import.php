@@ -19,6 +19,7 @@ use CraftCms\Cms\Import\Events\ImportRunSaved;
 use CraftCms\Cms\Import\Events\ImportRunSaving;
 use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
+use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
@@ -515,6 +516,10 @@ class Import
         // for each step in the $run
         foreach ($run->steps as $key => $step) {
             $config = $this->getConfigByUid($step['config']) ?? $this->getConfigByHandle($step['config']);
+            if (! $config) {
+                throw new InvalidConfigException($step['config']);
+            }
+
             $file = $config->file ?? $step['file'];
             $filePath = BaseImporter::resolvedFilePath($file);
 

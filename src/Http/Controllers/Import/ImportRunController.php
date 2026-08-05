@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Data\ImportRun;
+use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Importer;
 use Illuminate\Contracts\View\View;
@@ -131,6 +132,8 @@ class ImportRunController
 
         try {
             $this->importService->dispatchImport($run);
+        } catch (InvalidConfigException $e) {
+            return $this->asFailure(t("Import config “{$e->config}” not found. Review “{$run->name}” run and try again."));
         } catch (Throwable $e) {
             Importer::warning("Import run failed: {$e->getMessage()}");
 
