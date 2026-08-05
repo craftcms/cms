@@ -114,11 +114,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     #[Override]
     public function getNodeVisitors(): array
     {
+        $eventTagAdder = new EventTagAdder($this->pageLifecycle);
+
         return [
             new Profiler,
             new GetAttrAdjuster,
-            new EventTagFinder,
-            new EventTagAdder($this->pageLifecycle),
+            new EventTagFinder($eventTagAdder),
+            $eventTagAdder,
         ];
     }
 
