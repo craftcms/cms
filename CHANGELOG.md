@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where Yii-style migrations could be required twice. ([#19376](https://github.com/craftcms/cms/pull/19376))
+
 ## 6.0.0-alpha.15 - 2026-08-04
 
 - Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
