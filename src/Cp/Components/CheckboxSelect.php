@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Support\Html;
 
@@ -25,11 +24,11 @@ class CheckboxSelect extends ChoiceGroup
 {
     use HasDisabled;
 
-    protected Checkbox|Closure|null $allCheckbox = null;
+    protected ?Checkbox $allCheckbox = null;
 
-    protected bool|Closure $sortable = false;
+    protected bool $sortable = false;
 
-    protected string|Closure|null $storageKey = null;
+    protected ?string $storageKey = null;
 
     protected function tagName(): string
     {
@@ -37,7 +36,7 @@ class CheckboxSelect extends ChoiceGroup
     }
 
     /** The "All" checkbox, rendered before the items. */
-    public function allCheckbox(Checkbox|Closure|null $allCheckbox): static
+    public function allCheckbox(?Checkbox $allCheckbox): static
     {
         $this->allCheckbox = $allCheckbox;
 
@@ -45,7 +44,7 @@ class CheckboxSelect extends ChoiceGroup
     }
 
     /** Wraps the fieldset in a `<craft-sortable-checkbox-select>`. */
-    public function sortable(bool|Closure $sortable = true): static
+    public function sortable(bool $sortable = true): static
     {
         $this->sortable = $sortable;
 
@@ -53,7 +52,7 @@ class CheckboxSelect extends ChoiceGroup
     }
 
     /** Storage key for persisting the sort order client-side. */
-    public function storageKey(string|Closure|null $storageKey): static
+    public function storageKey(?string $storageKey): static
     {
         $this->storageKey = $storageKey;
 
@@ -67,7 +66,7 @@ class CheckboxSelect extends ChoiceGroup
             'id' => $this->getId(),
             'class' => 'cp-checkbox-select',
             'data' => [
-                'storage-key' => $this->evaluate($this->storageKey),
+                'storage-key' => $this->storageKey,
             ],
         ];
     }
@@ -79,22 +78,19 @@ class CheckboxSelect extends ChoiceGroup
     #[\Override]
     protected function leadingHtml(): string
     {
-        $allCheckbox = $this->evaluate($this->allCheckbox);
-
-        if ($allCheckbox !== null) {
-            return Html::tag('div', $allCheckbox->toHtml());
+        if ($this->allCheckbox !== null) {
+            return Html::tag('div', $this->allCheckbox->toHtml());
         }
 
-        $name = $this->evaluate($this->name);
-
-        if ($name !== null && (strlen($name) < 3 || ! str_ends_with($name, '[]'))) {
-            return (string) Html::hiddenInput($name, '');
+        if ($this->name !== null && (strlen($this->name) < 3 || ! str_ends_with($this->name, '[]'))) {
+            return (string) Html::hiddenInput($this->name, '');
         }
 
         return '';
     }
 
     #[\Override]
+    /** @return array<string, mixed> */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return ['class' => 'cp-checkbox-select__item'];
@@ -106,7 +102,7 @@ class CheckboxSelect extends ChoiceGroup
     {
         $html = parent::renderMarkup();
 
-        if (! $this->evaluate($this->sortable)) {
+        if (! $this->sortable) {
             return $html;
         }
 

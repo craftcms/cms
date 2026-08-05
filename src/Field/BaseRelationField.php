@@ -52,6 +52,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -72,7 +73,7 @@ use function CraftCms\Cms\template;
 /**
  * BaseRelationField is the base class for classes representing a relational field.
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-import-type InputObjectFieldConfig from InputObjectField
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
@@ -383,6 +384,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      */
     private array|null|ElementConditionInterface $_selectionCondition = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // limit => maxRelations
@@ -592,6 +594,8 @@ JS, [
 
     /**
      * Validates that the number of related elements are within the min/max relation bounds.
+     *
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $value
      */
     public function validateRelationCount(ElementInterface $element, string $attribute, ElementQueryInterface|ElementCollection $value, Validator $validator): void
     {
@@ -639,6 +643,8 @@ JS, [
 
     /**
      * Validates the related elements.
+     *
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $value
      */
     public function validateRelatedElements(ElementInterface $element, ElementQueryInterface|ElementCollection $value, Closure $fail): void
     {
@@ -705,7 +711,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQuery|ElementCollection $value */
+        /** @var ElementQuery<ElementInterface>|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -738,7 +744,7 @@ JS, [
         }
 
         $class = static::elementType();
-        /** @var ElementQuery $query */
+        /** @var ElementQuery<ElementInterface> $query */
         $query = $class::find()
             ->siteId($this->targetSiteId($element));
 
@@ -824,7 +830,7 @@ JS, [
         }
 
         // Get all the instances of this field
-        /** @var Collection<CustomField> $fieldInstances */
+        /** @var Collection<int, CustomField> $fieldInstances */
         $fieldInstances = Collection::make($element?->getFieldLayout()?->getCustomFieldElements())
             ->filter(fn (CustomField $layoutElement) => $layoutElement->getField()->id === $this->id)
             ->sortBy(fn (CustomField $layoutElement) => $layoutElement->dateAdded);
@@ -860,7 +866,7 @@ JS, [
             return array_map(fn (ElementInterface $element) => $element->id, $value);
         }
 
-        /** @var ElementQueryInterface|ElementCollection $value */
+        /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementCollection) {
             return $value->ids()->all();
         }
@@ -885,7 +891,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var ElementQuery $query */
+            /** @var ElementQuery<ElementInterface> $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -934,7 +940,7 @@ JS, [
     }
 
     /**
-     * @param  ElementQueryInterface|ElementCollection  $value
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $value
      * @param  array<int|null>|null  $initialValue
      * @return ElementInterface[]
      */
@@ -971,7 +977,7 @@ JS, [
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQuery|ElementCollection $value */
+        /** @var ElementQuery<ElementInterface>|ElementCollection<int, ElementInterface> $value */
         $titles = [];
 
         if ($value instanceof ElementCollection) {
@@ -990,7 +996,7 @@ JS, [
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
+        /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
             $value = ElementCollection::make($this->_all($value, $element)->all());
         } else {
@@ -1016,6 +1022,8 @@ JS, [
 
     /**
      * Returns the HTML that should be shown for this field in table and card views.
+     *
+     * @param  ElementCollection<int, ElementInterface>  $elements
      */
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -1024,7 +1032,7 @@ JS, [
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
-        /** @var ElementQueryInterface|ElementCollection $value */
+        /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
             $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
             $value = (clone $value)->eagerly($handle);
@@ -1038,7 +1046,11 @@ JS, [
      * set of mappings rather than the list form the interface also allows.
      *
      * @param  ElementInterface[]  $sourceElements
-     * @return EagerLoadingMap|null|false
+     * @return array{
+     *     elementType:class-string<ElementInterface>,
+     *     map:list<array{source:int, target:int}>,
+     *     criteria:array{siteId?:int, orderBy?:array{'structureelements.lft':int}},
+     * }|null|false
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
@@ -1120,6 +1132,8 @@ JS, [
 
     /**
      * Returns the custom field arguments for the selected source(s).
+     *
+     * @return array<string, Type|InputObjectFieldConfig>
      */
     protected function gqlFieldArguments(): array
     {
@@ -1169,7 +1183,7 @@ JS, [
 
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var ElementQuery|ElementCollection $value */
+        /** @var ElementQuery<ElementInterface>|ElementCollection<int, ElementInterface> $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1270,6 +1284,8 @@ JS, [
 
     /**
      * Normalizes the available sources into select input options.
+     *
+     * @return list<array{label:string, value:string, data:array{'structure-id':int|null}}>
      */
     public function getSourceOptions(): array
     {
@@ -1416,6 +1432,14 @@ JS, [
 
     /**
      * Returns an array of variables that should be passed to the settings template.
+     *
+     * @return array{
+     *     field:static,
+     *     upperElementType:string,
+     *     elementType:string,
+     *     pluralElementType:string,
+     *     selectionCondition:string|null,
+     * }
      */
     protected function settingsTemplateVariables(): array
     {
@@ -1452,6 +1476,36 @@ JS, [
      * Returns an array of variables that should be passed to the input template.
      *
      * @param  ElementInterface[]|ElementQueryInterface|null  $value
+     * @return array{
+     *     jsClass:string|null,
+     *     elementType:class-string<ElementInterface>,
+     *     id:string,
+     *     fieldId:int|null,
+     *     storageKey:string,
+     *     describedBy:string|null,
+     *     labelId:string,
+     *     name:string,
+     *     elements:list<ElementInterface>,
+     *     sources:array<array-key, string|null>|string|null,
+     *     searchCriteria:array<string, mixed>|null,
+     *     condition:ElementConditionInterface|null,
+     *     referenceElement:ElementInterface|null,
+     *     criteria:array<string, mixed>,
+     *     showSiteMenu:bool|'auto',
+     *     siteIds:list<int>|null,
+     *     allowSelfRelations:bool,
+     *     maintainHierarchy:bool,
+     *     branchLimit:int|null,
+     *     sourceElementId:int|null,
+     *     disabledElementIds:list<int|null>,
+     *     limit:int|null,
+     *     defaultPlacement:string,
+     *     viewMode:string,
+     *     selectionLabel:string,
+     *     sortable:bool,
+     *     prevalidate:bool,
+     *     modalSettings:array{defaultSiteId:int|null},
+     * }
      */
     protected function inputTemplateVariables(
         array|ElementQueryInterface|null $value = null,
@@ -1572,6 +1626,8 @@ JS, [
 
     /**
      * Returns an array of the source keys the field should be able to select elements from.
+     *
+     * @return array<array-key, string|null>|string|null
      */
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {
@@ -1584,6 +1640,8 @@ JS, [
 
     /**
      * Returns any additional criteria parameters limiting which elements the field should be able to select.
+     *
+     * @return array<string, mixed>
      */
     public function getInputSelectionCriteria(): array
     {
@@ -1678,6 +1736,8 @@ JS, [
 
     /**
      * Returns the field’s supported view modes.
+     *
+     * @return array<string, string>
      */
     protected function supportedViewModes(): array
     {
@@ -1713,6 +1773,8 @@ JS, [
 
     /**
      * Returns the sources that should be available to choose from within the field's settings
+     *
+     * @return list<array{key:string, label:string, structureId?:int}>
      */
     protected function availableSources(): array
     {

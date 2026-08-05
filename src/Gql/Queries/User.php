@@ -8,10 +8,13 @@ use CraftCms\Cms\Gql\Arguments\Elements\User as UserArguments;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\User as UserResolver;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 class User extends Query
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getQueries(bool $checkToken = true): array
     {
         if ($checkToken && ! GqlHelper::canQueryUsers()) {

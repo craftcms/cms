@@ -28,6 +28,7 @@ class ComponentRegistry
         'icon' => Icon::class,
         'input' => Input::class,
         'input-color' => InputColor::class,
+        'input-copy' => InputCopy::class,
         'input-password' => InputPassword::class,
         'lightswitch' => Lightswitch::class,
         'radio' => Radio::class,
@@ -47,6 +48,7 @@ class ComponentRegistry
         $this->components[$name] = $class;
     }
 
+    /** @param array<string, mixed> $config */
     public function make(string $name, array $config = []): ViewComponent
     {
         $class = $this->components[$name] ?? throw new InvalidArgumentException(sprintf(

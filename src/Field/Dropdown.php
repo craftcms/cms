@@ -116,6 +116,7 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         ]);
     }
 
+    /** @return string|list<string> */
     #[\Override]
     protected function encodeValue(MultiOptionsFieldData|OptionData|string|null $value): string|array
     {
@@ -130,6 +131,10 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         return t('Dropdown Options');
     }
 
+    /**
+     * @param  array{label:string, value:string, default?:bool|string, icon?:string|null, color?:string|null}  $option
+     * @param  list<string>  $selectedValues
+     */
     #[\Override]
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {

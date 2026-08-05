@@ -340,6 +340,7 @@ class EditElementController
             Html::endTag('div');
     }
 
+    /** @return list<array<string, mixed>> */
     private function contextMenuItems(
         ElementInterface $element,
         bool $isUnpublishedDraft,
@@ -522,6 +523,7 @@ class EditElementController
         return $this->request->hasHeader('X-Craft-Container-Id');
     }
 
+    /** @param list<array<string, mixed>>|null $previewTargets */
     private function additionalButtons(
         ElementInterface $element,
         ElementInterface $canonical,
@@ -628,6 +630,10 @@ class EditElementController
         return implode("\n", array_filter($components));
     }
 
+    /**
+     * @param  list<array<string, mixed>>  $previewTargets
+     * @return list<array<string, mixed>>
+     */
     private function actionMenuItems(ElementInterface $element, array $previewTargets): array
     {
         if (! $element->id) {
@@ -665,7 +671,7 @@ class EditElementController
         callable $contentFn,
         callable $sidebarFn,
         callable $jsSettingsFn,
-    ) {
+    ): void {
         $fieldLayout = $element->getFieldLayout();
         $form = $fieldLayout?->createForm($element, ! $canSave, [
             'registerDeltas' => true,

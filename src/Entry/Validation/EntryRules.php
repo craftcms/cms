@@ -20,6 +20,7 @@ use function CraftCms\Cms\t;
  */
 class EntryRules extends ElementRules
 {
+    /** @return array<string, array<int, string|Closure|object>> */
     #[Override]
     public function rules(): array
     {

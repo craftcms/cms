@@ -29,7 +29,7 @@ readonly class TokensController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index()
+    public function index(): \Inertia\Response
     {
         return Inertia::render('graphql/tokens/Index', [
             'crumbs' => fn () => [
@@ -149,6 +149,7 @@ readonly class TokensController extends GqlController
             ]);
     }
 
+    /** @return array<string, bool|int|string|null> */
     private function tokenData(GqlToken $token): array
     {
         return [
@@ -161,6 +162,7 @@ readonly class TokensController extends GqlController
         ];
     }
 
+    /** @return list<array{label:string|null, value:string}> */
     private function schemaOptions(GqlToken $token): array
     {
         $publicSchema = $this->gql->getPublicSchema();

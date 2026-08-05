@@ -298,7 +298,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     const $chipContent = $('<div/>', {class: 'chip-content'}).appendTo(
       $element
     );
-    const $titleContainer = $('<craft-element-label/>', {
+    const $titleContainer = $('<craft-truncate/>', {
       class: 'label',
     }).appendTo($chipContent);
 

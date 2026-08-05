@@ -111,6 +111,7 @@ enum TemplateMode: string
         }, '/\\');
     }
 
+    /** @return array<string, list<string>> */
     public function templateRoots(): array
     {
         return app(TemplateRoots::class)->roots($this);

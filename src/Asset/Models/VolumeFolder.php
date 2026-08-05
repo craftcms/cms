@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Models;
 
+use CraftCms\Cms\Database\Factories\VolumeFolderFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class VolumeFolder extends BaseModel
 {
+    /** @use HasFactory<VolumeFolderFactory> */
     use HasFactory;
+
     use HasUid;
 
     #[\Override]

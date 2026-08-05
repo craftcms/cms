@@ -56,6 +56,8 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
     /**
      * Returns configuration that JavaScript link pickers can use to render
      * this link type without relying on the Link field's server-rendered input.
+     *
+     * @return array{id:string, label:string, kind:string}
      */
     public function pickerConfig(): array
     {

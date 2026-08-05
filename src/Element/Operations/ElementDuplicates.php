@@ -40,6 +40,8 @@ readonly class ElementDuplicates
     ) {}
 
     /**
+     * @param  array<string, mixed>  $newAttributes
+     *
      * @throws UnsupportedSiteException
      * @throws InvalidElementException
      * @throws HttpException

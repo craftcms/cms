@@ -15,7 +15,7 @@ class ElementsHydrated
         public array $elements,
 
         /**
-         * @var array[] The element query’s raw result data
+         * @var array<int, array<string, mixed>> The element query’s raw result data
          */
         public array $rows,
     ) {}

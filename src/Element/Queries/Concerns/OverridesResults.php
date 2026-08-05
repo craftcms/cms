@@ -21,7 +21,7 @@ trait OverridesResults
     private ?array $override = null;
 
     /**
-     * @var array|null The criteria params that were set when the cached element query result was set
+     * @var array<string, mixed>|null The criteria params that were set when the cached element query result was set
      *
      * @see setResultOverride()
      */

@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -277,6 +278,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $value;
     }
 
+    /** @return list<ColorRule|ConditionalRules> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {

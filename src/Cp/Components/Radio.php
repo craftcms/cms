@@ -31,6 +31,7 @@ class Radio extends Checkbox
     }
 
     #[\Override]
+    /** @return array<string, mixed> */
     protected function inputDefaults(): array
     {
         return [

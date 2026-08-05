@@ -53,7 +53,7 @@ class AuthMethods
     public private(set) ?AuthError $authError = null;
 
     /**
-     * @var Collection<int, Collection<AuthMethodInterface>>
+     * @var Collection<int, Collection<int, AuthMethodInterface>>
      */
     private Collection $methods;
 
@@ -74,7 +74,7 @@ class AuthMethods
     }
 
     /**
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getAllMethods(?CraftUser $user = null): Collection
     {
@@ -133,7 +133,7 @@ class AuthMethods
     }
 
     /**
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getAvailableMethods(?CraftUser $user = null): Collection
     {
@@ -170,7 +170,7 @@ class AuthMethods
     /**
      * Returns the authentication methods that are active for the given user.
      *
-     * @return Collection<AuthMethodInterface>
+     * @return Collection<int, covariant AuthMethodInterface>
      */
     public function getActiveMethods(?CraftUser $user = null): Collection
     {
@@ -181,11 +181,6 @@ class AuthMethods
 
     /**
      * Returns an authentication method by its class name.
-     *
-     * @template T of AuthMethodInterface
-     *
-     * @param  class-string<T>  $class
-     * @return T
      *
      * @throws InvalidArgumentException
      */
@@ -260,6 +255,7 @@ class AuthMethods
         return false;
     }
 
+    /** @param array{password: string|null} $credentials */
     public function authenticate(CraftUser $user, #[SensitiveParameter] array $credentials): bool
     {
         event($event = new UserAuthenticating($credentials));
@@ -356,6 +352,7 @@ class AuthMethods
         return is_null($this->authError);
     }
 
+    /** @param class-string<AuthMethodInterface> $methodClass */
     public function verifyMethod(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser();

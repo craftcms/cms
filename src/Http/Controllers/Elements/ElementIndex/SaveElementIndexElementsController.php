@@ -82,8 +82,8 @@ class SaveElementIndexElementsController
 
     /**
      * @param  class-string<ElementInterface>  $elementType
-     * @param  array<string, array>  $data
-     * @return Collection<ElementInterface>
+     * @param  array<string, array<string, mixed>>  $data
+     * @return Collection<int, ElementInterface>
      */
     private function getElements(string $elementType, int $siteId, array $data): Collection
     {
@@ -92,7 +92,6 @@ class SaveElementIndexElementsController
             array_keys($data),
         );
 
-        /** @var Collection<ElementInterface> */
         return $elementType::find()
             ->id($elementIds)
             ->status(null)
@@ -103,8 +102,8 @@ class SaveElementIndexElementsController
     }
 
     /**
-     * @param  Collection<ElementInterface>  $elements
-     * @param  array<string, array>  $data
+     * @param  Collection<int, ElementInterface>  $elements
+     * @param  array<string, array<string, mixed>>  $data
      * @return array<int, array<string, array<int, string>>>
      */
     private function validateElements(Collection $elements, string $namespace, array $data): array

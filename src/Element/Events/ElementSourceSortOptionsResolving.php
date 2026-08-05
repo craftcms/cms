@@ -24,7 +24,7 @@ class ElementSourceSortOptionsResolving
         public string $source,
 
         /**
-         * @var Collection The sort option definitions.
+         * @var Collection<string, array<string, mixed>> The sort option definitions.
          *
          * Each sort option should be defined by an array with the following keys:
          *

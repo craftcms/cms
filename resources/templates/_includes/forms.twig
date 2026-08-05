@@ -217,7 +217,7 @@
 {% endmacro %}
 
 
-{% macro copytextField(config) %}
+{% macro copyTextField(config) %}
     {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/copytext') }}
 {% endmacro %}

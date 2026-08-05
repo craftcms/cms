@@ -61,6 +61,9 @@ class EnvValueRule implements DataAwareRule, ValidationRule
         $this->rules = Arr::wrap($rules);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     #[Override]
     public function setData(array $data): static
     {

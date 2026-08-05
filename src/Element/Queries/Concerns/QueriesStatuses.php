@@ -100,6 +100,7 @@ trait QueriesStatuses
      *
      * @throws QueryAbortedException
      */
+    /** @param ElementQuery<*> $elementQuery */
     private function applyStatusParam(ElementQuery $elementQuery): void
     {
         if (! $elementQuery->status || ! $elementQuery->elementType::hasStatuses()) {

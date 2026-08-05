@@ -28,14 +28,17 @@ trait MissingComponentTrait
     public ?string $errorMessage = null;
 
     /**
-     * @var array|null The custom settings associated with the component, if it is savable
+     * @var array<string, mixed>|null The custom settings associated with the component, if it is savable
      */
     public ?array $settings = null;
 
     /**
      * Creates a new component of a given type based on this one’s properties.
      *
-     * @param  class-string<ComponentInterface>  $type  The component class that should be used as the fallback
+     * @template T of ComponentInterface
+     *
+     * @param  class-string<T>  $type  The component class that should be used as the fallback
+     * @return T
      */
     public function createFallback(string $type): ComponentInterface
     {
@@ -43,7 +46,7 @@ trait MissingComponentTrait
         unset($config['expectedType'], $config['errorMessage'], $config['settings']);
         $config['type'] = $type;
 
-        return ComponentHelper::createComponent($config);
+        return ComponentHelper::createComponent($config, $type);
     }
 
     /**

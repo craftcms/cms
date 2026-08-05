@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -145,6 +144,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card preview options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getPreviewOptions(): ?array
     {
@@ -162,6 +163,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card thumbnail options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getThumbOptions(): ?array
     {
@@ -245,6 +248,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns HTML attributes that should be added to the selector container.
+     *
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null}}
      */
     protected function selectorAttributes(): array
     {
@@ -284,6 +289,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the indicators that should be shown within the selector.
+     *
+     * @return list<array{label: string, icon: string, iconColor: string}>
      */
     protected function selectorIndicators(): array
     {
@@ -553,6 +560,7 @@ abstract class BaseField extends FieldLayoutElement
         return $ids ? implode(' ', $ids) : null;
     }
 
+    /** @return array{class?: list<string>, data: array{base-input-name: string, error-key: string}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -585,6 +593,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -596,6 +605,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -605,10 +615,10 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns or sets the field’s label.
      */
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() !== 0) {
-            $this->label = $this->evaluate($label);
+            $this->label = $label;
 
             return $this;
         }
@@ -620,17 +630,15 @@ abstract class BaseField extends FieldLayoutElement
         return $this->defaultLabel();
     }
 
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
-        $this->instructions = $this->evaluate($instructions);
+        $this->instructions = $instructions;
 
         return $this;
     }
 
-    public function instructionsPosition(string|Closure $position): static
+    public function instructionsPosition(string $position): static
     {
-        $position = $this->evaluate($position);
-
         if (! in_array($position, ['before', 'after'], true)) {
             throw new InvalidArgumentException("Invalid instructions position: $position");
         }
@@ -640,31 +648,29 @@ abstract class BaseField extends FieldLayoutElement
         return $this;
     }
 
-    public function tip(string|Closure|null $tip): static
+    public function tip(?string $tip): static
     {
-        $this->tip = $this->evaluate($tip);
+        $this->tip = $tip;
 
         return $this;
     }
 
-    public function warning(string|Closure|null $warning): static
+    public function warning(?string $warning): static
     {
-        $this->warning = $this->evaluate($warning);
+        $this->warning = $warning;
 
         return $this;
     }
 
-    public function required(bool|Closure $required = true): static
+    public function required(bool $required = true): static
     {
-        $this->required = $this->evaluate($required);
+        $this->required = $required;
 
         return $this;
     }
 
-    public function labelHidden(bool|Closure $labelHidden = true): static
+    public function labelHidden(bool $labelHidden = true): static
     {
-        $labelHidden = $this->evaluate($labelHidden);
-
         return $this->label($labelHidden ? '__blank__' : null);
     }
 
@@ -837,6 +843,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return list<array<string, mixed>>
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
@@ -845,6 +852,9 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param  array{id?: string, icon?: string, label?: string, promptLabel?: string, attribute?: string}  $config
+     * @return array{id: string, icon: string, label: string}
      */
     protected function copyAttributeAction(array $config = []): array
     {

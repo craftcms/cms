@@ -151,6 +151,8 @@ class WebauthnServer
      * COSE algorithms that the authenticators must use in the order of interest.
      *
      * @see: https://webauthn-doc.spomky-labs.com/pure-php/authenticator-registration
+     *
+     * @return list<PublicKeyCredentialParameters>
      */
     public function getPublicKeyCredentialParametersList(): array
     {

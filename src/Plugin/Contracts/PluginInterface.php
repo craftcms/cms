@@ -230,7 +230,7 @@ interface PluginInterface
     /**
      * Sets the plugin settings
      *
-     * @param  array  $settings  The plugin settings that should be set on the settings model
+     * @param  array<string, mixed>  $settings  The plugin settings that should be set on the settings model
      */
     public function setSettings(array $settings): void;
 
@@ -293,6 +293,7 @@ interface PluginInterface
      * @see PluginTrait::$hasCpSection
      * @see Navigation::getItems()
      */
+    /** @return NavItem|array<string, mixed>|null */
     public function getCpNavItem(): NavItem|array|null;
 
     // Editions
@@ -354,6 +355,7 @@ interface PluginInterface
     /**
      * Creates and returns a new plugin instance based on a passed config
      */
+    /** @param array<string, mixed> $config */
     public static function create(array $config): self;
 
     /**

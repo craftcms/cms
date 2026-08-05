@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -28,7 +27,7 @@ use function CraftCms\Cms\t;
  */
 class CheckboxGroup extends ChoiceGroup
 {
-    protected string|Htmlable|Closure|null $customOptionTemplate = null;
+    protected string|Htmlable|null $customOptionTemplate = null;
 
     protected function tagName(): string
     {
@@ -40,7 +39,7 @@ class CheckboxGroup extends ChoiceGroup
      * new option, with `__ID__` placeholders for the generated input id, and
      * should already be namespaced for the active input namespace.
      */
-    public function customOptionTemplate(string|Htmlable|Closure|null $template): static
+    public function customOptionTemplate(string|Htmlable|null $template): static
     {
         $this->customOptionTemplate = $template;
 
@@ -60,12 +59,11 @@ class CheckboxGroup extends ChoiceGroup
     #[\Override]
     protected function leadingHtml(): string
     {
-        $name = $this->evaluate($this->name);
-
-        return $name !== null ? (string) Html::hiddenInput($name, '') : '';
+        return $this->name !== null ? (string) Html::hiddenInput($this->name, '') : '';
     }
 
     #[\Override]
+    /** @return array<string, mixed> */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return [
@@ -87,9 +85,7 @@ class CheckboxGroup extends ChoiceGroup
      */
     protected function customOptionsHtml(): string
     {
-        $template = $this->evaluate($this->customOptionTemplate);
-
-        if ($template === null || $template === '') {
+        if ($this->customOptionTemplate === null || $this->customOptionTemplate === '') {
             return '';
         }
 
@@ -137,7 +133,9 @@ class CheckboxGroup extends ChoiceGroup
             JS, [
             'container' => '#'.InputNamespace::namespaceId($id),
             'button' => '#'.InputNamespace::namespaceId($addButtonId),
-            'optionHtml' => $template instanceof Htmlable ? $template->toHtml() : (string) $template,
+            'optionHtml' => $this->customOptionTemplate instanceof Htmlable
+                ? $this->customOptionTemplate->toHtml()
+                : $this->customOptionTemplate,
         ]);
 
         return Button::make()

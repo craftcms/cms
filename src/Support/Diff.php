@@ -63,6 +63,7 @@ class Diff
         return rtrim($diff);
     }
 
+    /** @return list<array{?string, string}> */
     private static function _diff(mixed $from, mixed $to, int $indent, int $level): array
     {
         // Are we done doing recursion?
@@ -113,7 +114,8 @@ class Diff
         return $lines;
     }
 
-    private static function _buildLinesForValue($value, int $indent, int $level, ?string $char = null): array
+    /** @return list<array{?string, string}> */
+    private static function _buildLinesForValue(mixed $value, int $indent, int $level, ?string $char = null): array
     {
         return str(Yaml::dump($value, 20 - $level, $indent))
             ->rtrim()
@@ -122,6 +124,7 @@ class Diff
             ->all();
     }
 
+    /** @return array{?string, string} */
     private static function _buildLine(string $line, int $indent, int $level, ?string $char = null): array
     {
         return [$char, str_repeat(' ', $indent * $level).$line];

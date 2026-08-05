@@ -87,6 +87,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         }
     }
 
+    /** @var array<string, mixed> */
     public array $config {
         get => $this->getConfig();
     }
@@ -134,6 +135,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return null;
     }
 
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -150,6 +152,8 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
     /**
      * Returns the operators that should be allowed for this rule.
+     *
+     * @return string[]
      */
     protected function operators(): array
     {

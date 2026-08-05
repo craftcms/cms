@@ -13,6 +13,8 @@ use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
+use CraftCms\Cms\Database\MigrationRepository;
+use CraftCms\Cms\Database\Migrator as CoreMigrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Gql\Gql;
@@ -42,6 +44,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
+use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -62,6 +65,7 @@ use CraftCms\Yii2Adapter\User\LegacyUserPermissions;
 use CraftCms\Yii2Adapter\Utility\LegacyUtilityTypes;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
@@ -84,6 +88,12 @@ class Yii2ServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->app->bind(CoreMigrator::class, Migrator::class);
+        $this->app
+            ->when(Migrator::class)
+            ->needs(MigrationRepositoryInterface::class)
+            ->give(fn() => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
+
         new ClassAliases()->register();
         new MultiEnvironmentConfigCompatibility()->register($this->app);
 
@@ -244,10 +254,6 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft', PrepareLegacyCraftApp::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.web', HandleYiiSiteRouteFallback::class);
         $this->app->make(Router::class)->pushMiddlewareToGroup('craft.cp', RegisterLegacyCompatAssets::class);
-
-        $this->publishes([
-            __DIR__ . '/../legacy/web/assets/cpcompat' => public_path('vendor/craft/adapter/cpcompat'),
-        ], ['craftcms', 'craftcms-assets']);
 
         $this->commands([
             AddCategoriesSupportCommand::class,

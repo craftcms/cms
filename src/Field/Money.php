@@ -33,8 +33,8 @@ use function CraftCms\Cms\template;
 /**
  * Money field type
  *
- * @property-read array $contentGqlMutationArgumentType
- * @property-read array[] $elementValidationRules
+ * @property-read array{name:string,type:Type,description:string|null} $contentGqlMutationArgumentType
+ * @property-read list<MoneyRule> $elementValidationRules
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
@@ -353,6 +353,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $value;
     }
 
+    /** @return list<MoneyRule> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -388,6 +389,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return MoneyType::getType();
     }
 
+    /** @return array{name:string,type:Type,description:string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

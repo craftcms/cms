@@ -369,6 +369,7 @@ class Images
         return $image->orient()->saveAs($filePath, true);
     }
 
+    /** @return array<string,mixed>|null */
     public function getExifData(string $filePath): ?array
     {
         if (! ImageHelper::canHaveExifData($filePath)) {

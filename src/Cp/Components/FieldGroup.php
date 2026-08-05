@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
-
 /**
  * PHP counterpart to the `<craft-field-group>` web component: a grid
  * container for a list of fields.
@@ -20,7 +18,7 @@ use Closure;
  */
 class FieldGroup extends ViewComponent
 {
-    protected string|Closure|null $gap = null;
+    protected ?string $gap = null;
 
     protected function tagName(): string
     {
@@ -30,9 +28,9 @@ class FieldGroup extends ViewComponent
     /**
      * The grouped fields (default slot).
      *
-     * @param  iterable<array-key, mixed>|Closure  $children
+     * @param  iterable<array-key, mixed>  $children
      */
-    public function children(iterable|Closure $children): static
+    public function children(iterable $children): static
     {
         $this->slots[static::DEFAULT_SLOT] = $children;
 
@@ -40,7 +38,7 @@ class FieldGroup extends ViewComponent
     }
 
     /** Grid gap, as a CSS length (sets the component's `--gap` custom property). */
-    public function gap(string|Closure|null $gap): static
+    public function gap(?string $gap): static
     {
         $this->gap = $gap;
 
@@ -50,10 +48,8 @@ class FieldGroup extends ViewComponent
     #[\Override]
     protected function hostAttributes(): array
     {
-        $gap = $this->evaluate($this->gap);
-
         return [
-            'style' => $gap !== null ? "--gap: $gap;" : null,
+            'style' => $this->gap !== null ? "--gap: {$this->gap};" : null,
         ];
     }
 }

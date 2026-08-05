@@ -19,6 +19,7 @@ abstract class ConfigEvent
          *                    or one of its shortcut methods.
          */
         public ?array $tokenMatches = null,
+        /** @var array<string, mixed>|null */
         public ?array $data = null,
     ) {}
 }

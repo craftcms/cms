@@ -52,7 +52,7 @@ class RouteTokens
      * ]);
      * ```
      *
-     * @param  array|string  $route  Where matching requests should be routed to.
+     * @param  array<mixed>|string  $route  Where matching requests should be routed to.
      * @param  int|null  $usageLimit  The maximum number of times this token can be
      *                                used. Defaults to no limit.
      * @param  DateTimeInterface|null  $expiryDate  The date that the token expires.
@@ -103,6 +103,9 @@ class RouteTokens
 
     /**
      * Searches for a token, and possibly returns a route for the request.
+     */
+    /**
+     * @return array<mixed>|false
      */
     public function getTokenRoute(string $token): array|false
     {

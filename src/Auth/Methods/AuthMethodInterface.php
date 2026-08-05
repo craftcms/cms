@@ -114,12 +114,14 @@ interface AuthMethodInterface extends ComponentInterface
      * }
      * ```
      */
-    public function getAuthFormHtml(): string;
+    public function getAuthFormHtml(?string $returnUrl = null): string;
 
     /**
      * Returns action menu items for the authentication method, when active.
      *
      * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @return list<array<string, mixed>>
      */
     public function getActionMenuItems(): array;
 

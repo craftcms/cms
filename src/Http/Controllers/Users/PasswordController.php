@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -11,6 +12,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\UserPasswordViewModel;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -32,7 +34,7 @@ readonly class PasswordController
     use EditUserTrait;
     use RespondsWithFlash;
 
-    public function index(Request $request): CpScreenResponse
+    public function index(Request $request, AuthMethods $auth): CpScreenResponse
     {
         $currentUser = $request->craftUser();
         if (! $currentUser) {
@@ -41,12 +43,8 @@ readonly class PasswordController
 
         $user = $currentUser->asElement();
 
-        $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
-
-        $response->action('users/save-password');
-        $response->contentTemplate('users/_password', compact('user'));
-
-        return $response;
+        return $this->asEditUserScreen($user, self::SCREEN_PASSWORD)
+            ->inertiaPage('users/Password', new UserPasswordViewModel($user, $auth));
     }
 
     public function store(Request $request, Elements $elements): Response
@@ -231,6 +229,7 @@ readonly class PasswordController
         }, 100_000);
     }
 
+    /** @param list<string> $errors */
     private function handleSendPasswordResetError(array $errors, ?string $loginName = null): Response
     {
         $errorString = implode(', ', $errors);

@@ -43,8 +43,9 @@ abstract class BatchedElementJob extends BatchedJob
 
     protected function getQuery(): Builder
     {
-        /** @var ElementQuery $query */
-        $query = $this->elementType::find()->orderBy('elements.id');
+        $query = $this->elementType::find();
+        assert($query instanceof ElementQuery);
+        $query->orderBy('elements.id');
         $criteria = $this->criteria;
         unset($criteria['offset'], $criteria['limit']);
 

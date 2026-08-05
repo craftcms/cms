@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TemplateRoute
 {
+    /**
+     * @param  array<string, mixed>  $variables
+     */
     public function __construct(
         public string $template,
         public array $variables = [],

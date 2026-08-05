@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Models;
 
+use CraftCms\Cms\Database\Factories\SiteGroupFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SiteGroup extends BaseModel
 {
+    /** @use HasFactory<SiteGroupFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

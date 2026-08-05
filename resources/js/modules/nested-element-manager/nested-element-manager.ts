@@ -1215,7 +1215,10 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       ) {
         Craft.addActionsToChip(element, [
           {
-            icon: 'duplicate',
+            // `craft-action-item` resolves a string `icon` client-side with
+            // no knowledge of which names are custom icons, so it's
+            // pre-resolved here rather than as bare `'duplicate'`.
+            icon: 'custom-icons/duplicate',
             label: this.#pasteItemLabel(Craft.cp.getCopiedElements()),
             attributes: {
               data: {'paste-action': true},

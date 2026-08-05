@@ -727,7 +727,9 @@ class Fields extends Component
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
-                $event->compatibleTypes = new Collection($yiiEvent->compatibleTypes);
+                /** @var Collection<int, class-string<FieldInterface>> $compatibleTypes */
+                $compatibleTypes = new Collection(array_values($yiiEvent->compatibleTypes));
+                $event->compatibleTypes = $compatibleTypes;
             }
         });
 

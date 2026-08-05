@@ -36,6 +36,7 @@ class NavItem extends Component
      */
     public bool $group = false;
 
+    /** @var array<string, mixed> */
     public array $linkAttributes = [];
 
     public function __construct(object|array $config = [])
@@ -139,6 +140,7 @@ class NavItem extends Component
         return $this;
     }
 
+    /** @param array<string, mixed> $linkAttributes */
     public function linkAttributes(array $linkAttributes): self
     {
         $this->linkAttributes = $linkAttributes;

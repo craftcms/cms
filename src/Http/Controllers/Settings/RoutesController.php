@@ -112,6 +112,7 @@ readonly class RoutesController
             ]);
     }
 
+    /** @return list<array{label:string, value:string}> */
     private function tokenProps(): array
     {
         return collect($this->routes->tokens)
@@ -123,6 +124,7 @@ readonly class RoutesController
             ->all();
     }
 
+    /** @return list<array{label:string, value:string}> */
     private function siteProps(): array
     {
         return collect([[

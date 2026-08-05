@@ -168,7 +168,10 @@ it('accepts canonical nested element authorization for provisional draft owners'
     $draft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
 
     $this->withSession([
-        SessionAuth::$authAccessParam => [sprintf('manageNestedElements::%s::%s', $owner->id, 'field:matrixField')],
+        SessionAuth::$authAccessParam => [
+            sprintf('manageNestedElements::%s::%s', $owner->id, 'field:matrixField'),
+            sprintf('reorderNestedElements::%s::%s', $owner->id, 'field:matrixField'),
+        ],
     ])->postJson(action([NestedElementsController::class, 'reorder']), [
         ...nestedElementsControllerPayload($draft, 'field:matrixField'),
         'elementIds' => [$nestedEntry->id],
@@ -180,7 +183,10 @@ it('validates reorder params', function () {
     $owner = User::findOne();
 
     $this->withSession([
-        SessionAuth::$authAccessParam => [sprintf('manageNestedElements::%s::%s', $owner->id, 'addresses')],
+        SessionAuth::$authAccessParam => [
+            sprintf('manageNestedElements::%s::%s', $owner->id, 'addresses'),
+            sprintf('reorderNestedElements::%s::%s', $owner->id, 'addresses'),
+        ],
     ])->postJson(action([NestedElementsController::class, 'reorder']), nestedElementsControllerPayload($owner, 'addresses'))
         ->assertJsonValidationErrors(['elementIds', 'offset']);
 });
@@ -192,7 +198,10 @@ it('reorders collection-backed nested elements', function () {
     $third = AddressModel::factory()->withOwnedElement($owner, 3)->createElement();
 
     $this->withSession([
-        SessionAuth::$authAccessParam => [sprintf('manageNestedElements::%s::%s', $owner->id, 'addresses')],
+        SessionAuth::$authAccessParam => [
+            sprintf('manageNestedElements::%s::%s', $owner->id, 'addresses'),
+            sprintf('reorderNestedElements::%s::%s', $owner->id, 'addresses'),
+        ],
     ])->postJson(action([NestedElementsController::class, 'reorder']), [
         ...nestedElementsControllerPayload($owner, 'addresses'),
         'elementIds' => [$second->id],
@@ -216,7 +225,10 @@ it('reorders query-backed nested elements', function () {
     $third = nestedElementsControllerCreateMatrixNestedEntry($owner, $field, $entryType, 3, 'Third');
 
     $this->withSession([
-        SessionAuth::$authAccessParam => [sprintf('manageNestedElements::%s::%s', $owner->id, 'field:matrixField')],
+        SessionAuth::$authAccessParam => [
+            sprintf('manageNestedElements::%s::%s', $owner->id, 'field:matrixField'),
+            sprintf('reorderNestedElements::%s::%s', $owner->id, 'field:matrixField'),
+        ],
     ])->postJson(action([NestedElementsController::class, 'reorder']), [
         ...nestedElementsControllerPayload($owner, 'field:matrixField'),
         'elementIds' => [$second->id],

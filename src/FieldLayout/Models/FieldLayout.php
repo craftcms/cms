@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\Models;
 
+use CraftCms\Cms\Database\Factories\FieldLayoutFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Shared\BaseModel;
@@ -14,7 +15,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FieldLayout extends BaseModel
 {
+    /** @use HasFactory<FieldLayoutFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

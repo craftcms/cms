@@ -187,6 +187,7 @@ class ElementHelper
      *
      * @throws RuntimeException if any of the element's supported sites are invalid
      */
+    /** @return array<int,array{siteId:int,siteUid:string,propagate:bool,enabledByDefault:bool}> */
     public static function supportedSitesForElement(
         ElementInterface $element,
         bool $withUnpropagatedSites = false,
@@ -537,6 +538,10 @@ class ElementHelper
      *
      * @param  ElementInterface[]  $elements
      */
+    /**
+     * @param  ElementInterface[]  $elements
+     * @param  array<string,mixed>  $variables
+     */
     public static function renderElements(array $elements, array $variables = []): HtmlString
     {
         $output = array_map(fn (ElementInterface $element) => (string) $element->render($variables), $elements);
@@ -666,6 +671,7 @@ class ElementHelper
             'join',
             'having',
             'union',
+            'with',
             'withQueries',
             'params',
         ]);

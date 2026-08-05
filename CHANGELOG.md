@@ -1,12 +1,18 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.16 - 2026-08-05
 
+- Fixed a bug where Yii-style migrations could be required twice. ([#19376](https://github.com/craftcms/cms/pull/19376))
+- Fixed a bug where the legacy `craft\base\Widget` class wasn’t fully implementing `CraftCms\Cms\Dashboard\Contracts\WidgetInterface`. ([#19375](https://github.com/craftcms/cms/pull/19375))
+
+## 6.0.0-alpha.15 - 2026-08-04
+
+- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
 - Added support for configuring field layout field instruction positions.
-- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements, including dependency-injected closure values.
+- Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))
 - Changed `CraftCms\Cms\Cp\FormFields::textFromConfig()` to accept an optional `CraftCms\Cms\Cp\Components\Input` instance as a second argument, so callers can build on an existing component instead of always creating a plain `Input`. ([#19323](https://github.com/craftcms/cms/pull/19323))
@@ -59,7 +65,7 @@
 - Added `CraftCms\Cms\Utility\UtilityTypes`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\View\TemplateCacheCollectors`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\View\TemplateRoots`. ([#19270](https://github.com/craftcms/cms/pull/19270))
-- Moved `CraftCms\Cms\Cp\Concerns\EvaluatesClosures` to `CraftCms\Cms\Support\Concerns\EvaluatesClosures`.
+- Removed `CraftCms\Cms\Support\Concerns\EvaluatesClosures` and support for closure values in fluent CP component and field layout builder APIs.
 - Changed `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::label()` to accept an optional label and return the field layout element when one is passed. Overrides must accept the new optional argument.
 - Changed `CraftCms\Cms\Image\Raster::getTextBox()` to return a `width` and `height` array.
 - Renamed the protected `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::instructions()`, `tip()`, and `warning()` methods to `instructionsText()`, `tipText()`, and `warningText()`.
@@ -289,6 +295,7 @@
 - Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
 - Fixed a bug where preview tokens weren’t taking the `previewTokenDuration` config setting into account.
+- Fixed a bug where success/failure notifications weren’t being shown after deleting elements. ([#19028](https://github.com/craftcms/cms/pull/19028))
 
 ## 6.0.0-alpha.8 - 2026-06-17
 

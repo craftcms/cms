@@ -191,6 +191,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
         ]);
     }
 
+    /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -243,6 +244,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
         return NumberType::getType();
     }
 
+    /** @return array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

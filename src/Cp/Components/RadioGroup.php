@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
-
 /**
  * Radio group container — the PHP counterpart to the `<craft-radio-group>`
  * web component (and to the legacy `_includes/forms/radioGroup` template).
@@ -22,9 +20,9 @@ use Closure;
  */
 class RadioGroup extends ChoiceGroup
 {
-    protected bool|Closure $toggle = false;
+    protected bool $toggle = false;
 
-    protected string|Closure|null $targetPrefix = null;
+    protected ?string $targetPrefix = null;
 
     protected function tagName(): string
     {
@@ -32,14 +30,14 @@ class RadioGroup extends ChoiceGroup
     }
 
     /** Marks the group as a field toggle (reveals `{targetPrefix}{value}` containers). */
-    public function toggle(bool|Closure $toggle = true): static
+    public function toggle(bool $toggle = true): static
     {
         $this->toggle = $toggle;
 
         return $this;
     }
 
-    public function targetPrefix(string|Closure|null $targetPrefix): static
+    public function targetPrefix(?string $targetPrefix): static
     {
         $this->targetPrefix = $targetPrefix;
 
@@ -49,16 +47,14 @@ class RadioGroup extends ChoiceGroup
     #[\Override]
     protected function hostAttributes(): array
     {
-        $toggle = (bool) $this->evaluate($this->toggle);
-
         return [
             'id' => $this->getId(),
             'class' => array_filter([
                 'radio-group',
-                $toggle ? 'fieldtoggle' : null,
+                $this->toggle ? 'fieldtoggle' : null,
             ]),
             'data' => [
-                'target-prefix' => $toggle ? ($this->evaluate($this->targetPrefix) ?? '#') : null,
+                'target-prefix' => $this->toggle ? ($this->targetPrefix ?? '#') : null,
             ],
         ];
     }

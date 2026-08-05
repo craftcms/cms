@@ -144,6 +144,7 @@ JS, [
             Html::endTag('div');
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {

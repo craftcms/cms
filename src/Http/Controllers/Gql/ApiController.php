@@ -298,6 +298,7 @@ readonly class ApiController extends GqlController
         return strtolower(trim($contentType));
     }
 
+    /** @return array<string, mixed> */
     private function exceptionAsArray(Throwable $e): array
     {
         $array = [

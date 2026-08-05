@@ -6,6 +6,9 @@ namespace CraftCms\Cms\SystemMessage\Data;
 
 readonly class FormattedSystemMessageMail
 {
+    /**
+     * @param  array<string, mixed>  $viewData
+     */
     public function __construct(
         public bool $usesCustomTemplate,
         public string $htmlBody,

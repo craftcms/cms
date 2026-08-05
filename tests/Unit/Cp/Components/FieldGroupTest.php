@@ -34,14 +34,6 @@ it('mixes component, Htmlable, and encoded string children', function () {
         ->and($html)->toContain('plain &amp; text');
 });
 
-it('supports closure children', function () {
-    $html = FieldGroup::make()
-        ->children(fn (): array => [Field::make()->label('Lazy')])
-        ->toHtml();
-
-    expect($html)->toContain('label="Lazy"');
-});
-
 it('sets the gap custom property', function () {
     expect(FieldGroup::make()->gap('var(--c-spacing-xl)')->toHtml())
         ->toContain('style="--gap: var(--c-spacing-xl);"');

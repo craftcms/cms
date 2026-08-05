@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use DateTimeInterface;
 use Override;
@@ -52,9 +51,9 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         return false;
     }
 
-    public function width(int|Closure $width): static
+    public function width(int $width): static
     {
-        $this->width = $this->evaluate($width);
+        $this->width = $width;
 
         return $this;
     }
@@ -87,6 +86,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array{class?: list<string>}
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {

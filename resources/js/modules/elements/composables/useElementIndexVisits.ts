@@ -20,6 +20,19 @@ export interface IndexVisitOptions {
 }
 
 /**
+ * A composable's contribution to the single mount-time "restore persisted
+ * state" visit: the query params to merge in and the props to pull back. The
+ * page composes every non-null contribution into one visit (see
+ * {@link useElementIndexPage}) so the restores can't interrupt each other.
+ */
+export interface IndexRestore {
+  /** Params to merge into the restore visit (e.g. `{viewMode}`, `{columns}`). */
+  params: Record<string, unknown>;
+  /** Props this restore needs re-pulled; unioned across all contributions. */
+  only: Array<string>;
+}
+
+/**
  * Shared visit plumbing for the element index composables: merging params into
  * the current query and performing state/scroll-preserving Inertia visits
  * against the injected route.

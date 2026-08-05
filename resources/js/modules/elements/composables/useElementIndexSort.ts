@@ -1,7 +1,8 @@
-import {computed, onMounted, type Ref, watch} from 'vue';
+import {computed, type Ref, watch} from 'vue';
 import {
   createIndexVisitor,
   type ElementIndexRoute,
+  type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
 import type {SortItem} from '@/common/types';
@@ -96,8 +97,10 @@ export function useElementIndexSort(
   );
 
   // On load, if the URL doesn't specify a sort but we have one persisted from a
-  // previous visit, restore it into the URL (without adding a history entry).
-  onMounted(() => {
+  // previous visit, restore it. The page folds this into one mount-time restore
+  // visit alongside the view-mode/column restores (see `useElementIndexPage`),
+  // so they can't interrupt each other.
+  function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);
     const persisted = normalizeSort(persistedSort());
 
@@ -108,20 +111,20 @@ export function useElementIndexSort(
     );
 
     if (hasSortInUrl || !persisted.length) {
-      return;
+      return null;
     }
 
     if (
       JSON.stringify(persisted) === JSON.stringify(normalizeSort(props.sort))
     ) {
-      return;
+      return null;
     }
 
-    visitor.merge(
-      {sort: sortItemsToQuery(persisted)},
-      {only: ['data', 'sort', 'pagination'], replace: true}
-    );
-  });
+    return {
+      params: {sort: sortItemsToQuery(persisted)},
+      only: ['data', 'sort', 'pagination'],
+    };
+  }
 
   // Two-way bindings for the single-column sort controls in the "View" popover.
   // They read from and write through the same sorting state as the column
@@ -156,5 +159,6 @@ export function useElementIndexSort(
     onSortingChange,
     sortField,
     sortDirection,
+    restore,
   };
 }

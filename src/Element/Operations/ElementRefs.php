@@ -182,6 +182,10 @@ readonly class ElementRefs
         }, $str) ?? $str;
     }
 
+    /**
+     * @param  array<string|int, string>  $matches
+     * @param  array<string, int|null>  $resolvedRefs
+     */
     private function targetIdForRefTag(array $matches, ?int $defaultSiteId, array &$resolvedRefs = []): ?int
     {
         $elementType = $this->elements->getElementTypeByRefHandle($matches['elementType']);
@@ -198,8 +202,9 @@ readonly class ElementRefs
 
         $ref = $matches['ref'];
 
+        $cacheKey = sprintf('%s:%s:%s', $elementType, $siteId ?? '*', $ref);
+
         if (! ctype_digit((string) $ref)) {
-            $cacheKey = sprintf('%s:%s:%s', $elementType, $siteId ?? '*', $ref);
 
             if (isset($resolvedRefs[$cacheKey])) {
                 return $resolvedRefs[$cacheKey];

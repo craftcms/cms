@@ -9,12 +9,14 @@ use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 use function CraftCms\Cms\currentUser;
 
 /** @mixin Section */
 class SectionResource extends JsonResource
 {
+    /** @return array<string, array<int, int|array<string, string>>|bool|int|string|null|AnonymousResourceCollection> */
     #[\Override]
     public function toArray(Request $request): array
     {

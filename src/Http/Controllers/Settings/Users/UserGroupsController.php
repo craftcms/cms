@@ -16,6 +16,7 @@ use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -39,7 +40,7 @@ class UserGroupsController extends BaseUserSettingsController
         $this->readOnly = ! $this->generalConfig->allowAdminChanges;
     }
 
-    public function index()
+    public function index(): RedirectResponse|\Inertia\Response
     {
         if (Edition::get() === Edition::Team) {
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);

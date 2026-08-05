@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -41,9 +42,16 @@ use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
+ *
+ * @phpstan-type TableColumnType 'checkbox'|'color'|'date'|'select'|'email'|'heading'|'lightswitch'|'multiline'|'number'|'singleline'|'time'|'url'
+ * @phpstan-type TableOption array{label: string, value: string, default?: bool}
+ * @phpstan-type TableColumn array{heading: string, handle: string|array{value: string, hasErrors: true}, type: TableColumnType, width?: int|string, options?: list<TableOption>}
+ * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|null
+ * @phpstan-type TableRowData array<string, TableCellValue>
  */
 class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
+    /** @var array<string, string> */
     private static array $typeOptions;
 
     #[Override]
@@ -64,6 +72,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return 'array|null';
     }
 
+    /** @return array<string, string> */
     private static function typeOptions(): array
     {
         if (! isset(self::$typeOptions)) {
@@ -115,9 +124,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
      */
     public ?int $minRows = null;
 
-    /**
-     * @var array The columns that should be shown in the table
-     */
+    /** @var array<string, TableColumn> The columns that should be shown in the table */
     public array $columns = [
         'col1' => [
             'heading' => '',
@@ -126,9 +133,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         ],
     ];
 
-    /**
-     * @var array|null The default row values that new elements should have
-     */
+    /** @var list<TableRowData>|null The default row values that new elements should have */
     public ?array $defaults = [[]];
 
     public function __construct($config = [])
@@ -411,6 +416,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return true;
     }
 
+    /** @return list<TableRowData>|null */
     public function getDefaultValue(): ?array
     {
         return $this->defaults;
@@ -424,6 +430,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $this->_getInputHtml($value, $element, false);
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -475,6 +482,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $this->_normalizeValueInternal($value, $element, true);
     }
 
+    /** @return list<TableRowData>|null */
     private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
     {
         if (empty($this->columns)) {
@@ -708,11 +716,17 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     {
         $typeName = $this->handle.'_TableRowInput';
 
-        return Type::listOf(GqlEntityRegistry::getOrCreate($typeName, fn () => new InputObjectType([
+        $type = GqlEntityRegistry::getOrCreate($typeName, fn () => new InputObjectType([
             'name' => $typeName,
             'description' => sprintf('Defines a row within the “%s” Table field’s data.', $this->name),
             'fields' => fn () => TableRow::prepareRowFieldDefinition($this->columns),
-        ])));
+        ]));
+
+        if (! $type instanceof InputObjectType) {
+            throw new LogicException("The $typeName GraphQL entity must be an input object type.");
+        }
+
+        return Type::listOf($type);
     }
 
     /**

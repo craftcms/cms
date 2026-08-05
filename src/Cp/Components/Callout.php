@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasAppearance;
 use CraftCms\Cms\Cp\Concerns\HasVariant;
 use Illuminate\Contracts\Support\Htmlable;
@@ -27,22 +26,22 @@ class Callout extends ViewComponent
     use HasAppearance;
     use HasVariant;
 
-    protected string|Closure|null $title = null;
+    protected ?string $title = null;
 
-    protected string|Closure|null $icon = null;
+    protected ?string $icon = null;
 
-    protected bool|Closure $hideIcon = false;
+    protected bool $hideIcon = false;
 
-    protected string|Closure|null $rounded = null;
+    protected ?string $rounded = null;
 
-    protected bool|Closure $inline = false;
+    protected bool $inline = false;
 
     protected function tagName(): string
     {
         return 'craft-callout';
     }
 
-    public function title(string|Closure|null $title): static
+    public function title(?string $title): static
     {
         $this->title = $title;
 
@@ -50,7 +49,7 @@ class Callout extends ViewComponent
     }
 
     /** Icon name; the web component falls back to a variant-specific default. */
-    public function icon(string|Closure|null $icon): static
+    public function icon(?string $icon): static
     {
         $this->icon = $icon;
 
@@ -58,22 +57,22 @@ class Callout extends ViewComponent
     }
 
     /** Suppresses the icon entirely, including the variant default. */
-    public function hideIcon(bool|Closure $hideIcon = true): static
+    public function hideIcon(bool $hideIcon = true): static
     {
         $this->hideIcon = $hideIcon;
 
         return $this;
     }
 
-    /** @param 'all'|'start'|'end'|'none'|Closure|null $rounded */
-    public function rounded(string|Closure|null $rounded): static
+    /** @param 'all'|'start'|'end'|'none'|null $rounded */
+    public function rounded(?string $rounded): static
     {
         $this->rounded = $rounded;
 
         return $this;
     }
 
-    public function inline(bool|Closure $inline = true): static
+    public function inline(bool $inline = true): static
     {
         $this->inline = $inline;
 
@@ -81,7 +80,7 @@ class Callout extends ViewComponent
     }
 
     /** The callout body (default slot). */
-    public function content(string|Htmlable|Stringable|ViewComponent|Closure|null $content): static
+    public function content(string|Htmlable|Stringable|ViewComponent|null $content): static
     {
         $this->slots[static::DEFAULT_SLOT] = $content;
 
@@ -94,11 +93,11 @@ class Callout extends ViewComponent
         return [
             'variant' => $this->getVariant(),
             'appearance' => $this->getAppearance(),
-            'title' => $this->evaluate($this->title),
-            'icon' => $this->evaluate($this->icon),
-            'hide-icon' => (bool) $this->evaluate($this->hideIcon),
-            'rounded' => $this->evaluate($this->rounded),
-            'inline' => (bool) $this->evaluate($this->inline),
+            'title' => $this->title,
+            'icon' => $this->icon,
+            'hide-icon' => $this->hideIcon,
+            'rounded' => $this->rounded,
+            'inline' => $this->inline,
         ];
     }
 }

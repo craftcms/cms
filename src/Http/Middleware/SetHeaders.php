@@ -19,6 +19,7 @@ class SetHeaders
 
     private static bool $replace = true;
 
+    /** @var list<array{header:string, value:string, replace:bool}> */
     private static array $headers = [];
 
     public function __construct(

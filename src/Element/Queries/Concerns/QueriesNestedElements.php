@@ -6,10 +6,11 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -76,8 +77,7 @@ trait QueriesNestedElements
 
     protected function initQueriesNestedElements(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            /** @var EntryQuery|ContentBlockQuery $elementQuery */
+        $this->beforeQuery(function (AddressQuery|ContentBlockQuery|EntryQuery $elementQuery) {
             $this->normalizeNestedElementParams($elementQuery);
 
             if ($elementQuery->fieldId === false || $elementQuery->primaryOwnerId === false || $elementQuery->ownerId === false) {
@@ -144,8 +144,13 @@ trait QueriesNestedElements
                 }
             }
 
-            $elementQuery->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
+            $elementQuery->setNestedElementsDefaultOrderBy();
         });
+    }
+
+    public function setNestedElementsDefaultOrderBy(): void
+    {
+        $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
     }
 
     /**
@@ -433,9 +438,9 @@ trait QueriesNestedElements
     /**
      * Normalizes the `fieldId`, `primaryOwnerId`, and `ownerId` params.
      */
-    private function normalizeNestedElementParams(ElementQuery $query): void
+    /** @param AddressQuery|ContentBlockQuery|EntryQuery<Entry> $query */
+    private function normalizeNestedElementParams(AddressQuery|ContentBlockQuery|EntryQuery $query): void
     {
-        /** @var EntryQuery $query */
         $this->normalizeFieldId($query);
         $this->primaryOwnerId = $this->normalizeOwnerId($query->primaryOwnerId);
         $this->ownerId = $this->normalizeOwnerId($query->ownerId);
@@ -444,9 +449,9 @@ trait QueriesNestedElements
     /**
      * Normalizes the fieldId param to an array of IDs or null
      */
-    private function normalizeFieldId(ElementQuery $query): void
+    /** @param AddressQuery|ContentBlockQuery|EntryQuery<Entry> $query */
+    private function normalizeFieldId(AddressQuery|ContentBlockQuery|EntryQuery $query): void
     {
-        /** @var EntryQuery $query */
         if ($query->fieldId === false) {
             return;
         }

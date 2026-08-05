@@ -31,7 +31,7 @@ use function CraftCms\Cms\t;
 class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
-     * @var array Info about the available icons
+     * @var array<string, array{name: string, terms: string, pro: bool, styles: list<string>}> Info about the available icons
      *
      * @see iconStyles()
      */
@@ -225,7 +225,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function getContentGqlType(): Type|array
+    public function getContentGqlType(): Type
     {
         if (! $this->fullGraphqlData) {
             return parent::getContentGqlType();

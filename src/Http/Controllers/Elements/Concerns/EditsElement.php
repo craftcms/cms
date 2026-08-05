@@ -14,6 +14,7 @@ trait EditsElement
 {
     protected readonly ElementRequest $request;
 
+    /** @return array{string, string} */
     protected function editElementTitles(ElementInterface $element): array
     {
         $title = match (true) {

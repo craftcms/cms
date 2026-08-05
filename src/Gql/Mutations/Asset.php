@@ -11,10 +11,16 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Gql\Resolvers\Mutations\Asset as AssetResolver;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
 use CraftCms\Cms\Support\Facades\Volumes;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ */
 class Asset extends Mutation
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getMutations(): array
     {
         if (! GqlHelper::canMutateAssets()) {
@@ -56,6 +62,7 @@ class Asset extends Mutation
         return $mutationList;
     }
 
+    /** @return FieldDefinitionConfig */
     public static function createSaveMutation(Volume $volume): array
     {
         $mutationArguments = AssetMutationArguments::getArguments();

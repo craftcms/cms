@@ -13,7 +13,7 @@ class ElementDefaultCardAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  array  $cardAttributes  The default card attribute keys
+     * @param  list<string>  $cardAttributes  The default card attribute keys
      */
     public function __construct(
         public string $elementType,

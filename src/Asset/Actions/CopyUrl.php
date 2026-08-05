@@ -17,6 +17,12 @@ class CopyUrl extends ElementAction
         return t('Copy URL');
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         HtmlStack::jsWithVars(fn ($type) => <<<JS

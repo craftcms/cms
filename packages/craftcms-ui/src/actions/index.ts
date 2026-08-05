@@ -1,4 +1,5 @@
 import type {VariantKey} from '@src/constants/variants';
+import {actionClient} from '@src/utilities/api/actionClient';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}
@@ -15,7 +16,20 @@ export type BaseAction =
       detail?: Record<string, unknown>;
       confirm?: string;
     }
-  | {type: 'download'; url: string; filename?: string};
+  | {
+      type: 'download';
+      url: string;
+      filename?: string;
+      /**
+       * When set to a non-GET verb, the file is fetched as a blob through
+       * `actionClient` (resolving the action URL + CP headers) rather than a
+       * plain anchor navigation — needed for POST actions like recovery-code
+       * downloads that sit behind an elevated session.
+       */
+      method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+      body?: Record<string, unknown>;
+      confirm?: string;
+    };
 
 export type FeedbackData = {
   message?: string;
@@ -152,6 +166,40 @@ export async function runAction(
       break;
 
     case 'download': {
+      if (action.confirm && !confirm(action.confirm)) {
+        return;
+      }
+
+      // A non-GET download can't be a simple anchor navigation: fetch the file
+      // as a blob (through actionClient, so the action URL + CP headers resolve)
+      // and hand the browser an object URL to save.
+      if (action.method && action.method !== 'GET') {
+        const response = await actionClient.request({
+          url: action.url,
+          method: action.method,
+          data: action.body,
+          responseType: 'blob',
+        });
+
+        const disposition = String(
+          response.headers['content-disposition'] ?? ''
+        );
+        const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition);
+        const filename =
+          action.filename ??
+          (match?.[1] ? decodeURIComponent(match[1]) : 'download');
+
+        const objectUrl = URL.createObjectURL(response.data as Blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+        break;
+      }
+
       const a = document.createElement('a');
       a.href = action.url;
       a.download = action.filename ?? '';

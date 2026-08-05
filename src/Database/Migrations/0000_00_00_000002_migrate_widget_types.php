@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /** @var array<string, class-string> */
     private array $map = [
         'craft\widgets\CraftSupport' => CraftSupport::class,
         'craft\widgets\Feed' => Feed::class,

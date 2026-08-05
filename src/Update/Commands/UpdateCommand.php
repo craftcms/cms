@@ -115,6 +115,10 @@ class UpdateCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @param  list<string>  $handles
+     * @return array<string, string|false>
+     */
     private function getRequirements(array $handles): array
     {
         $constraints = [];
@@ -238,7 +242,7 @@ class UpdateCommand extends Command
 
         table(
             [Str::padRight('Handle', 10), Str::padRight('From', 10),  Str::padRight('To', 10), Str::padRight('Status', 10)],
-            $lines,
+            array_map(array_values(...), $lines),
         );
 
         return $requirements;
@@ -264,6 +268,10 @@ class UpdateCommand extends Command
         return null;
     }
 
+    /**
+     * @param  array<string, string|false>  $requirements
+     * @param  list<array{string, string, string, bool, UpdateStatus, string|null}>  $info
+     */
     private function updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
         if ($update->status === UpdateStatus::EXPIRED && ! $this->option('with-expired')) {
@@ -295,6 +303,7 @@ class UpdateCommand extends Command
         }
     }
 
+    /** @param array<string, string|false> $requirements */
     private function performUpdate(array $requirements): bool
     {
         $output = '';

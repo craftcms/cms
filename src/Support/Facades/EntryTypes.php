@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool deleteEntryType(\CraftCms\Cms\Entry\Data\EntryType $entryType)
  * @method static void handleDeletedEntryType(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void refreshEntryTypes()
+ * @method static array getTableData(int $page, int $limit, string|null $searchTerm = null, string $orderBy = 'name', int $sortDir = 4)
  *
  * @see \CraftCms\Cms\Entry\EntryTypes
  */

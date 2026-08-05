@@ -63,7 +63,7 @@ class FieldsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(TableRequest $request)
+    public function index(TableRequest $request): \Inertia\Response
     {
         [$pagination, $tableData] = $this->fieldsService->getTableData(
             page: $request->page(),
@@ -100,14 +100,16 @@ class FieldsController
 
         if (
             ! is_string($type) ||
+            ! is_subclass_of($type, FieldInterface::class) ||
             ! ComponentHelper::validateComponentClass($type, FieldInterface::class) ||
             ! $type::isSelectable()
         ) {
             $type = PlainText::class;
         }
 
-        /** @var Field $field */
         $field = $this->fieldsService->createField($type);
+
+        abort_unless($field instanceof Field, 500, 'Field types must extend the base field class.');
 
         return new CpScreenResponse()
             ->title(t('Create a new field'))
@@ -289,6 +291,7 @@ class FieldsController
      * URL-encoded string (`typeSettings`), since its inputs are server-rendered
      * HTML rather than form state. The legacy Twig form posts a `types` array.
      */
+    /** @return array<string, mixed> */
     private function typeSettingsFromRequest(Request $request, string $type): array
     {
         $settingsStr = $request->input('typeSettings');
@@ -399,6 +402,7 @@ class FieldsController
         ]);
     }
 
+    /** @param array<string, mixed>|null $settings */
     private function fieldLayoutComponent(Request $request, ?array &$settings = null): FieldLayoutComponent
     {
         $request->validate([

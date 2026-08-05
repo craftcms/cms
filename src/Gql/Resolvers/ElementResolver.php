@@ -20,6 +20,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 abstract class ElementResolver extends Resolver
 {
+    /** @param array<string, mixed> $arguments */
     public static function resolveOne(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
@@ -28,6 +29,7 @@ abstract class ElementResolver extends Resolver
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
@@ -36,13 +38,19 @@ abstract class ElementResolver extends Resolver
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
     }
 
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @param  array{argumentManager?: ArgumentManager, conditionBuilder?: ElementQueryConditionBuilder}|null  $context
+     */
     public static function resolveCount(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): mixed
     {
         return self::prepareElementQuery($source, $arguments, $context, $resolveInfo)->count();
     }
 
     /**
-     * @return ElementQuery|ElementCollection
+     * @param  array<string, mixed>  $arguments
+     * @param  array{argumentManager?: ArgumentManager, conditionBuilder?: ElementQueryConditionBuilder}|null  $context
+     * @return ElementQuery<ElementInterface>|ElementCollection<int, ElementInterface>
      */
     protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQueryInterface|ElementCollection
     {
@@ -62,7 +70,7 @@ abstract class ElementResolver extends Resolver
             $arguments['search'] = $searchTermOptions;
         }
 
-        /** @var ElementQuery $query */
+        /** @var ElementQuery<ElementInterface>|ElementCollection<int, ElementInterface> $query */
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
@@ -121,7 +129,7 @@ abstract class ElementResolver extends Resolver
 
     /**
      * @param  mixed  $source  The source. Null if top-level field being resolved.
-     * @param  array  $arguments  Arguments to apply to the query.
+     * @param  array<string, mixed>  $arguments  Arguments to apply to the query.
      * @param  string|null  $fieldName  Field name to resolve on the source, if not a top-level resolution.
      */
     abstract protected static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed;

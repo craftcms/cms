@@ -30,6 +30,7 @@ class Trim extends Directive
         return 'trim';
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         return trim((string) $value);
