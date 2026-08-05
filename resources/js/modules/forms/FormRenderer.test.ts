@@ -288,6 +288,86 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders FieldLayout tabs and semantic content', async () => {
+    app.unmount();
+    await mount({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Tab',
+          component: 'craft:tab',
+          props: {label: 'Content'},
+          uid: 'tab-content',
+          children: [
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+              component: 'craft:field',
+              props: {
+                label: 'Headline',
+                instructions: 'Keep it short.',
+                instructionsPosition: 'after',
+                tip: 'Use sentence case.',
+                warning: 'This appears publicly.',
+                required: true,
+                layoutUid: 'field-title',
+                width: 50,
+              },
+              control: {
+                type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                component: 'craft:text',
+                props: {},
+                path: ['title'],
+                mode: 'readOnly',
+                deltaGroup: ['title'],
+              },
+            },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\MarkdownContent',
+              component: 'craft:markdown-content',
+              props: {
+                html: '<p><strong>Editorial note</strong></p>',
+                displayInPane: true,
+                width: 50,
+              },
+              uid: 'content-note',
+              children: [],
+            },
+          ],
+        },
+      ],
+      values: {title: 'Persisted title'},
+      errors: [],
+      globalErrors: [],
+    });
+
+    const tab = container.querySelector<HTMLElement>(
+      'section[data-form-tab="tab-content"]'
+    );
+    const content = tab?.querySelector<HTMLElement>(
+      '[data-form-node="content-note"]'
+    );
+
+    expect(tab?.getAttribute('aria-label')).toBe('Content');
+    expect(
+      tab?.querySelector('craft-field')?.classList.contains('width-50')
+    ).toBe(true);
+    expect(tab?.querySelector('craft-field')?.dataset.layoutElement).toBe(
+      'field-title'
+    );
+    expect(tab?.querySelector('[slot="tip"]')?.textContent).toContain(
+      'Use sentence case.'
+    );
+    expect(tab?.querySelector('[slot="warning"]')?.textContent).toContain(
+      'This appears publicly.'
+    );
+    expect(content?.classList.contains('pane')).toBe(true);
+    expect(content?.classList.contains('width-50')).toBe(true);
+    expect(content?.querySelector('strong')?.textContent).toBe(
+      'Editorial note'
+    );
+  });
+
   it('renders server-localized copy unchanged', async () => {
     const localized = structuredClone(payload) as Mutable<FormPayload>;
     localized.nodes[0]!.props.label = 'UI-Modus';

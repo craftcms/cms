@@ -6,9 +6,13 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -107,5 +111,17 @@ class Markdown extends BaseUiElement
         ]);
 
         return Html::tag('div', $content, $this->containerAttributes($element, $static));
+    }
+
+    #[Override]
+    public function formNode(?ElementInterface $element, FormContext $context): ?Node
+    {
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Markdown FieldLayout elements require stable UIDs.');
+        }
+
+        return MarkdownContent::make($this->uid, $this->content)
+            ->displayInPane($this->displayInPane)
+            ->width($this->width);
     }
 }

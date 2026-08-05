@@ -9,6 +9,12 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use InvalidArgumentException;
 use Override;
@@ -36,6 +42,40 @@ class EntryTitleField extends TitleField
         $fields['required'] = 'required';
 
         return $fields;
+    }
+
+    #[Override]
+    public function formNode(?ElementInterface $element, FormContext $context): ?Node
+    {
+        if ($element !== null && ! $element instanceof Entry) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
+        }
+
+        if ($element && ! $element->getType()->hasTitleField) {
+            return null;
+        }
+
+        $control = $element?->getType()->allowLineBreaksInTitles
+            ? Textarea::make($this->name ?? $this->attribute())->rows(2)
+            : Text::make($this->name ?? $this->attribute())->inputType($this->inputType ?? 'text');
+        $control
+            ->value($this->value($element))
+            ->mode($this->disabled
+                ? ControlMode::Disabled
+                : ($this->readonly ? ControlMode::ReadOnly : ControlMode::Editable))
+            ->maxLength($this->maxlength)
+            ->placeholder($this->placeholder);
+
+        return Field::make()
+            ->label($this->showLabel() ? $this->label() : null)
+            ->instructions($this->instructionsText($element))
+            ->instructionsPosition($this->instructionsPosition)
+            ->tip($this->tipText($element))
+            ->warning($this->warningText($element))
+            ->required($this->required)
+            ->layoutUid($this->uid)
+            ->width($this->width)
+            ->control($control);
     }
 
     #[Override]

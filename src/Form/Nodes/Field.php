@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
 class Field implements Node
@@ -20,6 +21,16 @@ class Field implements Node
     private ?string $instructions = null;
 
     private bool $required = false;
+
+    private string $instructionsPosition = 'before';
+
+    private ?string $tip = null;
+
+    private ?string $warning = null;
+
+    private ?string $layoutUid = null;
+
+    private ?int $width = null;
 
     private ?Control $control = null;
 
@@ -46,12 +57,19 @@ class Field implements Node
         return FieldComponent::make()
             ->label($label)
             ->instructions($instructions)
+            ->instructionsPosition((string) ($node->props['instructionsPosition'] ?? 'before'))
+            ->tip(isset($node->props['tip']) ? (string) $node->props['tip'] : null)
+            ->warning(isset($node->props['warning']) ? (string) $node->props['warning'] : null)
             ->required((bool) ($node->props['required'] ?? false))
             ->readOnly($control->mode === ControlMode::ReadOnly)
             ->disabled($control->mode === ControlMode::Disabled)
             ->errors($errors)
             ->input($input)
-            ->attributes(['data-mode' => $control->mode->value])
+            ->attributes([
+                'class' => isset($node->props['width']) ? "width-{$node->props['width']}" : null,
+                'data-layout-element' => $node->props['layoutUid'] ?? null,
+                'data-mode' => $control->mode->value,
+            ])
             ->toHtml();
     }
 
@@ -77,6 +95,41 @@ class Field implements Node
     public function required(bool $required = true): static
     {
         $this->required = $required;
+
+        return $this;
+    }
+
+    public function instructionsPosition(string $instructionsPosition): static
+    {
+        $this->instructionsPosition = $instructionsPosition;
+
+        return $this;
+    }
+
+    public function tip(?string $tip): static
+    {
+        $this->tip = $tip;
+
+        return $this;
+    }
+
+    public function warning(?string $warning): static
+    {
+        $this->warning = $warning;
+
+        return $this;
+    }
+
+    public function layoutUid(?string $layoutUid): static
+    {
+        $this->layoutUid = $layoutUid;
+
+        return $this;
+    }
+
+    public function width(?int $width): static
+    {
+        $this->width = $width;
 
         return $this;
     }
@@ -109,6 +162,13 @@ class Field implements Node
             'label' => $this->label,
             'instructions' => $this->instructions,
             'required' => $this->required,
+            ...Arr::whereNotNull([
+                'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
+                'tip' => $this->tip,
+                'warning' => $this->warning,
+                'layoutUid' => $this->layoutUid,
+                'width' => $this->width,
+            ]),
         ];
     }
 

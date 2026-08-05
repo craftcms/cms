@@ -8,6 +8,8 @@ use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Form\Nodes\Tab;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -23,5 +25,7 @@ class FormNodeTypes extends TypeRegistry
     protected const array DEFAULT_TYPES = [
         Field::class,
         Group::class,
+        MarkdownContent::class,
+        Tab::class,
     ];
 }

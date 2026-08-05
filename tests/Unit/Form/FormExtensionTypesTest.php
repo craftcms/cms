@@ -34,6 +34,8 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
@@ -43,7 +45,7 @@ it('registers core and plugin Node and Control types separately', function () {
     $nodeTypes = app(FormNodeTypes::class);
     $controlTypes = app(FormControlTypes::class);
 
-    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class])
+    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, MarkdownContent::class, Tab::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
             Choice::class,
@@ -69,7 +71,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
-    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, Notice::class])
+    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, MarkdownContent::class, Tab::class, Notice::class])
         ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);

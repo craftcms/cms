@@ -19,6 +19,8 @@ import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
+import MarkdownContentNode from './MarkdownContentNode.vue';
+import TabNode from './TabNode.vue';
 import './content-block-input';
 
 export function registerFormComponents(
@@ -27,6 +29,8 @@ export function registerFormComponents(
   components.register('craft:form', FormRenderer);
   components.register('craft:field', FieldNode);
   components.register('craft:group', GroupNode);
+  components.register('craft:tab', TabNode);
+  components.register('craft:markdown-content', MarkdownContentNode);
   components.register('craft:text', TextControl);
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);

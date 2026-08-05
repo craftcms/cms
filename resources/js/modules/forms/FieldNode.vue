@@ -13,6 +13,11 @@
     label?: string | null;
     instructions?: string | null;
     required?: boolean;
+    instructionsPosition?: 'before' | 'after';
+    tip?: string;
+    warning?: string;
+    layoutUid?: string;
+    width?: number;
   };
 
   const props = defineProps<{
@@ -100,11 +105,18 @@
   <craft-field
     :label="node.props.label ?? undefined"
     :help-text="node.props.instructions ?? undefined"
+    :instructions-position="node.props.instructionsPosition"
     :required="Boolean(node.props.required)"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
+    :class="node.props.width ? `width-${node.props.width}` : undefined"
+    :data-layout-element="node.props.layoutUid"
   >
+    <span v-if="node.props.tip" slot="tip">{{ node.props.tip }}</span>
+    <span v-if="node.props.warning" slot="warning">
+      {{ node.props.warning }}
+    </span>
     <component
       :is="component"
       slot="input"

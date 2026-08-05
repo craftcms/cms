@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\FormContext;
 use DateTimeInterface;
+use LogicException;
 use Override;
 
 /**
@@ -72,6 +75,11 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
     abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
+
+    public function formNode(?ElementInterface $element, FormContext $context): ?Node
+    {
+        throw new LogicException(sprintf('%s does not provide a Form Node.', static::class));
+    }
 
     /**
      * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
