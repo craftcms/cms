@@ -36,6 +36,7 @@ class ComponentRegistry
         'input-password' => InputPassword::class,
         'input-time' => InputTime::class,
         'lightswitch' => Lightswitch::class,
+        'missing-component' => MissingComponent::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
         'select' => Select::class,

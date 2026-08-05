@@ -1,4 +1,5 @@
 import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
+import '@craftcms/ui/components/missing-component/missing-component';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
