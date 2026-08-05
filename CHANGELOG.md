@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.10.13.2 - 2026-08-05
 
 - Fixed a SQL error that could occur when viewing an element with an empty Categories field. ([#19372](https://github.com/craftcms/cms/issues/19372))
 
