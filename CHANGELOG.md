@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.16 - 2026-08-05
 
 - Fixed a bug where Yii-style migrations could be required twice. ([#19376](https://github.com/craftcms/cms/pull/19376))
 - Fixed a bug where the legacy `craft\base\Widget` class wasn’t fully implementing `CraftCms\Cms\Dashboard\Contracts\WidgetInterface`. ([#19375](https://github.com/craftcms/cms/pull/19375))
