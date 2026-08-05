@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \CraftCms\Cms\Entry\Elements\Entry|null getEntryById(int $entryId, int|string|int[]|null $siteId = null, array<array-key, mixed> $criteria = [])
- * @method static array<array-key, mixed> getSingleEntriesByHandle(string[] $handles)
+ * @method static \CraftCms\Cms\Entry\Elements\Entry|null getEntryById(int $entryId, int|string|int[]|null $siteId = null, array $criteria = [])
+ * @method static array getSingleEntriesByHandle(string[] $handles)
  * @method static void refreshSingleEntries()
  * @method static bool moveEntryToSection(\CraftCms\Cms\Entry\Elements\Entry $entry, \CraftCms\Cms\Section\Data\Section $section)
  * @method static int reassignEntries(int|int[] $oldUserId, int $newUserId)

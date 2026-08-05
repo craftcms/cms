@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static void push(string $heading, string $body, string|null $pluginHandle = null, bool $adminsOnly = false)
- * @method static array<array-key, mixed> get()
+ * @method static array get()
  * @method static void markAsRead(int[] $ids)
  *
  * @see \CraftCms\Cms\Announcement\Announcements

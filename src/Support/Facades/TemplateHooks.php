@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static void register(string $hook, callable|string $handler, bool $append = true)
- * @method static string invoke(string $hook, array<array-key, mixed> $context)
+ * @method static string invoke(string $hook, array $context)
  *
  * @see \CraftCms\Cms\View\TemplateHooks
  */

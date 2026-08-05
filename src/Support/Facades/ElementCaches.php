@@ -10,13 +10,13 @@ use Override;
 /**
  * @method static bool isCollectingCacheInfo()
  * @method static void startCollectingCacheInfo()
- * @method static void collectCacheTags(array<array-key, mixed> $tags)
+ * @method static void collectCacheTags(array $tags)
  * @method static void setCacheExpiryDate(\DateTimeInterface $expiryDate)
  * @method static void collectCacheInfoForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
- * @method static array<array-key, mixed> stopCollectingCacheInfo()
- * @method static array<array-key, mixed> invalidateAll()
- * @method static array<array-key, mixed> invalidateForElementType(string $elementType)
- * @method static array<array-key, mixed> invalidateForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
+ * @method static array stopCollectingCacheInfo()
+ * @method static array invalidateAll()
+ * @method static array invalidateForElementType(string $elementType)
+ * @method static array invalidateForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  *
  * @see \CraftCms\Cms\Element\ElementCaches
  */
