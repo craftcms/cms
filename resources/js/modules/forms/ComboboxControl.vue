@@ -21,8 +21,8 @@
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
 
-  function onValueChanged(value: string | number | boolean): void {
-    emit('update:value', String(value), 'typing');
+  function onValueChanged(value: string | number | boolean | undefined): void {
+    emit('update:value', String(value ?? ''), 'typing');
   }
 </script>
 

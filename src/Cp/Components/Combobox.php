@@ -27,6 +27,10 @@ class Combobox extends ViewComponent
 
     protected bool $readOnly = false;
 
+    protected int $limit = 150;
+
+    protected bool $clearable = false;
+
     protected ?string $describedBy = null;
 
     protected function tagName(): string
@@ -77,6 +81,20 @@ class Combobox extends ViewComponent
         return $this;
     }
 
+    public function limit(int $limit): static
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    public function clearable(bool $clearable = true): static
+    {
+        $this->clearable = $clearable;
+
+        return $this;
+    }
+
     public function describedBy(?string $describedBy): static
     {
         $this->describedBy = $describedBy;
@@ -96,6 +114,8 @@ class Combobox extends ViewComponent
             'required' => $this->required,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
+            'limit' => $this->limit,
+            'clearable' => $this->clearable,
             'aria' => ['describedby' => $this->describedBy],
         ];
     }
