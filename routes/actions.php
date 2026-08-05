@@ -302,6 +302,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/configs/saveMap', [ImportConfigController::class, 'storeMap']);
             Route::get('import/configs/editNestedFieldMapping', [ImportConfigController::class, 'editNestedFieldMapping']);
             Route::post('import/configs/saveNestedFieldMapping', [ImportConfigController::class, 'storeNestedFieldMapping']);
+            Route::post('import/configs/duplicate', [ImportConfigController::class, 'duplicate']);
         });
         Route::middleware('can:deleteImportConfigs')->post('import/configs/delete', [ImportConfigController::class, 'destroy']);
 

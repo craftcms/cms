@@ -70,6 +70,16 @@
                         {# todo: maybe we could have a link to edit field layout element screen; but not all element imports need it;
                             if so, it should come before the Edit Mapping button #}
 
+                        {% if not readOnly and currentUser.can('editImportConfigs') %}
+                            {% set actionItems = actionItems|merge([
+                                {
+                                    label: 'Duplicate'|t('app'),
+                                    action: 'import/configs/duplicate',
+                                    params: {uid: config.uid},
+                                },
+                            ]) %}
+                        {% endif %}
+
                         {% if not readOnly and currentUser.can('deleteImportConfigs') %}
                             {% set actionItems = actionItems|merge([
                                 {

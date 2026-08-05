@@ -522,6 +522,28 @@ class ImportConfigController
         return [$fieldUid, $field, $importUid, $import];
     }
 
+    public function duplicate(): Response
+    {
+        $uid = $this->request->input('uid');
+
+        if (! $uid) {
+            throw ValidationException::withMessages([
+                'id' => t('uid is required.'),
+            ]);
+        }
+
+        $config = $this->importService->getConfigByUid($uid);
+
+        abort_if(is_null($config), 404, "Invalid import config UID: $uid");
+        abort_if(! $config->isEditable(), 400, "This import config is not editable, so it can’t be duplicated via the Control Panel: $uid");
+
+        $this->importService->duplicateConfig($config);
+
+        return $this->asSuccess(t('“{name}” duplicated.', [
+            'name' => $config->name,
+        ]));
+    }
+
     public function destroy(): Response
     {
         $uid = $this->request->input('uid');

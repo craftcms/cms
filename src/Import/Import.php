@@ -276,6 +276,42 @@ class Import
     }
 
     /**
+     * Duplicate editable config.
+     */
+    public function duplicateConfig(BaseImporter $importer): void
+    {
+        $configRecord = $this->_getImportConfigModel($importer->uid);
+
+        // if we couldn't find it - return
+        if (! $configRecord->exists) {
+            return;
+        }
+
+        $newConfig = $configRecord->replicate();
+        $newConfig->uid = Str::uuid7()->toString();
+
+        if (preg_match('/^(.*?)(\d+)$/', (string) $newConfig->handle, $match)) {
+            $baseHandle = $match[1];
+            $i = (int) $match[2];
+        } else {
+            $baseHandle = $newConfig->handle;
+            $i = 1;
+        }
+        do {
+            $testHandle = sprintf('%s%s', $baseHandle, ++$i);
+            if (! $this->getConfigByHandle($testHandle)) {
+                $newConfig->handle = $testHandle;
+                break;
+            }
+        } while (true);
+
+        $newConfig->save();
+
+        // invalidate caches
+        $this->configs = null;
+    }
+
+    /**
      * Soft-deletes the DB record for an importer config and invalidates the configs cache.
      *
      * @param  BaseImporter  $importer  The importer config to delete.
