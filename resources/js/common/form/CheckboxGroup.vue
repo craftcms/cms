@@ -157,7 +157,7 @@
   .checkbox-group__items {
     display: flex;
     flex-direction: column;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-checkbox-group-spacing);
   }
 
   // Parent grid that the item rows subgrid onto: [handle | content].

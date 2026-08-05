@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+import {baseFieldStyles, baseInputStyles} from '@src/styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
