@@ -103,11 +103,13 @@ class EntriesTest extends TestCase
         ]);
 
         $commands = $this->_captureAuthorWriteCommands(fn() => $this->tester->saveElement($entry));
+        $entryId = $entry->id;
+        self::assertNotNull($entryId);
 
         self::assertSame(['INSERT'], $commands);
         self::assertSame([
             [$this->userA->id, 1],
-        ], $this->_savedAuthors($entry->id));
+        ], $this->_savedAuthors($entryId));
 
         $entry->authorId = $this->userB->id;
         $commands = $this->_captureAuthorWriteCommands(fn() => $this->tester->saveElement($entry));
@@ -115,7 +117,7 @@ class EntriesTest extends TestCase
         self::assertSame(['DELETE', 'INSERT'], $commands);
         self::assertSame([
             [$this->userB->id, 1],
-        ], $this->_savedAuthors($entry->id));
+        ], $this->_savedAuthors($entryId));
 
         $section = $entry->getSection();
         self::assertNotNull($section);
@@ -133,9 +135,11 @@ class EntriesTest extends TestCase
         } finally {
             $section->minAuthors = $oldMinAuthors;
         }
+        $authorlessEntryId = $authorlessEntry->id;
+        self::assertNotNull($authorlessEntryId);
 
         self::assertSame([], $commands);
-        self::assertSame([], $this->_savedAuthors($authorlessEntry->id));
+        self::assertSame([], $this->_savedAuthors($authorlessEntryId));
     }
 
     /**
