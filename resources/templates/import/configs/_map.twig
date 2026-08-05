@@ -63,14 +63,22 @@
             ) : null %}
 
             {% set nestedFieldValueForMatchCriteria = import.matchCriteria ? col.prefixedHandleAsArray|reduce(
-                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part)|boolean : null,
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part) : null,
                 import.matchCriteria
             ) : null %}
 
+            {% if nestedFieldValueForMatchCriteria is not null %}
+                {% set nestedFieldValueForMatchCriteria = nestedFieldValueForMatchCriteria|boolean %}
+            {% endif %}
+
             {% set nestedFieldValueForClear = import.clearableItems ? col.prefixedHandleAsArray|reduce(
-                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part)|boolean : null,
+                (value, part) => (value and value is iterable and value[part] is defined) ? attribute(value, part) : null,
                 import.clearableItems
             ) : null %}
+
+            {% if nestedFieldValueForClear is not null %}
+                {% set nestedFieldValueForClear = nestedFieldValueForClear|boolean %}
+            {% endif %}
 
             {% if col.isContainer %}
                 {{ hiddenInput(
