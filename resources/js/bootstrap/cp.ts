@@ -160,6 +160,7 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    handleRoutingAccessibility();
     ensureLegacyNotificationContainer();
 
     console.log('Calling booted callbacks', bootedCallbacks);
@@ -167,6 +168,23 @@ const Cp = {
     bootedCallbacks = [];
   },
 };
+
+function handleRoutingAccessibility() {
+  let previousComponent: string | null = null;
+  router.on('navigate', (event) => {
+    const { component, props } = event.detail.page;
+    if (component === previousComponent) return;
+    previousComponent = component;
+
+    const skipLink: HTMLElement | null = document.querySelector('.skip-link');
+
+    if (skipLink) {
+      skipLink.focus();
+    }
+
+    console.log(`Navigated to ${props.title} page`);
+  });
+}
 
 /**
  * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
