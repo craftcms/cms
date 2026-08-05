@@ -126,6 +126,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         $this->setLaravelDefaults();
         $this->registerLegacySiteTemplateRoot();
+        $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, 'yii2-adapter', __DIR__ . '/../resources/templates');
         $this->registerExceptionHandling();
     }
 
