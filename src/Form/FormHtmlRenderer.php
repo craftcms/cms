@@ -117,7 +117,10 @@ class FormHtmlRenderer
         return array_shift($path).implode('', array_map(fn (string $segment): string => "[{$segment}]", $path));
     }
 
-    /** @param array<string, mixed> $values @param list<string> $path */
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
     private function valueAt(array $values, array $path): mixed
     {
         foreach ($path as $segment) {
@@ -127,7 +130,11 @@ class FormHtmlRenderer
         return $values;
     }
 
-    /** @param list<array{path: list<string>, messages: list<string>}> $errors @param list<string> $path @return list<string> */
+    /**
+     * @param  list<array{path: list<string>, messages: list<string>}>  $errors
+     * @param  list<string>  $path
+     * @return list<string>
+     */
     public function errorsFor(array $errors, array $path): array
     {
         return array_merge(...array_map(
@@ -142,7 +149,10 @@ class FormHtmlRenderer
         return $errors === [] ? '' : $this->errorList($errors, null, ['role' => 'alert']);
     }
 
-    /** @param list<string> $errors @param array<string, mixed> $attributes */
+    /**
+     * @param  list<string>  $errors
+     * @param  array<string, mixed>  $attributes
+     */
     private function errorList(array $errors, ?string $id, array $attributes = []): string
     {
         return Html::tag('ul', implode('', array_map(

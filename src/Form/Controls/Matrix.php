@@ -39,7 +39,8 @@ class Matrix extends Control
         $order = is_array($value) && is_array($value['sortOrder'] ?? null) ? array_values($value['sortOrder']) : [];
         $editable = $attributes['name'] !== null;
         $forms = collect($control->forms)->keyBy(fn (NestedFormPayload $form): string => array_last($form->scope));
-        $types = collect($control->props['entryTypes'])->keyBy('value');
+        $entryTypes = self::resolvedEntryTypes($control->props['entryTypes'] ?? null);
+        $types = collect($entryTypes)->keyBy('value');
         $items = '';
 
         foreach ($order as $index => $uid) {
@@ -92,9 +93,9 @@ class Matrix extends Control
         $buttons = '';
 
         if ($editable) {
-            foreach ($control->props['entryTypes'] as $type) {
+            foreach ($entryTypes as $type) {
                 $buttons .= Button::make()
-                    ->label(count($control->props['entryTypes']) === 1
+                    ->label(count($entryTypes) === 1
                         ? $control->props['addLabel']
                         : t('Add {type}', ['type' => $type['label']]))
                     ->icon('plus')
@@ -120,8 +121,8 @@ class Matrix extends Control
                 'handle' => $type['value'],
                 'name' => $type['label'],
             ],
-            $control->props['entryTypes'],
-            array_keys($control->props['entryTypes']),
+            $entryTypes,
+            array_keys($entryTypes),
         );
 
         return Html::tag('craft-matrix-input', $clear.$matrix, [
@@ -209,7 +210,7 @@ class Matrix extends Control
             throw new InvalidArgumentException('Matrix minimum entries cannot exceed the maximum.');
         }
 
-        $this->assertValue($value);
+        $this->validatedValue($value);
 
         return [
             'entryTypes' => collect($this->entryTypes)
@@ -225,20 +226,22 @@ class Matrix extends Control
     #[\Override]
     public function nestedForms(mixed $value = null): array
     {
-        $this->assertValue($value);
+        $value = $this->validatedValue($value);
+        $forms = [];
 
-        return collect($value['sortOrder'])
-            ->filter(fn (mixed $uid): bool => is_string($uid) && isset($this->forms[$uid]))
-            ->map(fn (string $uid): array => [
+        foreach ($value['sortOrder'] as $uid) {
+            $forms[] = [
                 'scope' => ['entries', $uid],
                 'form' => $this->forms[$uid],
                 'refreshable' => true,
-            ])
-            ->values()
-            ->all();
+            ];
+        }
+
+        return $forms;
     }
 
-    private function assertValue(mixed $value): void
+    /** @return array{entries: array<string, array<string, mixed>>, sortOrder: list<string>} */
+    private function validatedValue(mixed $value): array
     {
         if (! is_array($value) || ! is_array(Arr::get($value, 'entries')) || ! is_array(Arr::get($value, 'sortOrder'))) {
             throw new InvalidArgumentException('Matrix values must contain entries and sortOrder arrays.');
@@ -259,5 +262,23 @@ class Matrix extends Control
                 throw new InvalidArgumentException("Matrix entry [{$uid}] requires a nested Form.");
             }
         }
+
+        return $value;
+    }
+
+    /** @return list<array{value: string, label: string}> */
+    private static function resolvedEntryTypes(mixed $entryTypes): array
+    {
+        if (! is_array($entryTypes)) {
+            throw new InvalidArgumentException('Resolved Matrix entry types must be an array.');
+        }
+
+        return array_map(function (mixed $entryType): array {
+            if (! is_array($entryType) || ! is_string($entryType['value'] ?? null) || ! is_string($entryType['label'] ?? null)) {
+                throw new InvalidArgumentException('Resolved Matrix entry types require string values and labels.');
+            }
+
+            return ['value' => $entryType['value'], 'label' => $entryType['label']];
+        }, array_values($entryTypes));
     }
 }

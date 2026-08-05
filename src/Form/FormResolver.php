@@ -56,6 +56,7 @@ class FormResolver
 
     /**
      * @param  list<string>  $namespace
+     * @param  list<string>|null  $inheritedDeltaGroup
      */
     private function resolveNode(
         Node $node,
@@ -124,6 +125,7 @@ class FormResolver
 
     /**
      * @param  list<string>  $namespace
+     * @param  list<string>|null  $inheritedDeltaGroup
      */
     private function resolveControl(
         Control $control,
@@ -258,7 +260,10 @@ class FormResolver
         return $matches[0];
     }
 
-    /** @param string|list<string> $path @return list<string> */
+    /**
+     * @param  string|list<string>  $path
+     * @return list<string>
+     */
     private function normalizePath(string|array $path, string $location): array
     {
         $segments = is_string($path) ? ($path === '' ? [] : explode('.', $path)) : array_values($path);
@@ -288,7 +293,10 @@ class FormResolver
         return $path === [] ? 'unknown' : implode('.', $path);
     }
 
-    /** @param array<string, mixed> $values @param list<string> $path */
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
     private function has(array $values, array $path): bool
     {
         foreach ($path as $segment) {
@@ -302,7 +310,10 @@ class FormResolver
         return true;
     }
 
-    /** @param array<string, mixed> $values @param list<string> $path */
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
     private function get(array $values, array $path): mixed
     {
         foreach ($path as $segment) {
@@ -312,7 +323,10 @@ class FormResolver
         return $values;
     }
 
-    /** @param array<string, mixed> $values @param list<string> $path */
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
     private function set(array &$values, array $path, mixed $value): void
     {
         $current = &$values;

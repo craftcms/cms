@@ -82,6 +82,7 @@ class Choice extends Control
         ];
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function selectHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         return self::select($control, $attributes)
@@ -90,6 +91,7 @@ class Choice extends Control
             ->toHtml();
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function multipleSelectHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         return self::select($control, $attributes)
@@ -99,6 +101,7 @@ class Choice extends Control
             ->toHtml();
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function select(ControlPayload $control, array $attributes): SelectComponent
     {
         return SelectComponent::make()
@@ -112,6 +115,7 @@ class Choice extends Control
             ]);
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function checkboxesHtml(
         ControlPayload $control,
         mixed $value,
@@ -143,6 +147,7 @@ class Choice extends Control
             ->toHtml();
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         $values = self::values($value);
@@ -170,6 +175,7 @@ class Choice extends Control
             ->toHtml();
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function buttonsHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         $values = self::values($value);
@@ -183,6 +189,7 @@ class Choice extends Control
             ->toHtml();
     }
 
+    /** @param array<string, mixed> $attributes */
     private static function multipleButtonsHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         $values = self::values($value);
@@ -196,7 +203,11 @@ class Choice extends Control
             ->toHtml();
     }
 
-    /** @return list<Button> */
+    /**
+     * @param  list<string>  $values
+     * @param  array<string, mixed>  $attributes
+     * @return list<Button>
+     */
     private static function buttons(ControlPayload $control, array $values, array $attributes): array
     {
         return array_map(function (array $option) use ($attributes, $values): Button {
@@ -221,6 +232,10 @@ class Choice extends Control
         return $name === null ? null : "{$name}[]";
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
     private static function groupAttributes(array $attributes, string $role): array
     {
         return [
@@ -235,6 +250,10 @@ class Choice extends Control
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
     private static function buttonGroupAttributes(array $attributes): array
     {
         return [

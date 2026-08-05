@@ -14,6 +14,7 @@ abstract class Control implements ControlContract
 
     protected ControlMode $mode = ControlMode::Editable;
 
+    /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
 
     /**
