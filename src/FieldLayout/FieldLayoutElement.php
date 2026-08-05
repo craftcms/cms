@@ -6,7 +6,7 @@ namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use DateTimeInterface;
 use LogicException;
 use Override;
@@ -76,9 +76,14 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
-    public function formNode(?ElementInterface $element, FormContext $context): ?Node
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
         throw new LogicException(sprintf('%s does not provide a Form Node.', static::class));
+    }
+
+    public function formMode(?ElementInterface $element): ControlMode
+    {
+        return ControlMode::Editable;
     }
 
     /**

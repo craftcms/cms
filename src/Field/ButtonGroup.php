@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
@@ -60,6 +61,12 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    #[Override]
+    protected function formPresentation(): ChoicePresentation
+    {
+        return ChoicePresentation::Buttons;
     }
 
     #[Override]

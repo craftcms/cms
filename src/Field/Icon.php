@@ -16,6 +16,8 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -179,6 +181,14 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return new IconData($value, self::iconStyles($value));
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return IconPicker::make($context->path)
+            ->freeOnly(! $this->includeProIcons)
+            ->value($context->value instanceof IconData ? $context->value->name : $context->value);
     }
 
     #[Override]

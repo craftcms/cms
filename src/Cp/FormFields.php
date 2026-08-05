@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
@@ -15,7 +16,10 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Components\InputDate;
+use CraftCms\Cms\Cp\Components\InputDateTime;
 use CraftCms\Cms\Cp\Components\InputPassword;
+use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
@@ -23,6 +27,7 @@ use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -31,6 +36,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use DateTimeInterface;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
@@ -1083,7 +1090,45 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/date', $config);
+        $html = self::dateFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateFromConfig(array $config): InputDate
+    {
+        $id = ($config['id'] ?? 'date'.mt_rand()).'-date';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDate::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'Y-m-d', $config['timeZone'] ?? null))
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Date') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1091,13 +1136,63 @@ readonly class FormFields
     {
         $config['id'] ??= 'date'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/date', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateHtml($c),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/time', $config);
+        $html = self::timeFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function timeFromConfig(array $config): InputTime
+    {
+        $id = ($config['id'] ?? 'time'.mt_rand()).'-time';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputTime::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'H:i', $config['timeZone'] ?? null))
+            ->min(self::formattedTime($config['minTime'] ?? null))
+            ->max(self::formattedTime($config['maxTime'] ?? null))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Time') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1105,7 +1200,54 @@ readonly class FormFields
     {
         $config['id'] ??= 'time'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/time', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::timeHtml($c),
+            $config,
+        );
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateTimeHtml(array $config): string
+    {
+        return self::dateTimeFromConfig($config)->toHtml();
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateTimeFromConfig(array $config): InputDateTime
+    {
+        $value = $config['value'] ?? null;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($value)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDateTime::make()
+            ->id($config['id'] ?? 'datetime'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->dateValue(self::formattedDateTimeValue($value, 'Y-m-d', $config['timeZone'] ?? null))
+            ->timeValue(self::formattedDateTimeValue($value, 'H:i', $config['timeZone'] ?? null))
+            ->timezone($timezone)
+            ->locale(I18N::getFormattingLocale()->id)
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->minTime(self::formattedTime($config['minTime'] ?? null))
+            ->maxTime(self::formattedTime($config['maxTime'] ?? null))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1116,7 +1258,43 @@ readonly class FormFields
             'fieldset' => true,
         ];
 
-        return self::fieldHtml('template:_includes/forms/datetime', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateTimeHtml($c),
+            $config,
+        );
+    }
+
+    private static function formattedDateTimeValue(mixed $value, string $format, bool|string|null $timezone = null): ?string
+    {
+        $date = DateTimeHelper::toDateTime($value, true, $timezone !== false);
+
+        if (! $date) {
+            return null;
+        }
+
+        if (is_string($timezone)) {
+            $date = Date::instance($date)->setTimezone($timezone);
+        }
+
+        return $date->format($format);
+    }
+
+    private static function formattedTime(mixed $value): ?string
+    {
+        if (is_numeric($value)) {
+            $seconds = (int) $value;
+
+            return sprintf('%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60));
+        }
+
+        return self::formattedDateTimeValue($value, 'H:i');
+    }
+
+    private static function valueTimezone(mixed $value): string
+    {
+        return $value instanceof DateTimeInterface
+            ? $value->getTimezone()->getName()
+            : Cms::timezone();
     }
 
     /** @param array<string, mixed> $config */

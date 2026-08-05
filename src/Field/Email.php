@@ -11,6 +11,8 @@ use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -65,6 +67,15 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return Text::make($context->path)
+            ->inputType('email')
+            ->placeholder(t($this->placeholder, category: 'site'))
+            ->value($context->value);
     }
 
     #[Override]

@@ -24,6 +24,15 @@ class FieldLayoutCompiler
         ?ElementInterface $element = null,
         FormContext $context = new FormContext,
     ): FormPayload {
+        return $this->resolver->resolve($this->form($layout, $element, $context), $context);
+    }
+
+    /** @internal Nested Controls need the unresolved definition during compilation. */
+    public function form(
+        FieldLayout $layout,
+        ?ElementInterface $element = null,
+        FormContext $context = new FormContext,
+    ): Form {
         $form = Form::make();
 
         foreach ($layout->getTabs() as $layoutTab) {
@@ -38,7 +47,11 @@ class FieldLayoutCompiler
                     continue;
                 }
 
-                $node = $layoutElement->formNode($element, $context);
+                $node = $layoutElement->formNode(new FieldLayoutElementContext(
+                    $element,
+                    $context,
+                    $layoutElement->formMode($element),
+                ));
 
                 if ($node !== null) {
                     $nodes[] = $node;
@@ -62,6 +75,6 @@ class FieldLayoutCompiler
 
         event($event = new FieldLayoutFormResolving($layout, $form, $context, $element));
 
-        return $this->resolver->resolve($event->form, $context);
+        return $event->form;
     }
 }

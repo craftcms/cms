@@ -12,6 +12,8 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Range as RangeControl;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
@@ -37,6 +39,16 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     public static function icon(): string
     {
         return 'slider';
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return RangeControl::make($context->path)
+            ->min($this->min)
+            ->max($this->max)
+            ->step($this->step)
+            ->value($context->value);
     }
 
     #[Override]

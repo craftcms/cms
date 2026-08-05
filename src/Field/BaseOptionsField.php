@@ -18,6 +18,9 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -358,6 +361,27 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         return $html;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $options = collect($this->translatedOptions(true, $context->value, $context->element))
+            ->filter(fn (array $option): bool => array_key_exists('value', $option))
+            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
+            ->values()
+            ->all();
+
+        return Choice::make($context->path)
+            ->options($options)
+            ->multiple(static::$multi)
+            ->presentation($this->formPresentation())
+            ->value($this->encodeValue($context->value));
+    }
+
+    protected function formPresentation(): ChoicePresentation
+    {
+        return static::$multi ? ChoicePresentation::Checkboxes : ChoicePresentation::Select;
     }
 
     /** @return list<string>|string|null */

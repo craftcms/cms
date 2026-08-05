@@ -7,7 +7,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -52,5 +56,15 @@ HTML;
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('hr');
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Horizontal Rule FieldLayout elements require stable UIDs.');
+        }
+
+        return Separator::make($this->uid);
     }
 }

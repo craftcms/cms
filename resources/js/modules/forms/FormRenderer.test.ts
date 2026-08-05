@@ -333,6 +333,39 @@ describe('FormRenderer', () => {
               uid: 'content-note',
               children: [],
             },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Heading',
+              component: 'craft:heading',
+              props: {content: 'Details', width: 100},
+              uid: 'heading',
+              children: [],
+            },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Separator',
+              component: 'craft:separator',
+              props: {},
+              uid: 'separator',
+              children: [],
+            },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\LineBreak',
+              component: 'craft:line-break',
+              props: {},
+              uid: 'line-break',
+              children: [],
+            },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Callout',
+              component: 'craft:callout',
+              props: {
+                html: '<p><strong>Careful</strong></p>',
+                variant: 'warning',
+                dismissible: false,
+                width: 50,
+              },
+              uid: 'callout',
+              children: [],
+            },
           ],
         },
       ],
@@ -366,6 +399,16 @@ describe('FormRenderer', () => {
     expect(content?.querySelector('strong')?.textContent).toBe(
       'Editorial note'
     );
+    expect(tab?.querySelector('[data-form-node="heading"]')?.textContent).toBe(
+      'Details'
+    );
+    expect(tab?.querySelector('hr[data-form-node="separator"]')).not.toBeNull();
+    expect(
+      tab?.querySelector('[data-form-node="line-break"]')?.classList
+    ).toContain('line-break');
+    expect(
+      tab?.querySelector('craft-callout[data-form-node="callout"]')?.textContent
+    ).toContain('Careful');
   });
 
   it('renders server-localized copy unchanged', async () => {

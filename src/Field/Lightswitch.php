@@ -14,6 +14,8 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Lightswitch as LightswitchControl;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -157,6 +159,15 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     public function getDefaultValue(): bool
     {
         return $this->default;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return LightswitchControl::make($context->path)
+            ->onLabel(t($this->onLabel, category: 'site'))
+            ->offLabel(t($this->offLabel, category: 'site'))
+            ->value((bool) $context->value);
     }
 
     #[Override]

@@ -12,6 +12,8 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Number as NumberControl;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -77,6 +79,17 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
         $valueSql = self::valueSql($instances);
 
         return $query->whereNumericParam($valueSql, $value, columnType: self::dbType());
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return NumberControl::make($context->path)
+            ->min($this->min)
+            ->max($this->max)
+            ->step($this->step)
+            ->size($this->size)
+            ->value($context->value);
     }
 
     /**

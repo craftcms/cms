@@ -19,8 +19,13 @@ import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
+import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
 import TabNode from './TabNode.vue';
+import CalloutNode from './CalloutNode.vue';
+import HeadingNode from './HeadingNode.vue';
+import LineBreakNode from './LineBreakNode.vue';
+import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
 
 export function registerFormComponents(
@@ -31,6 +36,10 @@ export function registerFormComponents(
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:markdown-content', MarkdownContentNode);
+  components.register('craft:callout', CalloutNode);
+  components.register('craft:heading', HeadingNode);
+  components.register('craft:line-break', LineBreakNode);
+  components.register('craft:separator', SeparatorNode);
   components.register('craft:text', TextControl);
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);
@@ -40,6 +49,7 @@ export function registerFormComponents(
   components.register('craft:number', ScalarControl);
   components.register('craft:range', ScalarControl);
   components.register('craft:date', ScalarControl);
+  components.register('craft:date-time', DateTimeControl);
   components.register('craft:time', ScalarControl);
   components.register('craft:color', ColorControl);
   components.register('craft:money', MoneyControl);

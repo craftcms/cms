@@ -69,6 +69,8 @@ interface Control
      */
     public function getMode(): ControlMode;
 
+    public function mode(ControlMode|string $mode): static;
+
     /**
      * Returns control-specific configuration for the resolved value and both renderers.
      *

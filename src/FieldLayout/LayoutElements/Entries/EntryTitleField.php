@@ -8,13 +8,12 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
-use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use InvalidArgumentException;
 use Override;
@@ -45,8 +44,10 @@ class EntryTitleField extends TitleField
     }
 
     #[Override]
-    public function formNode(?ElementInterface $element, FormContext $context): ?Node
+    protected function formControl(FieldLayoutElementContext $context): ?Control
     {
+        $element = $context->element;
+
         if ($element !== null && ! $element instanceof Entry) {
             throw new InvalidArgumentException(sprintf('%s can only be used in entry field layouts.', self::class));
         }
@@ -66,16 +67,7 @@ class EntryTitleField extends TitleField
             ->maxLength($this->maxlength)
             ->placeholder($this->placeholder);
 
-        return Field::make()
-            ->label($this->showLabel() ? $this->label() : null)
-            ->instructions($this->instructionsText($element))
-            ->instructionsPosition($this->instructionsPosition)
-            ->tip($this->tipText($element))
-            ->warning($this->warningText($element))
-            ->required($this->required)
-            ->layoutUid($this->uid)
-            ->width($this->width)
-            ->control($control);
+        return $control;
     }
 
     #[Override]

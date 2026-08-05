@@ -12,10 +12,12 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -184,6 +186,20 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
                     ->value($this->initialRows)
                     ->min(1)),
         ]);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $control = $this->multiline
+            ? Textarea::make($context->path)->rows($this->initialRows)
+            : Text::make($context->path);
+
+        return $control
+            ->value($context->value)
+            ->maxLength($this->charLimit)
+            ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
+            ->monospace($this->code);
     }
 
     #[Override]

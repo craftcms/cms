@@ -12,6 +12,8 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\DateTime as DateTimeControl;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
@@ -150,6 +152,29 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'min' => t('Min Date'),
             'max' => t('Max Date'),
         ];
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof DateTimeInterface ? [
+            'date' => $context->value->format('Y-m-d'),
+            'time' => $context->value->format('H:i'),
+            'timezone' => $context->value->getTimezone()->getName(),
+        ] : $context->value;
+
+        return DateTimeControl::make($context->path)
+            ->showDate($this->showDate)
+            ->showTime($this->showTime)
+            ->showTimeZone($this->showTimeZone)
+            ->min($this->min?->format('Y-m-d'))
+            ->max($this->max?->format('Y-m-d'))
+            ->minuteIncrement($this->minuteIncrement)
+            ->value($value ?? [
+                'date' => '',
+                'time' => '',
+                'timezone' => Cms::timezone(),
+            ]);
     }
 
     #[Override]

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
@@ -39,6 +40,12 @@ class MultiSelect extends BaseOptionsField
     public static function icon(): string
     {
         return 'list-check';
+    }
+
+    #[\Override]
+    protected function formPresentation(): ChoicePresentation
+    {
+        return ChoicePresentation::Select;
     }
 
     #[\Override]

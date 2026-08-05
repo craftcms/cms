@@ -22,7 +22,11 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\ContentBlock as ContentBlockControl;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
@@ -368,6 +372,24 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $control = ContentBlockControl::make($context->path);
+
+        if (! $context->value instanceof ContentBlockElement) {
+            return $control;
+        }
+
+        return $control
+            ->form(app(FieldLayoutCompiler::class)->form(
+                $context->value->getFieldLayout(),
+                $context->value,
+                new FormContext,
+            ))
+            ->value([]);
     }
 
     private function settingsHtml(bool $readOnly): string

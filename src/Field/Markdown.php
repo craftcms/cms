@@ -17,6 +17,8 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\MarkdownData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
@@ -222,6 +224,18 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public static function phpType(): string
     {
         return sprintf('\\%s|null', MarkdownData::class);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return MarkdownControl::make($context->path)
+            ->rows($this->initialRows)
+            ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
+            ->maxLength($this->charLimit)
+            ->toolbarButtons($this->toolbarButtons)
+            ->showToolbar($this->showToolbar)
+            ->value($context->value instanceof MarkdownData ? $context->value->getRaw() : $context->value);
     }
 
     /** @return list<array{label: string, value: string, icon: string}> */

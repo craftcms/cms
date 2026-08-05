@@ -16,6 +16,11 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\Field as FieldType;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -26,6 +31,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -72,6 +78,8 @@ class CustomField extends BaseField
     public ?string $handle = null;
 
     private ?FieldInterface $_field = null;
+
+    private ?FieldInterface $_sourceField = null;
 
     private ?string $_fieldUid = null;
 
@@ -431,6 +439,7 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
+        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -459,6 +468,7 @@ class CustomField extends BaseField
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
+        $this->_sourceField = null;
     }
 
     /**
@@ -808,6 +818,34 @@ class CustomField extends BaseField
         }
 
         return true;
+    }
+
+    #[Override]
+    public function formMode(?ElementInterface $element): ControlMode
+    {
+        return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
+    }
+
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        try {
+            $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        $field = $this->_sourceField;
+
+        if (! $field instanceof FieldType) {
+            throw new LogicException(sprintf('%s must extend %s to provide a Form Control.', $field::class, FieldType::class));
+        }
+
+        return $field->formControl(new FieldContext(
+            ['fields', $this->attribute()],
+            $this->value($context->element),
+            $context->element,
+        ));
     }
 
     #[Override]

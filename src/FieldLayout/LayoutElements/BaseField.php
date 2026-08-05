@@ -11,6 +11,11 @@ use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -351,6 +356,36 @@ abstract class BaseField extends FieldLayoutElement
             'defaultInstructions' => $this->defaultInstructions(),
             'labelHidden' => ! $this->showLabel(),
         ]);
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        $control = $this->formControl($context);
+
+        if ($control === null) {
+            return null;
+        }
+
+        if ($context->mode !== ControlMode::Editable) {
+            $control->mode($context->mode);
+        }
+
+        return Field::make()
+            ->label($this->showLabel() ? $this->label() : null)
+            ->instructions($this->instructionsText($context->element))
+            ->instructionsPosition($this->instructionsPosition)
+            ->tip($this->tipText($context->element))
+            ->warning($this->warningText($context->element))
+            ->required($this->required)
+            ->layoutUid($this->uid)
+            ->width($this->width)
+            ->control($control);
+    }
+
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return null;
     }
 
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string

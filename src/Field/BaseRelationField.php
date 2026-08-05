@@ -36,6 +36,8 @@ use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -260,6 +262,25 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         return $query;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $sources = $this->allowMultipleSources ? $this->sources : $this->source;
+        $sources = $sources === '*' ? null : $sources;
+        $sources = is_string($sources) ? [$sources] : $sources;
+        $value = $context->value === null
+            ? []
+            : $this->serializeValue($context->value, $context->element);
+
+        return ElementSelect::make($context->path)
+            ->elementType(static::elementType())
+            ->sources($sources)
+            ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
+            ->limit($this->maxRelations)
+            ->showSiteMenu($this->showSiteMenu)
+            ->value($value);
     }
 
     /**

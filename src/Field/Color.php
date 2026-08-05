@@ -12,6 +12,8 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Color as ColorControl;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
@@ -108,6 +110,14 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         $color = Arr::first($this->palette, fn (array $color) => $color['default'] ?? false);
 
         return $color ? $color['color'] : null;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return ColorControl::make($context->path)
+            ->presets(array_values(array_filter(array_column($this->palette, 'color'))))
+            ->value($context->value instanceof ColorData ? $context->value->getHex() : $context->value);
     }
 
     /**

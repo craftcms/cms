@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -45,6 +46,7 @@ class FormControlTypes extends TypeRegistry
         Combobox::class,
         ContentBlock::class,
         Date::class,
+        DateTime::class,
         ElementSelect::class,
         IconPicker::class,
         Lightswitch::class,

@@ -6,7 +6,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -62,5 +66,15 @@ class Heading extends BaseUiElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Heading FieldLayout elements require stable UIDs.');
+        }
+
+        return HeadingNode::make($this->uid, t($this->heading, category: 'site'));
     }
 }

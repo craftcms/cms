@@ -42,6 +42,7 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
@@ -66,6 +67,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 use RuntimeException;
 use Stringable;
@@ -293,6 +295,11 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public static function icon(): string
     {
         return 'i-cursor';
+    }
+
+    public function formControl(FieldContext $context): Control
+    {
+        throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
     }
 
     public static function isMultiInstance(): bool

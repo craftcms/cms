@@ -7,9 +7,13 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -166,6 +170,23 @@ JAVASCRIPT;
             ...$this->containerAttributes($element, $static),
             'id' => $id,
         ]);
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (trim($this->tip) === '') {
+            return null;
+        }
+
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Tip FieldLayout elements require stable UIDs.');
+        }
+
+        return Callout::make($this->uid, t($this->tip, category: 'site'))
+            ->variant($this->_isTip() ? 'info' : 'warning')
+            ->dismissible($this->dismissible)
+            ->width($this->width);
     }
 
     /**

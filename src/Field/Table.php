@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Table as TableControl;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
@@ -102,6 +104,23 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public static function dbType(): string
     {
         return Query::TYPE_JSON;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $columns = collect($this->columns)
+            ->map(fn (array $column): array => Arr::only($column, ['heading', 'type', 'width', 'options']))
+            ->all();
+
+        return TableControl::make($context->path)
+            ->columns($columns)
+            ->allowAdd(! $this->staticRows)
+            ->allowDelete(! $this->staticRows)
+            ->allowReorder(! $this->staticRows)
+            ->minRows($this->minRows)
+            ->maxRows($this->maxRows)
+            ->value($this->serializeValue($context->value, $context->element));
     }
 
     /**

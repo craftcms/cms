@@ -1,0 +1,98 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Form\Nodes;
+
+use CraftCms\Cms\Cp\Components\Callout as CalloutComponent;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Html;
+use Illuminate\Support\HtmlString;
+
+class Callout implements Node
+{
+    private string $variant = 'info';
+
+    private bool $dismissible = false;
+
+    private int $width = 100;
+
+    public function __construct(
+        private readonly string $uid,
+        private readonly string $content,
+    ) {}
+
+    public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
+    {
+        return CalloutComponent::make()
+            ->variant($node->props['variant'])
+            ->content(new HtmlString($node->props['html']))
+            ->attributes([
+                'class' => ["width-{$node->props['width']}"],
+                'data-form-node' => $node->uid,
+                'data-dismissible' => $node->props['dismissible'],
+            ])
+            ->toHtml();
+    }
+
+    public static function make(string $uid, string $content): self
+    {
+        return new self($uid, $content);
+    }
+
+    public function variant(string $variant): static
+    {
+        $this->variant = $variant;
+
+        return $this;
+    }
+
+    public function dismissible(bool $dismissible = true): static
+    {
+        $this->dismissible = $dismissible;
+
+        return $this;
+    }
+
+    public function width(int $width): static
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
+    public function component(): string
+    {
+        return 'craft:callout';
+    }
+
+    public function uid(): ?string
+    {
+        return $this->uid;
+    }
+
+    public function props(): array
+    {
+        return [
+            'html' => Markdown::parse(Html::encode($this->content), 'pre-encoded'),
+            'variant' => $this->variant,
+            'dismissible' => $this->dismissible,
+            'width' => $this->width,
+        ];
+    }
+
+    public function getControl(): ?Control
+    {
+        return null;
+    }
+
+    public function children(): array
+    {
+        return [];
+    }
+}

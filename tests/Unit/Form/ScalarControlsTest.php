@@ -7,6 +7,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
@@ -44,6 +45,9 @@ function scalarControlsForm(): Form
         Field::make()->label('Number')->control(Number::make('number')->min(0)->max(10)->step(0.5)),
         Field::make()->label('Range')->control(Range::make('range')->min(1)->max(5)->step(1)),
         Field::make()->label('Date')->control(Date::make('date')->min('2026-01-01')->max('2026-12-31')),
+        Field::make()->label('Date and time')->control(
+            DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15),
+        ),
         Field::make()->label('Time')->control(Time::make('time')->step(60)),
         Field::make()->label('Color')->control(Color::make('color')->presets(['#ff0000'])),
         Field::make()->label('Money')->control(
@@ -63,6 +67,7 @@ function scalarControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawl
             'number' => '',
             'range' => 3,
             'date' => '2026-08-04',
+            'datetime' => ['date' => '2026-08-04', 'time' => '14:30', 'timezone' => 'Europe/Brussels'],
             'time' => '14:30',
             'color' => 'ff0000',
             'price' => ['value' => '12,50', 'locale' => 'nl_BE'],
@@ -87,6 +92,10 @@ it('resolves and renders scalar and choice Controls with canonical values', func
         ->and($crawler->filter('input[type="number"][aria-invalid="true"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="date"][value="2026-08-04"][min="2026-01-01"][max="2026-12-31"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-date-time input[type="date"][name="settings[datetime][date]"][value="2026-08-04"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-date-time input[type="time"][name="settings[datetime][time]"][value="14:30"][step="900"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[datetime][timezone]"][value="Europe/Brussels"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input-date-time input[type="hidden"][name="settings[datetime][locale]"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="time"][value="14:30"][step="60"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-color input[value="ff0000"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-money input[name="settings[price][value]"][value="12,50"]'))->toHaveCount(1)
@@ -165,8 +174,9 @@ it('displays scalar and choice values without submitting them in non-editable mo
         ->and($crawler->filter('textarea')->text())->toBe('<script>alert(1)</script>')
         ->and($crawler->filter('select option[value="1"][selected]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
-        ->and($crawler->filter('input[type="date"][value="2026-08-04"]'))->toHaveCount(1)
-        ->and($crawler->filter('input[type="time"][value="14:30"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="date"][value="2026-08-04"]'))->toHaveCount(2)
+        ->and($crawler->filter('input[value="Europe/Brussels"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[type="time"][value="14:30"]'))->toHaveCount(2)
         ->and($crawler->filter('craft-input-color input[value="ff0000"]'))->toHaveCount(1)
         ->and($crawler->filter('input[value="12,50"]'))->toHaveCount(1);
 })->with([

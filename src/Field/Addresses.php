@@ -23,6 +23,10 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
@@ -327,6 +331,35 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $addresses = match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof AddressQuery => $context->value->all(),
+            default => [],
+        };
+        $values = $forms = $sortOrder = [];
+
+        foreach ($addresses as $address) {
+            $uid = $address->uid ?? (string) $address->id;
+            $values[$uid] = ['type' => 'address'];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $address->getFieldLayout(),
+                $address,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
+
+        return MatrixControl::make($context->path)
+            ->entryTypes(['address' => Address::displayName()])
+            ->forms($forms)
+            ->minEntries($this->minAddresses)
+            ->maxEntries($this->maxAddresses)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     private function settingsHtml(bool $readOnly): string

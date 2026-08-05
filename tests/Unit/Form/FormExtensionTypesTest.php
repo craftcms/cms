@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -32,9 +33,13 @@ use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Form\Nodes\LineBreak;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Controls\Slug;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Form\Nodes\Notice;
@@ -45,7 +50,7 @@ it('registers core and plugin Node and Control types separately', function () {
     $nodeTypes = app(FormNodeTypes::class);
     $controlTypes = app(FormControlTypes::class);
 
-    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, MarkdownContent::class, Tab::class])
+    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, LineBreak::class, MarkdownContent::class, Separator::class, Tab::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
             Choice::class,
@@ -53,6 +58,7 @@ it('registers core and plugin Node and Control types separately', function () {
             Combobox::class,
             ContentBlock::class,
             Date::class,
+            DateTime::class,
             ElementSelect::class,
             IconPicker::class,
             Lightswitch::class,
@@ -71,7 +77,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
-    expect($nodeTypes->types()->all())->toBe([Field::class, Group::class, MarkdownContent::class, Tab::class, Notice::class])
+    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, LineBreak::class, MarkdownContent::class, Separator::class, Tab::class, Notice::class])
         ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);

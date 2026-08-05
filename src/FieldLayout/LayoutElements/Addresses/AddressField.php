@@ -8,7 +8,10 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Address as AddressControl;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -58,6 +61,27 @@ class AddressField extends BaseField
     protected function showLabel(): bool
     {
         return false;
+    }
+
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        if (! $context->element instanceof Address) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
+        }
+
+        return AddressControl::make('address')
+            ->countryCode($context->element->countryCode)
+            ->value($context->element->toArray([
+                'addressLine1',
+                'addressLine2',
+                'addressLine3',
+                'administrativeArea',
+                'locality',
+                'dependentLocality',
+                'postalCode',
+                'sortingCode',
+            ]));
     }
 
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string

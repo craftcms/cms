@@ -7,8 +7,14 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\currentUser;
@@ -55,6 +61,35 @@ class FullNameField extends TextField
         }
 
         return parent::formHtml($element, $static);
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        $element = $context->element;
+
+        if (
+            ! $element ||
+            ! Cms::config()->showFirstAndLastNameFields ||
+            count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) !== 2
+        ) {
+            return parent::formNode($context);
+        }
+
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Full Name FieldLayout elements require stable UIDs.');
+        }
+
+        return Group::make($this->uid, [
+            Field::make()
+                ->label(t('First Name'))
+                ->required($this->required)
+                ->control(Text::make('firstName')->value($element->firstName ?? null)),
+            Field::make()
+                ->label(t('Last Name'))
+                ->required($this->required)
+                ->control(Text::make('lastName')->value($element->lastName ?? null)),
+        ]);
     }
 
     private function firstAndLastNameFields(?ElementInterface $element, bool $static): string

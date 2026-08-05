@@ -23,6 +23,8 @@ use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Link as LinkControl;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Support\Arr;
@@ -187,6 +189,25 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return $this->_linkTypes;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof LinkData
+            ? $context->value->serialize()
+            : $context->value;
+
+        $types = array_values(array_map(
+            fn (BaseLinkType $type): array => Arr::except($type->pickerConfig(), 'elementSelectConfig'),
+            $this->getLinkTypes(),
+        ));
+
+        return LinkControl::make($context->path)
+            ->types($types)
+            ->showLabelField($this->showLabelField)
+            ->advancedFields(array_values(array_intersect($this->advancedFields, ['urlSuffix', 'title'])))
+            ->value($value);
     }
 
     private function resolveType(string $value): string

@@ -7,7 +7,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\LineBreak as LineBreakNode;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -52,5 +56,15 @@ HTML;
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('div', '', ['class' => 'line-break']);
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Line Break FieldLayout elements require stable UIDs.');
+        }
+
+        return LineBreakNode::make($this->uid);
     }
 }
