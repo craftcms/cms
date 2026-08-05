@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## 5.10.13.1 - 2026-08-04
+
+- Fixed a bug where sanitized SVGs wouldn’t render. ([#19368](https://github.com/craftcms/cms/issues/19368))
+
 ## 5.10.13 - 2026-08-04
 
 - Added `craft\helpers\StringHelper::isMd5()`.
