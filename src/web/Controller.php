@@ -13,6 +13,7 @@ use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -395,11 +396,12 @@ abstract class Controller extends \yii\web\Controller
     ): ?YiiResponse {
         $modelName ??= 'model';
         $routeParams += [$modelName => $model];
-        $data += [
+
+        $data = ArrayHelper::merge([
             'modelName' => $modelName,
             $modelName => $model->toArray(),
             'errors' => $model->getErrors(),
-        ];
+        ], $data);
 
         return $this->asFailure(
             $message,
@@ -426,18 +428,26 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         ?string $redirect = null,
     ): YiiResponse {
-        $data += array_filter([
+        $modelData = $model->toArray();
+
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        if (!$isCpRequest && !static::currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
+        $data = ArrayHelper::merge(array_filter([
             'modelName' => $modelName,
             'modelClass' => get_class($model),
-            ($modelName ?? 'model') => $model->toArray(),
-        ]);
+            ($modelName ?? 'model') => $modelData,
+        ]), $data);
 
         if ($model instanceof Identifiable) {
             $data['modelId'] = $model->getId();
         }
 
         $notificationSettings = [];
-        if ($model instanceof Chippable) {
+        if ($isCpRequest && $model instanceof Chippable) {
             $notificationSettings['details'] = Cp::chipHtml($model);
         }
 

@@ -11,6 +11,7 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
 use craft\helpers\Json;
+use craft\web\twig\AllowableInSandbox;
 use craft\web\twig\AllowedInSandbox;
 use IteratorAggregate;
 use Traversable;
@@ -24,8 +25,7 @@ use yii\base\UnknownMethodException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.7.0
  */
-#[AllowedInSandbox]
-class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable
+class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable, AllowableInSandbox
 {
     public function __construct(
         private mixed $value,
@@ -53,6 +53,17 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
         }
     }
 
+    public function methodAllowedInSandbox(string $method): bool
+    {
+        return false;
+    }
+
+    public function propertyAllowedInSandbox(string $property): bool
+    {
+        return true;
+    }
+
+    #[AllowedInSandbox]
     public function getType(): string
     {
         $type = gettype($this->value);
@@ -62,11 +73,13 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
         };
     }
 
+    #[AllowedInSandbox]
     public function getValue(): mixed
     {
         return $this->value;
     }
 
+    #[AllowedInSandbox]
     public function getJson(bool $pretty = false, string $indent = '  '): string
     {
         if (isset($this->value['__ERROR__'], $this->value['__VALUE__'])) {

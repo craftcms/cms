@@ -29,13 +29,13 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\CredentialRecord;
 use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -217,27 +217,45 @@ class Auth extends Component
     public function verify(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser($sessionDuration);
+        $method = $this->getMethod($methodClass, $user);
+        $mutex = null;
+        $lockName = null;
 
-        if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
-            $user?->handleInvalidLoginParam();
-            return false;
+        if ($user) {
+            $mutex = Craft::$app->getMutex();
+            $lockName = sprintf('auth-verify:%d', $user->id);
+
+            if (!$mutex->acquire($lockName, 5)) {
+                return false;
+            }
         }
 
-        // success!
-        if ($user) {
-            $this->setUser(null);
-
-            // if we're impersonating, pass the user we're impersonating to the complete the login
-            $userSession = Craft::$app->getUser();
-            if ($userSession->getImpersonator() !== null) {
-                /** @var User $user */
-                $user = Craft::$app->getUser()->getIdentity();
+        try {
+            if (!$method->verify(...$args)) {
+                $user?->handleInvalidLoginParam();
+                return false;
             }
 
-            $userSession->login($user, $sessionDuration);
-        }
+            // success!
+            if ($user) {
+                $this->setUser(null);
 
-        return true;
+                // if we're impersonating, pass the user we're impersonating to the complete the login
+                $userSession = Craft::$app->getUser();
+                if ($userSession->getImpersonator() !== null) {
+                    /** @var User $user */
+                    $user = Craft::$app->getUser()->getIdentity();
+                }
+
+                $userSession->login($user, $sessionDuration);
+            }
+
+            return true;
+        } finally {
+            if ($mutex !== null && $lockName !== null) {
+                $mutex->release($lockName);
+            }
+        }
     }
 
     /**
@@ -485,7 +503,7 @@ class Auth extends Component
         $userEntity = $this->passkeyUserEntity($user);
 
         $excludeCredentials = array_map(
-            fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
+            fn(CredentialRecord $credential) => $credential->getPublicKeyCredentialDescriptor(),
             $this->webauthnServer()->getCredentialRepository()->findAllForUserEntity($userEntity),
         );
 
@@ -541,7 +559,7 @@ class Auth extends Component
         }
 
         try {
-            $publicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
+            $credentialRecord = $this->webauthnServer()->getAuthenticatorAttestationResponseValidator()->check(
                 $authenticatorAttestationResponse,
                 $publicKeyCredentialCreationOptions,
                 Craft::$app->getRequest()->getHostName(),
@@ -551,7 +569,7 @@ class Auth extends Component
             return false;
         }
 
-        $this->webauthnServer()->getCredentialRepository()->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
+        $this->webauthnServer()->getCredentialRepository()->savedNamedCredentialSource($credentialRecord, $credentialName);
 
         return true;
     }
@@ -605,29 +623,29 @@ class Auth extends Component
             return false;
         }
 
-        $publicKeyCredentialSource = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
+        $credentialRecord = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
             $publicKeyCredential->rawId,
             $checkOldUserHandle,
         );
 
-        if ($publicKeyCredentialSource === null) {
+        if ($credentialRecord === null) {
             Craft::warning('No publicKeyCredential source was found.');
             return false;
         }
 
         try {
-            $updatedPublicKeyCredentialSource = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
-                $publicKeyCredentialSource,
+            $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
+                $credentialRecord,
                 $authenticatorAssertionResponse,
                 $publicKeyCredentialRequestOptions,
                 Craft::$app->getRequest()->getHostName(),
                 $userEntity->id,
             );
 
-            // we can't save the updated public key credential source to db here as in User::authenticateWithPasskey()
+            // we can't save the updated credential record to db here as in User::authenticateWithPasskey()
             // we might need to call this method (Auth::verifyPasskey()) again, with checkOldUserHandle set to true;
             // so, we're going to store it in the session and then save from the User::authenticateWithPasskey() method
-            SessionHelper::set($this->passkeyCredSourceParam, $updatedPublicKeyCredentialSource);
+            SessionHelper::set($this->passkeyCredSourceParam, $updatedCredentialRecord);
         } catch (InvalidUserHandleException $e) {
             throw $e;
         } catch (Throwable $e) {
@@ -685,9 +703,11 @@ class Auth extends Component
      */
     private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
+        // note: `name` is deprecated in webauthn-lib as of 5.3, but the browser's WebAuthn API still requires
+        // `rp.name` to be present per spec, so it can't just be omitted (see https://github.com/w3c/webauthn/issues/2050)
         return PublicKeyCredentialRpEntity::create(
-            Craft::$app->getSystemName(),
-            Craft::$app->getRequest()->getHostName(),
+            name: Craft::$app->getSystemName(),
+            id: Craft::$app->getRequest()->getHostName(),
         );
     }
 }

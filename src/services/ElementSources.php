@@ -247,7 +247,7 @@ class ElementSources extends Component
     {
         $pages = [];
 
-        foreach ($this->_sourceConfigs($elementType) ?? [] as $source) {
+        foreach ($this->getSources($elementType) as $source) {
             // divide all sources into pages
             if (isset($source['page'])) {
                 $pages[$source['page']][] = $source;
@@ -643,6 +643,8 @@ class ElementSources extends Component
         /** @var CustomField[][] $groupedFieldElements */
         $groupedFieldElements = [];
         $groupedFieldInstances = [];
+        /** @var CustomField[] $groupedContentBlocks */
+        $groupedContentBlocks = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
@@ -667,9 +669,11 @@ class ElementSources extends Component
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
                     ) {
                         if ($field instanceof ContentBlock) {
-                            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
-                                $attributes["contentBlock:{$field->layoutElement->uid}.$key"] = $attribute;
-                            }
+                            // Combine it with any other instances of the same Content Block field
+                            // (from other layouts) that share the same handle, so its nested fields
+                            // are only listed once
+                            $key = $field->uid . ' - ' . ($layoutElement->handle ?? $field->handle);
+                            $groupedContentBlocks[$key] ??= $layoutElement;
                         } elseif ($layoutElement->handle === null) {
                             // The handle wasn't overridden, so combine it with any other instances (from other layouts)
                             // where the handle also wasn't overridden
@@ -693,6 +697,14 @@ class ElementSources extends Component
                         'label' => Craft::t('site', $field['name']),
                     ];
                 }
+            }
+        }
+
+        foreach ($groupedContentBlocks as $layoutElement) {
+            /** @var ContentBlock $field */
+            $field = $layoutElement->getField();
+            foreach ($this->getTableAttributesForFieldLayouts([$field->getFieldLayout()]) as $key => $attribute) {
+                $attributes["contentBlock:$layoutElement->uid.$key"] = $attribute;
             }
         }
 

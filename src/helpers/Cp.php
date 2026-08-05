@@ -1150,9 +1150,11 @@ JS, [
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) {
             /** @var DraftBehavior&ElementInterface $element */
-            $content .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
-                'class' => 'context-label',
-            ]);
+            $content .= Html::tag(
+                'span',
+                $element->draftName ? Html::encode($element->draftName) : Craft::t('app', 'Draft'),
+                ['class' => 'context-label'],
+            );
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
@@ -1426,6 +1428,7 @@ JS, [
             'jsSettings' => [],
             'registerJs' => true,
             'showSiteMenu' => 'auto',
+            'siteIds' => null,
             'showStatusMenu' => 'auto',
             'statuses' => null,
             'sources' => null,
@@ -1439,7 +1442,7 @@ JS, [
             ? $elementType::isLocalized()
             : (bool)$config['showSiteMenu'];
 
-        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteIds = $config['siteIds'] ?? Craft::$app->getSites()->getEditableSiteIds();
 
         $sortOptions = Collection::make($elementType::sortOptions())
             ->map(fn($option, $key) => [

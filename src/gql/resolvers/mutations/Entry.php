@@ -15,8 +15,10 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
+use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\Site;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -137,6 +139,10 @@ class Entry extends ElementMutationResolver
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
         $hardDelete = $arguments['hardDelete'] ?? false;
+
+        if ($siteId) {
+            $this->requireAllowedSite($siteId);
+        }
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
@@ -273,8 +279,18 @@ class Entry extends ElementMutationResolver
         $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
+            if (isset($arguments['siteId'])) {
+                $this->requireAllowedSite($arguments['siteId']);
+                $siteId = $arguments['siteId'];
+            } else {
+                $siteId = array_map(fn(Site $site) => $site->id, Gql::getAllowedSites());
+                $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+                if (in_array($primarySiteId, $siteId)) {
+                    $siteId = $primarySiteId;
+                }
+            }
+
             // Prepare the element query
-            $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
             $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);

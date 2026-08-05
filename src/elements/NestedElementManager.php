@@ -603,15 +603,20 @@ class NestedElementManager extends Component
             ]);
         }
 
-        $authorizedOwnerId = $owner->id;
-        if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface&DraftBehavior $owner */
-            if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
-                $authorizedOwnerId = $owner->getCanonicalId();
-            }
-        }
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
-        Craft::$app->getSession()->authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+
+        if ($config['sortable']) {
+            $authorizedOwnerId = $owner->id;
+
+            if ($owner->isProvisionalDraft) {
+                /** @var ElementInterface&DraftBehavior $owner */
+                if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
+                    $authorizedOwnerId = $owner->getCanonicalId();
+                }
+            }
+
+            Craft::$app->getSession()->authorize(sprintf('reorderNestedElements::%s::%s', $authorizedOwnerId, $attribute));
+        }
 
         $view = Craft::$app->getView();
         return $view->namespaceInputs(function() use (
@@ -1370,7 +1375,11 @@ JS, [
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
                             $elementsService->deleteElement($derivativeElement);
                         }
-                    } elseif (!$derivativeElement->trashed && ElementHelper::isOutdated($derivativeElement)) {
+                    } elseif (
+                        !$derivativeElement->trashed &&
+                        $derivativeElement::trackChanges() &&
+                        ElementHelper::isOutdated($derivativeElement)
+                    ) {
                         // Merge the upstream changes into the derivative nested element
                         $elementsService->mergeCanonicalChanges($derivativeElement);
                     }

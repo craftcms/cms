@@ -976,10 +976,11 @@ class AssetQuery extends ElementQuery
         if ($this->kind) {
             $kindCondition = ['or', Db::parseParam('assets.kind', $this->kind)];
             $kinds = Assets::getFileKinds();
+            $isPgsql = Craft::$app->getDb()->getIsPgsql();
             foreach ((array)$this->kind as $kind) {
                 if (isset($kinds[$kind])) {
                     foreach ($kinds[$kind]['extensions'] as $extension) {
-                        $kindCondition[] = ['like', 'assets.filename', "%.$extension", false];
+                        $kindCondition[] = [$isPgsql ? 'ilike' : 'like', 'assets.filename', "%.$extension", false];
                     }
                 }
             }

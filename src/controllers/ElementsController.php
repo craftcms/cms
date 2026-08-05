@@ -1719,7 +1719,7 @@ JS, [
 
         // If the original element is a provisional draft,
         // delete the draft as the changes are likely no longer wanted.
-        if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft) {
+        if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft && $element->canDelete($user)) {
             Craft::$app->getElements()->deleteElement($element);
         }
 
@@ -1886,15 +1886,25 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
+        if ($element->isProvisionalDraft) {
+            $canonical = $element->getCanonical();
+
+            if ($canonical->id === $element->id) {
+                $canonical = null;
+            }
+
+            if ($canonical && !$elementsService->canDeleteForSite($canonical)) {
+                throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
+            }
+        } else {
+            $canonical = null;
+        }
+
         $elementsService->deleteElementForSite($element);
 
-        if ($element->isProvisionalDraft) {
-            // see if the canonical element exists for this site
-            $canonical = $element->getCanonical();
-            if ($canonical->id !== $element->id) {
-                $element = $canonical;
-                $elementsService->deleteElementForSite($element);
-            }
+        if ($canonical) {
+            $elementsService->deleteElementForSite($canonical);
+            $element = $canonical;
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
@@ -2230,7 +2240,7 @@ JS, [
             $errors = $element->getErrors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
-            $elementsService->saveElement($element, saveContent: $saveContent);
+            $elementsService->saveElement($element, false, saveContent: $saveContent);
             $element->clearErrors();
             $element->addErrors($errors);
             $element->addInvalidNestedElementIds($invalidNestedElementIds);

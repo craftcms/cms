@@ -149,11 +149,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getNodeVisitors(): array
     {
+        $eventTagAdder = new EventTagAdder($this->view);
         return [
             new Profiler(),
             new GetAttrAdjuster(),
-            new EventTagFinder(),
-            new EventTagAdder($this->view),
+            new EventTagFinder($eventTagAdder),
+            $eventTagAdder,
         ];
     }
 
@@ -1558,6 +1559,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             if (is_a($class, $c, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
             }
+        }
+
+        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+            throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
         /** @var BaseObject */

@@ -34,6 +34,7 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
@@ -202,7 +203,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("viewCategories:$group->uid"),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("saveCategories:$group->uid"),
             ];
         }
 
@@ -395,6 +396,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -788,6 +790,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {

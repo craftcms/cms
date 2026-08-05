@@ -119,6 +119,7 @@ use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
+use yii\base\ErrorException;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\Exception;
@@ -1645,6 +1646,10 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
+        if (!App::isEphemeral()) {
+            $this->ensureResourcePathExists();
+        }
+
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
 
@@ -1725,6 +1730,24 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Ensures that the resources folder exists and is writable.
+     *
+     * @throws ErrorException
+     * @throws InvalidConfigException
+     * @throws Exception
+     */
+    protected function ensureResourcePathExists(): void
+    {
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+
+        if (!@FileHelper::createDirectory($resourceBasePath)) {
+            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
+        }
     }
 
     /**

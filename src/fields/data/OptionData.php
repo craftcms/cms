@@ -16,40 +16,45 @@ use craft\web\twig\AllowedInSandbox;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-#[AllowedInSandbox]
 class OptionData implements Serializable
 {
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $label = null;
 
     /**
      * @var string|null
      */
+    #[AllowedInSandbox]
     public ?string $value = null;
 
     /**
      * @var bool
      */
+    #[AllowedInSandbox]
     public bool $selected;
 
     /**
      * @var bool
      * @since 3.5.10
      */
+    #[AllowedInSandbox]
     public bool $valid;
 
     /**
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $icon = null;
 
     /**
      * @var string|null
      * @since 5.8.0
      */
+    #[AllowedInSandbox]
     public ?string $color = null;
 
     /**

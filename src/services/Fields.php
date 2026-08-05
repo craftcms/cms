@@ -1568,11 +1568,12 @@ class Fields extends Component
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle', 'instructions', 'type'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 

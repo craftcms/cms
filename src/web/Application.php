@@ -35,7 +35,6 @@ use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
@@ -99,10 +98,6 @@ class Application extends \yii\web\Application
         $this->_preInit();
 
         parent::init();
-
-        if (!App::isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
 
         $this->_postInit();
 
@@ -186,9 +181,10 @@ class Application extends \yii\web\Application
             $response = $this->getResponse();
             $headers = $response->getHeaders();
             $generalConfig = $this->getConfig()->getGeneral();
+            $hasPreviewParam = $request->getPreviewParam() !== null;
 
-            // Set no-cache headers for all action and CP requests
-            if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
+            // Set no-cache headers for all action/CP/preview requests
+            if ($request->getIsActionRequest() || $request->getIsCpRequest() || $hasPreviewParam) {
                 $response->setNoCacheHeaders();
             }
 
@@ -197,12 +193,12 @@ class Application extends \yii\web\Application
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
-            // Tell bots not to index/follow control panel and tokenized pages
+            // Tell bots not to index/follow control panel and tokenized/preview requests
             if (
                 $generalConfig->disallowRobots ||
                 $isCpRequest ||
                 $request->getToken() !== null ||
-                $request->getIsPreview() ||
+                $hasPreviewParam ||
                 ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
             ) {
                 $headers->set('X-Robots-Tag', 'none');
@@ -391,24 +387,6 @@ class Application extends \yii\web\Application
         }
 
         return $component;
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws ErrorException
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = $this->getConfig()->getGeneral();
-
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
-
-        if (!@FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
-        }
     }
 
     /**

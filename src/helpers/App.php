@@ -246,7 +246,17 @@ class App
             }
 
             $result = (string)$result;
-            return $result === '' ? null : $result;
+
+            if ($result === '') {
+                return null;
+            }
+
+            // the value could itself reference an alias (e.g. `@root/storage/rebrand`)
+            if (str_starts_with($result, '@')) {
+                $result = Craft::getAlias($result, false) ?: $result;
+            }
+
+            return $result;
         }
 
         // …/$VAR/…

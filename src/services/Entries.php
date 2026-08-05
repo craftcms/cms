@@ -2051,11 +2051,12 @@ SQL)->execute();
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 
@@ -2213,6 +2214,12 @@ SQL)->execute();
             throw new Exception('Attempting to move a nested element.');
         }
 
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (!in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
+        }
+
         // Ensure all fields have been normalized
         $entry->getFieldValues();
 
@@ -2357,13 +2364,14 @@ SQL)->execute();
             'and',
             ['authorId' => $oldUserId],
             [
-                'not exists',
+                'not in',
+                'entryId',
                 (new Query())
                     ->from(
                         (new Query())
+                            ->select(['entryId'])
                             ->from(['ea2' => Table::ENTRIES_AUTHORS])
-                            ->where(sprintf('[[ea2.entryId]] = %s.[[entryId]]', Table::ENTRIES_AUTHORS))
-                            ->andWhere(['ea2.authorId' => $newUserId])
+                            ->where(['authorId' => $newUserId])
                     ),
             ],
         ], [], false);
