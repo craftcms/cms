@@ -74,6 +74,38 @@ abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboar
     /**
      * @inheritdoc
      */
+    public function getType(): string
+    {
+        return static::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return static::icon();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDisplayName(): string
+    {
+        return static::displayName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMaxColspan(): ?int
+    {
+        return static::maxColspan();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
