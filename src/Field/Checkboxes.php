@@ -51,7 +51,7 @@ class Checkboxes extends BaseOptionsField
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        if (! $this->customOptions && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
+        if (! $this->customOptions && is_iterable($value) && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
             DeltaRegistry::setInitialValue($this->handle, null);
         }
 

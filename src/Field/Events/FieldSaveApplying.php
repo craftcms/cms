@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * @event FieldSaveApplying The event that is triggered before a field save is applied to the database.
+ *
+ * @phpstan-import-type FieldConfig from Fields
  */
 class FieldSaveApplying
 {
@@ -18,7 +21,7 @@ class FieldSaveApplying
          */
         public ?FieldInterface $field,
 
-        /** @var array New field config data that is about to be applied. */
+        /** @var FieldConfig New field config data that is about to be applied. */
         public array $config,
     ) {}
 }

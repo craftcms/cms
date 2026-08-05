@@ -45,6 +45,7 @@ trait HasSettings
         return $this->settings ?: null;
     }
 
+    /** @param array<string, mixed> $settings */
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {

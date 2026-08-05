@@ -18,6 +18,7 @@ use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 use function CraftCms\Cms\cp_url;
 
@@ -32,7 +33,7 @@ readonly class DashboardController
         private WidgetTypes $widgetTypes,
     ) {}
 
-    public function index()
+    public function index(): View
     {
         $widgets = $this->dashboard->getAllWidgets();
 
@@ -94,15 +95,15 @@ readonly class DashboardController
                     return;
                 }
 
-                if (! $widgetTypeInfo->has($info['type'])) {
-                    $widgetTypeInfo->put($info['type'], [
+                if (! isset($widgetTypeInfo[$info['type']])) {
+                    $widgetTypeInfo[$info['type']] = [
                         'iconSvg' => $this->getWidgetIconSvg($widget),
                         'name' => $widget->getDisplayName(),
                         'maxColspan' => $widget->getMaxColspan(),
                         'settingsHtml' => '',
                         'settingsJs' => '',
                         'selectable' => false,
-                    ]);
+                    ];
                 }
 
                 $variables['widgets'][] = $info;

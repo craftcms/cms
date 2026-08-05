@@ -34,6 +34,8 @@ use function CraftCms\Cms\t;
 /**
  * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
+ *
+ * @phpstan-type TabConfig array{id?: int, layoutId?: int, name?: string|null, sortOrder?: int, uid?: string, userCondition?: array<string, mixed>|null, elementCondition?: array<string, mixed>|null, fields?: array<string, array{sortOrder: int, required: bool}>, elements?: list<array<string, mixed>>}
  */
 class FieldLayoutTab extends FieldLayoutComponent
 {
@@ -71,7 +73,8 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     private array $_elements = [];
 
-    public function __construct($config = [])
+    /** @param array<string, mixed> $config */
+    public function __construct(array $config = [])
     {
         // Config normalization
         if (! array_key_exists('elements', $config)) {
@@ -93,6 +96,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Creates a new field layout tab from the given config.
+     *
+     * @param  TabConfig  $config
      */
     public static function createFromConfig(array $config): self
     {
@@ -119,6 +124,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Updates a field layout tab’s config to the new format.
+     *
+     * @param  TabConfig  $config
      */
     public static function updateConfig(array &$config): void
     {
@@ -126,10 +133,11 @@ class FieldLayoutTab extends FieldLayoutComponent
             return;
         }
 
+        $fields = $config['fields'];
+        uasort($fields, fn (array $a, array $b) => $a['sortOrder'] <=> $b['sortOrder']);
         $config['elements'] = [];
-        $config['fields'] = Arr::sort($config['fields'], 'sortOrder');
 
-        foreach ($config['fields'] as $fieldUid => $fieldConfig) {
+        foreach ($fields as $fieldUid => $fieldConfig) {
             $config['elements'][] = [
                 'type' => CustomField::class,
                 'fieldUid' => $fieldUid,
@@ -175,6 +183,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns the field layout tab’s config.
+     *
+     * @return array<string, mixed>
      */
     public function getConfig(): array
     {
@@ -191,7 +201,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns the tab’s elements’ configs.
      *
-     * @return array[]
+     * @return list<array<string, mixed>>
      */
     public function getElementConfigs(): array
     {

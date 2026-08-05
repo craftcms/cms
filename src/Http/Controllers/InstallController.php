@@ -287,7 +287,11 @@ readonly class InstallController
         return true;
     }
 
-    public function validateDbData($data): array
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, bool|int|string|null>
+     */
+    public function validateDbData(array $data): array
     {
         $data = Validator::validate($data, [
             'driver' => ['required', 'string', Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')],
@@ -325,6 +329,7 @@ readonly class InstallController
         return 'sqlite';
     }
 
+    /** @return array<string, array<string, string>> */
     private function dbDefaults(): array
     {
         return collect(self::DbDrivers)
@@ -332,6 +337,7 @@ readonly class InstallController
             ->all();
     }
 
+    /** @return array<string, string> */
     private function dbDefaultsForDriver(string $driver): array
     {
         if ($driver === 'sqlite') {
@@ -352,6 +358,7 @@ readonly class InstallController
         ];
     }
 
+    /** @param array<string, bool|int|string|null> $data */
     private function writeDbEnv(array $data, string $path): void
     {
         Env::writeVariable('DB_CONNECTION', $data['driver'], $path, overwrite: true);

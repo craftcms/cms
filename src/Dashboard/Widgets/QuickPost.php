@@ -64,6 +64,7 @@ class QuickPost extends Widget
      */
     private EntryType|false $_entryType;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // If we're saving the widget settings, all of the section-specific

@@ -17,6 +17,10 @@ use Override;
  */
 class SubdivisionRepository extends BaseSubdivisionRepository
 {
+    /**
+     * @param  list<string>  $parents
+     * @return array<string, string>
+     */
     #[Override]
     public function getList(array $parents, $locale = null): array
     {
@@ -34,6 +38,9 @@ class SubdivisionRepository extends BaseSubdivisionRepository
 
     /**
      * Get a list of extra subdivision options
+     *
+     * @param  list<string>  $parents
+     * @return array<string, string>
      */
     private function getExtraOptions(array $parents, ?string $lang = null): array
     {

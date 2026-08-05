@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class PreviewElementController
@@ -18,7 +19,7 @@ class PreviewElementController
         protected readonly ElementRequest $request,
     ) {}
 
-    public function __invoke(int $id, ?string $slug = null)
+    public function __invoke(int $id, ?string $slug = null): Response|View
     {
         $element = $this->request->element([
             'id' => $id,

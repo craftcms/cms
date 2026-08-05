@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Events\ElementExportersResolving;
 use CraftCms\Cms\Element\Exporters\Expanded;
 use CraftCms\Cms\Element\Exporters\Raw;
@@ -22,7 +23,7 @@ trait Exportable
      * Returns the available element exporters for a given source.
      *
      * @param  string  $source  The selected source's key
-     * @return array The available element exporters
+     * @return array<ElementExporterInterface|class-string<ElementExporterInterface>|array{type:class-string<ElementExporterInterface>}> The available element exporters
      */
     public static function exporters(string $source): array
     {
@@ -39,7 +40,7 @@ trait Exportable
      * Defines the available element exporters for a given source.
      *
      * @param  string  $source  The selected source's key
-     * @return array The available element exporters
+     * @return array<ElementExporterInterface|class-string<ElementExporterInterface>|array{type:class-string<ElementExporterInterface>}> The available element exporters
      *
      * @see exporters()
      */

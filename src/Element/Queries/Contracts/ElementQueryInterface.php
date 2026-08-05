@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin ElementQuery
+ * @mixin ElementQuery<ElementInterface>
  *
  * @phpstan-require-extends ElementQuery
  */
@@ -23,9 +23,9 @@ interface ElementQueryInterface extends Builder
     /**
      * Executes the query and returns a single row of result.
      *
-     * @param  array|string  $columns
-     * @return ElementInterface|array|null the first row (in terms of an array) of the query result. False is returned if the query
-     *                                     results in nothing.
+     * @param  array<int, string>|string  $columns
+     * @return ElementInterface|array<string, mixed>|null the first row (in terms of an array) of the query result. False is returned if the query
+     *                                                    results in nothing.
      */
     public function one($columns = ['*']);
 
@@ -839,6 +839,7 @@ interface ElementQueryInterface extends Builder
      * @param  array|null  $value  The property value
      * @return static self reference
      */
+    /** @param array<int, int|string>|null $value */
     public function preferSites(?array $value = null): static;
 
     /**
@@ -1133,6 +1134,7 @@ interface ElementQueryInterface extends Builder
      * @param  array|string|null  $value  The property value
      * @return static self reference
      */
+    /** @param array<array-key, mixed>|string|null $value */
     public function with(array|string|null $value): static;
 
     /**
@@ -1141,6 +1143,7 @@ interface ElementQueryInterface extends Builder
      * @param  array|string|null  $value  The property value to append
      * @return static self reference
      */
+    /** @param array<array-key, mixed>|string|null $value */
     public function andWith(array|string|null $value): static;
 
     /**
@@ -1571,8 +1574,8 @@ interface ElementQueryInterface extends Builder
     /**
      * Executes the query and returns all results as an array.
      *
-     * @param  array  $columns  = ['*']
-     * @return ElementInterface[]|array[] The resulting elements.
+     * @param  array<int, string>  $columns  = ['*']
+     * @return ElementInterface[]|array<array<string, mixed>> The resulting elements.
      */
     public function all($columns = ['*']): array;
 
@@ -1580,7 +1583,7 @@ interface ElementQueryInterface extends Builder
      * Executes the query and returns a single row of result at a given offset.
      *
      * @param  int  $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param  array  $columns
+     * @param  array<int, string>  $columns
      * @return mixed The element or row of the query result. Null is returned if the query
      *               results in nothing.
      */
@@ -1596,13 +1599,14 @@ interface ElementQueryInterface extends Builder
     /**
      * Executes the query and returns the IDs of the resulting elements as a collection.
      *
-     * @return Collection<int> The resulting element IDs as a collection.
+     * @return Collection<int, int> The resulting element IDs as a collection.
      */
     public function collectIds(): Collection;
 
     /**
      * Converts a found row into an element instance.
      */
+    /** @param array<string, mixed> $row */
     public function createElement(array $row): ElementInterface;
 
     /**
@@ -1644,8 +1648,8 @@ interface ElementQueryInterface extends Builder
     /**
      * Performs any post-population processing on elements.
      *
-     * @param  Collection<ElementInterface|array>  $items  the populated elements
-     * @return Collection<ElementInterface|array>
+     * @param  Collection<array-key, ElementInterface>  $items  the populated elements
+     * @return Collection<array-key, ElementInterface>
      */
     public function afterHydrate(Collection $items): Collection;
 }

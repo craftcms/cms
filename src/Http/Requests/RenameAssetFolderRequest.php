@@ -12,6 +12,7 @@ class RenameAssetFolderRequest extends FormRequest
 {
     private ?VolumeFolder $folder = null;
 
+    /** @return array<string, list<string>> */
     public function rules(): array
     {
         return [

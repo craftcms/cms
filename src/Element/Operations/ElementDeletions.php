@@ -8,7 +8,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementDeleted;
@@ -73,7 +72,6 @@ readonly class ElementDeletions
             foreach ($data as $elementType => $typeData) {
                 foreach ($typeData as $siteId => $relations) {
                     /** @var class-string<ElementInterface> $elementType */
-                    /** @var ElementCollection $relations */
                     $query = $elementType::find()
                         ->id($relations->pluck('sourceId'))
                         ->siteId($siteId)
@@ -188,6 +186,9 @@ readonly class ElementDeletions
         });
     }
 
+    /**
+     * @param  class-string<ElementInterface>|null  $elementType
+     */
     public function deleteElementById(
         int $elementId,
         ?string $elementType = null,
@@ -376,6 +377,9 @@ readonly class ElementDeletions
         return $this->restoreElements([$element]);
     }
 
+    /**
+     * @param  ElementInterface[]  $elements
+     */
     public function restoreElements(array $elements): bool
     {
         foreach ($elements as $element) {

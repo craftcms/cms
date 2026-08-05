@@ -34,7 +34,7 @@ class TwigRenderer implements TwigRendererInterface
      * Renders a Twig template.
      *
      * @param  string  $template  The name of the template to load
-     * @param  array  $variables  The variables that should be available to the template
+     * @param  array<string, mixed>  $variables  The variables that should be available to the template
      * @param  TemplateMode|null  $templateMode  The template mode to use
      * @return string the rendering result
      */
@@ -287,6 +287,10 @@ class TwigRenderer implements TwigRendererInterface
 
     /**
      * Filters fields array to only those referenced in template.
+     */
+    /**
+     * @param  array<array-key, mixed>  $fields
+     * @return list<int|string>
      */
     private function filterFieldsByTemplate(array $fields, string $template): array
     {

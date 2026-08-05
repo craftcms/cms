@@ -54,6 +54,7 @@ class RecoveryCodes extends BaseAuthMethod
     }
 
     #[Override]
+    /** @return list<array{label: string, icon: string, action: string, requireElevatedSession: true}> */
     public function getActionMenuItems(): array
     {
         return [
@@ -148,6 +149,7 @@ class RecoveryCodes extends BaseAuthMethod
         return sprintf('%s-%s', substr($code, 0, 6), substr($code, 6, 6));
     }
 
+    /** @param array<string|false> $codes */
     private function storeRecoveryCodes(array $codes): void
     {
         $model = RecoveryCodesModel::firstOrNew([

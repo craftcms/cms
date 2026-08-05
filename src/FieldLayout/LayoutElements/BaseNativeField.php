@@ -39,17 +39,17 @@ abstract class BaseNativeField extends BaseField
     public ?string $id = null;
 
     /**
-     * @var array HTML attributes for the field container
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the field container
      */
     public array $containerAttributes = [];
 
     /**
-     * @var array HTML attributes for the input container
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the input container
      */
     public array $inputContainerAttributes = [];
 
     /**
-     * @var array HTML attributes for the field label
+     * @var array<string, scalar|array<array-key, scalar|null>|null> HTML attributes for the field label
      */
     public array $labelAttributes = [];
 
@@ -86,6 +86,7 @@ abstract class BaseNativeField extends BaseField
         return $this->id ?? parent::id();
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -94,12 +95,14 @@ abstract class BaseNativeField extends BaseField
         return Arr::merge($attributes, $this->containerAttributes);
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
     }
 
+    /** @return array<string, scalar|array<array-key, scalar|null>|null> */
     #[Override]
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {

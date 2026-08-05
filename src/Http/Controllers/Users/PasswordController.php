@@ -229,6 +229,7 @@ readonly class PasswordController
         }, 100_000);
     }
 
+    /** @param list<string> $errors */
     private function handleSendPasswordResetError(array $errors, ?string $loginName = null): Response
     {
         $errorString = implode(', ', $errors);

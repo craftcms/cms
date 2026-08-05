@@ -7,6 +7,7 @@ namespace CraftCms\Cms\View;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
+/** @implements Arrayable<string, string> */
 readonly class HtmlFragment implements Arrayable, JsonSerializable
 {
     public function __construct(
@@ -22,6 +23,7 @@ readonly class HtmlFragment implements Arrayable, JsonSerializable
             && $this->bodyHtml === '';
     }
 
+    /** @return array{html: string, headHtml: string, bodyHtml: string} */
     public function toArray(): array
     {
         return [
@@ -31,6 +33,7 @@ readonly class HtmlFragment implements Arrayable, JsonSerializable
         ];
     }
 
+    /** @return array{html: string, headHtml: string, bodyHtml: string} */
     public function jsonSerialize(): array
     {
         return $this->toArray();

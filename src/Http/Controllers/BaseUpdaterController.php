@@ -49,7 +49,7 @@ abstract class BaseUpdaterController
 
     public const string ACTION_FINISH = 'finish';
 
-    /** @var array The data associated with the current update */
+    /** @var array<string, mixed> The data associated with the current update */
     protected array $data = [];
 
     protected bool $usesStepUrls = true;
@@ -214,6 +214,7 @@ abstract class BaseUpdaterController
     /**
      * Returns the initial data.
      */
+    /** @return array<string, mixed> */
     abstract protected function initialData(): array;
 
     /**
@@ -221,6 +222,7 @@ abstract class BaseUpdaterController
      *
      * @param  bool  $force  Whether to go through with the update even if Maintenance Mode is enabled
      */
+    /** @return array<string, mixed> */
     abstract protected function initialState(bool $force = false): array;
 
     /**
@@ -228,6 +230,7 @@ abstract class BaseUpdaterController
      *
      * @param  bool  $force  Whether to go through with the update even if Maintenance Mode is enabled
      */
+    /** @return array<string, mixed> */
     final protected function realInitialState(bool $force = false): array
     {
         $state = $this->initialState($force);
@@ -249,6 +252,7 @@ abstract class BaseUpdaterController
     /**
      * Returns the state data for after [[actionComposerInstall()]] is done.
      */
+    /** @return array<string, mixed> */
     abstract protected function postComposerInstallState(): array;
 
     /**
@@ -295,6 +299,7 @@ abstract class BaseUpdaterController
      *
      * @see ensureComposerJson()
      */
+    /** @return array<string, mixed> */
     protected function noComposerJsonState(): array
     {
         return [
@@ -309,6 +314,7 @@ abstract class BaseUpdaterController
     /**
      * Sends a state response.
      */
+    /** @param array<string, mixed> $state */
     protected function send(array $state = []): Response
     {
         // Encode and hash the data
@@ -321,6 +327,7 @@ abstract class BaseUpdaterController
         return new JsonResponse($this->clientState($state)->toArray());
     }
 
+    /** @param array<string, mixed> $state */
     protected function clientState(array $state): UpdaterState
     {
         if (isset($state['nextAction'])) {
@@ -353,6 +360,7 @@ abstract class BaseUpdaterController
      *
      * @param  string  $nextAction  The next action that should be run
      */
+    /** @param array<string, mixed> $state */
     protected function sendNextAction(string $nextAction, array $state = []): Response
     {
         $state = $this->actionState($nextAction, $state);
@@ -363,6 +371,7 @@ abstract class BaseUpdaterController
     /**
      * Sends a "finished" state response.
      */
+    /** @param array<string, mixed> $state */
     protected function sendFinished(array $state = []): Response
     {
         $state = $this->finishedState($state);
@@ -377,6 +386,7 @@ abstract class BaseUpdaterController
      * @param  Throwable  $e  The exception that was thrown
      * @param  string  $output  The Composer output
      */
+    /** @param array<string, mixed> $state */
     protected function sendComposerError(string $error, Throwable $e, string $output, array $state = []): Response
     {
         $state['error'] = $error;
@@ -400,6 +410,10 @@ abstract class BaseUpdaterController
     /**
      * Returns an option definition that kicks off a new action.
      */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
     protected function actionOption(string $label, string $action, array $state = []): array
     {
         $state['label'] = $label;
@@ -409,6 +423,10 @@ abstract class BaseUpdaterController
 
     /**
      * Sets the state info for the given next action.
+     */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
      */
     protected function actionState(string $nextAction, array $state = []): array
     {
@@ -446,6 +464,10 @@ abstract class BaseUpdaterController
 
     /**
      * Sets the state info for when the job is done.
+     */
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
      */
     protected function finishedState(array $state = []): array
     {
@@ -512,7 +534,7 @@ abstract class BaseUpdaterController
      * Attempts to install a plugin by its handle.
      *
      *
-     * @return array Array with installation results
+     * @return array{bool, string|null} Array with installation results
      */
     protected function installPluginInternal(string $handle, ?string $edition = null): array
     {

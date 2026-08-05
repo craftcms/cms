@@ -40,6 +40,7 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
         return $this->repository->getTrack();
     }
 
+    /** @param list<string> $paths */
     public function setPaths(array $paths): self
     {
         $this->paths = $paths;
@@ -63,19 +64,33 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
         return parent::run($paths, $options);
     }
 
+    /**
+     * @param  object  $migration
+     * @param  string  $method
+     * @param  string|null  $name
+     */
     #[Override]
     public function runMigration($migration, $method, $name = null): void
     {
         parent::runMigration($migration, $method, $name);
     }
 
+    /**
+     * @param  list<string>  $migrations
+     * @param  list<string>  $paths
+     * @return list<string>
+     */
     #[Override]
     public function resetMigrations(array $migrations, array $paths, $pretend = false): array
     {
         return parent::resetMigrations($migrations, $paths, $pretend);
     }
 
-    public function getPendingMigrations($paths = []): array
+    /**
+     * @param  list<string>  $paths
+     * @return list<string>
+     */
+    public function getPendingMigrations(array $paths = []): array
     {
         if (empty($paths)) {
             $paths = $this->paths;

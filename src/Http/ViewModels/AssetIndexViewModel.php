@@ -178,7 +178,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * re-point the query's `folderId` at that subfolder so the listing (and its
      * merged child folders) is scoped to it rather than the volume root.
      *
-     * @return array{0: ?string, 1: ?array}
+     * @return array{0: ?string, 1: ?array<string, mixed>}
      */
     #[Override]
     protected function sourceState(): array

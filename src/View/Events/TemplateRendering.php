@@ -14,6 +14,7 @@ class TemplateRendering
 {
     use ValidatableEvent;
 
+    /** @param array<string, mixed> $variables */
     public function __construct(
         public string $template,
         public array $variables,

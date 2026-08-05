@@ -60,7 +60,7 @@ readonly class Dashboard
     /**
      * Returns the dashboard widgets for the current user.
      *
-     * @return Collection<WidgetInterface> The widgets
+     * @return Collection<int, WidgetInterface> The widgets
      */
     public function getAllWidgets(): Collection
     {
@@ -331,7 +331,7 @@ readonly class Dashboard
     /**
      * Returns the widget records for the current user.
      *
-     * @return Collection<WidgetInterface>|false
+     * @return Collection<int, WidgetInterface>|false
      *
      * @throws Exception if no user is logged-in
      */

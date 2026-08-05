@@ -27,6 +27,7 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
         return ['kind'];
     }
 
+    /** @return list<string> */
     #[Override]
     protected function operators(): array
     {

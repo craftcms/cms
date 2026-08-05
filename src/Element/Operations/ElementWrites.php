@@ -101,6 +101,9 @@ readonly class ElementWrites
         }
     }
 
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
+     */
     public function save(
         ElementInterface $element,
         bool $runValidation = true,
@@ -185,6 +188,9 @@ readonly class ElementWrites
         event(new ElementsResaved($query));
     }
 
+    /**
+     * @param  int[]|int|null  $siteIds
+     */
     public function propagateElements(
         ElementQueryInterface $query,
         array|int|null $siteIds = null,
@@ -268,6 +274,9 @@ readonly class ElementWrites
         return $siteElement;
     }
 
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>  $supportedSites
+     */
     public function propagate(
         ElementInterface $element,
         array $supportedSites,
@@ -292,6 +301,9 @@ readonly class ElementWrites
      * @throws ElementNotFoundException
      * @throws UnsupportedSiteException
      * @throws Throwable
+     */
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
      */
     protected function saveInternal(
         ElementInterface $element,
@@ -718,6 +730,9 @@ readonly class ElementWrites
     /**
      * @throws UnsupportedSiteException
      */
+    /**
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>  $supportedSites
+     */
     protected function propagateInternal(
         ElementInterface $element,
         array $supportedSites,
@@ -913,6 +928,9 @@ readonly class ElementWrites
         return false;
     }
 
+    /**
+     * @param  array<int, int|string>  $dirtyAttributes
+     */
     private function updateModel(
         ElementInterface $element,
         bool $isNewElement,
@@ -995,6 +1013,9 @@ readonly class ElementWrites
         }
     }
 
+    /**
+     * @param  string[]  $searchableDirtyFields
+     */
     private function updateElementSearchIndex(
         ElementInterface $element,
         array $searchableDirtyFields,

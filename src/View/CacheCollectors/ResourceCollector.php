@@ -131,6 +131,10 @@ readonly class ResourceCollector implements CacheCollectorInterface
         }
     }
 
+    /**
+     * @param  array<string, \Stringable|string>  $tags
+     * @return array<string, array{string, array<string, mixed>}>
+     */
     private function parseInlineResourceTags(array $tags): array
     {
         return array_map(function ($tag) {
@@ -140,6 +144,10 @@ readonly class ResourceCollector implements CacheCollectorInterface
         }, $tags);
     }
 
+    /**
+     * @param  array<string, \Stringable|string>  $tags
+     * @return array<string, array{mixed, array<string, mixed>}>
+     */
     private function parseExternalResourceTags(array $tags, string $urlAttribute): array
     {
         return array_map(function ($tag) use ($urlAttribute) {
@@ -161,6 +169,10 @@ readonly class ResourceCollector implements CacheCollectorInterface
         }, $tags);
     }
 
+    /**
+     * @param  array<string, \Stringable|string>  $tags
+     * @return array<string, array<string, mixed>>
+     */
     private function parseSelfClosingTags(array $tags): array
     {
         return array_map(fn ($tag) => Html::parseTagAttributes((string) $tag), $tags);

@@ -36,6 +36,14 @@ class SecurityPolicy implements SecurityPolicyInterface
     /** @var class-string[] */
     private array $allowedClasses = [];
 
+    /**
+     * @param  list<string>  $allowedTags
+     * @param  list<string>  $allowedFilters
+     * @param  list<string>  $allowedFunctions
+     * @param  array<class-string, list<string>>  $allowedMethods
+     * @param  array<class-string, list<string>>  $allowedProperties
+     * @param  list<class-string>  $allowedClasses
+     */
     public function __construct(
         array $allowedTags = [],
         array $allowedFilters = [],
@@ -206,9 +214,9 @@ class SecurityPolicy implements SecurityPolicyInterface
         throw new SecurityNotAllowedMethodError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $class), $class, $method);
     }
 
-    private function isDynamicMacroMethod($obj, string $method): bool
+    private function isDynamicMacroMethod(object $obj, string $method): bool
     {
-        if (! is_object($obj) || ! is_callable([$obj::class, 'hasMacro']) || ! $obj::class::hasMacro($method)) {
+        if (! is_callable([$obj::class, 'hasMacro']) || ! $obj::class::hasMacro($method)) {
             return false;
         }
 
@@ -219,7 +227,8 @@ class SecurityPolicy implements SecurityPolicyInterface
         }
     }
 
-    private function checkForAllowedAttributeInMethod($obj, string $method, bool $checkInterfaces = true): bool
+    /** @param object|class-string|ReflectionClass<object> $obj */
+    private function checkForAllowedAttributeInMethod(object|string $obj, string $method, bool $checkInterfaces = true): bool
     {
         try {
             $classRef = new ReflectionClass($obj);
@@ -279,7 +288,8 @@ class SecurityPolicy implements SecurityPolicyInterface
         throw new SecurityNotAllowedPropertyError(sprintf('Calling "%s" property on a "%s" object is not allowed.', $property, $class), $class, $property);
     }
 
-    private function checkForAllowedAttributeInProperty($obj, string $property, bool $checkInterfaces = true): bool
+    /** @param object|class-string|ReflectionClass<object> $obj */
+    private function checkForAllowedAttributeInProperty(object|string $obj, string $property, bool $checkInterfaces = true): bool
     {
         try {
             $classRef = new ReflectionClass($obj);
@@ -307,7 +317,7 @@ class SecurityPolicy implements SecurityPolicyInterface
         return false;
     }
 
-    private function isClassAllowed($obj): bool
+    private function isClassAllowed(object $obj): bool
     {
         // see if the class has the AllowedInSandbox attribute
         if ($this->checkForAllowedAttributeInClass($obj)) {
@@ -317,7 +327,8 @@ class SecurityPolicy implements SecurityPolicyInterface
         return array_any($this->allowedClasses, fn ($class) => $obj instanceof $class);
     }
 
-    private function checkForAllowedAttributeInClass($obj, bool $checkInterfaces = true): bool
+    /** @param object|class-string|ReflectionClass<object> $obj */
+    private function checkForAllowedAttributeInClass(object|string $obj, bool $checkInterfaces = true): bool
     {
         try {
             $ref = new ReflectionClass($obj);

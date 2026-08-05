@@ -24,6 +24,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
         return parent::inputHtml();
     }
 
+    /** @return array<int, string>|string|null */
     protected function elementQueryParam(): array|string|null
     {
         if (! $this->field() instanceof Date) {
@@ -33,13 +34,13 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
         return $this->queryParamValue();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param DateTimeInterface|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof Date) {
             return true;
         }
 
-        /** @var DateTimeInterface|null $value */
         return $this->matchValue($value);
     }
 }

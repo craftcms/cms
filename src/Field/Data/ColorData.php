@@ -25,6 +25,8 @@ use Stringable;
 class ColorData implements Serializable, Stringable
 {
     /**
+     * @var array{int, int, int}
+     *
      * @see _hsl()
      */
     private array $_hsl;
@@ -148,6 +150,7 @@ class ColorData implements Serializable, Stringable
         return $this->getLightness();
     }
 
+    /** @return array{int, int, int} */
     private function _hsl(): array
     {
         if (isset($this->_hsl)) {

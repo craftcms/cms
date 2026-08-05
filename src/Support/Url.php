@@ -72,6 +72,7 @@ class Url extends \Illuminate\Support\Facades\URL
      *
      * Param names and values will be encoded, except for `{` and `}` characters.
      */
+    /** @param array<string, mixed> $params */
     public static function buildQuery(array $params): string
     {
         if (empty($params)) {
@@ -100,6 +101,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns a URL with additional query string parameters.
      */
+    /** @param array<string, mixed>|string $params */
     public static function urlWithParams(string $url, array|string $params): string
     {
         if (empty($params)) {
@@ -243,6 +245,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns either a control panel or a site URL, depending on the request type.
      */
+    /** @param array<string, mixed>|string|null $params */
     public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         // Return $path if it appears to be an absolute URL.
@@ -279,6 +282,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns a control panel URL.
      */
+    /** @param array<string, mixed>|string|null $params */
     public static function cpUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         // If this is already an absolute or root-relative URL, don't change it
@@ -297,6 +301,7 @@ class Url extends \Illuminate\Support\Facades\URL
      *
      * @throws Exception if|null $siteId is invalid
      */
+    /** @param array<string, mixed>|string|null $params */
     public static function siteUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): string
     {
         // Return $path if it appears to be an absolute URL.
@@ -341,6 +346,7 @@ class Url extends \Illuminate\Support\Facades\URL
      * @param  string|null  $scheme  The scheme to use ('http' or 'https'). If empty, the scheme used for the current
      *                               request will be used.
      */
+    /** @param array<string, mixed>|string|null $params */
     public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         $generalConfig = Cms::config();
@@ -541,6 +547,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Returns a URL.
      */
+    /** @param array<string, mixed>|string|null $params */
     private static function _createUrl(
         string $path,
         array|string|null $params,
@@ -630,6 +637,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Rebuilds a URL with params and a fragment.
      */
+    /** @param array<string, mixed> $params */
     private static function _buildUrl(string $url, array $params, ?string $fragment): string
     {
         if (($query = static::buildQuery($params)) !== '') {
@@ -645,6 +653,10 @@ class Url extends \Illuminate\Support\Facades\URL
 
     /**
      * Normalizes query string params.
+     */
+    /**
+     * @param  array<string, mixed>|string|null  $params
+     * @return array{array<string, mixed>, ?string}
      */
     private static function _normalizeParams(array|string|null $params): array
     {
@@ -676,6 +688,7 @@ class Url extends \Illuminate\Support\Facades\URL
     /**
      * Extracts the params and fragment from a given URL, and merges those with another set of params.
      */
+    /** @return array{string, array<string, mixed>, ?string} */
     private static function _extractParams(string $url): array
     {
         if (($queryPos = strpos($url, '?')) === false && ($queryPos = strpos($url, '#')) === false) {

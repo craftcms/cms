@@ -16,6 +16,7 @@ use Override;
 
 class ConfigServiceProvider extends ServiceProvider
 {
+    /** @var list<string> */
     private array $configFiles = [
         'general',
         'redirects',
@@ -85,12 +86,15 @@ class ConfigServiceProvider extends ServiceProvider
 
     private function loadGeneralConfig(ConfigRepository $repository): GeneralConfig
     {
-        /** @var GeneralConfig|array $staticConfig */
         $staticConfig = $repository->get('craft.general', []);
 
         if ($staticConfig instanceof GeneralConfig) {
             $config = clone $staticConfig;
         } else {
+            if (! is_array($staticConfig)) {
+                throw new InvalidArgumentException('The [craft.general] configuration must be an array.');
+            }
+
             Typecast::properties(GeneralConfig::class, $staticConfig);
             $config = GeneralConfig::create();
 

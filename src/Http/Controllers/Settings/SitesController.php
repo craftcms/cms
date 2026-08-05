@@ -77,7 +77,7 @@ readonly class SitesController
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): CpScreenResponse
     {
         $allGroups = $this->siteGroups->getAllGroups();
 

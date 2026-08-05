@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Passkeys;
 
-use Carbon\CarbonInterface;
+use Carbon\Carbon;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -63,9 +63,9 @@ class Passkeys
     /**
      * Returns info about the given user’s saved passkeys.
      *
-     * @return Collection<array{
-     *     credentialName:string,
-     *     dateLastUsed:CarbonInterface|null,
+     * @return Collection<int, covariant array{
+     *     credentialName:string|null,
+     *     dateLastUsed:Carbon|null,
      *     uid:string
      * }>
      */
@@ -81,11 +81,20 @@ class Passkeys
             ->select(['credentialName', 'dateLastUsed', 'uid'])
             ->where('userId', $user->id)
             ->get()
-            ->map(fn (WebAuthn $passkey) => [
-                'credentialName' => $passkey->credentialName,
-                'dateLastUsed' => $passkey->dateLastUsed,
-                'uid' => $passkey->uid,
-            ]);
+            ->toBase()
+            ->map($this->passkeyData(...));
+    }
+
+    /**
+     * @return array{credentialName: string|null, dateLastUsed: Carbon|null, uid: string}
+     */
+    private function passkeyData(WebAuthn $passkey): array
+    {
+        return [
+            'credentialName' => $passkey->credentialName,
+            'dateLastUsed' => $passkey->dateLastUsed,
+            'uid' => $passkey->uid,
+        ];
     }
 
     /**

@@ -17,7 +17,7 @@ class EditUserScreensResolving
         public User $editedUser,
 
         /**
-         * @var array<string,array> The screens that should be shown for the user being edited.
+         * @var array<string, array<string, string>> The screens that should be shown for the user being edited.
          *
          * Each screen should be represented by a sub-array whose key is the screen ID, and which has the following keys:
          *

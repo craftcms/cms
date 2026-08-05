@@ -23,6 +23,9 @@ abstract readonly class ProgressListener
         return in_array($queueName ?? $defaultQueueName, $this->generalConfig->trackedQueueNames, true);
     }
 
+    /**
+     * @param  array{uuid?: string, id?: string}  $payload
+     */
     protected function jobUuid(array $payload): ?string
     {
         return $payload['uuid'] ?? $payload['id'] ?? null;

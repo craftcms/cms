@@ -570,6 +570,7 @@ trait QueriesStructures
         return ! $this->revisions && $this->withStructure;
     }
 
+    /** @param ElementQuery<*> $elementQuery */
     private function applyStructureParams(ElementQuery $elementQuery): void
     {
         if (! $elementQuery->shouldJoinStructureData()) {

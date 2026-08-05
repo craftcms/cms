@@ -93,6 +93,7 @@ class Url extends BaseTextLinkType
             ]);
     }
 
+    /** @return array<string, string> */
     #[\Override]
     protected function inputAttributes(): array
     {

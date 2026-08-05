@@ -102,6 +102,10 @@ abstract readonly class AuthenticationController
         return $this->asFailure($message, ['errorCode' => $authError?->value]);
     }
 
+    /**
+     * @param  array<string, mixed>|null  $inertiaProps
+     * @param  array<string, mixed>  $data
+     */
     protected function renderViewWithFallback(string $inertiaComponent, ?array $inertiaProps = null, array $data = []): View|InertiaResponse|Response
     {
         $request = request();
@@ -127,6 +131,7 @@ abstract readonly class AuthenticationController
         );
     }
 
+    /** @return Response|array{User, string, string} */
     protected function processTokenRequest(Request $request): Response|array
     {
         $request->validate([

@@ -25,6 +25,7 @@ use function CraftCms\Cms\template;
 
 class CraftSupport extends Widget
 {
+    /** @param array<string, mixed> $config */
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,

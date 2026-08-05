@@ -27,6 +27,7 @@ readonly class ElementIndexHtml
 
     /**
      * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $config
      */
     public function html(string $elementType, array $config = []): string
     {
@@ -166,7 +167,7 @@ readonly class ElementIndexHtml
         // If all the sources are site-specific, filter out any unneeded site IDs
         if (
             $config['showSiteMenu'] &&
-            Collection::make($sources)->every(fn (array $source) => $source['type'] === 'heading' || isset($source['sites']))
+            $sources->every(fn (array $source) => $source['type'] === 'heading' || isset($source['sites']))
         ) {
             $representedSiteIds = [];
             foreach ($sources as $source) {

@@ -25,6 +25,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
         $this->queue = Cms::config()->queueName;
     }
 
+    /** @return class-string[] */
     public function via(mixed $notifiable): array
     {
         return [MailChannel::class];

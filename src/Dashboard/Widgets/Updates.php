@@ -16,6 +16,7 @@ use function CraftCms\Cms\template;
 
 class Updates extends Widget
 {
+    /** @param array<string, mixed> $config */
     public function __construct(
         private readonly UpdatesService $updates,
         array $config = []

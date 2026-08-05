@@ -17,6 +17,7 @@ class NestedElementsRequest extends FormRequest
 {
     private ?ElementInterface $owner = null;
 
+    /** @var ElementQueryInterface|ElementCollection<array-key, ElementInterface>|null */
     private ElementQueryInterface|ElementCollection|null $nestedElements = null;
 
     /** @var int[]|null */
@@ -26,6 +27,7 @@ class NestedElementsRequest extends FormRequest
 
     private ?NestedElementInterface $nestedElement = null;
 
+    /** @return array<string, list<string|object>> */
     public function rules(): array
     {
         return [
@@ -57,6 +59,7 @@ class NestedElementsRequest extends FormRequest
         return $this->owner = $owner;
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key, ElementInterface> */
     public function nestedElements(): ElementQueryInterface|ElementCollection
     {
         if ($this->nestedElements) {
@@ -75,6 +78,7 @@ class NestedElementsRequest extends FormRequest
         return $this->nestedElements = $nestedElements;
     }
 
+    /** @return list<int> */
     public function elementIds(): array
     {
         $this->validateReorder();

@@ -31,10 +31,10 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Settings
 {
-    /** @var array<string, array<string, Closure(): array>> */
+    /** @var array<string, array<string, Closure(): array<string, mixed>>> */
     private array $providers = [];
 
-    /** @var array<string, array<string, Closure(): array>> */
+    /** @var array<string, array<string, Closure(): array<string, mixed>>> */
     private array $readonlyProviders = [];
 
     public function __construct(
@@ -61,6 +61,7 @@ class Settings
         }
     }
 
+    /** @return array<string, array<string, array<string, mixed>>> */
     public function all(): array
     {
         $readOnly = ! $this->generalConfig->allowAdminChanges;
@@ -150,6 +151,10 @@ class Settings
         return $this->apply($settings, $readOnly);
     }
 
+    /**
+     * @param  array<string, array<string, array<string, mixed>>>  $settings
+     * @return array<string, array<string, array<string, mixed>>>
+     */
     public function apply(array $settings, bool $readOnly): array
     {
         foreach ($readOnly ? $this->readonlyProviders : $this->providers as $section => $providers) {
@@ -178,7 +183,7 @@ class Settings
     }
 
     /**
-     * @param  array<string, array<string, Closure(): array>>  $providers
+     * @param  array<string, array<string, Closure(): array<string, mixed>>>  $providers
      * @param  Closure(): array{label:string, url?:string, icon?:string, iconName?:string}  $provider
      */
     private function registerProvider(array &$providers, string $section, string $handle, Closure $provider): void

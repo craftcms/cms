@@ -9,11 +9,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Support\Collection;
 use Override;
 use Throwable;
 
@@ -51,8 +51,7 @@ class ReplaceRelations extends BatchedElementJob
     {
         $customFields = collect($element->getFieldLayout()?->getCustomFields());
 
-        /** @var Collection<BaseRelationField> $relationFields */
-        $relationFields = $customFields->filter(fn ($field) => (
+        $relationFields = $customFields->filter(fn (FieldInterface $field): bool => (
             $field instanceof BaseRelationField &&
             $field::elementType() === $this->targetElementType
         ));

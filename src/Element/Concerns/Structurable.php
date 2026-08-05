@@ -61,7 +61,7 @@ trait Structurable
 
     private ElementInterface|false|null $_nextSibling = null;
 
-    public function getNext($criteria = false): ?ElementInterface
+    public function getNext(mixed $criteria = false): ?ElementInterface
     {
         if ($criteria !== false || ! isset($this->_nextElement)) {
             return $this->_getRelativeElement($criteria, direction: 1);
@@ -70,7 +70,7 @@ trait Structurable
         return $this->_nextElement ?: null;
     }
 
-    public function getPrev($criteria = false): ?ElementInterface
+    public function getPrev(mixed $criteria = false): ?ElementInterface
     {
         if ($criteria !== false || ! isset($this->_prevElement)) {
             return $this->_getRelativeElement($criteria, direction: -1);
@@ -79,12 +79,12 @@ trait Structurable
         return $this->_prevElement ?: null;
     }
 
-    public function setNext($element): void
+    public function setNext(ElementInterface|false $element): void
     {
         $this->_nextElement = $element;
     }
 
-    public function setPrev($element): void
+    public function setPrev(ElementInterface|false $element): void
     {
         $this->_prevElement = $element;
     }
@@ -202,6 +202,7 @@ trait Structurable
         return $this->_parentId !== ($oldParentId ?: false);
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key,ElementInterface> */
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection
     {
         if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
@@ -221,6 +222,7 @@ trait Structurable
             ->siteId($this->siteId);
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key,ElementInterface> */
     public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection
     {
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
@@ -240,11 +242,13 @@ trait Structurable
             ->siteId($this->siteId);
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key,ElementInterface> */
     public function getChildren(): ElementQueryInterface|ElementCollection
     {
         return $this->getEagerLoadedElements('children') ?? $this->getDescendants(1);
     }
 
+    /** @return ElementQueryInterface|ElementCollection<array-key,ElementInterface> */
     public function getSiblings(): ElementQueryInterface|ElementCollection
     {
         return static::find()
@@ -273,7 +277,7 @@ trait Structurable
 
     private function findSibling(string $relation): ?ElementInterface
     {
-        /** @var ElementQuery $query */
+        /** @var ElementQuery<ElementInterface> $query */
         $query = static::find();
         $query->structureId = $this->structureId;
         $query->{$relation} = $this;
@@ -388,7 +392,7 @@ trait Structurable
             }
         }
 
-        /** @var ElementQuery $query */
+        /** @var ElementQuery<ElementInterface> $query */
         $elementIds = $query->cache()->ids();
         $key = array_search($this->getCanonicalId(), $elementIds);
 

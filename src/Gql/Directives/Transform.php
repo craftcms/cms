@@ -35,6 +35,7 @@ class Transform extends Directive
         return 'transform';
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         if (empty($arguments)) {

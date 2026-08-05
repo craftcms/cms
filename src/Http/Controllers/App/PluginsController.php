@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
@@ -36,7 +37,7 @@ readonly class PluginsController
         return new JsonResponse($result);
     }
 
-    public function updateLicense(Request $request)
+    public function updateLicense(Request $request): Response
     {
         $data = $request->validate([
             'handle' => ['required', 'string'],
@@ -52,6 +53,10 @@ readonly class PluginsController
 
     /**
      * Returns plugin license info.
+     */
+    /**
+     * @param  list<array<string, mixed>>|null  $pluginLicenses
+     * @return array<string, array<string, mixed>>
      */
     private function pluginLicenseInfo(?array $pluginLicenses = null): array
     {

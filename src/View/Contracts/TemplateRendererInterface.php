@@ -10,6 +10,7 @@ interface TemplateRendererInterface
 {
     public function supports(string $file): bool;
 
+    /** @param array<string, mixed> $variables */
     public function renderTemplate(
         string $template,
         array $variables = [],
@@ -17,6 +18,7 @@ interface TemplateRendererInterface
         ?string $resolvedTemplate = null,
     ): string;
 
+    /** @param array<string, mixed> $variables */
     public function renderString(
         string $template,
         array $variables = [],

@@ -71,6 +71,7 @@ trait HasRoutesAndUrls
      *
      * @see getRoute()
      */
+    /** @return array<array-key,mixed>|string|null */
     protected function route(): array|string|null
     {
         return null;

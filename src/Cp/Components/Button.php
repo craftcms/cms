@@ -59,6 +59,7 @@ class Button extends ViewComponent
 
     protected ?string $iconPosition = null;
 
+    /** @var array<string, mixed>|null */
     protected ?array $action = null;
 
     protected function tagName(): string
@@ -208,6 +209,8 @@ class Button extends ViewComponent
      * Declarative action to run on click — the same `runAction()` primitives
      * `craft-action-item` supports (`http`/`event`/`clipboard`/`download`),
      * serialized onto the `action` attribute.
+     *
+     * @param  array<string, mixed>|null  $action
      */
     public function action(?array $action): static
     {

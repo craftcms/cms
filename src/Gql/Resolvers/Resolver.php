@@ -14,5 +14,6 @@ abstract class Resolver
      * @param  mixed  $context  The context shared between all resolvers
      * @param  ResolveInfo  $resolveInfo  The resolve information
      */
+    /** @param array<string, mixed> $arguments */
     abstract public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed;
 }

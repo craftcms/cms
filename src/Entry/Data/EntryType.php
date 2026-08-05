@@ -20,7 +20,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
-use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -38,7 +38,7 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 #[Ruleset(EntryTypeRules::class)]
-class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, CustomFieldLayoutProviderInterface, Describable, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
     use HasFieldLayout;
 
@@ -198,6 +198,7 @@ JS, [
         return $items;
     }
 
+    /** @return array<string, int|\Closure> */
     public function getMetadata(): array
     {
         return [
@@ -267,6 +268,7 @@ JS, [
     /**
      * Returns the entry type’s config.
      */
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -301,6 +303,7 @@ JS, [
     /**
      * Returns the entry type’s usage info, possibly with name and handle override values.
      */
+    /** @return array<string, int|string|null> */
     public function getUsageConfig(): array
     {
         $config = ['uid' => $this->uid];

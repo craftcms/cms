@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /** @var array<string, class-string> */
     private array $map = [
         'craft\fields\Addresses' => Addresses::class,
         'craft\fields\Assets' => Assets::class,

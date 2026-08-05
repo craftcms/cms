@@ -303,6 +303,7 @@ JS;
         ]);
     }
 
+    /** @return array<int,string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -391,6 +392,7 @@ JS;
         return NumberType::getType();
     }
 
+    /** @return array{name:string,type:Type,description:string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

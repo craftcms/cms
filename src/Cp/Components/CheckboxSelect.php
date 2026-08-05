@@ -90,6 +90,7 @@ class CheckboxSelect extends ChoiceGroup
     }
 
     #[\Override]
+    /** @return array<string, mixed> */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return ['class' => 'cp-checkbox-select__item'];

@@ -142,6 +142,7 @@ readonly class Icons
             ->toString();
     }
 
+    /** @return array{name: string, family: string} */
     public static function resolveIconData(string $icon): array
     {
         // Resolve the family from the resolved name, not the raw one — an

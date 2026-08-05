@@ -17,6 +17,7 @@ use ReflectionMethod;
  * keeps constructors focused on required dependencies and lets view models expose
  * derived payload data without storing duplicate properties.
  */
+/** @implements Arrayable<string, mixed> */
 abstract class ViewModel implements Arrayable
 {
     public function toArray(): array
@@ -27,6 +28,7 @@ abstract class ViewModel implements Arrayable
         ];
     }
 
+    /** @return array<string, mixed> */
     private function publicMethodValues(): array
     {
         return collect(new ReflectionClass($this)->getMethods(ReflectionMethod::IS_PUBLIC))

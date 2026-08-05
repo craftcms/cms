@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  */
 class ElementActionMenuItemsResolving
 {
+    /** @param list<array<string, mixed>> $items */
     public function __construct(
         public ElementInterface $element,
         public array $items = [],

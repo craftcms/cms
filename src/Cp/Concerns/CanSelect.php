@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Concerns;
 
+use BackedEnum;
+
+/** @phpstan-require-implements BackedEnum */
 trait CanSelect
 {
     abstract public function label(): string;

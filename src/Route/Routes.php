@@ -22,6 +22,7 @@ use Illuminate\Support\Collection;
 #[Scoped]
 class Routes
 {
+    /** @var array<string, string> */
     public array $tokens {
         get => [
             'year' => '\d{4}',
@@ -70,6 +71,9 @@ class Routes
         ]);
     }
 
+    /**
+     * @param  list<string|null>  $segments
+     */
     public function joinRoutePrefix(array $segments): string
     {
         return implode('/', array_filter(
@@ -79,7 +83,7 @@ class Routes
     }
 
     /**
-     * @var array|null all the routes in project config for current site
+     * @var array<string, Route>|null all the routes in project config for current site
      */
     private ?array $projectConfigRoutes = null;
 
@@ -106,7 +110,7 @@ class Routes
     /**
      * Returns the routes defined in the project config.
      *
-     * @return Collection<Route>
+     * @return Collection<array-key, Route>
      */
     public function getProjectConfigRoutes(): Collection
     {
@@ -118,7 +122,13 @@ class Routes
             return collect($this->projectConfigRoutes = []);
         }
 
-        $routes = collect($this->projectConfig->get(ProjectConfig::PATH_ROUTES) ?? [])
+        $configRoutes = $this->projectConfig->get(ProjectConfig::PATH_ROUTES);
+
+        if (! is_array($configRoutes)) {
+            $configRoutes = [];
+        }
+
+        $routes = collect($configRoutes)
             ->sortBy('sortOrder', SORT_NUMERIC)
             ->filter(fn (array $route) => array_key_exists('siteUid', $route))
             ->all();
@@ -241,7 +251,7 @@ class Routes
     /**
      * Updates the route order.
      *
-     * @param  array  $routeUids  An array of each of the route UIDs, in their new order.
+     * @param  list<string>  $routeUids  An array of each of the route UIDs, in their new order.
      */
     public function updateRouteOrder(array $routeUids): void
     {
