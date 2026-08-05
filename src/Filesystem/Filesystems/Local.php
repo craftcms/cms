@@ -6,10 +6,15 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -35,12 +40,6 @@ class Local extends Filesystem
             self::VISIBILITY_HIDDEN => 0700,
         ],
     ];
-
-    public ?string $settingsHtml {
-        get => $this->getSettingsHtml();
-        set {
-        }
-    }
 
     public string $rootPath {
         get => $this->getRootPath();
@@ -96,7 +95,7 @@ class Local extends Filesystem
     #[Override]
     public function settingsAttributes(): array
     {
-        return array_values(array_diff(parent::settingsAttributes(), ['rootPath', 'settingsHtml']));
+        return array_values(array_diff(parent::settingsAttributes(), ['rootPath']));
     }
 
     #[Override]
@@ -122,28 +121,35 @@ class Local extends Filesystem
     }
 
     #[Override]
-    public function getSettingsHtml(): ?string
+    public function settingsForm(): ?Form
     {
-        return $this->settingsHtml(false);
-    }
+        $form = Form::make();
 
-    #[Override]
-    public function getReadOnlySettingsHtml(): ?string
-    {
-        return $this->settingsHtml(true);
-    }
+        if ($this->getShowHasUrlSetting()) {
+            $form->add(Field::make()
+                ->label(t('Files in this filesystem have public URLs'))
+                ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
+        }
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        return Html::tag('LocalFsSettings', attributes: [
-            ':filesystem' => [
-                'name' => static::displayName(),
-                'type' => self::class,
-                'handle' => $this->handle,
-                'path' => $this->path,
-            ],
-            ':readOnly' => $readOnly,
-        ]);
+        if ($this->hasUrls && $this->getShowUrlSetting()) {
+            $form->add(Field::make()
+                ->label(t('Base URL'))
+                ->instructions(t('The base URL to the files in this filesystem. This can begin with an environment variable or alias.'))
+                ->required()
+                ->control(Combobox::make('url')
+                    ->value($this->url)
+                    ->options(SelectOptions::getEnvSuggestions(true, fn ($value): bool => Str::isUrl($value)))
+                    ->placeholder('//example.com/path/to/folder')));
+        }
+
+        return $form->add(Field::make()
+            ->label(t('Base Path'))
+            ->instructions(t('The base folder path that should be used as the root of the filesystem. This can begin with an environment variable or alias.'))
+            ->required()
+            ->control(Combobox::make('path')
+                ->value($this->path)
+                ->options(SelectOptions::getEnvSuggestions(true))
+                ->placeholder('/path/to/folder')));
     }
 
     #[Override]

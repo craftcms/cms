@@ -53,6 +53,14 @@ it('builds complete and incremental node lists with Conditionable authoring', fu
         Field::make()->label('First')->control(Text::make('first')),
     ])->add(
         Field::make()->label('Second')->control(Text::make(['second'])),
+    )->addIf(true,
+        Field::make()->label('Conditional')->control(Text::make('conditional')),
+    )->addIf(false,
+        Field::make()->label('Omitted')->control(Text::make('omitted')),
+    )->addUnless(false,
+        Field::make()->label('Unless')->control(Text::make('unless')),
+    )->addUnless(true,
+        Field::make()->label('Also omitted')->control(Text::make('alsoOmitted')),
     )->when(true, fn (Form $form) => $form->add(
         Field::make()->label('Third')->control(Text::make('nested.third')),
     ));
@@ -65,6 +73,8 @@ it('builds complete and incremental node lists with Conditionable authoring', fu
         ->toBe([
             ['settings', 'first'],
             ['settings', 'second'],
+            ['settings', 'conditional'],
+            ['settings', 'unless'],
             ['settings', 'nested', 'third'],
         ]);
 });

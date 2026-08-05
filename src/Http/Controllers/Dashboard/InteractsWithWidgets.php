@@ -6,6 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 
@@ -20,7 +24,7 @@ trait InteractsWithWidgets
     }
 
     /**
-     * @return array{id: int|null, type: string, colspan: int, title: string|null, subtitle: string|null, name: string, bodyHtml: string, settingsHtml: string, settingsJs: string, settings: array<string, mixed>}|false
+     * @return array{id: int|null, type: string, colspan: int, title: string|null, subtitle: string|null, name: string, bodyHtml: string, settingsForm: FormPayload|null, settingsHtml: string|null, settingsJs: string|null, settings: array<string, mixed>}|false
      */
     protected function getWidgetInfo(WidgetInterface $widget): array|false
     {
@@ -31,10 +35,7 @@ trait InteractsWithWidgets
             return false;
         }
 
-        // Get the settings HTML + JS
-        HtmlStack::startJsBuffer();
-        $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), "widget$widget->id-settings");
-        $settingsJs = HtmlStack::clearJsBuffer(false);
+        $settings = $this->getWidgetSettingsInfo($widget, "widget{$widget->id}-settings");
 
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = $widget->colspan ?: 1;
@@ -51,9 +52,36 @@ trait InteractsWithWidgets
             'subtitle' => $widget->getSubtitle(),
             'name' => $widget->getDisplayName(),
             'bodyHtml' => $widgetBodyHtml,
-            'settingsHtml' => $settingsHtml,
-            'settingsJs' => (string) $settingsJs,
             'settings' => $widget->getSettings(),
+            ...$settings,
+        ];
+    }
+
+    /** @return array{settingsForm: FormPayload|null, settingsHtml: string|null, settingsJs: string|null} */
+    protected function getWidgetSettingsInfo(WidgetInterface $widget, string $namespace): array
+    {
+        $form = $widget instanceof Widget ? $widget->settingsForm() : null;
+
+        if ($form !== null) {
+            return [
+                'settingsForm' => app(FormResolver::class)->resolve($form, new FormContext(
+                    namespace: $namespace,
+                    values: [$namespace => $widget->getSettings()],
+                    errors: $widget->errors()->getMessages(),
+                    refreshable: true,
+                )),
+                'settingsHtml' => null,
+                'settingsJs' => null,
+            ];
+        }
+
+        HtmlStack::startJsBuffer();
+        $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), $namespace);
+
+        return [
+            'settingsForm' => null,
+            'settingsHtml' => $settingsHtml ?: null,
+            'settingsJs' => (string) HtmlStack::clearJsBuffer(false) ?: null,
         ];
     }
 }

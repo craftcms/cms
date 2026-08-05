@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\HtmlFragment;
 use Illuminate\Support\Collection;
 
@@ -20,6 +23,7 @@ use Illuminate\Support\Collection;
  *     hasUrls: bool,
  *     url: string|null,
  *     type: class-string<FsInterface>,
+ *     settingsForm: FormPayload|null,
  *     settingsHtml: string|null,
  *     settingsFragment: HtmlFragment|null,
  *     showHasUrlSetting: bool,
@@ -85,21 +89,6 @@ class FilesystemsEditViewModel extends ViewModel
         return $this->filesystems->getAllFilesystemTypes()->values()->all();
     }
 
-    // @TODO this should probably be its own item on SelectOptions
-    /** @return list<array{type: 'optgroup', label: string, options: list<array{label: string, value: string, data: array{hint: mixed}}>}>
-     */
-    public function baseUrlSuggestions(): array
-    {
-        return SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value));
-    }
-
-    /** @return list<array{type: 'optgroup', label: string, options: list<array{label: string, value: string, data: array{hint: mixed}}>}>
-     */
-    public function basePathSuggestions(): array
-    {
-        return SelectOptions::getEnvSuggestions(true);
-    }
-
     /**
      * One instance per filesystem type; the type being edited is represented
      * by the actual filesystem so its slot reflects the saved settings.
@@ -116,6 +105,7 @@ class FilesystemsEditViewModel extends ViewModel
     /** @return FsPayload */
     private function fsPayload(FsInterface $filesystem): array
     {
+        $form = $filesystem instanceof Filesystem ? $filesystem->settingsForm() : null;
         $settingsHtml = fn (): string => (string) ($this->readOnly
             ? $filesystem->getReadOnlySettingsHtml()
             : $filesystem->getSettingsHtml());
@@ -125,10 +115,19 @@ class FilesystemsEditViewModel extends ViewModel
         return [
             ...$filesystem->toArray(),
             'type' => $filesystem::class,
-            'settingsHtml' => $legacy ? null : $settingsHtml(),
-            // Legacy settings may register asset bundles and inline JS, so they
-            // are captured as a fragment and rendered as an isolated HTML island
-            'settingsFragment' => $legacy ? HtmlStack::capture($settingsHtml) : null,
+            'settingsForm' => $form === null ? null : app(FormResolver::class)->resolve($form, new FormContext(
+                namespace: 'settings',
+                values: ['settings' => [
+                    ...$filesystem->getSettings(),
+                    'hasUrls' => $filesystem->hasUrls,
+                    'url' => $filesystem->url,
+                ]],
+                errors: $filesystem->errors()->getMessages(),
+                mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+                refreshable: true,
+            )),
+            'settingsHtml' => $form === null && ! $legacy ? $settingsHtml() : null,
+            'settingsFragment' => $form === null && $legacy ? HtmlStack::capture($settingsHtml) : null,
             'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
             'showUrlSetting' => $filesystem->getShowUrlSetting(),
         ];

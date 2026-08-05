@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
@@ -100,6 +101,27 @@ it('uses the current formatting locale when money does not declare one', functio
 it('serializes choice presentations', function () {
     expect(Choice::make('choice')->presentation(ChoicePresentation::Buttons)->props()['presentation'])->toBe('buttons')
         ->and(Choice::make('choice')->multiple()->props()['presentation'])->toBe('checkboxes');
+});
+
+it('renders combobox options through the web component', function () {
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([Field::make()->control(Combobox::make('path')->options([
+            ['type' => 'optgroup', 'label' => 'Aliases', 'options' => [
+                ['label' => '<Root>', 'value' => '@root'],
+            ]],
+        ]))]),
+        new FormContext(namespace: 'settings', values: ['settings' => ['path' => '@root']]),
+    );
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    $combobox = $crawler->filter('craft-combobox[name="settings[path]"][model-value="@root"]');
+
+    expect($combobox)->toHaveCount(1)
+        ->and(json_decode((string) $combobox->attr('options'), true))->toBe([
+            ['type' => 'optgroup', 'label' => 'Aliases', 'options' => [
+                ['label' => '<Root>', 'value' => '@root'],
+            ]],
+        ]);
 });
 
 it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\Session;
 use Override;
 
 use function CraftCms\Cms\currentUser;
@@ -48,15 +49,13 @@ class MyDrafts extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsForm(): Form
     {
-        return FormFields::textFieldHtml([
-            'label' => t('Limit'),
-            'id' => 'limit',
-            'name' => 'limit',
-            'value' => $this->limit,
-            'size' => 2,
-            'errors' => Session::get('errors.limit', []),
+        return Form::make([
+            Field::make()
+                ->label(t('Limit'))
+                ->required()
+                ->control(Number::make('limit')->value($this->limit)->min(1)->size(2)),
         ]);
     }
 

@@ -6,6 +6,10 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -65,12 +69,42 @@ class RecentEntries extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsForm(): Form
     {
-        return template('_components/widgets/RecentEntries/settings',
-            [
-                'widget' => $this,
-            ]);
+        $form = Form::make();
+        $editableSites = Sites::getEditableSites();
+
+        if (Sites::isMultiSite() && $editableSites->count() > 1) {
+            $form->add(Field::make()
+                ->label(t('Site'))
+                ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
+                    ->map(fn ($site): array => [
+                        'label' => t($site->getName(), category: 'site'),
+                        'value' => $site->id,
+                    ])
+                    ->values()
+                    ->all())));
+        }
+
+        return $form->add(
+            Field::make()
+                ->label(t('Section'))
+                ->instructions(t('Which section do you want to pull recent entries from?'))
+                ->control(Choice::make('section')->value($this->section)->options([
+                    ['label' => t('All'), 'value' => '*'],
+                    ...Sections::getAllSections()
+                        ->filter(fn ($section): bool => $section->type !== SectionType::Single)
+                        ->map(fn ($section): array => [
+                            'label' => t($section->name, category: 'site'),
+                            'value' => $section->id,
+                        ])
+                        ->values()
+                        ->all(),
+                ])),
+            Field::make()
+                ->label(t('Limit'))
+                ->control(Number::make('limit')->value($this->limit)->min(1)),
+        );
     }
 
     #[Override]

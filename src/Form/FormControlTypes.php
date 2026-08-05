@@ -9,6 +9,7 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\ElementSelect;
@@ -41,6 +42,7 @@ class FormControlTypes extends TypeRegistry
         Address::class,
         Choice::class,
         Color::class,
+        Combobox::class,
         ContentBlock::class,
         Date::class,
         ElementSelect::class,

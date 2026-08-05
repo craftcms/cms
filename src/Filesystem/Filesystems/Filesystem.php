@@ -8,6 +8,11 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Validation\Rule;
@@ -56,6 +61,23 @@ abstract class Filesystem extends Component implements FsInterface
         get => $this->getRootUrl();
         set {
         }
+    }
+
+    public function settingsForm(): ?Form
+    {
+        return null;
+    }
+
+    #[Override]
+    public function getSettingsHtml(): ?string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
     }
 
     public function getRootUrl(): ?string
@@ -129,5 +151,19 @@ abstract class Filesystem extends Component implements FsInterface
                 Rule::requiredIf(fn () => $this->hasUrls && $this->getShowUrlSetting()),
             ],
         ];
+    }
+
+    private function settingsHtml(bool $readOnly): ?string
+    {
+        $form = $this->settingsForm();
+
+        if ($form === null) {
+            return null;
+        }
+
+        return app(FormHtmlRenderer::class)->render(app(FormResolver::class)->resolve($form, new FormContext(
+            errors: $this->errors()->getMessages(),
+            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        )));
     }
 }

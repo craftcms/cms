@@ -27,6 +27,16 @@ class Form
         return $this;
     }
 
+    public function addIf(bool $condition, Node ...$nodes): static
+    {
+        return $condition ? $this->add(...$nodes) : $this;
+    }
+
+    public function addUnless(bool $condition, Node ...$nodes): static
+    {
+        return $this->addIf(! $condition, ...$nodes);
+    }
+
     /** @return list<Node> */
     public function nodes(): array
     {

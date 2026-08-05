@@ -12,6 +12,11 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
@@ -26,6 +31,23 @@ abstract class Widget extends Component implements WidgetInterface
     use SavableComponent;
 
     public ?int $colspan = null;
+
+    public function settingsForm(): ?Form
+    {
+        return null;
+    }
+
+    #[Override]
+    public function getSettingsHtml(): ?string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    #[Override]
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
 
     #[Override]
     public static function isSelectable(): bool
@@ -155,6 +177,20 @@ EOD;
     public function validationData(): array
     {
         return $this->getSettings();
+    }
+
+    private function settingsHtml(bool $readOnly): ?string
+    {
+        $form = $this->settingsForm();
+
+        if ($form === null) {
+            return null;
+        }
+
+        return app(FormHtmlRenderer::class)->render(app(FormResolver::class)->resolve($form, new FormContext(
+            errors: $this->errors()->getMessages(),
+            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        )));
     }
 
     /** @param array<string, mixed>|WidgetModel $config */

@@ -2,6 +2,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ColorControl from './ColorControl.vue';
+import ComboboxControl from './ComboboxControl.vue';
 import FormRenderer from './FormRenderer.vue';
 import GroupNode from './GroupNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
@@ -27,6 +28,7 @@ export function registerFormComponents(
   components.register('craft:field', FieldNode);
   components.register('craft:group', GroupNode);
   components.register('craft:text', TextControl);
+  components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);
   components.register('craft:select', SelectControl);
   components.register('craft:lightswitch', LightswitchControl);

@@ -23,6 +23,7 @@ class ComponentRegistry
         'checkbox' => Checkbox::class,
         'checkbox-group' => CheckboxGroup::class,
         'checkbox-select' => CheckboxSelect::class,
+        'combobox' => Combobox::class,
         'field' => Field::class,
         'field-group' => FieldGroup::class,
         'icon' => Icon::class,

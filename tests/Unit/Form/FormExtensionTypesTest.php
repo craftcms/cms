@@ -7,6 +7,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\ElementSelect;
@@ -47,6 +48,7 @@ it('registers core and plugin Node and Control types separately', function () {
             Address::class,
             Choice::class,
             Color::class,
+            Combobox::class,
             ContentBlock::class,
             Date::class,
             ElementSelect::class,
