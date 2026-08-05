@@ -12,6 +12,7 @@ import {
   RETURN_KEY,
   UP_KEY,
 } from '@craftcms/garnish';
+import {elementSelectInputData} from './support';
 
 declare const Craft: any;
 declare const $: any;
@@ -153,6 +154,7 @@ export class BaseElementSelectInput extends Base {
     }
 
     this.$container = this.getContainer();
+    elementSelectInputData.set(this.$container[0], this);
     this.$form = this.$container.closest('form');
     this.$container.data('elementSelect', this);
 
@@ -170,7 +172,9 @@ export class BaseElementSelectInput extends Base {
 
     if (this.$addElementBtn.length) {
       // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-      $(this.$addElementBtn).on('activate', () => this.showModal());
+      $(this.$addElementBtn).on('activate.elementSelectInput', () =>
+        this.showModal()
+      );
     }
 
     requestAnimationFrame(() => {
@@ -195,6 +199,36 @@ export class BaseElementSelectInput extends Base {
         .closest('form')
         .data('elementEditor');
     }, 100);
+  }
+
+  override destroy(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    }
+
+    if (this.searchMenu) {
+      this.killSearchMenu();
+    }
+
+    this.$addElementBtn?.off('.elementSelectInput');
+    if (this.#handleShowElementEditor) {
+      this.$elements?.off('taphold', this.#handleShowElementEditor);
+      this.#handleShowElementEditor = null;
+    }
+
+    this.elementSort?.destroy?.();
+    this.elementSort = null;
+    this.elementSelect?.destroy?.();
+    this.elementSelect = null;
+    this.modal?.destroy?.();
+    this.modal = null;
+
+    if (this.$container?.[0]) {
+      elementSelectInputData.delete(this.$container[0]);
+    }
+
+    super.destroy();
   }
 
   get totalSelected(): number {

@@ -19,6 +19,108 @@ import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
 import type {FormPayload} from './types';
 
+const elementSelectMocks = vi.hoisted(() => {
+  const base = vi.fn();
+  const entry = vi.fn();
+  const asset = vi.fn();
+  let removeSelectedElement: ((id: number) => void) | null = null;
+
+  class BaseElementSelectInputMock {
+    protected readonly settings: Record<string, any>;
+    protected readonly container: HTMLElement;
+    private selectedIds: number[];
+
+    constructor(settings: Record<string, any>) {
+      base(settings);
+      this.settings = settings;
+      this.container = document.getElementById(settings.id)!;
+      this.selectedIds = [
+        ...this.container.querySelectorAll<HTMLElement>('craft-chip.element'),
+      ].map((chip) => Number(chip.dataset.id));
+      removeSelectedElement = (id) => this.removeElement(id);
+      this.container
+        .querySelector<HTMLButtonElement>('.btn.add')
+        ?.addEventListener('click', () => this.showModal());
+    }
+
+    getSelectedElementIds(): number[] {
+      return [...this.selectedIds];
+    }
+
+    destroy(): void {
+      removeSelectedElement = null;
+    }
+
+    removeElement(id: number): void {
+      this.selectedIds = this.selectedIds.filter(
+        (selectedId) => selectedId !== id
+      );
+      this.container.dispatchEvent(
+        new CustomEvent('removeElements', {bubbles: true})
+      );
+    }
+
+    protected showModal(): void {
+      Craft.createElementSelectorModal(this.settings.elementType, {
+        ...this.settings.modalSettings,
+        criteria: this.settings.criteria,
+        disabledElementIds: this.getSelectedElementIds(),
+        showSiteMenu: this.settings.showSiteMenu,
+        sources: this.settings.sources,
+        onSelect: (elements: Array<Record<string, any>>) => {
+          this.selectedIds.push(
+            ...elements.map((element) => Number(element.id))
+          );
+          this.container.dispatchEvent(
+            new CustomEvent('selectElements', {
+              bubbles: true,
+              detail: {elements},
+            })
+          );
+        },
+      });
+    }
+  }
+
+  class EntrySelectInputMock extends BaseElementSelectInputMock {
+    constructor(settings: Record<string, any>) {
+      super(settings);
+      entry(settings);
+    }
+  }
+
+  class AssetSelectInputMock extends BaseElementSelectInputMock {
+    constructor(settings: Record<string, any>) {
+      super(settings);
+      asset(settings);
+    }
+  }
+
+  return {
+    asset,
+    AssetSelectInputMock,
+    base,
+    BaseElementSelectInputMock,
+    entry,
+    EntrySelectInputMock,
+    removeElement(id: number) {
+      removeSelectedElement?.(id);
+    },
+  };
+});
+
+vi.mock('@/modules/element-select-input/base-element-select-input', () => ({
+  BaseElementSelectInput: elementSelectMocks.BaseElementSelectInputMock,
+}));
+
+vi.mock('@/modules/element-select-input/entry-select-input', () => ({
+  EntrySelectInput: elementSelectMocks.EntrySelectInputMock,
+}));
+
+vi.mock('@/modules/asset-select-input/asset-select-input', () => ({
+  AssetSelectInput: elementSelectMocks.AssetSelectInputMock,
+}));
+
 vi.mock('../markdown-field/markdown-field', () => {
   if (!customElements.get('craft-markdown-field')) {
     customElements.define(
@@ -488,6 +590,79 @@ describe('FormRenderer', () => {
       limitUnit: 'chars',
       canonical: {serverOwned: true},
     });
+  });
+
+  it('selects and removes ordered element relationships as changed-only values', async () => {
+    let mutation: FormPayload['values'] = {};
+    let selectElements: (elements: Array<Record<string, unknown>>) => void;
+    const createElementSelectorModal = vi.fn(
+      (_elementType: string, settings: Record<string, unknown>) => {
+        selectElements = settings.onSelect as typeof selectElements;
+
+        return {};
+      }
+    );
+    vi.stubGlobal('Craft', {
+      createElementSelectorModal,
+      initUiElements: vi.fn(),
+    });
+    const relational = structuredClone(payload) as Mutable<FormPayload>;
+    relational.nodes = [relational.nodes[0]!];
+    relational.values = {settings: {related: [2, 1]}};
+    relational.errors = [
+      {path: ['settings', 'related'], messages: ['Choose valid entries.']},
+    ];
+    relational.nodes[0]!.control = {
+      type: 'CraftCms\\Cms\\Form\\Controls\\ElementSelect',
+      component: 'craft:element-select',
+      props: {
+        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        customElement: 'craft-entry-select-input',
+        elements: [
+          {id: 2, label: 'Second entry'},
+          {id: 1, label: 'First entry'},
+        ],
+        sources: null,
+        criteria: {},
+        selectionLabel: 'Add an entry',
+        limit: null,
+        showSiteMenu: true,
+      },
+      path: ['settings', 'related'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'related'],
+    };
+    app.unmount();
+    await mount(relational, {
+      onMutation: (value) => (mutation = value),
+    });
+
+    expect(
+      [...container.querySelectorAll('craft-chip')].map((chip) =>
+        chip.textContent?.trim()
+      )
+    ).toEqual(['Second entry', 'First entry']);
+    expect(container.textContent).toContain('Choose valid entries.');
+    container.querySelector<HTMLElement>('[data-element-select-add]')!.click();
+    selectElements!([{id: 3, label: 'Third entry', siteId: 1}]);
+    await nextTick();
+
+    expect(createElementSelectorModal).toHaveBeenCalledWith(
+      'CraftCms\\Cms\\Entry\\Elements\\Entry',
+      expect.objectContaining({disabledElementIds: [2, 1]})
+    );
+    expect(elementSelectMocks.entry).toHaveBeenCalled();
+    expect(mutation).toEqual({settings: {related: [2, 1, 3]}});
+
+    elementSelectMocks.removeElement(2);
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({settings: {related: [1, 3]}});
+    expect(mutation).toEqual({settings: {related: [1, 3]}});
+    expect([...new FormData(form).getAll('settings[related][]')]).toEqual([
+      '1',
+      '3',
+    ]);
   });
 
   it('preserves focus and keyed component state during reconciliation', async () => {

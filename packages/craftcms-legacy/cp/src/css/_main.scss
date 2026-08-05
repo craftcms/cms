@@ -4298,6 +4298,7 @@ table:not(.cp-table) {
 
 /* element select fields */
 .elementselect {
+  display: block;
   position: relative;
   min-height: 34px;
 

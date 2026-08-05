@@ -15,6 +15,7 @@ import TableControl from './TableControl.vue';
 import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
+import ElementSelectControl from './ElementSelectControl.vue';
 
 export function registerFormComponents(
   components: Pick<CpComponentRegistry, 'register'>
@@ -38,4 +39,5 @@ export function registerFormComponents(
   components.register('craft:link', LinkControl);
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
+  components.register('craft:element-select', ElementSelectControl);
 }

@@ -89,11 +89,13 @@ type FieldLayoutDesignerInstance = any;
 interface ElementSelectorModalSettings {
   closeOtherModals?: boolean;
   criteria?: Record<string, unknown>;
+  disabledElementIds?: number[];
   hideOnSelect?: boolean;
   modalTitle?: string;
   multiSelect?: boolean;
   onSelect?: (elements: any[]) => void;
-  sources?: string[];
+  showSiteMenu?: boolean;
+  sources?: string[] | null;
 }
 
 interface CraftStatic {

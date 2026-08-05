@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Date;
+use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -39,6 +40,7 @@ class FormControlTypes extends TypeRegistry
         Choice::class,
         Color::class,
         Date::class,
+        ElementSelect::class,
         IconPicker::class,
         Lightswitch::class,
         Link::class,

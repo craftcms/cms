@@ -11,6 +11,7 @@
 - Added the renderer-neutral `CraftCms\Cms\Form` APIs, with shared PHP and Vue rendering for Plain Text field settings.
 - Added renderer-neutral scalar and choice Controls for Control Panel Forms, with shared PHP and Vue rendering.
 - Added renderer-neutral Markdown, table, link, address, and icon Controls for Control Panel Forms, with shared PHP and Vue rendering.
+- Added the renderer-neutral `CraftCms\Cms\Form\Controls\ElementSelect` Control for ordered element relationships, with shared PHP and Vue rendering.
 - Added `CraftCms\Cms\Form\FormNodeTypes` and `CraftCms\Cms\Form\FormControlTypes`, enabling plugins to register custom Form types for the PHP and Vue renderers.
 - Added refreshable Form scopes with value reconciliation and changed-only submission to the Inertia field settings screen.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
