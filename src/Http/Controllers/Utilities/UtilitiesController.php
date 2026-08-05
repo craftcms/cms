@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
+use Inertia\Response;
 use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
@@ -47,7 +48,7 @@ readonly class UtilitiesController
         return cp_redirect('utilities/'.$firstUtility::id());
     }
 
-    public function show(string $id, HtmlStack $htmlStack)
+    public function show(string $id, HtmlStack $htmlStack): RedirectResponse|Response
     {
         $class = $this->utilitiesService->getUtilityTypeById($id);
 
@@ -99,15 +100,11 @@ readonly class UtilitiesController
         return implode(PHP_EOL, array_filter($parts, fn (string $part) => $part !== ''));
     }
 
+    /** @return Collection<int, covariant array{id:string, url:string, iconSvg:string, displayName:string, iconPath:string|null, badgeCount:int}> */
     private function utilityInfo(): Collection
     {
         return $this->utilitiesService
             ->getAuthorizedUtilityTypes()
-            /**
-             * @var class-string<Utility> $class
-             *
-             * @phpstan-ignore argument.unresolvableType
-             */
             ->map(fn (string $class) => [
                 'id' => $class::id(),
                 'url' => Url::cpUrl('utilities/'.$class::id()),

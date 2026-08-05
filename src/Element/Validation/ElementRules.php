@@ -65,7 +65,7 @@ class ElementRules extends Ruleset
      *
      * Override this method in subclasses to define rules.
      *
-     * @return array<string, array>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
@@ -96,6 +96,10 @@ class ElementRules extends Ruleset
         return $this->addUriRules($rules);
     }
 
+    /**
+     * @param  array<string, mixed>  $rules
+     * @return array<string, mixed>
+     */
     private function addTitleRules(array $rules): array
     {
         try {
@@ -112,6 +116,10 @@ class ElementRules extends Ruleset
         return $rules;
     }
 
+    /**
+     * @param  array<string, mixed>  $rules
+     * @return array<string, mixed>
+     */
     private function addUriRules(array $rules): array
     {
         if (! $this->subject->hasUris()) {

@@ -8,10 +8,13 @@ use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 class Address extends Query
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getQueries(bool $checkToken = true): array
     {
         if ($checkToken && ! GqlHelper::canQueryUsers()) {

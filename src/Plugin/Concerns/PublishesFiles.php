@@ -43,6 +43,7 @@ trait PublishesFiles
         return asset("vendor/$this->packageName/$path");
     }
 
+    /** @return array<string, string> */
     private function publishableFilePaths(): array
     {
         return Collection::make($this->publishables)

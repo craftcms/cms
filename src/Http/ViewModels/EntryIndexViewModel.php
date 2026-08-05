@@ -28,6 +28,7 @@ class EntryIndexViewModel extends ContentIndexViewModel
         return $this->sectionHandle ?? '';
     }
 
+    /** @return list<array<string, mixed>> */
     public function publishableSections(): array
     {
         return SectionResource::collection(Sections::getPublishableSections())->resolve();

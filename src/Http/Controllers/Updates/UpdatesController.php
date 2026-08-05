@@ -86,6 +86,7 @@ readonly class UpdatesController
         return new JsonResponse($res);
     }
 
+    /** @return array<string, mixed> */
     private function transformUpdate(bool $allowUpdates, Update $update, string $handle, string $name): array
     {
         $arr = $update->toArray();

@@ -441,40 +441,96 @@ export class BaseElementSelectInput extends Base {
             if (actions.length) {
                 Craft.addActionsToChip($element, actions);
 
-                const disclosureMenu =
-                    $element
-                        .find(
-                            '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
-                        )
-                        .data('disclosureMenu') ||
-                    $element
-                        .children('[slot="suffix"]')
-                        .find('[data-disclosure-trigger]')
-                        .first()
-                        .data('disclosureMenu');
-
-                const moveForwardBtn = disclosureMenu.$container.find(
-                    '[data-move-forward]'
-                )[0];
-                const moveBackwardBtn = disclosureMenu.$container.find(
-                    '[data-move-backward]'
-                )[0];
-
-                disclosureMenu.on('show', () => {
+                const updateMoveButtons = () => {
                     const $li = $element.parent();
                     const $prev = $li.prev();
                     const $next = $li.next();
 
-                    if (moveForwardBtn) {
-                        disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-                    }
-                    if (moveBackwardBtn) {
-                        disclosureMenu.toggleItem(
-                            moveBackwardBtn,
-                            $next.length
+                    return {
+                        showForward: !!$prev.length,
+                        showBackward: !!$next.length,
+                    };
+                };
+
+                // The common case (`ElementHtml::componentActionMenu()`): a modern
+                // `<craft-action-menu>`, whose `craft-action-item`s aren't jQuery
+                // disclosure-menu items, so there's no `disclosureMenu` data to read.
+                const actionMenu = $element
+                    .find('craft-action-menu')
+                    .first()
+                    .get(0);
+
+                if (actionMenu) {
+                    const moveForwardItem = actionMenu.querySelector(
+                        '[data-move-forward]'
+                    );
+                    const moveBackwardItem = actionMenu.querySelector(
+                        '[data-move-backward]'
+                    );
+
+                    // No public "opening" event on `<craft-action-menu>` to defer to
+                    // (mirroring the disclosure-menu `show` handler below), so watch
+                    // its reflected `opened` attribute instead.
+                    const observer = new MutationObserver(() => {
+                        if (!(actionMenu as any).opened) {
+                            return;
+                        }
+
+                        const {showForward, showBackward} = updateMoveButtons();
+                        moveForwardItem?.toggleAttribute(
+                            'hidden',
+                            !showForward
                         );
+                        moveBackwardItem?.toggleAttribute(
+                            'hidden',
+                            !showBackward
+                        );
+                    });
+                    observer.observe(actionMenu, {
+                        attributes: true,
+                        attributeFilter: ['opened'],
+                    });
+                } else {
+                    // An old-markup, or modern-chip-with-legacy-trigger, disclosure menu.
+                    const disclosureMenu =
+                        $element
+                            .find(
+                                '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
+                            )
+                            .data('disclosureMenu') ||
+                        $element
+                            .children('[slot="suffix"]')
+                            .find('[data-disclosure-trigger]')
+                            .first()
+                            .data('disclosureMenu');
+
+                    if (disclosureMenu) {
+                        const moveForwardBtn = disclosureMenu.$container.find(
+                            '[data-move-forward]'
+                        )[0];
+                        const moveBackwardBtn = disclosureMenu.$container.find(
+                            '[data-move-backward]'
+                        )[0];
+
+                        disclosureMenu.on('show', () => {
+                            const {showForward, showBackward} =
+                                updateMoveButtons();
+
+                            if (moveForwardBtn) {
+                                disclosureMenu.toggleItem(
+                                    moveForwardBtn,
+                                    showForward
+                                );
+                            }
+                            if (moveBackwardBtn) {
+                                disclosureMenu.toggleItem(
+                                    moveBackwardBtn,
+                                    showBackward
+                                );
+                            }
+                        });
                     }
-                });
+                }
             }
 
             if (this.settings.sortable && Craft.hasMousePointerEvents()) {

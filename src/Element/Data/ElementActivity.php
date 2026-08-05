@@ -22,6 +22,7 @@ class ElementActivity extends Component
 
     public DateTimeInterface $timestamp;
 
+    /** @return array{userId: int|null, userName: string, userThumb: string, type: string, message: string} */
     public function toActivityRow(ElementInterface $element): array
     {
         $recordIsCanonical = $this->element->getIsCanonical() || $this->element->isProvisionalDraft;

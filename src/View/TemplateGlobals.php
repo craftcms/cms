@@ -20,6 +20,7 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class TemplateGlobals
 {
+    /** @var array<string, mixed>|null */
     private ?array $globals = null;
 
     public function __construct(

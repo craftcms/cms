@@ -9,6 +9,7 @@ use CraftCms\Cms\View\TemplateMode;
 
 interface TwigRendererInterface extends TemplateRendererInterface
 {
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedTemplate(
         string $template,
         array $variables = [],
@@ -23,6 +24,7 @@ interface TwigRendererInterface extends TemplateRendererInterface
         bool $escapeHtml = false,
     ): string;
 
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedString(
         string $template,
         array $variables = [],
@@ -30,13 +32,16 @@ interface TwigRendererInterface extends TemplateRendererInterface
         bool $escapeHtml = false,
     ): string;
 
+    /** @param array<string, mixed> $variables */
     public function renderObjectTemplate(
         string $template,
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string;
 
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedObjectTemplate(
         string $template,
         mixed $object,

@@ -61,7 +61,7 @@ class EntryTypesController
         }
     }
 
-    public function index(TableRequest $request)
+    public function index(TableRequest $request): \Inertia\Response
     {
         [$pagination, $tableData] = $this->entryTypes->getTableData(
             page: $request->page(),
@@ -145,6 +145,7 @@ class EntryTypesController
     /**
      * Builds the Inertia props for the entry type edit/new screen.
      */
+    /** @return array<string, mixed> */
     private function entryTypeProps(EntryType $entryType, bool $brandNew): array
     {
         $fieldLayout = $entryType->getFieldLayout();

@@ -34,7 +34,7 @@ class TwigRenderer implements TwigRendererInterface
      * Renders a Twig template.
      *
      * @param  string  $template  The name of the template to load
-     * @param  array  $variables  The variables that should be available to the template
+     * @param  array<string, mixed>  $variables  The variables that should be available to the template
      * @param  TemplateMode|null  $templateMode  The template mode to use
      * @return string the rendering result
      */
@@ -115,7 +115,7 @@ class TwigRenderer implements TwigRendererInterface
      * The passed-in `$object` will be available to the template as an `object` variable.
      *
      * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
-     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     * full Twig output tags (e.g. `{{ object.foo }}`.
      *
      * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
      * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
@@ -125,6 +125,7 @@ class TwigRenderer implements TwigRendererInterface
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string {
         // If there are no dynamic tags, just return the template
         if (! str_contains($template, '{')) {
@@ -140,7 +141,7 @@ class TwigRenderer implements TwigRendererInterface
             $twig->disableStrictVariables();
         }
 
-        $twig->setDefaultEscaperStrategy(false);
+        $twig->setDefaultEscaperStrategy($escaperStrategy);
         try {
             // Is this the first time we've parsed this template?
             $cacheKey = md5($templateMode->value.':'.$template);
@@ -253,7 +254,7 @@ class TwigRenderer implements TwigRendererInterface
                 $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
             }
 
-            return "{{ $replace|raw }}";
+            return "{{ $replace }}";
         }, (string) $template);
 
         // Restore tokenized content (sequential to handle nested tokens)
@@ -286,6 +287,10 @@ class TwigRenderer implements TwigRendererInterface
 
     /**
      * Filters fields array to only those referenced in template.
+     */
+    /**
+     * @param  array<array-key, mixed>  $fields
+     * @return list<int|string>
      */
     private function filterFieldsByTemplate(array $fields, string $template): array
     {

@@ -21,7 +21,7 @@ interface ConfigurableComponentInterface
     /**
      * Returns an array of the component’s settings.
      *
-     * @return array The component’s settings.
+     * @return array<string, mixed> The component’s settings.
      */
     public function getSettings(): array;
 

@@ -153,6 +153,7 @@ trait FieldConditionRuleTrait
         return $this->fieldInstances()[0];
     }
 
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), array_filter([
@@ -243,7 +244,7 @@ trait FieldConditionRuleTrait
 
     abstract protected function elementQueryParam(): mixed;
 
-    abstract protected function matchFieldValue($value): bool;
+    abstract protected function matchFieldValue(mixed $value): bool;
 
     public function getRules(): array
     {

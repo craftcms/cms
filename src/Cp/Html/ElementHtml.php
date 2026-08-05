@@ -54,6 +54,7 @@ readonly class ElementHtml
         private ContentHtml $contentHtml,
     ) {}
 
+    /** @param array<string, mixed> $config */
     public function chipHtml(Chippable $component, array $config = []): string
     {
         $config += [
@@ -264,6 +265,7 @@ readonly class ElementHtml
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      */
+    /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
     {
         $config += [
@@ -358,6 +360,7 @@ readonly class ElementHtml
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      */
+    /** @param array<string, mixed> $config */
     public function elementCardHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -380,6 +383,7 @@ readonly class ElementHtml
      *
      * Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardHeaderHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -401,6 +405,8 @@ readonly class ElementHtml
      * Renders the label portion of an element’s card header: its icon, card
      * title, and modified-status badge. Suited to a card component's `label`
      * slot. Accepts the same `$config` settings as {@see elementCardHtml()}.
+     *
+     * @param  array<string, mixed>  $config
      */
     public function elementCardLabelHtml(ElementInterface $element, array $config = []): string
     {
@@ -421,6 +427,8 @@ readonly class ElementHtml
      * button, action menu, and (when sortable) drag handle — as a plain
      * fragment, suited to a card component's `actions` slot. Accepts the
      * same `$config` settings as {@see elementCardHtml()}.
+     *
+     * @param  array<string, mixed>  $config
      */
     public function elementCardActionsHtml(ElementInterface $element, array $config = []): string
     {
@@ -437,6 +445,7 @@ readonly class ElementHtml
      * slideout module's window listener, which opens an element editor
      * slideout (or the element's edit page on ctrl-click).
      *
+     * @param  array<string, mixed>  $config
      * @return array{0: bool, 1: array<string, mixed>|null} `[showEditButton, editAction]`
      */
     private function cardEditButtonConfig(ElementInterface $element, array $config): array
@@ -464,6 +473,10 @@ readonly class ElementHtml
         ]];
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>|null  $editAction
+     */
     private function cardActionsHtml(ElementInterface $element, array $config, bool $showEditButton, ?array $editAction): string
     {
         return ($showEditButton ? Button::make()
@@ -498,6 +511,7 @@ readonly class ElementHtml
      *
      * Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardContentHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -574,6 +588,7 @@ readonly class ElementHtml
      * ID; otherwise it’s empty. Accepts the same `$config` settings as
      * {@see elementCardHtml()}.
      */
+    /** @param array<string, mixed> $config */
     public function elementCardFooterHtml(ElementInterface $element, array $config = []): string
     {
         $config = $this->normalizeCardConfig($element, $config);
@@ -595,6 +610,10 @@ readonly class ElementHtml
      * uses, so they can be applied to a card rendered from the individual part
      * methods. Accepts the same `$config` settings as {@see elementCardHtml()}.
      */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     public function elementCardAttributes(ElementInterface $element, array $config = []): array
     {
         return $this->cardAttributes($element, $this->normalizeCardConfig($element, $config));
@@ -606,6 +625,10 @@ readonly class ElementHtml
      * Applying defaults here (rather than in each part method) keeps the
      * generated `id` stable when {@see elementCardHtml()} composes the parts, so
      * the same already-normalized `$config` is threaded through each.
+     */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
      */
     private function normalizeCardConfig(ElementInterface $element, array $config): array
     {
@@ -647,6 +670,9 @@ readonly class ElementHtml
      * `data-duplicatable`/`data-deletable` attributes), so client-supplied
      * render configs (`app/render-elements`) can request them but never
      * grant them.
+     *
+     * @param  array<string, mixed>  $config
+     * @return list<array<string, mixed>>
      */
     private function nestedCardActionItems(ElementInterface $element, array $config): array
     {
@@ -733,6 +759,10 @@ readonly class ElementHtml
 
     /**
      * Builds the HTML attributes for the outer `.card` element.
+     */
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
      */
     private function cardAttributes(ElementInterface $element, array $config): array
     {
@@ -821,6 +851,10 @@ readonly class ElementHtml
             Html::endTag('div');
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function baseElementAttributes(ElementInterface $element, array $config): array
     {
         $user = currentUser();
@@ -907,6 +941,10 @@ readonly class ElementHtml
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  array<string, mixed>  $attributes
+     */
     private function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
@@ -984,6 +1022,8 @@ readonly class ElementHtml
      * The menu is always rendered, even with zero items, so JS (e.g.
      * `Craft.addActionsToChip()`) always has a `[slot="content"]` container
      * to inject into.
+     *
+     * @param  list<array<string, mixed>>  $extraItems
      */
     private function componentActionMenu(Actionable $component, bool $withEdit = true, array $extraItems = []): string
     {
@@ -1074,6 +1114,7 @@ readonly class ElementHtml
      *   be rejected server-side; it just won't get the elevated-session
      *   modal first. See the task report for details.
      */
+    /** @param array<string, mixed> $item */
     private function actionMenuItemHtml(array $item): string
     {
         $type = $item['type'] ?? MenuItemType::Button;
@@ -1124,6 +1165,19 @@ readonly class ElementHtml
             ], fn ($value) => $value !== null);
         }
 
+        // `craft-action-item` resolves its `icon` client-side (defaulting to
+        // the `solid` family) with no knowledge of `Icons::LEGACY_ICON_MAP` or
+        // which names are custom icons — resolve here and, when the icon
+        // isn't in the default `solid` family, prefix it the same way
+        // `Navigation.php` does for `custom-icons/*` icons.
+        $iconAttr = false;
+        if ($item['icon'] ?? false) {
+            $resolvedIcon = Icons::resolveIconData($item['icon']);
+            $iconAttr = $resolvedIcon['family'] !== 'solid'
+                ? "{$resolvedIcon['family']}/{$resolvedIcon['name']}"
+                : $resolvedIcon['name'];
+        }
+
         $attributes = Arr::merge([
             // Deliberately *not* run through `InputNamespace::namespaceId()`:
             // this whole method already runs inside its own
@@ -1132,7 +1186,7 @@ readonly class ElementHtml
             // attribute in the returned HTML automatically — namespacing it
             // here too would double it up.
             'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
-            'icon' => $item['icon'] ?? false,
+            'icon' => $iconAttr,
             'icon-color' => $color ?: false,
             'href' => $type === MenuItemType::Link->value ? Url::url((string) ($item['url'] ?? '')) : false,
             'disabled' => $item['disabled'] ?? false,
@@ -1150,6 +1204,7 @@ readonly class ElementHtml
      * `menu-item-description` markup `_includes/menuitem.twig` and
      * `_includes/forms/componentSelect.twig` use.
      */
+    /** @param array<string, mixed> $item */
     private function actionMenuItemContentHtml(array $item): string
     {
         $labelHtml = isset($item['label'])

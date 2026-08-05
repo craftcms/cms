@@ -74,6 +74,7 @@ readonly class PreviewHtml
 
     /**
      * @param  Chippable[]  $components
+     * @param  array<string, mixed>  $chipConfig
      */
     public function componentPreviewHtml(array $components, array $chipConfig = []): string
     {

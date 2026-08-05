@@ -58,6 +58,7 @@ class Search
 
     private readonly bool $isPgsql;
 
+    /** @var list<string>|null */
     private ?array $mysqlStopWords = null;
 
     /**
@@ -78,6 +79,7 @@ class Search
         }
     }
 
+    /** @param list<string>|null $fieldHandles */
     public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
         $mutex = Cache::lock("searchindex:$element->id:$element->siteId", 30);
@@ -173,6 +175,7 @@ class Search
     /**
      * @throws QueryException
      */
+    /** @param list<string> $fieldHandles */
     private function createOrUpdateIndexJob(ElementInterface $element, array $fieldHandles): void
     {
         $jobId = $this->pendingIndexJobId($element->id, $element->siteId);
@@ -355,6 +358,7 @@ class Search
         return $scores;
     }
 
+    /** @param string|array{query: string, subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool}|SearchQuery $searchQuery */
     public function createDbQuery(string|array|SearchQuery $searchQuery, ElementQueryInterface $elementQuery): Builder|false
     {
         $searchQuery = $this->normalizeSearchQuery($searchQuery);
@@ -391,6 +395,10 @@ class Search
         return $query;
     }
 
+    /**
+     * @param  list<array{elementId: int|string, siteId: int|string, keywords: string, attribute: string}>  $results
+     * @return array<string, int>
+     */
     private function scoreResults(array $results): array
     {
         $scores = [];
@@ -408,6 +416,7 @@ class Search
         return $scores;
     }
 
+    /** @param string|array{query: string, subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool}|SearchQuery $searchQuery */
     public function normalizeSearchQuery(string|array|SearchQuery $searchQuery): SearchQuery
     {
         if ($searchQuery instanceof SearchQuery) {
@@ -497,6 +506,7 @@ class Search
         }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
     }
 
+    /** @param array{elementId: int|string, siteId: int|string, keywords: string, attribute: string} $row */
     private function scoreRow(array $row): int
     {
         $score = 0;
@@ -516,6 +526,7 @@ class Search
         return (int) round($score);
     }
 
+    /** @param array{elementId: int|string, siteId: int|string, keywords: string, attribute: string} $row */
     private function scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1): float
     {
         if ($term->exact || ! ($keywords = $this->normalizeTerm($term->term, $row['siteId']))) {
@@ -589,6 +600,8 @@ class Search
     }
 
     /**
+     * @param  list<SearchQueryTerm>  $tokens
+     * @param  int|int[]|null  $siteId
      * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
      */
@@ -634,6 +647,7 @@ class Search
     }
 
     /**
+     * @param  int|int[]|null  $siteId
      * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{0: array{sql: string, bindings: list<int|float|string|bool|null>}|false|null, 1: string|null}
      */

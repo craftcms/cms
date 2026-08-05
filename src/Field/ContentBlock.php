@@ -155,6 +155,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
     }
 
+    /** @param list<string> $ancestorUids */
     private function ensureNoRecursion(self $field, array $ancestorUids = []): bool
     {
         if ($field->uid !== null) {
@@ -221,6 +222,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     /**
      * Sets the field layout.
+     *
+     * @param  FieldLayout|array<string, mixed>|string  $layout
      */
     public function setFieldLayout(FieldLayout|array|string $layout): void
     {
@@ -246,6 +249,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
     /**
      * Sets the field layouts.
+     *
+     * @param  array<string, array<string, mixed>>  $layouts
      */
     public function setFieldLayouts(array $layouts): void
     {
@@ -297,6 +302,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $this->_fieldLayout = $layout;
     }
 
+    /** @return list<int> */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -689,6 +695,7 @@ JS, [
         ]);
     }
 
+    /** @return list<\Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -730,6 +737,7 @@ JS, [
         return $this->contentBlockManager()->getSearchKeywords($element);
     }
 
+    /** @return array{name:string, type:Type, resolve:string, complexity:callable} */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -742,7 +750,7 @@ JS, [
     }
 
     #[Override]
-    public function getContentGqlMutationArgumentType(): Type|array
+    public function getContentGqlMutationArgumentType(): Type
     {
         return ContentBlockInputType::getType($this);
     }
@@ -803,7 +811,7 @@ JS, [
     /**
      * Creates an array of entries based on the given serialized data.
      *
-     * @param  array  $value  The raw field value
+     * @param  array<string, mixed>  $value  The raw field value
      * @param  ElementInterface  $element  The element the field is associated with
      * @param  bool  $fromRequest  Whether the data came from the request post data
      */

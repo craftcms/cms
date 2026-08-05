@@ -10,11 +10,13 @@ use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Throwable;
 
 /** @extends Ruleset<SectionSiteSettings> */
 class SectionSiteSettingsRules extends Ruleset
 {
+    /** @return array<string, array<int, string|ValidationRule>> */
     public function rules(): array
     {
         $section = null;

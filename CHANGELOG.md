@@ -1,7 +1,8 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.15 - 2026-08-04
 
+- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
@@ -289,6 +290,7 @@
 - Fixed an error that occurred when editing a category. ([#19120](https://github.com/craftcms/cms/pull/19120))
 - Fixed a bug where users’ Language preference field could be set to Arabic by default when the browser’s preferred language included a territory ID (e.g. `en-US`).
 - Fixed a bug where preview tokens weren’t taking the `previewTokenDuration` config setting into account.
+- Fixed a bug where success/failure notifications weren’t being shown after deleting elements. ([#19028](https://github.com/craftcms/cms/pull/19028))
 
 ## 6.0.0-alpha.8 - 2026-06-17
 

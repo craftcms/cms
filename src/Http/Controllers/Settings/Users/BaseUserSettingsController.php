@@ -34,6 +34,7 @@ abstract class BaseUserSettingsController
         ];
     }
 
+    /** @return list<array<string, string>> */
     protected function crumbs(string $title, ?string $url = null): array
     {
         return [

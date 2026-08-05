@@ -54,6 +54,7 @@ class Markdown extends BaseUiElement
         return 'markdown';
     }
 
+    /** @return array{class?: list<string>} */
     #[Override]
     protected function selectorLabelAttributes(): array
     {

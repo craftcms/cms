@@ -42,7 +42,7 @@ trait Eagerloadable
     public ?EagerLoadInfo $eagerLoadInfo = null;
 
     /**
-     * @var array<string,ElementCollection>
+     * @var array<string,ElementCollection<array-key,ElementInterface>>
      *
      * @see getEagerLoadedElements()
      * @see SetEagerLoadedElements()
@@ -176,7 +176,7 @@ trait Eagerloadable
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
      * @param  bool  $children  Whether only direct children should be included
-     * @return array|null The eager-loading element ID mappings, or null if the result should be ignored
+     * @return EagerLoadingMap|null The eager-loading element ID mappings, or null if the result should be ignored
      */
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
     {
@@ -239,7 +239,7 @@ trait Eagerloadable
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
      * @param  bool  $parents  Whether only direct parents should be included
-     * @return array|null The eager-loading element ID mappings, or null if the result should be ignored
+     * @return EagerLoadingMap|null The eager-loading element ID mappings, or null if the result should be ignored
      */
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
     {
@@ -304,6 +304,7 @@ trait Eagerloadable
 
     /**
      * @param  ElementInterface[]  $elements
+     * @return array<int,array{structureId:int,elementId:int,lft:int,rgt:int,level?:int}>
      */
     private static function _structureDataForElements(array $elements, bool $withLevel): array
     {
@@ -343,7 +344,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements in other locales.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapLocalized(array $sourceElements): array
     {
@@ -382,7 +383,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements' current revisions.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapCurrentRevisions(array $sourceElements): array
     {
@@ -412,7 +413,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements' current drafts.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapDrafts(array $sourceElements): array
     {
@@ -440,7 +441,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements' current revisions.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapRevisions(array $sourceElements): array
     {
@@ -468,7 +469,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements' draft creators.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapDraftCreators(array $sourceElements): array
     {
@@ -496,7 +497,7 @@ trait Eagerloadable
      * Returns an eager-loading map for the source elements' revision creators.
      *
      * @param  ElementInterface[]  $sourceElements  An array of the source elements
-     * @return array The eager-loading element ID mappings
+     * @return EagerLoadingMap The eager-loading element ID mappings
      */
     private static function _mapRevisionCreators(array $sourceElements): array
     {
@@ -545,7 +546,7 @@ trait Eagerloadable
      * Returns eager-loaded elements for a given handle.
      *
      * @param  string  $handle  The handle to check for
-     * @return ElementCollection|null The eager-loaded elements, or null if they don't exist
+     * @return ElementCollection<array-key,ElementInterface>|null The eager-loaded elements, or null if they don't exist
      *
      * @see SetEagerLoadedElements()
      */

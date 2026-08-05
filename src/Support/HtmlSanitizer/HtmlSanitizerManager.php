@@ -29,6 +29,7 @@ class HtmlSanitizerManager extends Manager
 
     /**
      * @param  string  $driver
+     * @param  array<string, mixed>|Closure|HtmlSanitizerInterface  $definition
      */
     #[Override]
     public function extend($driver, array|Closure|HtmlSanitizerInterface $definition): static
@@ -147,6 +148,7 @@ class HtmlSanitizerManager extends Manager
         return new HtmlSanitizer($this->defaultConfig());
     }
 
+    /** @param array<string, mixed> $settings */
     private function configFromArray(array $settings): HtmlSanitizerConfig
     {
         $config = new HtmlSanitizerConfig;

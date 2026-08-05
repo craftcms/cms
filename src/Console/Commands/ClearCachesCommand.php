@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
+use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
@@ -19,6 +20,9 @@ class ClearCachesCommand extends Command
 {
     use CraftCommand;
 
+    /**
+     * @param  list<string>  $aliases
+     */
     public function __construct(string $signature, string $description, array $aliases = [])
     {
         $this->signature = $signature;
@@ -31,9 +35,14 @@ class ClearCachesCommand extends Command
     public function handle(): int
     {
         if ($this->signature === 'craft:clear-caches {keys?*}') {
-            /** @phpstan-ignore-next-line */
-            if (! empty($keys = $this->argument('keys'))) {
+            $keys = $this->input->getArgument('keys');
+
+            if (is_array($keys) && $keys !== []) {
                 foreach ($keys as $key) {
+                    if (! is_string($key)) {
+                        throw new UnexpectedValueException('Cache keys must be strings.');
+                    }
+
                     $this->call("craft:clear-caches:$key");
                 }
 
@@ -117,6 +126,9 @@ class ClearCachesCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return list<array{signature: string, description: string, aliases?: list<string>}>
+     */
     public static function signatures(): array
     {
         $signatures = [

@@ -11,6 +11,7 @@ use CraftCms\Cms\View\TemplateMode;
  */
 class TemplateRendered
 {
+    /** @param array<string, mixed> $variables */
     public function __construct(
         public readonly string $rendererName,
         public readonly string $template,

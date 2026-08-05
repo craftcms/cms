@@ -8,10 +8,12 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\Generators\AddressType;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 class Address extends Element
 {
     #[Override]
@@ -45,6 +47,7 @@ class Address extends Element
         return 'AddressInterface';
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {

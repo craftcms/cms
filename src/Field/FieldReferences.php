@@ -73,6 +73,10 @@ readonly class FieldReferences
             ->delete();
     }
 
+    /**
+     * @param  array{tabs?:list<array{elements?:list<array{type?:string, uid?:string, ...}>}>}|null  $previousConfig
+     * @param  array{tabs?:list<array{elements?:list<array{type?:string, uid?:string, ...}>}>}|null  $currentConfig
+     */
     public function deleteReferencesForRemovedInstances(?array $previousConfig, ?array $currentConfig): void
     {
         $removedUids = array_values(array_diff(
@@ -159,6 +163,10 @@ readonly class FieldReferences
             ->whereNull('e.revisionId');
     }
 
+    /**
+     * @param  array{tabs?:list<array{elements?:list<array{type?:string, uid?:string, ...}>}>}|null  $config
+     * @return list<string>
+     */
     private function customFieldUidsInConfig(?array $config): array
     {
         if ($config === null) {

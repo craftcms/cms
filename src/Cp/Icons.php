@@ -86,7 +86,9 @@ readonly class Icons
         'asterisk-slash',
         'c-debug',
         'c-outline',
+        'clone-dashed',
         'diamond-slash',
+        'duplicate',
         'element-card',
         'element-card-slash',
         'element-cards',
@@ -94,6 +96,7 @@ readonly class Icons
         'graphql',
         'grip-dots',
         'image-slash',
+        'language',
         'list-flip',
         'list-tree-flip',
         'notification-bottom-left',
@@ -139,6 +142,7 @@ readonly class Icons
             ->toString();
     }
 
+    /** @return array{name: string, family: string} */
     public static function resolveIconData(string $icon): array
     {
         // Resolve the family from the resolved name, not the raw one — an

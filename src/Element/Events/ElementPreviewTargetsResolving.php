@@ -16,7 +16,7 @@ class ElementPreviewTargetsResolving
 {
     /**
      * @param  ElementInterface  $element  The element
-     * @param  array  $previewTargets  The registered preview targets
+     * @param  list<array<string, mixed>>  $previewTargets  The registered preview targets
      */
     public function __construct(
         public ElementInterface $element,

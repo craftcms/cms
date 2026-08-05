@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\Engine;
 
 class TwigEngine implements Engine
 {
+    /** @param array<string, mixed> $data */
     public function get($path, array $data = []): string
     {
         $template = $this->templateFromPath($path);

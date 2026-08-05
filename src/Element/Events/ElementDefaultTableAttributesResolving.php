@@ -14,7 +14,7 @@ class ElementDefaultTableAttributesResolving
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $source  The source key
-     * @param  array  $tableAttributes  The default table attribute keys
+     * @param  list<string>  $tableAttributes  The default table attribute keys
      */
     public function __construct(
         public string $elementType,

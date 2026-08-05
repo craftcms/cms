@@ -111,6 +111,7 @@ JS, [
         return parent::inputHtml($element, $static);
     }
 
+    /** @return array<string, string|array<string, string>> */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

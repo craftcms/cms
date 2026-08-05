@@ -196,6 +196,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /** @return list<BinaryOperatorExpressionParser> */
     #[Override]
     public function getExpressionParsers(): array
     {
@@ -307,6 +308,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /** @param array<string, mixed> $options */
     public function addressFilter(?Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
         if ($address === null) {
@@ -342,6 +344,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return t((string) $message, $params, $category, $language);
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function currencyFilter(mixed $value, ?string $currency = null, array $options = [], array $textOptions = [], bool $stripZeros = false): string
     {
         if ($value === null || $value === '') {
@@ -372,6 +378,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function filesizeFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -385,6 +395,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
+    /**
+     * @param  array<int, int>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = [], ?string $locale = null): string
     {
         if ($value === null || $value === '') {
@@ -405,6 +419,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $value;
     }
 
+    /**
+     * @param  array<string, mixed>  $options
+     * @param  array<string, mixed>  $textOptions
+     */
     public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
@@ -453,6 +471,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return clone $var;
     }
 
+    /**
+     * @param  string|array<string, mixed>  $type
+     * @param  array<string, mixed>  $params
+     */
     public function createFunction(string|array $type, array $params = []): object
     {
         if (is_array($type) && isset($type['__class']) && isset($type['class'])) {
@@ -488,6 +510,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
         $object = app()->make($class, $params);
 
+        if (! is_object($object)) {
+            throw new InvalidArgumentException("Unable to create an instance of $class.");
+        }
+
         if (! is_array($type)) {
             return $object;
         }
@@ -497,7 +523,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return Typecast::configure($object, $type);
     }
 
-    public function dumpFunction(array $context, ...$vars): string
+    /** @param array<string, mixed> $context */
+    public function dumpFunction(array $context, mixed ...$vars): string
     {
         if (! $vars) {
             $vars = [TemplateHelper::contextWithoutTemplate($context)];
@@ -525,7 +552,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $entryType;
     }
 
-    public function expressionFunction(mixed $expression): \Illuminate\Database\Query\Expression
+    public function expressionFunction(mixed $expression): Expression
     {
         return new \Illuminate\Database\Query\Expression($expression);
     }
@@ -541,6 +568,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         return $valueSql;
     }
 
+    /**
+     * @param  array<array-key, mixed>|null  $variables
+     * @return array<array-key, mixed>
+     */
     public function gqlFunction(string $query, ?array $variables = null, ?string $operationName = null): array
     {
         $schema = GqlHelper::createFullAccessSchema();

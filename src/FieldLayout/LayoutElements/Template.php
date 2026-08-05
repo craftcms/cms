@@ -76,6 +76,7 @@ class Template extends BaseUiElement
         return 'file-code';
     }
 
+    /** @return array{class?: list<string>} */
     #[Override]
     protected function selectorLabelAttributes(): array
     {

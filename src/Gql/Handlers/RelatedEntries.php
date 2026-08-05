@@ -13,7 +13,7 @@ class RelatedEntries extends RelationArgumentHandler
     protected string $argumentName = 'relatedToEntries';
 
     #[Override]
-    protected function handleArgument($argumentValue): mixed
+    protected function handleArgument(mixed $argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
 

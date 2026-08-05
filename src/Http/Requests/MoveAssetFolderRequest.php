@@ -14,6 +14,7 @@ class MoveAssetFolderRequest extends FormRequest
 
     private ?VolumeFolder $folderToMove = null;
 
+    /** @return array<string, list<string>> */
     public function rules(): array
     {
         return [

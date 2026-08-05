@@ -37,6 +37,7 @@ class Paginate extends Component
      */
     private string $_basePath;
 
+    /** @param LengthAwarePaginator<array-key, mixed> $paginator */
     public static function create(LengthAwarePaginator $paginator): self
     {
         return new self([
@@ -94,6 +95,7 @@ class Paginate extends Component
         return $this->getPageUrl($this->currentPage + 1);
     }
 
+    /** @return array<int, string|null> */
     public function getPrevUrls(?int $dist = null): array
     {
         if ($dist !== null) {
@@ -105,6 +107,7 @@ class Paginate extends Component
         return $this->getRangeUrls($start, $this->currentPage - 1);
     }
 
+    /** @return array<int, string|null> */
     public function getNextUrls(?int $dist = null): array
     {
         if ($dist !== null) {
@@ -116,6 +119,7 @@ class Paginate extends Component
         return $this->getRangeUrls($this->currentPage + 1, $end);
     }
 
+    /** @return array<int, string|null> */
     public function getRangeUrls(int $start, int $end): array
     {
         if ($start < 1) {

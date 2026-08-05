@@ -5,7 +5,8 @@
  * uses them; each shim below keeps third-party callers working while logging a
  * deprecation warning. Add future plugin shims to this file.
  *
- * Loaded CP-wide via CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
+ * Compiled into the legacy asset package and loaded CP-wide via
+ * CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
  */
 (function () {
   'use strict';

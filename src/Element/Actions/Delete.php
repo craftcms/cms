@@ -215,6 +215,9 @@ JS, [
         return true;
     }
 
+    /**
+     * @param  array<int, array<int|null>>  $deleteOwnership
+     */
     private function deleteElement(
         ElementInterface $element,
         array &$deleteOwnership,

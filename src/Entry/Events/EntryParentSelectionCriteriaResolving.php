@@ -13,6 +13,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  */
 class EntryParentSelectionCriteriaResolving
 {
+    /** @param array<string, array<array-key, int|string>|bool|int|string|null> $criteria */
     public function __construct(
         public Entry $entry,
         public array $criteria,

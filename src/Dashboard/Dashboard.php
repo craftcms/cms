@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
+use CraftCms\Cms\Dashboard\Widgets\Custom as CustomWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
@@ -34,6 +36,10 @@ use function CraftCms\Cms\currentUser;
 #[Singleton]
 readonly class Dashboard
 {
+    public function __construct(
+        private CustomWidgets $customWidgets,
+    ) {}
+
     /**
      * Creates a widget with a given config.
      *
@@ -54,7 +60,7 @@ readonly class Dashboard
     /**
      * Returns the dashboard widgets for the current user.
      *
-     * @return Collection<WidgetInterface> The widgets
+     * @return Collection<int, WidgetInterface> The widgets
      */
     public function getAllWidgets(): Collection
     {
@@ -266,6 +272,8 @@ readonly class Dashboard
     private function addDefaultUserWidgets(): void
     {
         $user = currentUser();
+        $customWidgets = $this->customWidgets->all()
+            ->filter(fn (CustomWidgetDefinition $definition) => $definition->showByDefault);
 
         // Recent Entries widget
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
@@ -288,6 +296,15 @@ readonly class Dashboard
                 'title' => 'Craft News',
             ],
         ]));
+
+        $customWidgets->each(function (CustomWidgetDefinition $definition) {
+            $this->saveWidget($this->createWidget([
+                'type' => CustomWidget::class,
+                'settings' => [
+                    'definitionId' => $definition->id,
+                ],
+            ]));
+        });
 
         User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,
@@ -314,7 +331,7 @@ readonly class Dashboard
     /**
      * Returns the widget records for the current user.
      *
-     * @return Collection<WidgetInterface>|false
+     * @return Collection<int, WidgetInterface>|false
      *
      * @throws Exception if no user is logged-in
      */

@@ -22,7 +22,7 @@ use Override;
  * @method static bool areFieldTypesCompatible(string $fieldA, string $fieldB)
  * @method static \Illuminate\Support\Collection getNestedEntryFieldTypes()
  * @method static \Illuminate\Support\Collection getRelationalFieldTypes()
- * @method static \CraftCms\Cms\Field\Contracts\FieldInterface createField(string|array $config)
+ * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|\CraftCms\Cms\Field\Contracts\FieldInterface createField(string|array $config)
  * @method static \Illuminate\Support\Collection getAllFields(string|string[]|false|null $context = null)
  * @method static \Illuminate\Support\Collection getFieldsWithContent(string|string[]|false|null $context = null)
  * @method static \Illuminate\Support\Collection getFieldsWithoutContent(string|string[]|false|null $context = null)
@@ -31,7 +31,7 @@ use Override;
  * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|null getFieldByUid(string $fieldUid)
  * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|null getFieldByHandle(string $handle, string|string[]|false|null $context = null)
  * @method static bool doesFieldWithHandleExist(string $handle, string|null $context = null)
- * @method static array createFieldConfig(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
+ * @method static mixed createFieldConfig(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
  * @method static bool saveField(\CraftCms\Cms\Field\Contracts\FieldInterface $field, bool $runValidation = true)
  * @method static void prepFieldForSave(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
  * @method static void handleChangedField(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
@@ -56,7 +56,7 @@ use Override;
  * @method static bool deleteLayout(\CraftCms\Cms\FieldLayout\FieldLayout $layout, bool $hardDelete = false)
  * @method static bool deleteLayoutsByType(string $type)
  * @method static bool restoreLayoutById(int $id)
- * @method static void applyFieldSave(string $fieldUid, array $data, string $context)
+ * @method static void applyFieldSave(string $fieldUid, mixed $data, string $context)
  *
  * @see \CraftCms\Cms\Field\Fields
  */

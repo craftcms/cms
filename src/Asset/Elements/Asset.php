@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Elements;
 
+use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
@@ -123,7 +124,7 @@ use function CraftCms\Cms\t;
  * @property int|null $width the image width
  * @property int|null $volumeId the volume ID
  * @property string $filename the filename (with extension)
- * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it’s not an image
+ * @property string|array{x: float, y: float}|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it’s not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
  * @property-read Volume $volume the asset’s volume
@@ -137,7 +138,7 @@ use function CraftCms\Cms\t;
  * @property-read string $contents
  * @property-read bool $hasCheckeredThumb
  * @property-read bool $supportsImageEditor
- * @property-read array $previewTargets
+ * @property-read list<array{label: string, url: string}> $previewTargets
  * @property-read string $titleTranslationKey
  * @property-read null|string $titleTranslationDescription
  * @property-read string $dataUrl
@@ -146,9 +147,15 @@ use function CraftCms\Cms\t;
  * @property-read string $imageTransformSourcePath
  * @property User|null $uploader
  * @property-read resource $stream
- * @property-write null|string|array|ImageTransform $transform
+ * @property-write null|string|array<string, bool|float|int|string|null>|ImageTransform $transform
  * @property-read string $gqlTypeName
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
+ *
+ * @phpstan-type TransformConfig array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null>
+ * @phpstan-type SourcePathInfo array{uri: string, folderId: int, hasChildren: bool, canView: bool, canCreate: bool, canMoveSubItems: bool, key: string, label: string, icon?: string, handle?: string|null, criteria?: array{folderId: int|null}, canRename?: bool, canMove?: bool, canDelete?: bool}
+ * @phpstan-type SourceInfo array{key: string, label: string|null, hasThumbs: bool, criteria: array{folderId: int|null, uploaderId?: int|null}, defaultSort: array{string, string}, defaultSourcePath: list<SourcePathInfo>|null, data: array{volume-handle: string|false, folder-id: int|null, can-upload: bool, can-move-to: bool, can-move-peer-files-to?: bool, fs-type: class-string}}
+ *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Ruleset(AssetRules::class)]
 class Asset extends Element
@@ -173,7 +180,7 @@ class Asset extends Element
     public bool $isFolder = false;
 
     /**
-     * @var array|null The source path, if this represents a folder.
+     * @var list<array<string, bool|int|string|null>>|null The source path, if this represents a folder.
      *
      * @internal
      */
@@ -322,7 +329,7 @@ class Asset extends Element
     private ?int $_height = null;
 
     /**
-     * @var array|null Focal point
+     * @var array{x: float, y: float}|null Focal point
      */
     private ?array $_focalPoint = null;
 
@@ -418,6 +425,7 @@ class Asset extends Element
         return new AssetCondition(self::class);
     }
 
+    /** @return array{elementType?: class-string<ElementInterface>, map: list<array{elementType?: class-string<ElementInterface>, source: int, target: int}>, criteria?: array<string, bool|int|string|null>, createElement?: callable}|list<array{elementType?: class-string<ElementInterface>, map: list<array{elementType?: class-string<ElementInterface>, source: int, target: int}>, criteria?: array<string, bool|int|string|null>, createElement?: callable}>|false|null */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -468,12 +476,14 @@ class Asset extends Element
         return AssetInterface::getType();
     }
 
+    /** @return list<string> */
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
         return ['volumes.'.$context->uid];
     }
 
+    /** @return list<SourceInfo> */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -515,6 +525,7 @@ class Asset extends Element
         return $sources;
     }
 
+    /** @return SourceInfo|null */
     public static function findSource(string $sourceKey, ?string $context): ?array
     {
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
@@ -530,6 +541,7 @@ class Asset extends Element
         return null;
     }
 
+    /** @return list<array<string, bool|int|string|array{folderId: int|null}|null>>|null */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
     {
         if (! preg_match('/^folder:([\w\-]+)$/', $stepKey, $match)) {
@@ -566,6 +578,7 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
+    /** @return list<class-string|array{type: class-string, label?: string, restorableElementsOnly?: bool}> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -645,6 +658,7 @@ class Asset extends Element
         return ['filename', 'extension', 'kind', 'alt'];
     }
 
+    /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */
     #[Override]
     public static function sortOptions(): array
     {
@@ -657,6 +671,7 @@ class Asset extends Element
         return parent::sortOptions();
     }
 
+    /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -685,6 +700,7 @@ class Asset extends Element
         ];
     }
 
+    /** @return array<string, array<string, string>> */
     #[Override]
     public static function tableAttributes(): array
     {
@@ -695,6 +711,7 @@ class Asset extends Element
         return parent::tableAttributes();
     }
 
+    /** @return array<string, array{label: string, icon?: string}> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -743,6 +760,7 @@ class Asset extends Element
         }
     }
 
+    /** @return array<string, array{label: string, placeholder: Closure}> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -802,6 +820,7 @@ class Asset extends Element
         return $attributes;
     }
 
+    /** @param array{value: string, placeholder: mixed} $attribute */
     #[Override]
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -1056,6 +1075,7 @@ class Asset extends Element
     /**
      * Transforms an VolumeFolderModel into a source info array.
      */
+    /** @return SourceInfo */
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, ?User $user = null): array
     {
         $volume = $folder->getVolume();
@@ -1143,7 +1163,7 @@ class Asset extends Element
      * @return mixed The property value
      */
     #[Override]
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         if (str_starts_with($name, 'transform:')) {
             return $this->copyWithTransform(substr($name, 10));
@@ -1161,6 +1181,7 @@ class Asset extends Element
         }
     }
 
+    /** @param array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null> $values */
     #[Override]
     public function setAttributesFromRequest(array $values): void
     {
@@ -1207,6 +1228,7 @@ class Asset extends Element
         return $tags;
     }
 
+    /** @return list<array{label?: string, url?: string, selected?: bool, menu?: array{label: string, items: array<int, array{label: string, url: string, selected: bool}>}}|null> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1300,6 +1322,7 @@ class Asset extends Element
         return Url::cpUrl('assets');
     }
 
+    /** @return list<array<string, bool|int|string|MenuItemType|list<array<string, bool|int|string|MenuItemType>>>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1604,7 +1627,7 @@ JS, [
     /**
      * Returns an `<img>` tag based on this asset.
      *
-     * @param  ImageTransform|string|array|null  $transform  The transform to use when generating the html.
+     * @param  ImageTransform|string|TransformConfig|null  $transform  The transform to use when generating the html.
      * @param  string[]|null  $sizes  The widths/x-descriptors that should be used for the `srcset` attribute
      *                                (see [[getSrcset()]] for example syntaxes)
      *
@@ -1660,7 +1683,7 @@ JS, [
      * ```
      *
      * @param  string[]  $sizes
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
      * @return string|false The `srcset` attribute value, or `false` if it can’t be determined
      *
      * @throws InvalidArgumentException
@@ -1710,7 +1733,8 @@ JS, [
      * ```
      *
      * @param  string[]  $sizes
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
+     * @return array<string, string|null>
      */
     #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null): array
@@ -1889,7 +1913,7 @@ JS, [
     /**
      * Sets the transform.
      *
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
      *
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
@@ -1905,9 +1929,9 @@ JS, [
     /**
      * Returns the element’s full URL.
      *
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the
-     *                                                       image If an array is passed, it can optionally include a `transform` key that defines a base transform
-     *                                                       which the rest of the settings should be applied to.
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the
+     *                                                                 image If an array is passed, it can optionally include a `transform` key that defines a base transform
+     *                                                                 which the rest of the settings should be applied to.
      * @param  bool|null  $immediately  Whether the image should be transformed immediately
      *
      * @throws RuntimeException
@@ -2084,6 +2108,7 @@ JS, [
         ]);
     }
 
+    /** @return list<array{label: string, url: string}> */
     #[Override]
     public function getPreviewTargets(): array
     {
@@ -2146,7 +2171,7 @@ JS, [
      * If a transform is applied (either via the `$transform` argument or [[setTransform()]]),
      * the MIME type will be based on the transform’s format.
      *
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the mime type
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the mime type
      *
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
@@ -2175,7 +2200,7 @@ JS, [
     /**
      * Returns the file's format, if it can be determined.
      *
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
      * @return string The asset's format
      *
      * @throws ImageTransformException If an invalid transform handle is supplied
@@ -2197,7 +2222,7 @@ JS, [
     /**
      * Returns the image height.
      *
-     * @param  ImageTransform|string|array|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  A transform handle or configuration that should be applied to the image
      */
     #[AllowedInSandbox]
     public function getHeight(mixed $transform = null): ?int
@@ -2218,7 +2243,7 @@ JS, [
     /**
      * Returns the image width.
      *
-     * @param  array|string|ImageTransform|null  $transform  A transform handle or configuration that should be applied to the image
+     * @param  TransformConfig|string|ImageTransform|null  $transform  A transform handle or configuration that should be applied to the image
      */
     #[AllowedInSandbox]
     public function getWidth(array|string|ImageTransform|null $transform = null): ?int
@@ -2401,6 +2426,7 @@ JS, [
      *
      * @param  bool  $asCss  whether the value should be returned in CSS syntax ("50% 25%") instead
      */
+    /** @return array{x: float, y: float}|string|null */
     #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
@@ -2422,6 +2448,7 @@ JS, [
      *
      * @throws InvalidArgumentException if $value is invalid
      */
+    /** @param array{x: float|int|string, y: float|int|string}|string|null $value */
     public function setFocalPoint(array|string|null $value): void
     {
         if (is_array($value)) {
@@ -2719,6 +2746,7 @@ JS;
         ]);
     }
 
+    /** @return array<string, Closure(): bool|string> */
     #[Override]
     protected function metadata(): array
     {
@@ -2792,6 +2820,7 @@ JS;
         return self::gqlTypeName($this->getVolume());
     }
 
+    /** @return list<string> */
     #[Override]
     public function attributes(): array
     {
@@ -2829,7 +2858,7 @@ JS;
     /**
      * Returns a copy of the asset with the given transform applied to it.
      *
-     * @param  ImageTransform|string|array|null  $transform  The transform handle or configuration that should be applied to the image
+     * @param  ImageTransform|string|TransformConfig|null  $transform  The transform handle or configuration that should be applied to the image
      *
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
@@ -3066,6 +3095,7 @@ JS;
         return $this->keptFile && parent::beforeRestore();
     }
 
+    /** @return array<string, array<string, bool|int|string|null>> */
     #[Override]
     public function getHtmlAttributes(string $context): array
     {
@@ -3092,6 +3122,7 @@ JS;
         return parent::getHtmlAttributes($context);
     }
 
+    /** @return array<string, array<string, bool|int|string|null>> */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -3150,7 +3181,8 @@ JS;
     /**
      * Returns the width and height of the image.
      *
-     * @param  ImageTransform|string|array|null  $transform
+     * @param  ImageTransform|string|TransformConfig|null  $transform
+     * @return array{int|null, int|null}
      */
     private function _dimensions(mixed $transform = null): array
     {

@@ -44,7 +44,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** The thumbnail edge length (px) requested for the thumbnail grid view. */
     private const int THUMB_SIZE = 200;
 
-    /** @var array{0: ?string, 1: ?array}|null */
+    /** @var array{0: ?string, 1: ?array<string, mixed>}|null */
     private ?array $resolvedSource = null;
 
     private ?ElementQueryInterface $query = null;
@@ -52,10 +52,13 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @var array<int, array{field: string, direction: string}>|null */
     private ?array $resolvedSort = null;
 
+    /** @var array<string, mixed>|null */
     private ?array $resolvedViewState = null;
 
+    /** @var array<string, mixed>|null */
     private ?array $indexData = null;
 
+    /** @var LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>>|null */
     private ?LengthAwarePaginator $paginator = null;
 
     /** @var array{perPage: int, page: int, total: int, pageParam: string}|null */
@@ -64,6 +67,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @var string[]|null */
     private ?array $visibleColumns = null;
 
+    /** @var list<array<string, mixed>>|null */
     private ?array $resolvedSources = null;
 
     public function __construct(
@@ -102,6 +106,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->request->input('search');
     }
 
+    /** @return array<string, mixed>|null */
     public function source(): ?array
     {
         return $this->sourceState()[1];
@@ -121,11 +126,13 @@ abstract class ContentIndexViewModel extends ViewModel
             : null;
     }
 
+    /** @return array<string, mixed>|null */
     public function currentCondition(): ?array
     {
         return $this->request->condition()?->getConfig();
     }
 
+    /** @return array<string, mixed> */
     public function viewState(): array
     {
         if ($this->resolvedViewState !== null) {
@@ -201,6 +208,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->elementType::pluralDisplayName();
     }
 
+    /** @return list<array<string, mixed>> */
     public function sources(): array
     {
         return $this->resolvedSources ??= ElementSources::getSources(
@@ -236,6 +244,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->elementType::hasDrafts();
     }
 
+    /** @return array<array-key, mixed> */
     public function viewModes(): array
     {
         return $this->elementType::indexViewModes();
@@ -347,6 +356,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ->all();
     }
 
+    /** @return list<array<string, mixed>> */
     public function data(): array
     {
         if ($this->sourceState()[0] === null) {
@@ -452,7 +462,7 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return array{0: ?string, 1: ?array} */
+    /** @return array{0: ?string, 1: ?array<string, mixed>} */
     protected function sourceState(): array
     {
         if ($this->resolvedSource !== null) {
@@ -542,6 +552,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * columns, view flags) — the same data that backs the legacy HTML index —
      * so the two indexes stay in sync.
      */
+    /** @return array<string, mixed> */
     private function resolveIndexData(): array
     {
         if ($this->indexData !== null) {
@@ -616,6 +627,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * type's index pipeline (so assets keep their folders) and the resolved
      * page state.
      */
+    /** @return LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>> */
     private function resolvePaginator(): LengthAwarePaginator
     {
         if ($this->paginator !== null) {
@@ -650,7 +662,8 @@ abstract class ContentIndexViewModel extends ViewModel
      * like `authors`). Only the visible columns render — the client refetches
      * when its column selection changes.
      *
-     * @param  ElementInterface[]  $elements
+     * @param  list<ElementInterface>  $elements
+     * @return list<array<string, mixed>>
      */
     private function tableRows(array $elements): array
     {
@@ -696,7 +709,8 @@ abstract class ContentIndexViewModel extends ViewModel
      * Serializes elements as server-rendered card parts for the cards view.
      * Vue owns the selection process, so cards render non-selectable.
      *
-     * @param  ElementInterface[]  $elements
+     * @param  list<ElementInterface>  $elements
+     * @return list<array<string, mixed>>
      */
     private function cardData(array $elements): array
     {
@@ -735,6 +749,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * the `ElementThumbs` component); folders navigate via their own row data.
      *
      * @param  ElementInterface[]  $elements
+     * @return list<array<string, mixed>>
      */
     private function thumbData(array $elements): array
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
@@ -58,6 +59,10 @@ class NativeFields
         }
     }
 
+    /**
+     * @param  list<BaseField|class-string<BaseField>|array{class: class-string<BaseField>, ...}>  $fields
+     * @return list<BaseField|class-string<BaseField>|array{class: class-string<BaseField>, ...}>
+     */
     public function apply(FieldLayout $fieldLayout, array $fields = []): array
     {
         foreach ($this->providers as $handle => $provider) {

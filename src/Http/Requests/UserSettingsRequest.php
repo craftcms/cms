@@ -15,6 +15,7 @@ use function CraftCms\Cms\t;
 
 class UserSettingsRequest extends FormRequest
 {
+    /** @return array<string, list<string|object>> */
     public function rules(): array
     {
         return [
@@ -29,6 +30,7 @@ class UserSettingsRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, bool|string|array<string>|null> */
     public function projectConfigSettings(): array
     {
         $data = $this->safe();
@@ -49,6 +51,7 @@ class UserSettingsRequest extends FormRequest
         ];
     }
 
+    /** @return list<string|Closure> */
     private function require2faRules(): array
     {
         return ['nullable', function (string $attribute, mixed $value, Closure $fail): void {

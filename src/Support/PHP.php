@@ -14,6 +14,7 @@ use function CraftCms\Cms\t;
 
 class PHP
 {
+    /** @var string[]|null */
     private static ?array $basePaths = null;
 
     private static ?bool $iconv = null;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -73,6 +74,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
      */
     public ?int $byteLimit = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Config normalization
@@ -189,6 +191,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
+    /** @return list<Closure|string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {

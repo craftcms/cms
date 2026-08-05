@@ -434,6 +434,10 @@ class OAuth
         return $definition;
     }
 
+    /**
+     * @param  array<string, mixed>  $config
+     * @return array<string, mixed>
+     */
     private function validateProviderConfig(string $handle, array $config): array
     {
         try {

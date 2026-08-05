@@ -109,6 +109,7 @@ class CountryCodeField extends BaseNativeField implements ImportableFieldLayoutE
         return $value;
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

@@ -86,6 +86,7 @@ class TextareaField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array{class: list<string>, id: string, describedBy: string|null, rows: int|null, cols: int|null, name: string, value: mixed, maxlength: int|null, autofocus: bool, disabled: bool, readonly: bool, required: bool, title: string|null, placeholder: string|null}
      */
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
@@ -119,6 +120,7 @@ class TextareaField extends BaseNativeField
         return $this->name ?? parent::errorKey();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

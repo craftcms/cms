@@ -11,8 +11,13 @@ use Illuminate\Support\Facades\Log;
 use Override;
 use ReflectionProperty;
 
+/**
+ * @implements Arrayable<string, mixed>
+ * @implements ArrayAccess<string, mixed>
+ */
 abstract class BaseConfig implements Arrayable, ArrayAccess
 {
+    /** @var array<string, string> */
     protected static array $renamedSettings = [];
 
     public static function create(): static
@@ -21,7 +26,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return new static;
     }
 
-    public function __get(string $name)
+    public function __get(string $name): mixed
     {
         if (isset(static::$renamedSettings[$name])) {
             return $this->{static::$renamedSettings[$name]};
@@ -30,7 +35,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return null;
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
         if (! isset(static::$renamedSettings[$name])) {
             return;
@@ -42,7 +47,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         $this->$newName = $value;
     }
 
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         if (isset(static::$renamedSettings[$name])) {
             return isset($this->{static::$renamedSettings[$name]});
@@ -56,7 +61,8 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
      * show the exception as the Framework isn't booted when it
      * happens. This delays the exception until that time.
      */
-    public function __call(string $name, array $arguments)
+    /** @param list<mixed> $arguments */
+    public function __call(string $name, array $arguments): static
     {
         app()->booted(function () use ($name) {
             throw new BadMethodCallException("Method `$name` does not exist on ".static::class);
@@ -99,6 +105,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
      * Restores the state of an object from an array. This
      * is used when the config is cached by Laravel.
      */
+    /** @param array<string, mixed> $stateData */
     public static function __set_state(array $stateData): static
     {
         $object = static::create();

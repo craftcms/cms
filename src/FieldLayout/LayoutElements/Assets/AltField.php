@@ -66,6 +66,9 @@ class AltField extends TextareaField implements ImportableFieldLayoutElementInte
         ]);
     }
 
+    /**
+     * @return array{class: list<string>, id: string, describedBy: string|null, rows: int|null, cols: int|null, name: string, value: mixed, maxlength: int|null, autofocus: bool, disabled: bool, readonly: bool, required: bool, title: string|null, placeholder: string|null}
+     */
     #[Override]
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {

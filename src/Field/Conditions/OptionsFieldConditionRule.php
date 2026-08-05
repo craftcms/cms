@@ -49,6 +49,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return parent::inputHtml();
     }
 
+    /** @return list<string>|string|null */
     protected function elementQueryParam(): string|array|null
     {
         if (! $this->field() instanceof BaseOptionsField) {
@@ -58,7 +59,8 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return $this->paramValue();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param MultiOptionsFieldData|SingleOptionFieldData|string|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if (! $this->field() instanceof BaseOptionsField) {
             return true;

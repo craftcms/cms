@@ -52,6 +52,8 @@ readonly class Announcements
 
     /**
      * Returns any announcements for the logged-in user.
+     *
+     * @return list<array{id: int, icon: string|false, label: string, heading: string, body: string, unread: bool}>
      */
     public function get(): array
     {

@@ -129,7 +129,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     #[AllowedInSandbox]
     public ?string $longitude = null;
 
-    public function __construct($config = [])
+    /** @param array<string, mixed>|object $config */
+    public function __construct(object|array $config = [])
     {
         parent::__construct($config);
 
@@ -188,6 +189,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
+    /** @return list<class-string<Copy>> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -196,6 +198,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ];
     }
 
+    /** @return array<string, array{label: string}> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -224,6 +227,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         };
     }
 
+    /** @return list<array{label: string, orderBy: string, attribute?: string, defaultDir?: 'asc'|'desc'}> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -293,6 +297,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         ];
     }
 
+    /** @return list<string> */
     #[Override]
     public function safeAttributes(): array
     {
@@ -323,7 +328,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    public function getAttributeLabel($attribute): string
+    public function getAttributeLabel(string $attribute): string
     {
         if (AddressField::exists($attribute)) {
             /** @phpstan-var AddressField::* $attribute */
@@ -353,6 +358,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return $owner instanceof User && $owner->getIsCurrent();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {

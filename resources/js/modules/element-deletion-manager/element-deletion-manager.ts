@@ -106,10 +106,16 @@ export class ElementDeletionManager extends Base {
         }
 
         this.$submitBtn?.addClass('loading');
+        let data: any = null;
         try {
-            await Craft.sendActionRequest('POST', 'delete-elements/delete', {
-                data: this.getParams(),
-            });
+            const response = await Craft.sendActionRequest(
+                'POST',
+                'delete-elements/delete',
+                {
+                    data: this.getParams(),
+                }
+            );
+            data = response.data;
         } catch {
             return;
         } finally {
@@ -119,6 +125,14 @@ export class ElementDeletionManager extends Base {
         this.succeeded = true;
         this.settings.onSuccess();
         this.modal?.hide();
+
+        if (data) {
+            if (data.showAsFailure) {
+                Craft.cp.displayError(data.message);
+            } else {
+                Craft.cp.displaySuccess(data.message);
+            }
+        }
     }
 
     getConfirmationMessage(totalElements: any): string {

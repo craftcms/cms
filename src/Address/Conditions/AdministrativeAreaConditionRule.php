@@ -22,6 +22,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
 {
     public string $countryCode = 'US';
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {

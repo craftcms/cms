@@ -15,6 +15,7 @@ readonly class JsonExtract implements Expression
     use IdentifiesDriver;
     use StringizeExpression;
 
+    /** @param string|list<string> $path */
     public function __construct(
         private string|Expression $expression,
         private string|array $path,

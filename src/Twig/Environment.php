@@ -13,6 +13,7 @@ use function CraftCms\Cms\debugbar;
 
 class Environment extends TwigEnvironment
 {
+    /** @param array<string, mixed> $options */
     public function __construct(LoaderInterface $loader, array $options = [])
     {
         parent::__construct($loader, $options);

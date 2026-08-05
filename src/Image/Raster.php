@@ -177,6 +177,7 @@ class Raster extends Image
         return $this;
     }
 
+    /** @param array{x:numeric,y:numeric}|string $position */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, ?string $fill = null, string|array $position = 'center-center', ?bool $upscale = null): static
     {
         $upscale ??= Cms::config()->upscaleImages;
@@ -189,6 +190,7 @@ class Raster extends Image
         return $this;
     }
 
+    /** @param array{x:numeric,y:numeric}|string $cropPosition */
     public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
@@ -427,6 +429,8 @@ class Raster extends Image
 
     /**
      * Returns EXIF metadata for a file by its path.
+     *
+     * @return array<string,mixed>
      */
     public function getExifMetadata(string $filePath): array
     {

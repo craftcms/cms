@@ -30,7 +30,7 @@ trait HasPreviewTargets
     /**
      * Returns the element's preview targets.
      *
-     * @return array The preview targets, each containing at minimum a `label` and `url` key.
+     * @return array<array-key,array<string,mixed>> The preview targets, each containing at minimum a `label` and `url` key.
      */
     public function getPreviewTargets(): array
     {
@@ -72,6 +72,7 @@ trait HasPreviewTargets
      *
      * @see getPreviewTargets()
      */
+    /** @return array<array-key,array<string,mixed>> */
     protected function previewTargets(): array
     {
         $previewTargets = [];

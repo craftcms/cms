@@ -285,6 +285,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $field instanceof PreviewableFieldInterface;
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getPreviewOptions(): ?array
     {
@@ -320,6 +321,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         ];
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getThumbOptions(): ?array
     {
@@ -568,6 +570,9 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         ];
     }
 
+    /**
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null, id?: int}}
+     */
     #[Override]
     protected function selectorAttributes(): array
     {
@@ -601,6 +606,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         ]);
     }
 
+    /** @return array{class?: list<string>, id?: string, data: array{base-input-name: string, error-key: string, type?: class-string<FieldInterface>}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -661,6 +667,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $field::icon();
     }
 
+    /** @return list<array{label: string, icon: string, iconColor: string}> */
     #[Override]
     protected function selectorIndicators(): array
     {
@@ -932,6 +939,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

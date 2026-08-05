@@ -85,6 +85,7 @@ class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayo
         ]);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

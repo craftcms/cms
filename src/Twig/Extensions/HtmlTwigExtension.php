@@ -79,6 +79,7 @@ class HtmlTwigExtension extends AbstractExtension
         ];
     }
 
+    /** @return array<string, mixed> */
     public function parseAttrFilter(string $tag): array
     {
         try {
@@ -115,6 +116,7 @@ class HtmlTwigExtension extends AbstractExtension
         return HtmlSanitizers::sanitize($html, $sanitizer);
     }
 
+    /** @param list<string>|string $class */
     public function removeClassFilter(string $tag, array|string $class): string
     {
         try {
@@ -145,6 +147,7 @@ class HtmlTwigExtension extends AbstractExtension
         }
     }
 
+    /** @param array<string, mixed> $attributes */
     public function attrFilter(string $tag, array $attributes): string
     {
         try {
@@ -224,6 +227,7 @@ class HtmlTwigExtension extends AbstractExtension
         }
     }
 
+    /** @param array<string, mixed>|string $attributes */
     public function headingFunction(int $level, array|string $attributes = ''): string
     {
         if ($level < 1 || $level > 6) {
@@ -251,6 +255,7 @@ class HtmlTwigExtension extends AbstractExtension
         return $svg;
     }
 
+    /** @param array<string, mixed>|string $attributes */
     public function tagFunction(string $type, array|string $attributes = ''): string
     {
         if (is_array($attributes)) {

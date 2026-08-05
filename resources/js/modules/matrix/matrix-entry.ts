@@ -193,9 +193,15 @@ export class MatrixEntry extends Base {
 
         this.visibleLayoutElements = this.dataJson('visible-layout-elements');
         this.staticLayoutElements = this.dataJson('static-layout-elements');
-        this.formObserver = new (craft().FormObserver)(container, (data) => {
-            this.updateFieldLayout(data);
-        });
+
+        setTimeout(() => {
+            this.formObserver = new (craft().FormObserver)(
+                container,
+                (data) => {
+                    this.updateFieldLayout(data);
+                }
+            );
+        }, 1);
     }
 
     /** Reads a JSON-ish data attribute the way jQuery `.data()` did. */

@@ -27,7 +27,7 @@
             }
         };
 
-        collect(page.props.sources ?? []);
+        collect((page.props.sources ?? []) as Source[]);
 
         return slugs;
     });

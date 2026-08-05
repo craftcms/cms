@@ -32,6 +32,7 @@ class AssetRules extends ElementRules
 
     public const string SCENARIO_REPLACE = 'replace';
 
+    /** @return array<string, list<array<int, object|string>|Closure|object|string>> */
     #[Override]
     public function rules(): array
     {

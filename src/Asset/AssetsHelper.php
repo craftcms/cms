@@ -91,6 +91,8 @@ class AssetsHelper
 
     /**
      * Returns revision query parameters that should be appended to as asset URL.
+     *
+     * @return array{v: string}
      */
     public static function revParams(Asset $asset, ?DateTimeInterface $dateUpdated = null): array
     {
@@ -243,8 +245,8 @@ class AssetsHelper
      *
      * @param  VolumeFolder  $sourceParentFolder  Folder whose nested folder structure should be mirrored.
      * @param  VolumeFolder  $destinationFolder  The destination folder
-     * @param  array  $targetTreeMap  map of relative path => existing folder ID
-     * @return array map of original folder ID => new folder ID
+     * @param  array<string, int>  $targetTreeMap  map of relative path => existing folder ID
+     * @return array<int, int> map of original folder ID => new folder ID
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
@@ -280,8 +282,9 @@ class AssetsHelper
      * Create an asset transfer list based on a list of assets and an array of
      * changing folder IDs.
      *
-     * @param  array  $assets  List of assets
-     * @param  array  $folderIdChanges  A map of folder ID changes
+     * @param  list<Asset>  $assets  List of assets
+     * @param  array<int, int>  $folderIdChanges  A map of folder ID changes
+     * @return list<array{assetId:int, folderId:int, force:true}>
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
     {
@@ -304,7 +307,7 @@ class AssetsHelper
     /**
      * Returns a list of the supported file kinds.
      *
-     * @return array The supported file kinds
+     * @return array<string, array{label:string, extensions:list<string>}> The supported file kinds
      */
     public static function getFileKinds(): array
     {
@@ -314,7 +317,7 @@ class AssetsHelper
     /**
      * Returns a list of file kinds that are allowed to be uploaded.
      *
-     * @return array The allowed file kinds
+     * @return array<string, array{label:string, extensions:list<string>}> The allowed file kinds
      */
     public static function getAllowedFileKinds(): array
     {
@@ -366,6 +369,8 @@ class AssetsHelper
     /**
      * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
      *
+     * @return array{int, string}
+     *
      * @throws InvalidArgumentException if the file location is invalid
      */
     public static function parseFileLocation(string $location): array
@@ -406,7 +411,7 @@ class AssetsHelper
     /**
      * Returns scaled width & height values for a maximum container size.
      *
-     * @return array The scaled width and height
+     * @return array{int, int} The scaled width and height
      */
     public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
     {
@@ -432,7 +437,7 @@ class AssetsHelper
     /**
      * Parses a srcset size (e.g. `100w` or `2x`).
      *
-     * @return array An array of the size value and unit (`w` or `x`)
+     * @return array{float, 'w'|'x'} An array of the size value and unit (`w` or `x`)
      *
      * @throws InvalidArgumentException if the size can’t be parsed
      */

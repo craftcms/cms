@@ -13,6 +13,7 @@ class EditImage extends ElementAction
 {
     public string $label;
 
+    /** @param array<string, mixed>|object $config */
     public function __construct(array|object $config = [])
     {
         parent::__construct($config);
