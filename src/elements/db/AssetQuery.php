@@ -1015,25 +1015,25 @@ class AssetQuery extends ElementQuery
     protected function afterPrepare(): bool
     {
         if ($this->hasAlt !== null) {
-            $hasAltCondition = [
+            $this->subQuery->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
                 'and',
-                ['not', ['assets_sites.alt' => '']],
-                ['not', ['assets_sites.alt' => null]],
-            ];
+                '[[assets_sites.assetId]] = [[assets.id]]',
+                '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+            ]);
 
-            $withoutAltCondition = [
-                'or',
-                ['assets_sites.alt' => ''],
-                ['assets_sites.alt' => null],
-            ];
-
-            $this->subQuery
-                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+            if ($this->hasAlt) {
+                $this->subQuery->andWhere([
                     'and',
-                    '[[assets_sites.assetId]] = [[assets.id]]',
-                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
-                ])
-                ->andWhere($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
+                    ['not', ['assets_sites.alt' => '']],
+                    ['not', ['assets_sites.alt' => null]],
+                ]);
+            } else {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['assets_sites.alt' => ''],
+                    ['assets_sites.alt' => null],
+                ]);
+            }
         }
 
         return parent::afterPrepare();
