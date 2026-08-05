@@ -28,22 +28,12 @@ trait QueriesAlt
 
             $hasAltCondition = function (Builder $query) {
                 $query->where('assets_sites.alt', '!=', '')
-                    ->orWhere(function (Builder $query) {
-                        $query->whereNull('assets_sites.alt')
-                            ->where('assets.alt', '!=', '')
-                            ->whereNotNull('assets.alt');
-                    });
+                    ->whereNotNull('assets_sites.alt');
             };
 
             $withoutAltCondition = function (Builder $query) {
                 $query->where('assets_sites.alt', '=', '')
-                    ->orWhere(function (Builder $query) {
-                        $query->whereNull('assets_sites.alt')
-                            ->where(function (Builder $query) {
-                                $query->where('assets.alt', '=', '')
-                                    ->orWhereNull('assets.alt');
-                            });
-                    });
+                    ->orWhereNull('assets_sites.alt');
             };
 
             $assetQuery->where($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
