@@ -21,6 +21,7 @@ import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
+import MissingProvider from './MissingProvider.vue';
 import TabNode from './TabNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
@@ -36,6 +37,8 @@ export function registerFormComponents(
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:markdown-content', MarkdownContentNode);
+  components.register('craft:missing-node', MissingProvider);
+  components.register('craft:missing-control', MissingProvider);
   components.register('craft:callout', CalloutNode);
   components.register('craft:heading', HeadingNode);
   components.register('craft:line-break', LineBreakNode);

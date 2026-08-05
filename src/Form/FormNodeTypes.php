@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
 use CraftCms\Cms\Form\Nodes\LineBreak;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Form\Nodes\Missing;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\Tab;
 use Illuminate\Container\Attributes\Singleton;
@@ -33,6 +34,7 @@ class FormNodeTypes extends TypeRegistry
         Heading::class,
         LineBreak::class,
         MarkdownContent::class,
+        Missing::class,
         Separator::class,
         Tab::class,
     ];

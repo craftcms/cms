@@ -18,8 +18,10 @@ use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field as FieldType;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -836,6 +838,13 @@ class CustomField extends BaseField
         }
 
         $field = $this->_sourceField;
+
+        if ($field instanceof MissingField) {
+            return MissingControl::make(['fields', $this->attribute()])
+                ->provider($field->expectedType)
+                ->mode(ControlMode::Disabled)
+                ->value($this->value($context->element));
+        }
 
         if (! $field instanceof FieldType) {
             throw new LogicException(sprintf('%s must extend %s to provide a Form Control.', $field::class, FieldType::class));

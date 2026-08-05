@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
@@ -19,6 +20,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -27,9 +29,16 @@ use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
 use CraftCms\Cms\Form\Nodes\LineBreak as LineBreakNode;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
+use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
 use CraftCms\Cms\Form\Nodes\Separator;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
+
+use function CraftCms\Cms\cp_url;
+use function Pest\Laravel\actingAs;
 
 function persistedEntryLayout(): FieldLayoutModel
 {
@@ -201,4 +210,109 @@ it('compiles custom fields and shared semantic layout content', function () {
         ->and($crawler->filter('hr[data-form-node="separator"]'))->toHaveCount(1)
         ->and($crawler->filter('.line-break[data-form-node="break"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-callout[data-form-node="warning"]')->text())->toContain('Careful');
+});
+
+it('preserves missing persisted form providers without submitting their values', function () {
+    $missingNodeType = 'Acme\\Forms\\MissingLayoutElement';
+    $missingControlType = 'Acme\\Forms\\MissingField';
+    actingAs(User::find()->one());
+    app()->instance(Plugins::class, Mockery::mock(Plugins::class, function ($plugins) use ($missingNodeType, $missingControlType) {
+        $plugins->shouldReceive('getPluginHandleByClass')->andReturn(null)->byDefault();
+        $plugins->shouldReceive('getPluginHandleByClass')->with($missingNodeType)->andReturnUsing(
+            fn () => class_exists($missingNodeType, false) ? null : 'missing-node-plugin',
+        );
+        $plugins->shouldReceive('getPluginHandleByClass')->with($missingControlType)->andReturnUsing(
+            fn () => class_exists($missingControlType, false) ? null : 'missing-control-plugin',
+        );
+        $plugins->shouldReceive('getPluginInfo')->with('missing-node-plugin')->andReturn([
+            'isInstalled' => true,
+            'name' => 'Missing Node Plugin',
+        ]);
+        $plugins->shouldReceive('getPluginInfo')->with('missing-control-plugin')->andReturn([
+            'isInstalled' => false,
+            'name' => 'Missing Control Plugin',
+        ]);
+        $plugins->shouldReceive('getPluginIconSvg')->andReturn('<svg></svg>');
+    }));
+    $layout = FieldLayout::make(CraftCms\Cms\Entry\Elements\Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(
+            new Markdown(['uid' => 'missing-node', 'content' => 'Temporary']),
+        ));
+    $layout->getTabs()[0]->uid = 'tab-content';
+    $config = $layout->getConfig();
+    $config['tabs'][0]['elements'][0] = $missingNodeConfig = [
+        'type' => $missingNodeType,
+        'uid' => 'missing-node',
+        'width' => 50,
+        'content' => 'Restored node content',
+        'displayInPane' => false,
+    ];
+    $layout = FieldLayout::createFromConfig($config);
+    $field = app(Fields::class)->createField([
+        'type' => $missingControlType,
+        'name' => 'Unavailable field',
+        'handle' => 'unavailable',
+        'uid' => 'missing-field',
+        'settings' => ['placeholder' => 'Restored placeholder'],
+    ]);
+    $missingControl = CustomField::make($field);
+    $missingControl->uid = 'missing-control';
+    $layout->getTabs()[0]->add($missingControl);
+
+    $payload = app(FieldLayoutCompiler::class)->compile(
+        $layout,
+        context: new FormContext(values: ['fields' => ['unavailable' => 'Original content']]),
+    );
+    $children = $payload->nodes[0]->children;
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $twigPlaceholder = new Crawler($field->getPlaceholderHtml());
+
+    expect($field)->toBeInstanceOf(MissingField::class)
+        ->and($children[0]->type)->toBe(MissingNode::class)
+        ->and($children[0]->props['provider'])->toBe($missingNodeType)
+        ->and($children[0]->props['pluginName'])->toBe('Missing Node Plugin')
+        ->and($children[0]->props['action'])->toBe([
+            'label' => 'Enable',
+            'url' => cp_url('settings/plugins/missing-node-plugin/enable'),
+            'method' => 'post',
+        ])
+        ->and($children[1]->control?->type)->toBe(MissingControl::class)
+        ->and($children[1]->control?->props['provider'])->toBe($missingControlType)
+        ->and($children[1]->control?->props['pluginName'])->toBe('Missing Control Plugin')
+        ->and($children[1]->control?->props['action'])->toBe([
+            'label' => 'Install',
+            'url' => cp_url('settings/plugins/missing-control-plugin/install'),
+            'method' => 'post',
+        ])
+        ->and($crawler->filter('input, select, textarea'))->toHaveCount(0)
+        ->and($crawler->filter('craft-missing-component')->eq(0)->attr('error'))->toContain($missingNodeType)
+        ->and($crawler->filter('craft-missing-component')->eq(1)->attr('error'))->toContain($missingControlType)
+        ->and($crawler->filter('button[formaction="'.cp_url('settings/plugins/missing-node-plugin/enable').'"]'))->toHaveCount(1)
+        ->and($crawler->filter('button[formaction="'.cp_url('settings/plugins/missing-control-plugin/install').'"]'))->toHaveCount(1)
+        ->and($crawler->filter('button[form]'))->toHaveCount(0)
+        ->and($twigPlaceholder->filter('craft-missing-component')->attr('error'))->toContain($missingControlType)
+        ->and($twigPlaceholder->filter('button[formaction="'.cp_url('settings/plugins/missing-control-plugin/install').'"]'))->toHaveCount(1)
+        ->and($layout->getConfig()['tabs'][0]['elements'][0])->toBe($missingNodeConfig)
+        ->and($fieldConfig = ProjectConfigHelper::unpackAssociativeArrays(app(Fields::class)->createFieldConfig($field)))->toMatchArray([
+            'type' => $missingControlType,
+            'settings' => ['placeholder' => 'Restored placeholder'],
+        ]);
+
+    class_alias(Markdown::class, $missingNodeType);
+    class_alias(PlainText::class, $missingControlType);
+    $recoveredLayout = FieldLayout::createFromConfig($config);
+    $recoveredField = app(Fields::class)->createField($fieldConfig + ['uid' => 'missing-field']);
+    $recoveredControl = CustomField::make($recoveredField);
+    $recoveredControl->uid = 'missing-control';
+    $recoveredLayout->getTabs()[0]->add($recoveredControl);
+    $recovered = app(FieldLayoutCompiler::class)->compile(
+        $recoveredLayout,
+        context: new FormContext(values: ['fields' => ['unavailable' => 'Original content']]),
+    );
+    $recoveredCrawler = new Crawler(app(FormHtmlRenderer::class)->render($recovered));
+
+    expect($recovered->nodes[0]->children[0]->type)->toBe(MarkdownContent::class)
+        ->and($recovered->nodes[0]->children[1]->control?->component)->toBe('craft:text')
+        ->and($recovered->values)->toBe(['fields' => ['unavailable' => 'Original content']])
+        ->and($recoveredCrawler->filter('input[name="fields[unavailable]"]'))->toHaveCount(1);
 });

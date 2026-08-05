@@ -438,6 +438,79 @@ describe('FormRenderer', () => {
     expect(form.dispatchEvent(submission)).toBe(false);
   });
 
+  it('renders missing persisted providers without submitting their values', async () => {
+    const missing = structuredClone(payload) as Mutable<FormPayload>;
+    missing.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Missing',
+        component: 'craft:missing-node',
+        props: {
+          provider: 'Acme\\Forms\\MissingLayoutElement',
+          error:
+            'Form Node provider [Acme\\Forms\\MissingLayoutElement] is unavailable.',
+          pluginName: 'Missing Node Plugin',
+          action: {
+            label: 'Enable',
+            url: '/settings/plugins/missing-node-plugin/enable',
+            method: 'post',
+          },
+        },
+        uid: 'missing-node',
+        children: [],
+      },
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Unavailable field'},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Missing',
+          component: 'craft:missing-control',
+          props: {
+            provider: 'Acme\\Forms\\MissingField',
+            error:
+              'Form Control provider [Acme\\Forms\\MissingField] is unavailable.',
+            pluginName: 'Missing Control Plugin',
+            action: {
+              label: 'Install',
+              url: '/settings/plugins/missing-control-plugin/install',
+              method: 'post',
+            },
+          },
+          path: ['settings', 'missing'],
+          mode: 'disabled',
+          deltaGroup: ['settings', 'missing'],
+        },
+      },
+    ];
+    missing.values = {settings: {missing: 'Original content'}};
+    app.unmount();
+    await mount(missing);
+
+    const placeholders = container.querySelectorAll('craft-missing-component');
+
+    expect(placeholders[0]?.error).toContain(
+      'Acme\\Forms\\MissingLayoutElement'
+    );
+    expect(placeholders[1]?.error).toContain('Acme\\Forms\\MissingField');
+    expect(placeholders[0]?.pluginName).toBe('Missing Node Plugin');
+    expect(placeholders[1]?.pluginName).toBe('Missing Control Plugin');
+    expect(
+      placeholders[0]?.querySelector<HTMLButtonElement>('[slot="action"]')
+        ?.formAction
+    ).toContain('/settings/plugins/missing-node-plugin/enable');
+    expect(
+      placeholders[1]?.querySelector<HTMLButtonElement>('[slot="action"]')
+        ?.formAction
+    ).toContain('/settings/plugins/missing-control-plugin/install');
+    expect(
+      placeholders[0]?.querySelector<HTMLButtonElement>('[slot="action"]')?.form
+    ).toBe(form);
+    expect(container.querySelector('input, select, textarea')).toBeNull();
+    expect(Object.fromEntries(new FormData(form))).not.toHaveProperty(
+      'settings[missing]'
+    );
+  });
+
   it('renders and submits test plugin Node and Control types', async () => {
     const pluginPayload = structuredClone(payload) as Mutable<FormPayload>;
     pluginPayload.nodes[0] = {

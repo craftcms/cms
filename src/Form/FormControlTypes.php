@@ -19,6 +19,7 @@ use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
 use CraftCms\Cms\Form\Controls\Markdown;
 use CraftCms\Cms\Form\Controls\Matrix;
+use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
@@ -53,6 +54,7 @@ class FormControlTypes extends TypeRegistry
         Link::class,
         Markdown::class,
         Matrix::class,
+        Missing::class,
         Money::class,
         Number::class,
         Range::class,
