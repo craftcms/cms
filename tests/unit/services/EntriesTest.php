@@ -8,7 +8,6 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -18,7 +17,6 @@ use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\UserFixture;
 use UnitTester;
-use yii\base\Event;
 
 /**
  * Unit tests for the Entries service.
@@ -148,24 +146,27 @@ class EntriesTest extends TestCase
      */
     private function _captureAuthorWriteCommands(callable $callback): array
     {
+        $db = Craft::$app->getDb();
+        $oldCommandClass = $db->commandClass;
+        $db->commandClass = RecordingCommand::class;
+        RecordingCommand::startRecording();
+
+        try {
+            $callback();
+        } finally {
+            $db->commandClass = $oldCommandClass;
+        }
+
         $commands = [];
-        $handler = static function(Event $event) use (&$commands): void {
-            /** @var Command $command */
-            $command = $event->sender;
-            $sql = ltrim($command->getSql());
+
+        foreach (RecordingCommand::stopRecording() as $sql) {
+            $sql = ltrim($sql);
             if (
                 str_contains($sql, 'entries_authors') &&
                 preg_match('/^(DELETE|INSERT)\b/i', $sql, $matches)
             ) {
                 $commands[] = strtoupper($matches[1]);
             }
-        };
-
-        Event::on(Command::class, Command::EVENT_BEFORE_EXECUTE, $handler);
-        try {
-            $callback();
-        } finally {
-            Event::off(Command::class, Command::EVENT_BEFORE_EXECUTE, $handler);
         }
 
         return $commands;
