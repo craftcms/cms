@@ -334,6 +334,16 @@ describe('FormRenderer', () => {
               children: [],
             },
             {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\TemplateContent',
+              component: 'craft:template-content',
+              props: {
+                html: '<p><strong>Template note</strong></p>',
+                width: 50,
+              },
+              uid: 'template-content',
+              children: [],
+            },
+            {
               type: 'CraftCms\\Cms\\Form\\Nodes\\Heading',
               component: 'craft:heading',
               props: {content: 'Details', width: 100},
@@ -380,6 +390,9 @@ describe('FormRenderer', () => {
     const content = tab?.querySelector<HTMLElement>(
       '[data-form-node="content-note"]'
     );
+    const templateContent = tab?.querySelector<HTMLElement>(
+      '[data-form-node="template-content"]'
+    );
 
     expect(tab?.getAttribute('aria-label')).toBe('Content');
     expect(
@@ -398,6 +411,11 @@ describe('FormRenderer', () => {
     expect(content?.classList.contains('width-50')).toBe(true);
     expect(content?.querySelector('strong')?.textContent).toBe(
       'Editorial note'
+    );
+    expect(templateContent?.inert).toBe(true);
+    expect(templateContent?.classList.contains('width-50')).toBe(true);
+    expect(templateContent?.querySelector('strong')?.textContent).toBe(
+      'Template note'
     );
     expect(tab?.querySelector('[data-form-node="heading"]')?.textContent).toBe(
       'Details'

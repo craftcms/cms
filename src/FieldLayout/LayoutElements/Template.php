@@ -6,43 +6,34 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Callout;
+use CraftCms\Cms\Form\Nodes\TemplateContent;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Extensions\CpExtension;
 use CraftCms\Cms\View\TemplateMode;
+use InvalidArgumentException;
 use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/**
+ * Renders a Twig template as sanitized, non-interactive field layout content.
+ *
+ * Form controls, scripts, registered assets, and other interactive behavior are not supported.
+ */
 class Template extends BaseUiElement
 {
     private static Environment $twig;
 
-    private static function twig(): Environment
-    {
-        if (isset(self::$twig)) {
-            return self::$twig;
-        }
-
-        TemplateMode::with(TemplateMode::Site, function () {
-            self::$twig = Twig::create();
-            self::$twig->addExtension(new CpExtension);
-        });
-
-        return self::$twig;
-    }
-
-    /**
-     * @var string The template path
-     */
     public string $template = '';
 
-    /**
-     * @var string The template mode to use when loading the template.
-     */
     public string $templateMode = TemplateMode::Site->value;
 
     public static function make(string $template): static
@@ -80,12 +71,13 @@ class Template extends BaseUiElement
     #[Override]
     protected function selectorLabelAttributes(): array
     {
-        $attr = parent::selectorLabelAttributes();
+        $attributes = parent::selectorLabelAttributes();
+
         if ($this->template) {
-            $attr['class'][] = 'code';
+            $attributes['class'][] = 'code';
         }
 
-        return $attr;
+        return $attributes;
     }
 
     #[Override]
@@ -105,7 +97,7 @@ class Template extends BaseUiElement
         return FormFields::autosuggestFieldHtml([
             'label' => t('Template'),
             'instructions' => t('The path to a template file within your `templates/` folder.'),
-            'tip' => t('The template will be rendered with an `element` variable.'),
+            'tip' => t('The template receives `element` and `static` variables. Its output is sanitized and displayed as non-interactive content; form controls, scripts, and registered assets are not supported.'),
             'class' => 'code',
             'id' => 'template',
             'name' => 'template',
@@ -117,7 +109,7 @@ class Template extends BaseUiElement
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $this->template) {
-            return $this->_error(t('No template path has been chosen yet.'), 'warning');
+            return $this->legacyError(t('No template path has been chosen yet.'), 'warning');
         }
 
         $templateMode = TemplateMode::get();
@@ -130,36 +122,79 @@ class Template extends BaseUiElement
                 'element' => $element,
                 'static' => $static,
             ], templateMode: TemplateMode::from($this->templateMode)));
-        } catch (Throwable $e) {
-            return $this->_error($e->getMessage(), 'error');
+        } catch (Throwable $exception) {
+            return $this->legacyError($exception->getMessage(), 'error');
         } finally {
             Twig::set($twig);
             TemplateMode::set($templateMode);
         }
 
-        if ($content === '') {
-            return null;
-        }
-
-        return Html::tag('div', $content, $this->containerAttributes($element, $static));
+        return $content === ''
+            ? null
+            : Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 
-    #[Override]
     public function alwaysRefresh(): bool
     {
         return true;
     }
 
-    private function _error(string $error, string $errorClass): string
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
-        $icon = Html::tag('span', '', [
-            'data' => [
-                'icon' => 'alert',
-            ],
-        ]);
-        $content = Html::tag('p', $icon.' '.Html::encode($error), [
-            'class' => $errorClass,
-        ]);
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Template FieldLayout elements require stable UIDs.');
+        }
+
+        if (! $this->template) {
+            return Callout::make($this->uid, t('No template path has been chosen yet.'))
+                ->variant('warning')
+                ->width($this->width);
+        }
+
+        $templateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::Site);
+        $twig = Twig::get();
+        Twig::set(self::twig());
+
+        try {
+            $fragment = HtmlStack::capture(fn (): string => trim(template($this->template, [
+                'element' => $context->element,
+                'static' => true,
+            ], templateMode: TemplateMode::from($this->templateMode))));
+        } catch (Throwable $exception) {
+            return Callout::make($this->uid, $exception->getMessage())
+                ->variant('danger')
+                ->width($this->width);
+        } finally {
+            Twig::set($twig);
+            TemplateMode::set($templateMode);
+        }
+
+        if ($fragment->html === '') {
+            return null;
+        }
+
+        return TemplateContent::make($this->uid, $fragment->html)
+            ->width($this->width);
+    }
+
+    private static function twig(): Environment
+    {
+        if (! isset(self::$twig)) {
+            TemplateMode::with(TemplateMode::Site, function () {
+                self::$twig = Twig::create();
+                self::$twig->addExtension(new CpExtension);
+            });
+        }
+
+        return self::$twig;
+    }
+
+    private function legacyError(string $error, string $errorClass): string
+    {
+        $icon = Html::tag('span', '', ['data' => ['icon' => 'alert']]);
+        $content = Html::tag('p', $icon.' '.Html::encode($error), ['class' => $errorClass]);
 
         return Html::tag('div', $content);
     }

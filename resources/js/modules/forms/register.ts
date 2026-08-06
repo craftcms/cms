@@ -23,6 +23,7 @@ import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
 import MissingProvider from './MissingProvider.vue';
 import TabNode from './TabNode.vue';
+import TemplateContentNode from './TemplateContentNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
@@ -36,6 +37,7 @@ export function registerFormComponents(
   components.register('craft:field', FieldNode);
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
+  components.register('craft:template-content', TemplateContentNode);
   components.register('craft:markdown-content', MarkdownContentNode);
   components.register('craft:missing-node', MissingProvider);
   components.register('craft:missing-control', MissingProvider);

@@ -15,6 +15,7 @@ use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Form\Nodes\Missing;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\Tab;
+use CraftCms\Cms\Form\Nodes\TemplateContent;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -37,5 +38,6 @@ class FormNodeTypes extends TypeRegistry
         Missing::class,
         Separator::class,
         Tab::class,
+        TemplateContent::class,
     ];
 }
