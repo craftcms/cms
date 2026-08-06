@@ -11,7 +11,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Support\Facades\Importer;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -135,7 +135,7 @@ class ImportRunController
         } catch (InvalidConfigException $e) {
             return $this->asFailure(t("Import config “{$e->config}” not found. Review “{$run->name}” run and try again."));
         } catch (Throwable $e) {
-            Importer::warning("Import run failed: {$e->getMessage()}");
+            ImportLog::warning("Import run failed: {$e->getMessage()}");
 
             return $this->asFailure(t('Import could not be started.'));
         }

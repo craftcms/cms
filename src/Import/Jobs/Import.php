@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Import\Jobs;
 
 use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
-use CraftCms\Cms\Support\Facades\Importer;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use Illuminate\Bus\Batchable;
 use Override;
 
@@ -21,9 +21,9 @@ class Import extends Job
     /**
      * Promotes step config, file path, and starting offset, then calls the parent constructor.
      *
-     * @param array $step The step configuration.
-     * @param string $filePath The path to the file being imported.
-     * @param int $start The offset to start processing from.
+     * @param  array  $step  The step configuration.
+     * @param  string  $filePath  The path to the file being imported.
+     * @param  int  $start  The offset to start processing from.
      */
     public function __construct(
         private readonly array $step,
@@ -77,7 +77,7 @@ class Import extends Job
                 $importService->importItem($config, $data[$i]);
             } catch (\Exception $e) {
                 // log and proceed further
-                Importer::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config->name, 'data' => $data[$i]]);
+                ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config->name, 'data' => $data[$i]]);
             }
         }
 

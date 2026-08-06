@@ -12,13 +12,13 @@ use Override;
  * @method static void warning(string $message, array $context = [])
  * @method static void error(string $message, array $context = [])
  *
- * @see \CraftCms\Cms\Import\Importer
+ * @see \CraftCms\Cms\Import\ImportLog
  */
-class Importer extends Facade
+class ImportLog extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\Import\Importer::class;
+        return \CraftCms\Cms\Import\ImportLog::class;
     }
 }

@@ -15,7 +15,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\Facades\Importer;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\ImportHelper;
@@ -433,7 +433,7 @@ class ElementImporter extends BaseImporter
         }
 
         if (! Elements::saveElement($element)) {
-            Importer::warning(
+            ImportLog::warning(
                 'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.
                 print_r($element->errors()->all(), true),
                 ['data' => $item]

@@ -29,7 +29,7 @@ use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
 use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Importer;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Support\Str;
@@ -828,7 +828,7 @@ class Import
         try {
             $data = $dataTypes[$extension]::format($rawData);
         } catch (Throwable $e) {
-            Importer::error($e->getMessage());
+            ImportLog::error($e->getMessage());
 
             return null;
         }
@@ -854,7 +854,7 @@ class Import
         try {
             $headings = $dataTypes[$extension]::getHeadings($rawData);
         } catch (Throwable $e) {
-            Importer::error($e->getMessage());
+            ImportLog::error($e->getMessage());
 
             return null;
         }

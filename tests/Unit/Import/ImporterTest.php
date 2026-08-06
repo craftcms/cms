@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Import\Importer;
+use CraftCms\Cms\Import\ImportLog;
 use CraftCms\Cms\Import\ImportServiceProvider;
 use Illuminate\Support\Facades\Log;
 
@@ -30,7 +30,7 @@ it('routes warning messages to the import channel', function () {
         ->once()
         ->with('something went wrong', ['foo' => 'bar']);
 
-    app(Importer::class)->warning('something went wrong', ['foo' => 'bar']);
+    app(ImportLog::class)->warning('something went wrong', ['foo' => 'bar']);
 });
 
 it('routes error messages to the import channel', function () {
@@ -42,7 +42,7 @@ it('routes error messages to the import channel', function () {
         ->once()
         ->with('it broke', []);
 
-    app(Importer::class)->error('it broke');
+    app(ImportLog::class)->error('it broke');
 });
 
 it('routes info messages to the import channel', function () {
@@ -54,5 +54,5 @@ it('routes info messages to the import channel', function () {
         ->once()
         ->with('fyi', []);
 
-    app(Importer::class)->info('fyi');
+    app(ImportLog::class)->info('fyi');
 });
