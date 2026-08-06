@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Form;
 
+use InvalidArgumentException;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
@@ -40,5 +41,60 @@ readonly class FormPayload implements JsonSerializable
             'errors' => $this->errors,
             'globalErrors' => $this->globalErrors,
         ];
+    }
+
+    /** @param list<string> $scope */
+    public function forScope(array $scope): self
+    {
+        if ($this->scope === $scope) {
+            return $this;
+        }
+
+        $nested = $this->findNestedForm($this->nodes, $scope);
+
+        if ($nested === null) {
+            throw new InvalidArgumentException(sprintf('Form scope [%s] was not found.', implode('.', $scope)));
+        }
+
+        return new self(
+            scope: $nested->scope,
+            refreshable: $nested->refreshable,
+            nodes: $nested->nodes,
+            values: $this->values,
+            errors: array_values(array_filter(
+                $this->errors,
+                fn (array $error): bool => array_slice($error['path'], 0, count($scope)) === $scope,
+            )),
+            globalErrors: [],
+        );
+    }
+
+    /**
+     * @param  list<NodePayload>  $nodes
+     * @param  list<string>  $scope
+     */
+    private function findNestedForm(array $nodes, array $scope): ?NestedFormPayload
+    {
+        foreach ($nodes as $node) {
+            foreach ($node->control->forms ?? [] as $form) {
+                if ($form->scope === $scope) {
+                    return $form;
+                }
+
+                $nested = $this->findNestedForm($form->nodes, $scope);
+
+                if ($nested !== null) {
+                    return $nested;
+                }
+            }
+
+            $nested = $this->findNestedForm($node->children ?? [], $scope);
+
+            if ($nested !== null) {
+                return $nested;
+            }
+        }
+
+        return null;
     }
 }

@@ -36,6 +36,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @type {?Craft.FormObserver}
      */
     formObserver: null,
+    formHost: null,
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -96,6 +97,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$sidebar =
         this.settings.$sidebar ??
         (this.isFullPage ? $('#details .details') : $());
+      this.formHost = this.$contentContainer.find(
+        'craft-entry-field-layout-form'
+      )[0];
 
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
@@ -1382,6 +1386,8 @@ Craft.ElementEditor = Garnish.Base.extend(
                   console.warn('Couldn’t save draft:', e);
                   reject(e);
                 });
+            } else if (this.formHost) {
+              resolve();
             } else {
               this.updateFieldLayout(data)
                 .then(resolve)
@@ -1924,6 +1930,19 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     async _afterUpdateFieldLayout(data, selectedTabId, response) {
+      if (this.formHost && response.data.form) {
+        this.formHost.payload = response.data.form;
+        const updateTabs =
+          this.settings.updateTabs ??
+          (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : null);
+        if (!updateTabs) {
+          throw new Error('Entry Form refresh requires a tab updater.');
+        }
+        updateTabs(response.data.tabs);
+
+        return;
+      }
+
       // Keep track of whether anything changed while we were waiting.
       // If not, we can safely update lastSerializedValue after swapping out the fields
       const noChanges = this.serializeForm(true) === data;
@@ -1945,10 +1964,11 @@ Craft.ElementEditor = Garnish.Base.extend(
         );
 
         if (!$tabContainer.length) {
-          $tabContainer = $('<div/>', {
+          $tabContainer = $('<section/>', {
             id: this.namespaceId(tabInfo.id),
             class: 'flex-fields',
             'data-id': tabInfo.id,
+            'data-form-tab': tabInfo.uid,
             'data-layout-tab': tabInfo.uid,
           });
           if (tabInfo.id !== selectedTabId) {
@@ -1960,6 +1980,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         $allTabContainers = $allTabContainers.add($tabContainer);
 
         for (const elementInfo of tabInfo.elements) {
+          const selector =
+            `[data-layout-element="${CSS.escape(elementInfo.uid)}"],` +
+            `[data-form-node="${CSS.escape(elementInfo.uid)}"]`;
+
           if (elementInfo.html !== false) {
             if (!visibleLayoutElements[tabInfo.uid]) {
               visibleLayoutElements[tabInfo.uid] = [];
@@ -1974,9 +1998,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
 
             if (typeof elementInfo.html === 'string') {
-              const $oldElement = $tabContainer.children(
-                `[data-layout-element="${elementInfo.uid}"]`
-              );
+              const $oldElement = $tabContainer.children(selector);
               const $newElement = $(elementInfo.html);
               if ($oldElement.length) {
                 $oldElement.replaceWith($newElement);
@@ -1986,10 +2008,10 @@ Craft.ElementEditor = Garnish.Base.extend(
               Craft.cp.elementThumbLoader.load($newElement);
               changedElements = true;
             }
+
+            $tabContainer.children(selector).appendTo($tabContainer);
           } else {
-            const $oldElement = $tabContainer.children(
-              `[data-layout-element="${elementInfo.uid}"]`
-            );
+            const $oldElement = $tabContainer.children(selector);
             if (
               !$oldElement.length ||
               !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')

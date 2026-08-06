@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form;
 
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Tab;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
 use RuntimeException;
@@ -33,10 +35,107 @@ class FormHtmlRenderer
     /** @param list<NodePayload> $nodes */
     public function renderNodes(array $nodes, FormPayload $payload): string
     {
-        return implode('', array_map(
-            fn (NodePayload $node): string => $this->renderNode($node, $payload),
-            $nodes,
-        ));
+        $previous = $this->payload;
+        $this->payload = $payload;
+
+        try {
+            return implode('', array_map(
+                fn (NodePayload $node): string => $this->renderNode($node, $payload),
+                $nodes,
+            ));
+        } finally {
+            $this->payload = $previous;
+        }
+    }
+
+    /** @return array<string, array{tabId: string, label: string, url: string, class: string|null}> */
+    public function tabMenu(FormPayload $payload, bool $namespaceScope = true): array
+    {
+        $tabs = [];
+
+        foreach ($payload->nodes as $node) {
+            if ($node->type !== Tab::class) {
+                continue;
+            }
+            if ($node->uid === null) {
+                continue;
+            }
+            $id = $namespaceScope ? $this->tabId($node, $payload) : $this->tabBaseId($node);
+            $tabs[$id] = [
+                'tabId' => "{$id}-tab",
+                'label' => (string) $node->props['label'],
+                'url' => "#{$id}",
+                'class' => $this->nodeHasErrors($node, $payload) ? 'error' : null,
+            ];
+        }
+
+        return $tabs;
+    }
+
+    public function tabId(NodePayload $node, FormPayload $payload): string
+    {
+        $id = $this->tabBaseId($node);
+
+        if ($payload->scope === []) {
+            return $id;
+        }
+
+        return InputNamespace::namespaceId($id, $this->name($payload->scope));
+    }
+
+    public function tabBaseId(NodePayload $node): string
+    {
+        return "form-tab-{$node->uid}";
+    }
+
+    public function isFirstTab(NodePayload $node, FormPayload $payload): bool
+    {
+        return array_find($payload->nodes, fn (NodePayload $candidate): bool => $candidate->type === Tab::class) === $node;
+    }
+
+    public function nodeHasErrors(NodePayload $node, FormPayload $payload): bool
+    {
+        if ($node->control !== null && $this->errorsFor($payload->errors, $node->control->path) !== []) {
+            return true;
+        }
+
+        if (array_any(
+            $node->children ?? [],
+            fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload),
+        )) {
+            return true;
+        }
+
+        return array_any($node->control->forms ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
+    }
+
+    /** @return array<string, list<string>> */
+    public function visibleLayoutElements(FormPayload $payload): array
+    {
+        return $this->layoutElements($payload, false);
+    }
+
+    /** @return array<string, list<string>> */
+    public function staticLayoutElements(FormPayload $payload): array
+    {
+        return $this->layoutElements($payload, true);
+    }
+
+    public function layoutElementUid(NodePayload $node): ?string
+    {
+        $uid = $node->props['layoutUid'] ?? $node->uid;
+
+        return is_string($uid) ? $uid : null;
+    }
+
+    public function nodeIsStatic(NodePayload $node): bool
+    {
+        if ($node->control !== null) {
+            return $node->control->mode !== ControlMode::Editable;
+        }
+
+        return $node->children !== []
+            && array_all($node->children ?? [], $this->nodeIsStatic(...));
     }
 
     public function renderNestedForm(NestedFormPayload $form): string
@@ -65,6 +164,31 @@ class FormHtmlRenderer
                 previous: $exception,
             );
         }
+    }
+
+    /** @return array<string, list<string>> */
+    private function layoutElements(FormPayload $payload, bool $staticOnly): array
+    {
+        $result = [];
+
+        foreach ($payload->nodes as $tab) {
+            if ($tab->type !== Tab::class) {
+                continue;
+            }
+            if ($tab->uid === null) {
+                continue;
+            }
+            foreach ($tab->children ?? [] as $node) {
+                $uid = $this->layoutElementUid($node);
+                $static = $this->nodeIsStatic($node);
+
+                if ($uid !== null && (! $staticOnly || $static)) {
+                    $result[$tab->uid][] = $uid;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /** @param array<string, mixed> $values */

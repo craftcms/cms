@@ -12,6 +12,7 @@
     touchedPaths: Set<string>;
     scope: string[];
     refreshable: boolean;
+    initiallyHidden?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
@@ -60,6 +61,7 @@
     :touched-paths="touchedPaths"
     :scope="scope"
     :refreshable="refreshable"
+    :initially-hidden="initiallyHidden"
     @change="onChange"
   />
 </template>

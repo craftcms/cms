@@ -403,9 +403,10 @@
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
     <FormNode
-      v-for="node in payload.nodes"
+      v-for="(node, index) in payload.nodes"
       :key="node.uid ?? node.control?.path.join('.')"
       :node="node"
+      :initially-hidden="node.component === 'craft:tab' && index > 0"
       :values="values"
       :errors="errors ?? payload.errors"
       :touched-paths="touchedPaths"

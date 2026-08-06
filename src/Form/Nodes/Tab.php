@@ -29,8 +29,14 @@ class Tab implements Node
             ->toHtml();
 
         return Html::tag('section', $children, [
+            'id' => $renderer->tabId($node, $payload),
+            'class' => $renderer->isFirstTab($node, $payload) ? null : 'hidden',
             'aria' => ['label' => $node->props['label']],
-            'data-form-tab' => $node->uid,
+            'data' => [
+                'id' => $renderer->tabId($node, $payload),
+                'form-tab' => $node->uid,
+                'layout-tab' => $node->uid,
+            ],
         ]);
     }
 

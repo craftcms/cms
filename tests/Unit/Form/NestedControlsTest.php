@@ -69,6 +69,18 @@ it('resolves nested Form scopes recursively with one ancestor atomic group', fun
         ]]);
 });
 
+it('returns a nested Form payload for a dependent refresh scope', function () {
+    $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
+    $scope = ['settings', 'matrix', 'entries', 'block-a'];
+    $nested = $payload->forScope($scope);
+
+    expect($nested->scope)->toBe($scope)
+        ->and($nested->nodes)->toHaveCount(2)
+        ->and($nested->values)->toBe($payload->values)
+        ->and($nested->errors)->toBe($payload->errors)
+        ->and($nested->globalErrors)->toBe([]);
+});
+
 it('renders nested Controls with Craft web components and no nested forms', function () {
     $payload = app(FormResolver::class)->resolve(nestedControlsForm(), nestedControlsContext());
     $crawler = new Crawler('<form>'.app(FormHtmlRenderer::class)->render($payload).'</form>');

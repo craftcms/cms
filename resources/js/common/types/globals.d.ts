@@ -105,6 +105,7 @@ interface CraftStatic {
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
+  namespaceId(id: string, namespace?: string | null): string;
   initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(
     elementType: string,
