@@ -38,7 +38,14 @@ class Csv implements DataTypeInterface
             return ['success' => false, 'error' => $error];
         }
 
-        return array_shift($data);
+        $keys = array_shift($data);
+        sort($keys);
+
+        array_walk($keys, function (&$value, $key) {
+            $value = ['label' => $value, 'value' => $value];
+        });
+
+        return $keys;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\DataTypes;
 
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use Exception;
 use Override;
@@ -36,12 +37,14 @@ class Xml implements DataTypeInterface
         }
 
         // iterate through the array and get all unique properties;
-        // todo (iwona): what about nested arrays?
-        return $array
-                |> (fn ($array) => array_map(array_keys(...), $array))
-                |> (fn ($keys) => array_merge(...$keys))
-                |> array_unique(...)
-                |> array_values(...);
+        $keys = Arr::uniqueDotifiedKeys($array);
+        sort($keys);
+
+        array_walk($keys, function (&$value, $key) {
+            $value = ['label' => $value, 'value' => $value];
+        });
+
+        return $keys;
     }
 
     /**

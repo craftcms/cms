@@ -78,6 +78,7 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
@@ -264,7 +265,7 @@ class Asset extends Element
     /**
      * @var string|null The temp file path
      */
-    #[Importable('tempFilePath', 'File Path')]
+    #[Importable('tempFilePath', 'File Path', canBeMatchCriteria: false, canBeCleared: false)]
     public ?string $tempFilePath = null;
 
     /**
@@ -3562,25 +3563,27 @@ JS;
         }
 
         // deduce filename - was one provided or should we get it from the provided file path
-        if (empty($attributes['filename'])) {
+        if (empty($attributes['filename']) && ! empty($attributes['tempFilePath'])) {
             $attributes['filename'] = AssetsHelper::prepareAssetName(pathinfo(Url::stripQueryString($attributes['tempFilePath']), PATHINFO_BASENAME));
-        } else {
+        } elseif (isset($attributes['filename'])) {
             $attributes['filename'] = AssetsHelper::prepareAssetName($attributes['filename']);
         }
 
         // avoid filename conflicts
-        $suggestedFilename = AssetsService::getNameReplacementInFolder($attributes['filename'], $attributes['folderId']);
-        if ($suggestedFilename !== $attributes['filename'] && (! $this->id || $attributes['filename'] !== $this->_filename)) {
-            $attributes['filename'] = $suggestedFilename;
-        }
+        if (isset($attributes['filename'])) {
+            $suggestedFilename = AssetsService::getNameReplacementInFolder($attributes['filename'], $attributes['folderId']);
+            if ($suggestedFilename !== $attributes['filename'] && (! $this->id || $attributes['filename'] !== $this->_filename)) {
+                $attributes['filename'] = $suggestedFilename;
+            }
 
-        // deduce extension and check if it's allowed
-        $allowedExtensions = Cms::config()->allowedFileExtensions;
-        $extension = strtolower(pathinfo($attributes['filename'], PATHINFO_EXTENSION));
-        if (! in_array($extension, $allowedExtensions, true)) {
-            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
-                'extension' => $extension,
-            ]));
+            // deduce extension and check if it's allowed
+            $allowedExtensions = Cms::config()->allowedFileExtensions;
+            $extension = strtolower(pathinfo($attributes['filename'], PATHINFO_EXTENSION));
+            if (! in_array($extension, $allowedExtensions, true)) {
+                throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
+            }
         }
 
         // process the file path (tempFilePath); if it's in a temp location - use it;
@@ -3592,13 +3595,20 @@ JS;
                 $value = realpath($attributes['tempFilePath']);
 
                 if ($value === false || ! is_file($value)) {
-                    $attributes['tempFilePath'] = null;
-                } else {
-                    $value = File::normalizePath($value);
-                    // Make sure it's within a known temp path, the project root, or storage/ folder
-                    $allowedRoots = Asset::getAllowedTempFileRoots();
-                    $attributes['tempFilePath'] = Path::isPathWithinRoots($value, $allowedRoots) ? $value : null;
+                    // if we don't have the file path, we shouldn't proceed
+                    throw new FileException(t('Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.', [
+                        'filePath' => $attributes['tempFilePath'],
+                    ]));
                 }
+                $value = File::normalizePath($value);
+                // Make sure it's within a known temp path, the project root, or storage/ folder
+                $allowedRoots = Asset::getAllowedTempFileRoots();
+                if (! Path::isPathWithinRoots($value, $allowedRoots)) {
+                    throw new FileException(t('File “{filePath}” is in a disallowed location. Only temp path, project root and storage folders are allowed.', [
+                        'filePath' => $attributes['tempFilePath'],
+                    ]));
+                }
+                $attributes['tempFilePath'] = $value;
             } else {
                 // if it's an absolute URL, we need to download the file to a temp location
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -3607,7 +3617,7 @@ JS;
                     $attributes['tempFilePath'] = $tempPath;
                 } catch (Exception $e) {
                     // log error
-                    Log::warning("Couldn't download a file while importing an asset: ".$e->getMessage());
+                    ImportLog::warning("Couldn't download a file while importing an asset: ".$e->getMessage());
                 }
                 // todo (iwona): what about base64 - feed me supports it, but do we want it for the native import?
             }
