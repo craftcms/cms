@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
@@ -121,7 +122,7 @@ class Local extends Filesystem
     }
 
     #[Override]
-    public function settingsForm(): ?Form
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
         $form = Form::make();
 

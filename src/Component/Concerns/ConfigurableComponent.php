@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Component\Concerns;
 use BackedEnum;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -23,6 +25,11 @@ trait ConfigurableComponent
      * @event {@see DefineSettingsAttributes} The event triggered when defining the component’s settings attributes, as returned by {@see settingsAttributes()}.
      */
     public const string EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
+
+    public function settingsForm(FormContext $context = new FormContext): ?Form
+    {
+        return null;
+    }
 
     public function settingsAttributes(): array
     {

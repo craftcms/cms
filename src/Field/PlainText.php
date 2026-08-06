@@ -140,7 +140,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         return $this->settingsHtml(false);
     }
 
-    public function settingsForm(): Form
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
             FormField::make()

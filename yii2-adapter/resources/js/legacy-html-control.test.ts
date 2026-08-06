@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('Legacy HTML Form Control', () => {
-  it('mounts head, HTML, and body in order and emits flat value mutations', async () => {
+  it('mounts assets in order and expands flat values before mutation', async () => {
     const appendChild = Node.prototype.appendChild;
 
     vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (node) {
@@ -28,11 +28,21 @@ describe('Legacy HTML Form Control', () => {
       return appendChild.call(this, node) as Node;
     });
 
-    const {container, mutation} = await mount({
-      html: '<input name="settings[title]" value="Original"><span data-legacy-order="html"></span>',
-      headHtml: '<meta data-legacy-order="head">',
-      bodyHtml: '<span data-legacy-order="body"></span>',
-    });
+    const {container, mutation} = await mount(
+      {
+        html: '<input name="settings[title]" value="Original"><input name="features[]" value="forms"><span data-legacy-order="html"></span>',
+        headHtml: '<meta data-legacy-order="head">',
+        bodyHtml: '<span data-legacy-order="body"></span>',
+      },
+      {
+        values: {
+          __legacy: {
+            'settings[title]': 'Original',
+            'features[]': 'forms',
+          },
+        },
+      }
+    );
     await vi.waitFor(() => {
       expect((window as any).legacyOrder).toEqual([
         'head',
@@ -51,7 +61,8 @@ describe('Legacy HTML Form Control', () => {
     await nextTick();
 
     expect(mutation.value).toEqual({
-      __legacy: {'settings[title]': 'Edited'},
+      settings: {title: 'Edited'},
+      features: ['forms'],
     });
   });
 
@@ -90,6 +101,73 @@ describe('Legacy HTML Form Control', () => {
     const submit = new SubmitEvent('submit', {bubbles: true, cancelable: true});
     form.dispatchEvent(submit);
 
+    expect(submit.defaultPrevented).toBe(true);
+  });
+
+  it('matches PHP expansion for sparse keys and normalized roots', async () => {
+    const {container, mutation} = await mount(
+      {
+        html: '<input name="a.b[c.d]" value="nested"><input name="items[2]" value="sparse">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        values: {
+          __legacy: {
+            'a.b[c.d]': 'nested',
+            'items[2]': 'sparse',
+          },
+        },
+      }
+    );
+
+    container
+      .querySelector<HTMLInputElement>('[name="items[2]"]')!
+      .dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation.value).toEqual({
+      a_b: {'c.d': 'nested'},
+      items: {'2': 'sparse'},
+    });
+  });
+
+  it('preserves leading-zero keys like PHP', async () => {
+    const {container, mutation} = await mount(
+      {html: '<input name="codes[00]" value="leading">', headHtml: '', bodyHtml: ''},
+      {values: {__legacy: {'codes[00]': 'leading'}}}
+    );
+
+    container
+      .querySelector<HTMLInputElement>('input')!
+      .dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation.value).toEqual({codes: {'00': 'leading'}});
+  });
+
+  it('rejects unsafe legacy input paths', async () => {
+    const {container, form} = await mount(
+      {
+        html: '<input name="__proto__[polluted]" value="yes">',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {values: {__legacy: {'__proto__[polluted]': 'yes'}}}
+    );
+
+    container
+      .querySelector<HTMLInputElement>('input')!
+      .dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    const submit = new SubmitEvent('submit', {bubbles: true, cancelable: true});
+    form.dispatchEvent(submit);
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'unsafe path'
+    );
+    expect(({} as {polluted?: string}).polluted).toBeUndefined();
     expect(submit.defaultPrevented).toBe(true);
   });
 
@@ -192,11 +270,7 @@ describe('Legacy HTML Form Control', () => {
 
     expect(refresh).toHaveBeenCalledWith(
       {
-        __legacyFieldLayout: {
-          'legacy-element': {
-            'nested[block][settings][title]': 'Edited',
-          },
-        },
+        settings: {title: 'Edited'},
       },
       ['nested', 'block']
     );
@@ -234,10 +308,14 @@ async function mount(
         control: {
           type: 'CraftCms\\Yii2Adapter\\Form\\Controls\\LegacyHtmlControl',
           component: 'craft-legacy:html',
-          props: {fragment, namespace: options.namespace ?? 'settings'},
+          props: {
+            fragment,
+            namespace: options.namespace ?? 'settings',
+            expandValues: true,
+          },
           path: options.path ?? ['__legacy'],
           mode: options.mode ?? 'editable',
-          deltaGroup: options.path ?? ['__legacy'],
+          deltaGroup: options.scope ?? [],
         },
       },
     ],

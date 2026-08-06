@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -87,7 +88,7 @@ class NewUsers extends Widget
     }
 
     #[Override]
-    public function settingsForm(): Form
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
         $form = Form::make([
             Field::make()

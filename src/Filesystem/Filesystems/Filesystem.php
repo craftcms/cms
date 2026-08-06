@@ -9,7 +9,6 @@ use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
@@ -61,11 +60,6 @@ abstract class Filesystem extends Component implements FsInterface
         get => $this->getRootUrl();
         set {
         }
-    }
-
-    public function settingsForm(): ?Form
-    {
-        return null;
     }
 
     #[Override]

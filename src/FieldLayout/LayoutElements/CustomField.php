@@ -16,7 +16,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
-use CraftCms\Cms\Field\Field as FieldType;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -33,7 +32,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
-use LogicException;
 use Override;
 use RuntimeException;
 use Throwable;
@@ -846,14 +844,12 @@ class CustomField extends BaseField
                 ->value($this->value($context->element));
         }
 
-        if (! $field instanceof FieldType) {
-            throw new LogicException(sprintf('%s must extend %s to provide a Form Control.', $field::class, FieldType::class));
-        }
-
         return $field->formControl(new FieldContext(
             ['fields', $this->attribute()],
             $this->value($context->element),
             $context->element,
+            $context->form,
+            $context->mode,
         ));
     }
 

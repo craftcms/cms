@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -108,7 +109,7 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function settingsForm(): ?Form
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
         $sections = self::availableSections();
 

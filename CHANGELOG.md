@@ -16,6 +16,7 @@
 - Added `CraftCms\Cms\Form\FormNodeTypes` and `CraftCms\Cms\Form\FormControlTypes`, enabling plugins to register custom Form types for the PHP and Vue renderers.
 - Added refreshable Form scopes with value reconciliation and changed-only submission to the Inertia field settings screen.
 - Added renderer-neutral settings Forms for configurable core filesystems and Dashboard widgets.
+- Added `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::settingsForm()`, `CraftCms\Cms\Field\Contracts\FieldInterface::formControl()`, and `CraftCms\Cms\FieldLayout\FieldLayoutElement::formNode()` as the public Form extension contracts.
 - Added `CraftCms\Cms\Cp\Components\Combobox`.
 - Added `CraftCms\Cms\Form\Form::addIf()` and `addUnless()`.
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))

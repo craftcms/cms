@@ -119,16 +119,15 @@ readonly class WidgetsController
             'type' => $widgetType,
             'settings' => $data['settings'] ?? [],
         ]);
-        $form = $widget instanceof Widget
-            ? $widget->settingsForm()
-            : null;
+        $context = new FormContext(
+            namespace: $data['namespace'],
+            values: [$data['namespace'] => $widget->getSettings()],
+            refreshable: true,
+        );
+        $form = $widget->settingsForm($context);
 
         return new JsonResponse([
-            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, new FormContext(
-                namespace: $data['namespace'],
-                values: [$data['namespace'] => $widget->getSettings()],
-                refreshable: true,
-            )),
+            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
         ]);
     }
 

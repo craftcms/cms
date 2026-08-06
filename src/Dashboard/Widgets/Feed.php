@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
@@ -50,7 +51,7 @@ class Feed extends Widget
     }
 
     #[Override]
-    public function settingsForm(): Form
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
             Field::make()

@@ -15,7 +15,9 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
@@ -250,6 +252,11 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
      */
     public function useFieldset(): bool;
+
+    /**
+     * Returns the renderer-neutral Control used to edit the field's value.
+     */
+    public function formControl(FieldContext $context): Control;
 
     /**
      * Returns the field’s input HTML.

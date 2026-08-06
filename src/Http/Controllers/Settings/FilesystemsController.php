@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Filesystem\Filesystems;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Filesystem\Resources\FsResource;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
@@ -144,14 +143,15 @@ class FilesystemsController
             'type' => $data['type'],
             'settings' => $data['settings'] ?? [],
         ]);
-        $form = $filesystem instanceof Filesystem ? $filesystem->settingsForm() : null;
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => $data['settings'] ?? []],
+            refreshable: true,
+        );
+        $form = $filesystem->settingsForm($context);
 
         return new JsonResponse([
-            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, new FormContext(
-                namespace: 'settings',
-                values: ['settings' => $data['settings'] ?? []],
-                refreshable: true,
-            )),
+            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
         ]);
     }
 

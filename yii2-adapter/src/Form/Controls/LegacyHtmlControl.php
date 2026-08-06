@@ -18,6 +18,8 @@ class LegacyHtmlControl extends Control
 
     private ?string $namespace = null;
 
+    private bool $expandValues = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $fragment = $control->props['fragment'] ?? null;
@@ -61,6 +63,14 @@ class LegacyHtmlControl extends Control
         return [
             'fragment' => $this->fragment->toArray(),
             'namespace' => $this->namespace,
+            'expandValues' => $this->expandValues,
         ];
+    }
+
+    public function expandValues(): static
+    {
+        $this->expandValues = true;
+
+        return $this;
     }
 }

@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Html;
 use Override;
@@ -49,7 +50,7 @@ class MyDrafts extends Widget
     }
 
     #[Override]
-    public function settingsForm(): Form
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
             Field::make()

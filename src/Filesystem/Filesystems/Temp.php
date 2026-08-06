@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\Path;
 
 use function CraftCms\Cms\t;
@@ -33,7 +34,7 @@ class Temp extends Local
     }
 
     #[\Override]
-    public function settingsForm(): ?Form
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
         return null;
     }

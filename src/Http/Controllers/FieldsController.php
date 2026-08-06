@@ -214,13 +214,16 @@ class FieldsController
             Typecast::configure($field, $settings);
         }
 
-        if ($field instanceof PlainText) {
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => $settings ?? []],
+            refreshable: true,
+        );
+        $form = $field->settingsForm($context);
+
+        if ($form !== null) {
             return new JsonResponse([
-                'form' => app(FormResolver::class)->resolve($field->settingsForm(), new FormContext(
-                    namespace: 'settings',
-                    values: ['settings' => $settings ?? []],
-                    refreshable: true,
-                )),
+                'form' => app(FormResolver::class)->resolve($form, $context),
             ]);
         }
 

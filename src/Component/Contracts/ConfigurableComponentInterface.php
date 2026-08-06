@@ -4,8 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+
 interface ConfigurableComponentInterface
 {
+    /**
+     * Returns the component's renderer-neutral settings Form.
+     *
+     * Return `null` if the component has no settings Form.
+     */
+    public function settingsForm(FormContext $context = new FormContext): ?Form;
+
     /**
      * Returns the list of settings attribute names.
      *

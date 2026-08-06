@@ -51,34 +51,54 @@ class LegacyHtml
     public function field(
         FieldInterface $field,
         mixed $value,
-        ElementInterface $element,
+        ?ElementInterface $element,
         string|array $path,
         ?string $namespace = null,
         LegacyHtmlMode $mode = LegacyHtmlMode::Editable,
+        string|array|null $deltaGroup = null,
     ): ?LegacyHtmlField {
         return $this->capture(
             $path,
             match ($mode) {
                 LegacyHtmlMode::Editable => fn(): string => $field->getInputHtml($value, $element),
-                LegacyHtmlMode::Static => fn(): string => $field->getStaticHtml($value, $element),
+                LegacyHtmlMode::Static => fn(): string => $element === null
+                    ? throw new InvalidArgumentException('Static legacy fields require an element.')
+                    : $field->getStaticHtml($value, $element),
                 LegacyHtmlMode::ReadOnly, LegacyHtmlMode::Disabled => fn(): string => Html::disableInputs(
                     fn(): string => $field->getInputHtml($value, $element),
                 ),
             },
             $namespace,
             $mode,
+            $deltaGroup,
         );
     }
 
+    /** @param string|list<string> $path */
+    public static function namespace(string|array $path): ?string
+    {
+        $segments = is_string($path)
+            ? ($path === '' ? [] : explode('.', $path))
+            : $path;
+        $namespace = array_shift($segments);
+
+        foreach ($segments as $segment) {
+            $namespace .= "[{$segment}]";
+        }
+
+        return $namespace;
+    }
+
     /**
-     * @param string|list<string> $path
-     * @param callable(): ?string $hook
+     * @param  string|list<string>  $path
+     * @param  callable(): ?string  $hook
      */
     public function capture(
         string|array $path,
         callable $hook,
         ?string $namespace = null,
         LegacyHtmlMode $mode = LegacyHtmlMode::Editable,
+        string|array|null $deltaGroup = null,
     ): ?LegacyHtmlField {
         $html = null;
         $resolvedNamespace = $namespace === null
@@ -116,6 +136,10 @@ class LegacyHtml
             ->fragment($fragment, $resolvedNamespace)
             ->value($this->parse($fragment->html))
             ->mode($mode->controlMode());
+
+        if ($deltaGroup !== null) {
+            $control->deltaGroup($deltaGroup);
+        }
 
         return new LegacyHtmlField($control);
     }
@@ -199,7 +223,7 @@ class LegacyHtml
     }
 
     /**
-     * @param array<string, string|list<string>> $values
+     * @param  array<string, string|list<string>>  $values
      * @return array<string, mixed>
      */
     public function expand(array $values): array

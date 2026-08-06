@@ -34,36 +34,23 @@ abstract class FieldLayoutElement extends \CraftCms\Cms\FieldLayout\FieldLayoutE
             $mode = $legacyEvent->static ? ControlMode::ReadOnly : ControlMode::Editable;
         }
 
-        return app(LegacyHtml::class)->capture(
+        $node = app(LegacyHtml::class)->capture(
             path: ['__legacyFieldLayout', $this->uid],
             hook: fn(): ?string => $mode === ControlMode::Disabled
                 ? Html::disableInputs(fn(): ?string => $this->formHtml($context->element, true))
                 : $this->formHtml($context->element, $mode !== ControlMode::Editable),
-            namespace: $this->legacyFormNamespace($context->form->namespace),
+            namespace: LegacyHtml::namespace($context->form->namespace),
             mode: match ($mode) {
                 ControlMode::Editable => LegacyHtmlMode::Editable,
                 ControlMode::ReadOnly => LegacyHtmlMode::Static,
                 ControlMode::Disabled => LegacyHtmlMode::Disabled,
             },
         );
-    }
 
-    /** @param string|list<string> $path */
-    private function legacyFormNamespace(string|array $path): ?string
-    {
-        $segments = is_string($path)
-            ? ($path === '' ? [] : explode('.', $path))
-            : $path;
-        $namespace = array_shift($segments);
+        $node?->getControl()
+            ->deltaGroupAtNamespace()
+            ->expandValues();
 
-        if ($namespace === null) {
-            return null;
-        }
-
-        foreach ($segments as $segment) {
-            $namespace .= "[{$segment}]";
-        }
-
-        return $namespace;
+        return $node;
     }
 }

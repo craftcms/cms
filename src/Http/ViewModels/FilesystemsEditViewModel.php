@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
-use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
@@ -105,7 +104,18 @@ class FilesystemsEditViewModel extends ViewModel
     /** @return FsPayload */
     private function fsPayload(FsInterface $filesystem): array
     {
-        $form = $filesystem instanceof Filesystem ? $filesystem->settingsForm() : null;
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => [
+                ...$filesystem->getSettings(),
+                'hasUrls' => $filesystem->hasUrls,
+                'url' => $filesystem->url,
+            ]],
+            errors: $filesystem->errors()->getMessages(),
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: true,
+        );
+        $form = $filesystem->settingsForm($context);
         $settingsHtml = fn (): string => (string) ($this->readOnly
             ? $filesystem->getReadOnlySettingsHtml()
             : $filesystem->getSettingsHtml());
@@ -115,17 +125,7 @@ class FilesystemsEditViewModel extends ViewModel
         return [
             ...$filesystem->toArray(),
             'type' => $filesystem::class,
-            'settingsForm' => $form === null ? null : app(FormResolver::class)->resolve($form, new FormContext(
-                namespace: 'settings',
-                values: ['settings' => [
-                    ...$filesystem->getSettings(),
-                    'hasUrls' => $filesystem->hasUrls,
-                    'url' => $filesystem->url,
-                ]],
-                errors: $filesystem->errors()->getMessages(),
-                mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
-                refreshable: true,
-            )),
+            'settingsForm' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
             'settingsHtml' => $form === null && ! $legacy ? $settingsHtml() : null,
             'settingsFragment' => $form === null && $legacy ? HtmlStack::capture($settingsHtml) : null,
             'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),

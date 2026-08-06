@@ -12,6 +12,7 @@ use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
 use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
@@ -24,6 +25,8 @@ use ReflectionProperty;
  */
 abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
 {
+    use LegacySettingsForm;
+
     /**
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
      * @since 3.7.0

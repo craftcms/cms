@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\Legacy;
 
+use craft\base\ConfigurableComponent;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutElement as LegacyFieldLayoutElement;
 use craft\models\FieldLayout as LegacyFieldLayout;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Yii2Adapter\Field\Field as LegacyField;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
@@ -32,18 +34,27 @@ use Mockery;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
 
-class LegacyHookField extends PlainText
+class LegacyHookField extends LegacyField
 {
     #[Override]
     public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
-        return '<input name="value" value="editable">';
+        return sprintf('<input name="%s" value="editable">', $this->handle);
     }
 
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return '<span data-static>static</span>';
+    }
+}
+
+class LegacySettingsComponent extends ConfigurableComponent
+{
+    #[Override]
+    public function getSettingsHtml(): string
+    {
+        return '<input name="apiKey" value="secret">';
     }
 }
 
@@ -180,6 +191,28 @@ it('omits null hooks and reports capture failures', function() {
     expect($legacyHtml->capture('__legacy', fn(): null => null))->toBeNull()
         ->and(fn() => $legacyHtml->capture('__legacy', fn() => throw new \RuntimeException('plugin failed')))
         ->toThrow(\RuntimeException::class, 'plugin failed');
+});
+
+it('implements replacement Form operations through legacy hooks', function() {
+    $settings = new LegacySettingsComponent()->settingsForm(new FormContext(
+        namespace: 'settings',
+        mode: ControlMode::ReadOnly,
+    ));
+    $settingsPayload = app(FormResolver::class)->resolve($settings, new FormContext(namespace: 'settings'));
+    $fieldControl = new LegacyHookField(['handle' => 'legacy'])->formControl(new FieldContext(
+        path: ['fields', 'legacy'],
+        value: 'value',
+        element: Mockery::mock(Entry::class),
+        form: new FormContext(namespace: ['nested', 'block']),
+        mode: ControlMode::Disabled,
+    ));
+
+    expect($settingsPayload->nodes[0]->control?->mode)->toBe(ControlMode::ReadOnly)
+        ->and($settingsPayload->nodes[0]->control?->props['fragment']['html'])
+        ->toContain('name="settings[apiKey]"', 'disabled')
+        ->and($fieldControl)->toBeInstanceOf(LegacyHtmlControl::class)
+        ->and($fieldControl->props()['fragment']['html'])
+        ->toContain('name="nested[block][fields][legacy]"', 'disabled');
 });
 
 it('renders the same captured fragment through PHP and restores its assets to the page stack', function() {

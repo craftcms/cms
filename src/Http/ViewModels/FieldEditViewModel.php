@@ -10,8 +10,8 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
-use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
@@ -26,6 +26,10 @@ use function CraftCms\Cms\template;
 
 class FieldEditViewModel extends ViewModel
 {
+    private ?Form $settingsForm = null;
+
+    private bool $settingsFormResolved = false;
+
     public function __construct(
         private readonly Field $field,
         private readonly Fields $fieldsService,
@@ -176,7 +180,7 @@ class FieldEditViewModel extends ViewModel
      */
     public function settings(): ?HtmlFragment
     {
-        if ($this->field instanceof PlainText) {
+        if ($this->settingsFormDefinition() !== null) {
             return null;
         }
 
@@ -189,15 +193,32 @@ class FieldEditViewModel extends ViewModel
 
     public function settingsForm(): ?FormPayload
     {
-        if (! $this->field instanceof PlainText) {
+        $form = $this->settingsFormDefinition();
+
+        if ($form === null) {
             return null;
         }
 
-        return app(FormResolver::class)->resolve($this->field->settingsForm(), new FormContext(
+        return app(FormResolver::class)->resolve($form, $this->settingsFormContext());
+    }
+
+    private function settingsFormDefinition(): ?Form
+    {
+        if (! $this->settingsFormResolved) {
+            $this->settingsForm = $this->field->settingsForm($this->settingsFormContext());
+            $this->settingsFormResolved = true;
+        }
+
+        return $this->settingsForm;
+    }
+
+    private function settingsFormContext(): FormContext
+    {
+        return new FormContext(
             namespace: 'settings',
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: true,
-        ));
+        );
     }
 
     /**

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
@@ -60,16 +59,17 @@ trait InteractsWithWidgets
     /** @return array{settingsForm: FormPayload|null, settingsHtml: string|null, settingsJs: string|null} */
     protected function getWidgetSettingsInfo(WidgetInterface $widget, string $namespace): array
     {
-        $form = $widget instanceof Widget ? $widget->settingsForm() : null;
+        $context = new FormContext(
+            namespace: $namespace,
+            values: [$namespace => $widget->getSettings()],
+            errors: $widget->errors()->getMessages(),
+            refreshable: true,
+        );
+        $form = $widget->settingsForm($context);
 
         if ($form !== null) {
             return [
-                'settingsForm' => app(FormResolver::class)->resolve($form, new FormContext(
-                    namespace: $namespace,
-                    values: [$namespace => $widget->getSettings()],
-                    errors: $widget->errors()->getMessages(),
-                    refreshable: true,
-                )),
+                'settingsForm' => app(FormResolver::class)->resolve($form, $context),
                 'settingsHtml' => null,
                 'settingsJs' => null,
             ];

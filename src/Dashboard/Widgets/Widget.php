@@ -13,7 +13,6 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
@@ -31,11 +30,6 @@ abstract class Widget extends Component implements WidgetInterface
     use SavableComponent;
 
     public ?int $colspan = null;
-
-    public function settingsForm(): ?Form
-    {
-        return null;
-    }
 
     #[Override]
     public function getSettingsHtml(): ?string

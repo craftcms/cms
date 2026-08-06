@@ -213,7 +213,12 @@
       const value = readFormInputs(this);
 
       if (this._values && this._control?.path) {
-        setValue(this._values, this._control.path, value);
+        if (this._control.props?.expandValues) {
+          unsetValue(this._values, this._control.path);
+          mergeValues(this._values, expandValues(value));
+        } else {
+          setValue(this._values, this._control.path, value);
+        }
       }
 
       this.dispatchEvent(
@@ -562,6 +567,138 @@
       target[segment] ??= {};
       target = target[segment];
     });
+  }
+
+  function unsetValue(values, path) {
+    const parents = [values];
+    const parent = path.slice(0, -1).reduce((value, segment) => {
+      const child = value?.[segment];
+      parents.push(child);
+
+      return child;
+    }, values);
+
+    if (parent && path.length) {
+      delete parent[path.at(-1)];
+    }
+
+    for (let index = path.length - 2; index >= 0; index--) {
+      const child = parents[index + 1];
+
+      if (!child || Object.keys(child).length) {
+        break;
+      }
+
+      delete parents[index][path[index]];
+    }
+  }
+
+  function expandValues(values) {
+    const expanded = Object.create(null);
+
+    for (const [name, value] of Object.entries(values)) {
+      const path = inputPath(name);
+
+      for (const item of Array.isArray(value) ? value : [value]) {
+        setInputValue(expanded, path, item);
+      }
+    }
+
+    return normalizeArrays(expanded);
+  }
+
+  function inputPath(name) {
+    const path = [];
+    const pattern = /(^[^[]+)|\[([^\]]*)\]/g;
+    let match;
+    let length = 0;
+
+    while ((match = pattern.exec(name))) {
+      const segment = match[1] ?? match[2];
+
+      if (['__proto__', 'constructor', 'prototype'].includes(segment)) {
+        throw new Error(`Legacy input [${name}] contains an unsafe path.`);
+      }
+
+      path.push(path.length ? segment : segment.replace(/[ .]/g, '_'));
+      length += match[0].length;
+    }
+
+    if (!path.length || length !== name.length) {
+      throw new Error(`Legacy input [${name}] has an invalid name.`);
+    }
+
+    return path;
+  }
+
+  function setInputValue(values, path, value) {
+    let target = values;
+
+    path.forEach((segment, index) => {
+      const key = segment === '' ? nextIndex(target) : segment;
+
+      if (index === path.length - 1) {
+        target[key] = value;
+
+        return;
+      }
+
+      if (!target[key] || typeof target[key] !== 'object') {
+        target[key] = Object.create(null);
+      }
+
+      target = target[key];
+    });
+  }
+
+  function nextIndex(values) {
+    return (
+      Math.max(
+        -1,
+        ...Object.keys(values)
+          .filter((key) => /^(0|[1-9]\d*)$/.test(key))
+          .map(Number)
+      ) + 1
+    );
+  }
+
+  function normalizeArrays(value) {
+    if (!value || typeof value !== 'object') {
+      return value;
+    }
+
+    const entries = Object.entries(value).map(([key, item]) => [
+      key,
+      normalizeArrays(item),
+    ]);
+    const numeric = entries.every(([key]) => /^(0|[1-9]\d*)$/.test(key));
+
+    if (
+      entries.length &&
+      numeric &&
+      entries.every(([key], index) => Number(key) === index)
+    ) {
+      return entries.map(([, item]) => item);
+    }
+
+    return Object.fromEntries(entries);
+  }
+
+  function mergeValues(target, source) {
+    for (const [key, value] of Object.entries(source)) {
+      if (
+        value &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        target[key] &&
+        typeof target[key] === 'object' &&
+        !Array.isArray(target[key])
+      ) {
+        mergeValues(target[key], value);
+      } else {
+        target[key] = value;
+      }
+    }
   }
 
   if (!customElements.get(elementName)) {

@@ -596,7 +596,7 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Field\Dropdown::class, Dropdown::class);
         class_alias(\CraftCms\Cms\Field\Email::class, \craft\fields\Email::class);
         class_alias(\CraftCms\Cms\Field\Entries::class, Entries::class);
-        class_alias(\CraftCms\Cms\Field\Field::class, Field::class);
+        class_alias(\CraftCms\Yii2Adapter\Field\Field::class, Field::class);
         class_alias(\CraftCms\Cms\Field\Icon::class, Icon::class);
         class_alias(\CraftCms\Cms\Field\Json::class, Json::class);
         class_alias(\CraftCms\Cms\Field\Lightswitch::class, Lightswitch::class);

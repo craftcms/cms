@@ -11,6 +11,7 @@ namespace craft\base;
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use yii\base\InvalidConfigException;
@@ -27,6 +28,8 @@ use yii\base\InvalidConfigException;
  */
 abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {
+    use LegacySettingsForm;
+
     public function getDiskConfig(): array
     {
         if (!is_string($this->handle) || $this->handle === '') {

@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form\Nodes;
 
-use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use InvalidArgumentException;
 
 class LegacyHtmlField implements Node
 {
-    public function __construct(private readonly Control $control)
+    public function __construct(private readonly LegacyHtmlControl $control)
     {
     }
 
@@ -63,7 +63,7 @@ class LegacyHtmlField implements Node
         return [];
     }
 
-    public function getControl(): Control
+    public function getControl(): LegacyHtmlControl
     {
         return $this->control;
     }
