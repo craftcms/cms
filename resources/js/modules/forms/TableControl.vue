@@ -14,18 +14,20 @@
     allowReorder?: boolean;
     minRows?: number;
     maxRows?: number;
+    keyed?: boolean;
   };
   type TableRow = Record<string, unknown>;
+  type TableValue = TableRow[] | Record<string, TableRow>;
 
   const props = defineProps<{
     control: FormControlPayload<TableControlProps>;
-    value: TableRow[];
+    value: TableValue;
     editable: boolean;
   }>();
   const emit = defineEmits<{
     (
       event: 'update:value',
-      value: TableRow[],
+      value: TableValue,
       kind: 'discrete' | 'typing'
     ): void;
   }>();
@@ -76,9 +78,9 @@
     const bodyElement = tableElement.tBodies[0]!;
     const name = inputName(props.control.path);
     bodyElement.replaceChildren();
-    rows.forEach((row, index) => {
+    rowEntries(rows).forEach(([rowId, row]) => {
       EditableTable.createRow(
-        String(index),
+        rowId,
         props.control.props.columns,
         name,
         row,
@@ -108,7 +110,7 @@
     });
     takeRecords();
 
-    if (bodyElement.children.length !== rows.length) {
+    if (bodyElement.children.length !== rowEntries(rows).length) {
       emitRows('discrete');
     }
   }
@@ -120,17 +122,24 @@
 
     const columns = Object.keys(props.control.props.columns);
     const data = new FormData(host.value!.closest('form')!);
-    const currentRows = [
+    const entries = [
       ...(table.value?.querySelectorAll<HTMLTableRowElement>('tbody > tr') ??
         []),
-    ].map((row) =>
-      Object.fromEntries(
-        columns.map((column, index) => [
-          column,
-          cellValue(row, row.cells[index]!, column, data),
-        ])
-      )
+    ].map(
+      (row) =>
+        [
+          row.dataset.id!,
+          Object.fromEntries(
+            columns.map((column, index) => [
+              column,
+              cellValue(row, row.cells[index]!, column, data),
+            ])
+          ),
+        ] as const
     );
+    const currentRows: TableValue = props.control.props.keyed
+      ? Object.fromEntries(entries)
+      : entries.map(([, row]) => row);
     if (sameRows(currentRows, rows)) {
       return;
     }
@@ -151,12 +160,18 @@
       ([key]) => key === name || key.startsWith(`${name}[`)
     );
 
+    if (cell.classList.contains('disabled')) {
+      return rowValue(rows, rowId)?.[column] ?? '';
+    }
+
     if (
       ['checkbox', 'lightswitch'].includes(
         props.control.props.columns[column]?.type ?? ''
       )
     ) {
-      return entries.some(([key]) => key === name);
+      return entries.some(
+        ([key, value]) => key === name && String(value) !== ''
+      );
     }
 
     const exact = entries.filter(([key]) => key === name);
@@ -173,10 +188,20 @@
       );
     }
 
-    return rows[Number(rowId)]?.[column] ?? '';
+    return rowValue(rows, rowId)?.[column] ?? '';
   }
 
-  function sameRows(left: TableRow[], right: TableRow[]): boolean {
+  function rowEntries(value: TableValue): Array<[string, TableRow]> {
+    return Array.isArray(value)
+      ? value.map((row, index) => [String(index), row])
+      : Object.entries(value);
+  }
+
+  function rowValue(value: TableValue, rowId: string): TableRow | undefined {
+    return Array.isArray(value) ? value[Number(rowId)] : value[rowId];
+  }
+
+  function sameRows(left: TableValue, right: TableValue): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
 </script>

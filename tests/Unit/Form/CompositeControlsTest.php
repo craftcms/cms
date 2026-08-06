@@ -133,3 +133,17 @@ it('displays composite values without submitting them in non-editable modes', fu
     'read-only' => ControlMode::ReadOnly,
     'disabled' => ControlMode::Disabled,
 ]);
+
+it('preserves keyed Table rows in payloads and PHP submission names', function () {
+    $form = Form::make([
+        Field::make()->control(Table::make('rows')
+            ->keyed()
+            ->columns(['name' => ['heading' => 'Name', 'type' => 'singleline']])
+            ->value(['site-one' => ['name' => 'Primary']])),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($payload->values['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']])
+        ->and($crawler->filter('textarea[name="settings[rows][site-one][name]"]')->text())->toBe('Primary');
+});

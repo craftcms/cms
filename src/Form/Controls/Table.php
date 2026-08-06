@@ -11,8 +11,8 @@ use Illuminate\Support\Arr;
 use function CraftCms\Cms\template;
 
 /**
- * An ordered table Control. Its canonical value is a list of row maps keyed
- * by the authored column IDs; cell values must be JSON-safe scalars or null.
+ * An ordered table Control. Its canonical value is a list or keyed map of row
+ * maps; cell values must be JSON-safe scalars or null.
  */
 class Table extends Control
 {
@@ -29,13 +29,19 @@ class Table extends Control
 
     private ?int $maxRows = null;
 
+    private bool $keyed = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
+        $rows = is_array($value)
+            ? ((bool) ($control->props['keyed'] ?? false) ? $value : array_values($value))
+            : [];
+
         return template('_includes/forms/editableTable', [
             'id' => $attributes['id'],
             'name' => $attributes['name'],
             'cols' => $control->props['columns'],
-            'rows' => is_array($value) ? array_values($value) : [],
+            'rows' => $rows,
             'allowAdd' => (bool) ($control->props['allowAdd'] ?? false),
             'allowDelete' => (bool) ($control->props['allowDelete'] ?? false),
             'allowReorder' => (bool) ($control->props['allowReorder'] ?? false),
@@ -93,6 +99,13 @@ class Table extends Control
         return $this;
     }
 
+    public function keyed(bool $keyed = true): static
+    {
+        $this->keyed = $keyed;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -103,6 +116,7 @@ class Table extends Control
             'allowReorder' => $this->allowReorder,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
+            'keyed' => $this->keyed,
         ]);
     }
 }
