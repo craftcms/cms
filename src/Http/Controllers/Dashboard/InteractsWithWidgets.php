@@ -9,8 +9,6 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 
 trait InteractsWithWidgets
 {
@@ -67,21 +65,10 @@ trait InteractsWithWidgets
         );
         $form = $widget->settingsForm($context);
 
-        if ($form !== null) {
-            return [
-                'settingsForm' => app(FormResolver::class)->resolve($form, $context),
-                'settingsHtml' => null,
-                'settingsJs' => null,
-            ];
-        }
-
-        HtmlStack::startJsBuffer();
-        $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), $namespace);
-
         return [
-            'settingsForm' => null,
-            'settingsHtml' => $settingsHtml ?: null,
-            'settingsJs' => (string) HtmlStack::clearJsBuffer(false) ?: null,
+            'settingsForm' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
+            'settingsHtml' => null,
+            'settingsJs' => null,
         ];
     }
 }

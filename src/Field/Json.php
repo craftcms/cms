@@ -106,12 +106,6 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
         return $this->_inputHtml($value, false);
     }
 
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->_inputHtml($value, true);
-    }
-
     private function _inputHtml(?JsonData $value, bool $static): string
     {
         $id = $this->getInputId();

@@ -5,10 +5,43 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Tests\Legacy;
 
 use craft\base\ConfigurableComponent;
+use craft\base\ConfigurableComponentInterface;
 use craft\base\Event as YiiEvent;
+use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement as LegacyFieldLayoutElement;
+use craft\fields\Addresses;
+use craft\fields\Assets;
+use craft\fields\BaseOptionsField;
+use craft\fields\BaseRelationField;
+use craft\fields\ButtonGroup;
+use craft\fields\Categories;
+use craft\fields\Checkboxes;
+use craft\fields\Color;
+use craft\fields\ContentBlock;
+use craft\fields\Country;
+use craft\fields\Date;
+use craft\fields\Dropdown;
+use craft\fields\Email;
+use craft\fields\Entries;
+use craft\fields\Icon;
+use craft\fields\Json;
+use craft\fields\Lightswitch;
+use craft\fields\Link;
+use craft\fields\Matrix;
+use craft\fields\MissingField;
+use craft\fields\Money;
+use craft\fields\MultiSelect;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\RadioButtons;
+use craft\fields\Range;
+use craft\fields\Table;
+use craft\fields\Tags;
+use craft\fields\Time;
+use craft\fields\Url;
+use craft\fields\Users;
 use craft\models\FieldLayout as LegacyFieldLayout;
-use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use craft\models\FieldLayoutForm;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\FieldContext;
@@ -26,6 +59,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\Field\Field as LegacyField;
+use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent as LegacySettingsContract;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\LegacyHtml;
@@ -93,7 +127,7 @@ it('registers its private Form types', function() {
 });
 
 it('eagerly captures namespaced HTML and assets into a JSON-safe payload', function() {
-    $component = Mockery::mock(ConfigurableComponentInterface::class);
+    $component = Mockery::mock(LegacySettingsContract::class);
     $component->expects('getSettingsHtml')->andReturnUsing(function(): string {
         HtmlStack::css('.legacy-field { color: red; }');
         HtmlStack::js("window.legacyField = '#" . InputNamespace::namespaceId('title') . "';");
@@ -118,7 +152,7 @@ it('eagerly captures namespaced HTML and assets into a JSON-safe payload', funct
 });
 
 it('composes an explicit namespace with the active namespace', function() {
-    $component = Mockery::mock(ConfigurableComponentInterface::class);
+    $component = Mockery::mock(LegacySettingsContract::class);
     $component->expects('getSettingsHtml')->andReturnUsing(fn(): string => sprintf(
         '<input id="title" name="title"><script data-namespace="%s"></script>',
         InputNamespace::get(),
@@ -213,6 +247,87 @@ it('implements replacement Form operations through legacy hooks', function() {
         ->and($fieldControl)->toBeInstanceOf(LegacyHtmlControl::class)
         ->and($fieldControl->props()['fragment']['html'])
         ->toContain('name="nested[block][fields][legacy]"', 'disabled');
+});
+
+it('preserves legacy hooks on public field aliases', function() {
+    if (!class_exists(LegacyPlainTextField::class, false)) {
+        class LegacyPlainTextField extends PlainText
+        {
+            public function getInputHtml(mixed $value, ?ElementInterface $element): string
+            {
+                return sprintf('<input name="%s" value="built-in-alias">', $this->handle);
+            }
+        }
+    }
+
+    $field = new LegacyPlainTextField(['handle' => 'legacy']);
+    $control = $field->formControl(new FieldContext(
+        path: ['fields', 'legacy'],
+        value: 'value',
+        element: Mockery::mock(Entry::class),
+        form: new FormContext(),
+    ));
+
+    expect(method_exists(ConfigurableComponentInterface::class, 'getSettingsHtml'))->toBeTrue()
+        ->and(method_exists(FieldInterface::class, 'getInputHtml'))->toBeTrue()
+        ->and(method_exists(PlainText::class, 'getSettingsHtml'))->toBeTrue()
+        ->and($control)->toBeInstanceOf(LegacyHtmlControl::class)
+        ->and($control->props()['fragment']['html'])->toContain('built-in-alias');
+});
+
+it('preserves legacy hooks on each built-in field alias', function(string $fieldClass) {
+    expect(method_exists($fieldClass, 'getSettingsHtml'))->toBeTrue()
+        ->and(method_exists($fieldClass, 'getInputHtml'))->toBeTrue()
+        ->and(method_exists($fieldClass, 'getStaticHtml'))->toBeTrue();
+})->with([
+    'addresses' => Addresses::class,
+    'assets' => Assets::class,
+    'base options field' => BaseOptionsField::class,
+    'base relation field' => BaseRelationField::class,
+    'button group' => ButtonGroup::class,
+    'categories' => Categories::class,
+    'checkboxes' => Checkboxes::class,
+    'color' => Color::class,
+    'content block' => ContentBlock::class,
+    'country' => Country::class,
+    'date' => Date::class,
+    'dropdown' => Dropdown::class,
+    'email' => Email::class,
+    'entries' => Entries::class,
+    'icon' => Icon::class,
+    'json' => Json::class,
+    'lightswitch' => Lightswitch::class,
+    'link' => Link::class,
+    'matrix' => Matrix::class,
+    'missing field' => MissingField::class,
+    'money' => Money::class,
+    'multi-select' => MultiSelect::class,
+    'number' => Number::class,
+    'plain text' => PlainText::class,
+    'radio buttons' => RadioButtons::class,
+    'range' => Range::class,
+    'table' => Table::class,
+    'tags' => Tags::class,
+    'time' => Time::class,
+    'url' => Url::class,
+    'users' => Users::class,
+]);
+
+it('preserves nullable settings and renderer-native static output on built-in aliases', function() {
+    expect(new MissingField()->settingsForm())->toBeNull()
+        ->and(new MissingField()->getSettingsHtml())->toBeNull();
+
+    $html = new Matrix(['handle' => 'matrix'])->getStaticHtml(null, Mockery::mock(Entry::class));
+
+    expect($html)->toContain('craft-matrix-input')
+        ->not->toContain('data-form-matrix-add');
+});
+
+it('preserves FieldLayout createForm on its public alias', function() {
+    $layout = LegacyFieldLayout::make(Entry::class);
+
+    expect(method_exists($layout, 'createForm'))->toBeTrue()
+        ->and($layout->createForm())->toBeInstanceOf(FieldLayoutForm::class);
 });
 
 it('renders the same captured fragment through PHP and restores its assets to the page stack', function() {

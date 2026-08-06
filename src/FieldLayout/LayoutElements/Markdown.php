@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
-use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 use Override;
@@ -99,18 +96,6 @@ class Markdown extends BaseUiElement
                 'name' => 'displayInPane',
                 'on' => $this->displayInPane,
             ]);
-    }
-
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        $content = Html::tag('div', MarkdownFacade::parse(Html::encode($this->content), 'pre-encoded'), [
-            'class' => array_filter([
-                'markdown',
-                $this->displayInPane ? 'pane' : null,
-            ]),
-        ]);
-
-        return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 
     #[Override]

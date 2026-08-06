@@ -116,12 +116,6 @@ class Local extends Filesystem
     }
 
     #[Override]
-    public function hasLegacySettingsHtml(): bool
-    {
-        return false;
-    }
-
-    #[Override]
     public function settingsForm(FormContext $context = new FormContext): ?Form
     {
         $form = Form::make();

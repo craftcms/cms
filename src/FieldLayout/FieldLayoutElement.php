@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use DateTimeInterface;
-use LogicException;
 use Override;
 
 /**
@@ -66,32 +65,11 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     abstract public function selectorHtml(): string;
 
-    /**
-     * Returns the element’s form HTMl.
-     *
-     * Return `null` if the element should not be present within the form.
-     *
-     * @param  ElementInterface|null  $element  The element the form is being rendered for
-     * @param  bool  $static  Whether the form should be static (non-interactive)
-     */
-    abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
-
-    public function formNode(FieldLayoutElementContext $context): ?Node
-    {
-        throw new LogicException(sprintf('%s does not provide a Form Node.', static::class));
-    }
+    abstract public function formNode(FieldLayoutElementContext $context): ?Node;
 
     public function formMode(?ElementInterface $element): ControlMode
     {
         return ControlMode::Editable;
-    }
-
-    /**
-     * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
-     */
-    public function alwaysRefresh(): bool
-    {
-        return false;
     }
 
     /**

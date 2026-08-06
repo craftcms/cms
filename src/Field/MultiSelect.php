@@ -68,21 +68,6 @@ class MultiSelect extends BaseOptionsField
     }
 
     #[\Override]
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        return FormFields::selectizeHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'class' => 'selectize',
-            'name' => $this->handle,
-            'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true, $value, $element),
-            'multi' => true,
-            'disabled' => true,
-        ]);
-    }
-
-    #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Multi-select Options');

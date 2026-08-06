@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -24,7 +22,12 @@ use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Link as LinkControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Support\Arr;
@@ -41,7 +44,6 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Link represents a Link field.
@@ -167,6 +169,24 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ], $this->linkSettingsRules());
     }
 
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make($this->linkSettingsNodes())->add(
+            FormField::make()
+                ->label(t('Max Length'))
+                ->instructions(t('The maximum length (in bytes) the field can hold.'))
+                ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
+        )->addIf(Cms::config()->enableGql,
+            FormField::make()
+                ->label(t('GraphQL Mode'))
+                ->control(Choice::make('graphqlMode')->options([
+                    ['label' => t('Full data'), 'value' => 'full'],
+                    ['label' => t('URL only'), 'value' => 'url'],
+                ])->value($this->fullGraphqlData ? 'full' : 'url')),
+        );
+    }
+
     /**
      * Returns the link types available to the field.
      *
@@ -237,71 +257,6 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         }
 
         return UrlType::id();
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $html = template('_components/fieldtypes/Link/link-settings', $this->linkSettingsProps($readOnly));
-
-        $html .=
-            Html::tag('hr').
-            Html::beginTag('craft-disclosure').
-            Button::make()
-                ->label(t('Advanced'))
-                ->icon('chevron-down')
-                ->variant(ButtonVariant::Plain)
-                ->attributes([
-                    'slot' => 'invoker',
-                    'class' => 'justify-self-start',
-                ]).
-            Html::beginTag('div', [
-                'slot' => 'content',
-            ]).
-            Html::beginTag('craft-field-group').
-            FormFields::textFieldHtml([
-                'label' => t('Max Length'),
-                'instructions' => t('The maximum length (in bytes) the field can hold.'),
-                'id' => 'maxLength',
-                'name' => 'maxLength',
-                'type' => 'number',
-                'min' => '10',
-                'step' => '10',
-                'value' => $this->maxLength,
-                'errors' => $this->errors()->get('maxLength'),
-                'data' => ['error-key' => 'maxLength'],
-                'disabled' => $readOnly,
-            ]);
-
-        if (Cms::config()->enableGql) {
-            $html .=
-                FormFields::selectFieldHtml([
-                    'label' => t('GraphQL Mode'),
-                    'id' => 'graphql-mode',
-                    'name' => 'graphqlMode',
-                    'options' => [
-                        ['label' => t('Full data'), 'value' => 'full'],
-                        ['label' => t('URL only'), 'value' => 'url'],
-                    ],
-                    'value' => $this->fullGraphqlData ? 'full' : 'url',
-                    'disabled' => $readOnly,
-                ]);
-        }
-
-        $html .= Html::endTag('craft-field-group');
-        $html .= Html::endTag('div');
-
-        return $html.Html::endTag('craft-disclosure');
     }
 
     /**

@@ -18,11 +18,8 @@ use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Html;
@@ -135,11 +132,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         ]);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
@@ -203,30 +195,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     }
 
     #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $errors = $this->errors()->getMessages();
-        $fieldLimitErrors = array_merge($errors['charLimit'] ?? [], $errors['byteLimit'] ?? []);
-        unset($errors['charLimit'], $errors['byteLimit']);
-
-        if ($fieldLimitErrors !== []) {
-            $errors['fieldLimit'] = $fieldLimitErrors;
-        }
-
-        $payload = app(FormResolver::class)->resolve($this->settingsForm(), new FormContext(
-            errors: $errors,
-            mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
-        ));
-
-        return app(FormHtmlRenderer::class)->render($payload);
-    }
-
-    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, false);
@@ -255,12 +223,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, false);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->_inputHtml($value, $element, true);
     }
 
     private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string

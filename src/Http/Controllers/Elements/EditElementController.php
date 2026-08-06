@@ -15,9 +15,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -238,9 +236,9 @@ class EditElementController
                     $canSave,
                     $response,
                     $containerId,
-                    fn (FieldLayoutForm|string|null $form) => $this->editorContent($element, $canSave, $form),
-                    fn (?FieldLayoutForm $form) => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
-                    fn (?FieldLayoutForm $form) => [
+                    fn (?string $form) => $this->editorContent($element, $canSave, $form),
+                    fn () => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
+                    fn () => [
                         'additionalSites' => $addlEditableSites,
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
@@ -267,8 +265,6 @@ class EditElementController
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (! app()->isLive() || ! $element->getSite()->getEnabled()) ? Crypt::encrypt((string) $element->siteId) : null,
-                        'visibleLayoutElements' => $form?->getVisibleElements() ?? [],
-                        'staticLayoutElements' => $form?->getStaticElements() ?? [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
                         'isStatic' => $isRevision || ! $canSave,
@@ -681,10 +677,9 @@ class EditElementController
     ): void {
         $fieldLayout = $element->getFieldLayout();
         $payload = null;
-        $form = null;
         $vueForm = $this->request->expectsJson();
 
-        if ($element instanceof Entry && $fieldLayout !== null) {
+        if ($fieldLayout !== null) {
             $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
                 $fieldLayout,
                 $element,
@@ -695,22 +690,18 @@ class EditElementController
                     refreshable: true,
                 ),
             ));
-        } else {
-            $form = $fieldLayout?->createForm($element, ! $canSave, [
-                'registerDeltas' => true,
-            ]);
         }
 
         $renderer = app(FormHtmlRenderer::class);
         $formContent = match (true) {
-            $payload === null => $form,
+            $payload === null => null,
             $vueForm => Html::tag('craft-entry-field-layout-form', '', [
                 'data' => ['payload' => Json::encode($payload)],
             ]),
             default => $renderer->render($payload),
         };
         $contentHtml = $contentFn($formContent);
-        $sidebarHtml = $sidebarFn($form);
+        $sidebarHtml = $sidebarFn();
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->acceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
@@ -750,18 +741,11 @@ class EditElementController
             $contentHtml = implode("\n", $components);
         }
 
-        $response->tabs($payload === null
-            ? ($form?->getTabMenu() ?? [])
-            : $renderer->tabMenu($payload, ! $vueForm));
+        $response->tabs($payload === null ? [] : $renderer->tabMenu($payload, ! $vueForm));
         $response->contentHtml($contentHtml);
         $response->metaSidebarHtml($sidebarHtml);
 
-        $settings = $jsSettingsFn($form);
-
-        if ($payload !== null) {
-            $settings['visibleLayoutElements'] = $renderer->visibleLayoutElements($payload);
-            $settings['staticLayoutElements'] = $renderer->staticLayoutElements($payload);
-        }
+        $settings = $jsSettingsFn();
 
         if ($this->isSlideout()) {
             HtmlStack::jsWithVars(fn ($settings) => <<<JS
@@ -781,11 +765,9 @@ JS, [
         $element->prepareEditScreen($response, $containerId);
     }
 
-    private function editorContent(ElementInterface $element, bool $canSave, FieldLayoutForm|string|null $form): string
+    private function editorContent(ElementInterface $element, bool $canSave, ?string $form): string
     {
-        $html = is_string($form) ? $form : ($form?->render() ?? '');
-
-        event($event = new ElementEditorContentResolving($element, $html, ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $form ?? '', ! $canSave));
 
         return trim($event->html);
     }

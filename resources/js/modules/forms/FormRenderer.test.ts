@@ -1239,6 +1239,23 @@ describe('FormRenderer', () => {
         {type: 'url', value: 'https://craftcms.com', label: '<Craft>'},
       ],
       [
+        'craft:choice',
+        'Choice',
+        'advancedFields',
+        {
+          options: [
+            {
+              label: 'Relation (rel)',
+              labelHtml: 'Relation (<code>rel</code>)',
+              value: 'rel',
+            },
+          ],
+          multiple: true,
+          presentation: 'checkboxes',
+        },
+        ['rel'],
+      ],
+      [
         'craft:address',
         'Address',
         'address',
@@ -1305,7 +1322,6 @@ describe('FormRenderer', () => {
     controlsPayload.globalErrors = [];
     app.unmount();
     await mount(controlsPayload);
-
     await vi.waitFor(() => {
       expect(
         container.querySelector<HTMLTextAreaElement>(
@@ -1351,6 +1367,9 @@ describe('FormRenderer', () => {
         ?.value
     ).toBe('star');
     expect(container.textContent).toContain('Enter a valid link.');
+    expect(
+      container.querySelector('craft-checkbox label code')?.textContent
+    ).toBe('rel');
     await vi.waitFor(() =>
       expect(
         (renderer.currentValues().settings as Record<string, unknown>).rows

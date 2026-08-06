@@ -10,7 +10,6 @@ use craft\models\FieldLayout as LegacyFieldLayout;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;

@@ -7,14 +7,12 @@ use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
-use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -99,7 +97,6 @@ it('can create a new field', function () {
             ->has('fieldTypeOptions')
             ->has('supportedTranslationMethods')
             ->has('translationMethodOptions', 5)
-            ->where('settings', null)
             ->where('settingsForm.refreshable', true)
             ->has('settingsForm.nodes'));
 });
@@ -139,7 +136,6 @@ it('can edit a field', function () {
             ->where('field.type', PlainText::class)
             ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
             ->where('missingFieldPlaceholder', null)
-            ->where('settings', null)
             ->has('settingsForm.nodes'));
 });
 
@@ -186,7 +182,11 @@ it('serves the legacy screen to slideout requests', function (?callable $setUp) 
 it('can render the settings of a field', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
-    ])->assertOk();
+        'namespace' => 'types[CraftCms-Cms-Field-PlainText]',
+    ])
+        ->assertOk()
+        ->assertJsonPath('form.scope.0', 'types[CraftCms-Cms-Field-PlainText]')
+        ->assertJsonPath('settingsHtml', fn (string $html): bool => str_contains($html, 'name="types[CraftCms-Cms-Field-PlainText][uiMode]"'));
 });
 
 it('renders composite field settings Controls', function (string $type, string $component, string $action, string $htmlFragment) {
@@ -248,22 +248,20 @@ it('refreshes Form settings from the complete current value snapshot', function 
 });
 
 it('preserves values between rendering settings', function () {
-    $label = Str::random();
+    $placeholder = fake()->sentence();
 
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
-        'type' => RadioButtons::class,
-        'oldType' => MultiSelect::class,
+        'type' => PlainText::class,
+        'oldType' => PlainText::class,
         'oldNamespace' => 'namespace',
         'settings' => http_build_query([
             'namespace' => [
-                'options' => [
-                    ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
-                ],
+                'placeholder' => $placeholder,
             ],
         ]),
     ])
         ->assertOk()
-        ->assertSee($label);
+        ->assertJsonPath('form.values.settings.placeholder', $placeholder);
 });
 
 it('can save a new field', function () {

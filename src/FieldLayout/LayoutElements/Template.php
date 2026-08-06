@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Extensions\CpExtension;
 use CraftCms\Cms\View\TemplateMode;
@@ -106,39 +104,6 @@ class Template extends BaseUiElement
         ]);
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (! $this->template) {
-            return $this->legacyError(t('No template path has been chosen yet.'), 'warning');
-        }
-
-        $templateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
-        $twig = Twig::get();
-        Twig::set(self::twig());
-
-        try {
-            $content = trim(template($this->template, [
-                'element' => $element,
-                'static' => $static,
-            ], templateMode: TemplateMode::from($this->templateMode)));
-        } catch (Throwable $exception) {
-            return $this->legacyError($exception->getMessage(), 'error');
-        } finally {
-            Twig::set($twig);
-            TemplateMode::set($templateMode);
-        }
-
-        return $content === ''
-            ? null
-            : Html::tag('div', $content, $this->containerAttributes($element, $static));
-    }
-
-    public function alwaysRefresh(): bool
-    {
-        return true;
-    }
-
     #[Override]
     public function formNode(FieldLayoutElementContext $context): ?Node
     {
@@ -189,13 +154,5 @@ class Template extends BaseUiElement
         }
 
         return self::$twig;
-    }
-
-    private function legacyError(string $error, string $errorClass): string
-    {
-        $icon = Html::tag('span', '', ['data' => ['icon' => 'alert']]);
-        $content = Html::tag('p', $icon.' '.Html::encode($error), ['class' => $errorClass]);
-
-        return Html::tag('div', $content);
     }
 }

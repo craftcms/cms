@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -13,6 +12,9 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -64,9 +66,15 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return $this->settingsHtml(false);
+        return Form::make([
+            FormField::make()
+                ->label(t('Placeholder Text'))
+                ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
+                ->control(Text::make('placeholder')->value($this->placeholder)),
+        ]);
     }
 
     #[Override]
@@ -76,25 +84,6 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
             ->inputType('email')
             ->placeholder(t($this->placeholder, category: 'site'))
             ->value($context->value);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return FormFields::textFieldHtml([
-            'label' => t('Placeholder Text'),
-            'instructions' => t('The text that will be shown if the field doesn’t have a value.'),
-            'id' => 'placeholder',
-            'name' => 'placeholder',
-            'value' => $this->placeholder,
-            'errors' => $this->errors()->get('placeholder'),
-            'disabled' => $readOnly,
-        ]);
     }
 
     #[Override]

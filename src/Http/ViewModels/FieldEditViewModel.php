@@ -15,14 +15,10 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\View\HtmlFragment;
-use CraftCms\Cms\View\TemplateMode;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class FieldEditViewModel extends ViewModel
 {
@@ -171,24 +167,6 @@ class FieldEditViewModel extends ViewModel
     public function isMultiSite(): bool
     {
         return Sites::isMultiSite();
-    }
-
-    /**
-     * A field type's settings rendered as a legacy HTML island until it adopts Form.
-     * Inputs are namespaced `types[<typeId>]` to match what the save and
-     * render-settings endpoints expect.
-     */
-    public function settings(): ?HtmlFragment
-    {
-        if ($this->settingsFormDefinition() !== null) {
-            return null;
-        }
-
-        return HtmlStack::capture(fn (): string => template('settings/fields/_type-settings', [
-            'field' => $this->field,
-            'namespace' => sprintf('types[%s]', Html::id($this->typeClass())),
-            'readOnly' => $this->readOnly,
-        ], templateMode: TemplateMode::Cp));
     }
 
     public function settingsForm(): ?FormPayload

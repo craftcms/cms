@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
-use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
 use Override;
 
@@ -61,11 +59,6 @@ class Heading extends BaseUiElement
             'name' => 'heading',
             'value' => $this->heading,
         ]);
-    }
-
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));
     }
 
     #[Override]

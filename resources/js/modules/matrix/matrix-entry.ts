@@ -3,41 +3,23 @@
  *
  * The per-`.matrixblock` controller: collapse/expand (with the preview-text
  * summary and localStorage persistence), the block action menu, enable/disable,
- * move/duplicate/copy/paste/delete, and conditional field-layout updates via
- * `elements/update-field-layout` driven by a `Craft.FormObserver`.
+ * move/duplicate/copy/paste/delete.
  */
 
 import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+import type {EntryFieldLayoutFormHost} from '@/modules/forms/entry-field-layout-form-host';
 import {animationDuration, MatrixInput} from './matrix-input';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,
-  type LegacyFormObserver,
   type LegacyTabs,
   craft,
   jqData,
-  jqParam,
   legacyGarnish,
   setJqData,
 } from './interop';
-
-declare const axios: {
-  CancelToken: {source(): {token: unknown; cancel(): void}};
-};
-
-interface UpdateFieldLayoutResponse {
-  missingElements: Array<{
-    uid: string;
-    id: string;
-    elements: Array<{uid: string; html: string | false; static?: boolean}>;
-  }>;
-  tabs?: string;
-  uiLabel?: string;
-  headHtml: string;
-  bodyHtml: string;
-}
 
 export class MatrixEntry extends Base {
   /** The entry controller for a `.matrixblock` container, if one was booted. */
@@ -105,13 +87,7 @@ export class MatrixEntry extends Base {
 
   tabManager: LegacyTabs | null = null;
   actionDisclosure: LegacyDisclosureMenu | null = null;
-  formObserver: LegacyFormObserver | null = null;
-  visibleLayoutElements: unknown;
-  staticLayoutElements: unknown;
-  cancelToken: {token: unknown; cancel(): void} | null = null;
-  ignoreFailedRequest = false;
   uiLabel: string | null = null;
-  hasTabs = false;
 
   isNew: boolean;
   id: string | number | null;
@@ -129,6 +105,33 @@ export class MatrixEntry extends Base {
     this.previewContainer =
       this.titlebar?.querySelector(':scope > .preview') ?? null;
     this.fieldsContainer = container.querySelector(':scope > .fields');
+    const formHost =
+      this.fieldsContainer?.querySelector<EntryFieldLayoutFormHost>(
+        'craft-entry-field-layout-form'
+      );
+    if (formHost) {
+      formHost.tabsUpdater = (tabs) => this.updateTabs(tabs);
+      formHost.requestMetadata = () => ({
+        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        elementId: null,
+        canonicalId: null,
+        draftId: null,
+        revisionId: null,
+        provisional: null,
+        elementUid:
+          this.matrix.elementEditor?.getDraftElementUid(
+            this.container.dataset.uid
+          ) ?? this.container.dataset.uid,
+        fieldId: this.matrix.settings!.fieldId,
+        ownerId: this.matrix.settings!.ownerId,
+        siteId: this.matrix.settings!.siteId,
+        typeId: this.container.dataset.typeId,
+        sortOrder:
+          Array.from(this.container.parentElement?.children ?? []).indexOf(
+            this.container
+          ) + 1,
+      });
+    }
 
     containerMatrixEntries.set(container, this);
     // PHP-emitted snippets (expand/collapse-all) read `$(block).data('entry')`.
@@ -184,16 +187,6 @@ export class MatrixEntry extends Base {
           this.toggle();
         }
       });
-    }
-
-    this.visibleLayoutElements = this.dataJson('visible-layout-elements');
-    this.staticLayoutElements = this.dataJson('static-layout-elements');
-    if (container.hasAttribute('data-field-layout-id')) {
-      setTimeout(() => {
-        this.formObserver = new (craft().FormObserver)(container, (data) => {
-          this.updateFieldLayout(data);
-        });
-      }, 1);
     }
   }
 
@@ -294,6 +287,17 @@ export class MatrixEntry extends Base {
       } else {
         this.actionDisclosure?.hideItem(pasteBtn);
       }
+    }
+  }
+
+  private updateTabs(tabs: string | null): void {
+    this.tabManager?.destroy();
+    this.tabManager = null;
+    this.tabContainer?.replaceChildren();
+
+    if (tabs && this.tabContainer) {
+      this.tabContainer.insertAdjacentHTML('beforeend', tabs);
+      this.tabManager = MatrixEntry.initTabs(this.tabContainer);
     }
   }
 
@@ -735,238 +739,13 @@ export class MatrixEntry extends Base {
       });
   }
 
-  updateFieldLayout(data: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const elementEditor = this.matrix.elementEditor;
-      const baseInputName = this.container.dataset.baseInputName ?? '';
-
-      // Ignore if we're already submitting the main form
-      if (elementEditor?.submittingForm) {
-        reject(new Error('Form already being submitted.'));
-        return;
-      }
-
-      if (this.cancelToken) {
-        this.ignoreFailedRequest = true;
-        this.cancelToken.cancel();
-      }
-
-      const param = (n: string) => craft().namespaceInputName(n, baseInputName);
-      const extraData: Record<string, unknown> = {
-        [param('visibleLayoutElements')]: this.visibleLayoutElements,
-        [param('staticLayoutElements')]: this.staticLayoutElements,
-        [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-        [param('siteId')]: this.matrix.settings!.siteId,
-        [param('ownerId')]: this.matrix.settings!.ownerId,
-        [param('fieldId')]: this.matrix.settings!.fieldId,
-        [param('sortOrder')]:
-          Array.from(this.container.parentElement?.children ?? []).indexOf(
-            this.container
-          ) + 1,
-        [param('typeId')]: this.container.dataset.typeId,
-        [param('elementUid')]:
-          elementEditor?.getDraftElementUid(this.container.dataset.uid) ??
-          this.container.dataset.uid,
-      };
-
-      const selectedTab = this.fieldsContainer?.querySelector<HTMLElement>(
-        ':scope > [data-layout-tab]:not(.hidden)'
-      );
-      const selectedTabId = selectedTab?.dataset.id;
-      if (selectedTabId) {
-        extraData[param('selectedTab')] = selectedTabId;
-      }
-
-      data += `&${jqParam(extraData)}`;
-
-      this.cancelToken = axios.CancelToken.source();
-
-      Craft.sendActionRequest('POST', 'elements/update-field-layout', {
-        cancelToken: this.cancelToken.token,
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-          'X-Craft-Namespace': baseInputName,
-        },
-        data,
-      })
-        .then((response: {data: UpdateFieldLayoutResponse}) => {
-          this.afterUpdateFieldLayout(selectedTabId, baseInputName, response);
-          resolve();
-        })
-        .catch((e: unknown) => {
-          if (!this.ignoreFailedRequest) {
-            reject(e);
-          }
-          this.ignoreFailedRequest = false;
-        })
-        .finally(() => {
-          this.cancelToken = null;
-        });
-    });
-  }
-
-  private async afterUpdateFieldLayout(
-    selectedTabId: string | undefined,
-    baseInputName: string,
-    response: {data: UpdateFieldLayoutResponse}
-  ): Promise<void> {
-    // capture the new selected tab ID, in case it just changed
-    const newSelectedTabId = this.fieldsContainer?.querySelector<HTMLElement>(
-      ':scope > [data-layout-tab]:not(.hidden)'
-    )?.dataset.id;
-
-    // Update the visible elements
-    const allTabContainers: HTMLElement[] = [];
-    const visibleLayoutElements: Record<string, string[]> = {};
-    const staticLayoutElements: Record<string, string[]> = {};
-
-    for (const tabInfo of response.data.missingElements) {
-      let tabContainer = this.fieldsContainer?.querySelector<HTMLElement>(
-        `:scope > [data-layout-tab="${tabInfo.uid}"]`
-      );
-
-      if (!tabContainer) {
-        tabContainer = document.createElement('div');
-        tabContainer.id = craft().namespaceId(tabInfo.id, baseInputName);
-        tabContainer.className = 'flex-fields';
-        tabContainer.dataset.id = tabInfo.id;
-        tabContainer.dataset.layoutTab = tabInfo.uid;
-        if (tabInfo.id !== selectedTabId) {
-          tabContainer.classList.add('hidden');
-        }
-        this.fieldsContainer?.append(tabContainer);
-      }
-
-      allTabContainers.push(tabContainer);
-
-      for (const elementInfo of tabInfo.elements) {
-        if (elementInfo.html !== false) {
-          (visibleLayoutElements[tabInfo.uid] ??= []).push(elementInfo.uid);
-
-          if (elementInfo.static) {
-            (staticLayoutElements[tabInfo.uid] ??= []).push(elementInfo.uid);
-          }
-
-          if (typeof elementInfo.html === 'string') {
-            const oldElement = tabContainer.querySelector(
-              `:scope > [data-layout-element="${elementInfo.uid}"]`
-            );
-            const template = document.createElement('template');
-            template.innerHTML = elementInfo.html.trim();
-            const newElement = template.content.firstElementChild;
-            if (newElement) {
-              if (oldElement) {
-                oldElement.replaceWith(newElement);
-              } else {
-                tabContainer.append(newElement);
-              }
-              Craft.initUiElements(newElement);
-            }
-          }
-        } else {
-          const oldElement = tabContainer.querySelector(
-            `:scope > [data-layout-element="${elementInfo.uid}"]`
-          );
-          if (
-            !oldElement ||
-            !hasAttr(oldElement, 'data-layout-element-placeholder')
-          ) {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'hidden';
-            placeholder.dataset.layoutElement = elementInfo.uid;
-            placeholder.setAttribute('data-layout-element-placeholder', '');
-
-            if (oldElement) {
-              oldElement.replaceWith(placeholder);
-            } else {
-              tabContainer.append(placeholder);
-            }
-          }
-        }
-      }
-    }
-
-    // Remove any unused tab content containers
-    // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
-    for (const container of this.fieldsContainer?.querySelectorAll<HTMLElement>(
-      ':scope > [data-layout-tab]'
-    ) ?? []) {
-      if (
-        !allTabContainers.includes(container) &&
-        container.getAttribute('data-layout-tab') !== ''
-      ) {
-        container.remove();
-      }
-    }
-
-    // Make the first tab visible if no others are
-    if (!allTabContainers.some((c) => !c.classList.contains('hidden'))) {
-      allTabContainers[0]?.classList.remove('hidden');
-    }
-
-    this.visibleLayoutElements = visibleLayoutElements;
-    this.staticLayoutElements = staticLayoutElements;
-
-    // Update the tabs
-    if (this.tabManager) {
-      this.tabManager.destroy();
-      this.tabManager = null;
-      if (this.tabContainer) {
-        this.tabContainer.innerHTML = '';
-      }
-    }
-
-    this.hasTabs = !!response.data.tabs;
-
-    if (this.hasTabs && this.tabContainer) {
-      this.tabContainer.insertAdjacentHTML('beforeend', response.data.tabs!);
-      this.tabManager = MatrixEntry.initTabs(this.tabContainer);
-
-      // was a new tab selected after the request was kicked off?
-      if (
-        this.tabManager &&
-        selectedTabId &&
-        newSelectedTabId &&
-        selectedTabId !== newSelectedTabId
-      ) {
-        const tabs = Array.from(
-          this.tabContainer.querySelectorAll<HTMLElement>('[data-id]')
-        );
-        const newSelectedTab = tabs.find(
-          (tab) => tab.dataset.id === newSelectedTabId
-        );
-        if (newSelectedTab) {
-          // if the new tab is visible - switch to it
-          this.tabManager.selectTab(newSelectedTab);
-        } else if (tabs[0]) {
-          // if the new tab is not visible (e.g. hidden by a condition)
-          // switch to the first tab
-          this.tabManager.selectTab(tabs[0]);
-        }
-      }
-    }
-
-    this.uiLabel = response.data.uiLabel ?? null;
-    if (this.collapsed && this.previewContainer) {
-      this.previewContainer.innerHTML = this.previewHtml();
-    }
-
-    await craft().appendHeadHtml(response.data.headHtml);
-    await craft().appendBodyHtml(response.data.bodyHtml);
-
-    // re-grab dismissible tips, re-attach listener, hide on re-load
-    this.matrix.elementEditor?.handleDismissibleTips?.();
-  }
-
   override destroy(): void {
     this.actionDisclosure?.hide();
 
     this.tabManager?.destroy();
     this.actionDisclosure?.destroy();
-    this.formObserver?.destroy();
     this.tabManager = null;
     this.actionDisclosure = null;
-    this.formObserver = null;
 
     containerMatrixEntries.delete(this.container);
     setJqData(this.container, 'entry', null);

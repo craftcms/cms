@@ -109,35 +109,6 @@ class FormHtmlRenderer
         return array_any($node->control->forms ?? [], fn ($form) => array_any($form->nodes, fn (NodePayload $child): bool => $this->nodeHasErrors($child, $payload)));
     }
 
-    /** @return array<string, list<string>> */
-    public function visibleLayoutElements(FormPayload $payload): array
-    {
-        return $this->layoutElements($payload, false);
-    }
-
-    /** @return array<string, list<string>> */
-    public function staticLayoutElements(FormPayload $payload): array
-    {
-        return $this->layoutElements($payload, true);
-    }
-
-    public function layoutElementUid(NodePayload $node): ?string
-    {
-        $uid = $node->props['layoutUid'] ?? $node->uid;
-
-        return is_string($uid) ? $uid : null;
-    }
-
-    public function nodeIsStatic(NodePayload $node): bool
-    {
-        if ($node->control !== null) {
-            return $node->control->mode !== ControlMode::Editable;
-        }
-
-        return $node->children !== []
-            && array_all($node->children ?? [], $this->nodeIsStatic(...));
-    }
-
     public function renderNestedForm(NestedFormPayload $form): string
     {
         if ($this->payload === null) {
@@ -164,31 +135,6 @@ class FormHtmlRenderer
                 previous: $exception,
             );
         }
-    }
-
-    /** @return array<string, list<string>> */
-    private function layoutElements(FormPayload $payload, bool $staticOnly): array
-    {
-        $result = [];
-
-        foreach ($payload->nodes as $tab) {
-            if ($tab->type !== Tab::class) {
-                continue;
-            }
-            if ($tab->uid === null) {
-                continue;
-            }
-            foreach ($tab->children ?? [] as $node) {
-                $uid = $this->layoutElementUid($node);
-                $static = $this->nodeIsStatic($node);
-
-                if ($uid !== null && (! $staticOnly || $static)) {
-                    $result[$tab->uid][] = $uid;
-                }
-            }
-        }
-
-        return $result;
     }
 
     /** @param array<string, mixed> $values */

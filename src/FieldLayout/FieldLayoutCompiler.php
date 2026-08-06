@@ -6,14 +6,11 @@ namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Tab;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -27,11 +24,8 @@ class FieldLayoutCompiler
         FormContext $context = new FormContext,
     ): FormPayload {
         $context = $this->normalizeErrors($layout, $context);
-        $payload = $this->resolver->resolve($this->form($layout, $element, $context), $context);
 
-        $this->registerDeltaGroups($payload, $element);
-
-        return $payload;
+        return $this->resolver->resolve($this->form($layout, $element, $context), $context);
     }
 
     /** @internal Nested Controls need the unresolved definition during compilation. */
@@ -70,7 +64,9 @@ class FieldLayoutCompiler
             }
 
             if (! $layoutTab->uid) {
-                throw new InvalidArgumentException('Persisted FieldLayout tabs require stable UIDs.');
+                $form->add(...$nodes);
+
+                continue;
             }
 
             $form->add(Tab::make(
@@ -107,37 +103,5 @@ class FieldLayoutCompiler
             mode: $context->mode,
             refreshable: $context->refreshable,
         );
-    }
-
-    private function registerDeltaGroups(FormPayload $payload, ?ElementInterface $element): void
-    {
-        $registered = [];
-
-        $visit = function (array $nodes) use (&$visit, &$registered, $payload, $element): void {
-            foreach ($nodes as $node) {
-                if ($node->control !== null && $node->control->mode === ControlMode::Editable) {
-                    $relativeGroup = array_slice($node->control->deltaGroup, count($payload->scope));
-                    $group = $relativeGroup;
-                    $name = array_shift($group).implode('', array_map(fn (string $segment): string => "[{$segment}]", $group));
-
-                    if (! isset($registered[$name])) {
-                        $forceModified = $element !== null
-                            && ($relativeGroup[0] ?? null) === 'fields'
-                            && isset($relativeGroup[1])
-                            && $element->isFieldDirty($relativeGroup[1]);
-                        DeltaRegistry::registerName($name, $forceModified);
-                        $registered[$name] = true;
-                    }
-                }
-
-                $visit($node->children ?? []);
-
-                foreach ($node->control->forms ?? [] as $form) {
-                    $visit($form->nodes);
-                }
-            }
-        };
-
-        $visit($payload->nodes);
     }
 }

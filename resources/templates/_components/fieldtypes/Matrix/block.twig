@@ -158,13 +158,6 @@
   {% endfor %}
 {% endif %}
 
-{% namespace baseInputName %}
-  {% set form = entry.getFieldLayout().createForm(entry, static, {
-    'errorKeyPrefix' : "#{name}[#{entry.uid}]",
-  }) %}
-  {% set tabs = form.getTabMenu() %}
-{% endnamespace %}
-
 {% tag 'div' with {
   class: [
     'matrixblock',
@@ -190,8 +183,6 @@
     collapsed: entry.collapsed,
     'type-id': entry.typeId,
     'field-layout-id': entry.getFieldLayout().id,
-    'visible-layout-elements': form.getVisibleElements(),
-    'static-layout-elements': form.getStaticElements(),
     'base-input-name': baseInputName|namespaceInputName,
     'ui-label': entry.getUiLabel(),
   },
@@ -281,8 +272,8 @@
     {% endif %}
   </div>
   <div class="fields">
-    {% namespace baseInputName %}
-      {{ form.render()|raw }}
-    {% endnamespace %}
+    {{ tag('craft-entry-field-layout-form', {
+      data: {payload: formPayload|json_encode},
+    }) }}
   </div>
 {% endtag %}{# /.matrixblock #}

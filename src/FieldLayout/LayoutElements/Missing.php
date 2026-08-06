@@ -6,7 +6,6 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Component\Concerns\MissingComponentTrait;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -18,11 +17,6 @@ class Missing extends FieldLayoutElement implements MissingComponentInterface
     use MissingComponentTrait;
 
     public function selectorHtml(): string
-    {
-        return $this->getPlaceholderHtml();
-    }
-
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->getPlaceholderHtml();
     }

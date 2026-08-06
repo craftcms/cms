@@ -1,10 +1,5 @@
 <script setup lang="ts">
-  import {
-    actionClient,
-    serializeFormInputsAsObject,
-    t,
-    toHandle,
-  } from '@craftcms/ui';
+  import {actionClient, t, toHandle} from '@craftcms/ui';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
@@ -15,8 +10,6 @@
   import {store} from '@actions/Settings/FilesystemsController';
   import {computed, ref, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
   import {renderSettings} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/FilesystemsController';
@@ -36,7 +29,6 @@
     settings: {} as Record<string, any>,
   });
 
-  const settingsHost = ref<HTMLElement | null>(null);
   const settingsRenderer = ref<{
     advanceBaseline: () => void;
   } | null>(null);
@@ -59,20 +51,6 @@
   );
 
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => {
-      const typeSettings =
-        !settingsPayload.value && settingsHost.value
-          ? serializeFormInputsAsObject(settingsHost.value)
-          : {};
-
-      return {
-        ...data,
-        settings: {
-          ...data.settings,
-          ...typeSettings,
-        },
-      };
-    },
     onSuccess: () => settingsRenderer.value?.advanceBaseline(),
   });
 
@@ -150,7 +128,7 @@
         />
       </template>
 
-      <div ref="settingsHost">
+      <div>
         <template v-for="(instance, fsType) in props.fsInstances" :key="fsType">
           <craft-field-group v-if="form.type === fsType">
             <FormRenderer
@@ -161,11 +139,6 @@
               :refresh="refreshSettings"
               @update:mutation="form.settings = $event.settings ?? {}"
             />
-            <HtmlFragmentRenderer
-              v-else-if="instance.settingsFragment"
-              :fragment="instance.settingsFragment"
-            />
-            <DynamicHtmlRenderer v-else :html="instance.settingsHtml ?? ''" />
           </craft-field-group>
         </template>
       </div>

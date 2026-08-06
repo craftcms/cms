@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -13,11 +12,9 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html as HtmlHelper;
 use InvalidArgumentException;
 use Override;
 
-use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 class FullNameField extends TextField
@@ -50,20 +47,6 @@ class FullNameField extends TextField
     }
 
     #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (
-            $element &&
-            Cms::config()->showFirstAndLastNameFields &&
-            count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) === 2
-        ) {
-            return $this->firstAndLastNameFields($element, $static);
-        }
-
-        return parent::formHtml($element, $static);
-    }
-
-    #[Override]
     public function formNode(FieldLayoutElementContext $context): ?Node
     {
         $element = $context->element;
@@ -90,57 +73,6 @@ class FullNameField extends TextField
                 ->required($this->required)
                 ->control(Text::make('lastName')->value($element->lastName ?? null)),
         ]);
-    }
-
-    private function firstAndLastNameFields(?ElementInterface $element, bool $static): string
-    {
-        $statusClass = $this->statusClass($element);
-        $status = $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null;
-        $required = ! $static && $this->required;
-        $isAdmin = currentUser()?->isAdmin();
-
-        return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]).
-            FormFields::textFieldHtml([
-                'id' => 'firstName',
-                'status' => $status,
-                'fieldClass' => 'flex-grow',
-                'label' => t('First Name'),
-                'attribute' => 'firstName',
-                'showAttribute' => $this->showAttribute(),
-                'required' => $required,
-                'autocomplete' => false,
-                'name' => 'firstName',
-                'value' => $element->firstName ?? null,
-                'errors' => ! $static ? $element->errors()->get('firstName') : [],
-                'disabled' => $static,
-                'data' => [
-                    'error-key' => 'firstName',
-                ],
-                'actionMenuItems' => array_filter([
-                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'firstName']) : null,
-                ]),
-            ]).
-            FormFields::textFieldHtml([
-                'id' => 'lastName',
-                'status' => $status,
-                'fieldClass' => 'flex-grow',
-                'label' => t('Last Name'),
-                'attribute' => 'lastName',
-                'showAttribute' => $this->showAttribute(),
-                'required' => $required,
-                'autocomplete' => false,
-                'name' => 'lastName',
-                'value' => $element->lastName ?? null,
-                'errors' => ! $static ? $element->errors()->get('lastName') : [],
-                'disabled' => $static,
-                'data' => [
-                    'error-key' => 'lastName',
-                ],
-                'actionMenuItems' => array_filter([
-                    $isAdmin ? $this->copyAttributeAction(['attribute' => 'lastName']) : null,
-                ]),
-            ]).
-            HtmlHelper::endTag('div');
     }
 
     #[Override]

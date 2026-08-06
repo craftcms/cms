@@ -6,6 +6,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
@@ -165,9 +166,15 @@ it('renders an accessible editable PHP form with ordinary nested names', functio
 
 it('uses the payload renderer for the production Plain Text PHP settings form', function () {
     $field = new PlainText(['placeholder' => 'Production value', 'multiline' => false]);
-    $field->errors()->add('charLimit', 'The field limit is invalid.');
-    $editable = new Crawler($field->getSettingsHtml());
-    $readOnly = new Crawler($field->getReadOnlySettingsHtml());
+    $field->errors()->add('fieldLimit', 'The field limit is invalid.');
+    $editableContext = new FormContext(errors: $field->errors()->getMessages());
+    $editable = new Crawler(app(FormHtmlRenderer::class)->render(
+        app(FormResolver::class)->resolve($field->settingsForm($editableContext), $editableContext),
+    ));
+    $readOnlyContext = new FormContext(mode: ControlMode::ReadOnly);
+    $readOnly = new Crawler(app(FormHtmlRenderer::class)->render(
+        app(FormResolver::class)->resolve($field->settingsForm($readOnlyContext), $readOnlyContext),
+    ));
 
     expect($editable->filter('[data-form-node="plain-text-field-limit"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="placeholder"][value="Production value"]'))->toHaveCount(1)

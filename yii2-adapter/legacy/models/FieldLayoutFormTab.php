@@ -12,11 +12,13 @@ if (false) {
      * @property-read string $name The tab’s name
      * @property-read string $id The tab’s HTML ID
      * @property-read string $content The tab’s HTML content
+     *
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\FieldLayoutFormTab} instead.
+     * @deprecated 6.0.0 use the renderer-neutral Form interfaces instead.
      */
-    class FieldLayoutFormTab extends \CraftCms\Cms\FieldLayout\FieldLayoutFormTab
+    class FieldLayoutFormTab extends \CraftCms\Yii2Adapter\FieldLayout\FieldLayoutFormTab
     {
     }
 }

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout;
+namespace CraftCms\Yii2Adapter\FieldLayout;
+
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 
 class FieldLayoutFormElement
 {
@@ -11,5 +13,6 @@ class FieldLayoutFormElement
         public bool $isConditional,
         public string|bool $html,
         public bool $isStatic,
-    ) {}
+    ) {
+    }
 }

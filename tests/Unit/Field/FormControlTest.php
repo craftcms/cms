@@ -63,3 +63,20 @@ it('provides a Form Control for every built-in field type', function (string $fi
     'time' => Time::class,
     'users' => Users::class,
 ]);
+
+it('preserves fixed Table column types', function () {
+    $types = ['checkbox', 'color', 'date', 'select', 'email', 'heading', 'lightswitch', 'multiline', 'number', 'singleline', 'time', 'url'];
+    $field = new Table(['columns' => array_combine($types, array_map(
+        fn (string $type): array => [
+            'heading' => ucfirst($type),
+            'handle' => $type,
+            'type' => $type,
+            ...($type === 'select' ? ['options' => [['label' => 'One', 'value' => 'one']]] : []),
+        ],
+        $types,
+    ))]);
+    $columns = $field->formControl(new FieldContext('value'))->props()['columns'];
+
+    expect(array_map(fn (array $column): string => $column['type'], $columns))->toBe(array_combine($types, $types))
+        ->and($columns['select']['options'])->toBe([['label' => 'One', 'value' => 'one']]);
+});

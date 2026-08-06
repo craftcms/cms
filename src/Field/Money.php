@@ -14,7 +14,13 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Money as MoneyControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -30,7 +36,6 @@ use Money\Money as MoneyLibrary;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Money field type
@@ -144,37 +149,51 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function getIcon(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return self::currencyIcon($this->currency);
+        $currencyOptions = [];
+        foreach ($this->_isoCurrencies as $currency) {
+            $currencyOptions[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
+        }
+
+        return Form::make([
+            FormField::make()
+                ->label(t('Currency'))
+                ->required()
+                ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),
+            FormField::make()
+                ->label(t('Default Value'))
+                ->control(Number::make('defaultValue')->step('any')->value($this->decimalSetting($this->defaultValue))),
+            FormField::make()
+                ->label(t('Min Value'))
+                ->control(Number::make('min')->step('any')->value($this->decimalSetting($this->min))),
+            FormField::make()
+                ->label(t('Max Value'))
+                ->control(Number::make('max')->step('any')->value($this->decimalSetting($this->max))),
+            FormField::make()
+                ->label(t('Show Currency'))
+                ->control(Lightswitch::make('showCurrency')->value($this->showCurrency)),
+            FormField::make()
+                ->label(t('Size'))
+                ->control(Number::make('size')->min(1)->value($this->size)),
+        ]);
     }
 
-    public function getSettingsHtml(): string
+    private function decimalSetting(int|float|null $value): ?float
     {
-        return $this->settingsHtml(false);
+        if ($value === null) {
+            return null;
+        }
+
+        $decimal = MoneyHelper::toDecimal(new MoneyLibrary($value, new Currency($this->currency)));
+
+        return $decimal === false ? null : (float) $decimal;
     }
 
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function getIcon(): string
     {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        foreach (['defaultValue', 'min', 'max'] as $attr) {
-            if ($this->$attr !== null) {
-                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
-                $this->$attr = $value !== false ? (float) $value : null;
-            }
-        }
-
-        return template('_components/fieldtypes/Money/settings', [
-            'field' => $this,
-            'currencies' => $this->_isoCurrencies,
-            'subUnits' => $this->subunits(),
-            'readOnly' => $readOnly,
-        ]);
+        return self::currencyIcon($this->currency);
     }
 
     #[Override]

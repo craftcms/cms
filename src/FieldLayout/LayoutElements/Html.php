@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use CraftCms\Cms\Support\Html as HtmlHelper;
 use InvalidArgumentException;
 use Override;
 
@@ -29,11 +27,6 @@ class Html extends FieldLayoutElement
     public function selectorHtml(): string
     {
         throw new NotSupportedException(sprintf('%s should not be included in user-modifiable field layouts.', self::class));
-    }
-
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return HtmlHelper::tag('div', $this->html);
     }
 
     #[Override]

@@ -27,7 +27,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Controls\ConditionBuilder as ConditionBuilderControl;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -38,7 +40,6 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\FieldSettingsAsset;
@@ -53,7 +54,6 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class FieldsController
 {
@@ -215,31 +215,20 @@ class FieldsController
         }
 
         if (isset($settings)) {
-            Typecast::configure($field, $settings);
+            $field = $this->fieldsService->createField(['type' => $type, ...$settings]);
         }
 
         $context = new FormContext(
-            namespace: 'settings',
-            values: ['settings' => $settings ?? []],
+            namespace: $request->input('namespace') ?: 'settings',
             refreshable: true,
         );
         $form = $field->settingsForm($context);
 
-        if ($form !== null) {
-            return new JsonResponse([
-                'form' => app(FormResolver::class)->resolve($form, $context),
-            ]);
-        }
-
-        $html = template('settings/fields/_type-settings', [
-            'field' => $field,
-            'namespace' => $request->input('namespace'),
-        ]);
+        $payload = $form === null ? null : app(FormResolver::class)->resolve($form, $context);
 
         return new JsonResponse([
-            'settingsHtml' => $html,
-            'headHtml' => $this->HtmlStack->headHtml(),
-            'bodyHtml' => $this->HtmlStack->bodyHtml(),
+            'form' => $payload,
+            'settingsHtml' => $payload === null ? '' : app(FormHtmlRenderer::class)->render($payload),
         ]);
     }
 
@@ -475,7 +464,7 @@ class FieldsController
     {
         $element = $this->fieldLayoutComponent($request);
         $namespace = Str::random(10);
-        $html = InputNamespace::namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
+        $html = InputNamespace::namespaceInputs(fn () => $element->renderSettingsHtml(), $namespace);
 
         return new JsonResponse([
             'settingsHtml' => $html,
@@ -726,6 +715,7 @@ class FieldsController
                 'missingFieldPlaceholder' => $missingFieldPlaceholder,
                 'supportedTranslationMethods' => $supportedTranslationMethods,
                 'readOnly' => $this->readOnly,
+                'settingsHtml' => $this->fieldSettingsHtml($field),
             ]);
 
         if (! $this->readOnly) {
@@ -785,5 +775,20 @@ JS, [
         }
 
         return $response;
+    }
+
+    private function fieldSettingsHtml(FieldInterface $field): string
+    {
+        $namespace = sprintf('types[%s]', Html::id($field::class));
+        $context = new FormContext(
+            namespace: $namespace,
+            errors: $field->errors()->getMessages(),
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+        );
+        $form = $field->settingsForm($context);
+
+        return $form === null
+            ? ''
+            : app(FormHtmlRenderer::class)->render(app(FormResolver::class)->resolve($form, $context));
     }
 }

@@ -13,7 +13,12 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range as RangeControl;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
@@ -22,7 +27,6 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
@@ -39,6 +43,21 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     public static function icon(): string
     {
         return 'slider';
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make()->label(t('Min Value'))->required()->control(Number::make('min')->step('any')->value($this->min)),
+            FormField::make()->label(t('Max Value'))->required()->control(Number::make('max')->step('any')->value($this->max)),
+            FormField::make()->label(t('Step Size'))->required()->control(Number::make('step')->step('any')->value($this->step)),
+            FormField::make()->label(t('Default Value'))->control(Number::make('defaultValue')->step('any')->value($this->defaultValue)),
+            FormField::make()
+                ->label(t('Suffix Text'))
+                ->instructions(t('Text that should be shown after the input.'))
+                ->control(Text::make('suffix')->value($this->suffix)),
+        ]);
     }
 
     #[Override]
@@ -118,25 +137,6 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             'max' => ['nullable', 'numeric', 'gte:min'],
             'step' => ['nullable', 'numeric'],
             'defaultValue' => ['nullable', 'numeric'],
-        ]);
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return template('_components/fieldtypes/Range/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
         ]);
     }
 

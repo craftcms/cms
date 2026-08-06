@@ -23,7 +23,6 @@ import './js/BaseElementIndexView.js';
 
 // Modals
 
-
 // Element thumb loader
 
 // Finally load the remaining files
@@ -35,7 +34,6 @@ import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
-import './js/ContentBlockEditor.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';

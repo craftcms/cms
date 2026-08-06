@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Str;
 use Override;
 
 use function CraftCms\Cms\currentUser;
@@ -64,38 +60,6 @@ class TitleField extends TextField
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Title');
-    }
-
-    #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        if (
-            $element &&
-            ! $static &&
-            (! isset($element->slug) || ElementHelper::isTempSlug($element->slug))
-        ) {
-            $language = $element->getSite()->getLanguage();
-            $charMap = $language !== app()->getLocale()
-                ? Str::asciiCharMap(true, $language)
-                : null;
-
-            HtmlStack::jsWithVars(fn ($titleId, $slugId, $charMap) => <<<JS
-(() => {
-  const slugInput = $('#' + $slugId);
-  if (slugInput.length && !slugInput.val().length) {
-    new Craft.SlugGenerator($('#' + $titleId), slugInput, {
-        charMap: $charMap,
-    })
-  }
-})();
-JS, [
-                InputNamespace::namespaceId($this->id()),
-                InputNamespace::namespaceId('slug'),
-                $charMap,
-            ]);
-        }
-
-        return parent::formHtml($element, $static);
     }
 
     #[Override]

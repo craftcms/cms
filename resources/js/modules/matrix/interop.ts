@@ -3,8 +3,8 @@
  * with. Matrix fields render on legacy-stack pages, where the webpack bundles
  * own several widgets this module must reuse rather than re-implement:
  *
- * - `Garnish.Select` (multi-select) and `Craft.Tabs` / `Craft.FormObserver` /
- *   `Craft.ElementEditor` have no jQuery-free ports yet, so instances are
+ * - `Garnish.Select` (multi-select), `Craft.Tabs`, and `Craft.ElementEditor`
+ *   have no jQuery-free ports yet, so instances are
  *   created/read through the page globals.
  * - Server-rendered action menus are initialized by the legacy bundle, which
  *   stores the `Garnish.DisclosureMenu` instance in jQuery data.
@@ -16,10 +16,10 @@
 import {jq as jqGlobal} from '@/common/utils/jquery';
 
 /** The page's jQuery, when the legacy bundle has loaded. */
-type JQueryLike = ((input: unknown) => {
+type JQueryLike = (input: unknown) => {
   data(key: string): unknown;
   data(key: string, value: unknown): unknown;
-}) & {param(data: Record<string, unknown>): string};
+};
 
 function jq(): JQueryLike | null {
   // Centralized jQuery seam; narrowed to the members Matrix interop uses.
@@ -40,17 +40,6 @@ export function jqData(el: Element, key: string): unknown {
  */
 export function setJqData(el: Element, key: string, value: unknown): void {
   jq()?.(el).data(key, value);
-}
-
-/** URL-encodes params with the legacy `$.param` (used for form-data suffixes). */
-export function jqParam(data: Record<string, unknown>): string {
-  const $ = jq();
-  if ($) {
-    return $.param(data);
-  }
-  return new URLSearchParams(
-    Object.entries(data).map(([k, v]) => [k, String(v)])
-  ).toString();
 }
 
 /** The legacy `Garnish.Select` surface used by {@link MatrixInput}. */
@@ -102,11 +91,6 @@ export interface LegacyElementEditor {
   handleDismissibleTips?(): void;
 }
 
-/** The legacy `Craft.FormObserver` surface used by {@link MatrixEntry}. */
-export interface LegacyFormObserver {
-  destroy(): void;
-}
-
 /**
  * Legacy runtime constructors/utilities reached through the page globals.
  * These members aren't part of the typed `CraftStatic` surface (yet) — narrow
@@ -125,10 +109,6 @@ export interface LegacyCraftRuntime {
     pasteElements(params: Record<string, unknown>): Promise<{id: number}[]>;
   };
   Tabs: new (tabs: unknown) => LegacyTabs;
-  FormObserver: new (
-    container: unknown,
-    callback: (data: string) => void
-  ) => LegacyFormObserver;
   elementTypeNames: Record<string, string[]>;
   getText(value: unknown): unknown;
   filterArray(arr: unknown[]): string[];

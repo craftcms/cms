@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\Event as YiiEvent;
-use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
@@ -210,23 +208,6 @@ trait LegacyConstants
                 YiiEvent::trigger(FieldLayout::class, FieldLayout::EVENT_DEFINE_UI_ELEMENTS, $yiiEvent);
 
                 $event->elements = $yiiEvent->elements;
-            }
-        });
-
-        Event::listen(function(FieldLayoutFormCreating $event) {
-            if (YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM)) {
-                $yiiEvent = new CreateFieldLayoutFormEvent([
-                    'form' => $event->form,
-                    'element' => $event->element,
-                    'static' => $event->static,
-                    'tabs' => $event->tabs,
-                ]);
-                $yiiEvent->sender = $event->fieldLayout;
-
-                YiiEvent::trigger(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM, $yiiEvent);
-
-                $event->tabs = $yiiEvent->tabs;
-                $event->static = $yiiEvent->static;
             }
         });
     }

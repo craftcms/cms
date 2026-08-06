@@ -10,7 +10,6 @@ use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use DateTimeInterface;
@@ -80,16 +79,5 @@ trait ConfigurableComponent
         }
 
         return $settings;
-    }
-
-    public function getSettingsHtml(): ?string
-    {
-        return null;
-    }
-
-    public function getReadOnlySettingsHtml(): ?string
-    {
-        // Just return the settings HTML with disabled inputs by default
-        return Html::disableInputs(fn () => $this->getSettingsHtml());
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
@@ -51,11 +50,6 @@ class HorizontalRule extends FieldLayoutElement
   </div>
 </div>
 HTML;
-    }
-
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return Html::tag('hr');
     }
 
     #[Override]

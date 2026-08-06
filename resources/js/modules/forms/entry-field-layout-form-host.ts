@@ -1,14 +1,29 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
+import {actionClient} from '@craftcms/ui';
 import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
 import FormRenderer from './FormRenderer.vue';
 import {inputName} from './runtime';
 import type {FormPayload} from './types';
 
 type ElementEditor = {
+  isFullPage?: boolean;
   settings: Record<string, any> & {
     updateTabs?: (tabs: string | null) => void;
   };
+  handleDismissibleTips?: () => void;
 };
+
+type CraftRuntime = typeof Craft & {
+  appendHeadHtml(html: string): Promise<void>;
+  appendBodyHtml(html: string): Promise<void>;
+  cp: typeof Craft.cp & {updateTabs(tabs: string | null): void};
+};
+
+export interface EntryFieldLayoutFormHost extends HTMLElement {
+  payload: FormPayload | null;
+  tabsUpdater: ((tabs: string | null) => void) | null;
+  requestMetadata: () => Record<string, unknown>;
+}
 
 export function defineEntryFieldLayoutFormHost(
   components: CpComponentRegistry
@@ -22,6 +37,8 @@ export function defineEntryFieldLayoutFormHost(
     class extends HTMLElement {
       readonly #payload = shallowRef<FormPayload | null>(null);
       #app: App | null = null;
+      tabsUpdater: ((tabs: string | null) => void) | null = null;
+      requestMetadata = (): Record<string, unknown> => ({});
 
       set payload(payload: FormPayload | null) {
         this.#payload.value = payload;
@@ -89,6 +106,7 @@ export function defineEntryFieldLayoutFormHost(
           ownerId: editor.settings.ownerId,
           siteId: editor.settings.siteId,
           provisional: editor.settings.isProvisionalDraft ? 1 : null,
+          ...this.requestMetadata(),
         };
         for (const [name, value] of Object.entries(metadata)) {
           if (value !== null && value !== undefined) {
@@ -102,11 +120,11 @@ export function defineEntryFieldLayoutFormHost(
           data.set(inputName([...rootScope, 'selectedTab']), selectedTab);
         }
 
-        const {data: response} = await Craft.sendActionRequest(
-          'POST',
+        const craft = Craft as CraftRuntime;
+        const {data: response} = await actionClient.post(
           'elements/update-field-layout',
+          data.toString(),
           {
-            data: data.toString(),
             headers: {
               ...(rootScope.length
                 ? {'X-Craft-Namespace': inputName(rootScope)}
@@ -117,16 +135,24 @@ export function defineEntryFieldLayoutFormHost(
           }
         );
 
-        if (!editor.settings.updateTabs) {
+        const updateTabs =
+          this.tabsUpdater ??
+          editor.settings.updateTabs ??
+          (editor.isFullPage ? craft.cp.updateTabs.bind(craft.cp) : undefined);
+        if (!updateTabs) {
           throw new Error('Entry Form refresh requires a tab updater.');
         }
-        editor.settings.updateTabs(response.tabs);
+        updateTabs(response.tabs);
 
         if (!response.form) {
           throw new Error(
             'The Entry FieldLayout did not return a Form payload.'
           );
         }
+
+        await craft.appendHeadHtml(response.headHtml);
+        await craft.appendBodyHtml(response.bodyHtml);
+        editor.handleDismissibleTips?.();
 
         return response.form;
       }

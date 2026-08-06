@@ -23,10 +23,8 @@ use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -854,19 +852,6 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        $active = DeltaRegistry::isActive() &&
-            ($element->id ?? false) &&
-            ! $static;
-
-        return DeltaRegistry::withActive($active, fn () => InputNamespace::namespaceInputs(
-            fn () => (string) parent::formHtml($element, $static),
-            'fields',
-        ));
-    }
-
-    #[Override]
     protected function useFieldset(): bool
     {
         try {
@@ -900,34 +885,6 @@ class CustomField extends BaseField
         }
 
         return $field->getLabelId();
-    }
-
-    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return null;
-        }
-
-        $field->static = $static;
-        $value = $element ? $element->getFieldValue($field->handle) : $field->normalizeValue(null, null);
-
-        if ($static) {
-            return $field->getStaticHtml($value, $element);
-        }
-
-        $isDirty = $element?->isFieldDirty($field->handle);
-        DeltaRegistry::registerName($field->handle, $isDirty);
-
-        $describedBy = $field->describedBy;
-        $field->describedBy = $this->describedBy($element, $static);
-
-        $html = $field->getInputHtml($value, $element);
-
-        $field->describedBy = $describedBy;
-
-        return $html !== '' ? $html : null;
     }
 
     #[Override]

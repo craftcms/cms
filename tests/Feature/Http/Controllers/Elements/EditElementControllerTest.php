@@ -200,7 +200,7 @@ it('returns a json editor payload for the current element', function () {
             ->where('content', fn (string $content) => str_contains($content, 'craft-entry-field-layout-form')
                 && str_contains($content, 'elements/save'))
             ->where('deltaNames', fn ($names) => collect($names)
-                ->contains(fn (string $name) => str_ends_with($name, '[title]')))
+                ->doesntContain(fn (string $name) => str_ends_with($name, '[title]')))
             ->where('bodyHtml', fn (string $html) => str_contains($html, sprintf('"elementId":%d', $entry->id))
                 && str_contains($html, sprintf('"canonicalId":%d', $entry->id))
                 && str_contains($html, '"isStatic":false')

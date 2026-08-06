@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout;
+namespace CraftCms\Yii2Adapter\FieldLayout;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\t;
@@ -13,40 +14,16 @@ class FieldLayoutFormTab extends Component
 {
     public FieldLayoutTab $layoutTab;
 
-    /**
-     * @var bool Whether the tab has any validation errors.
-     */
     public bool $hasErrors = false;
 
-    /**
-     * @var FieldLayoutFormElement[] The tab’s elements, whether they’re conditional, their HTML form HTML, and whether they were rendered statically.
-     */
+    /** @var FieldLayoutFormElement[] */
     public array $elements;
 
-    /**
-     * @var bool Whether the tab should be shown.
-     */
     public bool $visible;
-
-    public string $name {
-        get => $this->getName();
-    }
-
-    public string $id {
-        get => $this->getId();
-    }
-
-    public string $content {
-        get => $this->getContent();
-    }
 
     public function getName(): string
     {
-        if (! isset($this->layoutTab->name)) {
-            return '';
-        }
-
-        return t($this->layoutTab->name, category: 'site');
+        return isset($this->layoutTab->name) ? t($this->layoutTab->name, category: 'site') : '';
     }
 
     public function getId(): string
@@ -54,12 +31,9 @@ class FieldLayoutFormTab extends Component
         return $this->layoutTab->getHtmlId();
     }
 
-    /**
-     * Returns the tab anchor’s HTML ID.
-     */
     public function getTabId(): string
     {
-        return sprintf('tab-%s', $this->id);
+        return "tab-{$this->getId()}";
     }
 
     public function getUid(): ?string
@@ -67,21 +41,11 @@ class FieldLayoutFormTab extends Component
         return $this->layoutTab->uid;
     }
 
-    /**
-     * Returns the tab’s HTML content.
-     */
     public function getContent(): string
     {
         $components = [];
 
-        $html = Html::beginTag('craft-field-group');
         foreach ($this->elements as $formElement) {
-            if (is_array($formElement)) {
-                $components[] = $formElement[2] ?? null;
-
-                continue;
-            }
-
             if (is_string($formElement->html) && $formElement->html) {
                 $components[] = $formElement->html;
             } elseif ($formElement->isConditional) {
@@ -94,8 +58,7 @@ class FieldLayoutFormTab extends Component
                 ]);
             }
         }
-        $html .= implode("\n", $components);
 
-        return $html.Html::endTag('craft-field-group');
+        return Html::tag('craft-field-group', implode("\n", $components));
     }
 }

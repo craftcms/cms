@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Form;
 
-use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\InputNamespace;
+use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
+use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
 use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Form\Nodes\LegacyHtmlField;
@@ -30,7 +30,7 @@ class LegacyHtml
 
     /** @param string|list<string> $path */
     public function settings(
-        ConfigurableComponentInterface $component,
+        LegacySettingsComponent $component,
         string|array $path,
         ?string $namespace = null,
         LegacyHtmlMode $mode = LegacyHtmlMode::Editable,
@@ -49,7 +49,7 @@ class LegacyHtml
 
     /** @param string|list<string> $path */
     public function field(
-        FieldInterface $field,
+        LegacyField $field,
         mixed $value,
         ?ElementInterface $element,
         string|array $path,

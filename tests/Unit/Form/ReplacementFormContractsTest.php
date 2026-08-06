@@ -7,8 +7,10 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Form;
@@ -29,6 +31,14 @@ it('declares the replacement Form operations on their public contracts', functio
         ->and((string) $formNode->getReturnType())->toBe('?'.Node::class);
 });
 
+it('does not expose the replaced HTML rendering contracts', function () {
+    expect(method_exists(ConfigurableComponentInterface::class, 'getSettingsHtml'))->toBeFalse()
+        ->and(method_exists(FieldInterface::class, 'getInputHtml'))->toBeFalse()
+        ->and(method_exists(FieldLayoutElement::class, 'formHtml'))->toBeFalse()
+        ->and(method_exists(FieldLayout::class, 'createForm'))->toBeFalse()
+        ->and(class_exists(FieldLayoutForm::class))->toBeFalse();
+});
+
 it('uses a non-PlainText field settings Form through the public contract', function () {
     $field = new class extends Number
     {
@@ -41,6 +51,5 @@ it('uses a non-PlainText field settings Form through the public contract', funct
     };
     $viewModel = new FieldEditViewModel($field, app(Fields::class));
 
-    expect($viewModel->settings())->toBeNull()
-        ->and($viewModel->settingsForm()?->nodes)->toHaveCount(1);
+    expect($viewModel->settingsForm()?->nodes)->toHaveCount(1);
 });

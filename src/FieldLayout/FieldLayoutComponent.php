@@ -217,7 +217,7 @@ abstract class FieldLayoutComponent extends Component
      * Subclasses should override [[settingsHtml()]] instead of this method.
      * :::
      */
-    final public function getSettingsHtml(): string
+    final public function renderSettingsHtml(): string
     {
         return implode("\n<hr>\n", array_filter([
             $this->settingsHtml(),

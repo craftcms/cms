@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -388,91 +386,6 @@ abstract class BaseField extends FieldLayoutElement
         return null;
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        $inputHtml = $this->inputHtml($element, $static);
-        if ($inputHtml === null) {
-            return null;
-        }
-
-        $showStatus = $this->showStatus();
-        $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
-        $label = $this->showLabel() ? $this->label() : null;
-        $instructions = $this->instructionsText($element, $static);
-        $tip = $this->tipText($element, $static);
-        $warning = $this->warningText($element, $static);
-        $translatable = $this->translatable($element, $static);
-        $actionMenuItems = $this->actionMenuItems($element, $static);
-
-        event($event = new FieldLayoutActionMenuItemsResolving($element, $actionMenuItems, $static));
-        $actionMenuItems = $event->items;
-
-        if (
-            $this->uid &&
-            $element?->id &&
-            ! $static &&
-            $this->isCrossSiteCopyable($element) &&
-            $this->translatable($element, $static) &&
-            $element->getIsCrossSiteCopyable()
-        ) {
-            // prepare namespace for the purpose of copying
-            $namespace = InputNamespace::get();
-
-            $actionMenuItems = array_filter([
-                [
-                    'icon' => 'clone',
-                    'label' => t('Copy value from site…'),
-                    'attributes' => [
-                        'data' => [
-                            'cross-site-copy' => true,
-                            'element-id' => $element->id,
-                            'layout-element' => $this->uid,
-                            'label' => $label,
-                            'namespace' => ($namespace && $namespace !== 'fields')
-                                ? Str::chopEnd($namespace, '[fields]')
-                                : null,
-                        ],
-                    ],
-                ],
-                ! empty($actionMenuItems) ? ['type' => 'hr'] : null,
-                ...$actionMenuItems,
-            ]);
-        }
-
-        return FormFields::fieldHtml($inputHtml, [
-            'fieldClass' => array_keys(array_filter([
-                'no-status' => ! $showStatus,
-            ])),
-            'fieldset' => $this->useFieldset(),
-            'id' => $this->id(),
-            'labelId' => $this->labelId(),
-            'instructionsId' => $this->instructionsId(),
-            'tipId' => $this->tipId(),
-            'warningId' => $this->warningId(),
-            'errorsId' => $this->errorsId(),
-            'statusId' => $showStatus ? $this->statusId() : null,
-            'fieldAttributes' => $this->containerAttributes($element, $static),
-            'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
-            'labelAttributes' => $this->labelAttributes($element, $static),
-            'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
-            'static' => $static,
-            'label' => $label !== null ? Html::encode($label) : null,
-            'attribute' => $this->attribute(),
-            'showAttribute' => $this->showAttribute(),
-            'required' => ! $static && $this->required,
-            'instructions' => $instructions !== null ? Html::encode($instructions) : null,
-            'instructionsPosition' => $this->instructionsPosition,
-            'tip' => $tip !== null ? Html::encode($tip) : null,
-            'warning' => $warning !== null ? Html::encode($warning) : null,
-            'orientation' => $this->orientation($element, $static),
-            'translatable' => $translatable,
-            'translationDescription' => $this->translationDescription($element, $static),
-            'actionMenuItems' => $actionMenuItems,
-            // show errors regardless of whether the field is static
-            'errors' => $this->fieldErrors($element),
-        ]);
-    }
-
     /**
      * Returns the HTML for an element’s thumbnail.
      *
@@ -794,8 +707,6 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    abstract protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string;
-
     /**
      * Returns the field’s tip text.
      *

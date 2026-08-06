@@ -1,14 +1,13 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/ui';
+  import {actionClient, t, toHandle} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
@@ -44,7 +43,6 @@
     supportedTranslationMethods: Record<string, string[]>;
     translationMethodOptions: Array<{value: string; label: string}>;
     isMultiSite: boolean;
-    settings: CraftCms.Cms.View.HtmlFragment | null;
     settingsForm: FormPayload | null;
     readOnly: boolean;
     metadataHtml: string | null;
@@ -74,12 +72,6 @@
     handleGenerator.stop();
   }
 
-  // Types that have not adopted Form remain legacy HTML islands. Their inputs
-  // are serialized out of the DOM when the type changes or the field is saved.
-  const settingsHost = ref<HTMLElement | null>(null);
-  const settingsFragment = ref<CraftCms.Cms.View.HtmlFragment | null>(
-    props.settings
-  );
   const settingsPayload = ref<FormPayload | null>(props.settingsForm);
   const settingsRenderer = ref<{
     advanceBaseline: () => void;
@@ -95,10 +87,6 @@
   watch(
     () => form.type,
     async (type, oldType) => {
-      // Serialize before the island unmounts so compatible settings carry over.
-      const settings = settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '';
       const values = settingsRenderer.value?.currentValues().settings;
 
       const requestId = ++settingsRequestId;
@@ -108,7 +96,6 @@
         const {data} = await actionClient.post(renderSettings().url, {
           type,
           oldType,
-          settings,
           values,
           namespace: `types[${typeOptionFor(type)?.id ?? ''}]`,
           oldNamespace: `types[${typeOptionFor(oldType)?.id ?? ''}]`,
@@ -119,13 +106,6 @@
         }
 
         settingsPayload.value = data.form ?? null;
-        settingsFragment.value = data.form
-          ? null
-          : {
-              html: data.settingsHtml ?? '',
-              headHtml: data.headHtml ?? '',
-              bodyHtml: data.bodyHtml ?? '',
-            };
       } catch {
         // Keep the last valid presentation and current values.
       } finally {
@@ -188,13 +168,6 @@
   }
 
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => ({
-      ...data,
-      settings: settingsPayload.value ? data.settings : undefined,
-      typeSettings: settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '',
-    }),
     onSuccess: () => settingsRenderer.value?.advanceBaseline(),
   });
 
@@ -338,7 +311,7 @@
 
         <hr />
 
-        <div ref="settingsHost">
+        <div>
           <div :id="currentTypeOption?.id">
             <div v-if="settingsLoading" class="flex justify-center p-4">
               <craft-spinner></craft-spinner>
@@ -350,11 +323,6 @@
               :refresh="refreshSettings"
               :errors="settingsErrors"
               @update:mutation="form.settings = $event"
-            />
-            <HtmlFragmentRenderer
-              v-else
-              as="craft-field-group"
-              :fragment="settingsFragment"
             />
           </div>
         </div>

@@ -11,8 +11,6 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\View\HtmlFragment;
 use Illuminate\Support\Collection;
 
 /**
@@ -23,8 +21,6 @@ use Illuminate\Support\Collection;
  *     url: string|null,
  *     type: class-string<FsInterface>,
  *     settingsForm: FormPayload|null,
- *     settingsHtml: string|null,
- *     settingsFragment: HtmlFragment|null,
  *     showHasUrlSetting: bool,
  *     showUrlSetting: bool,
  *     ...
@@ -116,18 +112,11 @@ class FilesystemsEditViewModel extends ViewModel
             refreshable: true,
         );
         $form = $filesystem->settingsForm($context);
-        $settingsHtml = fn (): string => (string) ($this->readOnly
-            ? $filesystem->getReadOnlySettingsHtml()
-            : $filesystem->getSettingsHtml());
-
-        $legacy = $filesystem->hasLegacySettingsHtml();
 
         return [
             ...$filesystem->toArray(),
             'type' => $filesystem::class,
             'settingsForm' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
-            'settingsHtml' => $form === null && ! $legacy ? $settingsHtml() : null,
-            'settingsFragment' => $form === null && $legacy ? HtmlStack::capture($settingsHtml) : null,
             'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
             'showUrlSetting' => $filesystem->getShowUrlSetting(),
         ];
