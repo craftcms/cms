@@ -1,6 +1,7 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
+import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
 import FormRenderer from './FormRenderer.vue';
@@ -17,6 +18,8 @@ import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
+import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
+import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
@@ -51,6 +54,7 @@ export function registerFormComponents(
   components.register('craft:select', SelectControl);
   components.register('craft:lightswitch', LightswitchControl);
   components.register('craft:choice', ChoiceControl);
+  components.register('craft:condition-builder', ConditionBuilderControl);
   components.register('craft:number', ScalarControl);
   components.register('craft:range', ScalarControl);
   components.register('craft:date', ScalarControl);
@@ -64,6 +68,14 @@ export function registerFormComponents(
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
+  components.register(
+    'craft:grouped-entry-type-manager',
+    GroupedEntryTypeManagerControl
+  );
+  components.register(
+    'craft:field-layout-designer',
+    FieldLayoutDesignerControl
+  );
   components.register('craft:matrix', MatrixControl);
   components.register('craft:content-block', ContentBlockControl);
 }

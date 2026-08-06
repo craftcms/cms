@@ -135,4 +135,11 @@ abstract class Control implements ControlContract
     {
         return [];
     }
+
+    protected static function parentInputName(string $name): string
+    {
+        $position = strrpos($name, '[');
+
+        return $position === false ? '' : substr($name, 0, $position);
+    }
 }

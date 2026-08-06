@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -23,6 +24,9 @@ use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Controls\ConditionBuilder as ConditionBuilderControl;
+use CraftCms\Cms\Form\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
+use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
@@ -237,6 +241,85 @@ class FieldsController
             'headHtml' => $this->HtmlStack->headHtml(),
             'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
+    }
+
+    public function renderFieldLayoutDesigner(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'elementType' => ['required', 'string', new ElementTypeRule],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+            'customizableTabs' => ['required', 'boolean'],
+        ]);
+
+        return new JsonResponse([
+            'html' => FieldLayoutDesignerControl::designerHtml(
+                $data['value'],
+                $data['elementType'],
+                $data['name'],
+                $data['disabled'],
+                $data['customizableTabs'],
+            ),
+        ]);
+    }
+
+    public function renderGroupedEntryTypeManager(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        return new JsonResponse([
+            'html' => GroupedEntryTypeManagerControl::managerHtml(
+                $data['value'],
+                $data['name'],
+                $data['disabled'],
+            ),
+        ]);
+    }
+
+    public function renderConditionBuilder(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'conditionClass' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! is_string($value) || ! is_a($value, BaseCondition::class, true)) {
+                    $fail("The {$attribute} field must be a condition class.");
+                }
+            }],
+            'queryParams' => ['required', 'array'],
+            'queryParams.*' => ['string'],
+            'forProjectConfig' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        return new JsonResponse([
+            'html' => ConditionBuilderControl::builderHtml(
+                $data['value'],
+                $data['conditionClass'],
+                $data['queryParams'],
+                $data['forProjectConfig'],
+                $data['name'],
+                $data['disabled'],
+            ),
+        ]);
+    }
+
+    public function normalizeConditionBuilder(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'serialized' => ['required', 'string'],
+            'path' => ['required', 'array'],
+            'path.*' => ['required', 'string'],
+        ]);
+        parse_str((string) $data['serialized'], $values);
+        $config = Arr::get($values, implode('.', $data['path']), []);
+
+        return new JsonResponse(['value' => is_array($config) ? $config : []]);
     }
 
     public function store(Request $request): Response|CpScreenResponse

@@ -3,10 +3,15 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
@@ -43,6 +48,10 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['getJson', [FieldsController::class, 'index'], false],
     ['getJson', [FieldsController::class, 'edit'], false],
     ['postJson', [FieldsController::class, 'renderSettings'], true],
+    ['postJson', [FieldsController::class, 'renderFieldLayoutDesigner'], true],
+    ['postJson', [FieldsController::class, 'renderGroupedEntryTypeManager'], true],
+    ['postJson', [FieldsController::class, 'renderConditionBuilder'], true],
+    ['postJson', [FieldsController::class, 'normalizeConditionBuilder'], true],
     ['postJson', [FieldsController::class, 'store'], true],
     ['postJson', [FieldsController::class, 'renderLayoutComponentSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutTabSettings'], true],
@@ -178,6 +187,50 @@ it('can render the settings of a field', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
     ])->assertOk();
+});
+
+it('renders composite field settings Controls', function (string $type, string $component, string $action, string $htmlFragment) {
+    $field = Fields::createField($type);
+    $context = new FormContext(namespace: 'settings');
+    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $control = collect($payload->nodes)
+        ->first(fn ($node) => $node->control?->component === $component)
+        ->control;
+
+    $data = [
+        'value' => data_get($payload->values, implode('.', $control->path)),
+        'name' => 'settings['.end($control->path).']',
+        'disabled' => false,
+        ...$control->props,
+    ];
+
+    $this->postJson(action([FieldsController::class, $action]), $data)
+        ->assertOk()
+        ->assertJsonPath('html', fn (string $html): bool => str_contains($html, $htmlFragment));
+})->with([
+    'field layout designer' => [ContentBlock::class, 'craft:field-layout-designer', 'renderFieldLayoutDesigner', 'field-layout'],
+    'grouped entry type manager' => [Matrix::class, 'craft:grouped-entry-type-manager', 'renderGroupedEntryTypeManager', 'craft-entry-type-manager'],
+    'condition builder' => [Entries::class, 'craft:condition-builder', 'renderConditionBuilder', 'condition-container'],
+]);
+
+it('rejects non-condition classes from the condition builder endpoint', function () {
+    $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [
+        'value' => [],
+        'conditionClass' => PlainText::class,
+        'queryParams' => [],
+        'forProjectConfig' => false,
+        'name' => 'settings[selectionCondition]',
+        'disabled' => false,
+    ])->assertUnprocessable()->assertJsonValidationErrors('conditionClass');
+});
+
+it('normalizes namespaced condition builder values', function () {
+    $this->postJson(action([FieldsController::class, 'normalizeConditionBuilder']), [
+        'serialized' => http_build_query([
+            'settings' => ['selectionCondition' => ['conditionRules' => [['operator' => 'and']]]],
+        ]),
+        'path' => ['settings', 'selectionCondition'],
+    ])->assertOk()->assertJsonPath('value.conditionRules.0.operator', 'and');
 });
 
 it('refreshes Form settings from the complete current value snapshot', function () {

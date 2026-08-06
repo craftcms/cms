@@ -287,6 +287,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
+            Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
+            Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
+            Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
+            Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);

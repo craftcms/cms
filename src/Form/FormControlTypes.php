@@ -10,10 +10,13 @@ use CraftCms\Cms\Form\Controls\Address;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Controls\ContentBlock;
 use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -43,12 +46,15 @@ class FormControlTypes extends TypeRegistry
     protected const array DEFAULT_TYPES = [
         Address::class,
         Choice::class,
+        ConditionBuilder::class,
         Color::class,
         Combobox::class,
         ContentBlock::class,
         Date::class,
         DateTime::class,
         ElementSelect::class,
+        FieldLayoutDesigner::class,
+        GroupedEntryTypeManager::class,
         IconPicker::class,
         Lightswitch::class,
         Link::class,
