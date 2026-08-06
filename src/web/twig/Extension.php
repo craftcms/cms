@@ -149,11 +149,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getNodeVisitors(): array
     {
+        $eventTagAdder = new EventTagAdder($this->view);
         return [
             new Profiler(),
             new GetAttrAdjuster(),
-            new EventTagFinder(),
-            new EventTagAdder($this->view),
+            new EventTagFinder($eventTagAdder),
+            $eventTagAdder,
         ];
     }
 

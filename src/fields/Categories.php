@@ -133,7 +133,9 @@ class Categories extends BaseRelationField
 
                     $finalIds = array_map(fn(Category $category) => $category->id, $categories);
                     $query->where(['elements.id' => $finalIds]);
-                    $query->orderBy([new FixedOrderExpression('elements.id', $finalIds, Craft::$app->getDb())]);
+                    if (!empty($finalIds)) {
+                        $query->orderBy([new FixedOrderExpression('elements.id', $finalIds, Craft::$app->getDb())]);
+                    }
                 },
             ]));
         }
