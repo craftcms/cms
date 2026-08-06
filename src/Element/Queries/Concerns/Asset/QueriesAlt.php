@@ -26,17 +26,17 @@ trait QueriesAlt
                 return;
             }
 
-            $hasAltCondition = function (Builder $query) {
-                $query->where('assets_sites.alt', '!=', '')
-                    ->whereNotNull('assets_sites.alt');
-            };
-
-            $withoutAltCondition = function (Builder $query) {
-                $query->where('assets_sites.alt', '=', '')
-                    ->orWhereNull('assets_sites.alt');
-            };
-
-            $assetQuery->where($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
+            if ($this->hasAlt) {
+                $assetQuery->where(function (Builder $query) {
+                    $query->where('assets_sites.alt', '!=', '')
+                        ->whereNotNull('assets_sites.alt');
+                });
+            } else {
+                $assetQuery->where(function (Builder $query) {
+                    $query->where('assets_sites.alt', '=', '')
+                        ->orWhereNull('assets_sites.alt');
+                });
+            }
         });
     }
 
