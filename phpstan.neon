@@ -8,6 +8,17 @@ parameters:
     paths:
         - src
         - config
+    excludePaths:
+        analyse:
+            - src/Support/Facades
+    ignoreErrors:
+        -
+            message: '#CraftCms\\Cms\\Support\\Facades\\Elements::eagerLoadElements\(\)#'
+            identifier: argument.type
+        -
+            message: '#Unable to resolve the template type (TKey|TValue) in call to function collect#'
+            identifier: argument.templateType
+            path: src/Asset/Commands/Concerns/IndexesAssets.php
     stubFiles:
         - yii2-adapter/stubs/laravel-ruleset-validation.stub
         - yii2-adapter/stubs/_generated.stub
