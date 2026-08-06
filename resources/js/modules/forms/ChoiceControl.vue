@@ -11,8 +11,14 @@
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Form.Enums.ChoicePresentation;
+  type ChoiceOption = {
+    label: string;
+    labelHtml?: string;
+    value: ChoiceValue;
+    disabled?: boolean;
+  };
   type ChoiceControlProps = {
-    options: Array<{label: string; value: ChoiceValue; disabled?: boolean}>;
+    options: ChoiceOption[];
     multiple: boolean;
     presentation: ChoicePresentation;
   };
@@ -162,7 +168,8 @@
       :disabled="!editable || option.disabled"
       @click="onButtonClicked(option.value)"
     >
-      {{ option.label }}
+      <span v-if="option.labelHtml" v-html="option.labelHtml" />
+      <template v-else>{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
   <component
@@ -211,7 +218,10 @@
         :aria-invalid="invalid ? 'true' : undefined"
         @change="onOptionChanged"
       />
-      <label slot="label" :for="optionId(index)">{{ option.label }}</label>
+      <label slot="label" :for="optionId(index)">
+        <span v-if="option.labelHtml" v-html="option.labelHtml" />
+        <template v-else>{{ option.label }}</template>
+      </label>
     </component>
   </component>
 </template>

@@ -14,10 +14,11 @@ use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Form\ControlPayload;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use Illuminate\Support\HtmlString;
 
 class Choice extends Control
 {
-    /** @var list<array{label: string, value: bool|float|int|string, disabled?: bool}> */
+    /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -46,7 +47,7 @@ class Choice extends Control
         return 'craft:choice';
     }
 
-    /** @param list<array{label: string, value: bool|float|int|string, disabled?: bool}> $options */
+    /** @param list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}> $options */
     public function options(array $options): static
     {
         $this->options = $options;
@@ -132,7 +133,7 @@ class Choice extends Control
                 ->value($optionValue)
                 ->checked(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
-                ->label($option['label'])
+                ->label(self::optionLabel($option))
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
                     'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
@@ -160,7 +161,7 @@ class Choice extends Control
                 ->value($optionValue)
                 ->checked(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
-                ->label($option['label'])
+                ->label(self::optionLabel($option))
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
                     'required' => $attributes['required'],
@@ -214,7 +215,7 @@ class Choice extends Control
             $optionValue = (string) $option['value'];
 
             return Button::make()
-                ->label($option['label'])
+                ->label(self::optionLabel($option))
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));
@@ -230,6 +231,14 @@ class Choice extends Control
     private static function multipleName(?string $name): ?string
     {
         return $name === null ? null : "{$name}[]";
+    }
+
+    /** @param array{label: string, labelHtml?: string} $option */
+    private static function optionLabel(array $option): string|HtmlString
+    {
+        return isset($option['labelHtml'])
+            ? new HtmlString($option['labelHtml'])
+            : $option['label'];
     }
 
     /**
