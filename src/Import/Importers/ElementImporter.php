@@ -494,7 +494,8 @@ class ElementImporter extends BaseImporter
                 ? $field->serializeValue($element->getFieldValue($handle), $element)
                 : $element->getFieldValue($handle);
 
-            if ($oldValue != $newValue) {
+            // using !== cause the order of the keys is important here
+            if ($oldValue !== $newValue) {
                 return true;
             }
         }
