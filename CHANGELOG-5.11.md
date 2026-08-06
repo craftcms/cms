@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 5.11 (WIP)
 
+### Content Management
+- Asset alt text no longer gets propagated to all sites the first time it’s filled in. ([#19067](https://github.com/craftcms/cms/pull/19067)) 
+
 ### Development
 - The `params` argument of the `url()` Twig function now accepts `false` to remove all params from the passed-in URL. ([#19102](https://github.com/craftcms/cms/pull/19102))
 - Added `craft\web\DbSession`, which should be used instead of `yii\web\DbSession` to prevent “headers already sent” warnings from getting logged. ([#19139](https://github.com/craftcms/cms/issues/19139))
