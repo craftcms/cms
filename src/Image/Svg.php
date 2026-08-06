@@ -128,6 +128,7 @@ class Svg extends Image
         return $this;
     }
 
+    /** @param array{x:numeric,y:numeric}|string $cropPosition */
     public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         // SVGs don’t support focal points yet

@@ -53,6 +53,7 @@ class Money extends Directive
         return 'money';
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): \Money\Money|string|false
     {
         if (! $value instanceof \Money\Money) {

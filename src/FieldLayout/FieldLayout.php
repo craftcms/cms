@@ -27,7 +27,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -43,10 +42,14 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ *
+ * @phpstan-type GeneratedField array{uid: string, name?: string, handle?: string|array{value: string, hasErrors: bool}, template?: string}
+ * @phpstan-type GeneratedFieldConfig array{uid?: string, name?: string, handle?: string, template?: string}
+ */
 class FieldLayout extends Component
 {
-    use EvaluatesClosures;
     use LegacyConstants;
 
     public ?int $id = null;
@@ -107,18 +110,24 @@ class FieldLayout extends Component
     private ?array $_indexedCustomFields = null;
 
     /**
+     * @var list<GeneratedField>|null
+     *
      * @see getGeneratedFields()
      * @see setGeneratedFields()
      */
     private ?array $_generatedFields = null;
 
     /**
+     * @var list<string>
+     *
      * @see getCardView()
      * @see setCardView()
      */
     private array $_cardView;
 
     /**
+     * @var array<string, array{label: string, placeholder?: mixed}>
+     *
      * @see cardAttributes()
      */
     private array $_cardAttributes;
@@ -129,6 +138,7 @@ class FieldLayout extends Component
      */
     private string $_cardThumbAlignment;
 
+    /** @param array<string, mixed> $config */
     public function __construct(
         array $config = [],
     ) {
@@ -176,9 +186,8 @@ class FieldLayout extends Component
      *
      * @param  Closure(FieldLayoutTab): mixed|null  $configure
      */
-    public function tab(string|Closure $name, ?Closure $configure = null): static
+    public function tab(string $name, ?Closure $configure = null): static
     {
-        $name = $this->evaluate($name);
         $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
 
         if ($tab === null) {
@@ -239,6 +248,7 @@ class FieldLayout extends Component
     /**
      * Creates a new field layout from the given config.
      */
+    /** @param array<string, mixed> $config */
     public static function createFromConfig(array $config): self
     {
         $tabConfigs = Arr::pull($config, 'tabs');
@@ -275,6 +285,7 @@ class FieldLayout extends Component
         ]);
     }
 
+    /** @param list<FieldInterface> $customFields */
     public function validateFields(array $customFields, Closure $fail): void
     {
         // Make sure no field handles are duplicated or using one of our reserved attribute names
@@ -360,7 +371,7 @@ class FieldLayout extends Component
      *
      * @param  array  $tabs  An array of the layout’s tabs, which can either be FieldLayoutTab objects or arrays defining the tab’s attributes.
      *
-     * @phpstan-param array<array|FieldLayoutTab> $tabs
+     * @phpstan-param array<array<string, mixed>|FieldLayoutTab> $tabs
      */
     public function setTabs(array $tabs): void
     {
@@ -412,16 +423,19 @@ class FieldLayout extends Component
         $this->reset();
     }
 
+    /** @return list<GeneratedField> */
     public function getGeneratedFields(): array
     {
         return $this->_generatedFields ?? [];
     }
 
+    /** @return GeneratedField|null */
     public function getGeneratedFieldByUid(string $uid): ?array
     {
         return array_find($this->getGeneratedFields(), fn (array $field) => $field['uid'] === $uid);
     }
 
+    /** @param list<GeneratedFieldConfig>|null $fields */
     public function setGeneratedFields(?array $fields): void
     {
         if (empty($fields)) {
@@ -438,13 +452,15 @@ class FieldLayout extends Component
         $this->_generatedFields = array_values($fields);
     }
 
-    public function generatedFields(array|Closure|null $fields): static
+    /** @param list<GeneratedFieldConfig>|null $fields */
+    public function generatedFields(?array $fields): static
     {
-        $this->setGeneratedFields($this->evaluate($fields));
+        $this->setGeneratedFields($fields);
 
         return $this;
     }
 
+    /** @return list<string> */
     public function getCardView(): array
     {
         if (! isset($this->_cardView)) {
@@ -457,7 +473,7 @@ class FieldLayout extends Component
     /**
      * Sets the layout’s card view makeup.
      *
-     * @param  array|null  $items  An array of the layout’s card view items
+     * @param  list<string>|null  $items  An array of the layout’s card view items
      */
     public function setCardView(?array $items): void
     {
@@ -466,16 +482,17 @@ class FieldLayout extends Component
         $this->reset();
     }
 
-    public function cardView(array|Closure|null $items): static
+    /** @param list<string>|null $items */
+    public function cardView(?array $items): static
     {
-        $this->setCardView($this->evaluate($items));
+        $this->setCardView($items);
 
         return $this;
     }
 
-    public function thumbFieldKey(string|Closure|null $key): static
+    public function thumbFieldKey(?string $key): static
     {
-        $this->thumbFieldKey = $this->evaluate($key);
+        $this->thumbFieldKey = $key;
 
         return $this;
     }
@@ -510,10 +527,8 @@ class FieldLayout extends Component
         $this->_cardThumbAlignment = $alignment ?? 'end';
     }
 
-    public function cardThumbAlignment(string|Closure|null $alignment = null): static
+    public function cardThumbAlignment(?string $alignment = null): static
     {
-        $alignment = $this->evaluate($alignment);
-
         if ($alignment !== null && ! in_array($alignment, ['start', 'end'], true)) {
             throw new InvalidArgumentException("Invalid card thumbnail alignment: $alignment");
         }
@@ -684,6 +699,9 @@ class FieldLayout extends Component
 
     /**
      * Returns the field layout’s config.
+     */
+    /**
+     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string}|null
      */
     public function getConfig(): ?array
     {
@@ -1181,6 +1199,7 @@ class FieldLayout extends Component
         return $html;
     }
 
+    /** @return array<string, array{label: string, placeholder?: mixed}> */
     private function cardAttributes(): array
     {
         return $this->_cardAttributes ??= $this->type::cardAttributes($this);
@@ -1244,7 +1263,7 @@ class FieldLayout extends Component
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
-     * @param  array  $config  The [[FieldLayoutForm]] config
+     * @param  array{tabIdPrefix?: string|null, errorKeyPrefix?: string|null, namespace?: string|null, registerDeltas?: bool|null, visibleElements?: array<string, list<string>>|null, staticElements?: array<string, list<string>>|null}  $config  The [[FieldLayoutForm]] config
      */
     public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {

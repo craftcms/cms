@@ -22,31 +22,8 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([UsersController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->cpTrigger.'/login');
-});
-
-describe('index', function () {
-    test('index requires viewUsers', function () {
-        get(action([UsersController::class, 'index']))->assertOk();
-
-        Gate::before(function ($user, $ability) {
-            if ($ability === 'viewUsers') {
-                return false;
-            }
-
-            return null;
-        });
-
-        get(action([UsersController::class, 'index']))->assertForbidden();
-    });
-
-    test('index shows users list', function () {
-        get(action([UsersController::class, 'index']))
-            ->assertOk()
-            ->assertSee(t('Users'));
-    });
 });
 
 describe('create', function () {

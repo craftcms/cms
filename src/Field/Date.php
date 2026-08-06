@@ -280,6 +280,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
+    /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -408,6 +409,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return DateFieldConditionRule::class;
     }
 
+    /** @return array{name:string|null, type:DateTimeType, resolve:\Closure} */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -428,6 +430,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ];
     }
 
+    /** @return array{name:string|null, type:DateTimeType, description:string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

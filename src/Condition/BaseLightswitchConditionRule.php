@@ -15,6 +15,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
 {
     public bool $value = true;
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {

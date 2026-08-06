@@ -105,6 +105,7 @@ class DeprecationCollector extends DataCollector implements AssetProvider, Rende
     }
 
     /**
+     * @param  array<string, mixed>  $trace
      * @return array{
      *     call: string,
      *     file: string|null,
@@ -129,6 +130,7 @@ class DeprecationCollector extends DataCollector implements AssetProvider, Rende
         ];
     }
 
+    /** @param array<string, mixed> $trace */
     private function formatTraceCall(array $trace): string
     {
         $class = $trace['class'] ?? $trace['objectClass'] ?? null;

@@ -24,6 +24,8 @@ readonly class NestedElementsController
 
     public function reorder(NestedElementsRequest $request): Response
     {
+        $request->authorizeReorder();
+
         $this->elements->reorderNestedElements(
             $request->owner(),
             $request->nestedElements(),

@@ -7,11 +7,13 @@ namespace CraftCms\Cms\Element\Models;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Draft extends BaseModel
 {
+    /** @use HasFactory<Factory<Draft>> */
     use HasFactory;
 
     #[\Override]

@@ -48,6 +48,7 @@ use Tpetry\QueryExpressions\Value\Value;
 #[Singleton]
 class AssetIndexer
 {
+    /** @var Collection<int, IndexingSession> */
     public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();
     }
@@ -58,6 +59,7 @@ class AssetIndexer
         private readonly Volumes $volumes,
     ) {}
 
+    /** @return Generator<int, FsListing> */
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
@@ -109,7 +111,7 @@ class AssetIndexer
         }
     }
 
-    /** @return Collection<IndexingSession> */
+    /** @return Collection<int, IndexingSession> */
     public function getExistingIndexingSessions(): Collection
     {
         return AssetIndexingSessionModel::query()
@@ -467,6 +469,7 @@ class AssetIndexer
         return $result ? new AssetIndexEntry((array) $result) : null;
     }
 
+    /** @param array{inProgress?:bool, completed?:bool, recordId?:int, isSkipped?:bool, processedEntries?:int} $data */
     public function updateIndexEntry(int $entryId, array $data): void
     {
         $data = array_intersect_key(

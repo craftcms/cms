@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Html as HtmlHelper;
 
 class Html extends FieldLayoutElement
 {
+    /** @param array<string, mixed> $config */
     public function __construct(private readonly string $html, array $config = [])
     {
         parent::__construct($config);

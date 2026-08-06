@@ -26,7 +26,7 @@ class FormActionsResolving
 {
     public function __construct(
         /**
-         * @var array The form actions that will be displayed for the current page.
+         * @var list<array<string, mixed>> The form actions that will be displayed for the current page.
          *
          * Each action should be defined by an array with any of the following keys:
          *

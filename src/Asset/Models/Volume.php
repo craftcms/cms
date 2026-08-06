@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Models;
 
+use CraftCms\Cms\Database\Factories\VolumeFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Shared\BaseModel;
@@ -15,7 +16,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Volume extends BaseModel
 {
+    /** @use HasFactory<VolumeFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

@@ -55,6 +55,10 @@ use function CraftCms\Cms\t;
 
 /**
  * Assets represents an Assets field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type UploadedFileData array{type:'data', filename:string, mimeType:string, data:string}|array{type:'file'|'upload', filename:string, mimeType:string|null, path:string}
  */
 class Assets extends BaseRelationField
 {
@@ -144,8 +148,8 @@ class Assets extends BaseRelationField
     public bool $restrictFiles = false;
 
     /**
-     * @var array|null The file kinds that the field should be restricted to
-     *                 (only used if [[restrictFiles]] is true)
+     * @var list<string>|null The file kinds that the field should be restricted to
+     *                        (only used if [[restrictFiles]] is true)
      */
     public ?array $allowedKinds = null;
 
@@ -179,11 +183,10 @@ class Assets extends BaseRelationField
     #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
-    /**
-     * @var array|null References for files uploaded as data strings for this field.
-     */
+    /** @var array{data:array<array-key, string>, filename:array<array-key, string>}|null References for files uploaded as data strings for this field. */
     private ?array $_uploadedDataFiles = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Rename old settings
@@ -216,6 +219,7 @@ class Assets extends BaseRelationField
         ]);
     }
 
+    /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */
     #[Override]
     public function getSourceOptions(): array
     {
@@ -226,6 +230,9 @@ class Assets extends BaseRelationField
                 $sourceOptions[] = [
                     'label' => $volume['label'],
                     'value' => $volume['key'],
+                    'data' => [
+                        'structure-id' => $volume['structureId'] ?? null,
+                    ],
                 ];
             }
         }
@@ -233,9 +240,7 @@ class Assets extends BaseRelationField
         return $sourceOptions;
     }
 
-    /**
-     * Returns the available file kind options for the settings
-     */
+    /** @return list<array{value:string, label:string}> */
     public function getFileKindOptions(): array
     {
         $fileKindOptions = [];
@@ -265,6 +270,7 @@ class Assets extends BaseRelationField
         }
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -277,6 +283,8 @@ class Assets extends BaseRelationField
 
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
+     *
+     * @param  ElementQuery<Asset>  $value
      */
     public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
@@ -400,6 +408,15 @@ class Assets extends BaseRelationField
         return Gql::canQueryAssets($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -412,6 +429,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @param ElementCollection<int, covariant ElementInterface> $elements */
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -593,6 +611,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
+    /** @return array{volumeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -614,6 +633,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @return list<string> */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
@@ -680,6 +700,7 @@ class Assets extends BaseRelationField
         return $sources;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -718,6 +739,7 @@ class Assets extends BaseRelationField
         return $variables;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -752,9 +774,7 @@ class Assets extends BaseRelationField
         return count($sources) === 1;
     }
 
-    /**
-     * Returns any files that were uploaded to the field.
-     */
+    /** @return list<UploadedFileData> */
     private function _getUploadedFiles(ElementInterface $element): array
     {
         $files = [];
@@ -861,9 +881,7 @@ class Assets extends BaseRelationField
         return $folder;
     }
 
-    /**
-     * Get a list of allowed extensions for a list of file kinds.
-     */
+    /** @return list<string> */
     private function _getAllowedExtensions(): array
     {
         if (! is_array($this->allowedKinds)) {

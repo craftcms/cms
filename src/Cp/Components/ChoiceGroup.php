@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use Closure;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Html;
 
@@ -17,13 +16,13 @@ abstract class ChoiceGroup extends ViewComponent
 {
     use HasId;
 
-    /** @var iterable<ViewComponent>|Closure */
-    protected iterable|Closure $options = [];
+    /** @var iterable<ViewComponent> */
+    protected iterable $options = [];
 
-    protected string|Closure|null $name = null;
+    protected ?string $name = null;
 
-    /** @param iterable<ViewComponent>|Closure $options */
-    public function options(iterable|Closure $options): static
+    /** @param iterable<ViewComponent> $options */
+    public function options(iterable $options): static
     {
         $this->options = $options;
 
@@ -31,7 +30,7 @@ abstract class ChoiceGroup extends ViewComponent
     }
 
     /** The group's base input name. */
-    public function name(string|Closure|null $name): static
+    public function name(?string $name): static
     {
         $this->name = $name;
 
@@ -50,7 +49,11 @@ abstract class ChoiceGroup extends ViewComponent
         return '';
     }
 
-    /** Attributes for each option's wrapper element. */
+    /**
+     * Attributes for each option's wrapper element.
+     *
+     * @return array<string, mixed>
+     */
     protected function optionWrapperAttributes(ViewComponent $option): array
     {
         return [];
@@ -61,7 +64,7 @@ abstract class ChoiceGroup extends ViewComponent
     {
         $html = [$this->leadingHtml()];
 
-        foreach ($this->evaluate($this->options) as $option) {
+        foreach ($this->options as $option) {
             $html[] = Html::tag('div', $option->toHtml(), $this->optionWrapperAttributes($option));
         }
 

@@ -27,7 +27,7 @@ use InvalidArgumentException;
 #[Singleton]
 class AssetFileKinds
 {
-    /** @var array<string, array|Closure> */
+    /** @var array<string, array{label?:string, extensions?:list<string>}|Closure():array{label?:string, extensions?:list<string>}> */
     private array $fileKinds = [];
 
     /** @var array<string, true> */

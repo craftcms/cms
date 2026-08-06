@@ -32,6 +32,7 @@ readonly class Updates
             ->contains(fn (Update $update) => $update->hasCritical());
     }
 
+    /** @param array{cms?: array<string, mixed>, plugins?: array<array-key, array<string, mixed>>} $data */
     public static function fromArray(array $data): self
     {
         return new self(

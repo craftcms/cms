@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -40,6 +41,7 @@ class Entry extends BaseElementLinkType
         return EntryElement::class;
     }
 
+    /** @param array<string, bool|list<string>|null> $config */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -110,6 +112,7 @@ class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     #[Override]
     protected function selectionCriteria(): array
     {
@@ -122,6 +125,15 @@ class Entry extends BaseElementLinkType
         return $criteria;
     }
 
+    /**
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     * }
+     */
     #[Override]
     protected function elementSelectConfig(): array
     {

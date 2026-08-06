@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 /** @mixin EntryType */
 class EntryTypeResource extends JsonResource
 {
+    /** @return array<string, scalar|array<array-key, scalar|array<string, scalar|null>|null>|object|null> */
     #[\Override]
     public function toArray(Request $request): array
     {

@@ -69,6 +69,8 @@ class TwigCacheCommand extends Command
 
     /**
      * Compile the given view files.
+     *
+     * @param  Collection<string, SplFileInfo>  $views
      */
     private function compileTemplates(Twig $twig, TemplateMode $mode, string $root, Collection $views): void
     {
@@ -89,6 +91,10 @@ class TwigCacheCommand extends Command
         }
     }
 
+    /**
+     * @param  list<string>  $paths
+     * @return Collection<string, SplFileInfo>
+     */
     private function twigFilesIn(array $paths): Collection
     {
         return Collection::make(

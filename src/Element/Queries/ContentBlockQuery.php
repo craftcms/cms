@@ -19,6 +19,7 @@ class ContentBlockQuery extends ElementQuery implements NestedElementQueryInterf
     #[\Override]
     protected string $table = Table::CONTENTBLOCKS;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         parent::__construct(ContentBlock::class, $config);

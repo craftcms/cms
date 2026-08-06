@@ -17,6 +17,8 @@ use InvalidArgumentException;
 
 /**
  * Edition defines all available Craft CMS editions
+ *
+ * @implements Arrayable<string, int|string>
  */
 enum Edition: int implements Arrayable
 {

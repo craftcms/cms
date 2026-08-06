@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /** @var array<string, class-string> */
     private array $map = [
         'craft\elements\Address' => Address::class,
         'craft\elements\Asset' => Asset::class,
@@ -21,6 +22,7 @@ return new class extends Migration
         'craft\elements\User' => User::class,
     ];
 
+    /** @var array<string, string> */
     private array $tables = [
         Table::ELEMENTS => 'type',
         Table::FIELDLAYOUTS => 'type',

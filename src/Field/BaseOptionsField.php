@@ -38,6 +38,11 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseOptionsField is the base class for classes representing an options field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type Option array{label:string, value:string, default?:bool|string, icon?:string|null, color?:string|null}
+ * @phpstan-type Optgroup array{optgroup:string}
  */
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
@@ -131,6 +136,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $query->where($applyConditions, boolean: $negate ? 'and not' : 'and');
     }
 
+    /** @param list<static> $instances */
     private static function valueColumn(array $instances): string|Expression|null
     {
         if (count($instances) === 1 && isset($instances[0]->layoutElement)) {
@@ -140,9 +146,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return static::valueSql($instances);
     }
 
-    /**
-     * @var array The available options
-     */
+    /** @var list<Option|Optgroup> The available options */
     public array $options;
 
     /**
@@ -356,6 +360,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $html;
     }
 
+    /** @return list<string>|string|null */
     #[Override]
     public function getDefaultValue(): array|string|null
     {
@@ -443,6 +448,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
     /**
      * Check if given option should be marked as selected.
+     *
+     * @param  Option  $option
+     * @param  list<string>  $selectedValues
      */
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {
@@ -505,6 +513,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return OptionsFieldConditionRule::class;
     }
 
+    /** @return list<\Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -619,6 +628,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return static::$multi;
     }
 
+    /**
+     * @return array{
+     *     name:string|null,
+     *     type:Type,
+     *     args:array<string, ArgumentConfig>,
+     *     resolve:string,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -630,6 +647,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ];
     }
 
+    /** @return Type|array{name:string, type:Type, description:string} */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -679,6 +697,8 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      *   ['label' => 'Banana', 'value' => 'banana'],
      * ]
      * ```
+     *
+     * @return list<Option|Optgroup>
      */
     protected function options(): array
     {
@@ -692,6 +712,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      * @param  mixed  $value  The field’s value. This will either be the [[normalizeValue()|normalized value]],
      *                        raw POST data (i.e. if there was a validation error), or null
      * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
+     * @return list<array{optgroup:string}|array{label:string|null, value:string|list<string>, color?:string|null, icon?:string|null, custom?:true}>
      */
     protected function translatedOptions(bool $encode = false, mixed $value = null, ?ElementInterface $element = null): array
     {
@@ -737,9 +758,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $translatedOptions;
     }
 
-    /**
-     * Base64-encodes a value.
-     */
+    /** @return string|list<string>|null Base64-encodes a value. */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
     {
         if ($value instanceof MultiOptionsFieldData) {

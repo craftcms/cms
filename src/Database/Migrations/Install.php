@@ -1403,6 +1403,7 @@ class Install extends Migration
         }
     }
 
+    /** @return array<string, int|array<string, mixed>> */
     private function _generateInitialConfig(): array
     {
         $siteGroupUid = Str::uuid()->toString();

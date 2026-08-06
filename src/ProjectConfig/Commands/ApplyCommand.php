@@ -37,12 +37,12 @@ class ApplyCommand extends Command
     private int $pathCount = 0;
 
     /**
-     * @var array The config paths that are currently being processed.
+     * @var array<string, int> The config paths that are currently being processed.
      */
     private array $processingPaths;
 
     /**
-     * @var array The config paths that have finished being processed.
+     * @var array<string, true> The config paths that have finished being processed.
      */
     private array $completedPaths = [];
 
@@ -156,6 +156,7 @@ class ApplyCommand extends Command
         $this->completedPaths[$event->path] = true;
     }
 
+    /** @param string[] $handles */
     private function installPlugins(Plugins $plugins, array $handles): bool
     {
         foreach ($handles as $handle) {
@@ -168,6 +169,7 @@ class ApplyCommand extends Command
         return true;
     }
 
+    /** @param string[] $handles */
     private function uninstallPlugins(Plugins $plugins, array $handles): bool
     {
         foreach ($handles as $handle) {

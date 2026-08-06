@@ -34,6 +34,8 @@ use function CraftCms\Cms\t;
 /**
  * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
+ *
+ * @phpstan-type TabConfig array{id?: int, layoutId?: int, name?: string|null, sortOrder?: int, uid?: string, userCondition?: array<string, mixed>|null, elementCondition?: array<string, mixed>|null, fields?: array<string, array{sortOrder: int, required: bool}>, elements?: list<array<string, mixed>>}
  */
 class FieldLayoutTab extends FieldLayoutComponent
 {
@@ -71,7 +73,8 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     private array $_elements = [];
 
-    public function __construct($config = [])
+    /** @param array<string, mixed> $config */
+    public function __construct(array $config = [])
     {
         // Config normalization
         if (! array_key_exists('elements', $config)) {
@@ -93,6 +96,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Creates a new field layout tab from the given config.
+     *
+     * @param  TabConfig  $config
      */
     public static function createFromConfig(array $config): self
     {
@@ -119,6 +124,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Updates a field layout tab’s config to the new format.
+     *
+     * @param  TabConfig  $config
      */
     public static function updateConfig(array &$config): void
     {
@@ -126,10 +133,11 @@ class FieldLayoutTab extends FieldLayoutComponent
             return;
         }
 
+        $fields = $config['fields'];
+        uasort($fields, fn (array $a, array $b) => $a['sortOrder'] <=> $b['sortOrder']);
         $config['elements'] = [];
-        $config['fields'] = Arr::sort($config['fields'], 'sortOrder');
 
-        foreach ($config['fields'] as $fieldUid => $fieldConfig) {
+        foreach ($fields as $fieldUid => $fieldConfig) {
             $config['elements'][] = [
                 'type' => CustomField::class,
                 'fieldUid' => $fieldUid,
@@ -175,6 +183,8 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns the field layout tab’s config.
+     *
+     * @return array<string, mixed>
      */
     public function getConfig(): array
     {
@@ -191,7 +201,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns the tab’s elements’ configs.
      *
-     * @return array[]
+     * @return list<array<string, mixed>>
      */
     public function getElementConfigs(): array
     {
@@ -295,9 +305,9 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
     }
 
-    public function name(string|Closure $name): static
+    public function name(string $name): static
     {
-        $this->name = $this->evaluate($name);
+        $this->name = $name;
 
         return $this;
     }
@@ -339,16 +349,16 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(CustomField): mixed)|null $configure */
-    public function field(FieldInterface|string|Closure $field, ?Closure $configure = null): static
+    public function field(FieldInterface|string $field, ?Closure $configure = null): static
     {
-        $element = CustomField::make($this->evaluate($field));
+        $element = CustomField::make($field);
         $configure?->__invoke($element);
 
         return $this->add($element);
     }
 
     /** @param (Closure(Heading): mixed)|null $configure */
-    public function heading(string|Closure $heading, ?Closure $configure = null): static
+    public function heading(string $heading, ?Closure $configure = null): static
     {
         $element = Heading::make($heading);
         $configure?->__invoke($element);
@@ -357,7 +367,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Tip): mixed)|null $configure */
-    public function tip(string|Closure $tip, ?Closure $configure = null): static
+    public function tip(string $tip, ?Closure $configure = null): static
     {
         $element = Tip::make($tip);
         $configure?->__invoke($element);
@@ -366,7 +376,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Tip): mixed)|null $configure */
-    public function warning(string|Closure $warning, ?Closure $configure = null): static
+    public function warning(string $warning, ?Closure $configure = null): static
     {
         $element = Tip::make($warning)->warning();
         $configure?->__invoke($element);
@@ -375,7 +385,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Markdown): mixed)|null $configure */
-    public function markdown(string|Closure $content, ?Closure $configure = null): static
+    public function markdown(string $content, ?Closure $configure = null): static
     {
         $element = Markdown::make($content);
         $configure?->__invoke($element);
@@ -384,7 +394,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /** @param (Closure(Template): mixed)|null $configure */
-    public function template(string|Closure $template, ?Closure $configure = null): static
+    public function template(string $template, ?Closure $configure = null): static
     {
         $element = Template::make($template);
         $configure?->__invoke($element);

@@ -190,7 +190,8 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
-     * @return T|null The matching element, or `null`.
+     * @param  array<string,mixed>  $criteria
+     * @return ($elementType is class-string<T> ? T|null : ElementInterface|null) The matching element, or `null`.
      */
     public function getElementById(
         int $elementId,
@@ -214,6 +215,7 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
+     * @param  array<string,mixed>  $criteria
      * @return T|null The matching element, or `null`.
      */
     public function getElementByUid(
@@ -235,6 +237,7 @@ class Elements
      * @param  class-string<T>|null  $elementType  The element class.
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
+     * @param  array<string,mixed>  $criteria
      * @return T|null The matching element, or `null`.
      */
     private function elementByKey(
@@ -313,7 +316,11 @@ class Elements
             )
             ->first();
 
-        return $result ? $this->getElementById($result->id, $result->type, $siteId) : null;
+        if (! $result || ! is_a($result->type, ElementInterface::class, true)) {
+            return null;
+        }
+
+        return $this->getElementById($result->id, $result->type, $siteId);
     }
 
     /**
@@ -448,7 +455,7 @@ class Elements
      * @template T of ElementInterface
      *
      * @param  T  $element  The derivative element
-     * @param  array  $newAttributes  Any attributes to apply to the canonical element
+     * @param  array<string,mixed>  $newAttributes  Any attributes to apply to the canonical element
      * @return T The updated canonical element
      *
      * @throws InvalidArgumentException if the element is already a canonical element
@@ -521,8 +528,8 @@ class Elements
      * @template T of ElementInterface
      *
      * @param  T  $element  the element to duplicate
-     * @param  array  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
-     *                                set to an array of site-specific attribute array, indexed by site IDs.
+     * @param  array<string,mixed>  $newAttributes  any attributes to apply to the duplicate. This can contain a `siteAttributes` key,
+     *                                              set to an array of site-specific attribute array, indexed by site IDs.
      * @param  bool  $placeInStructure  whether to position the cloned element after the original one in its structure.
      *                                  (This will only happen if the duplicated element is canonical.)
      * @param  bool  $asUnpublishedDraft  whether the duplicate should be created as unpublished draft
@@ -824,7 +831,7 @@ class Elements
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
      *
-     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
+     * @phpstan-param string|array<EagerLoadPlan|array<array-key,mixed>|string> $with
      *
      * @return EagerLoadPlan[]
      */
@@ -837,8 +844,8 @@ class Elements
      * Eager-loads additional elements onto a given set of elements.
      *
      * @param  class-string<ElementInterface>  $elementType  The root element type class
-     * @param  ElementInterface[]  $elements  The root element models that should be updated with the eager-loaded elements
-     * @param  array<int, string|array|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param  ElementInterface[]|Collection<array-key,ElementInterface>  $elements  The root element models that should be updated with the eager-loaded elements
+     * @param  array<int,string|array<array-key,mixed>|EagerLoadPlan>|string  $with  Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array|Collection $elements, array|string $with): void
     {

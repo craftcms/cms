@@ -82,6 +82,7 @@ class ImageTransform extends Component
         return app()->make($this->getTransformer());
     }
 
+    /** @return array<string,mixed> */
     public function getConfig(): array
     {
         return [

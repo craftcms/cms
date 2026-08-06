@@ -84,6 +84,10 @@ trait QueriesAffiliatedSite
         return $this;
     }
 
+    /**
+     * @param  string[]  $value
+     * @return int[]
+     */
     private function parseSiteParam(array $value): array
     {
         if ($not = (strtolower((string) reset($value)) === 'not')) {

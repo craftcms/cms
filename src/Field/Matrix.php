@@ -79,7 +79,11 @@ use function CraftCms\Cms\template;
 /**
  * Matrix field type
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ * @phpstan-import-type InputObjectFieldConfig from \GraphQL\Type\Definition\InputObjectField
+ *
+ * @phpstan-type SerializedEntryData array{type?:string,title?:string|null,slug?:string|null,uid?:string|null,enabled?:bool|int|string,collapsed?:bool|int|string,fresh?:bool|int|string,fields?:array<string,mixed>}
+ * @phpstan-type SerializedEntries array<int|string,SerializedEntryData>
  */
 class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
@@ -165,6 +169,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * Returns the “Default Table Columns” options for the given entry types.
      *
      * @param  EntryType[]  $entryTypes
+     * @return list<array{label:string,value:string}>
      */
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
@@ -240,7 +245,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public ?string $propagationKeyFormat = null;
 
     /**
-     * @var array{uriFormat:string|null,template?:string|null,errors?:array}[] Site settings
+     * @var array<string,array{uriFormat?:string|null,template?:string|null,errors?:array<string,list<string>>}> Site settings
      */
     public array $siteSettings = [];
 
@@ -446,6 +451,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ];
     }
 
+    /** @return list<int> */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -529,7 +535,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
     private function totalEntries(ElementInterface $owner): int
     {
-        /** @var EntryQuery|ElementCollection $value */
+        /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $value = $owner->getFieldValue($this->handle);
 
         if ($value instanceof EntryQuery) {
@@ -655,6 +661,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $query;
     }
 
+    /** @return EntryQuery<Entry> */
     private function createEntryQuery(?ElementInterface $owner): EntryQuery
     {
         $query = Entry::find();
@@ -690,10 +697,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $query;
     }
 
+    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,collapsed:bool,fields:array<string,mixed>}> */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
-        /** @var EntryQuery|ElementCollection $value */
+        /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $serialized = [];
         $new = 0;
 
@@ -713,10 +721,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $serialized;
     }
 
+    /** @return array<int|string,array{title:string|null,slug:string|null,type:string,enabled:bool,collapsed:bool,fields:array<string,mixed>}> */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
-        /** @var EntryQuery|ElementCollection $value */
+        /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $serialized = [];
         $new = 0;
 
@@ -759,6 +768,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $this->entryManager()->getTranslationDescription($element);
     }
 
+    /** @return list<array<string,mixed>> */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -785,6 +795,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return [...$items, ...$parentItems];
     }
 
+    /** @return list<array<string,mixed>> */
     private function blockViewActionMenuItems(): array
     {
         $items = [];
@@ -850,6 +861,7 @@ JS, [
         return $items;
     }
 
+    /** @return list<array<string,mixed>> */
     private function cardViewActionMenuItems(): array
     {
         $items = [];
@@ -863,6 +875,7 @@ JS, [
         return $items;
     }
 
+    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false} */
     private function copyAction(string $type, string $entrySelector): array
     {
         $id = sprintf('action-copy-%s', mt_rand());
@@ -904,7 +917,7 @@ JS, [
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getEntries().length);
+      btn.toggleClass('disabled', !getEntries().length);
     });
   }, 1);
 })();
@@ -952,6 +965,7 @@ JS, [
         };
     }
 
+    /** @param EntryQuery<Entry>|ElementCollection<int,Entry>|null $value */
     private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
     {
         if (! $element?->id) {
@@ -1139,6 +1153,7 @@ JS, [
         ]);
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -1158,10 +1173,11 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var EntryQuery|ElementCollection $value */
+        /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         return $value->count() === 0;
     }
 
+    /** @param EntryQuery<Entry>|ElementCollection<int,Entry> $value */
     private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
         $new = 0;
@@ -1253,9 +1269,7 @@ JS, [
         return $this->entryManager()->getSearchKeywords($element);
     }
 
-    /**
-     * @return EagerLoadingMap
-     */
+    /** @return array{elementType:class-string<Entry>,map:list<array{source:int,target:int}>,criteria:array{fieldId:int|string|null,allowOwnerDrafts:true,allowOwnerRevisions:true,revisions:bool},createElement:callable} */
     public function getEagerLoadingMap(array $sourceElements): array
     {
         // Get the source element IDs
@@ -1334,6 +1348,7 @@ JS, [
         parent::afterMergeFrom($outgoingField);
     }
 
+    /** @return array{name:string|null,type:Type,args:array<string,Type|ArgumentConfig>,resolve:string,complexity:callable} */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -1346,15 +1361,18 @@ JS, [
             $arguments += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
         }
 
+        $unionType = GqlHelper::getUnionType($typeName, $typeArray);
+
         return [
             'name' => $this->handle,
-            'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType($typeName, $typeArray))),
+            'type' => Type::nonNull(Type::listOf($unionType)),
             'args' => $arguments,
             'resolve' => EntryResolver::class.'::resolve',
             'complexity' => GqlHelper::eagerLoadComplexity(),
         ];
     }
 
+    /** @return array{withProvisionalDrafts:bool} */
     #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
@@ -1364,7 +1382,7 @@ JS, [
     }
 
     #[Override]
-    public function getContentGqlMutationArgumentType(): Type|array
+    public function getContentGqlMutationArgumentType(): Type
     {
         return MatrixInputType::getType($this);
     }
@@ -1458,8 +1476,8 @@ JS, [
 
         // Tell the browser to collapse any new entry IDs
         $collapsedIds = Collection::make($event->elements)
-            ->filter(fn (Entry $entry) => $entry->collapsed)
-            ->map(fn (Entry $entry) => $entry->id)
+            ->filter(fn (ElementInterface $entry) => $entry instanceof Entry && $entry->collapsed)
+            ->map(fn (ElementInterface $entry) => $entry->id)
             ->all();
 
         if (empty($collapsedIds)) {
@@ -1512,9 +1530,11 @@ JS, [
     /**
      * Creates an array of entries based on the given serialized data.
      *
-     * @param  array  $value  The raw field value
      * @param  ElementInterface  $element  The element the field is associated with
      * @param  bool  $fromRequest  Whether the data came from the request post data
+     *
+     * @phpstan-param SerializedEntries|array{entries?:SerializedEntries,blocks?:SerializedEntries,sortOrder?:list<int|string>} $value The raw field value
+     *
      * @return Entry[]
      */
     private function _createEntriesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array

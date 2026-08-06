@@ -40,7 +40,7 @@ readonly class Revisions
      * @param  ElementInterface  $canonical  The element to create a revision for
      * @param  int|null  $creatorId  The user ID that the revision should be attributed to
      * @param  string|null  $notes  The revision notes
-     * @param  array  $newAttributes  any attributes to apply to the draft
+     * @param  array<string,mixed>  $newAttributes  any attributes to apply to the draft
      * @param  bool  $force  Whether to force a new revision even if the element doesn't appear to have changed since the last revision
      * @return int The revision ID
      *

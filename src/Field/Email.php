@@ -122,6 +122,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         return $value;
     }
 
+    /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {

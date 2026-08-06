@@ -23,6 +23,7 @@ class Expanded extends ElementExporter
         return t('Expanded');
     }
 
+    /** @param ElementQueryInterface&ElementQuery<ElementInterface> $query */
     public function export(ElementQueryInterface $query): mixed
     {
         $eagerLoadableFields = [];
@@ -42,7 +43,6 @@ class Expanded extends ElementExporter
 
         $data = [];
 
-        /** @var ElementQuery $query */
         $query->with($eagerLoadableFields);
 
         $query->each(function (ElementInterface $element) use (&$data) {

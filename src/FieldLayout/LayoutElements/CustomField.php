@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
@@ -129,7 +128,7 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() === 0) {
             return parent::label();
@@ -145,7 +144,7 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
         parent::instructions($instructions);
 
@@ -156,9 +155,8 @@ class CustomField extends BaseField
         return $this;
     }
 
-    public function handle(string|Closure|null $handle): static
+    public function handle(?string $handle): static
     {
-        $handle = $this->evaluate($handle);
         $this->handle = $handle;
 
         if ($this->_field !== null) {
@@ -170,14 +168,14 @@ class CustomField extends BaseField
 
     public function editCondition(mixed $editCondition): static
     {
-        $this->setEditCondition($this->evaluate($editCondition));
+        $this->setEditCondition($editCondition);
 
         return $this;
     }
 
     public function elementEditCondition(mixed $elementEditCondition): static
     {
-        $this->setElementEditCondition($this->evaluate($elementEditCondition));
+        $this->setElementEditCondition($elementEditCondition);
 
         return $this;
     }
@@ -282,6 +280,7 @@ class CustomField extends BaseField
         return $field instanceof PreviewableFieldInterface;
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getPreviewOptions(): ?array
     {
@@ -317,6 +316,7 @@ class CustomField extends BaseField
         ];
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getThumbOptions(): ?array
     {
@@ -565,6 +565,9 @@ class CustomField extends BaseField
         ];
     }
 
+    /**
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null, id?: int}}
+     */
     #[Override]
     protected function selectorAttributes(): array
     {
@@ -598,6 +601,7 @@ class CustomField extends BaseField
         ]);
     }
 
+    /** @return array{class?: list<string>, id?: string, data: array{base-input-name: string, error-key: string, type?: class-string<FieldInterface>}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -658,6 +662,7 @@ class CustomField extends BaseField
         return $field::icon();
     }
 
+    /** @return list<array{label: string, icon: string, iconColor: string}> */
     #[Override]
     protected function selectorIndicators(): array
     {
@@ -929,6 +934,7 @@ class CustomField extends BaseField
         return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

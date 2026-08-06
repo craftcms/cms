@@ -17,6 +17,7 @@ use Illuminate\Validation\Rules\Unique;
 /** @extends Ruleset<Site> */
 class SiteRules extends Ruleset
 {
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

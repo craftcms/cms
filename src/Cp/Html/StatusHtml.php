@@ -16,6 +16,7 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class StatusHtml
 {
+    /** @param array<string, mixed> $attributes */
     public function statusIndicatorHtml(string $status, array $attributes = []): ?string
     {
         $label = Arr::get($attributes, 'label', ucfirst($status));
@@ -65,6 +66,7 @@ readonly class StatusHtml
         return $this->statusIndicatorHtml($status, $statusDef);
     }
 
+    /** @param array<string, mixed> $config */
     public function statusLabelHtml(array $config = []): ?string
     {
         $config += [

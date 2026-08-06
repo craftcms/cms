@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Arguments;
 
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 abstract class ElementMutationArguments extends MutationArguments
 {
+    /** @return array<string, ArgumentConfig> */
     #[\Override]
     public static function getArguments(): array
     {

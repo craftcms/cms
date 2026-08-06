@@ -55,7 +55,14 @@ use function CraftCms\Cms\template;
 /**
  * Addresses field type.
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type AddressEagerLoadingMap array{
+ *     elementType:class-string<Address>,
+ *     map:list<array{source:int, target:int}>,
+ *     criteria:array{fieldId:int|null, allowOwnerDrafts:true, allowOwnerRevisions:true},
+ *     createElement:callable,
+ * }
  */
 class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
@@ -217,6 +224,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return null;
     }
 
+    /** @return list<int> */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -296,7 +304,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     private function totalAddresses(ElementInterface $owner): int
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $value = $owner->getFieldValue($this->handle);
 
         if ($value instanceof AddressQuery) {
@@ -369,6 +377,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $query;
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $value
+     * @return list<Address>
+     */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the old addresses
@@ -526,7 +538,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $serialized = [];
         $new = 0;
 
@@ -578,6 +590,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $this->addressManager()->getTranslationDescription($element);
     }
 
+    /** @return list<array<string, bool|string|Color>> */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -600,6 +613,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return [...$items, ...$parentItems];
     }
 
+    /** @return array{id:string, icon:string, color:Color, label:string, showInChips:false} */
     private function copyAction(): array
     {
         $id = sprintf('action-copy-%s', mt_rand());
@@ -626,7 +640,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
+      btn.toggleClass('disabled', !getAddresses().length);
     });
   }, 1);
 })();
@@ -694,6 +708,7 @@ JS, [
         return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -709,10 +724,11 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         return $value->count() === 0;
     }
 
+    /** @param ElementCollection<int, Address>|AddressQuery $value */
     private function validateAddresses(ElementInterface $element, AddressQuery|ElementCollection $value, Closure $fail): void
     {
         if ($value instanceof AddressQuery) {
@@ -792,7 +808,8 @@ JS, [
     }
 
     /**
-     * @return EagerLoadingMap
+     * @param  list<ElementInterface>  $sourceElements
+     * @return AddressEagerLoadingMap|list<AddressEagerLoadingMap>
      */
     public function getEagerLoadingMap(array $sourceElements): array
     {
@@ -843,6 +860,15 @@ JS, [
         parent::afterMergeFrom($outgoingField);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -855,6 +881,7 @@ JS, [
         ];
     }
 
+    /** @return array{withProvisionalDrafts:bool} */
     #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
@@ -866,7 +893,13 @@ JS, [
     #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {
-        return Type::listOf(AddressesInput::getType());
+        $type = AddressesInput::getType();
+
+        if (! $type instanceof Type) {
+            throw new RuntimeException('AddressesInput::getType() must return a GraphQL type.');
+        }
+
+        return Type::listOf($type);
     }
 
     #[Override]

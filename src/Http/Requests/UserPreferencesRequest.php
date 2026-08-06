@@ -25,6 +25,7 @@ class UserPreferencesRequest extends FormRequest
         return ! $this->hasAny(self::adminOnlyPreferences());
     }
 
+    /** @return array<string, list<string|object>> */
     public function rules(): array
     {
         return [
@@ -44,6 +45,7 @@ class UserPreferencesRequest extends FormRequest
         ];
     }
 
+    /** @return array<string, bool|int|string|null> */
     public function preferences(): array
     {
         $validated = $this->safe();

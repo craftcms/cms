@@ -90,6 +90,7 @@ class RepairCommand extends Command
         return $value;
     }
 
+    /** @param array<string|int, mixed> $value */
     private function saveConfig(ProjectConfig $projectConfig, string $path, array $value, bool $useExternalConfig): void
     {
         if ($useExternalConfig) {

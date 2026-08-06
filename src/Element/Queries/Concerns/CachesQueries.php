@@ -31,6 +31,10 @@ trait CachesQueries
      */
     public ?Dependency $queryCacheDependency = null;
 
+    /**
+     * @param ElementQuery<*> $elementQuery
+     * @param  array<array-key, mixed>|string  $parameters
+     */
     protected function queryCacheKey(ElementQuery $elementQuery, string $method, array|string $parameters = []): string
     {
         $sql = $elementQuery->query->toRawSql();

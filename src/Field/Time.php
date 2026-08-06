@@ -147,6 +147,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
+    /** @return list<TimeRule> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -228,6 +229,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return DateTimeType::getType();
     }
 
+    /** @return array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

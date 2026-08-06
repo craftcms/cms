@@ -17,10 +17,11 @@ use CraftCms\Cms\Support\Str;
 class ProjectConfigData extends ReadOnlyProjectConfigData
 {
     /**
-     * @var array Holds the already parsed paths as keys.
+     * @var array<string, true> Holds the already parsed paths as keys.
      */
     private array $parsedChanges;
 
+    /** @param array<string|int, mixed> $data */
     public function __construct(public array $data, public ProjectConfig $projectConfig)
     {
         parent::__construct($data, $projectConfig);

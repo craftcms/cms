@@ -73,21 +73,28 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /**
+     * @param  list<scalar>|null  $allowedValues
+     * @return list<array<string, mixed>>
+     */
     public function envOptions(?array $allowedValues = null): array
     {
         return $this->formatLegacyOptions(SelectOptions::getEnvOptions($allowedValues));
     }
 
+    /** @return list<array<string, mixed>> */
     public function envSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
         return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
     }
 
+    /** @return list<array<string, mixed>> */
     public function templateSuggestions(): array
     {
         return $this->formatLegacySuggestions(SelectOptions::getTemplateSuggestions());
     }
 
+    /** @param list<string> $entryPoints */
     public function vite(array $entryPoints): string
     {
         try {
@@ -113,6 +120,10 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>|Collection<array-key, array<string, mixed>>  $items
+     * @return array<string, mixed>
+     */
     private function findCrumb(array|Collection $items): array
     {
         if ($items instanceof Collection) {
@@ -129,6 +140,10 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             }
 
             if (isset($item['items'])) {
+                if (! is_array($item['items']) && ! $item['items'] instanceof Collection) {
+                    throw new \InvalidArgumentException('Crumb items must be an array or collection.');
+                }
+
                 $selected = $this->findCrumb($item['items']);
                 if (! empty($selected)) {
                     return $selected;
@@ -139,6 +154,10 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         return [];
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
     private function formatLegacySuggestions(array $options): array
     {
         return array_map(fn ($group) => [
@@ -150,6 +169,10 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ], $options);
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $originalOptions
+     * @return list<array<string, mixed>>
+     */
     private function formatLegacyOptions(array $originalOptions): array
     {
         $options = [];

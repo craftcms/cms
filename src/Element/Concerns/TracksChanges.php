@@ -32,11 +32,15 @@ trait TracksChanges
     private ?array $_attributeNames = null;
 
     /**
+     * @var array<string,int>|null
+     *
      * @see _outdatedAttributes()
      */
     private ?array $_outdatedAttributes = null;
 
     /**
+     * @var array<string,int>|null
+     *
      * @see _modifiedAttributes()
      */
     private ?array $_modifiedAttributes = null;
@@ -116,7 +120,7 @@ trait TracksChanges
     }
 
     /**
-     * @return array The attribute names that have been modified for this element
+     * @return array<string,int> The attribute names that have been modified for this element
      */
     private function _outdatedAttributes(): array
     {
@@ -138,7 +142,7 @@ trait TracksChanges
     }
 
     /**
-     * @return array The attribute names that have been modified for this element
+     * @return array<string,int> The attribute names that have been modified for this element
      */
     private function _modifiedAttributes(): array
     {

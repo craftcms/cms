@@ -26,6 +26,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
         return User::class;
     }
 
+    /** @return array{assetUploaders: true} */
     protected function criteria(): array
     {
         return [

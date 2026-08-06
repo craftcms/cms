@@ -116,6 +116,7 @@ class HtmlStack
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
      */
+    /** @param list<mixed> $vars */
     public function jsWithVars(callable $fn, array $vars, Position $position = Position::Ready, ?string $key = null): void
     {
         $this->js(Html::jsWithVars($fn, $vars), $position, $key);
@@ -132,6 +133,7 @@ class HtmlStack
      * @param  array  $options  HTML attributes and options. A `position` key sets the page position.
      * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
      */
+    /** @param array<string, mixed> $options */
     public function jsFile(string $url, array $options = [], ?string $key = null): void
     {
         $key ??= $url;
@@ -160,6 +162,7 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<link>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
      */
+    /** @param array<string, mixed> $options */
     public function cssFile(string $url, array $options = [], ?string $key = null): void
     {
         $entries = $this->cssFiles;
@@ -176,6 +179,7 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<style>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$css`.
      */
+    /** @param array<string, mixed> $options */
     public function css(string $css, array $options = [], ?string $key = null): void
     {
         $entries = $this->css;
@@ -194,6 +198,7 @@ class HtmlStack
      * @param  array  $options  HTML attributes to add to the `<script>` tag (e.g. `['type' => 'application/ld+json']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$script`.
      */
+    /** @param array<string, mixed> $options */
     public function script(string $script, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         $entries = $this->scripts[$position->value] ?? [];
@@ -212,6 +217,10 @@ class HtmlStack
      * @param  Position  $position  Where on the page the tag should appear.
      * @param  array  $options  HTML attributes to add to the `<script>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting script.
+     */
+    /**
+     * @param  list<mixed>  $vars
+     * @param  array<string, mixed>  $options
      */
     public function scriptWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
@@ -270,6 +279,7 @@ class HtmlStack
      * @param  array  $attributes  The HTML attributes for the `<meta>` tag (e.g. `['name' => 'description', 'content' => '...']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
      */
+    /** @param array<string, mixed> $attributes */
     public function metaTag(array $attributes, ?string $key = null): void
     {
         $entries = $this->metaTags;
@@ -285,6 +295,7 @@ class HtmlStack
      * @param  array  $attributes  The HTML attributes for the `<link>` tag (e.g. `['rel' => 'canonical', 'href' => '...']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
      */
+    /** @param array<string, mixed> $attributes */
     public function linkTag(array $attributes, ?string $key = null): void
     {
         $entries = $this->linkTags;
@@ -458,6 +469,7 @@ class HtmlStack
      *
      * @param  array|string  $keys  The property names to buffer (e.g. `'js'`, `['css', 'cssFiles']`).
      */
+    /** @param list<string>|string $keys */
     public function startBuffer(array|string $keys): void
     {
         foreach (Arr::wrap($keys) as $key) {
@@ -479,6 +491,7 @@ class HtmlStack
      *
      * @see startBuffer()
      */
+    /** @param list<string>|string $keys */
     public function clearBuffer(array|string $keys): mixed
     {
         $captured = [];
@@ -596,7 +609,7 @@ class HtmlStack
      *
      * @param  bool  $scriptTag  Whether the returned code should be wrapped in a `<script>` tag.
      * @param  bool  $combine  Whether all positions should be combined into a single blob (position info is lost).
-     * @return string|array The captured JS — a string when combined, or an array keyed by position value when not.
+     * @return string|array<int, list<string>|string> The captured JS — a string when combined, or an array keyed by position value when not.
      *
      * @see startJsBuffer()
      */
@@ -789,6 +802,7 @@ class HtmlStack
         $this->scripts = [];
     }
 
+    /** @return Collection<int, string> */
     private function getAssetsForPosition(Position $position): Collection
     {
         return collect()

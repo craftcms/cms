@@ -19,8 +19,8 @@ use Twig\Template;
 class GetAttrNode extends GetAttrExpression
 {
     /**
-     * @param  array  $nodes  An array of named nodes
-     * @param  array  $attributes  An array of attributes (should not be nodes)
+     * @param  array<string, Node>  $nodes  An array of named nodes
+     * @param  array<string, mixed>  $attributes  An array of attributes (should not be nodes)
      * @param  int  $lineno  The line number
      *
      * @noinspection PhpMissingParentConstructorInspection

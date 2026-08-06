@@ -63,7 +63,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public ?string $addRuleLabel = null;
 
     /**
-     * @var array The condition’s portable config
+     * @var array<string, mixed> The condition’s portable config
      */
     public array $config {
         get => $this->getConfig();
@@ -72,6 +72,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @see getConditionRules()
      * @see setConditionRules()
+     *
+     * @var Collection<int, ConditionRuleInterface>
      */
     private Collection $_conditionRules;
 
@@ -106,6 +108,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         get => $this->getBuilderInnerHtml();
     }
 
+    /** @param  array<string, mixed>  $config */
     public function __construct(array $config = [])
     {
         parent::__construct($config);
@@ -192,6 +195,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return $this->_conditionRules->all();
     }
 
+    /** @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules */
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
@@ -443,6 +447,7 @@ JS,
 
     /**
      * @param  ConditionRuleInterface[]  $selectableRules
+     * @param  array<string, mixed>  $buttonAttributes
      */
     private function _ruleTypeMenu(
         array $selectableRules,
@@ -566,11 +571,13 @@ JS,
         ];
     }
 
+    /** @return array<string, mixed> */
     public function getBuilderConfig(): array
     {
         return $this->config();
     }
 
+    /** @return array<string, mixed> */
     final public function getConfig(): array
     {
         return array_merge($this->config(), [
@@ -592,6 +599,8 @@ JS,
 
     /**
      * Returns the base config that should be maintained by the builder and included in the condition’s portable config.
+     *
+     * @return array<string, mixed>
      */
     protected function config(): array
     {

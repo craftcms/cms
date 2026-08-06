@@ -20,6 +20,7 @@ class BladeRenderer implements TemplateRendererInterface
         return str_ends_with($file, '.blade.php');
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderTemplate(
         string $template,
         array $variables = [],
@@ -42,6 +43,7 @@ class BladeRenderer implements TemplateRendererInterface
         return $view->render();
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderString(
         string $template,
         array $variables = [],

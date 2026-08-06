@@ -26,6 +26,7 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class FieldLayoutDesigner
 {
+    /** @param array<string, mixed> $config */
     public function html(FieldLayout $fieldLayout, array $config = []): string
     {
         $config += [
@@ -148,6 +149,7 @@ class FieldLayoutDesigner
         ])->render();
     }
 
+    /** @param array<string, mixed> $config */
     public function fieldHtml(FieldLayout $fieldLayout, array $config = []): string
     {
         $config += [
@@ -167,6 +169,7 @@ class FieldLayoutDesigner
         ])->render();
     }
 
+    /** @param array<string, mixed> $attributes */
     public function layoutElementSelectorHtml(
         FieldLayoutElement $element,
         bool $forLibrary = false,
@@ -214,6 +217,7 @@ class FieldLayoutDesigner
         return Html::modifyTagAttributes($element->selectorHtml(), $attributes);
     }
 
+    /** @param array<string, mixed> $config */
     public function generatedFieldsTableHtml(FieldLayout $fieldLayout, array $config = []): string
     {
         $config += [

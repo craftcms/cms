@@ -28,6 +28,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     #[Override]
     protected bool $reloadOnOperatorChange = true;
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {
@@ -37,7 +38,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     }
 
     #[Override]
-    public function __set(string $name, $value): void
+    public function __set(string $name, mixed $value): void
     {
         if (
             $name === 'attributes' &&
@@ -53,6 +54,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the operators that should be allowed for this rule.
+     *
+     * @return string[]
      */
     #[Override]
     protected function operators(): array
@@ -97,6 +100,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the input options that should be used.
+     *
+     * @return array<string, mixed>
      */
     protected function inputOptions(): array
     {
@@ -143,6 +148,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the rule’s value, prepped for {@see QueryParam::parse()} based on the selected operator.
+     *
+     * @return string|array<mixed>|null
      */
     protected function paramValue(): string|array|null
     {

@@ -159,7 +159,7 @@ class GarbageCollection
     /**
      * @param array<array{
      *     0: class-string<GarbageCollectionAction>,
-     *     1: array
+     *     1: array<string, mixed>
      * }|class-string<GarbageCollectionAction>> $actions
      */
     public function runActions(array $actions): void

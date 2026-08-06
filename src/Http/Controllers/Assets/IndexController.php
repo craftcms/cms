@@ -4,70 +4,27 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use CraftCms\Cms\Asset\Folders;
-use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Arr;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
+use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
+use Inertia\Inertia;
+use Inertia\Response;
 
 readonly class IndexController
 {
     use RespondsWithFlash;
 
-    public function __construct(
-        private Volumes $volumes,
-        private Folders $folders,
-    ) {}
-
-    public function __invoke(Request $request, ?string $defaultSource = null): View
+    public function __invoke(ElementIndexRequest $request, ?string $defaultSource = null): Response
     {
-        $variables = [];
+        // The CP asset index lists a volume/folder's subfolders alongside its
+        // files; Asset::indexElements() only merges those in when `showFolders`
+        // is set (matching the legacy index's request param). It reads the
+        // global request, which is a separate instance from this FormRequest.
+        request()->merge(['showFolders' => true]);
 
-        if (! $defaultSource = $request->input('defaultSource', $defaultSource)) {
-            return view('assets/_index', $variables);
-        }
-
-        $defaultSourcePath = Arr::whereNotEmpty(explode('/', (string) $defaultSource));
-        $volume = $this->volumes->getVolumeByHandle(array_shift($defaultSourcePath));
-
-        if (! $volume) {
-            return view('assets/_index', $variables);
-        }
-
-        $variables['defaultSource'] = "volume:$volume->uid";
-
-        if (empty($defaultSourcePath)) {
-            return view('assets/_index', $variables);
-        }
-
-        $subfolder = $this->folders->findFolder([
-            'volumeId' => $volume->id,
-            'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
-        ]);
-
-        if (! $subfolder) {
-            return view('assets/_index', $variables);
-        }
-
-        $sourcePath = [];
-        $folderChain = [];
-
-        while ($subfolder) {
-            array_unshift($folderChain, $subfolder);
-            $subfolder = $subfolder->getParent();
-        }
-
-        foreach ($folderChain as $i => $folder) {
-            if ($i < count($folderChain) - 1) {
-                $folder->setHasChildren(true);
-            }
-
-            $sourcePath[] = $folder->getSourcePathInfo();
-        }
-
-        $variables['defaultSourcePath'] = $sourcePath;
-
-        return view('assets/_index', $variables);
+        return Inertia::render('assets/Index', new AssetIndexViewModel(
+            $request,
+            defaultSource: $request->input('defaultSource', $defaultSource),
+        ));
     }
 }

@@ -34,18 +34,23 @@ use function CraftCms\Cms\t;
  * }
  * ```
  */
+/**
+ * @phpstan-type CacheOption array{key: string, label: string, action: callable|string, info?: string, params?: array<array-key, mixed>}
+ * @phpstan-type CacheOptionInput array{label: string, action: callable|string, info?: string, params?: array<array-key, mixed>}
+ * @phpstan-type TagOption array{tag: string, label: string}
+ */
 class ClearCaches extends Utility
 {
-    /** @var array<string, array|Closure> */
+    /** @var array<string, CacheOptionInput|Closure(): CacheOptionInput> */
     private static array $additionalCacheOptions = [];
 
     /** @var array<string, string|Closure> */
     private static array $additionalTagOptions = [];
 
-    /** @var (Closure(array): array)|null */
+    /** @var (Closure(list<CacheOption>): list<CacheOption>)|null */
     private static ?Closure $optionTransformer = null;
 
-    /** @var (Closure(array): array)|null */
+    /** @var (Closure(list<TagOption>): list<TagOption>)|null */
     private static ?Closure $tagTransformer = null;
 
     #[Override]
@@ -98,6 +103,7 @@ class ClearCaches extends Utility
     /**
      * Returns all cache options
      */
+    /** @return list<CacheOption> */
     public static function cacheOptions(): array
     {
         $options = app()->runningUnitTests() ? [] : array_column(self::defaultCacheOptions(), null, 'key');
@@ -122,11 +128,13 @@ class ClearCaches extends Utility
             $options = app()->call(self::$optionTransformer, ['options' => $options]);
         }
 
-        return Arr::sort($options, 'label');
+        usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
+
+        return $options;
     }
 
     /**
-     * @param  array{label:string, action:callable|string, info?:string, params?:array}|Closure():array{label:string, action:callable|string, info?:string, params?:array}  $option
+     * @param  CacheOptionInput|Closure(): CacheOptionInput  $option
      */
     public static function add(string $key, array|Closure $option): void
     {
@@ -166,6 +174,7 @@ class ClearCaches extends Utility
         self::$tagTransformer = null;
     }
 
+    /** @return list<CacheOption> */
     private static function defaultCacheOptions(): array
     {
         $pathService = app(\CraftCms\Cms\Support\Path::class);
@@ -253,6 +262,7 @@ class ClearCaches extends Utility
     /**
      * Returns all cache tag invalidation options.
      */
+    /** @return list<TagOption> */
     public static function tagOptions(): array
     {
         $options = [
@@ -282,6 +292,8 @@ class ClearCaches extends Utility
             $options = app()->call(self::$tagTransformer, ['options' => $options]);
         }
 
-        return Arr::sort($options, 'label');
+        usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
+
+        return $options;
     }
 }

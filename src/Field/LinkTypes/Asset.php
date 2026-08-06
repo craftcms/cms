@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -20,9 +21,7 @@ use function CraftCms\Cms\t;
  */
 class Asset extends BaseElementLinkType
 {
-    /**
-     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true).
-     */
+    /** @var list<string>|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true). */
     public ?array $allowedKinds = null;
 
     /**
@@ -99,6 +98,7 @@ class Asset extends BaseElementLinkType
             ->all();
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     #[Override]
     protected function selectionCriteria(): array
     {
@@ -114,6 +114,16 @@ class Asset extends BaseElementLinkType
         return $criteria;
     }
 
+    /**
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     *     jsClass: string,
+     * }
+     */
     #[Override]
     protected function elementSelectConfig(): array
     {

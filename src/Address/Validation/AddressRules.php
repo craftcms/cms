@@ -72,6 +72,7 @@ class AddressRules extends ElementRules
         }
     }
 
+    /** @return array<string, array<int, mixed>> */
     #[Override]
     public function rules(): array
     {
@@ -85,6 +86,10 @@ class AddressRules extends ElementRules
         return $this->addCoordinateValidation($rules);
     }
 
+    /**
+     * @param  array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
     private function addAddressAttributeRules(array $rules): array
     {
         $rules['fieldId'] = ['nullable', 'integer'];
@@ -110,6 +115,10 @@ class AddressRules extends ElementRules
         return $rules;
     }
 
+    /**
+     * @param  array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
     private function addCountryCodeValidation(array $rules): array
     {
         $countryCodes = array_keys(app(Addresses::class)->getCountryRepository()->getList());
@@ -118,6 +127,10 @@ class AddressRules extends ElementRules
         return $rules;
     }
 
+    /**
+     * @param  array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
     private function addAddressFormatRequirements(array $rules): array
     {
         foreach (Address::addressAttributes() as $attribute) {
@@ -145,6 +158,10 @@ class AddressRules extends ElementRules
         return in_array($attribute, $formatter->getRequiredFields());
     }
 
+    /**
+     * @param  array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
     private function addFieldLayoutRequirements(array $rules): array
     {
         $fieldLayout = $this->subject->getFieldLayout();
@@ -182,6 +199,10 @@ class AddressRules extends ElementRules
         };
     }
 
+    /**
+     * @param  array<string, array<int, mixed>>  $rules
+     * @return array<string, array<int, mixed>>
+     */
     private function addCoordinateValidation(array $rules): array
     {
         $coordinateScenarios = $this->inScenarios(self::SCENARIO_LIVE, self::SCENARIO_DEFAULT);
