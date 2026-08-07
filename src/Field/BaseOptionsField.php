@@ -329,8 +329,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }, $this->options ?: [['label' => '', 'value' => '']]);
 
         return Form::make([
-            FormField::make()
-                ->label($this->optionsSettingLabel())
+            FormField::make($this->optionsSettingLabel())
                 ->instructions(t('Define the available options.'))
                 ->control(Table::make('options')
                     ->columns($columns)
@@ -339,8 +338,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ->allowReorder()
                     ->value($rows)),
         ])->addIf(static::$allowCustomOptions,
-            FormField::make()
-                ->label(t('Allow custom options'))
+            FormField::make(t('Allow custom options'))
                 ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
         );
     }

@@ -26,31 +26,31 @@ use Symfony\Component\DomCrawler\Crawler;
 function scalarControlsForm(): Form
 {
     return Form::make([
-        Field::make()->label('Summary')->control(
+        Field::make('Summary',
             Textarea::make('summary')->rows(4)->maxLength(120)->placeholder('<write>'),
         ),
-        Field::make()->label('Choice')->required()->control(
+        Field::make('Choice',
             Choice::make('choice')->options([
                 ['label' => '<None>', 'value' => ''],
                 ['label' => 'One', 'value' => 'one'],
                 ['label' => 'Enabled', 'value' => true],
             ]),
-        ),
-        Field::make()->label('Tags')->required()->control(
+        )->required(),
+        Field::make('Tags',
             Choice::make('tags')->multiple()->options([
                 ['label' => 'Alpha', 'value' => 'a'],
                 ['label' => 'Beta', 'value' => 'b'],
             ]),
-        ),
-        Field::make()->label('Number')->control(Number::make('number')->min(0)->max(10)->step(0.5)),
-        Field::make()->label('Range')->control(Range::make('range')->min(1)->max(5)->step(1)),
-        Field::make()->label('Date')->control(Date::make('date')->min('2026-01-01')->max('2026-12-31')),
-        Field::make()->label('Date and time')->control(
+        )->required(),
+        Field::make('Number', Number::make('number')->min(0)->max(10)->step(0.5)),
+        Field::make('Range', Range::make('range')->min(1)->max(5)->step(1)),
+        Field::make('Date', Date::make('date')->min('2026-01-01')->max('2026-12-31')),
+        Field::make('Date and time',
             DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15),
         ),
-        Field::make()->label('Time')->control(Time::make('time')->step(60)),
-        Field::make()->label('Color')->control(Color::make('color')->presets(['#ff0000'])),
-        Field::make()->label('Money')->control(
+        Field::make('Time', Time::make('time')->step(60)),
+        Field::make('Color', Color::make('color')->presets(['#ff0000'])),
+        Field::make('Money',
             Money::make('price')->currency('EUR')->locale('nl_BE')->min(0),
         ),
     ]);

@@ -50,8 +50,7 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return parent::settingsForm($context)->add(
-            FormField::make()
-                ->label(t('Icons only'))
+            FormField::make(t('Icons only'))
                 ->instructions(t('Whether buttons should only show their icons, hiding their text labels.'))
                 ->control(Lightswitch::make('iconsOnly')->value($this->iconsOnly)),
         );

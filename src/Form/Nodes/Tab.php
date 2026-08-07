@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Nodes;
 
 use CraftCms\Cms\Cp\Components\FieldGroup;
-use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
@@ -13,14 +12,16 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\HtmlString;
 
-class Tab implements Node
+class Tab extends Container
 {
     /** @param list<Node> $children */
     private function __construct(
-        private readonly string $uid,
+        string $uid,
         private readonly string $label,
-        private array $children = [],
-    ) {}
+        array $children = [],
+    ) {
+        parent::__construct($uid, $children);
+    }
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
@@ -46,35 +47,13 @@ class Tab implements Node
         return new self($uid, $label, $children);
     }
 
-    public function add(Node ...$children): static
-    {
-        array_push($this->children, ...$children);
-
-        return $this;
-    }
-
     public function component(): string
     {
         return 'craft:tab';
     }
 
-    public function uid(): ?string
-    {
-        return $this->uid;
-    }
-
     public function props(): array
     {
         return ['label' => $this->label];
-    }
-
-    public function getControl(): ?Control
-    {
-        return null;
-    }
-
-    public function children(): array
-    {
-        return $this->children;
     }
 }

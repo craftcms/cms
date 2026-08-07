@@ -73,14 +73,11 @@ class Url extends BaseTextLinkType
     public function settingsNodes(string $prefix): array
     {
         return [
-            FormField::make()
-                ->label(t('Allow root-relative URLs'))
+            FormField::make(t('Allow root-relative URLs'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowRootRelativeUrls'))->value($this->allowRootRelativeUrls)),
-            FormField::make()
-                ->label(t('Allow anchors'))
+            FormField::make(t('Allow anchors'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowAnchors'))->value($this->allowAnchors)),
-            FormField::make()
-                ->label(t('Allow custom URL schemes'))
+            FormField::make(t('Allow custom URL schemes'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'allowCustomSchemes'))->value($this->allowCustomSchemes)),
         ];
     }

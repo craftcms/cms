@@ -10,7 +10,6 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Tab;
 
 use function CraftCms\Cms\t;
 
@@ -69,11 +68,11 @@ class FieldLayoutCompiler
                 continue;
             }
 
-            $form->add(Tab::make(
-                $layoutTab->uid,
+            $form->addTab(
                 t($layoutTab->name ?? '', category: 'site'),
                 $nodes,
-            ));
+                $layoutTab->uid,
+            );
         }
 
         event($event = new FieldLayoutFormResolving($layout, $form, $context, $element));

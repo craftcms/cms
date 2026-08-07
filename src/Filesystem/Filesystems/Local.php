@@ -121,14 +121,12 @@ class Local extends Filesystem
         $form = Form::make();
 
         if ($this->getShowHasUrlSetting()) {
-            $form->add(Field::make()
-                ->label(t('Files in this filesystem have public URLs'))
+            $form->add(Field::make(t('Files in this filesystem have public URLs'))
                 ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
         }
 
         if ($this->hasUrls && $this->getShowUrlSetting()) {
-            $form->add(Field::make()
-                ->label(t('Base URL'))
+            $form->add(Field::make(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem. This can begin with an environment variable or alias.'))
                 ->required()
                 ->control(Combobox::make('url')
@@ -137,8 +135,7 @@ class Local extends Filesystem
                     ->placeholder('//example.com/path/to/folder')));
         }
 
-        return $form->add(Field::make()
-            ->label(t('Base Path'))
+        return $form->add(Field::make(t('Base Path'))
             ->instructions(t('The base folder path that should be used as the root of the filesystem. This can begin with an environment variable or alias.'))
             ->required()
             ->control(Combobox::make('path')

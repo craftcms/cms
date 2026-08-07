@@ -502,8 +502,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         $form = Form::make([
-            FormField::make()
-                ->label($this->allowMultipleSources ? t('Sources') : t('Source'))
+            FormField::make($this->allowMultipleSources ? t('Sources') : t('Source'))
                 ->instructions(t('Which sources do you want to select {type} from?', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]))
@@ -518,8 +517,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
         $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
         if ($selectionCondition !== null) {
-            $form->add(FormField::make()
-                ->label(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
+            $form->add(FormField::make(t('Selectable {type} Condition', ['type' => $elementType::pluralDisplayName()]))
                 ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ])))
@@ -530,8 +528,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                     ->value($selectionCondition->getConfig())));
         }
 
-        $form->add(FormField::make()
-            ->label(t('Maintain hierarchy'))
+        $form->add(FormField::make(t('Maintain hierarchy'))
             ->instructions(t('Whether the structure of the related {type} should be maintained.', [
                 'type' => $elementType::pluralLowerDisplayName(),
             ]))
@@ -539,24 +536,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
         if ($this->allowLimit) {
             $form->add(
-                FormField::make()
-                    ->label(t('Min Relations'))
+                FormField::make(t('Min Relations'))
                     ->instructions(t('The minimum number of {type} that may be selected.', ['type' => $elementType::pluralLowerDisplayName()]))
                     ->control(Number::make('minRelations')->min(0)->value($this->minRelations)),
-                FormField::make()
-                    ->label(t('Max Relations'))
+                FormField::make(t('Max Relations'))
                     ->instructions(t('The maximum number of {type} that may be selected.', ['type' => $elementType::pluralLowerDisplayName()]))
                     ->control(Number::make('maxRelations')->min(0)->value($this->maxRelations)),
             );
         }
 
         $form->add(
-            FormField::make()
-                ->label(t('Branch Limit'))
+            FormField::make(t('Branch Limit'))
                 ->instructions(t('Limit the number of selectable {type} branches.', ['type' => $elementType::lowerDisplayName()]))
                 ->control(Number::make('branchLimit')->min(0)->value($this->branchLimit)),
-            FormField::make()
-                ->label(t('Default {type} Placement', ['type' => $elementType::displayName()]))
+            FormField::make(t('Default {type} Placement', ['type' => $elementType::displayName()]))
                 ->instructions(t('Where new {type} should be placed by default in the field.', ['type' => $elementType::pluralLowerDisplayName()]))
                 ->control(Choice::make('defaultPlacement')->options([
                     ['label' => t('Before other {type}', ['type' => $elementType::pluralLowerDisplayName()]), 'value' => self::DEFAULT_PLACEMENT_BEGINNING],
@@ -565,8 +558,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         );
 
         if (count($viewModes) > 1) {
-            $form->add(FormField::make()
-                ->label(t('View Mode'))
+            $form->add(FormField::make(t('View Mode'))
                 ->instructions(t('Choose how the field should look for authors.'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
@@ -575,22 +567,18 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         $form->add(
-            FormField::make()
-                ->label(t('“Add” Button Label'))
+            FormField::make(t('“Add” Button Label'))
                 ->instructions(t('The text label for {type} selection buttons.', ['type' => $elementType::lowerDisplayName()]))
                 ->control(Text::make('selectionLabel')->placeholder(static::defaultSelectionLabel())->value($this->selectionLabel)),
-            FormField::make()
-                ->label(t('Show the search input'))
+            FormField::make(t('Show the search input'))
                 ->control(Lightswitch::make('showSearchInput')->value($this->showSearchInput)),
-            FormField::make()
-                ->label(t('Validate related {type}', ['type' => $elementType::pluralLowerDisplayName()]))
+            FormField::make(t('Validate related {type}', ['type' => $elementType::pluralLowerDisplayName()]))
                 ->instructions(t('Whether validation errors on the related {type} should prevent the source element from being saved.', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]))
                 ->control(Lightswitch::make('validateRelatedElements')->value($this->validateRelatedElements)),
             Group::make('relation-advanced-settings', [
-                FormField::make()
-                    ->label(t('Allow self relations'))
+                FormField::make(t('Allow self relations'))
                     ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementType::lowerDisplayName()]))
                     ->control(Lightswitch::make('allowSelfRelations')->value($this->allowSelfRelations)),
             ])->label(t('Advanced')),
@@ -602,17 +590,14 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'value' => $site->uid,
             ])->all();
             $form->add(
-                FormField::make()
-                    ->label(t('Relate {type} from a specific site?', ['type' => $elementType::pluralLowerDisplayName()]))
+                FormField::make(t('Relate {type} from a specific site?', ['type' => $elementType::pluralLowerDisplayName()]))
                     ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
-                FormField::make()
-                    ->label(t('Which site should {type} be related from?', ['type' => $elementType::pluralLowerDisplayName()]))
+                FormField::make(t('Which site should {type} be related from?', ['type' => $elementType::pluralLowerDisplayName()]))
                     ->control(Choice::make('targetSiteId')->options($sites)->value($this->targetSiteId)),
             );
 
             if (static::canShowSiteMenu()) {
-                $form->add(FormField::make()
-                    ->label(t('Show the site menu'))
+                $form->add(FormField::make(t('Show the site menu'))
                     ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu)));
             }
         }

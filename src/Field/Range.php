@@ -49,12 +49,11 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()->label(t('Min Value'))->required()->control(Number::make('min')->step('any')->value($this->min)),
-            FormField::make()->label(t('Max Value'))->required()->control(Number::make('max')->step('any')->value($this->max)),
-            FormField::make()->label(t('Step Size'))->required()->control(Number::make('step')->step('any')->value($this->step)),
-            FormField::make()->label(t('Default Value'))->control(Number::make('defaultValue')->step('any')->value($this->defaultValue)),
-            FormField::make()
-                ->label(t('Suffix Text'))
+            FormField::make(t('Min Value'), Number::make('min')->step('any')->value($this->min))->required(),
+            FormField::make(t('Max Value'), Number::make('max')->step('any')->value($this->max))->required(),
+            FormField::make(t('Step Size'), Number::make('step')->step('any')->value($this->step))->required(),
+            FormField::make(t('Default Value'), Number::make('defaultValue')->step('any')->value($this->defaultValue)),
+            FormField::make(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
                 ->control(Text::make('suffix')->value($this->suffix)),
         ]);

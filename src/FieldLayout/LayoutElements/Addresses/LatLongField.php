@@ -85,14 +85,10 @@ class LatLongField extends BaseNativeField
         }
 
         return Group::make($this->uid, [
-            Field::make()
-                ->label(t('Latitude'))
-                ->required($this->required)
-                ->control(Text::make('latitude')->value($context->element->latitude)),
-            Field::make()
-                ->label(t('Longitude'))
-                ->required($this->required)
-                ->control(Text::make('longitude')->value($context->element->longitude)),
+            Field::make(t('Latitude'), Text::make('latitude')->value($context->element->latitude))
+                ->required($this->required),
+            Field::make(t('Longitude'), Text::make('longitude')->value($context->element->longitude))
+                ->required($this->required),
         ]);
     }
 

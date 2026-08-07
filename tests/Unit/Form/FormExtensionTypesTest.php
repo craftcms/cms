@@ -38,6 +38,7 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Form\Nodes\Callout;
+use CraftCms\Cms\Form\Nodes\Container;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
@@ -93,12 +94,46 @@ it('registers core and plugin Node and Control types separately', function () {
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);
 });
 
+it('builds Node containers from children, configuration closures, and conditions', function () {
+    $field = Field::make('Title', Text::make('title'));
+    $form = Form::make()
+        ->addTab('Array tab', [$field])
+        ->addTab('Closure tab', fn (Tab $tab) => $tab->add($field), 'custom-tab')
+        ->addGroup('Array group', [$field])
+        ->addGroup('Closure group', fn (Group $group) => $group->label('Configured group')->add($field), 'custom-group');
+
+    [$arrayTab, $closureTab, $arrayGroup, $closureGroup] = $form->nodes();
+    $conditionalGroup = Group::make('conditional')
+        ->addIf(true, $field)
+        ->addIf(false, $field)
+        ->addUnless(false, $field)
+        ->addUnless(true, $field);
+
+    expect($arrayTab)->toBeInstanceOf(Tab::class)
+        ->and($arrayTab)->toBeInstanceOf(Container::class)
+        ->and($arrayTab->uid())->toBe('array-tab')
+        ->and($arrayTab->children())->toBe([$field])
+        ->and($closureTab)->toBeInstanceOf(Tab::class)
+        ->and($closureTab->uid())->toBe('custom-tab')
+        ->and($closureTab->children())->toBe([$field])
+        ->and($arrayGroup)->toBeInstanceOf(Group::class)
+        ->and($arrayGroup)->toBeInstanceOf(Container::class)
+        ->and($arrayGroup->uid())->toBe('array-group')
+        ->and($arrayGroup->props())->toBe(['label' => 'Array group'])
+        ->and($arrayGroup->children())->toBe([$field])
+        ->and($closureGroup)->toBeInstanceOf(Group::class)
+        ->and($closureGroup->uid())->toBe('custom-group')
+        ->and($closureGroup->props())->toBe(['label' => 'Configured group'])
+        ->and($closureGroup->children())->toBe([$field])
+        ->and($conditionalGroup->children())->toBe([$field, $field]);
+});
+
 it('renders and submits test plugin types through the PHP renderer', function () {
     new TestPlugin(app())->registerFormTypes(app(FormNodeTypes::class), app(FormControlTypes::class));
 
     $payload = app(FormResolver::class)->resolve(Form::make([
         new Notice('plugin-notice', 'Provided by the test plugin'),
-        Field::make()->label('Slug')->control(Slug::make('slug')->value('custom-value')),
+        Field::make('Slug', Slug::make('slug')->value('custom-value')),
     ]), new FormContext(namespace: 'settings'));
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 

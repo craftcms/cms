@@ -121,8 +121,7 @@ class QuickPost extends Widget
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $form->add(Field::make()
-                ->label(t('Site'))
+            $form->add(Field::make(t('Site'))
                 ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
                     ->map(fn ($site): array => [
                         'label' => t($site->getName(), category: 'site'),
@@ -136,8 +135,7 @@ class QuickPost extends Widget
         $entryTypes = $section->getEntryTypes();
 
         return $form->add(
-            Field::make()
-                ->label(t('Section'))
+            Field::make(t('Section'))
                 ->instructions(t('Which section do you want to save entries to?'))
                 ->control(Choice::make('section')->value($section->id)->options(array_map(
                     fn (Section $section): array => [
@@ -146,8 +144,7 @@ class QuickPost extends Widget
                     ],
                     $sections,
                 ))),
-            Field::make()
-                ->label(t('Entry Type'))
+            Field::make(t('Entry Type'))
                 ->instructions(count($entryTypes) > 1 ? t('Which type of entries do you want to create?') : null)
                 ->control(Choice::make('entryType')->value($this->entryType()?->id)->options(array_map(
                     fn (EntryType $entryType): array => [
@@ -156,8 +153,7 @@ class QuickPost extends Widget
                     ],
                     $entryTypes,
                 ))),
-            Field::make()
-                ->label(t('Widget Title'))
+            Field::make(t('Widget Title'))
                 ->control(Text::make('customTitle')
                     ->value($this->customTitle)
                     ->placeholder(t('Create a new {section} entry', ['section' => $section->getUiLabel()]))),

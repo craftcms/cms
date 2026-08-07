@@ -146,8 +146,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         $layout = $this->getFieldLayout();
 
         return Form::make([
-            FormField::make()
-                ->label(t('Field Layout'))
+            FormField::make(t('Field Layout'))
                 ->control(FieldLayoutDesigner::make('fieldLayout')
                     ->elementType(ContentBlockElement::class)
                     ->customizableTabs(false)
@@ -156,8 +155,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                         'type' => $layout->type,
                         ...($layout->getConfig() ?? []),
                     ])),
-            FormField::make()
-                ->label(t('View Mode'))
+            FormField::make(t('View Mode'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
                     ->options([

@@ -64,14 +64,10 @@ class FullNameField extends TextField
         }
 
         return Group::make($this->uid, [
-            Field::make()
-                ->label(t('First Name'))
-                ->required($this->required)
-                ->control(Text::make('firstName')->value($element->firstName ?? null)),
-            Field::make()
-                ->label(t('Last Name'))
-                ->required($this->required)
-                ->control(Text::make('lastName')->value($element->lastName ?? null)),
+            Field::make(t('First Name'), Text::make('firstName')->value($element->firstName ?? null))
+                ->required($this->required),
+            Field::make(t('Last Name'), Text::make('lastName')->value($element->lastName ?? null))
+                ->required($this->required),
         ]);
     }
 

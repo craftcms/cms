@@ -18,13 +18,13 @@ use Symfony\Component\DomCrawler\Crawler;
 function compositeControlsForm(): Form
 {
     return Form::make([
-        Field::make()->label('Body')->control(
+        Field::make('Body',
             Markdown::make('body')
                 ->rows(6)
                 ->placeholder('Write <Markdown>')
                 ->toolbarButtons(['bold', 'link']),
         ),
-        Field::make()->label('Rows')->control(
+        Field::make('Rows',
             Table::make('rows')
                 ->columns([
                     'name' => ['heading' => 'Name', 'type' => 'singleline'],
@@ -33,7 +33,7 @@ function compositeControlsForm(): Form
                 ->allowAdd()
                 ->allowDelete(),
         ),
-        Field::make()->label('Link')->control(
+        Field::make('Link',
             Link::make('link')
                 ->types([
                     ['id' => 'url', 'label' => 'URL', 'kind' => 'text'],
@@ -42,10 +42,10 @@ function compositeControlsForm(): Form
                 ->showLabelField()
                 ->advancedFields(['title']),
         ),
-        Field::make()->label('Address')->control(
+        Field::make('Address',
             Address::make('address')->countryCode('US'),
         ),
-        Field::make()->label('Icon')->control(IconPicker::make('icon')->freeOnly()),
+        Field::make('Icon', IconPicker::make('icon')->freeOnly()),
     ]);
 }
 

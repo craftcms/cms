@@ -369,16 +369,17 @@ abstract class BaseField extends FieldLayoutElement
             $control->mode($context->mode);
         }
 
-        return Field::make()
-            ->label($this->showLabel() ? $this->label() : null)
+        return Field::make(
+            $this->showLabel() ? $this->label() : null,
+            $control,
+        )
             ->instructions($this->instructionsText($context->element))
             ->instructionsPosition($this->instructionsPosition)
             ->tip($this->tipText($context->element))
             ->warning($this->warningText($context->element))
             ->required($this->required)
             ->layoutUid($this->uid)
-            ->width($this->width)
-            ->control($control);
+            ->width($this->width);
     }
 
     protected function formControl(FieldLayoutElementContext $context): ?Control

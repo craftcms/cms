@@ -100,12 +100,10 @@ class Entries extends BaseRelationField
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return parent::settingsForm($context)->add(
-            FormField::make()
-                ->label(t('Show unpermitted sections'))
+            FormField::make(t('Show unpermitted sections'))
                 ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedSections')->value($this->showUnpermittedSections)),
-            FormField::make()
-                ->label(t('Show unpermitted entries'))
+            FormField::make(t('Show unpermitted entries'))
                 ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
                 ->control(Lightswitch::make('showUnpermittedEntries')->value($this->showUnpermittedEntries)),
         );

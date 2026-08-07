@@ -374,8 +374,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         $form = Form::make([
-            FormField::make()
-                ->label(t('Entry Types'))
+            FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
                 ->control(GroupedEntryTypeManager::make('entryTypes')
                     ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))),
@@ -383,8 +382,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         if (Sites::isMultiSite()) {
             $form->add(
-                FormField::make()
-                    ->label(t('Propagation Method'))
+                FormField::make(t('Propagation Method'))
                     ->instructions(t('Which sites should entries be saved to?'))
                     ->control(Choice::make('propagationMethod')->options([
                         ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
@@ -393,8 +391,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
                         ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
                     ])->value($this->propagationMethod->value)),
-                FormField::make()
-                    ->label(t('Propagation Key Format'))
+                FormField::make(t('Propagation Key Format'))
                     ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
                     ->control(Text::make('propagationKeyFormat')->monospace()->value($this->propagationKeyFormat)),
             );
@@ -429,23 +426,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
 
         return $form->add(
-            FormField::make()
-                ->label(t('Site Settings'))
+            FormField::make(t('Site Settings'))
                 ->instructions(t('Choose the site-specific settings for nested entries.'))
                 ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
-            FormField::make()
-                ->label(t('Min {type}', ['type' => t('Entries')]))
+            FormField::make(t('Min {type}', ['type' => t('Entries')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('minEntries')->min(0)->value($this->minEntries)),
-            FormField::make()
-                ->label(t('Max {type}', ['type' => t('Entries')]))
+            FormField::make(t('Max {type}', ['type' => t('Entries')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
                 ->control(Number::make('maxEntries')->min(0)->value($this->maxEntries)),
-            FormField::make()
-                ->label(t('Enable versioning for entries in this field'))
+            FormField::make(t('Enable versioning for entries in this field'))
                 ->control(Lightswitch::make('enableVersioning')->value($this->enableVersioning)),
-            FormField::make()
-                ->label(t('View Mode'))
+            FormField::make(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
@@ -456,29 +448,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                         ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
                     ])
                     ->value($this->viewMode)),
-            FormField::make()
-                ->label(t('Include Table View'))
+            FormField::make(t('Include Table View'))
                 ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
                 ->control(Lightswitch::make('includeTableView')->value($this->includeTableView)),
-            FormField::make()
-                ->label(t('Default Table Columns'))
+            FormField::make(t('Default Table Columns'))
                 ->instructions(t('Choose which table columns should be visible by default.'))
                 ->control(Choice::make('defaultTableColumns')
                     ->multiple()
                     ->options(self::defaultTableColumnOptions($this->_entryTypes))
                     ->value($this->defaultTableColumns)),
-            FormField::make()
-                ->label(t('Default View Mode'))
+            FormField::make(t('Default View Mode'))
                 ->control(Choice::make('defaultIndexViewMode')->options($indexViewModes)->value($this->defaultIndexViewMode)),
-            FormField::make()
-                ->label(t('{type} Per Page', ['type' => t('Entries')]))
+            FormField::make(t('{type} Per Page', ['type' => t('Entries')]))
                 ->instructions(t('The total number of {type} to display per page within the element index.', ['type' => t('entries')]))
                 ->control(Choice::make('pageSize')->options(array_map(fn (int $size): array => [
                     'label' => (string) $size,
                     'value' => $size,
                 ], [10, 20, 50, 100]))->value($this->pageSize ?? 50)),
-            FormField::make()
-                ->label(t('“New” Button Label'))
+            FormField::make(t('“New” Button Label'))
                 ->instructions(t('The text label for the entry creation button.'))
                 ->control(Text::make('createButtonLabel')->placeholder($this->defaultCreateButtonLabel())->value($this->createButtonLabel)),
         );

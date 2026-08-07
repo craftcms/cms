@@ -60,8 +60,7 @@ class Asset extends BaseElementLinkType
     {
         return [
             ...parent::settingsNodes($prefix),
-            FormField::make()
-                ->label(t('Allowed File Types'))
+            FormField::make(t('Allowed File Types'))
                 ->control(Choice::make($this->settingPath($prefix, 'allowedKinds'))
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
@@ -73,12 +72,10 @@ class Asset extends BaseElementLinkType
                         ->values()
                         ->all())
                     ->value($this->allowedKinds ?? [])),
-            FormField::make()
-                ->label(t('Show unpermitted volumes'))
+            FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedVolumes'))->value($this->showUnpermittedVolumes)),
-            FormField::make()
-                ->label(t('Show unpermitted files'))
+            FormField::make(t('Show unpermitted files'))
                 ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
                 ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedFiles'))->value($this->showUnpermittedFiles)),
         ];

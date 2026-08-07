@@ -115,19 +115,15 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()
-                ->label(t('Default Value'))
+            FormField::make(t('Default Value'))
                 ->control(LightswitchControl::make('default')->value($this->default)),
-            FormField::make()
-                ->label(t('OFF Label'))
+            FormField::make(t('OFF Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s disabled state.'))
                 ->control(Text::make('offLabel')->value($this->offLabel)),
-            FormField::make()
-                ->label(t('ON Label'))
+            FormField::make(t('ON Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s enabled state.'))
                 ->control(Text::make('onLabel')->value($this->onLabel)),
-            FormField::make()
-                ->label(t('Show ON/OFF labels in cards'))
+            FormField::make(t('Show ON/OFF labels in cards'))
                 ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
                 ->control(LightswitchControl::make('showLabelsInCards')->value($this->showLabelsInCards)),
         ]);

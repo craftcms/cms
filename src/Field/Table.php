@@ -144,8 +144,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }, $this->columns);
 
         return Form::make([
-            FormField::make()
-                ->label(t('Columns'))
+            FormField::make(t('Columns'))
                 ->instructions(t('Define the columns your table should have. Dropdown options are entered as JSON arrays.'))
                 ->control(TableControl::make('columns')
                     ->keyed()
@@ -160,8 +159,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowDelete()
                     ->allowReorder()
                     ->value($columnRows)),
-            FormField::make()
-                ->label(t('Default Values'))
+            FormField::make(t('Default Values'))
                 ->instructions(t('Define the default values for the field.'))
                 ->control(TableControl::make('defaults')
                     ->columns($defaultColumns)
@@ -169,20 +167,16 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowDelete()
                     ->allowReorder()
                     ->value($this->defaults ?? [])),
-            FormField::make()
-                ->label(t('Static Rows'))
+            FormField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
                 ->control(Lightswitch::make('staticRows')->value($this->staticRows)),
-            FormField::make()
-                ->label(t('Min Rows'))
+            FormField::make(t('Min Rows'))
                 ->instructions(t('The minimum number of rows the field is allowed to have.'))
                 ->control(Number::make('minRows')->min(0)->value($this->minRows)),
-            FormField::make()
-                ->label(t('Max Rows'))
+            FormField::make(t('Max Rows'))
                 ->instructions(t('The maximum number of rows the field is allowed to have.'))
                 ->control(Number::make('maxRows')->min(0)->value($this->maxRows)),
-            FormField::make()
-                ->label(t('Add Row Label'))
+            FormField::make(t('Add Row Label'))
                 ->instructions(t('Insert the button label for adding a new row to the table.'))
                 ->control(Text::make('addRowLabel')->value($this->addRowLabel)),
         ]);

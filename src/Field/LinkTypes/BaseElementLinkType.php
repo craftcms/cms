@@ -105,8 +105,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         array_unshift($sources, ['label' => t('All'), 'value' => '*']);
 
         return [
-            FormField::make()
-                ->label(t('{type} Sources', ['type' => static::elementType()::displayName()]))
+            FormField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
                 ->control(Choice::make($this->settingPath($prefix, 'sources'))
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)

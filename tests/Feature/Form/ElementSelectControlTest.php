@@ -19,7 +19,7 @@ it('resolves and renders ordered element relationships', function () {
     $first = Entry::factory()->title('First entry')->create();
     $second = Entry::factory()->title('Second entry')->create();
     $form = Form::make([
-        Field::make()->label('Related entries')->control(
+        Field::make('Related entries',
             ElementSelect::make('related')
                 ->elementType(EntryElement::class)
                 ->selectionLabel('Add an entry'),

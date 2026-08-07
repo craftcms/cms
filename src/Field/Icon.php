@@ -115,13 +115,11 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()
-                ->label(t('Include Pro icons'))
+            FormField::make(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
                 ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
         ])->addIf(Cms::config()->enableGql,
-            FormField::make()
-                ->label(t('GraphQL Mode'))
+            FormField::make(t('GraphQL Mode'))
                 ->control(Choice::make('graphqlMode')->options([
                     ['label' => t('Full data'), 'value' => 'full'],
                     ['label' => t('Name only'), 'value' => 'name'],

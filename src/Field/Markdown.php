@@ -26,7 +26,6 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
@@ -253,58 +252,48 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         $volumeOptions = $this->volumeOptions();
 
         return Form::make([
-            FormField::make()
-                ->label(t('Markdown Flavor'))
+            FormField::make(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
                 ->control(Choice::make('flavor')->options(self::flavorOptions())->value($this->flavor)),
-            FormField::make()
-                ->label(t('Inline Only'))
+            FormField::make(t('Inline Only'))
                 ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
                 ->control(Lightswitch::make('inlineOnly')->value($this->inlineOnly)),
-            FormField::make()
-                ->label(t('Show Toolbar'))
+            FormField::make(t('Show Toolbar'))
                 ->instructions(t('Whether the editor toolbar should be visible.'))
                 ->control(Lightswitch::make('showToolbar')->value($this->showToolbar)),
-            FormField::make()
-                ->label(t('Toolbar Buttons'))
+            FormField::make(t('Toolbar Buttons'))
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
                 ->control(Choice::make('toolbarButtons')
                     ->multiple()
                     ->options(array_map(fn (array $option): array => Arr::only($option, ['label', 'value']), self::toolbarButtonOptions()))
                     ->value($this->toolbarButtons)),
-            FormField::make()
-                ->label(t('Show Stats'))
+            FormField::make(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
                 ->control(Lightswitch::make('showStats')->value($this->showStats)),
-            FormField::make()
-                ->label(t('Placeholder Text'))
+            FormField::make(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->control(Text::make('placeholder')->value($this->placeholder)),
-            FormField::make()
-                ->label(t('Initial Rows'))
+            FormField::make(t('Initial Rows'))
                 ->control(Number::make('initialRows')->min(1)->value($this->initialRows)),
-            Group::make('markdown-field-limit', [
-                FormField::make()
-                    ->label(t('Maximum'))
-                    ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
-                    ->control(Number::make('fieldLimit')
-                        ->min(1)
-                        ->deltaGroupAtNamespace()
-                        ->value($this->charLimit ?? $this->byteLimit)),
-                FormField::make()
-                    ->label(t('Unit'))
-                    ->control(Choice::make('limitUnit')
-                        ->deltaGroupAtNamespace()
-                        ->options([
-                            ['label' => t('Characters'), 'value' => 'chars'],
-                            ['label' => t('Bytes'), 'value' => 'bytes'],
-                        ])
-                        ->value($this->byteLimit ? 'bytes' : 'chars')),
-            ])->label(t('Field Limit')),
-            Group::make('markdown-link-settings', $this->linkSettingsNodes())->label(t('Links')),
-            Group::make('markdown-asset-settings', [
-                FormField::make()
-                    ->label(t('Available Volumes'))
+        ])->addGroup(t('Field Limit'), [
+            FormField::make(t('Maximum'))
+                ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
+                ->control(Number::make('fieldLimit')
+                    ->min(1)
+                    ->deltaGroupAtNamespace()
+                    ->value($this->charLimit ?? $this->byteLimit)),
+            FormField::make(t('Unit'))
+                ->control(Choice::make('limitUnit')
+                    ->deltaGroupAtNamespace()
+                    ->options([
+                        ['label' => t('Characters'), 'value' => 'chars'],
+                        ['label' => t('Bytes'), 'value' => 'bytes'],
+                    ])
+                    ->value($this->byteLimit ? 'bytes' : 'chars')),
+        ], 'markdown-field-limit')
+            ->addGroup(t('Links'), $this->linkSettingsNodes(), 'markdown-link-settings')
+            ->addGroup(t('Assets'), [
+                FormField::make(t('Available Volumes'))
                     ->instructions(t('The volumes that should be available when selecting assets.'))
                     ->control(Choice::make('availableVolumes')
                         ->multiple()
@@ -313,40 +302,33 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                             ...$volumeOptions,
                         ])
                         ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
-                FormField::make()
-                    ->label(t('Show unpermitted volumes'))
+                FormField::make(t('Show unpermitted volumes'))
                     ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                     ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-                FormField::make()
-                    ->label(t('Show unpermitted files'))
+                FormField::make(t('Show unpermitted files'))
                     ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
                     ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
-                FormField::make()
-                    ->label(t('Upload Volume'))
+                FormField::make(t('Upload Volume'))
                     ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
                     ->control(Choice::make('uploadVolume')->options([
                         ['label' => t('No uploads'), 'value' => ''],
                         ...$volumeOptions,
                     ])->value($this->uploadVolume)),
-            ])->label(t('Assets')),
-            Group::make('markdown-advanced-settings', [
-                FormField::make()
-                    ->label(t('Encode HTML'))
+            ], 'markdown-asset-settings')
+            ->addGroup(t('Advanced'), [
+                FormField::make(t('Encode HTML'))
                     ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
                     ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
                     ->control(Lightswitch::make('encode')->value($this->encode)),
-                FormField::make()
-                    ->label(t('Sanitize HTML'))
+                FormField::make(t('Sanitize HTML'))
                     ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
                     ->warning(t('Disable this at your own risk!'))
                     ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)),
-                FormField::make()
-                    ->label(t('HTML Sanitizer'))
+                FormField::make(t('HTML Sanitizer'))
                     ->control(Choice::make('htmlSanitizer')
                         ->options($this->htmlSanitizerOptions()->all())
                         ->value($this->htmlSanitizer ?? 'default')),
-            ])->label(t('Advanced')),
-        ]);
+            ], 'markdown-advanced-settings');
     }
 
     /** @return list<array{label: string, value: string, icon: string}> */

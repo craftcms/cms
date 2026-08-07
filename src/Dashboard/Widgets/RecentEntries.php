@@ -76,8 +76,7 @@ class RecentEntries extends Widget
         $editableSites = Sites::getEditableSites();
 
         if (Sites::isMultiSite() && $editableSites->count() > 1) {
-            $form->add(Field::make()
-                ->label(t('Site'))
+            $form->add(Field::make(t('Site'))
                 ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
                     ->map(fn ($site): array => [
                         'label' => t($site->getName(), category: 'site'),
@@ -88,8 +87,7 @@ class RecentEntries extends Widget
         }
 
         return $form->add(
-            Field::make()
-                ->label(t('Section'))
+            Field::make(t('Section'))
                 ->instructions(t('Which section do you want to pull recent entries from?'))
                 ->control(Choice::make('section')->value($this->section)->options([
                     ['label' => t('All'), 'value' => '*'],
@@ -102,8 +100,7 @@ class RecentEntries extends Widget
                         ->values()
                         ->all(),
                 ])),
-            Field::make()
-                ->label(t('Limit'))
+            Field::make(t('Limit'))
                 ->control(Number::make('limit')->value($this->limit)->min(1)),
         );
     }

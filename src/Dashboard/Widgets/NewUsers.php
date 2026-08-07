@@ -91,8 +91,7 @@ class NewUsers extends Widget
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         $form = Form::make([
-            Field::make()
-                ->label(t('Date Range'))
+            Field::make(t('Date Range'))
                 ->control(Choice::make('dateRange')->value($this->dateRange)->options([
                     ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
                     ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
@@ -104,8 +103,7 @@ class NewUsers extends Widget
         $userGroups = UserGroups::getAllGroups();
 
         return $form->when($userGroups->isNotEmpty(), fn (Form $form) => $form->add(
-            Field::make()
-                ->label(t('User Group'))
+            Field::make(t('User Group'))
                 ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
                     ['label' => t('All'), 'value' => ''],
                     ...$userGroups->map(fn ($userGroup): array => [

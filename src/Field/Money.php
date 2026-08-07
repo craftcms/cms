@@ -157,24 +157,18 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return Form::make([
-            FormField::make()
-                ->label(t('Currency'))
+            FormField::make(t('Currency'))
                 ->required()
                 ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),
-            FormField::make()
-                ->label(t('Default Value'))
+            FormField::make(t('Default Value'))
                 ->control(Number::make('defaultValue')->step('any')->value($this->decimalSetting($this->defaultValue))),
-            FormField::make()
-                ->label(t('Min Value'))
+            FormField::make(t('Min Value'))
                 ->control(Number::make('min')->step('any')->value($this->decimalSetting($this->min))),
-            FormField::make()
-                ->label(t('Max Value'))
+            FormField::make(t('Max Value'))
                 ->control(Number::make('max')->step('any')->value($this->decimalSetting($this->max))),
-            FormField::make()
-                ->label(t('Show Currency'))
+            FormField::make(t('Show Currency'))
                 ->control(Lightswitch::make('showCurrency')->value($this->showCurrency)),
-            FormField::make()
-                ->label(t('Size'))
+            FormField::make(t('Size'))
                 ->control(Number::make('size')->min(1)->value($this->size)),
         ]);
     }

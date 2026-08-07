@@ -53,8 +53,7 @@ class MyDrafts extends Widget
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            Field::make()
-                ->label(t('Limit'))
+            Field::make(t('Limit'))
                 ->required()
                 ->control(Number::make('limit')->value($this->limit)->min(1)->size(2)),
         ]);

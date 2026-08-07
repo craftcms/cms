@@ -199,8 +199,7 @@ trait ProvidesLinkField
         $configured = $this->configuredLinkTypesForSettings();
         $typeSettings = $this->{$this->namespacedAttribute('typeSettings')};
         $nodes = [
-            FormField::make()
-                ->label(t('Allowed Link Types'))
+            FormField::make(t('Allowed Link Types'))
                 ->instructions(t('The link types that should be available when inserting links.'))
                 ->required()
                 ->control(Choice::make("{$prefix}types")
@@ -223,12 +222,10 @@ trait ProvidesLinkField
             }
         }
 
-        $nodes[] = FormField::make()
-            ->label(t('Show the “Label” field'))
+        $nodes[] = FormField::make(t('Show the “Label” field'))
             ->control(Lightswitch::make("{$prefix}showLabelField")
                 ->value($this->{$this->namespacedAttribute('showLabelField')}));
-        $nodes[] = FormField::make()
-            ->label(t('Advanced Fields'))
+        $nodes[] = FormField::make(t('Advanced Fields'))
             ->instructions(t('Choose which advanced fields should be available when inserting links.'))
             ->control(Choice::make("{$prefix}advancedFields")
                 ->multiple()

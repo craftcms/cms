@@ -121,8 +121,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()
-                ->label(t('Palette'))
+            FormField::make(t('Palette'))
                 ->instructions(t('Define the available colors to choose from.'))
                 ->control(Table::make('palette')
                     ->columns([
@@ -134,8 +133,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowDelete()
                     ->allowReorder()
                     ->value($this->palette)),
-            FormField::make()
-                ->label(t('Allow custom colors'))
+            FormField::make(t('Allow custom colors'))
                 ->control(Lightswitch::make('allowCustomColors')->value($this->allowCustomColors)),
         ]);
     }

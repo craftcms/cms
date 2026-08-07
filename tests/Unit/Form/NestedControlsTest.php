@@ -15,17 +15,17 @@ use Symfony\Component\DomCrawler\Crawler;
 function nestedControlsForm(): Form
 {
     $contentBlock = ContentBlock::make('content')->form(Form::make([
-        Field::make()->label('Body')->control(Text::make('body')),
+        Field::make('Body', Text::make('body')),
     ]));
 
     return Form::make([
-        Field::make()->label('Content')->control(
+        Field::make('Content',
             Matrix::make('matrix')
                 ->entryTypes(['text' => 'Text'])
                 ->forms([
                     'block-a' => Form::make([
-                        Field::make()->label('Heading')->control(Text::make('heading')),
-                        Field::make()->label('Content block')->control($contentBlock),
+                        Field::make('Heading', Text::make('heading')),
+                        Field::make('Content block', $contentBlock),
                     ]),
                 ]),
         ),

@@ -54,16 +54,13 @@ class Feed extends Widget
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            Field::make()
-                ->label(t('URL'))
+            Field::make(t('URL'))
                 ->required()
                 ->control(Text::make('url')->value($this->url)),
-            Field::make()
-                ->label(t('Title'))
+            Field::make(t('Title'))
                 ->required()
                 ->control(Text::make('title')->value($this->title)),
-            Field::make()
-                ->label(t('Limit'))
+            Field::make(t('Limit'))
                 ->required()
                 ->control(Number::make('limit')->value($this->limit)->min(1)),
         ]);

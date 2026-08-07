@@ -188,16 +188,13 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()
-                ->label(t('Min {type}', ['type' => t('Addresses')]))
+            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
-            FormField::make()
-                ->label(t('Max {type}', ['type' => t('Addresses')]))
+            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
                 ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
                 ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
-            FormField::make()
-                ->label(t('View Mode'))
+            FormField::make(t('View Mode'))
                 ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)

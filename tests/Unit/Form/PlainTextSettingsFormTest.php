@@ -51,19 +51,19 @@ function plainTextPayload(): FormPayload
 
 it('builds complete and incremental node lists with Conditionable authoring', function () {
     $form = Form::make([
-        Field::make()->label('First')->control(Text::make('first')),
+        Field::make('First', Text::make('first')),
     ])->add(
-        Field::make()->label('Second')->control(Text::make(['second'])),
+        Field::make('Second', Text::make(['second'])),
     )->addIf(true,
-        Field::make()->label('Conditional')->control(Text::make('conditional')),
+        Field::make('Conditional', Text::make('conditional')),
     )->addIf(false,
-        Field::make()->label('Omitted')->control(Text::make('omitted')),
+        Field::make('Omitted', Text::make('omitted')),
     )->addUnless(false,
-        Field::make()->label('Unless')->control(Text::make('unless')),
+        Field::make('Unless', Text::make('unless')),
     )->addUnless(true,
-        Field::make()->label('Also omitted')->control(Text::make('alsoOmitted')),
+        Field::make('Also omitted', Text::make('alsoOmitted')),
     )->when(true, fn (Form $form) => $form->add(
-        Field::make()->label('Third')->control(Text::make('nested.third')),
+        Field::make('Third', Text::make('nested.third')),
     ));
 
     $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
@@ -82,8 +82,8 @@ it('builds complete and incremental node lists with Conditionable authoring', fu
 
 it('rejects identities that cannot reconcile stably', function () {
     $duplicatePaths = Form::make([
-        Field::make()->label('First')->control(Text::make('same')),
-        Field::make()->label('Second')->control(Text::make(['same'])),
+        Field::make('First', Text::make('same')),
+        Field::make('Second', Text::make(['same'])),
     ]);
     $missingUid = Form::make([
         Group::make('', [Field::make()->control(Text::make('child'))]),

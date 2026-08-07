@@ -181,19 +181,15 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                     ->presentation(ChoicePresentation::Radios)
                     ->options($options)
                     ->value($dateTime)),
-            FormField::make()
-                ->label(t('Minute Increment'))
+            FormField::make(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->control(Choice::make('minuteIncrement')->options(self::minuteIncrementOptions())->value($this->minuteIncrement)),
-            FormField::make()
-                ->label(t('Show Time Zone'))
+            FormField::make(t('Show Time Zone'))
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->control(Lightswitch::make('showTimeZone')->value($this->showTimeZone)),
-            FormField::make()
-                ->label(t('Min Date'))
+            FormField::make(t('Min Date'))
                 ->control(DateControl::make('min')->value($this->min?->format('Y-m-d'))),
-            FormField::make()
-                ->label(t('Max Date'))
+            FormField::make(t('Max Date'))
                 ->control(DateControl::make('max')->value($this->max?->format('Y-m-d'))),
         ]);
     }

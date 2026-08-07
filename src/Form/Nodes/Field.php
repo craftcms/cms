@@ -73,9 +73,13 @@ class Field implements Node
             ->toHtml();
     }
 
-    public static function make(): self
+    public static function make(?string $label = null, ?Control $control = null): self
     {
-        return new self;
+        $field = new self;
+        $field->label = $label;
+        $field->control = $control;
+
+        return $field;
     }
 
     public function label(?string $label): static

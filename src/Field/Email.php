@@ -70,8 +70,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function settingsForm(FormContext $context = new FormContext): Form
     {
         return Form::make([
-            FormField::make()
-                ->label(t('Placeholder Text'))
+            FormField::make(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->control(Text::make('placeholder')->value($this->placeholder)),
         ]);
