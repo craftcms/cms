@@ -2,6 +2,7 @@ import {
   Base,
   DragSort,
   Select,
+  deferUntil,
   firstFocusableElement,
   hasAttr,
   isCtrlKeyPressed,
@@ -175,7 +176,8 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
   #activateBound: any[] = [];
   /** Teardown callbacks for per-card native listeners (delete items, …). */
   #disposers: Array<() => void> = [];
-  #afterInitTimeout: ReturnType<typeof setTimeout> | null = null;
+  /** Aborts the after-init `elementEditor` lookup on `destroy()`. */
+  #afterInitController: AbortController | null = null;
 
   constructor(
     container: HTMLElement | string,
@@ -235,28 +237,39 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       this.#initCreateButton();
     }
 
-    // The owner's element editor boots after this manager does; look it up a
-    // beat later (legacy parity, including the delay).
-    this.#afterInitTimeout = setTimeout(() => {
-      this.elementEditor = $(this.container)
-        .closest('form')
-        .data('elementEditor');
+    // The owner's element editor boots after this manager does; keep checking
+    // until it's attached (legacy parity: the poll interval mirrors the old
+    // fixed delay, but retries instead of gambling on a single check).
+    const $form = $(this.container).closest('form');
+    this.#afterInitController = new AbortController();
 
-      if (this.elementEditor) {
-        this.elementEditor.on('update', () => {
-          this.settings.ownerId = this.elementEditor.getDraftElementId(
-            this.settings.ownerId
-          );
+    if ($form.length) {
+      deferUntil(
+        () => $form.data('elementEditor'),
+        100,
+        this.#afterInitController.signal
+      )
+        .then((elementEditor) => {
+          this.elementEditor = elementEditor;
+          this.elementEditor.on('update', () => {
+            this.settings.ownerId = this.elementEditor.getDraftElementId(
+              this.settings.ownerId
+            );
 
-          if (this.elementIndex) {
-            this.elementIndex.settings.criteria[this.settings.ownerIdParam!] =
-              this.settings.ownerId;
-          }
+            if (this.elementIndex) {
+              this.elementIndex.settings.criteria[this.settings.ownerIdParam!] =
+                this.settings.ownerId;
+            }
+          });
+
+          this.trigger('afterInit');
+        })
+        .catch(() => {
+          // Destroyed before the editor showed up — nothing left to do.
         });
-      }
-
+    } else {
       this.trigger('afterInit');
-    }, 100);
+    }
 
     // NOTE: `Craft.cp` has no unregister API for this; the callback holds this
     // instance until the page unloads (legacy parity — see README).
@@ -1355,10 +1368,8 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
   // --- Teardown ---------------------------------------------------------------
 
   override destroy(): void {
-    if (this.#afterInitTimeout !== null) {
-      clearTimeout(this.#afterInitTimeout);
-      this.#afterInitTimeout = null;
-    }
+    this.#afterInitController?.abort();
+    this.#afterInitController = null;
 
     for (const $bound of this.#activateBound) {
       $bound.off('activate');

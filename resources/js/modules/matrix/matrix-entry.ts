@@ -7,7 +7,7 @@
  * `elements/update-field-layout` driven by a `Craft.FormObserver`.
  */
 
-import {Base, getInputPostVal, hasAttr} from '@craftcms/garnish';
+import {Base, deferUntil, getInputPostVal, hasAttr} from '@craftcms/garnish';
 import {t} from '@craftcms/ui';
 import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import {animationDuration, MatrixInput} from './matrix-input';
@@ -189,11 +189,11 @@ export class MatrixEntry extends Base {
     this.visibleLayoutElements = this.dataJson('visible-layout-elements');
     this.staticLayoutElements = this.dataJson('static-layout-elements');
 
-    setTimeout(() => {
+    deferUntil(() => !!craft().FormObserver).then(() => {
       this.formObserver = new (craft().FormObserver)(container, (data) => {
         this.updateFieldLayout(data);
       });
-    }, 1);
+    });
   }
 
   /** Reads a JSON-ish data attribute the way jQuery `.data()` did. */
