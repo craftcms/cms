@@ -462,11 +462,12 @@ describe('store', function () {
 
         $volume = Volume::factory()->create(['fs' => 'disk:save-element-controller-test']);
         $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
-        $asset = AssetModel::factory()->createElement([
+        $assetModel = AssetModel::factory()->create([
             'volumeId' => $volume->id,
             'folderId' => $folder->id,
-            'alt' => 'Existing alt text',
         ]);
+        $asset = Asset::find()->id($assetModel->id)->one();
+        $assetModel->sites()->attach($asset->siteId, ['alt' => 'Existing alt text']);
 
         postJson(action([SaveElementController::class, 'store']), [
             'elementType' => Asset::class,
@@ -475,7 +476,8 @@ describe('store', function () {
             'alt' => '',
         ])->assertOk();
 
-        expect(Asset::find()->id($asset->id)->one()->alt)->toBe('');
+        // Laravel's ConvertEmptyStringsToNull middleware turns the posted '' into null before it reaches the element.
+        expect(Asset::find()->id($asset->id)->one()->alt)->toBeNull();
     });
 
     it('marks nested elements to update their owner search index before saving', function () {

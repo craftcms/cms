@@ -286,7 +286,6 @@ class Install extends Migration
             $table->string('filename');
             $table->string('mimeType')->nullable();
             $table->string('kind', 50)->default(FileKind::Unknown->value);
-            $table->text('alt')->nullable();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();

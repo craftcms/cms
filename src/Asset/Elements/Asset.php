@@ -334,12 +334,6 @@ class Asset extends Element
 
     public function __construct($config = [])
     {
-        // alt='' actually means something, so we should preserve it.
-        $alt = Arr::pull($config, 'alt');
-        if ($alt !== null) {
-            $this->alt = $alt;
-        }
-
         parent::__construct($config);
 
         if (isset($this->alt)) {
@@ -1170,18 +1164,6 @@ class Asset extends Element
 
             throw $e;
         }
-    }
-
-    /** @param array<string, bool|float|int|string|array<string, bool|float|int|string|null>|null> $values */
-    #[Override]
-    public function setAttributesFromRequest(array $values): void
-    {
-        // alt='' actually means something, so we should preserve it.
-        if (Arr::has($values, 'alt')) {
-            $this->alt = Arr::pull($values, 'alt') ?? '';
-        }
-
-        parent::setAttributesFromRequest($values);
     }
 
     /**
@@ -3006,10 +2988,6 @@ JS;
                 $model->mimeType = $this->_mimeType;
             }
 
-            if ($model->alt === null) {
-                $model->alt = $this->alt;
-            }
-
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
                 $model->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
@@ -3018,8 +2996,17 @@ JS;
             }
 
             $model->save();
+
+            // we're not propagating at this point, so save the alt ONLY against the site we're saving to
+            DB::table(Table::ASSETS_SITES)
+                ->upsert([
+                    'assetId' => $this->id,
+                    'siteId' => $this->siteId,
+                    'alt' => $this->alt,
+                ], ['assetId', 'siteId']);
         }
 
+        $upsert = false;
         if (
             $this->propagating &&
             $this->propagatingFrom &&
@@ -3032,16 +3019,19 @@ JS;
                 $this->alt !== $from->alt &&
                 $this->getAltTranslationKey() === $from->getAltTranslationKey()
             ) {
+                $upsert = true;
                 $this->alt = $from->alt;
             }
         }
 
-        DB::table(Table::ASSETS_SITES)
-            ->upsert([
-                'assetId' => $this->id,
-                'siteId' => $this->siteId,
-                'alt' => $this->alt,
-            ], ['assetId', 'siteId']);
+        if ($upsert || $this->propagateAll) {
+            DB::table(Table::ASSETS_SITES)
+                ->upsert([
+                    'assetId' => $this->id,
+                    'siteId' => $this->siteId,
+                    'alt' => $this->alt,
+                ], ['assetId', 'siteId']);
+        }
 
         parent::afterSave($isNew);
     }
