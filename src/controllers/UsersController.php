@@ -233,10 +233,13 @@ class UsersController extends Controller
         }
 
         if ($this->request->getIsGet()) {
-            // see if they're already logged in
-            $user = static::currentUser();
-            if ($user) {
-                return $this->_handleSuccessfulLogin($user);
+            // see if they're already logged in, unless this is a preview request
+            // (see https://github.com/craftcms/cms/discussions/19360)
+            if (!$this->request->getIsPreview()) {
+                $user = static::currentUser();
+                if ($user) {
+                    return $this->_handleSuccessfulLogin($user);
+                }
             }
 
             // should we be showing the 2FA form?

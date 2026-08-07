@@ -16,5 +16,6 @@
 
 ### System
 - Added support for `.well-known/passkey-endpoints` requests. ([#19364](https://github.com/craftcms/cms/pull/19364))
+- The front-end login page no longer returns a redirect response for logged-in users, if it’s a preview request. ([#19360](https://github.com/craftcms/cms/discussions/19360))
 - Updated Twig to 3.28.
 - Updated yii2-debug to 2.1.28.
