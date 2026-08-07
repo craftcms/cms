@@ -218,7 +218,8 @@ trait ProvidesLinkField
 
             if ($settings !== []) {
                 $nodes[] = Group::make("link-type-settings-{$typeId}", $settings)
-                    ->label($this->linkTypeSettingsLabel($typeClass));
+                    ->label($this->linkTypeSettingsLabel($typeClass))
+                    ->collapsible();
             }
         }
 

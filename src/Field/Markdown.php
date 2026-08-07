@@ -26,6 +26,7 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
@@ -291,44 +292,50 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                     ])
                     ->value($this->byteLimit ? 'bytes' : 'chars')),
         ], 'markdown-field-limit')
-            ->addGroup(t('Links'), $this->linkSettingsNodes(), 'markdown-link-settings')
-            ->addGroup(t('Assets'), [
-                FormField::make(t('Available Volumes'))
-                    ->instructions(t('The volumes that should be available when selecting assets.'))
-                    ->control(Choice::make('availableVolumes')
-                        ->multiple()
-                        ->options([
-                            ['label' => t('All'), 'value' => '*'],
+            ->addGroup(t('Links'), fn (Group $group): Group => $group
+                ->collapsible()
+                ->add(...$this->linkSettingsNodes()), 'markdown-link-settings')
+            ->addGroup(t('Assets'), fn (Group $group): Group => $group
+                ->collapsible()
+                ->add(
+                    FormField::make(t('Available Volumes'))
+                        ->instructions(t('The volumes that should be available when selecting assets.'))
+                        ->control(Choice::make('availableVolumes')
+                            ->multiple()
+                            ->options([
+                                ['label' => t('All'), 'value' => '*'],
+                                ...$volumeOptions,
+                            ])
+                            ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
+                    FormField::make(t('Show unpermitted volumes'))
+                        ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                        ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
+                    FormField::make(t('Show unpermitted files'))
+                        ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                        ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+                    FormField::make(t('Upload Volume'))
+                        ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
+                        ->control(Choice::make('uploadVolume')->options([
+                            ['label' => t('No uploads'), 'value' => ''],
                             ...$volumeOptions,
-                        ])
-                        ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
-                FormField::make(t('Show unpermitted volumes'))
-                    ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                    ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-                FormField::make(t('Show unpermitted files'))
-                    ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
-                    ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
-                FormField::make(t('Upload Volume'))
-                    ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
-                    ->control(Choice::make('uploadVolume')->options([
-                        ['label' => t('No uploads'), 'value' => ''],
-                        ...$volumeOptions,
-                    ])->value($this->uploadVolume)),
-            ], 'markdown-asset-settings')
-            ->addGroup(t('Advanced'), [
-                FormField::make(t('Encode HTML'))
-                    ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
-                    ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
-                    ->control(Lightswitch::make('encode')->value($this->encode)),
-                FormField::make(t('Sanitize HTML'))
-                    ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
-                    ->warning(t('Disable this at your own risk!'))
-                    ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)),
-                FormField::make(t('HTML Sanitizer'))
-                    ->control(Choice::make('htmlSanitizer')
-                        ->options($this->htmlSanitizerOptions()->all())
-                        ->value($this->htmlSanitizer ?? 'default')),
-            ], 'markdown-advanced-settings');
+                        ])->value($this->uploadVolume)),
+                ), 'markdown-asset-settings')
+            ->addGroup(t('Advanced'), fn (Group $group): Group => $group
+                ->collapsible()
+                ->add(
+                    FormField::make(t('Encode HTML'))
+                        ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
+                        ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
+                        ->control(Lightswitch::make('encode')->value($this->encode)),
+                    FormField::make(t('Sanitize HTML'))
+                        ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
+                        ->warning(t('Disable this at your own risk!'))
+                        ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)),
+                    FormField::make(t('HTML Sanitizer'))
+                        ->control(Choice::make('htmlSanitizer')
+                            ->options($this->htmlSanitizerOptions()->all())
+                            ->value($this->htmlSanitizer ?? 'default')),
+                ), 'markdown-advanced-settings');
     }
 
     /** @return list<array{label: string, value: string, icon: string}> */

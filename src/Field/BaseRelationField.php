@@ -577,19 +577,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]))
                 ->control(Lightswitch::make('validateRelatedElements')->value($this->validateRelatedElements)),
-            Group::make('relation-advanced-settings', [
-                FormField::make(t('Allow self relations'))
-                    ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementType::lowerDisplayName()]))
-                    ->control(Lightswitch::make('allowSelfRelations')->value($this->allowSelfRelations)),
-            ])->label(t('Advanced')),
         );
+
+        $advanced = Group::make('relation-advanced-settings', [
+            FormField::make(t('Allow self relations'))
+                ->instructions(t('Whether {type} elements should be allowed to relate to themselves.', ['type' => $elementType::lowerDisplayName()]))
+                ->control(Lightswitch::make('allowSelfRelations')->value($this->allowSelfRelations)),
+        ])->label(t('Advanced'))->collapsible();
 
         if (Sites::isMultiSite() && $elementType::isLocalized()) {
             $sites = Sites::getAllSites()->map(fn ($site): array => [
                 'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
             ])->all();
-            $form->add(
+            $advanced->add(
                 FormField::make(t('Relate {type} from a specific site?', ['type' => $elementType::pluralLowerDisplayName()]))
                     ->control(Lightswitch::make('useTargetSite')->value(! empty($this->targetSiteId))),
                 FormField::make(t('Which site should {type} be related from?', ['type' => $elementType::pluralLowerDisplayName()]))
@@ -597,10 +598,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             );
 
             if (static::canShowSiteMenu()) {
-                $form->add(FormField::make(t('Show the site menu'))
+                $advanced->add(FormField::make(t('Show the site menu'))
                     ->control(Lightswitch::make('showSiteMenu')->value($this->showSiteMenu)));
             }
         }
+
+        $form->add($advanced);
 
         return $form;
     }

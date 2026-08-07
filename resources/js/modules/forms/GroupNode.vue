@@ -1,9 +1,13 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field-group/field-group';
+  import '@craftcms/ui/components/disclosure/disclosure';
   import FormNode from './FormNode.vue';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
-  type GroupNodeProps = {label?: string | null};
+  type GroupNodeProps = {
+    label?: string | null;
+    collapsible?: boolean;
+  };
 
   defineProps<{
     node: FormNodePayload<GroupNodeProps>;
@@ -19,9 +23,15 @@
 </script>
 
 <template>
-  <fieldset :data-form-node="node.uid">
-    <legend v-if="node.props.label">{{ node.props.label }}</legend>
-    <craft-field-group>
+  <component
+    :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
+    :label="node.props.collapsible ? node.props.label : undefined"
+    :data-form-node="node.uid"
+  >
+    <legend v-if="!node.props.collapsible && node.props.label">
+      {{ node.props.label }}
+    </legend>
+    <craft-field-group :slot="node.props.collapsible ? 'content' : undefined">
       <FormNode
         v-for="child in node.children"
         :key="child.uid ?? child.control?.path.join('.')"
@@ -34,5 +44,5 @@
         @change="emit('change', $event)"
       />
     </craft-field-group>
-  </fieldset>
+  </component>
 </template>

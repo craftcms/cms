@@ -128,6 +128,21 @@ it('builds Node containers from children, configuration closures, and conditions
         ->and($conditionalGroup->children())->toBe([$field, $field]);
 });
 
+it('renders collapsible groups through the shared payload and PHP renderer', function () {
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Group::make('links', [
+            Field::make('URL', Text::make('url')->value('https://craftcms.com')),
+        ])->label('Links')->collapsible(),
+    ]), new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($payload->nodes[0]->props)->toBe([
+        'label' => 'Links',
+        'collapsible' => true,
+    ])->and($crawler->filter('craft-disclosure[data-form-node="links"][label="Links"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-disclosure craft-field-group[slot="content"] input[name="settings[url]"]'))->toHaveCount(1);
+});
+
 it('renders and submits test plugin types through the PHP renderer', function () {
     new TestPlugin(app())->registerFormTypes(app(FormNodeTypes::class), app(FormControlTypes::class));
 

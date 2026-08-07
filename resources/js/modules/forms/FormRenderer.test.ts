@@ -288,6 +288,22 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders collapsible groups with the shared disclosure component', async () => {
+    const collapsible = structuredClone(payload) as Mutable<FormPayload>;
+    collapsible.nodes[2]!.props.collapsible = true;
+    app.unmount();
+    await mount(collapsible);
+
+    const disclosure = container.querySelector<HTMLElement & {label: string}>(
+      'craft-disclosure[data-form-node="plain-text-field-limit"]'
+    );
+
+    expect(disclosure?.label).toBe('Field Limit');
+    expect(
+      disclosure?.querySelector('craft-field-group[slot="content"]')
+    ).not.toBeNull();
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
     app.unmount();
     await mount({
