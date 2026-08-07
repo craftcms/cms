@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
@@ -308,7 +309,7 @@ describe('store', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -347,7 +348,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -387,7 +388,7 @@ describe('store', function () {
         app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
         actingAs(UserModel::findOrFail(auth()->id()));
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public ?bool $capturedCrossSiteValidate = null;
 
@@ -480,7 +481,7 @@ describe('store', function () {
     it('marks nested elements to update their owner search index before saving', function () {
         $fixture = createSaveElementMatrixFixture();
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public bool $capturedNestedOwnerIndexFlag = false;
 
@@ -643,7 +644,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -695,7 +696,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends ElementsService
+        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
