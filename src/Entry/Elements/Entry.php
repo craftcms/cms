@@ -2518,9 +2518,13 @@ JS;
                 ->all();
         }
 
-        DB::table(Table::ENTRIES_AUTHORS)
-            ->where('entryId', $this->id)
-            ->delete();
+        // Only issue the delete if there’s something to delete: an unconditional delete for a brand-new
+        // entry ID can take a gap lock on the primary index and deadlock against other transactions
+        // inserting authors for their own new entries.
+        $authorsQuery = DB::table(Table::ENTRIES_AUTHORS)->where('entryId', $this->id);
+        if ($authorsQuery->exists()) {
+            $authorsQuery->delete();
+        }
 
         if (! empty($this->_authorIds)) {
             $data = [];
