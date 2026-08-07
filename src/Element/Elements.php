@@ -723,8 +723,8 @@ class Elements
      * Reorders nested elements for a given owner element.
      *
      * @param  ElementInterface  $owner  The owner element
-     * @param  ElementQueryInterface|ElementCollection  $nestedElements  The owner’s nested elements
-     * @param  array  $elementIds  The nested element IDs that are being moved, in their new relative order
+     * @param  ElementQueryInterface|ElementCollection<int, ElementInterface>  $nestedElements  The owner’s nested elements
+     * @param  int[]  $elementIds  The nested element IDs that are being moved, in their new relative order
      * @param  int  $offset  The zero-based offset that `$elementIds` should be inserted at, relative to the owner’s
      *                       other nested elements
      */
