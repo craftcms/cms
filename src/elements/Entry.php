@@ -3147,7 +3147,7 @@ JS;
             $this->_oldAuthorIds = array_map(fn($id) => (int)$id, $oldAuthorIds);
         }
 
-        Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
+        Db::deleteIfExists(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
 
         if (!empty($this->_authorIds)) {
             $data = [];
