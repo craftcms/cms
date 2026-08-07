@@ -139,6 +139,8 @@ class Url extends \Illuminate\Support\Facades\URL
 
     /**
      * Removes query string params from a URL.
+     *
+     * @param  string[]  $params
      */
     public static function removeParams(string $url, array $params): string
     {
