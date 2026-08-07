@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -363,7 +364,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
     $this->fixture = refreshMatrixControllerFixture($this->fixture);
     $source = matrixControllerNestedEntries($this->fixture)->sole();
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class)) extends Elements
+    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends Elements
     {
         public function duplicateElement(
             ElementInterface $element,
