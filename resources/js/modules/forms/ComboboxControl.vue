@@ -7,6 +7,11 @@
   type ComboboxControlProps = {
     options: ComboboxItem[];
     placeholder?: string;
+    limit?: number;
+    clearable?: boolean;
+    requireOptionMatch?: boolean;
+    showAllOnEmpty?: boolean;
+    dir?: string;
   };
 
   defineProps<{
@@ -34,6 +39,11 @@
     :model-value="String(value ?? '')"
     :options="control.props.options"
     :placeholder="control.props.placeholder"
+    :limit="control.props.limit"
+    :clearable="control.props.clearable"
+    :require-option-match="control.props.requireOptionMatch"
+    :show-all-on-empty="control.props.showAllOnEmpty"
+    :dir="control.props.dir"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"

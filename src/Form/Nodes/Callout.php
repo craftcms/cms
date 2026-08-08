@@ -18,6 +18,10 @@ class Callout implements Node
 {
     private string $variant = 'info';
 
+    private ?string $appearance = null;
+
+    private ?string $icon = null;
+
     private bool $dismissible = false;
 
     private int $width = 100;
@@ -31,6 +35,8 @@ class Callout implements Node
     {
         return CalloutComponent::make()
             ->variant($node->props['variant'])
+            ->appearance($node->props['appearance'] ?? null)
+            ->icon($node->props['icon'] ?? null)
             ->content(new HtmlString($node->props['html']))
             ->attributes([
                 'class' => ["width-{$node->props['width']}"],
@@ -48,6 +54,20 @@ class Callout implements Node
     public function variant(string $variant): static
     {
         $this->variant = $variant;
+
+        return $this;
+    }
+
+    public function appearance(?string $appearance): static
+    {
+        $this->appearance = $appearance;
+
+        return $this;
+    }
+
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon;
 
         return $this;
     }
@@ -81,6 +101,10 @@ class Callout implements Node
         return [
             'html' => Markdown::parse(Html::encode($this->content), 'pre-encoded'),
             'variant' => $this->variant,
+            ...array_filter([
+                'appearance' => $this->appearance,
+                'icon' => $this->icon,
+            ], fn (?string $value): bool => $value !== null),
             'dismissible' => $this->dismissible,
             'width' => $this->width,
         ];

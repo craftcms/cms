@@ -17,6 +17,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -55,6 +56,7 @@ class FormControlTypes extends TypeRegistry
         ElementSelect::class,
         FieldLayoutDesigner::class,
         GroupedEntryTypeManager::class,
+        Handle::class,
         IconPicker::class,
         Lightswitch::class,
         Link::class,

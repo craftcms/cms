@@ -19,6 +19,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -66,6 +67,7 @@ class FormKitchenSink
             'element-select' => ElementSelect::class,
             'field-layout-designer' => FieldLayoutDesigner::class,
             'grouped-entry-type-manager' => GroupedEntryTypeManager::class,
+            'handle' => Handle::class,
             'icon-picker' => IconPicker::class,
             'lightswitch' => Lightswitch::class,
             'link' => Link::class,
@@ -211,6 +213,14 @@ class FormKitchenSink
                 'Placeholder' => $this->control('Combobox', Combobox::make('combobox')
                     ->options($options)
                     ->placeholder('Choose or enter a value')),
+                'Behavior' => $this->control('Combobox', Combobox::make('combobox')
+                    ->options($options)
+                    ->limit(1)
+                    ->clearable()
+                    ->requireOptionMatch()
+                    ->showAllOnEmpty()
+                    ->dir('rtl')
+                    ->value('primary')),
             ];
         }
 
@@ -310,6 +320,16 @@ class FormKitchenSink
                         ->customizableTabs(false)
                         ->value($value),
                 ),
+            ];
+        }
+
+        if ($component === Handle::class) {
+            return [
+                'Default' => $this->control('Handle', Handle::make('handle')->value('exampleHandle')),
+                'Generated' => Form::make([
+                    Field::make('Name', Text::make('name')->value('Example handle')),
+                    Field::make('Handle', Handle::make('handle')->source('name')->value('exampleHandle')),
+                ]),
             ];
         }
 
@@ -474,6 +494,14 @@ class FormKitchenSink
                 'Monospace' => $this->control('Text', Text::make('text')
                     ->monospace()
                     ->value('font-family: monospace;')),
+                'Browser behavior' => $this->control('Text', Text::make('text')
+                    ->inputMode('numeric')
+                    ->autocomplete('one-time-code')
+                    ->autocorrect(false)
+                    ->autocapitalize(false)
+                    ->size(6)
+                    ->dir('rtl')
+                    ->value('123456')),
                 'Feedback' => Form::make([
                     Field::make('Text', Text::make('text')->placeholder('Plain text')->value('Text value'))
                         ->instructions('Includes instructions, a tip, a warning, and an error.')
@@ -519,6 +547,11 @@ class FormKitchenSink
                 ]),
                 'Dismissible' => Form::make([
                     Callout::make('callout-dismissible', 'This callout can be dismissed.')->dismissible(),
+                ]),
+                'Plain with custom icon' => Form::make([
+                    Callout::make('callout-plain', 'This is a **plain** callout with a custom icon.')
+                        ->appearance('plain')
+                        ->icon('flask'),
                 ]),
             ];
         }

@@ -31,6 +31,12 @@ export default class CraftInput extends LionInput {
   /** Native virtual keyboard hint. */
   @property({attribute: false}) override inputMode = '';
 
+  /** Whether the native input allows browser autocorrection. */
+  @property({attribute: false}) autoCorrect = true;
+
+  /** Whether the native input allows automatic capitalization. */
+  @property({attribute: false}) autoCapitalize = true;
+
   /** Renders the input at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
 
@@ -82,7 +88,9 @@ export default class CraftInput extends LionInput {
       changedProperties.has('min') ||
       changedProperties.has('max') ||
       changedProperties.has('step') ||
-      changedProperties.has('inputMode')
+      changedProperties.has('inputMode') ||
+      changedProperties.has('autoCorrect') ||
+      changedProperties.has('autoCapitalize')
     ) {
       this.syncNativeAttributes();
     }
@@ -105,12 +113,18 @@ export default class CraftInput extends LionInput {
       max: this.max,
       step: this.step,
       inputmode: this.inputMode,
+      autocorrect: this.autoCorrect ? undefined : 'off',
+      autocapitalize: this.autoCapitalize ? undefined : 'none',
     };
 
     for (const [attribute, value] of Object.entries(attributes)) {
-      if (value !== undefined) {
-        this._inputNode?.setAttribute(attribute, String(value));
+      if (value === undefined) {
+        this._inputNode?.removeAttribute(attribute);
+
+        continue;
       }
+
+      this._inputNode?.setAttribute(attribute, String(value));
     }
   }
 }

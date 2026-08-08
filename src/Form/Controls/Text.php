@@ -23,6 +23,20 @@ class Text extends Control
 
     private ?string $placeholder = null;
 
+    private ?string $inputMode = null;
+
+    private bool $autofocus = false;
+
+    private bool|string|null $autocomplete = null;
+
+    private bool $autocorrect = true;
+
+    private bool $autocapitalize = true;
+
+    private ?int $size = null;
+
+    private ?string $dir = null;
+
     private bool $monospace = false;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
@@ -36,8 +50,14 @@ class Text extends Control
             ->max($control->props['max'] ?? null)
             ->step($control->props['step'] ?? null)
             ->maxlength($control->props['maxLength'] ?? null)
-            ->inputSize($control->props['size'] ?? null)
             ->placeholder($control->props['placeholder'] ?? null)
+            ->inputmode($control->props['inputMode'] ?? null)
+            ->autofocus((bool) ($control->props['autofocus'] ?? false))
+            ->autocomplete($control->props['autocomplete'] ?? false)
+            ->autocorrect((bool) ($control->props['autocorrect'] ?? true))
+            ->autocapitalize((bool) ($control->props['autocapitalize'] ?? true))
+            ->inputSize($control->props['size'] ?? null)
+            ->orientation($control->props['dir'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
             ->disabled($attributes['disabled'] || ($attributes['readonly'] && ($control->props['inputType'] ?? 'text') === 'range'))
             ->readOnly($attributes['readonly'])
@@ -97,6 +117,55 @@ class Text extends Control
         return $this;
     }
 
+    public function inputMode(?string $inputMode): static
+    {
+        $this->inputMode = $inputMode;
+
+        return $this;
+    }
+
+    public function autofocus(bool $autofocus = true): static
+    {
+        $this->autofocus = $autofocus;
+
+        return $this;
+    }
+
+    public function autocomplete(bool|string $autocomplete): static
+    {
+        $this->autocomplete = $autocomplete;
+
+        return $this;
+    }
+
+    public function autocorrect(bool $autocorrect = true): static
+    {
+        $this->autocorrect = $autocorrect;
+
+        return $this;
+    }
+
+    public function autocapitalize(bool $autocapitalize = true): static
+    {
+        $this->autocapitalize = $autocapitalize;
+
+        return $this;
+    }
+
+    public function size(?int $size): static
+    {
+        $this->size = $size;
+
+        return $this;
+    }
+
+    public function dir(?string $dir): static
+    {
+        $this->dir = $dir;
+
+        return $this;
+    }
+
     public function monospace(bool $monospace = true): static
     {
         $this->monospace = $monospace;
@@ -114,6 +183,13 @@ class Text extends Control
             'step' => $this->step,
             'maxLength' => $this->maxLength,
             'placeholder' => $this->placeholder,
+            'inputMode' => $this->inputMode,
+            'autofocus' => $this->autofocus ?: null,
+            'autocomplete' => $this->autocomplete,
+            'autocorrect' => $this->autocorrect ? null : false,
+            'autocapitalize' => $this->autocapitalize ? null : false,
+            'size' => $this->size,
+            'dir' => $this->dir,
             'monospace' => $this->monospace ?: null,
         ]);
     }

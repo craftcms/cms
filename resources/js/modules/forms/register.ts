@@ -29,6 +29,7 @@ import TabNode from './TabNode.vue';
 import TemplateContentNode from './TemplateContentNode.vue';
 import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
+import HandleControl from './HandleControl.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
@@ -48,6 +49,7 @@ export function registerFormComponents(
   components.register('craft:heading', HeadingNode);
   components.register('craft:line-break', LineBreakNode);
   components.register('craft:separator', SeparatorNode);
+  components.register('craft:handle', HandleControl);
   components.register('craft:text', TextControl);
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);

@@ -11,6 +11,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Controls\Time;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
@@ -28,6 +29,16 @@ function scalarControlsForm(): Form
     return Form::make([
         Field::make('Summary',
             Textarea::make('summary')->rows(4)->maxLength(120)->placeholder('<write>'),
+        ),
+        Field::make('Retry duration', Text::make('retryDuration')
+            ->inputMode('numeric')
+            ->maxLength(4)
+            ->autofocus()
+            ->autocomplete('one-time-code')
+            ->autocorrect(false)
+            ->autocapitalize(false)
+            ->size(6)
+            ->dir('rtl'),
         ),
         Field::make('Choice',
             Choice::make('choice')->options([
@@ -62,6 +73,7 @@ function scalarControlsCrawler(ControlMode $mode = ControlMode::Editable): Crawl
         namespace: 'settings',
         values: ['settings' => [
             'summary' => '<script>alert(1)</script>',
+            'retryDuration' => '60',
             'choice' => true,
             'tags' => [],
             'number' => '',
@@ -84,6 +96,7 @@ it('resolves and renders scalar and choice Controls with canonical values', func
 
     expect($crawler->filter('textarea[name="settings[summary]"]')->text())->toBe('<script>alert(1)</script>')
         ->and($crawler->filter('textarea[rows="4"][maxlength="120"][placeholder="<write>"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-input[inputmode="numeric"] input[name="settings[retryDuration]"][inputmode="numeric"][maxlength="4"][autocomplete="one-time-code"][autocorrect="off"][autocapitalize="none"][size="6"][dir="rtl"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-select select[name="settings[choice]"][required] option[value="1"][selected]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="hidden"][name="settings[tags]"][value=""]'))->toHaveCount(1)
         ->and($crawler->filter('craft-checkbox-group craft-checkbox input[type="checkbox"][name="settings[tags][]"]'))->toHaveCount(2)
@@ -112,13 +125,37 @@ it('serializes choice presentations', function () {
         ->and(Choice::make('choice')->multiple()->props()['presentation'])->toBe('checkboxes');
 });
 
+it('serializes text input behavior', function () {
+    expect(Text::make('name')
+        ->autofocus()
+        ->autocomplete(false)
+        ->autocorrect(false)
+        ->autocapitalize(false)
+        ->size(12)
+        ->dir('rtl')
+        ->props())->toMatchArray([
+            'autofocus' => true,
+            'autocomplete' => false,
+            'autocorrect' => false,
+            'autocapitalize' => false,
+            'size' => 12,
+            'dir' => 'rtl',
+        ]);
+});
+
 it('renders combobox options through the web component', function () {
     $payload = app(FormResolver::class)->resolve(
-        Form::make([Field::make()->control(Combobox::make('path')->options([
-            ['type' => 'optgroup', 'label' => 'Aliases', 'options' => [
-                ['label' => '<Root>', 'value' => '@root'],
-            ]],
-        ]))]),
+        Form::make([Field::make()->control(Combobox::make('path')
+            ->limit(10)
+            ->clearable()
+            ->requireOptionMatch()
+            ->showAllOnEmpty()
+            ->dir('rtl')
+            ->options([
+                ['type' => 'optgroup', 'label' => 'Aliases', 'options' => [
+                    ['label' => '<Root>', 'value' => '@root'],
+                ]],
+            ]))]),
         new FormContext(namespace: 'settings', values: ['settings' => ['path' => '@root']]),
     );
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
@@ -126,11 +163,33 @@ it('renders combobox options through the web component', function () {
     $combobox = $crawler->filter('craft-combobox[name="settings[path]"][model-value="@root"]');
 
     expect($combobox)->toHaveCount(1)
+        ->and($combobox->attr('limit'))->toBe('10')
+        ->and($combobox->attr('clearable'))->not->toBeNull()
+        ->and($combobox->attr('requireoptionmatch'))->not->toBeNull()
+        ->and($combobox->attr('show-all-on-empty'))->not->toBeNull()
+        ->and($combobox->attr('dir'))->toBe('rtl')
         ->and(json_decode((string) $combobox->attr('options'), true))->toBe([
             ['type' => 'optgroup', 'label' => 'Aliases', 'options' => [
                 ['label' => '<Root>', 'value' => '@root'],
             ]],
         ]);
+});
+
+it('serializes and validates combobox behavior', function () {
+    expect(Combobox::make('path')
+        ->limit(25)
+        ->clearable()
+        ->requireOptionMatch()
+        ->showAllOnEmpty()
+        ->dir('rtl')
+        ->props())->toMatchArray([
+            'limit' => 25,
+            'clearable' => true,
+            'requireOptionMatch' => true,
+            'showAllOnEmpty' => true,
+            'dir' => 'rtl',
+        ])
+        ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
 });
 
 it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {

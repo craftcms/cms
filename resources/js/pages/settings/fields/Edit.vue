@@ -11,6 +11,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
+  import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -73,10 +74,15 @@
   }
 
   const settingsPayload = ref<FormPayload | null>(props.settingsForm);
-  const settingsRenderer = ref<{
-    advanceBaseline: () => void;
-    currentValues: () => FormPayload['values'];
-  } | null>(null);
+  const {
+    advanceBaseline: advanceSettingsBaseline,
+    errors: settingsErrors,
+    onMutation: onSettingsMutation,
+    renderer: settingsRenderer,
+    values: settingsValues,
+  } = useInertiaFormRenderer(form, settingsPayload, {
+    mutationKey: 'settings',
+  });
   const settingsLoading = ref(false);
   let settingsRequestId = 0;
 
@@ -87,7 +93,7 @@
   watch(
     () => form.type,
     async (type, oldType) => {
-      const values = settingsRenderer.value?.currentValues().settings;
+      const values = settingsValues.value.settings;
 
       const requestId = ++settingsRequestId;
       settingsLoading.value = true;
@@ -140,15 +146,6 @@
     () => !props.brandNew && !form.errors.type
   );
 
-  const settingsErrors = computed(() =>
-    Object.entries(form.errors)
-      .filter(([path]) => path.startsWith('settings.'))
-      .map(([path, message]) => ({
-        path: path.split('.'),
-        messages: [String(message)],
-      }))
-  );
-
   async function refreshSettings(
     values: FormPayload['values']
   ): Promise<FormPayload> {
@@ -166,7 +163,7 @@
   }
 
   const {save} = useSettingsSave(form, store, {
-    onSuccess: () => settingsRenderer.value?.advanceBaseline(),
+    onSuccess: advanceSettingsBaseline,
   });
 
   const formActionItems = computed(() => [
@@ -320,7 +317,7 @@
               :payload="settingsPayload"
               :refresh="refreshSettings"
               :errors="settingsErrors"
-              @update:mutation="form.settings = $event.settings ?? {}"
+              @update:mutation="onSettingsMutation"
             />
           </div>
         </div>

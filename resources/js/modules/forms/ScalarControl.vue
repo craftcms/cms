@@ -13,6 +13,7 @@
     max?: number | string;
     step?: number | string;
     size?: number;
+    inputMode?: string;
   };
 
   defineProps<{
@@ -48,6 +49,7 @@
     :max="control.props.max"
     :step="control.props.step"
     .inputSize="control.props.size"
+    .inputMode="control.props.inputMode"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="

@@ -32,6 +32,7 @@ class ComponentRegistry
         'input-copy' => InputCopy::class,
         'input-date' => InputDate::class,
         'input-date-time' => InputDateTime::class,
+        'input-handle' => InputHandle::class,
         'input-money' => InputMoney::class,
         'input-password' => InputPassword::class,
         'input-time' => InputTime::class,

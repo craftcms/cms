@@ -487,6 +487,8 @@ describe('FormRenderer', () => {
               props: {
                 html: '<p><strong>Careful</strong></p>',
                 variant: 'warning',
+                appearance: 'plain',
+                icon: 'circle-info',
                 dismissible: false,
                 width: 50,
               },
@@ -541,9 +543,23 @@ describe('FormRenderer', () => {
     expect(
       tab?.querySelector('[data-form-node="line-break"]')?.classList
     ).toContain('line-break');
+    const callout = tab?.querySelector(
+      'craft-callout[data-form-node="callout"]'
+    ) as
+      | (HTMLElement & {
+          appearance: string;
+          icon: string;
+          updateComplete: Promise<unknown>;
+        })
+      | undefined;
+    await callout?.updateComplete;
+
+    expect(callout?.textContent).toContain('Careful');
+    expect(callout?.appearance).toBe('plain');
+    expect(callout?.icon).toBe('circle-info');
     expect(
-      tab?.querySelector('craft-callout[data-form-node="callout"]')?.textContent
-    ).toContain('Careful');
+      callout?.shadowRoot?.querySelector('craft-icon')?.getAttribute('name')
+    ).toBe('circle-info');
   });
 
   it('renders server-localized copy unchanged', async () => {
@@ -1077,11 +1093,32 @@ describe('FormRenderer', () => {
     const controlsPayload = structuredClone(payload) as Mutable<FormPayload>;
     const controls = [
       [
+        'craft:text',
+        'Text',
+        'retryDuration',
+        {maxLength: 4, inputMode: 'numeric'},
+        '60',
+      ],
+      [
         'craft:textarea',
         'Textarea',
         'summary',
         {rows: 4, maxLength: 120, placeholder: '<write>'},
         '<summary>',
+      ],
+      [
+        'craft:combobox',
+        'Combobox',
+        'timezone',
+        {
+          options: [{label: 'UTC', value: 'UTC'}],
+          limit: 10,
+          clearable: true,
+          requireOptionMatch: true,
+          showAllOnEmpty: true,
+          dir: 'rtl',
+        },
+        'UTC',
       ],
       [
         'craft:choice',
@@ -1206,6 +1243,24 @@ describe('FormRenderer', () => {
     expect(textarea.getAttribute('rows')).toBe('4');
     expect(textarea.maxLength).toBe(120);
     expect(textarea.getAttribute('placeholder')).toBe('<write>');
+    const retryDuration = container.querySelector<HTMLInputElement>(
+      'input[name="settings[retryDuration]"]'
+    )!;
+    expect(retryDuration.inputMode).toBe('numeric');
+    expect(retryDuration.maxLength).toBe(4);
+    const combobox = container.querySelector(
+      'craft-combobox'
+    ) as HTMLElement & {
+      limit: number;
+      clearable: boolean;
+      requireOptionMatch: boolean;
+      showAllOnEmpty: boolean;
+    };
+    expect(combobox.limit).toBe(10);
+    expect(combobox.clearable).toBe(true);
+    expect(combobox.requireOptionMatch).toBe(true);
+    expect(combobox.showAllOnEmpty).toBe(true);
+    expect(combobox.dir).toBe('rtl');
     expect(
       container.querySelector<HTMLSelectElement>(
         'select[name="settings[choice]"]'

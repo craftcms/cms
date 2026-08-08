@@ -8,10 +8,11 @@
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
   import {store} from '@actions/Settings/FilesystemsController';
-  import {computed, ref, watch} from 'vue';
+  import {computed, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
+  import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {renderSettings} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/FilesystemsController';
 
   defineOptions({
@@ -29,16 +30,22 @@
     settings: {} as Record<string, any>,
   });
 
-  const settingsRenderer = ref<{
-    advanceBaseline: () => void;
-  } | null>(null);
-  function setSettingsRenderer(renderer: unknown): void {
-    settingsRenderer.value = renderer as typeof settingsRenderer.value;
-  }
   const settingsPayload = computed<FormPayload | null>(
     () =>
       (props.fsInstances[form.type]?.settingsForm as FormPayload | null) ?? null
   );
+  const {
+    advanceBaseline: advanceSettingsBaseline,
+    errors: settingsErrors,
+    onMutation: onSettingsMutation,
+    renderer: settingsRenderer,
+  } = useInertiaFormRenderer(form, settingsPayload, {
+    mutationKey: 'settings',
+    mapErrorPath: (path) =>
+      ['name', 'handle', 'type'].includes(path)
+        ? null
+        : ['settings', ...path.split('.')],
+  });
 
   watch(
     () => form.type,
@@ -51,17 +58,8 @@
   );
 
   const {save} = useSettingsSave(form, store, {
-    onSuccess: () => settingsRenderer.value?.advanceBaseline(),
+    onSuccess: advanceSettingsBaseline,
   });
-
-  const settingsErrors = computed(() =>
-    Object.entries(form.errors)
-      .filter(([path]) => !['name', 'handle', 'type'].includes(path))
-      .map(([path, message]) => ({
-        path: ['settings', ...path.split('.')],
-        messages: [String(message)],
-      }))
-  );
 
   async function refreshSettings(
     values: FormPayload['values']
@@ -133,11 +131,11 @@
           <craft-field-group v-if="form.type === fsType">
             <FormRenderer
               v-if="settingsPayload"
-              :ref="setSettingsRenderer"
+              ref="settingsRenderer"
               :payload="settingsPayload"
               :errors="settingsErrors"
               :refresh="refreshSettings"
-              @update:mutation="form.settings = $event.settings ?? {}"
+              @update:mutation="onSettingsMutation"
             />
           </craft-field-group>
         </template>

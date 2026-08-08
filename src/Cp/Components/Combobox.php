@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Support\Json;
+use InvalidArgumentException;
 
 /** PHP counterpart to the `<craft-combobox>` web component. */
 class Combobox extends ViewComponent
@@ -30,6 +31,12 @@ class Combobox extends ViewComponent
     protected int $limit = 150;
 
     protected bool $clearable = false;
+
+    protected bool $requireOptionMatch = false;
+
+    protected bool $showAllOnEmpty = false;
+
+    protected ?string $orientation = null;
 
     protected ?string $describedBy = null;
 
@@ -83,6 +90,10 @@ class Combobox extends ViewComponent
 
     public function limit(int $limit): static
     {
+        if ($limit < 1) {
+            throw new InvalidArgumentException('Combobox limits must be at least 1.');
+        }
+
         $this->limit = $limit;
 
         return $this;
@@ -91,6 +102,27 @@ class Combobox extends ViewComponent
     public function clearable(bool $clearable = true): static
     {
         $this->clearable = $clearable;
+
+        return $this;
+    }
+
+    public function requireOptionMatch(bool $requireOptionMatch = true): static
+    {
+        $this->requireOptionMatch = $requireOptionMatch;
+
+        return $this;
+    }
+
+    public function showAllOnEmpty(bool $showAllOnEmpty = true): static
+    {
+        $this->showAllOnEmpty = $showAllOnEmpty;
+
+        return $this;
+    }
+
+    public function orientation(?string $orientation): static
+    {
+        $this->orientation = $orientation;
 
         return $this;
     }
@@ -116,6 +148,9 @@ class Combobox extends ViewComponent
             'disabled' => $this->isDisabled(),
             'limit' => $this->limit,
             'clearable' => $this->clearable,
+            'requireoptionmatch' => $this->requireOptionMatch,
+            'show-all-on-empty' => $this->showAllOnEmpty,
+            'dir' => $this->orientation,
             'aria' => ['describedby' => $this->describedBy],
         ];
     }
