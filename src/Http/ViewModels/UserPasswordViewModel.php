@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Arr;
 
 class UserPasswordViewModel extends ViewModel
 {
@@ -66,7 +67,7 @@ class UserPasswordViewModel extends ViewModel
                 'icon' => $item['icon'] ?? null,
                 'action' => $item['action'] ?? null,
                 'requireElevatedSession' => (bool) ($item['requireElevatedSession'] ?? false),
-                'download' => isset($item['action']) && str_contains($item['action'], 'download'),
+                'download' => isset($item['action']) && str_contains(Arr::string($item, 'action'), 'download'),
             ])
             ->values()
             ->all();
