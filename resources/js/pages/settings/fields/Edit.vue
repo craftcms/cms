@@ -97,8 +97,6 @@
           type,
           oldType,
           values,
-          namespace: `types[${typeOptionFor(type)?.id ?? ''}]`,
-          oldNamespace: `types[${typeOptionFor(oldType)?.id ?? ''}]`,
         });
 
         if (requestId !== settingsRequestId) {
@@ -322,7 +320,7 @@
               :payload="settingsPayload"
               :refresh="refreshSettings"
               :errors="settingsErrors"
-              @update:mutation="form.settings = $event"
+              @update:mutation="form.settings = $event.settings ?? {}"
             />
           </div>
         </div>
