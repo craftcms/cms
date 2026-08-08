@@ -48,7 +48,7 @@
     emit(
       'update:value',
       String((event.target as CraftInput).modelValue ?? ''),
-      ['text', 'email', 'url', 'tel', 'password'].includes(
+      ['text', 'email', 'url', 'tel', 'password', 'number'].includes(
         String((event.target as CraftInput).type)
       )
         ? 'typing'
@@ -79,7 +79,10 @@
     :monospace="control.props.monospace"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
+    :disabled="
+      control.mode === 'disabled' ||
+      (control.mode === 'readOnly' && control.props.inputType === 'range')
+    "
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
   ></craft-input>

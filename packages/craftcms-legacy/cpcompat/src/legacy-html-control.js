@@ -1,7 +1,8 @@
+import {appendElementHtml, serializeFormInputsAsObject} from '@craftcms/ui';
+
 (() => {
   const elementName = 'craft-legacy-html-control';
   const componentNames = ['craft-legacy:html-field', 'craft-legacy:html'];
-  const ownedAssets = new Map();
 
   class LegacyHtmlControl extends HTMLElement {
     _control = null;
@@ -180,7 +181,7 @@
         return true;
       }
 
-      const dispose = await appendHtml(html, parent);
+      const dispose = await appendElementHtml(html, parent, true);
 
       if (runId !== this._runId) {
         dispose();
@@ -210,7 +211,7 @@
         );
       }
 
-      const value = readFormInputs(this);
+      const value = serializeFormInputsAsObject(this);
 
       if (this._values && this._control?.path) {
         if (this._control.props?.expandValues) {
@@ -304,172 +305,6 @@
     );
   }
 
-  async function appendHtml(html, parent) {
-    const template = document.createElement('template');
-    const appended = [];
-    const releases = [];
-
-    template.innerHTML = html.trim();
-
-    const dispose = () => {
-      appended.forEach((node) => node.remove());
-      releases.forEach((release) => release());
-    };
-
-    try {
-      for (const source of template.content.childNodes) {
-        const asset = assetDetails(source);
-
-        if (asset) {
-          const ownedAsset = ownedAssets.get(asset.key);
-
-          if (ownedAsset) {
-            ownedAsset.references++;
-            releases.push(() => releaseAsset(asset.key, ownedAsset));
-            await ownedAsset.loaded;
-
-            continue;
-          }
-
-          if (hasAsset(asset.selector, asset.property, asset.value)) {
-            continue;
-          }
-        }
-
-        const node = cloneNode(source);
-        const loaded = asset
-          ? waitForAsset(node, asset.value)
-          : Promise.resolve();
-
-        parent.appendChild(node);
-
-        if (asset) {
-          const ownedAsset = {node, loaded, references: 1};
-
-          ownedAssets.set(asset.key, ownedAsset);
-          releases.push(() => releaseAsset(asset.key, ownedAsset));
-        } else {
-          appended.push(node);
-        }
-
-        await loaded;
-      }
-
-      return dispose;
-    } catch (error) {
-      dispose();
-
-      throw error;
-    }
-  }
-
-  function cloneNode(source) {
-    if (!(source instanceof HTMLScriptElement)) {
-      return source.cloneNode(true);
-    }
-
-    const script = document.createElement('script');
-
-    for (const attribute of source.attributes) {
-      script.setAttribute(attribute.name, attribute.value);
-    }
-
-    script.textContent = source.textContent;
-    script.async = false;
-
-    return script;
-  }
-
-  function assetDetails(node) {
-    if (node instanceof HTMLLinkElement && node.href) {
-      return {
-        key: `link:${node.href}`,
-        selector: 'link[href]',
-        property: 'href',
-        value: node.href,
-      };
-    }
-
-    if (node instanceof HTMLScriptElement && node.src) {
-      return {
-        key: `script:${node.src}`,
-        selector: 'script[src]',
-        property: 'src',
-        value: node.src,
-      };
-    }
-
-    return null;
-  }
-
-  function waitForAsset(node, url) {
-    if (
-      !(node instanceof HTMLScriptElement || node instanceof HTMLLinkElement)
-    ) {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve, reject) => {
-      node.addEventListener('load', resolve, {once: true});
-      node.addEventListener(
-        'error',
-        () => reject(new Error(`Failed to load legacy asset [${url}].`)),
-        {once: true}
-      );
-    });
-  }
-
-  function hasAsset(selector, property, value) {
-    return Array.from(document.querySelectorAll(selector)).some(
-      (element) => element[property] === value
-    );
-  }
-
-  function releaseAsset(key, asset) {
-    asset.references--;
-
-    if (asset.references > 0) {
-      return;
-    }
-
-    asset.node.remove();
-    ownedAssets.delete(key);
-  }
-
-  function readFormInputs(container) {
-    const values = {};
-
-    for (const control of formControls(container)) {
-      if (control.disabled) {
-        continue;
-      }
-
-      if (control instanceof HTMLInputElement) {
-        if (
-          ['file', 'submit', 'button', 'reset', 'image'].includes(control.type)
-        ) {
-          continue;
-        }
-
-        if (['checkbox', 'radio'].includes(control.type) && !control.checked) {
-          continue;
-        }
-      }
-
-      if (control instanceof HTMLSelectElement && control.multiple) {
-        for (const option of control.selectedOptions) {
-          appendValue(values, control.name, option.value);
-        }
-
-        continue;
-      }
-
-      appendValue(values, control.name, control.value);
-    }
-
-    return values;
-  }
-
   function restoreFormInputs(container, values) {
     if (!values || typeof values !== 'object') {
       return;
@@ -536,18 +371,6 @@
         target.type
       )
     );
-  }
-
-  function appendValue(values, name, value) {
-    if (!(name in values)) {
-      values[name] = value;
-
-      return;
-    }
-
-    values[name] = Array.isArray(values[name])
-      ? [...values[name], value]
-      : [values[name], value];
   }
 
   function valueAt(values, path) {

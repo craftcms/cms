@@ -29,7 +29,6 @@ use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
-use CraftCms\Cms\Form\Controls\Select;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -77,7 +76,6 @@ class FormKitchenSink
             'money' => Money::class,
             'number' => Number::class,
             'range' => Range::class,
-            'select' => Select::class,
             'table' => Table::class,
             'text' => Text::class,
             'textarea' => Textarea::class,
@@ -623,10 +621,6 @@ class FormKitchenSink
                 'Missing control',
                 MissingControl::make('missingControl')->provider('workbench/missing-control'),
             ),
-            Select::class => $this->control('Select', Select::make('select')->options([
-                ['label' => 'First option', 'value' => 'first'],
-                ['label' => 'Second option', 'value' => 'second'],
-            ])->value('second')),
             Heading::class => Form::make([
                 Heading::make('heading-node', 'Heading node'),
             ]),

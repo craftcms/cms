@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
@@ -75,7 +75,7 @@ class CountryCodeField extends BaseNativeField
             ->values()
             ->all();
 
-        return Select::make($this->attribute())
+        return Choice::make($this->attribute())
             ->options($options)
             ->value($context->element->countryCode);
     }

@@ -1,7 +1,12 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
-  import {FormFailure} from './runtime';
+  import {
+    FormFailure,
+    pathsMatch,
+    setValue as setPathValue,
+    valueAt,
+  } from './runtime';
   import type {
     FormChange,
     FormChangeKind,
@@ -63,27 +68,10 @@
       pathsMatch(error.path, control.value.path) ? error.messages : []
     )
   );
-  const value = computed(() => valueAt(control.value.path));
-
-  function valueAt(path: string[]): unknown {
-    return path.reduce<unknown>(
-      (value, segment) => (value as Record<string, unknown>)[segment],
-      props.values
-    );
-  }
+  const value = computed(() => valueAt(props.values, control.value.path));
 
   function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
-    let target = props.values;
-
-    control.value.path.forEach((segment, index) => {
-      if (index === control.value.path.length - 1) {
-        target[segment] = value;
-
-        return;
-      }
-
-      target = target[segment] as Record<string, unknown>;
-    });
+    setPathValue(props.values, control.value.path, value);
 
     emit('change', {
       kind,
@@ -91,13 +79,6 @@
       scope: props.scope,
       refreshable: props.refreshable,
     });
-  }
-
-  function pathsMatch(path: string[], controlPath: string[]): boolean {
-    return (
-      path.length === controlPath.length &&
-      path.every((segment, index) => segment === controlPath[index])
-    );
   }
 </script>
 

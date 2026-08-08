@@ -14,7 +14,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Support\Query;
 use Override;
 
@@ -75,7 +75,7 @@ class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEd
             ->values()
             ->all();
 
-        return Select::make($context->path)
+        return Choice::make($context->path)
             ->options($options)
             ->value($this->serializeValue($context->value, $context->element));
     }

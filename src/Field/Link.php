@@ -176,12 +176,15 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             FormField::make(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
                 ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
-        )->addIf(Cms::config()->enableGql,
-            FormField::make(t('GraphQL Mode'))
-                ->control(Choice::make('graphqlMode')->options([
-                    ['label' => t('Full data'), 'value' => 'full'],
-                    ['label' => t('URL only'), 'value' => 'url'],
-                ])->value($this->fullGraphqlData ? 'full' : 'url')),
+        )->when(
+            Cms::config()->enableGql,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('GraphQL Mode'))
+                    ->control(Choice::make('graphqlMode')->options([
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('URL only'), 'value' => 'url'],
+                    ])->value($this->fullGraphqlData ? 'full' : 'url')),
+            ),
         );
     }
 

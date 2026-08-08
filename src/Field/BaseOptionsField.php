@@ -337,9 +337,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ->allowDelete()
                     ->allowReorder()
                     ->value($rows)),
-        ])->addIf(static::$allowCustomOptions,
-            FormField::make(t('Allow custom options'))
-                ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
+        ])->when(
+            static::$allowCustomOptions,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('Allow custom options'))
+                    ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
+            ),
         );
     }
 

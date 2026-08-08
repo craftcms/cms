@@ -7,6 +7,7 @@
     ignoreModelValueInitialization,
     inputName,
     serverErrorValidators,
+    valueAt,
   } from './runtime';
 
   type HandleControlProps = {
@@ -50,14 +51,6 @@
     return String(
       valueAt(props.values, [...props.control.path.slice(0, -1), ...source]) ??
         ''
-    );
-  }
-
-  function valueAt(source: unknown, path: string[]): unknown {
-    return path.reduce<unknown>(
-      (value, segment) =>
-        (value as Record<string, unknown> | undefined)?.[segment],
-      source
     );
   }
 </script>

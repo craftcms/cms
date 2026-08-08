@@ -13,7 +13,14 @@
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
   import FormNode from './FormNode.vue';
-  import {FormFailure} from './runtime';
+  import {
+    FormFailure,
+    isRecord,
+    pathsMatch,
+    setValue,
+    unsetValue,
+    valueAt,
+  } from './runtime';
   import type {
     FormChange,
     FormControlPayload,
@@ -297,51 +304,6 @@
     return value;
   }
 
-  function valueAt(source: unknown, path: string[]): unknown {
-    return path.reduce<unknown>(
-      (value, segment) =>
-        (value as Record<string, unknown> | undefined)?.[segment],
-      source
-    );
-  }
-
-  function setValue(
-    source: Record<string, unknown>,
-    path: string[],
-    value: unknown
-  ): void {
-    let target = source;
-
-    path.forEach((segment, index) => {
-      if (index === path.length - 1) {
-        target[segment] = value;
-
-        return;
-      }
-
-      target[segment] ??= {};
-      target = target[segment] as Record<string, unknown>;
-    });
-  }
-
-  function unsetValue(source: unknown, path: string[]): void {
-    if (!isRecord(source) || path.length === 0) {
-      return;
-    }
-
-    const parent = path
-      .slice(0, -1)
-      .reduce<unknown>(
-        (value, segment) =>
-          (value as Record<string, unknown> | undefined)?.[segment],
-        source
-      );
-
-    if (isRecord(parent)) {
-      delete parent[path.at(-1)!];
-    }
-  }
-
   function mergeMissing(
     target: Record<string, unknown>,
     source: Record<string, unknown>
@@ -357,10 +319,6 @@
         mergeMissing(target[key], value);
       }
     }
-  }
-
-  function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   function cloneRaw<T>(value: T): T {
@@ -384,13 +342,6 @@
       Object.keys(value)
         .sort()
         .map((key) => [key, canonicalValue(value[key])])
-    );
-  }
-
-  function pathsMatch(left: string[], right: string[]): boolean {
-    return (
-      left.length === right.length &&
-      left.every((segment, index) => segment === right[index])
     );
   }
 

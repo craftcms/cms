@@ -15,6 +15,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -24,7 +25,6 @@ use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
-use CraftCms\Cms\Form\Controls\Select;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -70,6 +70,7 @@ it('registers core and plugin Node and Control types separately', function () {
             ElementSelect::class,
             FieldLayoutDesigner::class,
             GroupedEntryTypeManager::class,
+            Handle::class,
             IconPicker::class,
             Lightswitch::class,
             Link::class,
@@ -79,7 +80,6 @@ it('registers core and plugin Node and Control types separately', function () {
             Money::class,
             Number::class,
             Range::class,
-            Select::class,
             Table::class,
             Text::class,
             Textarea::class,
@@ -104,10 +104,10 @@ it('builds Node containers from children, configuration closures, and conditions
 
     [$arrayTab, $closureTab, $arrayGroup, $closureGroup] = $form->nodes();
     $conditionalGroup = Group::make('conditional')
-        ->addIf(true, $field)
-        ->addIf(false, $field)
-        ->addUnless(false, $field)
-        ->addUnless(true, $field);
+        ->when(true, fn (Group $group) => $group->add($field))
+        ->when(false, fn (Group $group) => $group->add($field))
+        ->unless(false, fn (Group $group) => $group->add($field))
+        ->unless(true, fn (Group $group) => $group->add($field));
 
     expect($arrayTab)->toBeInstanceOf(Tab::class)
         ->and($arrayTab)->toBeInstanceOf(Container::class)

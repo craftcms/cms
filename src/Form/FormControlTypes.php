@@ -27,7 +27,6 @@ use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Range;
-use CraftCms\Cms\Form\Controls\Select;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
@@ -66,7 +65,6 @@ class FormControlTypes extends TypeRegistry
         Money::class,
         Number::class,
         Range::class,
-        Select::class,
         Table::class,
         Text::class,
         Textarea::class,

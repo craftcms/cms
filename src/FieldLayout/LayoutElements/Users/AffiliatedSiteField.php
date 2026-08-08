@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Select;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -71,7 +71,7 @@ class AffiliatedSiteField extends BaseNativeField
             return null;
         }
 
-        return Select::make($this->attribute())
+        return Choice::make($this->attribute())
             ->options([
                 ['label' => t('None'), 'value' => ''],
                 ...Sites::getAllSites()->map(fn (Site $site) => [

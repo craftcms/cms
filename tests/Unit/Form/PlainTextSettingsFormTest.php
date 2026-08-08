@@ -54,15 +54,15 @@ it('builds complete and incremental node lists with Conditionable authoring', fu
         Field::make('First', Text::make('first')),
     ])->add(
         Field::make('Second', Text::make(['second'])),
-    )->addIf(true,
-        Field::make('Conditional', Text::make('conditional')),
-    )->addIf(false,
-        Field::make('Omitted', Text::make('omitted')),
-    )->addUnless(false,
-        Field::make('Unless', Text::make('unless')),
-    )->addUnless(true,
-        Field::make('Also omitted', Text::make('alsoOmitted')),
     )->when(true, fn (Form $form) => $form->add(
+        Field::make('Conditional', Text::make('conditional')),
+    ))->when(false, fn (Form $form) => $form->add(
+        Field::make('Omitted', Text::make('omitted')),
+    ))->unless(false, fn (Form $form) => $form->add(
+        Field::make('Unless', Text::make('unless')),
+    ))->unless(true, fn (Form $form) => $form->add(
+        Field::make('Also omitted', Text::make('alsoOmitted')),
+    ))->when(true, fn (Form $form) => $form->add(
         Field::make('Third', Text::make('nested.third')),
     ));
 
