@@ -33,7 +33,7 @@
     :rows="control.props.rows ?? 8"
     :placeholder="control.props.placeholder"
     :max-length="control.props.maxLength"
-    :toolbar-buttons="control.props.toolbarButtons ?? []"
+    .toolbarButtons="control.props.toolbarButtons ?? []"
     :show-toolbar="control.props.showToolbar ?? true"
     sanitize-html
     :disabled="!editable"

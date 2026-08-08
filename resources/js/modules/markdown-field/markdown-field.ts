@@ -204,6 +204,11 @@ class MarkdownField extends LitElement {
     ];
 
     this.syncEditorState();
+    requestAnimationFrame(() => {
+      if (this.editor === editor) {
+        editor.setValue(editor.getValue());
+      }
+    });
     this.syncInitialFormValue(editor.textarea.name);
   }
 
@@ -334,6 +339,7 @@ class MarkdownField extends LitElement {
   private textareaProps(inputId: string): Record<string, string | number> {
     const props: Record<string, string | number> = {
       class: 'nicetext code',
+      rows: this.rows,
     };
 
     if (inputId) {
