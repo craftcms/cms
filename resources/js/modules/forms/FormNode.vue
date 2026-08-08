@@ -13,6 +13,7 @@
     scope: string[];
     refreshable: boolean;
     initiallyHidden?: boolean;
+    tabButtonId?: string;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
@@ -62,6 +63,7 @@
     :scope="scope"
     :refreshable="refreshable"
     :initially-hidden="initiallyHidden"
+    :tab-button-id="tabButtonId"
     @change="onChange"
   />
 </template>

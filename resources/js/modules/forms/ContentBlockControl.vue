@@ -5,7 +5,7 @@
   import {t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {ref} from 'vue';
-  import FormNode from './FormNode.vue';
+  import FormNodeList from './FormNodeList.vue';
   import type {
     FormChange,
     FormControlPayload,
@@ -77,10 +77,8 @@
     </craft-empty>
     <div v-else class="pane" data-content-block>
       <template v-if="control.forms?.[0]">
-        <FormNode
-          v-for="node in control.forms[0].nodes"
-          :key="node.uid ?? node.control?.path.join('.')"
-          :node="node"
+        <FormNodeList
+          :nodes="control.forms[0].nodes"
           :values="values"
           :errors="errors"
           :touched-paths="touchedPaths"

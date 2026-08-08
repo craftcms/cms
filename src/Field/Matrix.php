@@ -44,7 +44,6 @@ use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
@@ -1154,7 +1153,7 @@ JS, [
         ]);
     }
 
-    /** @return array{formPayload: array<string, mixed>, tabs: array<string, mixed>} */
+    /** @return array{formPayload: array<string, mixed>} */
     public function blockFormVariables(Entry $entry, bool $static): array
     {
         $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
@@ -1167,11 +1166,9 @@ JS, [
                 mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
             ),
         );
-        $renderer = app(FormHtmlRenderer::class);
 
         return [
             'formPayload' => $payload->jsonSerialize(),
-            'tabs' => $renderer->tabMenu($payload, false),
         ];
     }
 

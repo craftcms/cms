@@ -40,6 +40,12 @@ export function inputName(path: string[]): string {
     .join('')}`;
 }
 
+export function formTabPanelId(uid: string, scope: string[]): string {
+  const id = `form-tab-${uid}`;
+
+  return scope.length ? Craft.namespaceId(id, inputName(scope)) : id;
+}
+
 export function valueAt(source: unknown, path: string[]): unknown {
   return path.reduce<unknown>(
     (value, segment) =>

@@ -116,7 +116,6 @@ it('submits Entry Form values and preserves refresh context', async () => {
         errors: [],
         globalErrors: [],
       },
-      tabs: '<nav>Nested tabs</nav>',
       headHtml: '<style>nested</style>',
       bodyHtml: '<script>nested</script>',
     },
@@ -129,8 +128,6 @@ it('submits Entry Form values and preserves refresh context', async () => {
     appendHeadHtml,
     appendBodyHtml,
   });
-  const tabsUpdater = vi.fn();
-  (host as EntryFieldLayoutFormHost).tabsUpdater = tabsUpdater;
   (host as EntryFieldLayoutFormHost).requestMetadata = () => ({
     elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
     elementId: null,
@@ -197,8 +194,6 @@ it('submits Entry Form values and preserves refresh context', async () => {
     'X-Craft-Form-Root-Scope': '["editor"]',
     'X-Craft-Form-Scope': '["editor","matrix","entries","block-a"]',
   });
-  expect(tabsUpdater).toHaveBeenCalledWith('<nav>Nested tabs</nav>');
-  expect(editor.settings.updateTabs).not.toHaveBeenCalled();
   expect(appendHeadHtml).toHaveBeenCalledWith('<style>nested</style>');
   expect(appendBodyHtml).toHaveBeenCalledWith('<script>nested</script>');
 });

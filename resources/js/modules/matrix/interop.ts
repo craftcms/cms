@@ -64,20 +64,6 @@ export interface LegacyDisclosureMenu {
   destroy(): void;
 }
 
-/** The legacy `Craft.Tabs` surface used by {@link MatrixEntry}. */
-export interface LegacyTabs {
-  $tabs: unknown;
-  $menuBtn: {data(key: string): unknown};
-  on(events: string, handler: (ev: {$tab: LegacyJqTab}) => void): void;
-  selectTab(tab: unknown): void;
-  destroy(): void;
-}
-
-/** A jQuery-wrapped tab link inside {@link LegacyTabs} events. */
-export interface LegacyJqTab {
-  attr(name: string): string | undefined;
-}
-
 /** The legacy `Craft.ElementEditor` surface used by this module. */
 export interface LegacyElementEditor {
   queue?: {push(job: () => Promise<void>): Promise<void>};
@@ -108,7 +94,6 @@ export interface LegacyCraftRuntime {
     ): void;
     pasteElements(params: Record<string, unknown>): Promise<{id: number}[]>;
   };
-  Tabs: new (tabs: unknown) => LegacyTabs;
   elementTypeNames: Record<string, string[]>;
   getText(value: unknown): unknown;
   filterArray(arr: unknown[]): string[];

@@ -63,10 +63,9 @@ class FormKitchenSinkController
         $label = Str::headline(class_basename(FormKitchenSink::component($type, $component)));
         $url = "workbench/forms/{$type}/{$component}";
 
-        return new CpScreenResponse()
+        $response = new CpScreenResponse()
             ->title("{$label} ".Str::singular($type))
             ->addCrumb('Kitchen Sink', 'workbench/forms')
-            ->tabs($this->htmlRenderer->tabMenu($payload))
             ->additionalButtonsHtml(ButtonGroup::make()
                 ->buttons([
                     Button::make()
@@ -79,5 +78,9 @@ class FormKitchenSinkController
                         ->active($renderer === 'html'),
                 ])
                 ->toHtml());
+
+        return $renderer === 'html'
+            ? $response->tabs($this->htmlRenderer->tabMenu($payload))
+            : $response;
     }
 }

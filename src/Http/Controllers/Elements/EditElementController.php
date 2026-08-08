@@ -741,7 +741,7 @@ class EditElementController
             $contentHtml = implode("\n", $components);
         }
 
-        $response->tabs($payload === null ? [] : $renderer->tabMenu($payload, ! $vueForm));
+        $response->tabs($payload === null || $vueForm ? [] : $renderer->tabMenu($payload));
         $response->contentHtml($contentHtml);
         $response->metaSidebarHtml($sidebarHtml);
 

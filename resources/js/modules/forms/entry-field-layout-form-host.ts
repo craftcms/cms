@@ -6,22 +6,17 @@ import {inputName} from './runtime';
 import type {FormPayload} from './types';
 
 type ElementEditor = {
-  isFullPage?: boolean;
-  settings: Record<string, any> & {
-    updateTabs?: (tabs: string | null) => void;
-  };
+  settings: Record<string, any>;
   handleDismissibleTips?: () => void;
 };
 
 type CraftRuntime = typeof Craft & {
   appendHeadHtml(html: string): Promise<void>;
   appendBodyHtml(html: string): Promise<void>;
-  cp: typeof Craft.cp & {updateTabs(tabs: string | null): void};
 };
 
 export interface EntryFieldLayoutFormHost extends HTMLElement {
   payload: FormPayload | null;
-  tabsUpdater: ((tabs: string | null) => void) | null;
   requestMetadata: () => Record<string, unknown>;
 }
 
@@ -37,7 +32,6 @@ export function defineEntryFieldLayoutFormHost(
     class extends HTMLElement {
       readonly #payload = shallowRef<FormPayload | null>(null);
       #app: App | null = null;
-      tabsUpdater: ((tabs: string | null) => void) | null = null;
       requestMetadata = (): Record<string, unknown> => ({});
 
       set payload(payload: FormPayload | null) {
@@ -134,15 +128,6 @@ export function defineEntryFieldLayoutFormHost(
             },
           }
         );
-
-        const updateTabs =
-          this.tabsUpdater ??
-          editor.settings.updateTabs ??
-          (editor.isFullPage ? craft.cp.updateTabs.bind(craft.cp) : undefined);
-        if (!updateTabs) {
-          throw new Error('Entry Form refresh requires a tab updater.');
-        }
-        updateTabs(response.tabs);
 
         if (!response.form) {
           throw new Error(

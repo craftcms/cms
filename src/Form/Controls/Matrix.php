@@ -76,8 +76,7 @@ class Matrix extends Control
                 : Html::tag('craft-spinner', '', ['label' => t('Loading')]);
             $titlebar = Html::tag('div',
                 Html::tag('div', Html::encode($label), ['class' => ['blocktype', 'flex', 'flex-nowrap', 'flex-gap-xs']])
-                .Html::tag('div', '', ['class' => 'preview'])
-                .Html::tag('div', '', ['class' => 'matrixblock-tabs']),
+                .Html::tag('div', '', ['class' => 'preview']),
                 ['class' => 'titlebar'],
             );
             $items .= Html::tag('div', $hidden.$titlebar

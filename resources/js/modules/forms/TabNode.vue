@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field-group/field-group';
-  import {onMounted, ref} from 'vue';
-  import FormNode from './FormNode.vue';
-  import {inputName} from './runtime';
+  import FormNodeList from './FormNodeList.vue';
+  import {formTabPanelId} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   const props = defineProps<{
@@ -13,41 +12,31 @@
     scope: string[];
     refreshable: boolean;
     initiallyHidden?: boolean;
+    tabButtonId?: string;
   }>();
-  const root = ref<HTMLElement>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
   }>();
 
-  onMounted(() => {
-    if (props.initiallyHidden) {
-      root.value?.classList.add('hidden');
-    }
-  });
-
   function id(): string {
-    const id = `form-tab-${props.node.uid}`;
-
-    return props.scope.length
-      ? Craft.namespaceId(id, inputName(props.scope))
-      : id;
+    return formTabPanelId(props.node.uid!, props.scope);
   }
 </script>
 
 <template>
   <section
-    ref="root"
     :id="id()"
+    :class="{hidden: initiallyHidden}"
+    :role="tabButtonId ? 'tabpanel' : undefined"
     :aria-label="node.props.label"
+    :aria-labelledby="tabButtonId"
     :data-id="id()"
     :data-form-tab="node.uid"
     :data-layout-tab="node.uid"
   >
     <craft-field-group>
-      <FormNode
-        v-for="child in node.children"
-        :key="child.uid ?? child.control?.path.join('.')"
-        :node="child"
+      <FormNodeList
+        :nodes="node.children ?? []"
         :values="values"
         :errors="errors"
         :touched-paths="touchedPaths"

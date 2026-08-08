@@ -5,7 +5,7 @@
   import {t} from '@craftcms/ui';
   import {computed, ref, toRaw, useId} from 'vue';
   import '@/modules/matrix';
-  import FormNode from './FormNode.vue';
+  import FormNodeList from './FormNodeList.vue';
   import type {
     FormChange,
     FormControlPayload,
@@ -148,7 +148,6 @@
               {{ entryType(uid)?.label ?? uid }}
             </div>
             <div class="preview" />
-            <div class="matrixblock-tabs" />
           </div>
           <div v-if="editable" class="actions">
             <craft-reorder-button
@@ -176,10 +175,8 @@
           </div>
           <div class="fields">
             <template v-if="forms.get(uid)">
-              <FormNode
-                v-for="node in forms.get(uid)!.nodes"
-                :key="node.uid ?? node.control?.path.join('.')"
-                :node="node"
+              <FormNodeList
+                :nodes="forms.get(uid)!.nodes"
                 :values="values"
                 :errors="errors"
                 :touched-paths="touchedPaths"

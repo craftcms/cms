@@ -24,7 +24,6 @@ it('renders the renderer switch in the page actions', async () => {
             stories: {},
             additionalButtons:
               '<a href="/workbench/forms/icon-picker/html">HTML</a>',
-            tabs: {},
           }),
         ]),
     })

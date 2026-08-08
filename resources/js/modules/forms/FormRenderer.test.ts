@@ -233,6 +233,11 @@ type Mutable<T> = T extends object
   ? {-readonly [Key in keyof T]: Mutable<T[Key]>}
   : T;
 
+const attachInternals = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  'attachInternals'
+);
+
 describe('FormRenderer', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
@@ -244,6 +249,10 @@ describe('FormRenderer', () => {
   };
 
   beforeEach(async () => {
+    Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+      configurable: true,
+      value: () => ({setFormValue: vi.fn()}),
+    });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
     form = document.createElement('form');
     container = document.createElement('div');
@@ -256,6 +265,15 @@ describe('FormRenderer', () => {
     vi.unstubAllGlobals();
     app.unmount();
     form.remove();
+    if (attachInternals) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'attachInternals',
+        attachInternals
+      );
+    } else {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+    }
   });
 
   it('renders the shared payload with equivalent names, values, and errors', () => {
@@ -509,15 +527,42 @@ describe('FormRenderer', () => {
             },
           ],
         },
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Tab',
+          component: 'craft:tab',
+          props: {label: 'SEO'},
+          uid: 'tab-seo',
+          children: [
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+              component: 'craft:field',
+              props: {label: 'Slug'},
+              control: {
+                type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                component: 'craft:text',
+                props: {},
+                path: ['slug'],
+                mode: 'editable',
+                deltaGroup: ['slug'],
+              },
+            },
+          ],
+        },
       ],
-      values: {title: 'Persisted title'},
-      errors: [],
+      values: {title: 'Persisted title', slug: 'persisted-title'},
+      errors: [{path: ['slug'], messages: ['Slug is already taken.']}],
       globalErrors: [],
     });
 
     const tab = container.querySelector<HTMLElement>(
       'section[data-form-tab="tab-content"]'
     );
+    const seoTab = container.querySelector<HTMLElement>(
+      'section[data-form-tab="tab-seo"]'
+    );
+    const tabButtons = [
+      ...container.querySelectorAll<HTMLElement>('[role="tab"]'),
+    ];
     const content = tab?.querySelector<HTMLElement>(
       '[data-form-node="content-note"]'
     );
@@ -525,7 +570,32 @@ describe('FormRenderer', () => {
       '[data-form-node="template-content"]'
     );
 
+    expect(tabButtons).toHaveLength(2);
+    expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
+    expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
+    expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
     expect(tab?.getAttribute('aria-label')).toBe('Content');
+    expect(tab?.getAttribute('aria-labelledby')).toBe(
+      'form-tab-tab-content-tab'
+    );
+    expect(tab?.classList).not.toContain('hidden');
+    expect(seoTab?.classList).toContain('hidden');
+
+    tabButtons[1]!.click();
+    await nextTick();
+
+    expect(tab?.classList).toContain('hidden');
+    expect(seoTab?.classList).not.toContain('hidden');
+    expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('true');
+
+    tabButtons[1]!.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Home', bubbles: true})
+    );
+    await nextTick();
+
+    expect(tab?.classList).not.toContain('hidden');
+    expect(seoTab?.classList).toContain('hidden');
+    expect(document.activeElement).toBe(tabButtons[0]);
     expect(
       tab?.querySelector('craft-field')?.classList.contains('width-50')
     ).toBe(true);

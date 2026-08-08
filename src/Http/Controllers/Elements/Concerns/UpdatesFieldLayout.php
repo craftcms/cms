@@ -47,8 +47,9 @@ trait UpdatesFieldLayout
         } catch (InvalidArgumentException $exception) {
             throw new BadRequestHttpException($exception->getMessage(), $exception);
         }
-        $renderer = app(FormHtmlRenderer::class);
-        $tabs = $renderer->tabMenu($rootPayload);
+        $tabs = request()->hasHeader('X-Craft-Form-Root-Scope')
+            ? []
+            : app(FormHtmlRenderer::class)->tabMenu($rootPayload);
 
         if (count($tabs) > 1) {
             $selectedTab = request()->input('selectedTab');

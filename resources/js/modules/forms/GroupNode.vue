@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/disclosure/disclosure';
-  import FormNode from './FormNode.vue';
+  import FormNodeList from './FormNodeList.vue';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   type GroupNodeProps = {
@@ -32,10 +32,8 @@
       {{ node.props.label }}
     </legend>
     <craft-field-group :slot="node.props.collapsible ? 'content' : undefined">
-      <FormNode
-        v-for="child in node.children"
-        :key="child.uid ?? child.control?.path.join('.')"
-        :node="child"
+      <FormNodeList
+        :nodes="node.children ?? []"
         :values="values"
         :errors="errors"
         :touched-paths="touchedPaths"

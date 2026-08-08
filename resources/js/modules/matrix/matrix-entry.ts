@@ -14,7 +14,6 @@ import {animationDuration, MatrixInput} from './matrix-input';
 import {containerMatrixEntries} from './support';
 import {
   type LegacyDisclosureMenu,
-  type LegacyTabs,
   craft,
   jqData,
   legacyGarnish,
@@ -27,65 +26,14 @@ export class MatrixEntry extends Base {
     return containerMatrixEntries.get(container);
   }
 
-  /**
-   * Initializes a tab manager for a `.matrixblock-tabs` container via the
-   * legacy `Craft.Tabs` (no modern port yet — see ./interop).
-   */
-  static initTabs(container: HTMLElement): LegacyTabs | null {
-    const tabs = container.querySelector(':scope > .pane-tabs');
-    if (!tabs) {
-      return null;
-    }
-
-    const tabManager = new (craft().Tabs)(tabs);
-
-    // prevent items in the disclosure menu from changing the URL
-    const disclosureMenu = tabManager.$menuBtn.data('trigger') as
-      | {$container: {0?: HTMLElement}}
-      | undefined;
-    const menuContainer = disclosureMenu?.$container?.[0];
-    for (const el of menuContainer?.querySelectorAll('li, a') ?? []) {
-      el.addEventListener('click', (ev) => {
-        ev.preventDefault();
-      });
-    }
-
-    tabManager.on('selectTab', (ev) => {
-      const href = ev.$tab.attr('href');
-
-      // Show its content area
-      if (href?.startsWith('#')) {
-        document.querySelector(href)?.classList.remove('hidden');
-      }
-
-      // Trigger a resize event to update any UI components listening for it
-      window.dispatchEvent(new Event('resize'));
-
-      // Fixes Redactor fixed toolbars on previously hidden panes
-      document.dispatchEvent(new Event('scroll'));
-    });
-
-    tabManager.on('deselectTab', (ev) => {
-      const href = ev.$tab.attr('href');
-      if (href?.startsWith('#')) {
-        // Hide its content area
-        document.querySelector(href)?.classList.add('hidden');
-      }
-    });
-
-    return tabManager;
-  }
-
   matrix: MatrixInput;
   container: HTMLElement;
   titlebar: HTMLElement | null;
-  tabContainer: HTMLElement | null;
   fieldsContainer: HTMLElement | null;
   previewContainer: HTMLElement | null;
   actionMenu: HTMLElement | null = null;
   collapsedInput: HTMLInputElement | null = null;
 
-  tabManager: LegacyTabs | null = null;
   actionDisclosure: LegacyDisclosureMenu | null = null;
   uiLabel: string | null = null;
 
@@ -100,8 +48,6 @@ export class MatrixEntry extends Base {
     this.matrix = matrix;
     this.container = container;
     this.titlebar = container.querySelector(':scope > .titlebar');
-    this.tabContainer =
-      this.titlebar?.querySelector(':scope > .matrixblock-tabs') ?? null;
     this.previewContainer =
       this.titlebar?.querySelector(':scope > .preview') ?? null;
     this.fieldsContainer = container.querySelector(':scope > .fields');
@@ -110,7 +56,6 @@ export class MatrixEntry extends Base {
         'craft-entry-field-layout-form'
       );
     if (formHost) {
-      formHost.tabsUpdater = (tabs) => this.updateTabs(tabs);
       formHost.requestMetadata = () => ({
         elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
         elementId: null,
@@ -140,10 +85,6 @@ export class MatrixEntry extends Base {
     this.id = container.dataset.id ?? null;
     this.isNew =
       !this.id || (typeof this.id === 'string' && this.id.startsWith('new'));
-
-    if (this.tabContainer) {
-      this.tabManager = MatrixEntry.initTabs(this.tabContainer);
-    }
 
     const actionMenuBtn = this.container.querySelector<HTMLElement>(
       ':scope > .actions > .action-btn'
@@ -290,17 +231,6 @@ export class MatrixEntry extends Base {
     }
   }
 
-  private updateTabs(tabs: string | null): void {
-    this.tabManager?.destroy();
-    this.tabManager = null;
-    this.tabContainer?.replaceChildren();
-
-    if (tabs && this.tabContainer) {
-      this.tabContainer.insertAdjacentHTML('beforeend', tabs);
-      this.tabManager = MatrixEntry.initTabs(this.tabContainer);
-    }
-  }
-
   private previousBlock(): HTMLElement | null {
     const prev = this.container.previousElementSibling;
     return prev?.classList.contains('matrixblock')
@@ -360,10 +290,6 @@ export class MatrixEntry extends Base {
       heightAnimation.finished.then(finishCollapse).catch(() => {});
     } else {
       finishCollapse();
-    }
-
-    if (this.tabContainer) {
-      this.tabContainer.style.display = 'none';
     }
 
     // Remember that?
@@ -501,9 +427,6 @@ export class MatrixEntry extends Base {
       }
       this.container.style.height = 'auto';
       this.container.dispatchEvent(new Event('scroll'));
-      if (this.tabContainer) {
-        this.tabContainer.style.display = '';
-      }
     };
 
     const heightAnimation = this.container.animate(
@@ -742,9 +665,7 @@ export class MatrixEntry extends Base {
   override destroy(): void {
     this.actionDisclosure?.hide();
 
-    this.tabManager?.destroy();
     this.actionDisclosure?.destroy();
-    this.tabManager = null;
     this.actionDisclosure = null;
 
     containerMatrixEntries.delete(this.container);

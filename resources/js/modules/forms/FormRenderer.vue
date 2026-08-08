@@ -12,7 +12,7 @@
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import FormNode from './FormNode.vue';
+  import FormNodeList from './FormNodeList.vue';
   import {
     FormFailure,
     isRecord,
@@ -55,6 +55,7 @@
   ]);
   const knownControlPaths = new Map<string, string[]>();
   const touchedPaths = new Set<string>();
+  const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
 
@@ -357,13 +358,10 @@
     <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
       <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
     </ul>
-    <FormNode
-      v-for="(node, index) in payload.nodes"
-      :key="node.uid ?? node.control?.path.join('.')"
-      :node="node"
-      :initially-hidden="node.component === 'craft:tab' && index > 0"
+    <FormNodeList
+      :nodes="payload.nodes"
       :values="values"
-      :errors="errors ?? payload.errors"
+      :errors="effectiveErrors"
       :touched-paths="touchedPaths"
       :scope="payload.scope"
       :refreshable="payload.refreshable"
