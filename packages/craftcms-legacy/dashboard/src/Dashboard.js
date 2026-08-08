@@ -1,5 +1,4 @@
 import './dashboard.scss';
-import '@craftcms/ui';
 
 (function ($) {
   /** global: Craft */

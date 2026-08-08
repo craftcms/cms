@@ -1,4 +1,8 @@
 import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
+// craft-truncate used to be registered by the legacy webpack bundle's Craft.js.
+// It moves here so the Vite graph is the sole owner of the @craftcms/ui element
+// definitions — registering them from both bundles loaded lit twice.
+import '@craftcms/ui/components/truncate/truncate';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
