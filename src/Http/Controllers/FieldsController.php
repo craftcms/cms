@@ -279,22 +279,26 @@ class FieldsController
                     $fail("The {$attribute} field must be a condition class.");
                 }
             }],
-            'queryParams' => ['required', 'array'],
+            'queryParams' => ['present', 'array'],
             'queryParams.*' => ['string'],
             'forProjectConfig' => ['required', 'boolean'],
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
         ]);
 
+        $html = ConditionBuilderControl::builderHtml(
+            $data['value'],
+            $data['conditionClass'],
+            $data['queryParams'],
+            $data['forProjectConfig'],
+            $data['name'],
+            $data['disabled'],
+        );
+
         return new JsonResponse([
-            'html' => ConditionBuilderControl::builderHtml(
-                $data['value'],
-                $data['conditionClass'],
-                $data['queryParams'],
-                $data['forProjectConfig'],
-                $data['name'],
-                $data['disabled'],
-            ),
+            'html' => $html,
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 

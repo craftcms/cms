@@ -113,7 +113,7 @@ class ConditionBuilder extends Control
 
     private static function leafName(string $name): string
     {
-        preg_match('/(?:^|\[)([^\[]+)]?$/', $name, $matches);
+        preg_match('/(?:^|\[)([^\[\]]+)]?$/', $name, $matches);
 
         return $matches[1] ?? $name;
     }

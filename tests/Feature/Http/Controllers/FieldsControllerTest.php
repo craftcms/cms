@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Matrix;
@@ -222,6 +223,20 @@ it('rejects non-condition classes from the condition builder endpoint', function
         'name' => 'settings[selectionCondition]',
         'disabled' => false,
     ])->assertUnprocessable()->assertJsonValidationErrors('conditionClass');
+});
+
+it('renders a condition builder without query params', function () {
+    $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [
+        'value' => [],
+        'conditionClass' => ElementCondition::class,
+        'queryParams' => [],
+        'forProjectConfig' => false,
+        'name' => 'settings[condition]',
+        'disabled' => false,
+    ])
+        ->assertOk()
+        ->assertJsonPath('html', fn (string $html): bool => str_contains($html, 'condition-container'))
+        ->assertJsonPath('bodyHtml', fn (string $html): bool => str_contains($html, 'htmx.min.js') && str_contains($html, 'ConditionBuilder.js'));
 });
 
 it('normalizes namespaced condition builder values', function () {

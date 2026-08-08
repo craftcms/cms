@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {actionClient} from '@craftcms/ui';
+  import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import type {FormControlPayload} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
@@ -23,21 +22,32 @@
       kind: 'discrete'
     ): void;
   }>();
+  let headHtml = '';
+  let bodyHtml = '';
   const {host, html} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
+    events: ['input', 'change', 'drop', 'htmx:afterSwap'],
     async render() {
-      const response = await actionClient.post<{html: string}>(
-        'fields/render-condition-builder',
-        {
-          value: props.value,
-          ...props.control.props,
-          name: inputName(props.control.path),
-          disabled: !props.editable,
-        }
-      );
+      const response = await actionClient.post<{
+        html: string;
+        headHtml: string;
+        bodyHtml: string;
+      }>('fields/render-condition-builder', {
+        value: props.value,
+        ...props.control.props,
+        name: inputName(props.control.path),
+        disabled: !props.editable,
+      });
+
+      headHtml = response.data.headHtml;
+      bodyHtml = response.data.bodyHtml;
 
       return response.data.html;
+    },
+    async afterRender() {
+      await appendHeadHtml(headHtml);
+      await appendBodyHtml(bodyHtml);
     },
     async readValue(host) {
       if (!props.editable) {
@@ -68,7 +78,5 @@
 </script>
 
 <template>
-  <div ref="host">
-    <DynamicHtmlRenderer :html="html" />
-  </div>
+  <div ref="host" v-html="html"></div>
 </template>

@@ -305,6 +305,97 @@ describe('FormRenderer', () => {
     ).not.toBeNull();
   });
 
+  it('initializes and reads server-rendered condition builder updates', async () => {
+    const condition = structuredClone(payload) as Mutable<FormPayload>;
+    condition.nodes = [condition.nodes[0]!];
+    condition.nodes[0]!.control = {
+      type: 'CraftCms\\Cms\\Form\\Controls\\ConditionBuilder',
+      component: 'craft:condition-builder',
+      props: {
+        conditionClass: 'CraftCms\\Cms\\Entry\\Conditions\\EntryCondition',
+        queryParams: ['site'],
+        forProjectConfig: true,
+      },
+      path: ['settings', 'selectionCondition'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'selectionCondition'],
+    };
+    condition.values = {
+      settings: {selectionCondition: {conditionRules: []}},
+    };
+    let finishFirstRead!: () => void;
+    const firstRead = new Promise<void>((resolve) => {
+      finishFirstRead = resolve;
+    });
+    let reads = 0;
+    const request = vi
+      .spyOn(actionClient, 'post')
+      .mockImplementation(async (url) => {
+        if (url === 'fields/render-condition-builder') {
+          return {
+            data: {
+              html: '<div class="condition-container"><span class="legacy-vue-template">{{ suggestion.item.name }}</span><input name="settings[selectionCondition][conditionRules][1][class]" value="Title"></div>',
+              headHtml: '<style data-condition-builder></style>',
+              bodyHtml: '<script data-condition-builder></script>',
+            },
+          };
+        }
+
+        reads++;
+        if (reads === 1) {
+          await firstRead;
+        }
+
+        return {
+          data: {
+            value:
+              reads === 1
+                ? {conditionRules: []}
+                : {conditionRules: [{class: 'Title'}]},
+          },
+        };
+      });
+    app.unmount();
+    await mount(condition);
+
+    await vi.waitFor(() =>
+      expect(
+        document.head.querySelector('[data-condition-builder]')
+      ).not.toBeNull()
+    );
+    expect(
+      document.body.querySelector('script[data-condition-builder]')
+    ).not.toBeNull();
+
+    const builder = container.querySelector('.condition-container')!;
+    builder.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await new Promise(requestAnimationFrame);
+    expect(reads).toBe(0);
+    expect(
+      builder.querySelector('.legacy-vue-template')?.textContent
+    ).toContain('{{ suggestion.item.name }}');
+    builder.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await vi.waitFor(() => expect(reads).toBe(1));
+    builder.dispatchEvent(new CustomEvent('htmx:afterSwap', {bubbles: true}));
+    await new Promise(requestAnimationFrame);
+    finishFirstRead();
+    await vi.waitFor(() =>
+      expect(renderer.currentValues()).toMatchObject({
+        settings: {
+          selectionCondition: {conditionRules: [{class: 'Title'}]},
+        },
+      })
+    );
+    expect(request).toHaveBeenCalledWith(
+      'fields/normalize-condition-builder',
+      expect.any(Object)
+    );
+    request.mockRestore();
+    document
+      .querySelectorAll('[data-condition-builder]')
+      .forEach((element) => element.remove());
+  });
+
   it('renders a reactive payload', async () => {
     app.unmount();
     await mount(reactive(structuredClone(payload)) as FormPayload);
