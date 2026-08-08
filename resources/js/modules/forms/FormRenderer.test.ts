@@ -1056,6 +1056,23 @@ describe('FormRenderer', () => {
         {inputType: 'date', min: '2026-01-01', max: '2026-12-31'},
         '2026-08-04',
       ],
+      [
+        'craft:date-time',
+        'DateTime',
+        'datetime',
+        {
+          showDate: true,
+          showTime: true,
+          showTimeZone: true,
+          locale: 'en-US',
+          minuteIncrement: 15,
+        },
+        {
+          date: '2026-08-07',
+          time: '14:30',
+          timezone: 'Europe/Brussels',
+        },
+      ],
       ['craft:time', 'Time', 'time', {inputType: 'time', step: 60}, '14:30'],
       ['craft:color', 'Color', 'color', {presets: ['#ff0000']}, 'ff0000'],
       [
@@ -1136,6 +1153,15 @@ describe('FormRenderer', () => {
       container.querySelector<HTMLInputElement>('input[name="settings[date]"]')
         ?.value
     ).toBe('2026-08-04');
+    const clearDateTime = container.querySelector<HTMLButtonElement>(
+      'craft-input-date-time > .clear-btn'
+    );
+    expect(clearDateTime).not.toBeNull();
+    clearDateTime!.click();
+    await nextTick();
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {datetime: {date: '', time: '', timezone: ''}},
+    });
     expect(
       container.querySelector<HTMLInputElement>(
         'input[name="settings[price][value]"]'

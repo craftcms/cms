@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input-date-time/input-date-time';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {computed} from 'vue';
   import type {FormControlPayload} from './types';
   import {ignoreModelValueInitialization, inputName} from './runtime';
 
@@ -27,6 +29,25 @@
   const emit = defineEmits<{
     (event: 'update:value', value: DateTimeValue, kind: 'discrete'): void;
   }>();
+  const hasValue = computed(
+    () =>
+      (props.control.props.showDate && Boolean(props.value.date)) ||
+      (props.control.props.showTime && Boolean(props.value.time)) ||
+      (props.control.props.showTimeZone && Boolean(props.value.timezone))
+  );
+
+  function clear(): void {
+    emit(
+      'update:value',
+      {
+        ...props.value,
+        ...(props.control.props.showDate ? {date: ''} : {}),
+        ...(props.control.props.showTime ? {time: ''} : {}),
+        ...(props.control.props.showTimeZone ? {timezone: ''} : {}),
+      },
+      'discrete'
+    );
+  }
 
   const update = ignoreModelValueInitialization((event) => {
     const input = event.target as CraftInput;
@@ -64,5 +85,14 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     @model-value-changed="update"
-  ></craft-input-date-time>
+  >
+    <button
+      v-if="editable && hasValue"
+      type="button"
+      class="clear-btn"
+      :title="t('Clear')"
+      :aria-label="t('Clear')"
+      @click="clear"
+    ></button>
+  </craft-input-date-time>
 </template>
