@@ -1,4 +1,5 @@
 import {registerCraftGlobals} from '@/common/craft-global';
+import '@/modules/element-thumb-loader';
 import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {TagSelectInput} from './tag-select-input';
