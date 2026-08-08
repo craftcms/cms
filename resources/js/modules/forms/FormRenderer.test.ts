@@ -538,6 +538,7 @@ describe('FormRenderer', () => {
     expect(placeholders[1]?.error).toContain('Acme\\Forms\\MissingField');
     expect(placeholders[0]?.pluginName).toBe('Missing Node Plugin');
     expect(placeholders[1]?.pluginName).toBe('Missing Control Plugin');
+    expect(placeholders[1]?.slot).toBe('input');
     expect(
       placeholders[0]?.querySelector<HTMLButtonElement>('[slot="action"]')
         ?.formAction

@@ -24,6 +24,7 @@
 
 <template>
   <craft-missing-component
+    :slot="$attrs.slot"
     :error="presentation.error"
     :plugin-name="presentation.pluginName"
   >
