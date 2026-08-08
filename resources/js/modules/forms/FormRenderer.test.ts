@@ -3,6 +3,7 @@ import {
   defineComponent,
   h,
   nextTick,
+  reactive,
   ref,
   shallowRef,
   type Ref,
@@ -301,6 +302,15 @@ describe('FormRenderer', () => {
     expect(disclosure?.label).toBe('Field Limit');
     expect(
       disclosure?.querySelector('craft-field-group[slot="content"]')
+    ).not.toBeNull();
+  });
+
+  it('renders a reactive payload', async () => {
+    app.unmount();
+    await mount(reactive(structuredClone(payload)) as FormPayload);
+
+    expect(
+      container.querySelector('input[name="settings[placeholder]"]')
     ).not.toBeNull();
   });
 

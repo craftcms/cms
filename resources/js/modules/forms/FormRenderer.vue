@@ -36,8 +36,8 @@
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
-  const values = reactive(structuredClone(props.payload.values));
-  let baseline = structuredClone(props.payload.values);
+  const values = reactive(cloneRaw(props.payload.values));
+  let baseline = cloneRaw(props.payload.values);
   const refreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const refreshVersions = new Map<string, number>();
   const lastRefreshValues = new Map([
@@ -93,7 +93,7 @@
   }
 
   async function requestRefresh(scope: string[]): Promise<void> {
-    const snapshot = structuredClone(toRaw(valueAt(values, scope)));
+    const snapshot = cloneRaw(valueAt(values, scope));
 
     if (!isRecord(snapshot)) {
       throw new Error(
@@ -149,7 +149,7 @@
     if (pathsMatch(scope, payload.value.scope)) {
       payload.value = refreshed;
     } else {
-      const current = structuredClone(payload.value);
+      const current = cloneRaw(payload.value);
       const nested = findNestedForm(current.nodes, scope);
 
       if (!nested) {
@@ -219,12 +219,12 @@
   }
 
   function advanceBaseline(): void {
-    baseline = structuredClone(toRaw(values));
+    baseline = cloneRaw(values);
     emitMutation();
   }
 
   function currentValues(): FormPayload['values'] {
-    return structuredClone(toRaw(values));
+    return cloneRaw(values);
   }
 
   defineExpose({advanceBaseline, currentValues});
@@ -281,7 +281,7 @@
     groupPath: string[],
     editablePaths: Set<string>
   ): unknown {
-    const value = structuredClone(toRaw(valueAt(source, groupPath)));
+    const value = cloneRaw(valueAt(source, groupPath));
 
     for (const [key, controlPath] of knownControlPaths) {
       if (
@@ -348,7 +348,7 @@
   ): void {
     for (const [key, value] of Object.entries(source)) {
       if (!(key in target)) {
-        target[key] = structuredClone(value);
+        target[key] = cloneRaw(value);
 
         continue;
       }
@@ -361,6 +361,10 @@
 
   function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  function cloneRaw<T>(value: T): T {
+    return structuredClone(toRaw(value));
   }
 
   function canonical(value: unknown): string {
