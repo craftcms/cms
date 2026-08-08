@@ -18,7 +18,7 @@
     :class="`width-${node.props.width}`"
     :data-form-node="node.uid"
     :variant="node.props.variant"
-    :appearance="node.props.appearance"
+    v-bind="node.props.appearance ? {appearance: node.props.appearance} : {}"
     :icon="node.props.icon"
     :data-dismissible="node.props.dismissible || undefined"
     v-html="node.props.html"

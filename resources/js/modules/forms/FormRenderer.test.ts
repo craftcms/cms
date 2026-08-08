@@ -495,6 +495,18 @@ describe('FormRenderer', () => {
               uid: 'callout',
               children: [],
             },
+            {
+              type: 'CraftCms\\Cms\\Form\\Nodes\\Callout',
+              component: 'craft:callout',
+              props: {
+                html: '<p>Default appearance</p>',
+                variant: 'success',
+                dismissible: false,
+                width: 100,
+              },
+              uid: 'callout-default-appearance',
+              children: [],
+            },
           ],
         },
       ],
@@ -560,6 +572,11 @@ describe('FormRenderer', () => {
     expect(
       callout?.shadowRoot?.querySelector('craft-icon')?.getAttribute('name')
     ).toBe('circle-info');
+    const defaultAppearanceCallout = tab?.querySelector(
+      'craft-callout[data-form-node="callout-default-appearance"]'
+    ) as (HTMLElement & {appearance: string}) | undefined;
+
+    expect(defaultAppearanceCallout?.appearance).toBe('outline-fill');
   });
 
   it('renders server-localized copy unchanged', async () => {
