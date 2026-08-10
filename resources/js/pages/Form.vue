@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {actionClient} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -17,6 +18,7 @@
       method: 'delete' | 'get' | 'patch' | 'post' | 'put';
       url: string;
     };
+    refreshUrl?: string;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -44,6 +46,19 @@
   }
 
   defineExpose({setValue});
+
+  async function refresh(
+    values: FormPayload['values'],
+    scope: string[] = []
+  ): Promise<FormPayload> {
+    const {data} = await actionClient.post(props.refreshUrl!, {values, scope});
+
+    if (!data.form) {
+      throw new Error('The refresh endpoint did not return a Form payload.');
+    }
+
+    return data.form;
+  }
 </script>
 
 <template>
@@ -52,6 +67,7 @@
       <FormRenderer
         ref="renderer"
         :payload="form"
+        :refresh="refreshUrl ? refresh : undefined"
         :errors="errors"
         @update:mutation="onMutation"
         @change="onChange"

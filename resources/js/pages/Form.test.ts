@@ -5,12 +5,21 @@ import FormPage from './Form.vue';
 
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
+  post: vi.fn(),
+  refresh: undefined as
+    | ((values: FormPayload['values'], scope: string[]) => Promise<FormPayload>)
+    | undefined,
   submit: vi.fn(),
   setValue: vi.fn(),
   change: undefined as
     | ((change: FormChange, values: FormPayload['values']) => void)
     | undefined,
   currentValues: {name: 'Changed', live: '1'},
+}));
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal()),
+  actionClient: {post: state.post},
 }));
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -52,8 +61,10 @@ vi.mock('@/common/components/Pane.vue', () => ({
 
 vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   default: defineComponent({
+    props: ['refresh'],
     emits: ['change', 'update:mutation'],
-    setup: (_, {emit, expose}) => {
+    setup: (props, {emit, expose}) => {
+      state.refresh = props.refresh;
       state.change = (change, values) => emit('change', change, values);
       expose({
         advanceBaseline: vi.fn(),
@@ -81,6 +92,8 @@ let container: HTMLElement;
 
 beforeEach(() => {
   state.layout.mockClear();
+  state.post.mockReset();
+  state.refresh = undefined;
   state.change = undefined;
   state.setValue.mockReset();
   state.submit.mockClear();
@@ -107,6 +120,26 @@ it('submits complete current values after a partial mutation', async () => {
     {method: 'post', url: '/settings/general'},
     expect.objectContaining({name: 'Changed', live: '1'})
   );
+});
+
+it('refreshes the form through the configured endpoint', async () => {
+  const refreshed = {...payload, values: {name: 'Changed', live: '1'}};
+  state.post.mockResolvedValueOnce({data: {form: refreshed}});
+  app = createApp(FormPage, {
+    form: payload,
+    submit: {method: 'post', url: '/settings/sites'},
+    refreshUrl: '/settings/sites/form',
+  });
+  app.mount(container);
+  await nextTick();
+
+  const result = await state.refresh!({hasUrls: true}, []);
+
+  expect(state.post).toHaveBeenCalledWith('/settings/sites/form', {
+    values: {hasUrls: true},
+    scope: [],
+  });
+  expect(result).toBe(refreshed);
 });
 
 it('forwards control changes and external value updates', async () => {
