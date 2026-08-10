@@ -307,6 +307,68 @@ describe('useInertiaFormRenderer', () => {
     expect(form.isDirty).toBe(false);
   });
 
+  it('lets two root-scoped bridges share one form without clobbering each other', async () => {
+    const layoutPayload: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [],
+      values: {title: 'Original', fields: {email: ''}},
+      errors: [],
+      globalErrors: [],
+    };
+    const sidebarPayload: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [],
+      values: {slug: 'original-slug', enabled: true},
+      errors: [],
+      globalErrors: [],
+    };
+
+    let form!: ReturnType<typeof useForm<Record<string, any>>>;
+    let layout!: ReturnType<typeof useInertiaFormRenderer<Record<string, any>>>;
+    let sidebar!: ReturnType<
+      typeof useInertiaFormRenderer<Record<string, any>>
+    >;
+
+    mount(() => {
+      form = useForm<Record<string, any>>({});
+      layout = useInertiaFormRenderer(form, layoutPayload);
+      sidebar = useInertiaFormRenderer(form, sidebarPayload);
+    });
+
+    layout.onMutation({title: 'Changed', fields: {email: 'a@b.c'}});
+    sidebar.onMutation({slug: 'changed-slug', enabled: false});
+    await nextTick();
+
+    expect(form.data()).toEqual({
+      title: 'Changed',
+      fields: {email: 'a@b.c'},
+      slug: 'changed-slug',
+      enabled: false,
+    });
+
+    layout.onMutation({title: 'Changed again', fields: {email: 'a@b.c'}});
+    await nextTick();
+
+    expect(form.data()).toEqual({
+      title: 'Changed again',
+      fields: {email: 'a@b.c'},
+      slug: 'changed-slug',
+      enabled: false,
+    });
+
+    sidebar.onMutation({slug: 'final-slug', enabled: true});
+    await nextTick();
+
+    expect(form.data()).toEqual({
+      title: 'Changed again',
+      fields: {email: 'a@b.c'},
+      slug: 'final-slug',
+      enabled: true,
+    });
+  });
+
   function mount(setup: () => void): void {
     container = document.createElement('div');
     document.body.append(container);

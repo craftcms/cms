@@ -11,6 +11,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
+use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
@@ -20,6 +21,7 @@ use Inertia\Testing\AssertableInertia;
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -79,14 +81,42 @@ it('points the form at the entry save action', function () {
         );
 });
 
-it('includes the meta fields and metadata as server-rendered islands', function () {
+it('compiles the meta fields into a sidebar form', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarHtml', fn (?string $html) => is_string($html) && str_contains($html, 'name="slug"'))
+            ->where('sidebarForm.nodes', function (Collection $nodes) {
+                $paths = $nodes
+                    ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
+                    ->all();
+
+                return in_array('slug', $paths, true)
+                    && in_array('postDate', $paths, true)
+                    && in_array('expiryDate', $paths, true)
+                    && in_array('enabled', $paths, true)
+                    && in_array('notes', $paths, true);
+            })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
             ->etc()
         );
+});
+
+it('saves the meta fields the sidebar form submits', function () {
+    post(action(StoreEntryController::class), [
+        'entryId' => $this->entry->id,
+        'siteId' => $this->entry->siteId,
+        'typeId' => $this->entry->typeId,
+        'title' => 'Retitled',
+        'slug' => 'retitled-slug',
+        'enabled' => '1',
+        'postDate' => ['date' => '2027-03-04', 'time' => '09:30'],
+    ])->assertRedirect();
+
+    $entry = Entry::find()->id($this->entry->id)->status(null)->one();
+
+    expect($entry->title)->toBe('Retitled')
+        ->and($entry->slug)->toBe('retitled-slug')
+        ->and($entry->postDate->format('Y-m-d'))->toBe('2027-03-04');
 });
 
 it('falls back to the legacy editor for drafts', function () {

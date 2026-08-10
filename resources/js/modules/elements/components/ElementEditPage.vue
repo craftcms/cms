@@ -20,10 +20,13 @@
     form,
     formPayload,
     onMutation,
+    onSidebarMutation,
     props: payload,
     renderer,
     save,
-    sidebarEl,
+    sidebarErrors,
+    sidebarPayload,
+    sidebarRenderer,
   } = useElementEditPage({saveData: props.saveData});
 
   useAppLayout(() => ({
@@ -55,17 +58,18 @@
     <slot :payload="payload" />
   </Pane>
 
-  <LayoutSlot v-if="payload.sidebarHtml || payload.metadataHtml" name="details">
+  <LayoutSlot v-if="sidebarPayload || payload.metadataHtml" name="details">
     <!--
-      The meta fields are still server-rendered; `useElementEditPage` reads
-      their inputs out of this container at submit time.
+      The meta fields render as their own Form, bridged into the same Inertia
+      form as the field layout above, so they submit as ordinary inputs.
     -->
-    <div ref="sidebarEl">
-      <DynamicHtmlRenderer
-        v-if="payload.sidebarHtml"
-        :html="payload.sidebarHtml"
-      />
-    </div>
+    <FormRenderer
+      v-if="sidebarPayload"
+      ref="sidebarRenderer"
+      :payload="sidebarPayload"
+      :errors="sidebarErrors"
+      @update:mutation="onSidebarMutation"
+    />
 
     <DynamicHtmlRenderer
       v-if="payload.metadataHtml"
