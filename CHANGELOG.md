@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380]())
+- Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380](https://github.com/craftcms/cms/discussions/19380))
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
