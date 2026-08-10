@@ -35,6 +35,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Missing as MissingLayoutElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -557,8 +558,10 @@ class Fields
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
-            'type' => $field::class,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($settings),
+            'type' => $field instanceof MissingField ? $field->expectedType : $field::class,
+            'settings' => ProjectConfigHelper::packAssociativeArrays(
+                $field instanceof MissingField ? ($field->settings ?? []) : $settings,
+            ),
         ];
     }
 
@@ -1052,8 +1055,24 @@ class Fields
     {
         $type = Arr::pull($config, 'type');
 
-        if (! $type || ! is_subclass_of($type, FieldLayoutElement::class)) {
+        if (! $type) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");
+        }
+
+        if (class_exists($type) && ! is_subclass_of($type, FieldLayoutElement::class)) {
+            throw new InvalidArgumentException("Invalid field layout element class: $type");
+        }
+
+        try {
+            ComponentHelper::validateComponentClass($type, FieldLayoutElement::class, true);
+        } catch (MissingComponentException $exception) {
+            return new MissingLayoutElement([
+                'expectedType' => $type,
+                'errorMessage' => $exception->getMessage(),
+                'settings' => $config,
+                'uid' => $config['uid'] ?? null,
+                'width' => $config['width'] ?? 100,
+            ]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */

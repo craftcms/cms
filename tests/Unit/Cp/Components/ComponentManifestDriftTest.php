@@ -221,6 +221,8 @@ function cpDriftExpectedPhpOnly(): array
         // craft-input-copy extends craft-input, inheriting the same
         // Lion-pushed control properties.
         'craft-input-copy' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        'craft-input-money' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        'craft-select' => ['label', 'label-sr-only', 'name', 'disabled', 'required'],
         // craft-input-password / craft-input-color extend LionInput directly (no
         // craft-input host props), so they only carry the Lion-pushed control
         // props; `type` is owned by the component (password reveal / color

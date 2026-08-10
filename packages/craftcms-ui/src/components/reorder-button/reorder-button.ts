@@ -85,6 +85,8 @@ export default class CraftReorderButton extends LitElement {
     this.dispatchEvent(
       new CustomEvent<{direction: ReorderDirection}>('reorder', {
         detail: {direction},
+        bubbles: true,
+        composed: true,
       })
     );
   }

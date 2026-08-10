@@ -21,8 +21,8 @@ import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {createCpComponentRegistry} from './components.js';
+import {registerFormComponents} from '@/modules/forms/register';
 import {configureIcons} from './icons.js';
-import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -49,6 +49,7 @@ function defaultPageLayout(name: string) {
 const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 const components = createCpComponentRegistry();
+registerFormComponents(components);
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
@@ -153,7 +154,6 @@ const Cp = {
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
         app.component('CpLink', CpLink);
-        app.component('LocalFsSettings', LocalFsSettings);
 
         components.install(app);
       },

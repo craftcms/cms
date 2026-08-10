@@ -130,9 +130,7 @@
 
 <div id="settings">
   <div id="{{ fieldType }}">
-    {% include 'settings/fields/_type-settings' with {
-      namespace: "types[#{fieldType}]"
-    } %}
+    {{ settingsHtml|raw }}
   </div>
 </div>
 

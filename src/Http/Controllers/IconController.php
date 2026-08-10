@@ -74,6 +74,7 @@ readonly class IconController
                 Html::button(file_get_contents($file), [
                     'class' => 'icon-picker--icon',
                     'title' => $name,
+                    'value' => $name,
                     'aria' => [
                         'label' => $name,
                     ],

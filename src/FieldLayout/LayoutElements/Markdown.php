@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -97,15 +98,15 @@ class Markdown extends BaseUiElement
             ]);
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
-        $content = Html::tag('div', MarkdownFacade::parse(Html::encode($this->content), 'pre-encoded'), [
-            'class' => array_filter([
-                'markdown',
-                $this->displayInPane ? 'pane' : null,
-            ]),
-        ]);
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Markdown FieldLayout elements require stable UIDs.');
+        }
 
-        return Html::tag('div', $content, $this->containerAttributes($element, $static));
+        return MarkdownContent::make($this->uid, $this->content)
+            ->displayInPane($this->displayInPane)
+            ->width($this->width);
     }
 }

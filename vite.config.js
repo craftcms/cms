@@ -186,6 +186,7 @@ export default defineConfig(({mode}) => {
       ignorePatterns: [
         '**/*',
         '!resources/js/**',
+        '!workbench/resources/js/**',
         'resources/build/**',
         'resources/legacy/**',
         'resources/js/**/fixtures/**',
@@ -266,7 +267,10 @@ export default defineConfig(({mode}) => {
     // environment; the craftcms-ui package has its own vitest projects.
     test: {
       environment: 'happy-dom',
-      include: ['resources/js/**/*.test.ts'],
+      include: [
+        'resources/js/**/*.test.ts',
+        'yii2-adapter/resources/js/**/*.test.ts',
+      ],
     },
 
     build: {
@@ -323,6 +327,7 @@ export default defineConfig(({mode}) => {
           'resources/js/cp.ts',
           'resources/js/legacy.ts',
           'resources/css/cp.css',
+          'workbench/resources/js/cp.ts',
         ],
         publicDirectory,
         hotFile: `${publicDirectory}/hot`,

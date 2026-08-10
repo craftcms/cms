@@ -8,11 +8,14 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Resources\FsResource;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -100,7 +103,20 @@ class FilesystemsController
     public function store(Request $request): Response
     {
         $type = $request->input('type');
-        $settings = Arr::whereNotNull($request->array('settings'));
+        $oldFilesystem = $request->input('oldHandle')
+            ? $this->filesystems->getFilesystemByHandle($request->input('oldHandle'))
+            : null;
+        $preservedSettings = $oldFilesystem && is_string($type) && is_a($oldFilesystem, $type)
+            ? [
+                ...$oldFilesystem->getSettings(),
+                'hasUrls' => $oldFilesystem->hasUrls,
+                'url' => $oldFilesystem->url,
+            ]
+            : [];
+        $settings = [
+            ...$preservedSettings,
+            ...Arr::whereNotNull($request->array('settings')),
+        ];
 
         $fs = $this->filesystems->createFilesystem([
             'type' => $type,
@@ -115,6 +131,28 @@ class FilesystemsController
         }
 
         return $this->asModelSuccess($fs, t('Filesystem saved.'), 'filesystem');
+    }
+
+    public function renderSettings(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'string'],
+            'settings' => ['nullable', 'array'],
+        ]);
+        $filesystem = $this->filesystems->createFilesystem([
+            'type' => $data['type'],
+            'settings' => $data['settings'] ?? [],
+        ]);
+        $context = new FormContext(
+            namespace: 'settings',
+            values: ['settings' => $data['settings'] ?? []],
+            refreshable: true,
+        );
+        $form = $filesystem->settingsForm($context);
+
+        return new JsonResponse([
+            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
+        ]);
     }
 
     public function destroy(Request $request, string $handle): Response

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  *
@@ -11,6 +13,9 @@ namespace craft\base;
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
+use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use CraftCms\Yii2Adapter\Validation\LegacyYiiRules;
 use yii\base\InvalidConfigException;
@@ -25,8 +30,20 @@ use yii\base\InvalidConfigException;
  * @since 4.0.0
  * @deprecated 6.0.0
  */
-abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
+abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface, LegacySettingsComponent
 {
+    use LegacySettingsForm;
+
+    public function getSettingsHtml(): ?string
+    {
+        return null;
+    }
+
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return Html::disableInputs(fn() => $this->getSettingsHtml());
+    }
+
     public function getDiskConfig(): array
     {
         if (!is_string($this->handle) || $this->handle === '') {

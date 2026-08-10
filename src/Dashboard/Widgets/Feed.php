@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\FeedAsset;
@@ -46,12 +51,19 @@ class Feed extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return template('_components/widgets/Feed/settings',
-            [
-                'widget' => $this,
-            ]);
+        return Form::make([
+            Field::make(t('URL'))
+                ->required()
+                ->control(Text::make('url')->value($this->url)),
+            Field::make(t('Title'))
+                ->required()
+                ->control(Text::make('title')->value($this->title)),
+            Field::make(t('Limit'))
+                ->required()
+                ->control(Number::make('limit')->value($this->limit)->min(1)),
+        ]);
     }
 
     #[Override]

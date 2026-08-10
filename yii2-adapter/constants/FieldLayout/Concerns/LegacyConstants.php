@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\Event as YiiEvent;
-use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\NativeFields;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Yii2Adapter\FieldLayout\LegacyFormEvents;
 use Deprecated;
 use Generator;
 use Illuminate\Support\Facades\Event;
@@ -128,6 +131,51 @@ trait LegacyConstants
 
     public static function registerEvents(): void
     {
+        Event::listen(function(FieldLayoutFormResolving $event) {
+            if (!YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM)) {
+                return;
+            }
+
+            $static = $event->context->mode !== ControlMode::Editable;
+            $legacyEvents = app(LegacyFormEvents::class);
+            $yiiEvent = $legacyEvents->prepare($event->fieldLayout, $event->element, $event->context);
+
+            if ($yiiEvent === null) {
+                return;
+            }
+
+            try {
+                $nodes = $event->form->nodes();
+                $tabUids = array_map(fn($tab) => $tab->uid, $event->fieldLayout->getTabs());
+                $ordered = [];
+
+                foreach ($yiiEvent->tabs as $index => $tab) {
+                    $node = array_find($nodes, fn(Node $node) => $node->uid() === $tab->uid)
+                        ?? $legacyEvents->compileTab(
+                            $event->fieldLayout,
+                            $tab,
+                            $event->element,
+                            $event->context,
+                            "yii2-adapter:event-tab:{$index}",
+                        );
+
+                    if ($node !== null) {
+                        $ordered[] = $node;
+                    }
+                }
+                $event->form = Form::make([
+                    ...$ordered,
+                    ...array_filter($nodes, fn(Node $node) => !in_array($node->uid(), $tabUids, true)),
+                ]);
+
+                if ($yiiEvent->static !== $static) {
+                    self::setFormMode($event->form->nodes(), $yiiEvent->static ? ControlMode::ReadOnly : ControlMode::Editable);
+                }
+            } finally {
+                $legacyEvents->forget($event->fieldLayout, $event->context);
+            }
+        });
+
         Event::listen(function(FieldLayoutCustomFieldsResolving $event) {
             if (YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS)) {
                 $yiiEvent = new DefineFieldLayoutCustomFieldsEvent(['fields' => $event->fields]);
@@ -162,22 +210,14 @@ trait LegacyConstants
                 $event->elements = $yiiEvent->elements;
             }
         });
+    }
 
-        Event::listen(function(FieldLayoutFormCreating $event) {
-            if (YiiEvent::hasHandlers(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM)) {
-                $yiiEvent = new CreateFieldLayoutFormEvent([
-                    'form' => $event->form,
-                    'element' => $event->element,
-                    'static' => $event->static,
-                    'tabs' => $event->tabs,
-                ]);
-                $yiiEvent->sender = $event->fieldLayout;
-
-                YiiEvent::trigger(FieldLayout::class, FieldLayout::EVENT_CREATE_FORM, $yiiEvent);
-
-                $event->tabs = $yiiEvent->tabs;
-                $event->static = $yiiEvent->static;
-            }
-        });
+    /** @param list<Node> $nodes */
+    private static function setFormMode(array $nodes, ControlMode $mode): void
+    {
+        foreach ($nodes as $node) {
+            $node->getControl()?->mode($mode);
+            self::setFormMode($node->children(), $mode);
+        }
     }
 }

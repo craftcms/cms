@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -16,6 +15,13 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\IconPicker;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -105,66 +111,23 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $html = Html::beginTag('craft-field-group');
-        $html .= FormFields::lightswitchFieldHtml([
-            'label' => t('Include Pro icons'),
-            'instructions' => t('Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
-                'url' => 'https://fontawesome.com/plans',
-            ]),
-            'name' => 'includeProIcons',
-            'on' => $this->includeProIcons,
-            'disabled' => $readOnly,
-        ]);
-
-        if (Cms::config()->enableGql) {
-            $html .= Html::tag('hr').
-                Html::beginTag('craft-disclosure').
-                Button::make()
-                    ->label(t('Advanced'))
-                    ->variant('plain')
-                    ->icon('chevron-down')
-                    ->slot('invoker')
-                    ->attributes([
-                        'class' => 'fieldtoggle justify-self-start',
-                        'data' => ['target' => 'advanced'],
-                        'aria-controls' => 'advanced',
-                    ]).
-                Html::beginTag('div', [
-                    'id' => 'advanced',
-                    'slot' => 'content',
-                ]);
-
-            $html .=
-                FormFields::selectFieldHtml([
-                    'label' => t('GraphQL Mode'),
-                    'id' => 'graphql-mode',
-                    'name' => 'graphqlMode',
-                    'options' => [
+        return Form::make([
+            FormField::make(t('Include Pro icons'))
+                ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
+                ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
+        ])->when(
+            Cms::config()->enableGql,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('GraphQL Mode'))
+                    ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
                         ['label' => t('Name only'), 'value' => 'name'],
-                    ],
-                    'value' => $this->fullGraphqlData ? 'full' : 'name',
-                    'disabled' => $readOnly,
-                ]);
-
-            $html .= Html::endTag('div');
-            $html .= Html::endTag('craft-disclosure');
-        }
-
-        return $html.Html::endTag('craft-field-group');
+                    ])->value($this->fullGraphqlData ? 'full' : 'name')),
+            ),
+        );
     }
 
     #[Override]
@@ -182,6 +145,14 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        return IconPicker::make($context->path)
+            ->freeOnly(! $this->includeProIcons)
+            ->value($context->value instanceof IconData ? $context->value->name : $context->value);
+    }
+
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var IconData|null $value */
@@ -191,16 +162,6 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'name' => $this->handle,
             'value' => $value?->name,
             'freeOnly' => ! $this->includeProIcons,
-        ]);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        /** @var IconData|null $value */
-        return FormFields::iconPickerHtml([
-            'static' => true,
-            'value' => $value?->name,
         ]);
     }
 

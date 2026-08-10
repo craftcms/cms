@@ -69,6 +69,7 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -286,6 +287,10 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
+            Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
+            Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
+            Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
+            Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
@@ -337,12 +342,18 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
         Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
+        Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
+
+        // Filesystems
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('filesystems/render-settings', [FilesystemsController::class, 'renderSettings']);
+        });
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {

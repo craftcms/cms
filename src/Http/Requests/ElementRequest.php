@@ -70,8 +70,6 @@ class ElementRequest extends FormRequest
             'provisional' => ['exclude'],
             'dropProvisional' => ['exclude'],
             'addAnother' => ['exclude'],
-            'visibleLayoutElements' => ['exclude'],
-            'staticLayoutElements' => ['exclude'],
             'selectedTab' => ['exclude'],
             'applyParams' => ['exclude'],
             'prevalidate' => ['exclude'],
