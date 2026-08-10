@@ -45,6 +45,7 @@ const {
   setSlideoutDirtyCheck,
   slideoutPanels,
 } = await import('./store');
+const {stackedPanels} = await import('./panel-stack');
 const SlideoutPanel = (await import('./SlideoutPanel.vue')).default;
 const LayoutSlot = (await import('@/common/components/LayoutSlot.vue')).default;
 const {useAppLayout} = await import('@/common/composables/useAppLayout');
@@ -375,18 +376,18 @@ describe('SlideoutHost', () => {
   }
 
   /**
-   * The shade must NOT be `.slideout-shade`: the legacy stylesheet owns that
-   * class and hides it with `:not(.visible) { display: none }` until its own
-   * JS marks it visible, which would stop this one rendering at all.
+   * The shade is created once and left in the document between slideouts, so
+   * "closed" means not `.is-visible` rather than not present. The stylesheet
+   * makes it inert in that state.
    */
-  it('renders no shade until a slideout is open', async () => {
+  it('shows no shade until a slideout is open', async () => {
     const root = await mountHost();
 
-    expect(document.querySelector('.cp-slideout-shade')).toBeNull();
+    expect(document.querySelector('.cp-slideout-shade.is-visible')).toBeNull();
     expect(root).toBeTruthy();
   });
 
-  it('renders a shade while a slideout is open', async () => {
+  it('shows a shade while a slideout is open', async () => {
     await mountHost();
     await openSlideout('/a');
     await nextTick();
@@ -394,8 +395,26 @@ describe('SlideoutHost', () => {
     const shade = document.querySelector('.cp-slideout-shade');
 
     expect(shade).not.toBeNull();
-    // Guards against the legacy collision coming back.
+    expect(shade!.classList.contains('is-visible')).toBe(true);
+    /**
+     * The shade must NOT be `.slideout-shade`: the legacy stylesheet owns
+     * that class and hides it with `:not(.visible) { display: none }` until
+     * its own JS marks it visible, which would stop this one rendering.
+     */
     expect(shade!.classList.contains('slideout-shade')).toBe(false);
+  });
+
+  it('hides the shade again once the last slideout closes', async () => {
+    await mountHost();
+    const panel = (await openSlideout('/a'))!;
+    await nextTick();
+
+    closeSlideout(panel.id, {force: true});
+    await nextTick();
+
+    const shade = document.querySelector('.cp-slideout-shade')!;
+
+    expect(shade.classList.contains('is-visible')).toBe(false);
   });
 
   it('closes the top slideout when the shade is clicked', async () => {
@@ -425,7 +444,7 @@ describe('SlideoutPanel', () => {
 
     const root = mount(
       defineComponent({
-        render: () => h(SlideoutPanel, {instance, depth: 0, total: 1}),
+        render: () => h(SlideoutPanel, {instance}),
       })
     );
 
@@ -448,7 +467,7 @@ describe('SlideoutPanel', () => {
       defineComponent({
         // Second of two: sits flush against the edge, so the whole leftover
         // width. The outer one gets half of it and peeks out behind.
-        render: () => h(SlideoutPanel, {instance, depth: 1, total: 2}),
+        render: () => h(SlideoutPanel, {instance}),
       })
     );
     await nextTick();
@@ -462,6 +481,50 @@ describe('SlideoutPanel', () => {
     );
   });
 
+  /**
+   * The panel joins the stack shared with the legacy jQuery slideouts, rather
+   * than positioning itself from its index in the Vue list — that's what lets
+   * the two interleave.
+   */
+  it('joins the shared panel stack for as long as it is mounted', async () => {
+    await mountPanel(defineComponent({render: () => h('div')}));
+
+    expect(stackedPanels()).toHaveLength(1);
+
+    // The host renders one of these per open slideout, so closing a panel
+    // reaches the stack as an unmount.
+    const app = apps.pop()!;
+    app.unmount();
+    app.root.remove();
+    await nextTick();
+
+    expect(stackedPanels()).toHaveLength(0);
+  });
+
+  it('presents itself to assistive technology as a modal dialog', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+
+    expect(panel.getAttribute('aria-modal')).toBe('true');
+    expect(panel.getAttribute('role')).toBe('dialog');
+  });
+
+  /**
+   * Escape goes through the UI layer manager rather than a window listener, so
+   * it closes one thing: whichever layer is on top, across both slideout
+   * stacks and every modal, HUD, and menu.
+   */
+  it('closes on Escape via the layer manager', async () => {
+    await mountPanel(defineComponent({render: () => h('div')}));
+
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', {keyCode: 27} as never)
+    );
+    await nextTick();
+
+    expect(slideoutPanels()).toHaveLength(0);
+  });
+
   it('applies a per-panel width override', async () => {
     fetchSlideoutPage.mockResolvedValue({
       component: defineComponent({render: () => h('div')}),
@@ -473,7 +536,7 @@ describe('SlideoutPanel', () => {
 
     const root = mount(
       defineComponent({
-        render: () => h(SlideoutPanel, {instance, depth: 0, total: 1}),
+        render: () => h(SlideoutPanel, {instance}),
       })
     );
     await nextTick();

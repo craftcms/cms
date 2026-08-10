@@ -347,7 +347,7 @@ however deep it goes — each panel just peeks out a little less.
 | Custom property | Default | Notes |
 | --- | --- | --- |
 | `--slideout-width` | `55vw` | Must be a **length**, not a percentage — the stack offset subtracts it from `100vw`. |
-| `--slideout-shade-color` | `rgb(0 0 0 / 40%)` | The dimming behind the panel. |
+| `--shade-bg` | `rgb(0 0 0 / 40%)` | The dimming behind the panel. Shared with the legacy slideouts and modals. |
 
 ```css
 :root {
@@ -402,14 +402,38 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 
 ## Coexisting with the legacy stack
 
-The legacy `Craft.CpScreenSlideout` is untouched and still used by
-`resources/js/common/components/SlideoutButton.vue`. Both stacks share `z-index: 100` and interleave
-by DOM order.
+The legacy `Craft.Slideout` (and its `CpScreenSlideout` / `ElementEditorSlideout` subclasses) is
+still very much alive — the field layout designer, matrix, component select and the nested element
+manager all open one. So both kinds can be on screen at once: a Vue panel opened over a legacy
+slideout, or a legacy element editor opened from inside a Vue panel.
+
+Everything that needs to see *all* open panels rather than one stack's own lives in
+**`resources/js/common/slideouts/panel-stack.ts`**, and both implementations register with it:
+
+| Shared | Why it has to be |
+| --- | --- |
+| Stacking offsets | Opening a second panel has to move the first one, whichever kind it is |
+| The shade | One element, shown while anything is open; a click goes to the topmost panel only |
+| `body.no-scroll` | Two stacks toggling it independently would unlock the page too early |
+| Background `aria-hidden` | Restoring it correctly means knowing what's still open |
+| HUD repositioning | Panels move, and a HUD anchored inside one has to follow |
+
+Escape isn't in that list because it doesn't need to be: both stacks register a UI layer with
+`uiLayerManager()` and put their Escape shortcut on it, so the layer manager already orders them
+against each other and against every modal, HUD, and menu. One press closes one thing.
+
+A panel is anything that satisfies `StackedPanel` — an element, a `position(index, total)`, and a
+`handleShadeClick()`. The stack owns the *ordering*; each implementation renders its own offset,
+because the two position different things (a `.slideout` inside a full-viewport container versus a
+panel positioned directly, with a configurable width). An optional `suppressShade()` opts a
+full-screen mobile sheet out of the shade.
 
 Two things to know if you touch this area:
 
 - **Don't reuse legacy class names.** The legacy stylesheet owns `.slideout-shade` and hides it with
-  `:not(.visible) { display: none }`. The Vue shade is `.cp-slideout-shade` for that reason.
+  `:not(.visible) { display: none }`. The shared shade is `.cp-slideout-shade` for that reason, and
+  it sits at `z-index: 99` — one below both kinds of panel, so it stays underneath them regardless
+  of the order they were appended to `<body>` in.
 - The legacy payload's key order is pinned by `tests/Feature/Http/Responses/CpScreenSlideoutTest.php`.
   If that test goes red, the jQuery slideout stack is broken.
 
@@ -418,14 +442,13 @@ Two things to know if you touch this area:
 - **Live preview from a slideout.** `Craft.ElementEditor` builds its preview links off an action
   button the Vue panel doesn't render yet, so the editor gets an empty one.
 - **Deep linking.** Opening a slideout doesn't change the URL, and it can't be linked to.
-- **Coordinated stacking with legacy slideouts.** A Vue panel opened over a
-  `Craft.CpScreenSlideout` will compete with it for the shade and <kbd>Esc</kbd>.
 
 ## Files
 
 | Path | What it is |
 | --- | --- |
 | `resources/js/common/slideouts/` | Store, request layer, host, panel, `useSlideout` |
+| `resources/js/common/slideouts/panel-stack.ts` | The stack both implementations share: offsets, shade, scroll lock, layers |
 | `resources/js/common/layouts/AppLayout.vue` | The shell dispatcher |
 | `resources/js/common/layouts/screens/` | `PageScreen`, `SlideoutScreen`, `PassthroughScreen`, the shared contract |
 | `resources/js/common/composables/screen.ts` | Screen context, shell key, props store |

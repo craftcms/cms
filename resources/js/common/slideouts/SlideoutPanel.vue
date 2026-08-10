@@ -10,7 +10,22 @@
    * `resolveInertiaPage()` returns the bare component — Inertia only attaches
    * the default layout for components it renders itself.
    */
-  import {computed, provide} from 'vue';
+  import {
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    provide,
+    useTemplateRef,
+    watch,
+  } from 'vue';
+  import {
+    addModalAttributes,
+    ESC_KEY,
+    releaseFocusWithin,
+    setFocusWithin,
+    trapFocusWithin,
+  } from '@craftcms/garnish';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
   import {
@@ -20,14 +35,17 @@
     ScreenPropsStoreKey,
     ScreenShellKey,
   } from '@/common/composables/screen';
+  import {
+    registerPanel,
+    uiLayerManager,
+    unregisterPanel,
+    type StackedPanel,
+  } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
   import {SlideoutControllerKey, type SlideoutInstance} from './types';
 
   const props = defineProps<{
     instance: SlideoutInstance;
-    /** Stack depth, 0 = outermost. Drives the inset offset. */
-    depth: number;
-    total: number;
   }>();
 
   provide(ScreenShellKey, SlideoutScreen);
@@ -60,31 +78,92 @@
       : 'inset-inline-start'
   );
 
+  const panelEl = useTemplateRef<HTMLElement>('panel');
+
   /**
-   * Where this panel sits, matching Craft 5's `Slideout.updateStyles()`:
-   * `45 * ((totalPanels - i) / totalPanels)vw` for panels 55% wide.
+   * Where this panel sits, driven by the shared stack rather than by this
+   * component's position in the Vue list — a legacy jQuery slideout can be
+   * open at the same time, and only the stack sees both.
    *
-   * Craft 5 counts `i` from the newest panel; `depth` counts from the oldest,
-   * which makes `totalPanels - i` the same as `depth + 1`. Its `45` is really
-   * `100 - 55` — the space left over beside a panel — so that's derived from
-   * the width here rather than hard-coded, and changing `--slideout-width`
-   * keeps the geometry correct.
+   * Starts offscreen so the panel transitions in: {@link registerPanel}
+   * forces a reflow before positioning it, so the browser has the `100vw`
+   * start value to animate from.
+   */
+  const offset = ref('100vw');
+
+  /**
+   * The stack's view of this panel. Its `position()` mirrors Craft 5's
+   * `Slideout.updateStyles()`, where the offset was `45 * ((total - i) /
+   * total)vw` for panels 55% wide — `45` being the viewport left over beside
+   * one. That's derived from the width here rather than hard-coded, so
+   * changing `--slideout-width` keeps the geometry correct.
    *
    * Spreading the stack across the leftover space rather than stepping by a
-   * constant means it never runs off the edge however deep it goes; each panel
-   * just peeks out a little less.
+   * constant means it never runs off the edge however deep it goes; each
+   * panel just peeks out a little less.
    */
-  const offset = computed(() => {
-    const fraction = (props.depth + 1) / props.total;
+  const stackPanel: StackedPanel = {
+    get element() {
+      return panelEl.value!;
+    },
+    position(index: number, total: number) {
+      offset.value = `calc((100vw - var(--slideout-panel-width)) * ${
+        (index + 1) / total
+      })`;
+    },
+    handleShadeClick() {
+      closeSlideout(props.instance.id);
+    },
+  };
 
-    return `calc((100vw - var(--slideout-panel-width)) * ${fraction})`;
+  onMounted(() => {
+    const el = panelEl.value!;
+
+    addModalAttributes(el);
+    trapFocusWithin(el);
+
+    // Joining the layer manager rather than listening for Escape on the
+    // window is what keeps a Vue panel in the right order against legacy
+    // slideouts, modals, and menus: only the topmost layer's shortcuts fire,
+    // so one Escape press closes one thing.
+    uiLayerManager().addLayer(el);
+    uiLayerManager().registerShortcut(ESC_KEY, () => {
+      closeSlideout(props.instance.id);
+    });
+
+    // After `addLayer`, which the stack relies on to work out which container
+    // to leave visible to assistive technology.
+    registerPanel(stackPanel);
   });
+
+  onBeforeUnmount(() => {
+    const el = panelEl.value!;
+
+    // By element, not the bare pop: with two slideout stacks interleaving,
+    // this panel isn't necessarily the topmost layer. Before `unregisterPanel`,
+    // which restores the background layers based on what's still open.
+    uiLayerManager().removeLayer(el);
+    unregisterPanel(stackPanel);
+    releaseFocusWithin(el);
+  });
+
+  // The screen arrives a request after the panel does, so focus can't be
+  // placed until there's something in it to focus.
+  watch(
+    () => props.instance.component,
+    (component) => {
+      if (component && panelEl.value) {
+        setFocusWithin(panelEl.value);
+      }
+    }
+  );
 </script>
 
 <template>
   <!-- `data-slideout-id` is how the store works out which panel something was
     opened from, so it can nest below it rather than replace it. -->
   <div
+    ref="panel"
     class="slideout-panel"
     :data-slideout-id="instance.id"
     :style="{
