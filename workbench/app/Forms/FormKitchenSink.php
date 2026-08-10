@@ -107,10 +107,10 @@ class FormKitchenSink
     }
 
     /** @return array<string, FormPayload>|null */
-    public function stories(string $type, string $slug): ?array
+    public function stories(string $type, string $slug, ?string $countryCode = null): ?array
     {
         $component = self::component($type, $slug);
-        $forms = $this->forms($component);
+        $forms = $this->forms($component, $countryCode);
 
         if ($forms === null) {
             return null;
@@ -130,21 +130,13 @@ class FormKitchenSink
     }
 
     /** @return array<string, Form>|null */
-    private function forms(?string $component): ?array
+    private function forms(?string $component, ?string $countryCode): ?array
     {
         if ($component === Address::class) {
             return [
-                'Belgium' => $this->control('Address', Address::make('address')->countryCode('BE')->value([
-                    'addressLine1' => 'Korenmarkt 1',
-                    'locality' => 'Gent',
-                    'postalCode' => '9000',
-                ])),
-                'United States' => $this->control('Address', Address::make('address')->countryCode('US')->value([
-                    'addressLine1' => '1 Infinite Loop',
-                    'administrativeArea' => 'CA',
-                    'locality' => 'Cupertino',
-                    'postalCode' => '95014',
-                ])),
+                'Country-dependent fields' => $this->control('Address', Address::make('address')
+                    ->countryCode($countryCode ?? 'BE')
+                    ->value([])),
                 'Current user' => $this->control('Address', Address::make('address')
                     ->countryCode('BE')
                     ->belongsToCurrentUser()

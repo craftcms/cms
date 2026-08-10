@@ -3,6 +3,7 @@
   import CraftSelect from '@craftcms/ui/components/select/select';
   import {actionClient, t} from '@craftcms/ui';
   import '@craftcms/ui/components/field/field';
+  import '@craftcms/ui/components/field-group/field-group';
   import {ref, watch} from 'vue';
   import {useFlashMessages} from '@/common/composables/useFlashMessages';
   import type {FormChangeKind, FormControlPayload} from './types';
@@ -195,7 +196,7 @@
 </script>
 
 <template>
-  <div class="address-fields">
+  <craft-field-group class="address-fields">
     <craft-field
       v-for="field in fields"
       :key="field.name"
@@ -247,5 +248,5 @@
         />
       </div>
     </craft-field>
-  </div>
+  </craft-field-group>
 </template>

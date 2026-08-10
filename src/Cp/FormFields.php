@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputCopy;
@@ -1359,10 +1360,12 @@ readonly class FormFields
         bool $static = false,
         ?bool $belongsToCurrentUser = null,
     ): string {
-        return implode('', array_map(
-            fn (array $field): string => self::addressFieldHtml($field, $static),
-            app(Addresses::class)->getFormFieldDefinitions($address, $belongsToCurrentUser),
-        ));
+        return FieldGroup::make()
+            ->children(array_map(
+                fn (array $field): HtmlString => new HtmlString(self::addressFieldHtml($field, $static)),
+                app(Addresses::class)->getFormFieldDefinitions($address, $belongsToCurrentUser),
+            ))
+            ->toHtml();
     }
 
     /** @param AddressFormField $field */

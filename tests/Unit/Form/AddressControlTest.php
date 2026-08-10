@@ -49,7 +49,8 @@ it('renders the canonical address map as nested inputs', function () {
     ));
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
-    expect($crawler->filter('input[name="settings[address][addressLine1]"]')->attr('value'))->toBe('Museumstraat 1')
+    expect($crawler->filter('craft-field[data-mode="editable"] > craft-field-group[slot="input"] input[name="settings[address][locality]"]'))->toHaveCount(1)
+        ->and($crawler->filter('input[name="settings[address][addressLine1]"]')->attr('value'))->toBe('Museumstraat 1')
         ->and($crawler->filter('input[name="settings[address][locality]"]')->attr('value'))->toBe('Antwerp')
         ->and($crawler->filter('input[name="settings[address][postalCode]"]')->attr('value'))->toBe('2000');
 });
