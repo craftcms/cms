@@ -54,6 +54,13 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\DateTime;
+use CraftCms\Cms\Form\Controls\ElementSelect;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Section\Data\Section;
@@ -2039,6 +2046,139 @@ JS, [
         }
 
         return $user->can('move', $this);
+    }
+
+    /**
+     * The Form-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
+     * visibility rules so the Inertia editor shows exactly the fields the
+     * legacy editor does.
+     *
+     * @return list<Node>
+     */
+    #[Override]
+    protected function metaFieldsNodes(bool $static): array
+    {
+        $nodes = [];
+        $section = $this->getSection();
+        $user = currentUserElement();
+
+        $entryTypes = $this->getAvailableEntryTypes();
+        if (collect($entryTypes)->doesntContain(fn (EntryType $entryType) => $entryType->id === $this->typeId)) {
+            $entryTypes[] = $this->getType();
+        }
+
+        if (count($entryTypes) > 1 || ! $this->isEntryTypeAllowed($entryTypes)) {
+            $nodes[] = Field::make(t('Entry Type'))
+                ->control(
+                    Choice::make('typeId')
+                        ->options(array_map(fn (EntryType $entryType) => [
+                            'label' => t($entryType->name, category: 'site'),
+                            'value' => $entryType->id,
+                        ], $entryTypes))
+                        ->value($this->getType()->id)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($this->getType()->showSlugField) {
+            $nodes[] = Field::make(t('Slug'))
+                ->control(
+                    Text::make('slug')
+                        ->value(! ElementHelper::isTempSlug($this->slug) ? $this->slug : null)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
+            $nodes[] = Field::make(t('Parent'))
+                ->control(
+                    ElementSelect::make('parentId')
+                        ->elementType(self::class)
+                        ->sources(["section:$section->uid"])
+                        ->criteria($this->_parentOptionCriteria($section))
+                        ->selectionLabel(t('Choose'))
+                        ->showSiteMenu()
+                        ->limit(1)
+                        ->value(array_filter([$this->parentIdForForm()]))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($section && $section->type !== SectionType::Single) {
+            if ($section->maxAuthors !== 0 && Edition::get() !== Edition::Solo) {
+                $nodes[] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
+                    'max' => $section->maxAuthors ?? PHP_INT_MAX,
+                ]))
+                    ->control(
+                        ElementSelect::make('authorIds')
+                            ->elementType(User::class)
+                            ->criteria(['can' => "viewEntries:$section->uid"])
+                            ->selectionLabel(t('Choose'))
+                            ->limit($section->maxAuthors)
+                            ->value($this->getAuthorIds())
+                            ->mode($static || ! $this->canChangeAuthor($user)
+                                ? ControlMode::Disabled
+                                : ControlMode::Editable),
+                    );
+            }
+
+            $nodes[] = Field::make(t('Post Date'))
+                ->control(
+                    DateTime::make('postDate')
+                        ->showTime()
+                        ->value(self::dateTimeControlValue($this->postDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+
+            $nodes[] = Field::make(t('Expiry Date'))
+                ->control(
+                    DateTime::make('expiryDate')
+                        ->showTime()
+                        ->value(self::dateTimeControlValue($this->expiryDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * The {@see DateTime} Control's value shape — an empty date still needs the
+     * date/time/timezone keys so the control renders.
+     *
+     * @return array{date: string, time: string, timezone: string}
+     */
+    private static function dateTimeControlValue(?DateTimeInterface $value): array
+    {
+        return [
+            'date' => $value?->format('Y-m-d') ?? '',
+            'time' => $value?->format('H:i') ?? '',
+            'timezone' => $value?->getTimezone()->getName() ?? Cms::timezone(),
+        ];
+    }
+
+    /**
+     * The entry's current parent id, resolved the same way the legacy Parent
+     * meta field resolves it.
+     */
+    private function parentIdForForm(): ?int
+    {
+        if ($parentId = $this->getParentId()) {
+            return $parentId;
+        }
+
+        /** @var self|null $parent */
+        $parent = self::find()
+            ->site('*')
+            ->preferSites([$this->siteId])
+            ->drafts(null)
+            ->draftOf(false)
+            ->status(null)
+            ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+            ->ancestorDist(1)
+            ->one();
+
+        return $parent?->id;
     }
 
     #[Override]

@@ -19,6 +19,13 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -561,6 +568,47 @@ JS,
         event($event = new ElementSidebarHtmlResolving($this, $static, $html));
 
         return $event->html;
+    }
+
+    public function sidebarForm(FormContext $context = new FormContext): ?Form
+    {
+        $static = $context->mode === ControlMode::ReadOnly || $context->mode === ControlMode::Disabled;
+
+        $nodes = $this->metaFieldsNodes($static);
+
+        if (! $static && static::hasStatuses() && $this->showStatusField()) {
+            $nodes[] = Field::make(t('Status'))
+                ->control(
+                    Lightswitch::make('enabled')
+                        ->value((bool) $this->enabled)
+                        ->onLabel(t('Enabled'))
+                        ->offLabel(t('Disabled')),
+                );
+        }
+
+        if ($this->hasRevisions() && ! $this->getIsRevision()) {
+            $nodes[] = Field::make(t('Notes about your changes'))
+                ->control(
+                    Textarea::make('notes')
+                        ->rows(1)
+                        ->value($this->getIsDraft() ? $this->draftNotes : $this->revisionNotes),
+                );
+        }
+
+        return $nodes === [] ? null : Form::make($nodes);
+    }
+
+    /**
+     * Returns the editor sidebar's element-type-specific meta fields as Form
+     * Nodes. The Form-system counterpart to {@see metaFieldsHtml()}; element
+     * types override this alongside their HTML implementation until the legacy
+     * editor is retired.
+     *
+     * @return list<Node>
+     */
+    protected function metaFieldsNodes(bool $static): array
+    {
+        return [];
     }
 
     /**

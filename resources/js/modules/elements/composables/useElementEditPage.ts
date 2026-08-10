@@ -1,8 +1,7 @@
 import {useEventListener} from '@vueuse/core';
 import {router, useForm, usePage} from '@inertiajs/vue3';
 import {t} from '@craftcms/ui';
-import {computed, onBeforeUnmount, ref} from 'vue';
-import {expandFormData} from '@/common/utils/forms';
+import {computed, onBeforeUnmount} from 'vue';
 import type {FormPayload} from '@/modules/forms/types';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -19,7 +18,7 @@ export interface ElementEditPayload {
   crumbs: Array<Record<string, any>>;
   readOnly: boolean;
   form: FormPayload | null;
-  sidebarHtml: string | null;
+  sidebarForm: FormPayload | null;
   metadataHtml: string | null;
   saveUrl: string;
   // Element-type view models add their own keys on top of the shared payload.
@@ -47,42 +46,21 @@ export function useElementEditPage({saveData}: Options = {}) {
   const props = page.props;
 
   const formPayload = computed(() => props.form);
+  const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<Record<string, any>>({});
 
+  // Two bridges share one Inertia form. Each only ever deletes the root keys
+  // it wrote itself, and both are constructed here — before either receives a
+  // mutation — so neither can claim the other's keys.
   const {advanceBaseline, errors, onMutation, renderer, values} =
     useInertiaFormRenderer(form, formPayload);
 
-  // The meta fields (entry type, slug, parent, post date, …) are still
-  // server-rendered HTML, so their values are read out of the DOM at submit
-  // time rather than tracked as Inertia form state.
-  const sidebarEl = ref<HTMLElement | null>(null);
-
-  function sidebarData(): Record<string, unknown> {
-    const root = sidebarEl.value;
-
-    if (!root) {
-      return {};
-    }
-
-    const data = new FormData();
-
-    for (const input of root.querySelectorAll<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >('input[name], select[name], textarea[name]')) {
-      if (
-        (input instanceof HTMLInputElement &&
-          (input.type === 'checkbox' || input.type === 'radio') &&
-          !input.checked) ||
-        input.disabled
-      ) {
-        continue;
-      }
-
-      data.append(input.name, input.value);
-    }
-
-    return expandFormData(data);
-  }
+  const {
+    advanceBaseline: advanceSidebarBaseline,
+    errors: sidebarErrors,
+    onMutation: onSidebarMutation,
+    renderer: sidebarRenderer,
+  } = useInertiaFormRenderer(form, sidebarPayload);
 
   const {save} = useSettingsSave(
     form,
@@ -93,36 +71,20 @@ export function useElementEditPage({saveData}: Options = {}) {
     {
       transform: (data) => ({
         ...data,
-        ...sidebarData(),
         ...saveData?.(),
       }),
-      onSuccess: advanceBaseline,
+      onSuccess: () => {
+        advanceBaseline();
+        advanceSidebarBaseline();
+      },
     }
   );
 
-  // Unsaved-changes guard. The field layout is tracked by Inertia's own dirty
-  // state; the sidebar island is compared against a baseline captured on first
-  // interaction, since it injects asynchronously.
-  let sidebarBaseline: string | null = null;
-
-  function captureSidebarBaseline(): void {
-    sidebarBaseline ??= JSON.stringify(sidebarData());
-  }
-
+  // Both the field layout and the sidebar feed the same Inertia form, so its
+  // own dirty state covers the whole screen.
   function hasUnsavedChanges(): boolean {
-    if (form.processing) {
-      return false;
-    }
-
-    return (
-      form.isDirty ||
-      (sidebarBaseline !== null &&
-        JSON.stringify(sidebarData()) !== sidebarBaseline)
-    );
+    return !form.processing && form.isDirty;
   }
-
-  useEventListener(sidebarEl, 'focusin', captureSidebarBaseline);
-  useEventListener(sidebarEl, 'pointerdown', captureSidebarBaseline);
 
   useEventListener(window, 'beforeunload', (event) => {
     if (hasUnsavedChanges()) {
@@ -150,10 +112,13 @@ export function useElementEditPage({saveData}: Options = {}) {
     form,
     formPayload,
     onMutation,
+    onSidebarMutation,
     props,
     renderer,
     save,
-    sidebarEl,
+    sidebarErrors,
+    sidebarPayload,
+    sidebarRenderer,
     values,
   };
 }

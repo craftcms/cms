@@ -10,6 +10,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -45,6 +46,10 @@ abstract class ElementEditViewModel extends ViewModel
     private ?FormPayload $form = null;
 
     private bool $formResolved = false;
+
+    private ?FormPayload $sidebarForm = null;
+
+    private bool $sidebarFormResolved = false;
 
     public function __construct(
         protected readonly ElementInterface $element,
@@ -146,17 +151,34 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * The element's meta fields (entry type, slug, parent, post date, …).
+     * The element's meta fields (entry type, slug, parent, post date, status,
+     * notes …) as a second Form, rendered into the editor sidebar.
      *
-     * These are still rendered by the legacy `metaFieldsHtml()` PHP surface, so
-     * the page mounts them as an HTML island and reads their inputs at submit
-     * time. Porting them onto Form Controls is a follow-up.
+     * Keeping it separate from {@see form()} lets the two render in different
+     * regions while both submit through the same Inertia form.
      */
-    public function sidebarHtml(): ?string
+    public function sidebarForm(): ?FormPayload
     {
-        $html = trim((string) $this->element->getSidebarHtml(! $this->canSave));
+        if ($this->sidebarFormResolved) {
+            return $this->sidebarForm;
+        }
 
-        return $html !== '' ? $html : null;
+        $this->sidebarFormResolved = true;
+        $context = $this->sidebarFormContext();
+        $form = $this->element->sidebarForm($context);
+
+        return $this->sidebarForm = $form === null
+            ? null
+            : app(FormResolver::class)->resolve($form, $context);
+    }
+
+    private function sidebarFormContext(): FormContext
+    {
+        return new FormContext(
+            namespace: [],
+            errors: $this->element->errors()->getMessages(),
+            mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
+        );
     }
 
     public function metadataHtml(): ?string
