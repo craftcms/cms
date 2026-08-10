@@ -102,9 +102,10 @@ jobs:
 
       # `vp run` skips the npm pretypecheck hook, which would redundantly run
       # generate:types and generate:wayfinder.
-      # The storybook tests run in real Chromium via @vitest/browser-playwright.
+      # The Storybook tests run headlessly via @vitest/browser-playwright, so
+      # the full headed Chromium build is unnecessary.
       - name: Install Playwright Chromium
-        run: vp exec playwright install --with-deps chromium
+        run: vp exec playwright install --with-deps --only-shell chromium
 
       - parallel:
           - name: Run Oxlint
