@@ -618,6 +618,22 @@ class FormKitchenSink
             ];
         }
 
+        if ($component === Heading::class) {
+            return [
+                'Default' => Form::make([
+                    Heading::make('heading-default', 'Default heading'),
+                ]),
+                'Levels' => Form::make([
+                    Heading::make('heading-level-1', 'Level 1')->level(1),
+                    Heading::make('heading-level-2', 'Level 2')->level(2),
+                    Heading::make('heading-level-3', 'Level 3')->level(3),
+                    Heading::make('heading-level-4', 'Level 4')->level(4),
+                    Heading::make('heading-level-5', 'Level 5')->level(5),
+                    Heading::make('heading-level-6', 'Level 6')->level(6),
+                ]),
+            ];
+        }
+
         if ($component === MarkdownContent::class) {
             return [
                 'Pane' => Form::make([
@@ -646,9 +662,6 @@ class FormKitchenSink
                 'Missing control',
                 MissingControl::make('missingControl')->provider('workbench/missing-control'),
             ),
-            Heading::class => Form::make([
-                Heading::make('heading-node', 'Heading node'),
-            ]),
             LineBreak::class => Form::make([
                 Heading::make('before-line-break', 'Before line break')->width(50),
                 LineBreak::make('line-break-node'),

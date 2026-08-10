@@ -482,7 +482,7 @@ describe('FormRenderer', () => {
             {
               type: 'CraftCms\\Cms\\Form\\Nodes\\Heading',
               component: 'craft:heading',
-              props: {content: 'Details', width: 100},
+              props: {content: 'Details', level: 3, width: 100},
               uid: 'heading',
               children: [],
             },
@@ -619,9 +619,9 @@ describe('FormRenderer', () => {
     expect(templateContent?.querySelector('strong')?.textContent).toBe(
       'Template note'
     );
-    expect(tab?.querySelector('[data-form-node="heading"]')?.textContent).toBe(
-      'Details'
-    );
+    expect(
+      tab?.querySelector('h3[data-form-node="heading"]')?.textContent
+    ).toBe('Details');
     expect(tab?.querySelector('hr[data-form-node="separator"]')).not.toBeNull();
     expect(
       tab?.querySelector('[data-form-node="line-break"]')?.classList

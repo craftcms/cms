@@ -13,6 +13,8 @@ use CraftCms\Cms\Support\Html;
 
 class Heading implements Node
 {
+    private int $level = 2;
+
     private int $width = 100;
 
     public function __construct(
@@ -22,7 +24,7 @@ class Heading implements Node
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
-        return Html::tag('h2', Html::encode($node->props['content']), [
+        return Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
             'class' => ["width-{$node->props['width']}"],
             'data-form-node' => $node->uid,
         ]);
@@ -36,6 +38,13 @@ class Heading implements Node
     public function width(int $width): static
     {
         $this->width = $width;
+
+        return $this;
+    }
+
+    public function level(int $level): static
+    {
+        $this->level = $level;
 
         return $this;
     }
@@ -54,6 +63,7 @@ class Heading implements Node
     {
         return [
             'content' => $this->content,
+            'level' => $this->level,
             'width' => $this->width,
         ];
     }
