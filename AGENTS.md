@@ -10,20 +10,6 @@ New core work should be Laravel-first. Do not add Yii dependencies to `src/`; pu
 
 This is a large codebase with some large files. Search narrowly before reading full files.
 
-## Agent skills
-
-### Issue tracker
-
-Issues are tracked in the private GitHub repository `riasvdv/field-layout-issues`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Triage uses the five default canonical labels. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-This repository uses a single-context domain layout. See `docs/agents/domain.md`.
-
 ## Commands
 
 ### PHP
