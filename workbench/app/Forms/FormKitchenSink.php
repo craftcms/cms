@@ -28,6 +28,7 @@ use CraftCms\Cms\Form\Controls\Matrix;
 use CraftCms\Cms\Form\Controls\Missing as MissingControl;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
@@ -49,6 +50,8 @@ use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Form\Nodes\Tab;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\Permission;
+use CraftCms\Cms\User\Data\PermissionGroup;
 
 class FormKitchenSink
 {
@@ -75,6 +78,7 @@ class FormKitchenSink
             'missing' => MissingControl::class,
             'money' => Money::class,
             'number' => Number::class,
+            'permission-tree' => PermissionTree::class,
             'range' => Range::class,
             'table' => Table::class,
             'text' => Text::class,
@@ -440,6 +444,27 @@ class FormKitchenSink
                     ->step(5)
                     ->size(5)
                     ->value(40)),
+            ];
+        }
+
+        if ($component === PermissionTree::class) {
+            $groups = [
+                new PermissionGroup('content', 'Content', collect([
+                    new Permission('viewEntries', 'View entries', nested: collect([
+                        new Permission('editEntries', 'Edit entries'),
+                        new Permission('deleteEntries', 'Delete entries', warning: 'Deleted entries cannot be restored.'),
+                    ])),
+                ])),
+                new PermissionGroup('system', 'System', collect([
+                    new Permission('accessCp', 'Access the control panel'),
+                ])),
+            ];
+
+            return [
+                'Selected and inherited' => $this->control('Permissions', PermissionTree::make('permissions')
+                    ->groups($groups)
+                    ->lockedPermissions(['accessCp'])
+                    ->value(['viewEntries', 'editEntries'])),
             ];
         }
 

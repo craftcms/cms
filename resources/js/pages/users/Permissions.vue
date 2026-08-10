@@ -6,7 +6,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -134,20 +134,12 @@
       </craft-callout>
 
       <craft-field-group v-if="!form.admin">
-        <div
-          v-for="group in props.permissions"
-          :key="group.handle"
-          class="user-permissions"
-        >
-          <PermissionList
-            :heading="group.heading"
-            :permissions="group.permissions"
-            :permission-keys="group.keys"
-            :locked-permissions="lockedPermissions"
-            :disabled="Boolean(props.teamPermissionsNotice)"
-            v-model="form.permissions"
-          />
-        </div>
+        <PermissionTree
+          :groups="props.permissions"
+          :locked-permissions="lockedPermissions"
+          :disabled="Boolean(props.teamPermissionsNotice)"
+          v-model="form.permissions"
+        />
       </craft-field-group>
     </craft-field-group>
   </Pane>

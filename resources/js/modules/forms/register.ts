@@ -29,6 +29,7 @@ import CalloutNode from './CalloutNode.vue';
 import HeadingNode from './HeadingNode.vue';
 import HandleControl from './HandleControl.vue';
 import LineBreakNode from './LineBreakNode.vue';
+import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
 
@@ -61,6 +62,7 @@ export function registerFormComponents(
   components.register('craft:time', TextControl);
   components.register('craft:color', ColorControl);
   components.register('craft:money', MoneyControl);
+  components.register('craft:permission-tree', PermissionTreeControl);
   components.register('craft:markdown', MarkdownControl);
   components.register('craft:table', TableControl);
   components.register('craft:link', LinkControl);

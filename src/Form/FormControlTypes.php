@@ -26,6 +26,7 @@ use CraftCms\Cms\Form\Controls\Matrix;
 use CraftCms\Cms\Form\Controls\Missing;
 use CraftCms\Cms\Form\Controls\Money;
 use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\PermissionTree;
 use CraftCms\Cms\Form\Controls\Range;
 use CraftCms\Cms\Form\Controls\Table;
 use CraftCms\Cms\Form\Controls\Text;
@@ -64,6 +65,7 @@ class FormControlTypes extends TypeRegistry
         Missing::class,
         Money::class,
         Number::class,
+        PermissionTree::class,
         Range::class,
         Table::class,
         Text::class,

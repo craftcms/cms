@@ -16,6 +16,7 @@ import {
   type CpComponentRegistration,
 } from '@/bootstrap/components';
 import {actionClient} from '@craftcms/ui';
+import type CraftPermissionTree from '@craftcms/ui/components/permission-tree/permission-tree';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
 import type {FormPayload} from './types';
@@ -2001,6 +2002,113 @@ describe('FormRenderer', () => {
     });
     expect(new FormData(form).get('settings[matrix]')).toBe('');
     vi.useRealTimers();
+  });
+
+  it('renders and updates permission trees', async () => {
+    let mutation: FormPayload['values'] = {};
+    app.unmount();
+    await mount(
+      {
+        scope: ['settings'],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+            component: 'craft:field',
+            props: {label: 'Permissions'},
+            control: {
+              type: 'CraftCms\\Cms\\Form\\Controls\\PermissionTree',
+              component: 'craft:permission-tree',
+              props: {
+                groups: [
+                  {
+                    handle: 'content',
+                    heading: 'Content',
+                    keys: ['viewEntries', 'editEntries', 'deleteEntries'],
+                    permissions: {
+                      viewEntries: {
+                        key: 'viewEntries',
+                        label: 'View entries',
+                        info: null,
+                        warning: null,
+                        nested: {
+                          editEntries: {
+                            key: 'editEntries',
+                            label: 'Edit entries',
+                            info: null,
+                            warning: null,
+                            nested: {},
+                          },
+                          deleteEntries: {
+                            key: 'deleteEntries',
+                            label: 'Delete entries',
+                            info: null,
+                            warning: null,
+                            nested: {},
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+                lockedPermissions: ['deleteEntries'],
+              },
+              path: ['settings', 'permissions'],
+              mode: 'editable',
+              deltaGroup: ['settings', 'permissions'],
+            },
+          },
+        ],
+        values: {settings: {permissions: ['viewEntries']}},
+        errors: [],
+        globalErrors: [],
+      },
+      {onMutation: (value) => (mutation = value)}
+    );
+
+    const permissionTree = container.querySelector(
+      'craft-permission-tree'
+    ) as CraftPermissionTree;
+    await permissionTree.updateComplete;
+    const checkboxes = [
+      ...permissionTree.shadowRoot!.querySelectorAll<
+        HTMLElement & {
+          checked: boolean;
+          choiceValue: string;
+          disabled: boolean;
+        }
+      >('craft-checkbox'),
+    ];
+    expect(checkboxes.map((checkbox) => checkbox.choiceValue)).toEqual([
+      'viewEntries',
+      'editEntries',
+      'deleteEntries',
+    ]);
+    const edit = checkboxes.find(
+      (checkbox) => checkbox.choiceValue === 'editEntries'
+    )!;
+    const inherited = checkboxes.find(
+      (checkbox) => checkbox.choiceValue === 'deleteEntries'
+    )!;
+
+    expect(inherited.checked).toBe(true);
+    expect(inherited.disabled).toBe(true);
+    expect(new FormData(form).getAll('settings[permissions][]')).toEqual([
+      'viewEntries',
+    ]);
+
+    edit.checked = true;
+    edit.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
+    );
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({
+      settings: {permissions: ['viewEntries', 'editEntries']},
+    });
+    expect(mutation).toEqual({
+      settings: {permissions: ['viewEntries', 'editEntries']},
+    });
   });
 
   it.each(['readOnly', 'disabled'] as const)(
