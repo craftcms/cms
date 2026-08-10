@@ -22,6 +22,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -132,10 +133,15 @@ it('renders the current entry edit screen for each control panel route', functio
 
     get($route($entry))
         ->assertOk()
-        ->assertSeeText('Current Title')
-        ->assertSee('data-form-tab="entry-content"', false)
-        ->assertSeeText('Create a draft')
-        ->assertSee('elements/save', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('title', 'Current Title')
+            ->where('elementId', $entry->id)
+            ->where('readOnly', false)
+            ->where('saveUrl', fn (string $url) => str_contains($url, 'entries/save-entry'))
+            ->has('form.nodes')
+            ->has('sidebarHtml')
+        );
 })->with('editElementEntryRoutes');
 
 it('renders the asset edit screen', function () {
