@@ -44,6 +44,16 @@ beforeEach(() => {
 });
 
 describe('craft-combobox', () => {
+  it('forwards its placeholder to the textbox', async () => {
+    const combobox = await createFixture((c) => {
+      c.placeholder = 'Choose an option';
+    });
+
+    expect((combobox._inputNode as HTMLInputElement).placeholder).toBe(
+      'Choose an option'
+    );
+  });
+
   it('renders options from the array property', async () => {
     const combobox = await createFixture((c) => {
       c.options = makeOptions(5);
