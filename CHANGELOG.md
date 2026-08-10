@@ -17,17 +17,7 @@
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
 - Added support for configuring field layout field instruction positions.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
-- Added the renderer-neutral `CraftCms\Cms\Form` APIs, with shared PHP and Vue rendering for Plain Text field settings.
-- Added renderer-neutral scalar and choice Controls for Control Panel Forms, with shared PHP and Vue rendering.
-- Added renderer-neutral Markdown, table, link, address, and icon Controls for Control Panel Forms, with shared PHP and Vue rendering.
-- Added the renderer-neutral `CraftCms\Cms\Form\Controls\ElementSelect` Control for ordered element relationships, with shared PHP and Vue rendering.
-- Added renderer-neutral Matrix and Content Block Controls with nested Form scopes, the existing Matrix input interface, ordered atomic mutations, and shared PHP and Vue rendering.
-- Added `CraftCms\Cms\Form\FormNodeTypes` and `CraftCms\Cms\Form\FormControlTypes`, enabling plugins to register custom Form types for the PHP and Vue renderers.
-- Added refreshable Form scopes with value reconciliation and changed-only submission to the Inertia field settings screen.
-- Added renderer-neutral settings Forms for configurable core filesystems and Dashboard widgets.
-- Added `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::settingsForm()`, `CraftCms\Cms\Field\Contracts\FieldInterface::formControl()`, and `CraftCms\Cms\FieldLayout\FieldLayoutElement::formNode()` as the public Form extension contracts.
-- Added `CraftCms\Cms\Cp\Components\Combobox`.
-- Added `CraftCms\Cms\Form\Form::addIf()` and `addUnless()`.
+- Added a renderer-neutral Control Panel Form system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))
 - Changed `CraftCms\Cms\Cp\FormFields::textFromConfig()` to accept an optional `CraftCms\Cms\Cp\Components\Input` instance as a second argument, so callers can build on an existing component instead of always creating a plain `Input`. ([#19323](https://github.com/craftcms/cms/pull/19323))
