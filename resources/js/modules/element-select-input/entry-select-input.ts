@@ -16,7 +16,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
     }
   }
 
-  get #section(): any {
+  get section(): any {
     if (!this.settings.sectionId) return null;
     return Craft.publishableSections.find(
       (s: any) => s.id === this.settings.sectionId
@@ -24,14 +24,14 @@ export class EntrySelectInput extends BaseElementSelectInput {
   }
 
   override canCreateElements(): boolean {
-    return !!this.#section;
+    return !!this.section;
   }
 
   override async createElement(title: string): Promise<number | null> {
     const response = await Craft.sendActionRequest('POST', 'entries/create', {
       data: {
         siteId: this.settings.criteria.siteId,
-        section: this.#section.handle,
+        section: this.section.handle,
         authorId: Craft.userId,
         title,
       },
@@ -40,7 +40,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
     const entry = response.data.entry;
 
     try {
-      await this.#showElementEditor(entry);
+      await this.showElementEditor(entry);
     } catch {
       return null;
     }
@@ -48,7 +48,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
     return entry.id;
   }
 
-  #showElementEditor(entry: any): Promise<void> {
+  showElementEditor(entry: any): Promise<void> {
     return new Promise((resolve, reject) => {
       const slideout = Craft.createElementEditor(
         'CraftCms\\Cms\\Entry\\Elements\\Entry',

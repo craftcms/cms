@@ -1,4 +1,6 @@
 import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
+import '@craftcms/ui/components/missing-component/missing-component';
+import '@craftcms/ui/components/truncate/truncate';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
@@ -8,6 +10,8 @@ import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
+import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
+import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
 
 import './modules/listbox/index';
 import './modules/matrix/index';
@@ -59,6 +63,8 @@ window.Cp = Cp as unknown as typeof window.Cp;
 // only: `start()` mounts the Inertia app, which legacy pages must not do.
 Cp.config((window as any).Craft ?? {});
 Cp.init();
+defineDashboardWidgetSettingsFormHost(Cp.$components);
+defineEntryFieldLayoutFormHost(Cp.$components);
 
 mountElevatedSessionHost();
 

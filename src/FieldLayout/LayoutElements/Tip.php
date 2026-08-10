@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Markdown;
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Callout;
+use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -100,72 +99,21 @@ class Tip extends BaseUiElement
             ]);
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
-        $tip = trim($this->tip);
-
-        if ($tip === '') {
+        if (trim($this->tip) === '') {
             return null;
         }
 
         if (! $this->uid) {
-            $this->dismissible = false;
+            throw new InvalidArgumentException('Persisted Tip FieldLayout elements require stable UIDs.');
         }
 
-        $id = sprintf('tip%s', mt_rand());
-        $namespacedId = InputNamespace::namespaceId($id);
-
-        $classes = [
-            'pane',
-            'mb-0',
-            $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING,
-        ];
-
-        if ($this->dismissible) {
-            $classes[] = 'dismissible';
-        }
-
-        $tip = Markdown::parse(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
-        $closeBtn = $this->dismissible
-            ? Html::button('', [
-                'class' => 'tip-dismiss-btn',
-                'title' => t('Dismiss'),
-                'aria' => [
-                    'label' => t('Dismiss'),
-                ],
-                'data' => [
-                    'icon' => 'remove',
-                ],
-            ])
-            : '';
-
-        if ($this->dismissible) {
-            $key = sprintf('Craft-%s.dismissedTips', Cms::systemUid());
-            $js = <<<JAVASCRIPT
-if (
-  typeof localStorage !== 'undefined' &&
-  typeof localStorage['$key'] !== 'undefined' &&
-  JSON.parse(localStorage['$key']).includes('$this->uid')
-) {
-  document.getElementById('$namespacedId').remove();
-}
-JAVASCRIPT;
-        } else {
-            $js = null;
-        }
-
-        $html = Html::tag('div', $closeBtn.$tip, [
-            'class' => $classes,
-        ]);
-
-        if ($js) {
-            $html .= "<script>$js</script>";
-        }
-
-        return Html::tag('div', $html, [
-            ...$this->containerAttributes($element, $static),
-            'id' => $id,
-        ]);
+        return Callout::make($this->uid, t($this->tip, category: 'site'))
+            ->variant($this->_isTip() ? 'info' : 'warning')
+            ->dismissible($this->dismissible)
+            ->width($this->width);
     }
 
     /**

@@ -53,7 +53,7 @@ export default class CraftCallout extends LitElement {
       ${!this.hideIcon
         ? html`<slot name="icon" class="callout__icon">
             <craft-icon
-              name="${this.getDefaultIcon()}"
+              name="${this.icon ?? this.getDefaultIcon()}"
               style="font-size: 0.9em"
             ></craft-icon>
           </slot>`

@@ -133,7 +133,7 @@
             {% else %}
               {% set headingId = "#{id}-heading-#{loop.index}" %}
               {% set hasErrors = cell.errors.isNotEmpty() ?? false %}
-              {% set cellName = name~'['~rowId~']['~colId~']' %}
+              {% set cellName = static ? null : name~'['~rowId~']['~colId~']' %}
               {% set isCode = (col.code ?? false) or col.type == 'color' %}
               <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>
                 {% block tablecell %}

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
@@ -42,6 +43,12 @@ class MultiSelect extends BaseOptionsField
     }
 
     #[\Override]
+    protected function formPresentation(): ChoicePresentation
+    {
+        return ChoicePresentation::Select;
+    }
+
+    #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
@@ -57,21 +64,6 @@ class MultiSelect extends BaseOptionsField
             'values' => $this->encodeValue($value),
             'options' => $this->translatedOptions(true, $value, $element),
             'multi' => true,
-        ]);
-    }
-
-    #[\Override]
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        return FormFields::selectizeHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'class' => 'selectize',
-            'name' => $this->handle,
-            'values' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true, $value, $element),
-            'multi' => true,
-            'disabled' => true,
         ]);
     }
 

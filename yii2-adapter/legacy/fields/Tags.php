@@ -18,10 +18,12 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
+use CraftCms\Yii2Adapter\Field\BaseRelationField;
 use DOMElement;
 use GraphQL\Type\Definition\Type;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
+
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -30,7 +32,7 @@ use function CraftCms\Cms\template;
  *
  * @deprecated in 6.0.0
  */
-class Tags extends \CraftCms\Cms\Field\BaseRelationField
+class Tags extends BaseRelationField
 {
     /**
      * {@inheritdoc}
@@ -142,7 +144,7 @@ class Tags extends \CraftCms\Cms\Field\BaseRelationField
                     'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel,
                         category: 'site') : self::defaultSelectionLabel(),
-                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
+                    'allowSelfRelations' => (bool) $this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }

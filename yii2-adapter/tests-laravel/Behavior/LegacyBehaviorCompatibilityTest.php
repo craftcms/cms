@@ -104,7 +104,7 @@ test('legacy behavior mixins are applied to every discovered compatibility targe
         ->toBe([]);
 });
 
-test('discovered behavior targets resolve through their legacy aliases to their migrated classes', function() {
+test('discovered behavior targets resolve through their legacy aliases to migrated classes or compatibility subclasses', function() {
     $aliasTargets = collect(LegacyBehaviorCatalog::discoveredTargets())
         ->filter(fn(array $target) => (new ReflectionClass($target['legacyClass']))->getName() !== $target['legacyClass'])
         ->values();
@@ -112,8 +112,7 @@ test('discovered behavior targets resolve through their legacy aliases to their 
     expect($aliasTargets)->not->toBeEmpty();
 
     $aliasTargets->each(function(array $target) {
-        expect((new ReflectionClass($target['legacyClass']))->getName())
-            ->toBe($target['targetClass']);
+        expect(is_a($target['legacyClass'], $target['targetClass'], true))->toBeTrue();
     });
 });
 

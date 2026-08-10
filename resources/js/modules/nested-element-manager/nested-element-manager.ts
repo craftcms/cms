@@ -541,7 +541,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         magnetStrength: 4,
         helperLagBase: 1.5,
         onSortChange: () => {
-          this.onSortChange(this.elementSort!.$draggee);
+          void this.onSortChange(this.elementSort!.$draggee);
         },
       } as any);
     }
@@ -662,7 +662,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
    * sorter, or a jQuery collection from the (legacy) embedded element index.
    */
   async onSortChange(
-    draggee: HTMLElement | HTMLElement[] | any
+    draggee: HTMLElement | HTMLElement[] | JQuery<HTMLElement>
   ): Promise<void> {
     // The DOM order just changed — re-gate the cards' Move items.
     this.#syncCardActionItems();
@@ -869,7 +869,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
       slideout.on('load', () => {
         slideout.elementEditor.once('afterSaveDraft', () => {
-          showElement(data.element);
+          void showElement(data.element);
         });
       });
 
@@ -927,7 +927,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     this.elementEditor?.checkForm(true);
   }
 
-  async duplicateElements(elements: HTMLElement[] | any): Promise<void> {
+  async duplicateElements(
+    elements: HTMLElement[] | JQuery<HTMLElement>
+  ): Promise<void> {
     for (const element of $(elements).toArray()) {
       await this.duplicateElement(element);
     }
@@ -1014,7 +1016,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     }
   }
 
-  async deleteElements(elements: HTMLElement[] | any): Promise<void> {
+  async deleteElements(
+    elements: HTMLElement[] | JQuery<HTMLElement>
+  ): Promise<void> {
     for (const element of $(elements).toArray()) {
       await this.deleteElement(element);
     }
@@ -1167,7 +1171,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         const prev = li?.previousElementSibling;
         if (li && prev) {
           prev.before(li);
-          this.onSortChange($(li));
+          void this.onSortChange($(li));
         }
       });
 
@@ -1176,7 +1180,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         const next = li?.nextElementSibling;
         if (li && next) {
           next.after(li);
-          this.onSortChange($(li));
+          void this.onSortChange($(li));
         }
       });
 
@@ -1185,9 +1189,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
           return;
         }
         if (this.bulkActionMode(element)) {
-          this.duplicateElements(this.elementSelect!.getSelectedItems());
+          void this.duplicateElements(this.elementSelect!.getSelectedItems());
         } else {
-          this.duplicateElement(element);
+          void this.duplicateElement(element);
         }
       });
 
@@ -1212,10 +1216,10 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       wireItem('data-delete-action', () => {
         if (this.bulkActionMode(element)) {
           if (confirm(this.settings.bulkDeleteConfirmationMessage!)) {
-            this.deleteElements(this.elementSelect!.getSelectedItems());
+            void this.deleteElements(this.elementSelect!.getSelectedItems());
           }
         } else if (confirm(this.settings.deleteConfirmationMessage!)) {
-          this.deleteElement(element);
+          void this.deleteElement(element);
         }
       });
 

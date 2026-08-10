@@ -5,7 +5,7 @@
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store, update} from '@actions/Gql/SchemasController';
   import {useForm} from '@inertiajs/vue3';
@@ -88,19 +88,11 @@
           {{ t('Choose the available content for querying with this schema:') }}
         </h2>
 
-        <div
-          v-for="group in permissions"
-          :key="group.handle"
-          class="user-permissions"
-        >
-          <PermissionList
-            :heading="group.heading"
-            :permissions="group.permissions"
-            :permission-keys="group.keys"
-            v-model="form.permissions"
-            :disabled="readOnly"
-          />
-        </div>
+        <PermissionTree
+          :groups="permissions"
+          v-model="form.permissions"
+          :disabled="readOnly"
+        />
       </section>
     </div>
   </Pane>

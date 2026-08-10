@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {serializeFormInputsAsObject, t, toHandle} from '@craftcms/ui';
+  import {actionClient, t, toHandle} from '@craftcms/ui';
   import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
@@ -8,12 +8,12 @@
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave.js';
   import {store} from '@actions/Settings/FilesystemsController';
-  import {provide, ref} from 'vue';
+  import {computed, watch} from 'vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import type {FormPayload} from '@/modules/forms/types';
+  import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
+  import {renderSettings} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/FilesystemsController';
 
   defineOptions({
     inheritAttrs: false,
@@ -27,48 +27,57 @@
     handle: props.filesystem.handle ?? '',
     oldHandle: props.oldHandle,
     type: props.filesystem.type ?? '',
-    settings: {
-      hasUrls: props.filesystem.hasUrls ?? false,
-      url: props.filesystem.url ?? '',
-    },
+    settings: {} as Record<string, any>,
   });
 
-  const settingsHost = ref<HTMLElement | null>(null);
+  const settingsPayload = computed<FormPayload | null>(
+    () =>
+      (props.fsInstances[form.type]?.settingsForm as FormPayload | null) ?? null
+  );
+  const {
+    advanceBaseline: advanceSettingsBaseline,
+    errors: settingsErrors,
+    onMutation: onSettingsMutation,
+    renderer: settingsRenderer,
+  } = useInertiaFormRenderer(form, settingsPayload, {
+    mutationKey: 'settings',
+    mapErrorPath: (path) =>
+      ['name', 'handle', 'type'].includes(path)
+        ? null
+        : ['settings', ...path.split('.')],
+  });
+
+  watch(
+    () => form.type,
+    () => (form.settings = {})
+  );
 
   useInputGenerator(
     () => form.name,
     (v) => (form.handle = toHandle(v))
   );
 
-  /**
-   * We create a special ref for the type specific settings and then provide
-   * it down. That way Vue components registered and rendered within
-   * DynamicHtmlRenderer can pick up the injected ref and alter it so the
-   * settings values can be picked up by the form.
-   *
-   * @TODO I need to make sure this works with plugins, or make it work with
-   * plugins.
-   */
-  const fsTypeSettings = ref<Record<string, any>>({});
-
-  provide('fsTypeSettings', fsTypeSettings);
-
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => {
-      const typeSettings = settingsHost.value
-        ? serializeFormInputsAsObject(settingsHost.value)
-        : {};
-
-      return {
-        ...data,
-        settings: {
-          ...data.settings,
-          ...typeSettings,
-          ...fsTypeSettings.value,
-        },
-      };
-    },
+    onSuccess: advanceSettingsBaseline,
   });
+
+  async function refreshSettings(
+    values: FormPayload['values']
+  ): Promise<FormPayload> {
+    const {data} = await actionClient.post(renderSettings().url, {
+      type: form.type,
+      settings: {
+        ...(props.filesystem.url === null ? {} : {url: props.filesystem.url}),
+        ...values,
+      },
+    });
+
+    if (!data.form) {
+      throw new Error('The filesystem type did not return a Form payload.');
+    }
+
+    return data.form;
+  }
 
   useAppLayout({
     form,
@@ -117,42 +126,17 @@
         />
       </template>
 
-      <template v-if="props.filesystem.showHasUrlSetting">
-        <CraftSwitch
-          :label="t('Files in this filesystem have public URLs')"
-          name="hasUrls"
-          id="has-urls"
-          v-model="form.settings.hasUrls"
-          :disabled="props.readOnly"
-        />
-      </template>
-
-      <template v-if="form.settings.hasUrls && props.filesystem.showUrlSetting">
-        <CraftCombobox
-          :label="t('Base URL')"
-          :help-text="t('The base URL to the files in this filesystem.')"
-          v-model="form.settings.url"
-          :options="props.baseUrlSuggestions"
-          name="url"
-          :required="true"
-          placeholder="//example.com/path/to/folder"
-          data-error-key="url"
-          :disabled="props.readOnly"
-        ></CraftCombobox>
-      </template>
-
-      <div ref="settingsHost">
+      <div>
         <template v-for="(instance, fsType) in props.fsInstances" :key="fsType">
           <craft-field-group v-if="form.type === fsType">
-            <!-- Legacy (Twig) settings render as an isolated HTML island; component
-                 settings are compiled as part of the page. Each pane must render
-                 its own type's settings — rendering the selected filesystem's here
-                 would inject the same island (and its element ids) once per pane. -->
-            <HtmlFragmentRenderer
-              v-if="instance.settingsFragment"
-              :fragment="instance.settingsFragment"
+            <FormRenderer
+              v-if="settingsPayload"
+              ref="settingsRenderer"
+              :payload="settingsPayload"
+              :errors="settingsErrors"
+              :refresh="refreshSettings"
+              @update:mutation="onSettingsMutation"
             />
-            <DynamicHtmlRenderer v-else :html="instance.settingsHtml ?? ''" />
           </craft-field-group>
         </template>
       </div>

@@ -166,6 +166,7 @@ readonly class MatrixController
             'entry' => $entry,
             'isFresh' => true,
             'staticEntries' => $validated['staticEntries'] ?? false,
+            ...$field->blockFormVariables($entry, false),
         ]), $validated['namespace']);
 
         return new JsonResponse([
@@ -229,6 +230,7 @@ readonly class MatrixController
                 'name' => $field->handle,
                 'entryTypes' => $entryTypes,
                 'entry' => $entry,
+                ...$field->blockFormVariables($entry, false),
             ]), $validated['namespace']);
         }
 

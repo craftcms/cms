@@ -113,7 +113,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
-    deferUntil(() => !!Craft?.Grid).then(() => {
+    void deferUntil(() => !!Craft?.Grid).then(() => {
       this.deferredInit();
     });
   }

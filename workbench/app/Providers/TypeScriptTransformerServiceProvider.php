@@ -7,6 +7,11 @@ namespace Workbench\App\Providers;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
@@ -53,6 +58,11 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    ChoicePresentation::class,
+                    ControlMode::class,
+                    ControlPayload::class,
+                    FormPayload::class,
+                    NodePayload::class,
                     FilesystemsEditViewModel::class,
                     NavItem::class,
                     Permission::class,

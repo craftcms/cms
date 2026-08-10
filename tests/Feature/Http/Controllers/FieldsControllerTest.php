@@ -3,13 +3,17 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
-use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\RadioButtons;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -43,6 +47,10 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['getJson', [FieldsController::class, 'index'], false],
     ['getJson', [FieldsController::class, 'edit'], false],
     ['postJson', [FieldsController::class, 'renderSettings'], true],
+    ['postJson', [FieldsController::class, 'renderFieldLayoutDesigner'], true],
+    ['postJson', [FieldsController::class, 'renderGroupedEntryTypeManager'], true],
+    ['postJson', [FieldsController::class, 'renderConditionBuilder'], true],
+    ['postJson', [FieldsController::class, 'normalizeConditionBuilder'], true],
     ['postJson', [FieldsController::class, 'store'], true],
     ['postJson', [FieldsController::class, 'renderLayoutComponentSettings'], true],
     ['postJson', [FieldsController::class, 'applyLayoutTabSettings'], true],
@@ -90,7 +98,8 @@ it('can create a new field', function () {
             ->has('fieldTypeOptions')
             ->has('supportedTranslationMethods')
             ->has('translationMethodOptions', 5)
-            ->has('settings.html'));
+            ->where('settingsForm.refreshable', true)
+            ->has('settingsForm.nodes'));
 });
 
 it('preselects a requested field type when creating', function (mixed $type, string $expectedType) {
@@ -128,7 +137,7 @@ it('can edit a field', function () {
             ->where('field.type', PlainText::class)
             ->where('metadataHtml', fn ($value) => is_string($value) && $value !== '')
             ->where('missingFieldPlaceholder', null)
-            ->has('settings.html'));
+            ->has('settingsForm.nodes'));
 });
 
 it('renders the edit screen read-only without admin changes', function () {
@@ -174,26 +183,100 @@ it('serves the legacy screen to slideout requests', function (?callable $setUp) 
 it('can render the settings of a field', function () {
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => PlainText::class,
-    ])->assertOk();
+        'namespace' => 'types[CraftCms-Cms-Field-PlainText]',
+    ])
+        ->assertOk()
+        ->assertJsonPath('form.scope.0', 'types[CraftCms-Cms-Field-PlainText]')
+        ->assertJsonPath('settingsHtml', fn (string $html): bool => str_contains($html, 'name="types[CraftCms-Cms-Field-PlainText][uiMode]"'));
+});
+
+it('renders composite field settings Controls', function (string $type, string $component, string $action, string $htmlFragment) {
+    $field = Fields::createField($type);
+    $context = new FormContext(namespace: 'settings');
+    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $control = collect($payload->nodes)
+        ->first(fn ($node) => $node->control?->component === $component)
+        ->control;
+
+    $data = [
+        'value' => data_get($payload->values, implode('.', $control->path)),
+        'name' => 'settings['.end($control->path).']',
+        'disabled' => false,
+        ...$control->props,
+    ];
+
+    $this->postJson(action([FieldsController::class, $action]), $data)
+        ->assertOk()
+        ->assertJsonPath('html', fn (string $html): bool => str_contains($html, $htmlFragment));
+})->with([
+    'field layout designer' => [ContentBlock::class, 'craft:field-layout-designer', 'renderFieldLayoutDesigner', 'field-layout'],
+    'grouped entry type manager' => [Matrix::class, 'craft:grouped-entry-type-manager', 'renderGroupedEntryTypeManager', 'craft-entry-type-manager'],
+    'condition builder' => [Entries::class, 'craft:condition-builder', 'renderConditionBuilder', 'condition-container'],
+]);
+
+it('rejects non-condition classes from the condition builder endpoint', function () {
+    $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [
+        'value' => [],
+        'conditionClass' => PlainText::class,
+        'queryParams' => [],
+        'forProjectConfig' => false,
+        'name' => 'settings[selectionCondition]',
+        'disabled' => false,
+    ])->assertUnprocessable()->assertJsonValidationErrors('conditionClass');
+});
+
+it('renders a condition builder without query params', function () {
+    $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [
+        'value' => [],
+        'conditionClass' => ElementCondition::class,
+        'queryParams' => [],
+        'forProjectConfig' => false,
+        'name' => 'settings[condition]',
+        'disabled' => false,
+    ])
+        ->assertOk()
+        ->assertJsonPath('html', fn (string $html): bool => str_contains($html, 'condition-container'))
+        ->assertJsonPath('bodyHtml', fn (string $html): bool => str_contains($html, 'htmx.min.js') && str_contains($html, 'ConditionBuilder.js'));
+});
+
+it('normalizes namespaced condition builder values', function () {
+    $this->postJson(action([FieldsController::class, 'normalizeConditionBuilder']), [
+        'serialized' => http_build_query([
+            'settings' => ['selectionCondition' => ['conditionRules' => [['operator' => 'and']]]],
+        ]),
+        'path' => ['settings', 'selectionCondition'],
+    ])->assertOk()->assertJsonPath('value.conditionRules.0.operator', 'and');
+});
+
+it('refreshes Form settings from the complete current value snapshot', function () {
+    $this->postJson(action([FieldsController::class, 'renderSettings']), [
+        'type' => PlainText::class,
+        'values' => [
+            'placeholder' => 'Unsaved placeholder',
+            'uiMode' => 'enlarged',
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath('form.refreshable', true)
+        ->assertJsonPath('form.values.settings.placeholder', 'Unsaved placeholder')
+        ->assertJsonPath('form.values.settings.uiMode', 'enlarged');
 });
 
 it('preserves values between rendering settings', function () {
-    $label = Str::random();
+    $placeholder = fake()->sentence();
 
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
-        'type' => RadioButtons::class,
-        'oldType' => MultiSelect::class,
+        'type' => PlainText::class,
+        'oldType' => PlainText::class,
         'oldNamespace' => 'namespace',
         'settings' => http_build_query([
             'namespace' => [
-                'options' => [
-                    ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
-                ],
+                'placeholder' => $placeholder,
             ],
         ]),
     ])
         ->assertOk()
-        ->assertSee($label);
+        ->assertJsonPath('form.values.settings.placeholder', $placeholder);
 });
 
 it('can save a new field', function () {
@@ -233,6 +316,77 @@ it('can save a new field with settings posted as a url-encoded string', function
         expect($field->settings['placeholder'])->toBe('Type something…');
         expect($field->settings['multiline'])->toBeTrue();
     });
+});
+
+it('saves changed Form groups without resetting untouched settings', function () {
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'placeholder' => 'Before',
+        'initialRows' => 8,
+    ]));
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'fieldId' => $field->id,
+        'type' => PlainText::class,
+        'name' => $field->name,
+        'handle' => $field->handle,
+        'settings' => ['placeholder' => 'After'],
+    ])->assertOk();
+
+    $saved = Fields::getFieldById($field->id);
+
+    expect($saved->placeholder)->toBe('After')
+        ->and($saved->initialRows)->toBe(8);
+});
+
+it('saves complete atomic Form groups', function () {
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'charLimit' => 10,
+    ]));
+
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'fieldId' => $field->id,
+        'type' => PlainText::class,
+        'name' => $field->name,
+        'handle' => $field->handle,
+        'settings' => [
+            'fieldLimit' => 25,
+            'limitUnit' => 'bytes',
+        ],
+    ])->assertOk();
+
+    $saved = Fields::getFieldById($field->id);
+
+    expect($saved->charLimit)->toBeNull()
+        ->and($saved->byteLimit)->toBe(25);
+});
+
+it('returns Form setting validation errors at their submitted paths', function () {
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => 'My plaintext field',
+        'handle' => 'plainText',
+        'settings' => ['initialRows' => 0],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('settings.initialRows');
+});
+
+it('keeps host and Form validation errors at their submitted paths', function () {
+    $this->postJson(action([FieldsController::class, 'store']), [
+        'type' => PlainText::class,
+        'name' => '',
+        'handle' => '',
+        'settings' => ['initialRows' => 0],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['name', 'handle', 'settings.initialRows'])
+        ->assertJsonMissingValidationErrors(['settings.name', 'settings.handle']);
 });
 
 it('can delete a field', function () {

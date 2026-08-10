@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Override;
 
@@ -43,6 +44,12 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    #[Override]
+    protected function formPresentation(): ChoicePresentation
+    {
+        return ChoicePresentation::Radios;
     }
 
     #[Override]

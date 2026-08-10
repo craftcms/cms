@@ -16,11 +16,15 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Missing as MissingControl;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -72,6 +76,8 @@ class CustomField extends BaseField
     public ?string $handle = null;
 
     private ?FieldInterface $_field = null;
+
+    private ?FieldInterface $_sourceField = null;
 
     private ?string $_fieldUid = null;
 
@@ -431,6 +437,7 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
+        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -459,6 +466,7 @@ class CustomField extends BaseField
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
+        $this->_sourceField = null;
     }
 
     /**
@@ -811,15 +819,35 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    public function formMode(?ElementInterface $element): ControlMode
     {
-        $active = DeltaRegistry::isActive() &&
-            ($element->id ?? false) &&
-            ! $static;
+        return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
+    }
 
-        return DeltaRegistry::withActive($active, fn () => InputNamespace::namespaceInputs(
-            fn () => (string) parent::formHtml($element, $static),
-            'fields',
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        try {
+            $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        $field = $this->_sourceField;
+
+        if ($field instanceof MissingField) {
+            return MissingControl::make(['fields', $this->attribute()])
+                ->provider($field->expectedType)
+                ->mode(ControlMode::Disabled)
+                ->value($this->value($context->element));
+        }
+
+        return $field->formControl(new FieldContext(
+            ['fields', $this->attribute()],
+            $this->value($context->element),
+            $context->element,
+            $context->form,
+            $context->mode,
         ));
     }
 
@@ -857,34 +885,6 @@ class CustomField extends BaseField
         }
 
         return $field->getLabelId();
-    }
-
-    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return null;
-        }
-
-        $field->static = $static;
-        $value = $element ? $element->getFieldValue($field->handle) : $field->normalizeValue(null, null);
-
-        if ($static) {
-            return $field->getStaticHtml($value, $element);
-        }
-
-        $isDirty = $element?->isFieldDirty($field->handle);
-        DeltaRegistry::registerName($field->handle, $isDirty);
-
-        $describedBy = $field->describedBy;
-        $field->describedBy = $this->describedBy($element, $static);
-
-        $html = $field->getInputHtml($value, $element);
-
-        $field->describedBy = $describedBy;
-
-        return $html !== '' ? $html : null;
     }
 
     #[Override]

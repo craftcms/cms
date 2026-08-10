@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonContains;
 use CraftCms\Cms\Database\QueryParam;
@@ -18,6 +17,14 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
@@ -277,87 +284,87 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
     }
 
-    public function getSettingsHtml(): string
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        if (empty($this->options)) {
-            // Give it a default row
-            $this->options = [['label' => '', 'value' => '']];
-        }
-
-        $cols = [];
+        $columns = [];
         if (static::$optgroups) {
-            $cols['isOptgroup'] = [
+            $columns['isOptgroup'] = [
                 'heading' => t('Optgroup?'),
                 'type' => 'checkbox',
                 'class' => 'thin',
                 'toggle' => ['!value', '!icon', '!color', '!default'],
             ];
         }
-        $cols['label'] = [
+        $columns['label'] = [
             'heading' => t('Option Label'),
             'type' => 'singleline',
             'autopopulate' => 'value',
         ];
-        $cols['value'] = [
+        $columns['value'] = [
             'heading' => t('Value'),
             'type' => 'singleline',
             'class' => 'code',
         ];
         if (static::$optionIcons) {
-            $cols['icon'] = [
-                'heading' => t('Icon'),
-                'type' => 'icon',
-                'class' => 'thin',
-            ];
+            $columns['icon'] = ['heading' => t('Icon'), 'type' => 'icon', 'class' => 'thin'];
         }
         if (static::$optionColors) {
-            $cols['color'] = [
-                'heading' => t('Color'),
-                'type' => 'color',
-            ];
+            $columns['color'] = ['heading' => t('Color'), 'type' => 'color'];
         }
-        $cols['default'] = [
+        $columns['default'] = [
             'heading' => t('Default?'),
             'type' => 'checkbox',
             'radioMode' => ! static::$multi,
             'class' => 'thin',
         ];
 
-        $rows = [];
-        foreach ($this->options as $option) {
+        $rows = array_map(function (array $option): array {
             if (isset($option['optgroup'])) {
                 $option['isOptgroup'] = true;
                 $option['label'] = Arr::pull($option, 'optgroup');
             }
-            $rows[] = $option;
-        }
 
-        $html = FormFields::editableTableFieldHtml([
-            'label' => $this->optionsSettingLabel(),
-            'instructions' => t('Define the available options.'),
-            'id' => 'options',
-            'name' => 'options',
-            'addRowLabel' => t('Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $cols,
-            'rows' => $rows,
-            'width' => 'full',
-            'errors' => $this->errors()->get('options'),
-            'data' => ['error-key' => 'options'],
-        ]);
+            return $option;
+        }, $this->options ?: [['label' => '', 'value' => '']]);
 
-        if (static::$allowCustomOptions) {
-            $html .= FormFields::lightswitchFieldHtml([
-                'label' => t('Allow custom options'),
-                'id' => 'custom-options',
-                'name' => 'customOptions',
-                'on' => $this->customOptions,
-            ]);
-        }
+        return Form::make([
+            FormField::make($this->optionsSettingLabel())
+                ->instructions(t('Define the available options.'))
+                ->control(Table::make('options')
+                    ->columns($columns)
+                    ->allowAdd()
+                    ->allowDelete()
+                    ->allowReorder()
+                    ->value($rows)),
+        ])->when(
+            static::$allowCustomOptions,
+            fn (Form $form): Form => $form->add(
+                FormField::make(t('Allow custom options'))
+                    ->control(Lightswitch::make('customOptions')->value($this->customOptions)),
+            ),
+        );
+    }
 
-        return $html;
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $options = collect($this->translatedOptions(true, $context->value, $context->element))
+            ->filter(fn (array $option): bool => array_key_exists('value', $option))
+            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
+            ->values()
+            ->all();
+
+        return Choice::make($context->path)
+            ->options($options)
+            ->multiple(static::$multi)
+            ->presentation($this->formPresentation())
+            ->value($this->encodeValue($context->value));
+    }
+
+    protected function formPresentation(): ChoicePresentation
+    {
+        return static::$multi ? ChoicePresentation::Checkboxes : ChoicePresentation::Select;
     }
 
     /** @return list<string>|string|null */

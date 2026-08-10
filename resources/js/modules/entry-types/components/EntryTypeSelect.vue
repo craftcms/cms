@@ -128,10 +128,7 @@
       },
     });
 
-    const form = slideout.$container[0];
-    if (!form) {
-      return;
-    }
+    const form = slideout.$container[0]!;
 
     form.addEventListener('submit', async (event: SubmitEvent) => {
       event.preventDefault();
@@ -182,7 +179,7 @@
     });
 
     // Bind up the buttons
-    form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
+    form.querySelectorAll<HTMLElement>('[data-action]').forEach((el) => {
       el.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
         if (!target) {
