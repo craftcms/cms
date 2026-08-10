@@ -32,13 +32,14 @@ jobs:
           node-version: '24'
           cache: true
 
-      - name: Install frontend dependencies
-        run: vp install --frozen-lockfile
-        env:
-          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+      - parallel:
+          - name: Install frontend dependencies
+            run: vp install --frozen-lockfile
+            env:
+              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
-      - name: Install Composer dependencies
-        uses: ramsey/composer-install@v3
+          - name: Install Composer dependencies
+            uses: ramsey/composer-install@v3
 
       - name: Copy icons
         run: php ./scripts/copyicons.php
