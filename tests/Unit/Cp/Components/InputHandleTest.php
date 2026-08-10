@@ -13,11 +13,17 @@ it('renders the handle input component with handle-safe text behavior', function
         ->toHtml();
 
     expect($html)
-        ->toContain('<craft-input-handle name="handle">')
-        ->toContain('name="handle"')
-        ->toContain('value="exampleHandle"')
-        ->toContain('autocorrect="off"')
-        ->toContain('autocapitalize="none"')
+        ->toContainTag('craft-input-handle', [
+            'name' => 'handle',
+            'autocorrect' => 'off',
+            'autocapitalize' => 'off',
+        ])
+        ->toContainTag('input', [
+            'name' => 'handle',
+            'value' => 'exampleHandle',
+            'autocorrect' => 'off',
+            'autocapitalize' => 'none',
+        ])
         ->and(app(ComponentRegistry::class)->make('input-handle'))
         ->toBeInstanceOf(InputHandle::class);
 });

@@ -16,6 +16,16 @@ class InputHandle extends Input
     protected bool $autocapitalize = false;
 
     #[\Override]
+    protected function hostAttributes(): array
+    {
+        return [
+            ...parent::hostAttributes(),
+            'autocorrect' => $this->autocorrect ? 'on' : 'off',
+            'autocapitalize' => $this->autocapitalize ? 'sentences' : 'off',
+        ];
+    }
+
+    #[\Override]
     protected function tagName(): string
     {
         return 'craft-input-handle';
