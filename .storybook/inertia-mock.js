@@ -97,6 +97,18 @@ export function usePage() {
 }
 
 /**
+ * Mock setLayoutProps.
+ *
+ * Upstream this pushes props at whichever layout Inertia rendered. Storybook
+ * renders a story, not a page, so there's no layout to reach — but
+ * `useAppLayout()` falls back to this whenever no shell has provided a sink,
+ * which is every story that isn't wrapped in one.
+ */
+export function setLayoutProps(props) {
+  console.log('[Storybook] setLayoutProps:', props);
+}
+
+/**
  * Mock router for Inertia
  */
 export const router = {
@@ -131,13 +143,29 @@ export const router = {
 };
 
 /**
- * Mock useForm composable
+ * The shape `useForm` and `useHttp` share: the form's own fields spread at the
+ * top level, plus the request state and the chainable helpers.
+ *
+ * The two differ in exactly two ways, which is why this is one builder:
+ * `useHttp`'s verbs resolve a promise (callers `await` them) and it carries a
+ * `response`. Neither mock performs a request — they log, so a story shows what
+ * *would* have been sent.
+ *
+ * @param initialValues - The form's starting data.
+ * @param label - What to call this in the console.
+ * @param async - Whether the verbs return a promise, as `useHttp`'s do.
  */
-export function useForm(rememberKeyOrData, maybeData) {
-  const initialValues =
-    typeof rememberKeyOrData === 'string' ? maybeData : rememberKeyOrData;
+function createFormLike(initialValues, {label, async: isAsync}) {
   const formData = reactive({...initialValues});
   const errors = {};
+
+  const send = (verb) => (url, options) => {
+    console.log(`[Storybook] ${label}.${verb}:`, url, options);
+
+    // `useHttp` callers `await` this, or chain off it. Resolving `null` keeps
+    // them moving without inventing a response body they'd then render.
+    return isAsync ? Promise.resolve(null) : undefined;
+  };
 
   const formProps = {
     errors,
@@ -184,30 +212,67 @@ export function useForm(rememberKeyOrData, maybeData) {
       return formProps;
     },
     submit(...args) {
-      console.log('[Storybook] form.submit:', ...args);
+      console.log(`[Storybook] ${label}.submit:`, ...args);
+      return isAsync ? Promise.resolve(null) : undefined;
     },
-    get(url, options) {
-      console.log('[Storybook] form.get:', url, options);
-    },
-    post(url, options) {
-      console.log('[Storybook] form.post:', url, options);
-    },
-    put(url, options) {
-      console.log('[Storybook] form.put:', url, options);
-    },
-    patch(url, options) {
-      console.log('[Storybook] form.patch:', url, options);
-    },
-    delete(url, options) {
-      console.log('[Storybook] form.delete:', url, options);
-    },
+    get: send('get'),
+    post: send('post'),
+    put: send('put'),
+    patch: send('patch'),
+    delete: send('delete'),
     cancel() {
-      console.log('[Storybook] form.cancel');
+      console.log(`[Storybook] ${label}.cancel`);
     },
     dontRemember: () => formProps,
     optimistic: () => formProps,
     withPrecognition: () => formProps,
   };
+
+  if (isAsync) {
+    formProps.response = null;
+    formProps.withAllErrors = () => formProps;
+  }
+
+  return {formData, formProps};
+}
+
+/**
+ * Mock useForm composable
+ */
+export function useForm(rememberKeyOrData, maybeData) {
+  const initialValues =
+    typeof rememberKeyOrData === 'string' ? maybeData : rememberKeyOrData;
+
+  const {formData, formProps} = createFormLike(initialValues, {
+    label: 'form',
+    async: false,
+  });
+
+  return reactive({...formData, ...formProps});
+}
+
+/**
+ * Mock useHttp composable — the non-navigating request form.
+ *
+ * Overloaded upstream as `()`, `(data)`, `(rememberKey, data)`,
+ * `(urlMethodPair, data)` and `(method, url, data)`. In every one of those the
+ * data is the last argument, so that's all this needs to find; the method and
+ * URL only matter to a request the mock never makes.
+ */
+export function useHttp(...args) {
+  const last = args[args.length - 1];
+  const resolved = typeof last === 'function' ? last() : last;
+
+  // A lone string is a remember key, not data; `()` has nothing at all.
+  const initialValues =
+    resolved && typeof resolved === 'object' && !Array.isArray(resolved)
+      ? resolved
+      : {};
+
+  const {formData, formProps} = createFormLike(initialValues, {
+    label: 'http',
+    async: true,
+  });
 
   return reactive({...formData, ...formProps});
 }

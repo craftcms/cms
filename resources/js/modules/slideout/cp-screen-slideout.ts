@@ -277,9 +277,6 @@ export class CpScreenSlideout extends Slideout {
     this.addListener(this.$cancelBtn, 'click', () => {
       this.closeMeMaybe();
     });
-    this.addListener(this.$shade, 'click', () => {
-      this.closeMeMaybe();
-    });
     this.addListener(this.$container, 'click', (ev: any) => {
       const $target = $(ev.target);
 
@@ -930,6 +927,15 @@ export class CpScreenSlideout extends Slideout {
     const serializer =
       this.$container.data('serializer') || (() => this.$container.serialize());
     return initialValue !== serializer();
+  }
+
+  /**
+   * A CP screen always checks for unsaved changes before a shade click can
+   * dismiss it, whatever `closeOnShadeClick` says — which is how this has
+   * always behaved, back when it bound its own listener to the shade.
+   */
+  override handleShadeClick(): void {
+    this.closeMeMaybe();
   }
 
   closeMeMaybe(): void {

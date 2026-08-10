@@ -9,6 +9,7 @@
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
   import {useElementIndexPage} from '@/modules/elements/composables/useElementIndexPage';
+  import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import {TableSpacing} from '@/common/types';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -24,6 +25,9 @@
     route: props.route,
     pinnedColumn: props.pinnedColumn,
   });
+
+  // Double-click an element to edit it in a slideout.
+  const quickEdit = useElementQuickEdit();
 
   const {
     elementIndex,
@@ -114,27 +118,32 @@
       </template>
       <template #navbar><slot name="navbar"></slot></template>
       <template #body>
-        <ElementCards
-          v-if="mode === 'cards'"
-          :table="elementTable"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-        />
-        <ElementThumbs
-          v-else-if="mode === 'thumbs'"
-          :table="elementTable"
-          :data="elementIndex.data"
-          :selectable="true"
-          :loading="loading"
-        />
-        <DataTable
-          v-else
-          :table="elementTable"
-          :selectable="true"
-          :loading="loading"
-          :spacing="TableSpacing.Spacious"
-        />
+        <!-- Delegated so every view mode gets double-click-to-edit without
+          any of them knowing about it, matching Craft 5's element container
+          listener. -->
+        <div @dblclick="quickEdit.onDblClick">
+          <ElementCards
+            v-if="mode === 'cards'"
+            :table="elementTable"
+            :data="elementIndex.data"
+            :selectable="true"
+            :loading="loading"
+          />
+          <ElementThumbs
+            v-else-if="mode === 'thumbs'"
+            :table="elementTable"
+            :data="elementIndex.data"
+            :selectable="true"
+            :loading="loading"
+          />
+          <DataTable
+            v-else
+            :table="elementTable"
+            :selectable="true"
+            :loading="loading"
+            :spacing="TableSpacing.Spacious"
+          />
+        </div>
       </template>
     </BaseElementIndex>
   </craft-pane>

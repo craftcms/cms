@@ -137,6 +137,15 @@ class CpScreenResponse implements Responsable
     public ?string $slideoutBodyClass = null;
 
     /**
+     * @var array<string, mixed> Extra data merged into the Inertia `screen`
+     *                           prop, for screens whose client-side behavior
+     *                           needs configuring.
+     *
+     * @see screenData()
+     */
+    private array $screenData = [];
+
+    /**
      * @var array<string, mixed> Custom attributes to add to the `<main>` tag.
      *
      * See [[\CraftCms\Cms\Support\Html::renderTagAttributes()]] for supported attribute syntaxes.
@@ -751,22 +760,67 @@ class CpScreenResponse implements Responsable
         );
     }
 
+    /**
+     * Merge extra data into the Inertia `screen` prop.
+     *
+     * For screens that hand configuration to client-side code. The Twig/jQuery
+     * paths pass such config by injecting a script that looks the container up
+     * by id — which races Vue's mount, since the panel's subtree isn't in the
+     * document yet when that script runs. Props arrive with the page instead.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function screenData(array $data): self
+    {
+        $this->screenData = [...$this->screenData, ...$data];
+
+        return $this;
+    }
+
     public function toResponse($request): Response
     {
         if ($request->wantsJson()) {
-            return $this->jsonResponse($request);
+            return $this->slideoutResponse($request);
         }
 
         return $this->response($request);
     }
 
-    private function jsonResponse(Request $request): JsonResponse
+    /**
+     * Render the screen into a slideout.
+     *
+     * Two clients ask for this, and they want different wire formats. The Vue
+     * client sends `X-Inertia` and gets an Inertia page it can mount as a
+     * component; the legacy jQuery `CpScreenSlideout` gets the flat payload of
+     * server-rendered HTML it has always got. Both are built from one pass over
+     * the screen, so a screen behaves identically whichever one asks.
+     *
+     * A regular Inertia page visit never lands here: Inertia's own client sends
+     * `Accept: text/html`, so `wantsJson()` is false for it.
+     */
+    private function slideoutResponse(Request $request): Response
+    {
+        $parts = $this->prepareSlideout($request);
+
+        return $request->inertia()
+            ? $this->slideoutInertiaResponse($request, $parts)
+            : $this->slideoutJsonResponse($parts);
+    }
+
+    /**
+     * Resolve the screen's parts under a per-request input namespace.
+     *
+     * The namespace keeps two slideouts of the same screen from colliding on
+     * input names, so it has to wrap `prepareScreen` as well as the rendering.
+     *
+     * @return array<string, mixed>
+     */
+    private function prepareSlideout(Request $request): array
     {
         $namespace = Str::random(10);
+        $containerId = $request->header('X-Craft-Container-Id');
 
         if ($this->prepareScreen) {
-            $containerId = $request->header('X-Craft-Container-Id');
-
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
             InputNamespace::set($namespace);
@@ -800,30 +854,114 @@ class CpScreenResponse implements Responsable
         $sidebar = $this->metaSidebarHtml ? InputNamespace::namespaceInputs($this->metaSidebarHtml, $namespace) : null;
         $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
-        return new JsonResponse([
-            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+        // Read after everything above: rendering the screen is what pushes onto
+        // the HTML stack and registers delta names.
+        return [
             'namespace' => $namespace,
-            'title' => $this->title,
+            'containerId' => $containerId,
+            'extraToolbarItems' => $extraToolbarItems,
             'notice' => $notice,
             'tabs' => $tabs,
-            'bodyClass' => $this->slideoutBodyClass,
-            'formAttributes' => $this->formAttributes,
-            'action' => $this->action,
-            'extraToolbarItems' => $extraToolbarItems,
-            'submitButtonLabel' => $this->submitButtonLabel,
-            'actionMenu' => $this->actionMenu(withDestructive: false, config: [
-                'withButton' => false,
-            ], namespace: $namespace),
             'content' => $content,
             'inertiaPage' => $this->inertiaPage,
             'inertiaProps' => $this->inertiaProps,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
+            'actionMenu' => $this->actionMenu(withDestructive: false, config: [
+                'withButton' => false,
+            ], namespace: $namespace),
+        ];
+    }
+
+    /**
+     * The legacy `Craft.CpScreenSlideout` payload.
+     *
+     * @param  array<string, mixed>  $parts
+     */
+    private function slideoutJsonResponse(array $parts): JsonResponse
+    {
+        return new JsonResponse([
+            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+            'namespace' => $parts['namespace'],
+            'title' => $this->title,
+            'notice' => $parts['notice'],
+            'tabs' => $parts['tabs'],
+            'bodyClass' => $this->slideoutBodyClass,
+            'formAttributes' => $this->formAttributes,
+            'action' => $this->action,
+            'extraToolbarItems' => $parts['extraToolbarItems'],
+            'submitButtonLabel' => $this->submitButtonLabel,
+            'actionMenu' => $parts['actionMenu'],
+            'content' => $parts['content'],
+            // The legacy slideout mounts a Vue page of its own when the screen
+            // has one, so it needs these too — it isn't only the Inertia
+            // payload's business.
+            'inertiaPage' => $parts['inertiaPage'],
+            'inertiaProps' => $parts['inertiaProps'],
+            'sidebar' => $parts['sidebar'],
+            'errorSummary' => $parts['errorSummary'],
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
+    }
+
+    /**
+     * The Inertia slideout payload.
+     *
+     * Screens that haven't been ported to a Vue page still render here — they
+     * fall back to the `cp/Screen` component, which draws the same HTML
+     * fragments the legacy payload carries.
+     *
+     * @param  array<string, mixed>  $parts
+     */
+    private function slideoutInertiaResponse(Request $request, array $parts): Response
+    {
+        return Inertia::render($this->inertiaPage ?? 'cp/Screen', $this->inertiaProps)
+            ->with($this->screenProps('slideout', [
+                'containerId' => $parts['containerId'],
+                'namespace' => $parts['namespace'],
+                'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+                'bodyClass' => $this->slideoutBodyClass,
+                'action' => $this->action,
+                'formAttributes' => $this->formAttributes,
+                'deltaNames' => DeltaRegistry::getNames(),
+                'initialDeltaValues' => DeltaRegistry::getInitialValues(),
+            ]))
+            ->with([
+                'title' => $this->title,
+                'submitButtonLabel' => $this->submitButtonLabel,
+                'actionMenu' => $parts['actionMenu'],
+                'toolbar' => $parts['extraToolbarItems'],
+                // Populated for every screen; `cp/Screen` renders them, and a
+                // Vue page ignores them.
+                'tabs' => $parts['tabs'],
+                'contentNotice' => $parts['notice'],
+                'content' => $parts['content'],
+                'details' => $parts['sidebar'],
+                'errorSummary' => $parts['errorSummary'],
+            ])
+            ->toResponse($request);
+    }
+
+    /**
+     * Tells the client which context the screen is rendering in.
+     *
+     * `headHtml`/`bodyHtml` ride along as props because the blade root view —
+     * where `HandleInertiaRequests` normally injects them — isn't rendered for
+     * an XHR Inertia response.
+     *
+     * @param  array<string, mixed>  $extra
+     * @return array<string, mixed>
+     */
+    private function screenProps(string $mode, array $extra = []): array
+    {
+        return [
+            'screen' => ['mode' => $mode] + $extra + $this->screenData,
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+        ];
     }
 
     private function response(Request $request): Response
@@ -931,6 +1069,7 @@ class CpScreenResponse implements Responsable
 
             return Inertia::render($this->inertiaPage, $this->inertiaProps)
                 ->with($templateProps)
+                ->with($this->screenProps('page'))
                 ->toResponse($request);
         }
 

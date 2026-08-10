@@ -214,6 +214,40 @@ it('returns a json editor payload for the current element', function () {
         );
 });
 
+/**
+ * The Vue slideout builds its own `Craft.ElementEditor`, so it needs the same
+ * settings — but not the same delivery. The injected script looks the
+ * container up by id, and it runs while Vue still has the panel's subtree
+ * detached from the document, so the settings travel as a prop instead.
+ */
+it('sends element editor settings as a prop to an Inertia slideout', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement(['title' => 'Prop Delivery', 'slug' => 'prop-delivery']);
+
+    $response = getJson(action(EditElementController::class, [
+        'elementType' => $entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Craft-Container-Id' => 'slideout-1',
+    ])->assertOk();
+
+    expect($response->json('props.screen.elementEditorSettings'))
+        ->toMatchArray([
+            'elementId' => $entry->id,
+            'canonicalId' => $entry->id,
+            'isStatic' => false,
+            'isProvisionalDraft' => false,
+        ])
+        // The jQuery hand-off is the other branch's job, and emitting both
+        // would double-instantiate the editor.
+        ->and($response->json('props.bodyHtml'))
+        ->not->toContain('elementEditorSettings');
+});
+
 it('prevalidates enabled live elements and returns an error summary', function () {
     $entry = EntryModel::factory()
         ->forSection($this->section)
