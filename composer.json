@@ -141,7 +141,7 @@
     "rector": "rector",
     "tests": [
       "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --parallel --compact"
+      "./vendor/bin/pest --parallel --compact --tia"
     ],
     "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
     "post-autoload-dump": [

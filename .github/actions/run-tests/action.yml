@@ -9,6 +9,10 @@ inputs:
     description: 'PHP version to install'
     required: false
     default: '8.5'
+  coverage:
+    description: 'Coverage driver to use'
+    required: false
+    default: 'none'
   github-token:
     description: 'GitHub token for Composer'
     required: false
@@ -36,7 +40,7 @@ runs:
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi
         tools: composer:v2
         ini-values: display_errors=On, memory_limit=2G
-        coverage: none
+        coverage: ${{ inputs.coverage }}
         # Pass an empty token so setup-php doesn't write GITHUB_TOKEN into
         # Composer's auth config. Composer 2.9.7's regex rejects the new
         # GITHUB_TOKEN format (composer/composer#12849).
