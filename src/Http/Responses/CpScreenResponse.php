@@ -893,6 +893,11 @@ class CpScreenResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'actionMenu' => $parts['actionMenu'],
             'content' => $parts['content'],
+            // The legacy slideout mounts a Vue page of its own when the screen
+            // has one, so it needs these too — it isn't only the Inertia
+            // payload's business.
+            'inertiaPage' => $parts['inertiaPage'],
+            'inertiaProps' => $parts['inertiaProps'],
             'sidebar' => $parts['sidebar'],
             'errorSummary' => $parts['errorSummary'],
             'headHtml' => HtmlStack::headHtml(),

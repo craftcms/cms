@@ -6,9 +6,9 @@
 .cp-slideout-shade {
   position: fixed;
   inset: 0;
-  /* `--shade-bg` is the legacy token the old `.slideout-shade` used, so the
-     two look identical wherever the legacy stylesheet is loaded. */
-  background: var(--shade-bg, rgb(0 0 0 / 40%));
+  /* The same token `.slideout-shade` uses in `resources/css/slideout.css`, so
+     this looks identical to the shade it replaced. */
+  background: var(--c-surface-shade, rgb(0 0 0 / 25%));
   opacity: 0;
   /* Inert until shown. The shade is appended once and left in place rather
      than removed on close, so it must not swallow clicks in between —

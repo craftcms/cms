@@ -96,6 +96,8 @@ it('still returns the legacy flat payload when the client is not Inertia', funct
         'submitButtonLabel',
         'actionMenu',
         'content',
+        'inertiaPage',
+        'inertiaProps',
         'sidebar',
         'errorSummary',
         'headHtml',

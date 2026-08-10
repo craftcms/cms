@@ -347,7 +347,7 @@ however deep it goes — each panel just peeks out a little less.
 | Custom property | Default | Notes |
 | --- | --- | --- |
 | `--slideout-width` | `55vw` | Must be a **length**, not a percentage — the stack offset subtracts it from `100vw`. |
-| `--shade-bg` | `rgb(0 0 0 / 40%)` | The dimming behind the panel. Shared with the legacy slideouts and modals. |
+| `--c-surface-shade` | `rgba(0 0 0 / 25%)` | The dimming behind the panel. Shared with the legacy slideouts. |
 
 ```css
 :root {
