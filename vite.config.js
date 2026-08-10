@@ -186,6 +186,7 @@ export default defineConfig(({mode}) => {
       ignorePatterns: [
         '**/*',
         '!resources/js/**',
+        '!workbench/resources/js/**',
         'resources/build/**',
         'resources/legacy/**',
         'resources/js/**/fixtures/**',
@@ -326,6 +327,7 @@ export default defineConfig(({mode}) => {
           'resources/js/cp.ts',
           'resources/js/legacy.ts',
           'resources/css/cp.css',
+          'workbench/resources/js/cp.ts',
         ],
         publicDirectory,
         hotFile: `${publicDirectory}/hot`,
