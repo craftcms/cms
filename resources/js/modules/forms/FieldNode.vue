@@ -20,7 +20,9 @@
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
     tip?: string;
+    tipHtml?: string;
     warning?: string;
+    warningHtml?: string;
     layoutUid?: string;
     width?: number;
   };
@@ -94,10 +96,12 @@
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >
-    <span v-if="node.props.tip" slot="tip">{{ node.props.tip }}</span>
-    <span v-if="node.props.warning" slot="warning">
-      {{ node.props.warning }}
-    </span>
+    <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
+    <span
+      v-if="node.props.warningHtml"
+      slot="warning"
+      v-html="node.props.warningHtml"
+    />
     <component
       :is="component"
       slot="input"

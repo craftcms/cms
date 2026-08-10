@@ -308,6 +308,46 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('displays a combobox option label for its initial value', async () => {
+    const status: FormPayload = {
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'System Status', required: true},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+            component: 'craft:combobox',
+            props: {
+              options: [
+                {label: 'Online', value: '1'},
+                {label: 'Offline', value: '0'},
+              ],
+            },
+            path: ['settings', 'live'],
+            mode: 'editable',
+            deltaGroup: ['settings', 'live'],
+          },
+        },
+      ],
+      values: {settings: {live: '1'}},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(status);
+
+    const combobox = container.querySelector<
+      HTMLElement & {modelValue: string}
+    >('craft-combobox')!;
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('1');
+      expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
+  });
+
   it('renders collapsible groups with the shared disclosure component', async () => {
     const collapsible = structuredClone(payload) as Mutable<FormPayload>;
     collapsible.nodes[2]!.props.collapsible = true;
@@ -443,8 +483,10 @@ describe('FormRenderer', () => {
                 label: 'Headline',
                 instructions: 'Keep it short.',
                 instructionsPosition: 'after',
-                tip: 'Use sentence case.',
-                warning: 'This appears publicly.',
+                tip: 'Use *sentence* case.',
+                tipHtml: 'Use <em>sentence</em> case.',
+                warning: 'This appears **publicly**.',
+                warningHtml: 'This appears <strong>publicly</strong>.',
                 required: true,
                 layoutUid: 'field-title',
                 width: 50,
@@ -603,11 +645,9 @@ describe('FormRenderer', () => {
     expect(tab?.querySelector('craft-field')?.dataset.layoutElement).toBe(
       'field-title'
     );
-    expect(tab?.querySelector('[slot="tip"]')?.textContent).toContain(
-      'Use sentence case.'
-    );
-    expect(tab?.querySelector('[slot="warning"]')?.textContent).toContain(
-      'This appears publicly.'
+    expect(tab?.querySelector('[slot="tip"] em')?.textContent).toBe('sentence');
+    expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
+      'publicly'
     );
     expect(content?.classList.contains('pane')).toBe(true);
     expect(content?.classList.contains('width-50')).toBe(true);

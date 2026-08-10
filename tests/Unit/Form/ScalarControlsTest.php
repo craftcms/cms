@@ -143,6 +143,24 @@ it('serializes text input behavior', function () {
         ]);
 });
 
+it('serializes field notice markdown as HTML', function () {
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([
+            Field::make('Name', Text::make('name'))
+                ->tip('Read the [docs](https://craftcms.com).')
+                ->warning('Use **care**.'),
+        ]),
+        new FormContext,
+    );
+
+    $tip = new Crawler($payload->nodes[0]->props['tipHtml']);
+    $warning = new Crawler($payload->nodes[0]->props['warningHtml']);
+
+    expect($tip->filter('a')->text())->toBe('docs')
+        ->and($tip->filter('a')->attr('href'))->toBe('https://craftcms.com')
+        ->and($warning->filter('strong')->text())->toBe('care');
+});
+
 it('renders combobox options through the web component', function () {
     $payload = app(FormResolver::class)->resolve(
         Form::make([Field::make()->control(Combobox::make('path')
