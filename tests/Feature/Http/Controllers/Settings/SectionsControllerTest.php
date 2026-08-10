@@ -33,7 +33,7 @@ beforeEach(function () {
 
     $this->sections = app(Sections::class);
 
-    Section::factory()->create();
+    Section::factory()->create(['name' => 'mmm Middle Section']);
 });
 
 it('requires authentication', function () {
