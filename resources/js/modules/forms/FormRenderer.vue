@@ -17,7 +17,7 @@
     FormFailure,
     isRecord,
     pathsMatch,
-    setValue,
+    setValue as setPathValue,
     unsetValue,
     valueAt,
   } from './runtime';
@@ -38,6 +38,7 @@
   }>();
   const emit = defineEmits<{
     (event: 'update:mutation', mutation: FormPayload['values']): void;
+    (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const payload = shallowRef(props.payload);
   const root = ref<HTMLElement>();
@@ -77,7 +78,12 @@
   );
   onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
-  function onChange(change: FormChange): void {
+  function onControlChange(change: FormChange): void {
+    recordChange(change);
+    emit('change', change, currentValues());
+  }
+
+  function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
     emitMutation();
 
@@ -151,7 +157,11 @@
     rememberControlPaths(refreshed.nodes);
     visitControls(refreshed.nodes, (control) => {
       if (control.mode !== 'editable') {
-        setValue(values, control.path, valueAt(refreshed.values, control.path));
+        setPathValue(
+          values,
+          control.path,
+          valueAt(refreshed.values, control.path)
+        );
       }
     });
     if (pathsMatch(scope, payload.value.scope)) {
@@ -211,7 +221,7 @@
           continue;
         }
 
-        setValue(result, path, current);
+        setPathValue(result, path, current);
       }
     }
 
@@ -235,7 +245,16 @@
     return cloneRaw(values);
   }
 
-  defineExpose({advanceBaseline, currentValues});
+  function setValue(
+    path: string[],
+    value: unknown,
+    kind: FormChange['kind'] = 'discrete'
+  ): void {
+    setPathValue(values, path, value);
+    recordChange({kind, path});
+  }
+
+  defineExpose({advanceBaseline, currentValues, setValue});
 
   function visitControls(
     nodes: FormNodePayload[],
@@ -365,7 +384,7 @@
       :touched-paths="touchedPaths"
       :scope="payload.scope"
       :refreshable="payload.refreshable"
-      @change="onChange"
+      @change="onControlChange"
     />
   </template>
 </template>

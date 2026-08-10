@@ -60,6 +60,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: vi.fn(() => integration.onMutation({})),
         currentValues: () => structuredClone(currentValues),
+        setValue: vi.fn(),
       };
     });
 
@@ -110,6 +111,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: advanceRendererBaseline,
         currentValues: () => payload.values,
+        setValue: vi.fn(),
       };
     });
 
@@ -215,6 +217,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: vi.fn(() => integration.onMutation({})),
         currentValues: () => rootPayload.values,
+        setValue: vi.fn(),
       };
     });
 

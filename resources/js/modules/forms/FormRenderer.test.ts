@@ -19,7 +19,7 @@ import {actionClient} from '@craftcms/ui';
 import type CraftPermissionTree from '@craftcms/ui/components/permission-tree/permission-tree';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
-import type {FormPayload} from './types';
+import type {FormChange, FormPayload} from './types';
 
 const elementSelectMocks = vi.hoisted(() => {
   const base = vi.fn();
@@ -247,6 +247,11 @@ describe('FormRenderer', () => {
   let renderer: {
     advanceBaseline: () => void;
     currentValues: () => FormPayload['values'];
+    setValue: (
+      path: string[],
+      value: unknown,
+      kind?: FormChange['kind']
+    ) => void;
   };
 
   beforeEach(async () => {
@@ -345,6 +350,72 @@ describe('FormRenderer', () => {
     await vi.waitFor(() => {
       expect(combobox.modelValue).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
+  });
+
+  it('reports control changes and applies external value updates', async () => {
+    const derived: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: ['name', 'summary'].map((path) => ({
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: path},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+          component: 'craft:combobox',
+          props: {options: []},
+          path: [path],
+          mode: 'editable',
+          deltaGroup: [path],
+        },
+      })),
+      values: {name: '', summary: ''},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    let mutation: FormPayload['values'] = {};
+    const onChange = vi.fn(
+      (change: FormChange, values: FormPayload['values']) => {
+        renderer.setValue(
+          ['summary'],
+          `Derived from ${String(values.name)}`,
+          change.kind
+        );
+      }
+    );
+    await mount(derived, {
+      onChange,
+      onMutation: (current) => (mutation = current),
+    });
+
+    const [name] = container.querySelectorAll<
+      HTMLElement & {modelValue: string}
+    >('craft-combobox');
+    name!.modelValue = 'My Site';
+    name!.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith(
+      {
+        kind: 'typing',
+        path: ['name'],
+        scope: [],
+        refreshable: false,
+      },
+      {name: 'My Site', summary: ''}
+    );
+    expect(renderer.currentValues()).toEqual({
+      name: 'My Site',
+      summary: 'Derived from My Site',
+    });
+    expect(mutation).toEqual({
+      name: 'My Site',
+      summary: 'Derived from My Site',
     });
   });
 
@@ -2212,6 +2283,7 @@ describe('FormRenderer', () => {
         scope?: string[]
       ) => Promise<FormPayload>;
       onMutation?: (mutation: FormPayload['values']) => void;
+      onChange?: (change: FormChange, values: FormPayload['values']) => void;
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
         components: Pick<
@@ -2230,6 +2302,7 @@ describe('FormRenderer', () => {
           payload: currentPayload.value,
           refresh: options.refresh,
           'onUpdate:mutation': options.onMutation,
+          onChange: options.onChange,
         }),
     });
     const components = createCpComponentRegistry();

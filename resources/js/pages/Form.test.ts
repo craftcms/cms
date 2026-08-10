@@ -1,11 +1,15 @@
 import {createApp, defineComponent, h, nextTick, onMounted} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormPayload} from '@/modules/forms/types';
+import type {FormChange, FormPayload} from '@/modules/forms/types';
 import FormPage from './Form.vue';
 
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
   submit: vi.fn(),
+  setValue: vi.fn(),
+  change: undefined as
+    | ((change: FormChange, values: FormPayload['values']) => void)
+    | undefined,
   currentValues: {name: 'Changed', live: '1'},
 }));
 
@@ -48,11 +52,13 @@ vi.mock('@/common/components/Pane.vue', () => ({
 
 vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   default: defineComponent({
-    emits: ['update:mutation'],
+    emits: ['change', 'update:mutation'],
     setup: (_, {emit, expose}) => {
+      state.change = (change, values) => emit('change', change, values);
       expose({
         advanceBaseline: vi.fn(),
         currentValues: () => structuredClone(state.currentValues),
+        setValue: state.setValue,
       });
       onMounted(() => emit('update:mutation', {name: 'Changed'}));
 
@@ -75,6 +81,8 @@ let container: HTMLElement;
 
 beforeEach(() => {
   state.layout.mockClear();
+  state.change = undefined;
+  state.setValue.mockReset();
   state.submit.mockClear();
   container = document.createElement('div');
   document.body.append(container);
@@ -98,5 +106,29 @@ it('submits complete current values after a partial mutation', async () => {
   expect(state.submit).toHaveBeenCalledWith(
     {method: 'post', url: '/settings/general'},
     expect.objectContaining({name: 'Changed', live: '1'})
+  );
+});
+
+it('forwards control changes and external value updates', async () => {
+  const onChange = vi.fn();
+  app = createApp(FormPage, {
+    form: payload,
+    submit: {method: 'post', url: '/settings/sites'},
+    onChange,
+  });
+  const page = app.mount(container) as unknown as {
+    setValue(path: string[], value: unknown, kind?: FormChange['kind']): void;
+  };
+  await nextTick();
+
+  const change: FormChange = {kind: 'typing', path: ['name']};
+  state.change!(change, {name: 'My Site'});
+  page.setValue(['baseUrl'], '$MY_SITE_URL', 'typing');
+
+  expect(onChange).toHaveBeenCalledWith(change, {name: 'My Site'});
+  expect(state.setValue).toHaveBeenCalledWith(
+    ['baseUrl'],
+    '$MY_SITE_URL',
+    'typing'
   );
 });
