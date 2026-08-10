@@ -39,7 +39,7 @@
       .modelValue="value"
       :name="editable ? inputName(control.path) : ''"
       :show-label-field="control.props.showLabelField"
-      :advanced-fields="control.props.advancedFields"
+      .advancedFields="control.props.advancedFields"
       :disabled="!editable"
       @apply="apply"
     />

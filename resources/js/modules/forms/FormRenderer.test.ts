@@ -1521,7 +1521,7 @@ describe('FormRenderer', () => {
         {
           types: [{id: 'url', label: 'URL', kind: 'text'}],
           showLabelField: true,
-          advancedFields: [],
+          advancedFields: ['urlSuffix', 'title'],
         },
         {type: 'url', value: 'https://craftcms.com', label: '<Craft>'},
       ],
@@ -1644,6 +1644,14 @@ describe('FormRenderer', () => {
         )?.value
       ).toBe('https://craftcms.com')
     );
+    expect(
+      container.querySelectorAll('craft-link-field craft-field-group')
+    ).toHaveLength(2);
+    expect(
+      container.querySelector(
+        'craft-link-field craft-disclosure craft-field-group[slot="content"]'
+      )
+    ).not.toBeNull();
     expect(
       container.querySelector<HTMLInputElement>(
         'input[name="settings[address][addressLine1]"]'

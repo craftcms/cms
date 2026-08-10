@@ -1,4 +1,6 @@
 import {t} from '@craftcms/ui';
+import '@craftcms/ui/components/disclosure/disclosure';
+import '@craftcms/ui/components/field-group/field-group';
 import {
   html,
   LitElement,
@@ -50,7 +52,7 @@ let advancedPanelIndex = 0;
 
 @customElement('craft-link-field')
 class CraftLinkField extends LitElement {
-  @property({type: Array})
+  @property({attribute: 'advanced-fields', type: Array})
   advancedFields: string[] = [];
 
   @property({attribute: 'show-label-field', type: Boolean})
@@ -88,9 +90,6 @@ class CraftLinkField extends LitElement {
 
   @state()
   private valueError = '';
-
-  @state()
-  private advancedExpanded = false;
 
   private readonly advancedPanelId = `craft-link-field-advanced-${++advancedPanelIndex}`;
 
@@ -365,10 +364,6 @@ class CraftLinkField extends LitElement {
     this.dispatchEvent(new CustomEvent('cancel', {bubbles: true}));
   }
 
-  private toggleAdvanced(): void {
-    this.advancedExpanded = !this.advancedExpanded;
-  }
-
   private renderTypeInput(): TemplateResult | typeof nothing {
     const type = this.selectedType;
 
@@ -498,34 +493,27 @@ class CraftLinkField extends LitElement {
     }
 
     return html`
-      <button
-        type="button"
-        class=${this.advancedExpanded
-          ? 'fieldtoggle mb-0 expanded'
-          : 'fieldtoggle mb-0'}
-        data-target=${this.advancedPanelId}
-        aria-expanded=${String(this.advancedExpanded)}
-        aria-controls=${this.advancedPanelId}
-        ?disabled=${this.disabled}
-        @click=${this.toggleAdvanced}
-      >
-        ${t('Advanced')}
-      </button>
-      <div
-        id=${this.advancedPanelId}
-        class=${this.advancedExpanded
-          ? 'meta pane hairline'
-          : 'hidden meta pane hairline'}
-      >
-        ${this.showUrlSuffixField ? this.renderUrlSuffixField() : nothing}
-        ${this.showTitleField ? this.renderTitleField() : nothing}
-      </div>
+      <craft-disclosure id=${this.advancedPanelId}>
+        <craft-button
+          slot="invoker"
+          type="button"
+          appearance="plain"
+          icon="chevron-down"
+          ?disabled=${this.disabled}
+        >
+          ${t('Advanced')}
+        </craft-button>
+        <craft-field-group slot="content" class="meta pane hairline">
+          ${this.showUrlSuffixField ? this.renderUrlSuffixField() : nothing}
+          ${this.showTitleField ? this.renderTitleField() : nothing}
+        </craft-field-group>
+      </craft-disclosure>
     `;
   }
 
   override render(): TemplateResult {
     return html`
-      <div class="craft-link-field">
+      <craft-field-group class="craft-link-field">
         ${this.types.length > 1
           ? html`
               <craft-select
@@ -594,7 +582,7 @@ class CraftLinkField extends LitElement {
               `
             )
           : nothing}
-      </div>
+      </craft-field-group>
     `;
   }
 
