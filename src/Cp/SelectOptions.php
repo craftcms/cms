@@ -148,7 +148,13 @@ class SelectOptions
     /**
      * Returns environment variable options for a boolean menu.
      */
-    /** @return list<array<string, mixed>> */
+    /**
+     * @return list<array{
+     *     type: 'optgroup',
+     *     label: string,
+     *     options: Collection<int, array{label: string, value: string, data: array{boolean: string}}>,
+     * }>
+     */
     public static function getBooleanEnvOptions(): array
     {
         $options = [];
