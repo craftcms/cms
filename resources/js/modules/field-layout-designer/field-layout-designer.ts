@@ -1,5 +1,6 @@
 import {
   Base,
+  deferUntil,
   ESC_KEY,
   type GarnishEvent,
   hasAttr,
@@ -111,6 +112,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (this.settings!.readOnly) {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
+
+    void deferUntil(() => !!Craft?.Grid).then(() => {
+      this.deferredInit();
+    });
+  }
+
+  deferredInit(): void {
     // Set up the layout grids — Craft.Grid is a jQuery seam.
     this.tabGrid = new Craft.Grid($(this.$tabContainer), {
       itemSelector: '.fld-tab',

@@ -17,6 +17,7 @@ import {
   Base,
   DragSort,
   type GarnishBaseSettings,
+  deferUntil,
   firstFocusableElement,
   prefersReducedMotion,
   scrollContainerToElement,
@@ -139,6 +140,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   entrySelect: LegacySelect | null = null;
 
   elementEditor: LegacyElementEditor | null = null;
+  /** Aborts the after-init `elementEditor` lookup on `destroy()`. */
+  private elementEditorController: AbortController | null = null;
 
   addingEntry = false;
 
@@ -294,18 +297,16 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
     this.updateAddEntryBtn();
 
-    setTimeout(() => {
-      this.elementEditor = this.form
-        ? ((jqData(this.form, 'elementEditor') as LegacyElementEditor) ?? null)
-        : null;
-
-      if (this.elementEditor) {
-        this.elementEditor.on('update', () => {
-          this.settings!.ownerId = this.elementEditor!.getDraftElementId(
-            this.settings!.ownerId
-          ) as MatrixInputSettings['ownerId'];
-        });
-      }
+    // The owner's element editor boots after this input does; keep checking
+    // until it's attached (legacy parity: the poll interval mirrors the old
+    // fixed delay, but retries instead of gambling on a single check).
+    const finishInit = (elementEditor: LegacyElementEditor | null): void => {
+      this.elementEditor = elementEditor;
+      this.elementEditor?.on('update', () => {
+        this.settings!.ownerId = this.elementEditor!.getDraftElementId(
+          this.settings!.ownerId
+        ) as MatrixInputSettings['ownerId'];
+      });
 
       this.trigger('afterInit');
 
@@ -313,7 +314,24 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       if (defaultEntries && defaultEntries.count > 0) {
         void this.addDefaultEntries(defaultEntries.type, defaultEntries.count);
       }
-    }, 100);
+    };
+
+    this.elementEditorController = new AbortController();
+
+    const form = this.form;
+    if (form) {
+      deferUntil(
+        () => jqData(form, 'elementEditor') as LegacyElementEditor | undefined,
+        100,
+        this.elementEditorController.signal
+      )
+        .then((elementEditor) => finishInit(elementEditor ?? null))
+        .catch(() => {
+          // Destroyed before the editor showed up — nothing left to do.
+        });
+    } else {
+      finishInit(null);
+    }
 
     // If this field is nested within something that's deletable, be ready to
     // handle that
@@ -456,7 +474,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
       await craft().appendHeadHtml(data.headHtml);
       await craft().appendBodyHtml(data.bodyHtml);
-      Craft.initUiElements(newEntries);
+      Craft.initUiElements($(newEntries));
 
       for (const entry of newEntries) {
         new MatrixEntry(this, entry);
@@ -476,7 +494,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     // Resume the element editor
-    this.elementEditor?.resume();
+    void this.elementEditor?.resume();
   }
 
   updateAddEntryBtn(): void {
@@ -508,7 +526,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         this.pasteBtn = createPasteButton();
         this.addEntryBtnContainer?.append(this.pasteBtn);
         this.addListener(this.pasteBtn, 'activate', () => {
-          this.pasteEntries();
+          void this.pasteEntries();
         });
       } else {
         this.pasteBtn.hidden = false;
@@ -664,7 +682,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
           }
 
           // Resume the element editor
-          this.elementEditor?.resume();
+          void this.elementEditor?.resume();
         });
       } finally {
         this.addingEntry = false;
@@ -684,7 +702,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
     setTimeout(() => {
       requestAnimationFrame(() => {
-        this.elementEditor?.resume();
+        void this.elementEditor?.resume();
       });
     }, 100);
   }
@@ -732,6 +750,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   override destroy(): void {
+    this.elementEditorController?.abort();
+    this.elementEditorController = null;
+
     this.entrySort?.destroy();
     this.entrySelect?.destroy();
     this.entrySort = null;
