@@ -17,6 +17,7 @@ class Number extends Text
         return 'craft:number';
     }
 
+    #[\Override]
     public function size(?int $size): static
     {
         $this->size = $size;
