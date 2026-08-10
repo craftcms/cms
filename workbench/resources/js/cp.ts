@@ -4,5 +4,5 @@ import FormKitchenSink from './pages/FormKitchenSink.vue';
 
 Cp.$inertia.register(
   'workbench/FormKitchenSink',
-  FormKitchenSink as InertiaPageComponent
+  FormKitchenSink as unknown as InertiaPageComponent
 );
