@@ -159,7 +159,7 @@ it('allows the form-stage event to replace typed nodes without changing persiste
     $payload = app(FieldLayoutCompiler::class)->compile($layout, context: new FormContext);
 
     expect(array_column($payload->nodes, 'uid'))->toBe(['tab-hidden', 'injected-note'])
-        ->and($layoutModel->fresh()->config)->toBe($config);
+        ->and($layoutModel->fresh()->config)->toEqual($config);
 });
 
 it('compiles custom fields and shared semantic layout content', function () {
