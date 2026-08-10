@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
@@ -183,8 +184,8 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         'page' => '[^\/]+',
     ]);
     Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
-    Route::get('entries/{section}/{id}{slug?}', EditElementController::class)->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug?}', EditElementController::class)->where([
+    Route::get('entries/{section}/{id}{slug?}', EditEntryController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}', EditEntryController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
