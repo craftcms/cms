@@ -64,7 +64,6 @@
     <CpLink
       :inertia="false"
       :href="create().url"
-      class="btn submit add icon"
       icon="plus"
       appearance="button"
       variant="accent"
@@ -79,7 +78,6 @@
           <CpLink
             :inertia="false"
             :href="create().url"
-            class="btn submit add icon"
             icon="plus"
             appearance="button"
             >{{ t('New user group') }}</CpLink
