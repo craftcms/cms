@@ -10,6 +10,7 @@ use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\LineBreak;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Form\Nodes\Missing;
@@ -33,6 +34,7 @@ class FormNodeTypes extends TypeRegistry
         Field::class,
         Group::class,
         Heading::class,
+        HiddenField::class,
         LineBreak::class,
         MarkdownContent::class,
         Missing::class,

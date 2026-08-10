@@ -348,6 +348,36 @@ describe('FormRenderer', () => {
     });
   });
 
+  it('keeps hidden values in complete form values', async () => {
+    const hidden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\HiddenField',
+          component: 'craft:hidden-field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+            component: 'craft:hidden',
+            props: {},
+            path: ['siteId'],
+            mode: 'editable',
+            deltaGroup: ['siteId'],
+          },
+        },
+      ],
+      values: {siteId: 42},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(hidden);
+
+    expect(new FormData(form).get('siteId')).toBe('42');
+    expect(renderer.currentValues()).toEqual({siteId: 42});
+  });
+
   it('renders collapsible groups with the shared disclosure component', async () => {
     const collapsible = structuredClone(payload) as Mutable<FormPayload>;
     collapsible.nodes[2]!.props.collapsible = true;

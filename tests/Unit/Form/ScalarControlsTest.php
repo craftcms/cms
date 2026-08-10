@@ -21,6 +21,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Support\Facades\I18N;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -159,6 +160,17 @@ it('serializes field notice markdown as HTML', function () {
     expect($tip->filter('a')->text())->toBe('docs')
         ->and($tip->filter('a')->attr('href'))->toBe('https://craftcms.com')
         ->and($warning->filter('strong')->text())->toBe('care');
+});
+
+it('resolves and renders hidden values', function () {
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([HiddenField::make('siteId')]),
+        new FormContext(values: ['siteId' => 42]),
+    );
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($payload->values)->toBe(['siteId' => 42])
+        ->and($crawler->filter('input[type="hidden"][name="siteId"][value="42"]'))->toHaveCount(1);
 });
 
 it('renders combobox options through the web component', function () {
