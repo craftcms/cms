@@ -13,7 +13,7 @@ jobs:
       - name: Copy tests .env
         shell: bash
         run: |
-          cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
+          cp ./tests/.env.example.sqlite ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
           touch database/craft_tests.sqlite
 
