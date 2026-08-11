@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {actionClient} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
+  import {shallowRef, toRaw} from 'vue';
   import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
@@ -18,17 +19,49 @@
       method: 'delete' | 'get' | 'patch' | 'post' | 'put';
       url: string;
     };
+    elevatedFields?: string[] | '*';
     refreshUrl?: string;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const inertiaForm = useForm<Record<string, any>>({});
+  const elevatedBaseline = shallowRef(
+    structuredClone(toRaw(props.form.values))
+  );
+  const elevatedFields = props.elevatedFields;
   const {advanceBaseline, errors, onMutation, renderer} =
     useInertiaFormRenderer(inertiaForm, () => props.form);
   const {save} = useSettingsSave(inertiaForm, () => props.submit, {
     transform: () => renderer.value?.currentValues() ?? props.form.values,
-    onSuccess: advanceBaseline,
+    onSuccess: () => {
+      elevatedBaseline.value = structuredClone(
+        toRaw(renderer.value?.currentValues() ?? props.form.values)
+      );
+      advanceBaseline();
+    },
+    passwordConfirmation: elevatedFields
+      ? {
+          required: () => {
+            const values = renderer.value?.currentValues() ?? props.form.values;
+            const fields =
+              elevatedFields === '*'
+                ? [
+                    ...new Set([
+                      ...Object.keys(elevatedBaseline.value),
+                      ...Object.keys(values),
+                    ]),
+                  ]
+                : elevatedFields;
+
+            return fields.some(
+              (field) =>
+                normalize(values[field]) !==
+                normalize(elevatedBaseline.value[field])
+            );
+          },
+        }
+      : undefined,
   });
 
   useAppLayout({form: inertiaForm, onSave: save});
@@ -58,6 +91,10 @@
     }
 
     return data.form;
+  }
+
+  function normalize(value: unknown): string {
+    return JSON.stringify(Array.isArray(value) ? [...value].sort() : value);
   }
 </script>
 

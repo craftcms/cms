@@ -1,4 +1,11 @@
-import {createApp, defineComponent, h, nextTick, onMounted} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  onMounted,
+  reactive,
+} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {FormChange, FormPayload} from '@/modules/forms/types';
 import FormPage from './Form.vue';
@@ -14,7 +21,8 @@ const state = vi.hoisted(() => ({
   change: undefined as
     | ((change: FormChange, values: FormPayload['values']) => void)
     | undefined,
-  currentValues: {name: 'Changed', live: '1'},
+  currentValues: {name: 'Changed', live: '1'} as Record<string, unknown>,
+  confirmElevation: vi.fn(),
 }));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
@@ -48,6 +56,10 @@ vi.mock('@inertiajs/vue3', () => ({
 
 vi.mock('@/common/composables/useAppLayout', () => ({
   useAppLayout: state.layout,
+}));
+
+vi.mock('@/modules/auth/elevated-session', () => ({
+  elevatedSessionManager: {require: state.confirmElevation},
 }));
 
 vi.mock('@/common/components/Pane.vue', () => ({
@@ -97,6 +109,8 @@ beforeEach(() => {
   state.change = undefined;
   state.setValue.mockReset();
   state.submit.mockClear();
+  state.confirmElevation.mockReset();
+  state.currentValues = {siteId: 42, name: 'Changed', live: '1'};
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -120,6 +134,41 @@ it('submits complete current values after a partial mutation', async () => {
     {method: 'post', url: '/settings/general'},
     expect.objectContaining({name: 'Changed', live: '1'})
   );
+});
+
+it('accepts reactive Inertia form values', () => {
+  app = createApp(FormPage, {
+    form: reactive(payload),
+    submit: {method: 'post', url: '/settings/users/groups'},
+    elevatedFields: ['permissions'],
+  });
+
+  expect(() => app.mount(container)).not.toThrow();
+});
+
+it('confirms elevated field changes once per saved baseline', async () => {
+  state.currentValues = {
+    siteId: 42,
+    name: 'Changed',
+    live: '1',
+    permissions: ['accessCp'],
+  };
+  state.confirmElevation.mockResolvedValue(true);
+  app = createApp(FormPage, {
+    form: {...payload, values: {...payload.values, permissions: []}},
+    submit: {method: 'post', url: '/settings/users/groups'},
+    elevatedFields: ['permissions'],
+  });
+  app.mount(container);
+  await nextTick();
+
+  state.layout.mock.calls[0]![0].onSave();
+  await vi.waitFor(() => expect(state.submit).toHaveBeenCalledTimes(1));
+
+  state.layout.mock.calls[0]![0].onSave();
+
+  expect(state.confirmElevation).toHaveBeenCalledTimes(1);
+  expect(state.submit).toHaveBeenCalledTimes(2);
 });
 
 it('refreshes the form through the configured endpoint', async () => {
