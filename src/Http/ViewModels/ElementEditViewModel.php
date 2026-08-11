@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
@@ -17,8 +19,11 @@ use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Locale;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 
@@ -62,6 +67,7 @@ abstract class ElementEditViewModel extends ViewModel
         protected readonly ElementInterface $element,
         ElementRequest $request,
         protected readonly bool $canSave = true,
+        protected readonly bool $mergedCanonicalChanges = false,
     ) {
         $this->request = $request;
     }
@@ -169,6 +175,43 @@ abstract class ElementEditViewModel extends ViewModel
             ];
         }
 
+        // Applying a named draft writes it onto the canonical element. The
+        // provisional case isn't here: for those the Save button *is* apply.
+        if (
+            $element->getIsDraft() &&
+            ! $isCurrent &&
+            $this->canSave &&
+            Gate::check('saveCanonical', $element)
+        ) {
+            $actions[] = [
+                'label' => t('Apply draft'),
+                'actionUrl' => Url::actionUrl('elements/apply-draft'),
+                'params' => [
+                    ...$this->genericIdentityParams(),
+                    'draftId' => $element->draftId,
+                ],
+                'redirect' => Crypt::encrypt('{cpEditUrl}'),
+                'variant' => 'secondary',
+            ];
+        }
+
+        if (
+            $element->getIsRevision() &&
+            $element->hasRevisions() &&
+            Gate::check('saveCanonical', $element)
+        ) {
+            $actions[] = [
+                'label' => t('Revert content from this revision'),
+                'actionUrl' => Url::actionUrl('elements/revert'),
+                'params' => [
+                    ...$this->genericIdentityParams(),
+                    'revisionId' => $element->revisionId,
+                ],
+                'redirect' => Crypt::encrypt('{cpEditUrl}'),
+                'variant' => 'outline',
+            ];
+        }
+
         // Read-only users who may still branch the element get the duplicate
         // path instead, since they can't save over the canonical one.
         if (
@@ -189,6 +232,163 @@ abstract class ElementEditViewModel extends ViewModel
         }
 
         return $actions;
+    }
+
+    /**
+     * The drafts-and-revisions switcher shown beside the breadcrumbs.
+     *
+     * Groups are flattened into a single item list — headings become `heading`
+     * entries the client renders as non-interactive rows — because the action
+     * menu's item contract has no nested-group shape.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function contextMenu(): ?array
+    {
+        $element = $this->element->isProvisionalDraft
+            ? $this->element->getCanonical(true)
+            : $this->element;
+
+        if (! $element->id || $element->getIsUnpublishedDraft()) {
+            return null;
+        }
+
+        $drafts = $element::find()
+            ->draftOf($element)
+            ->siteId($element->siteId)
+            ->status(null)
+            ->orderByDesc('dateUpdated')
+            ->with(['draftCreator'])
+            ->get()
+            ->filter(fn (ElementInterface $draft): bool => $this->request->craftUser()->can('view', $draft))
+            ->all();
+
+        $revisions = $this->recentRevisions($element);
+
+        if ($drafts === [] && $revisions->isEmpty()) {
+            return null;
+        }
+
+        $formatter = I18N::getFormatter();
+        $baseParams = Arr::except($this->request->query(), ['draftId', 'revisionId', 'siteId', 'fresh']);
+        $cpEditUrl = Url::cpUrl($element->getCpEditUrl(), ['draftId' => null, 'revisionId' => null]);
+        $isDraft = $this->element->getIsDraft() && ! $this->element->isProvisionalDraft;
+        $isRevision = $this->element->getIsRevision();
+
+        $currentRevision = $element->getCurrentRevision();
+        $currentCreator = $currentRevision?->getRevisionCreator();
+        $currentTimestamp = $formatter->asTimestamp(
+            $currentRevision->dateCreated ?? $element->dateUpdated,
+            Locale::LENGTH_SHORT,
+            true,
+        );
+
+        $items = [[
+            'type' => 'link',
+            'label' => t('Current'),
+            'description' => $currentCreator
+                ? t('Saved {timestamp} by {creator}', ['timestamp' => $currentTimestamp, 'creator' => $currentCreator->name])
+                : t('Last saved {timestamp}', ['timestamp' => $currentTimestamp]),
+            'href' => $cpEditUrl,
+            'selected' => ! $isDraft && ! $isRevision,
+        ]];
+
+        if ($drafts !== []) {
+            $items[] = ['type' => 'heading', 'label' => t('Drafts')];
+
+            foreach ($drafts as $draft) {
+                $creator = $draft->getDraftCreator();
+                $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
+
+                $items[] = [
+                    'type' => 'link',
+                    'label' => (string) $draft->draftName,
+                    'description' => $creator
+                        ? t('Saved {timestamp} by {creator}', ['timestamp' => $timestamp, 'creator' => $creator->name])
+                        : t('Last saved {timestamp}', ['timestamp' => $timestamp]),
+                    'href' => Url::urlWithParams($cpEditUrl, [...$baseParams, 'draftId' => $draft->draftId]),
+                    'selected' => $draft->id === $this->element->id,
+                ];
+            }
+        }
+
+        if ($revisions->isNotEmpty()) {
+            $items[] = ['type' => 'heading', 'label' => t('Recent Revisions')];
+
+            foreach ($revisions as $revision) {
+                $creator = $revision->getRevisionCreator();
+                $timestamp = $formatter->asTimestamp($revision->dateCreated, Locale::LENGTH_SHORT, true);
+
+                $items[] = [
+                    'type' => 'link',
+                    'label' => (string) $revision->getRevisionLabel(),
+                    'description' => $creator
+                        ? t('Saved {timestamp} by {creator}', ['timestamp' => $timestamp, 'creator' => $creator->name])
+                        : t('Saved {timestamp}', ['timestamp' => $timestamp]),
+                    'href' => Url::urlWithParams($cpEditUrl, [...$baseParams, 'revisionId' => $revision->revisionId]),
+                    'selected' => $revision->id === $this->element->id,
+                ];
+            }
+        }
+
+        if (($revisionsUrl = $element->getCpRevisionsUrl()) !== null && $this->hasMoreRevisions($element)) {
+            $items[] = ['type' => 'hr'];
+            $items[] = [
+                'type' => 'link',
+                'label' => t('View all revisions'),
+                'href' => Url::cpUrl($revisionsUrl),
+                'selected' => false,
+            ];
+        }
+
+        return [
+            'label' => $this->editElementTitles($this->element)[1],
+            'items' => $items,
+        ];
+    }
+
+    /** @return Collection<int, ElementInterface> */
+    private function recentRevisions(ElementInterface $element): Collection
+    {
+        if (! $element->hasRevisions() || Cms::config()->maxRevisions === 1) {
+            return collect();
+        }
+
+        $revisions = $this->revisionQuery($element)->get();
+
+        // A revision being viewed is always listed, even when it has aged out
+        // of the recent window.
+        if (
+            $this->element->getIsRevision() &&
+            $revisions->doesntContain(fn (ElementInterface $revision): bool => $revision->id === $this->element->id)
+        ) {
+            $revisions->push($this->element);
+        }
+
+        return $revisions;
+    }
+
+    private function hasMoreRevisions(ElementInterface $element): bool
+    {
+        if (! $element->hasRevisions() || Cms::config()->maxRevisions === 1) {
+            return false;
+        }
+
+        return ($this->revisionQuery($element)->getCountForPagination() - 1) > 0;
+    }
+
+    private function revisionQuery(ElementInterface $element): ElementQueryInterface
+    {
+        $maxRevisions = Cms::config()->maxRevisions;
+
+        return $element::find()
+            ->revisionOf($element)
+            ->siteId($element->siteId)
+            ->status(null)
+            ->offset(1)
+            ->limit($maxRevisions ? min($maxRevisions - 1, 10) : 10)
+            ->orderByDesc('dateCreated')
+            ->with(['revisionCreator']);
     }
 
     /**
@@ -223,14 +423,56 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * The notice shown above the editor when the screen is showing unsaved
-     * provisional changes rather than the canonical element.
+     * The notice shown above the editor when the screen isn't showing the
+     * canonical element as it stands.
      */
     public function notice(): ?string
     {
-        return $this->element->isProvisionalDraft
-            ? t('Showing your unsaved changes.')
+        return match (true) {
+            $this->element->isProvisionalDraft => t('Showing your unsaved changes.'),
+            $this->element->getIsRevision() => t('You’re viewing a revision. None of the {type}’s fields are editable.', [
+                'type' => $this->element::lowerDisplayName(),
+            ]),
+            default => null,
+        };
+    }
+
+    /**
+     * Shown when an outdated draft picked up newer canonical changes on the way
+     * in, so the author knows the content shifted under them.
+     */
+    public function mergeNotice(): ?string
+    {
+        return $this->mergedCanonicalChanges
+            ? t('Recent changes to the Current revision have been merged into this draft.')
             : null;
+    }
+
+    /** Whether the notice offers to throw the provisional changes away. */
+    public function canDiscardDraft(): bool
+    {
+        return (bool) $this->element->isProvisionalDraft;
+    }
+
+    /**
+     * The Save button's label. Saving a named draft saves the draft rather than
+     * the element, and an unpublished draft creates the element outright.
+     */
+    public function submitButtonLabel(): string
+    {
+        $element = $this->element;
+
+        if ($element->getIsUnpublishedDraft()) {
+            return Gate::check('saveCanonical', $element)
+                ? mb_ucfirst(t('Create {type}', ['type' => $element::lowerDisplayName()]))
+                : mb_ucfirst(t('Save {type}', ['type' => t('draft')]));
+        }
+
+        if ($element->getIsDraft() && ! $element->isProvisionalDraft) {
+            return mb_ucfirst(t('Save {type}', ['type' => t('draft')]));
+        }
+
+        return t('Save');
     }
 
     public function elementId(): ?int
