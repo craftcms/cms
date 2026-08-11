@@ -78,7 +78,7 @@
     emit('change', change, values);
   }
 
-  defineExpose({setValue});
+  defineExpose({save, setValue});
 
   async function refresh(
     values: FormPayload['values'],

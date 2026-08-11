@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Form\Nodes;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Hidden;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
@@ -19,6 +20,13 @@ class HiddenField implements Node
     public static function make(string|array $path): self
     {
         return new self(Hidden::make($path));
+    }
+
+    public function mode(ControlMode|string $mode): static
+    {
+        $this->control->mode($mode);
+
+        return $this;
     }
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
