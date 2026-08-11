@@ -52,7 +52,11 @@
 </script>
 
 <template>
-  <form :action="LoginController.logout().url" method="post" ref="logoutForm">
+  <form
+    :action="LoginController.logout['/{cpTrigger?}/logout']().url"
+    method="post"
+    ref="logoutForm"
+  >
     <input
       v-if="csrfTokenName && csrfTokenValue"
       type="hidden"
