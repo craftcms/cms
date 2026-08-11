@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
+  import {router} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -19,6 +20,7 @@
   }>();
 
   const {
+    activity,
     autosave,
     discardDraft,
     errors,
@@ -74,6 +76,23 @@
       onClick: () => window.open(target.url, '_blank', 'noopener'),
     }))
   );
+
+  // Mirrors the legacy wording: a changed draft names the draft, anything else
+  // names the element type.
+  const staleMessage = computed(() =>
+    t('This {type} has been updated.', {
+      type:
+        activity.staleType.value === 'element' &&
+        payload.draftId !== null &&
+        !payload.isProvisionalDraft
+          ? t('draft')
+          : payload.elementDisplayName,
+    })
+  );
+
+  function reload(): void {
+    router.reload();
+  }
 
   const autosaveMessage = computed(() => {
     switch (autosave.status.value) {
@@ -132,7 +151,44 @@
     </span>
   </LayoutSlot>
 
+  <!-- Who else is working on this element, beside the save controls. -->
+  <LayoutSlot v-if="activity.activity.value.length" name="toolbar">
+    <div
+      role="region"
+      :aria-label="t('Recent Activity')"
+      class="flex items-center gap-1"
+    >
+      <span
+        v-for="entry in activity.activity.value"
+        :key="entry.userId"
+        :title="entry.message"
+        :aria-label="entry.message"
+        class="inline-flex"
+        v-html="entry.userThumb"
+      />
+    </div>
+  </LayoutSlot>
+
   <Pane appearance="raised">
+    <craft-callout
+      v-if="activity.isStale.value"
+      variant="warning"
+      icon="triangle-exclamation"
+      class="mb-4"
+    >
+      {{ staleMessage }}
+
+      <craft-button
+        slot="action"
+        type="button"
+        appearance="outline"
+        size="small"
+        @click="reload"
+      >
+        {{ t('Reload') }}
+      </craft-button>
+    </craft-callout>
+
     <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
       {{ t('This is a read-only view.') }}
     </craft-callout>
