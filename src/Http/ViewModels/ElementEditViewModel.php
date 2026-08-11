@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Collection;
@@ -232,6 +233,79 @@ abstract class ElementEditViewModel extends ViewModel
         }
 
         return $actions;
+    }
+
+    /**
+     * The element's preview targets as ready-to-open links.
+     *
+     * A live element links straight at its URL. Anything not publicly visible
+     * yet — a draft, a disabled entry, a future post date — links at
+     * `preview/create-token`, which mints a preview token and redirects to the
+     * tokenized URL. The legacy editor does that dance in JavaScript; every
+     * input is known here, so the link arrives ready to follow.
+     *
+     * @return list<array{label: string, url: string}>
+     */
+    public function previewTargets(): array
+    {
+        $element = $this->element;
+
+        if (! $element->id) {
+            return [];
+        }
+
+        $targets = $element->getPreviewTargets();
+
+        if ($targets === []) {
+            return [];
+        }
+
+        $isLive = (
+            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
+            ! $element->getIsDraft() &&
+            $element->enabled &&
+            $element->getEnabledForSite() &&
+            $element->getRoute() !== null
+        );
+
+        $previewToken = Str::random(32, extendedChars: true);
+        $siteToken = (! app()->isLive() || ! $element->getSite()->getEnabled())
+            ? Crypt::encrypt((string) $element->siteId)
+            : null;
+
+        $tokenParams = array_filter([
+            'elementType' => $element::class,
+            'canonicalId' => $element->getCanonicalId(),
+            'siteId' => $element->siteId,
+            'revisionId' => $element->revisionId,
+            'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
+            'previewToken' => Crypt::encrypt($previewToken),
+        ], fn (mixed $value): bool => $value !== null);
+
+        return array_values(array_map(function (array $target) use ($isLive, $previewToken, $siteToken, $tokenParams): array {
+            $params = array_filter([
+                // Randomized so CDNs don't serve a cached page.
+                'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
+                Cms::config()->siteToken => $siteToken,
+            ], fn (mixed $value): bool => $value !== null);
+
+            if ($isLive) {
+                return [
+                    'label' => (string) $target['label'],
+                    'url' => Url::url($target['url'], $params),
+                ];
+            }
+
+            $params[Cms::config()->tokenParam] = $previewToken;
+
+            return [
+                'label' => (string) $target['label'],
+                'url' => Url::actionUrl('preview/create-token', [
+                    ...$tokenParams,
+                    'redirect' => Url::url($target['url'], $params),
+                ]),
+            ];
+        }, $targets));
     }
 
     /**

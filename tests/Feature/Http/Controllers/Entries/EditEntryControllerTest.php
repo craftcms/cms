@@ -13,7 +13,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
@@ -35,7 +37,21 @@ beforeEach(function () {
     $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'news',
         'enableVersioning' => true,
+        'previewTargets' => [
+            ['label' => 'Primary entry page', 'urlFormat' => '{url}', 'refresh' => '1'],
+        ],
     ]);
+    // The site settings factory randomizes `hasUrls`, which would make preview
+    // targets come and go between runs.
+    SectionSiteSettings::query()
+        ->where('sectionId', $this->section->id)
+        ->update([
+            'hasUrls' => true,
+            'uriFormat' => 'news/{slug}',
+            'template' => 'news/_entry',
+        ]);
+    Sections::refreshSections();
+
     $this->entry = EntryModel::factory()
         ->forSection($this->section)
         ->forEntryType($this->entryType)
@@ -331,6 +347,34 @@ it('drops the View action for revisions, which have no editable URL context', fu
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('actionMenu', fn (Collection $items) => $items
                 ->pluck('label')->doesntContain('Validate entry'))
+            ->etc()
+        );
+});
+
+it('links preview targets straight at the element when it is live', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewTargets', fn (Collection $targets) => $targets->isNotEmpty()
+                && $targets->every(fn (array $target) => ! str_contains((string) $target['url'], 'preview/create-token')))
+            ->etc()
+        );
+});
+
+it('links preview targets through a token when the element is not public', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+
+    get(cp_url(sprintf(
+        'entries/news/%d-%s?draftId=%d',
+        $this->entry->id,
+        $this->entry->slug,
+        $draft->draftId,
+    )))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('previewTargets', fn (Collection $targets) => $targets->isNotEmpty()
+                && $targets->every(fn (array $target) => str_contains((string) $target['url'], 'preview/create-token')
+                    && str_contains((string) $target['url'], 'redirect=')))
             ->etc()
         );
 });

@@ -67,6 +67,7 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   submitButtonLabel: string;
   actionMenu: Array<ElementActionMenuItem>;
+  previewTargets: Array<{label: string; url: string}>;
   contextMenu: {
     label: string;
     items: Array<ElementContextMenuItem>;
