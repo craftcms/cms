@@ -97,13 +97,10 @@ Sidebar metadata
   padding: 0;
 }
 
-.cp-metadata-list dt {
-  font-weight: bold;
-}
-
 .cp-metadata-list__item {
   display: grid;
   gap: var(--c-spacing-xs);
+  align-items: baseline;
 }
 
 /* Roughly 250px */

@@ -27,7 +27,7 @@ readonly class ContentHtml
                     Html::beginTag('div', [
                         'class' => 'cp-metadata-list__item',
                     ]).
-                    Html::tag('dt', Html::encode($label))."\n".
+                    Html::tag('dt', Html::encode($label), ['class' => 'font-bold text-xs'])."\n".
                     Html::tag('dd', $value)."\n".
                     Html::endTag('div');
             }
