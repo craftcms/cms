@@ -128,6 +128,8 @@ it('submits complete current values after a partial mutation', async () => {
   app.mount(container);
   await nextTick();
 
+  expect(container.querySelector('form')).not.toBeNull();
+
   state.layout.mock.calls[0]![0].onSave({redirect: false});
 
   expect(state.submit).toHaveBeenCalledWith(

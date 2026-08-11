@@ -210,15 +210,35 @@ vi.mock('../editable-table', () => ({
 
       for (const [key, column] of Object.entries(columns)) {
         const cell = row.insertCell();
+        const value = values[key];
+        const stringValue =
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+            ? String(value)
+            : '';
+        if (['autosuggest', 'template'].includes(column.type)) {
+          const combobox = document.createElement(
+            'craft-combobox'
+          ) as HTMLElement & {
+            modelValue: string;
+            name: string;
+          };
+          combobox.name = `${baseName}[${rowId}][${key}]`;
+          combobox.modelValue = stringValue;
+          cell.append(combobox);
+          continue;
+        }
+
         const input = document.createElement(
           column.type === 'checkbox' ? 'input' : 'textarea'
         );
         input.name = `${baseName}[${rowId}][${key}]`;
         if (input instanceof HTMLInputElement) {
           input.type = 'checkbox';
-          input.checked = Boolean(values[key]);
+          input.checked = Boolean(value);
         } else {
-          input.value = String(values[key] ?? '');
+          input.value = stringValue;
         }
         cell.append(input);
       }
@@ -351,6 +371,60 @@ describe('FormRenderer', () => {
       expect(combobox.modelValue).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
     });
+  });
+
+  it('includes editable table combobox changes in current values', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: {
+                fromEmail: {type: 'autosuggest'},
+              },
+              keyed: true,
+            },
+            path: ['siteOverrides'],
+            mode: 'editable',
+            deltaGroup: ['siteOverrides'],
+          },
+        },
+      ],
+      values: {
+        siteOverrides: {
+          'site-uid': {fromEmail: ''},
+        },
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    const combobox = container.querySelector('craft-combobox')!;
+    await vi.waitFor(() =>
+      expect(combobox.querySelector('input')).not.toBeNull()
+    );
+    const input = combobox.querySelector('input')!;
+    input.value = '$SITE_EMAIL';
+    input.dispatchEvent(
+      new InputEvent('input', {bubbles: true, composed: true})
+    );
+
+    await vi.waitFor(() =>
+      expect(renderer.currentValues()).toEqual({
+        siteOverrides: {
+          'site-uid': {fromEmail: '$SITE_EMAIL'},
+        },
+      })
+    );
   });
 
   it('reports control changes and applies external value updates', async () => {

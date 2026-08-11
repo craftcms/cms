@@ -99,16 +99,18 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
-    <craft-field-group>
-      <FormRenderer
-        ref="renderer"
-        :payload="form"
-        :refresh="refreshUrl ? refresh : undefined"
-        :errors="errors"
-        @update:mutation="onMutation"
-        @change="onChange"
-      />
-    </craft-field-group>
-  </Pane>
+  <form @submit.prevent="save()">
+    <Pane appearance="raised">
+      <craft-field-group>
+        <FormRenderer
+          ref="renderer"
+          :payload="form"
+          :refresh="refreshUrl ? refresh : undefined"
+          :errors="errors"
+          @update:mutation="onMutation"
+          @change="onChange"
+        />
+      </craft-field-group>
+    </Pane>
+  </form>
 </template>

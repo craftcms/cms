@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {type EditableTable, Row} from './editable-table';
+import {EditableTable, Row} from './editable-table';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -31,4 +31,44 @@ it('initializes text cells without the legacy NiceText behavior', () => {
   expect(instance.niceTexts).toEqual([]);
 
   instance.destroy();
+});
+
+it('renders autosuggest cells as comboboxes', async () => {
+  vi.stubGlobal('$', $);
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  vi.stubGlobal('Craft', {
+    hasMousePointerEvents: () => true,
+    inArray: (value: unknown, values: unknown[]) => values.includes(value),
+  });
+
+  const row = EditableTable.createRow(
+    'site-uid',
+    {
+      fromEmail: {
+        type: 'autosuggest',
+        heading: 'System Email Address',
+        options: [{label: 'Environment', value: '$SYSTEM_EMAIL'}],
+      },
+    },
+    'siteOverrides',
+    {fromEmail: '$SYSTEM_EMAIL'}
+  );
+  document.body.append(row[0]);
+  const combobox = row.find('craft-combobox')[0] as HTMLElement & {
+    label: string;
+    modelValue: string;
+    name: string;
+    options: Array<{label: string; value: string}>;
+    showAllOnEmpty: boolean;
+    updateComplete: Promise<boolean>;
+  };
+  await combobox.updateComplete;
+
+  expect(combobox.name).toBe('siteOverrides[site-uid][fromEmail]');
+  expect(combobox.label).toBe('System Email Address');
+  expect(combobox.modelValue).toBe('$SYSTEM_EMAIL');
+  expect(combobox.options).toEqual([
+    {label: 'Environment', value: '$SYSTEM_EMAIL'},
+  ]);
+  expect(combobox.showAllOnEmpty).toBe(true);
 });
