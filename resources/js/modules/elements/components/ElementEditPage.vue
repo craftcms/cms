@@ -59,6 +59,22 @@
     currentEntryTypeId: () => form.typeId,
   });
 
+  // "View" opens the element on the front end. The hrefs arrive ready to
+  // follow — a live element points at its own URL, anything else at a
+  // token-minting redirect that lands on the tokenized preview.
+  //
+  // These ride in `formAdditionalButtons` because the layout's
+  // `additional-buttons` slot is a component slot, not a layout-slot outlet,
+  // so it can't be filled from a page using the ambient layout.
+  const viewButtons = computed(() =>
+    payload.previewTargets.map((target, index) => ({
+      label: payload.previewTargets.length === 1 ? t('View') : target.label,
+      variant: 'outline',
+      key: `view-${index}`,
+      onClick: () => window.open(target.url, '_blank', 'noopener'),
+    }))
+  );
+
   const autosaveMessage = computed(() => {
     switch (autosave.status.value) {
       case 'saving':
@@ -83,7 +99,7 @@
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
     formActions: formActionItems.value,
-    formAdditionalButtons: headerButtons.value,
+    formAdditionalButtons: [...viewButtons.value, ...headerButtons.value],
     formAdditionalActions: actionMenuItems.value,
   }));
 </script>

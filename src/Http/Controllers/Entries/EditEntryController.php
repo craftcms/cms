@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
+use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -60,6 +61,16 @@ class EditEntryController
         }
 
         $this->applyParamsToElement($element);
+
+        // Minting a preview token later requires the session to be authorized
+        // for whatever is being previewed.
+        if ($element->id && $element->getPreviewTargets() !== []) {
+            match (true) {
+                $element->getIsDraft() && ! $element->isProvisionalDraft => SessionAuth::authorize("previewDraft:$element->draftId"),
+                $element->getIsRevision() => SessionAuth::authorize("previewRevision:$element->revisionId"),
+                default => SessionAuth::authorize('previewElement:'.$element->getCanonicalId()),
+            };
+        }
 
         return Inertia::render('content/Edit', new EntryEditViewModel(
             entry: $element,
