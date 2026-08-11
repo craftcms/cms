@@ -113,7 +113,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
+    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
