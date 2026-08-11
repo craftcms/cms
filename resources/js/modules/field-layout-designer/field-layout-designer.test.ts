@@ -1,4 +1,6 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {Base} from '@craftcms/garnish';
+import {CardViewDesigner} from './card-view-designer';
 import {FieldLayoutDesigner} from './field-layout-designer';
 
 const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
@@ -86,4 +88,21 @@ it('adds a field returned by the field editor slideout', () => {
   expect(addLibraryElementToActiveTab).toHaveBeenCalledWith(
     group.firstElementChild
   );
+});
+
+it('leaves sortable checkbox teardown to its custom element', () => {
+  const baseDestroy = vi
+    .spyOn(Base.prototype, 'destroy')
+    .mockImplementation(() => {});
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  designer.cancelToken = null;
+  designer.sortableCheckboxSelect = document.createElement(
+    'craft-sortable-checkbox-select'
+  );
+  designer.$container = document.createElement('div');
+
+  expect(() => designer.destroy()).not.toThrow();
+  expect(baseDestroy).toHaveBeenCalledOnce();
 });

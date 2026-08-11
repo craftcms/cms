@@ -1089,8 +1089,13 @@ class Fields
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.').'.' : '';
 
-        $config = JsonHelper::decode(Request::input("{$paramPrefix}fieldLayout"));
-        $config['generatedFields'] = Request::input("{$paramPrefix}generatedFields") ?: null;
+        $config = Request::input("{$paramPrefix}fieldLayout");
+        $config = is_array($config) ? $config : JsonHelper::decode($config);
+        $config ??= [];
+
+        if (Request::has("{$paramPrefix}generatedFields")) {
+            $config['generatedFields'] = Request::input("{$paramPrefix}generatedFields") ?: null;
+        }
 
         $layout = $this->createLayout($config);
 
