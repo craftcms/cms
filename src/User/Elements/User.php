@@ -1346,6 +1346,234 @@ XML;
         return Url::cpUrl("users/$this->id");
     }
 
+    /**
+     * The account actions for the Inertia editor — the Form-system counterpart
+     * to the items {@see safeActionMenuItems()} and
+     * {@see destructiveActionMenuItems()} build with inline jQuery.
+     *
+     * Everything here posts to an existing `users/*` action; the client
+     * dispatches them, so nothing needs an inline script.
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(): array
+    {
+        $currentUser = currentUser();
+
+        if (
+            ! $this->id ||
+            $this->getIsUnpublishedDraft() ||
+            ! $currentUser instanceof CraftUser ||
+            Edition::get() === Edition::Solo
+        ) {
+            return [];
+        }
+
+        $isCurrentUser = $this->getIsCurrent();
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $status = $this->getStatus();
+
+        $items = [
+            ...$this->statusActionDescriptors($currentUser, $status, $isCurrentUser),
+            ...$this->passwordResetActionDescriptors($canAdministrateUsers, $status, $isCurrentUser),
+            ...$this->sessionActionDescriptors($currentUser, $isCurrentUser),
+        ];
+
+        // Suspending and deactivating revoke access, so they're flagged the way
+        // deleting is and sort with it.
+        if (! $isCurrentUser && Users::canSuspend($currentUser, $this) && $this->active && ! $this->suspended) {
+            $items[] = [
+                'label' => t('Suspend'),
+                'icon' => 'ban',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/suspend-user'),
+                    'params' => ['userId' => $this->id],
+                ],
+            ];
+        }
+
+        if (Gate::check('deactivate', $this) && ($this->active || $this->pending)) {
+            $items[] = [
+                'label' => t('Deactivate'),
+                'icon' => 'disabled',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/deactivate-user'),
+                    'params' => ['userId' => $this->id],
+                    'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Actions that move the account between statuses — enabling, activating,
+     * unsuspending, unlocking, and the password-reset emails that go with them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function statusActionDescriptors(CraftUser $currentUser, string $status, bool $isCurrentUser): array
+    {
+        $items = [];
+
+        switch ($status) {
+            case Element::STATUS_ARCHIVED:
+            case Element::STATUS_DISABLED:
+                if (Gate::check('save', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Enable'), 'users/enable-user');
+                }
+                break;
+
+            case self::STATUS_INACTIVE:
+            case self::STATUS_PENDING:
+                // Activation only means something for an account that can be
+                // emailed about it.
+                if (! $this->email) {
+                    break;
+                }
+
+                if (Gate::check('sendActivationEmail', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Send activation email'), 'users/send-activation-email', 'paperplane');
+                }
+
+                if (Gate::check('activate', $this)) {
+                    if (! $this->password && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy activation URL…'), 'users/get-password-reset-url');
+                    }
+
+                    $items[] = $this->userActionDescriptor(t('Activate account'), 'users/activate-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_SUSPENDED:
+                if (Users::canSuspend($currentUser, $this)) {
+                    $items[] = $this->userActionDescriptor(t('Unsuspend'), 'users/unsuspend-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_ACTIVE:
+                if (
+                    $this->locked &&
+                    ! $isCurrentUser &&
+                    ($currentUser->isAdmin() || ! $this->admin) &&
+                    $currentUser->can('moderateUsers') &&
+                    (
+                        ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
+                        $this->id !== $impersonatorId
+                    )
+                ) {
+                    $items[] = $this->userActionDescriptor(t('Unlock'), 'users/unlock-user');
+                }
+
+                if (! $isCurrentUser && Gate::check('editUsers')) {
+                    $items[] = $this->userActionDescriptor(t('Send password reset email'), 'users/send-password-reset-email', 'paperplane');
+
+                    if ($currentUser->can('administrateUsers') && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy password reset URL…'), 'users/get-password-reset-url');
+                    }
+                }
+                break;
+        }
+
+        return $items;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function passwordResetActionDescriptors(bool $canAdministrateUsers, string $status, bool $isCurrentUser): array
+    {
+        if (
+            ! $canAdministrateUsers ||
+            $isCurrentUser ||
+            ! in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE], true)
+        ) {
+            return [];
+        }
+
+        return [$this->passwordResetRequired
+            ? [
+                ...$this->userActionDescriptor(
+                    t('Don’t require a password reset on next login'),
+                    'users/remove-password-reset-requirement',
+                    'asterisk-slash',
+                ),
+                'color' => Color::Gray->value,
+            ]
+            : $this->userActionDescriptor(
+                t('Require a password reset on next login'),
+                'users/require-password-reset',
+                'asterisk',
+            ),
+        ];
+    }
+
+    /**
+     * Signing in as this user, which always needs a fresh password first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function sessionActionDescriptors(CraftUser $currentUser, bool $isCurrentUser): array
+    {
+        if ($isCurrentUser || ! Users::canImpersonate($currentUser, $this)) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => trim($this->getName())
+                    ? t('Sign in as {user}', ['user' => $this->getName()])
+                    : t('Sign in as user'),
+                'icon' => 'key',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/impersonate'),
+                    'params' => ['userId' => $this->id],
+                    'requireElevatedSession' => true,
+                ],
+            ],
+            $this->copyUrlDescriptor(t('Copy impersonation URL…'), 'users/get-impersonation-url'),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function userActionDescriptor(string $label, string $action, ?string $icon = null): array
+    {
+        return array_filter([
+            'label' => $label,
+            'icon' => $icon,
+            'behavior' => [
+                'type' => 'submit',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+            ],
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * An action that fetches a one-off URL and offers it for copying, behind an
+     * elevated session — these URLs grant access to the account.
+     *
+     * @return array<string, mixed>
+     */
+    private function copyUrlDescriptor(string $label, string $action): array
+    {
+        return [
+            'label' => $label,
+            'icon' => 'clipboard',
+            'behavior' => [
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the URL, and open it in a new private window.'),
+            ],
+        ];
+    }
+
     /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
@@ -1815,6 +2043,17 @@ JS, [
                 'can-suspend' => $currentUser instanceof CraftUser && Users::canSuspend($currentUser, $this),
             ],
         ];
+    }
+
+    /**
+     * A user's status follows from the account actions (activate, suspend,
+     * deactivate…), not from an editable switch, so the editor sidebar shows
+     * none — matching {@see statusFieldHtml()}, which renders nothing.
+     */
+    #[Override]
+    protected function showStatusField(): bool
+    {
+        return false;
     }
 
     #[Override]

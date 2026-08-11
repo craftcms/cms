@@ -196,6 +196,10 @@ interface CraftStatic {
     ): void | Promise<void>;
   };
 
+  ui: {
+    createCopyTextPrompt(settings: {label: string; value: string}): unknown;
+  };
+
   // Asset editing, still served by the legacy bundle.
   isImagick?: boolean;
   PreviewFileModal: new (assetId: number, settings?: object) => unknown;
