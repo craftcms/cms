@@ -7,8 +7,9 @@
    * `SlideoutScreen`. Both implement `ScreenSlots`/`ScreenProps`.
    */
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, provide, watch} from 'vue';
+  import {computed, provide, useId, useTemplateRef, watch} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
+  import {useElementSize} from '@vueuse/core';
   import Breadcrumbs from '@/common/components/Breadcrumbs.vue';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
@@ -17,6 +18,7 @@
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import LiveRegion from '@/common/components/LiveRegion.vue';
+  import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
   import SlideoutHost from '@/common/slideouts/SlideoutHost.vue';
@@ -29,6 +31,7 @@
   import {useAppendHtml} from '@/common/composables/useAppendHtml';
   import {useFlash} from '@/common/composables/useFlash';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import {useResizable} from '@/common/composables/useResizable';
   import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
   import {
     provideScreenContext,
@@ -37,6 +40,10 @@
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {ButtonVariant} from '@craftcms/ui';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
+
+  /** Resize bounds for the details column, in px — 12rem to 30rem. */
+  const DETAILS_MIN_WIDTH = 192;
+  const DETAILS_MAX_WIDTH = 480;
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -118,6 +125,46 @@
     icon: sidebarIcon,
     width: sidebarWidth,
   } = useGlobalSidebar();
+
+  // The details column is user-resizable. The width lands on
+  // `--content-layout-details-width`, which `.content-layout` uses for its
+  // trailing grid track, so leaving it unset keeps the stylesheet's
+  // responsive default. The name is deliberately not `--details-width`:
+  // legacy `_cp.scss` already publishes one of those globally.
+  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
+  const detailsColumn = useTemplateRef<HTMLElement>('detailsColumn');
+  const {width: contentLayoutWidth} = useElementSize(contentLayout);
+
+  // Ceiling on the details column so a wide drag — or a width restored from
+  // storage at a narrower viewport — can never squeeze the main column off the
+  // page. Mirrors the `min()` cap on the grid track, and stays put during a
+  // drag because it keys off the layout rather than the columns inside it.
+  const detailsMaxWidth = computed(() => {
+    if (!contentLayoutWidth.value) {
+      return DETAILS_MAX_WIDTH;
+    }
+
+    const share = contentLayoutWidth.value * (hasSidebar.value ? 0.4 : 0.5);
+
+    return Math.max(
+      DETAILS_MIN_WIDTH,
+      Math.min(DETAILS_MAX_WIDTH, Math.round(share))
+    );
+  });
+
+  const detailsResizer = useResizable({
+    target: detailsColumn,
+    edge: 'inline-start',
+    minWidth: DETAILS_MIN_WIDTH,
+    maxWidth: detailsMaxWidth,
+    cssVariable: '--content-layout-details-width',
+    storageKey: 'AppLayout.detailsWidth',
+  });
+
+  // `aria-controls` needs a real id, and `details` is taken: legacy CSS pins
+  // `#details` to 350px, which would override the grid track and push the
+  // column off the page.
+  const detailsId = `content-layout-details-${useId()}`;
 
   const formActionItems = computed(() => [
     ...props.defaultFormActions.map(defaultFormActionItem),
@@ -276,11 +323,13 @@
                 <CalloutReadOnly />
               </template>
               <div
+                ref="contentLayout"
                 class="content-layout"
                 :class="{
                   'content-layout--sidebar': hasSidebar,
                   'content-layout--details': hasDetails,
                 }"
+                :style="detailsResizer.style.value"
               >
                 <aside
                   v-show="hasSidebar"
@@ -327,9 +376,19 @@
                   teleport target, which must stay in the DOM so page-side
                   <LayoutSlot> content can mount before registration flips
                   hasDetails. -->
-                <aside v-show="hasDetails">
+                <aside
+                  v-show="hasDetails"
+                  ref="detailsColumn"
+                  class="content-layout__details-column"
+                >
+                  <ResizeHandle
+                    class="content-layout__details-resize-handle"
+                    :resizer="detailsResizer"
+                    :label="t('Resize details')"
+                    :controls="detailsId"
+                  />
                   <craft-pane>
-                    <div class="details">
+                    <div :id="detailsId" class="details">
                       <LayoutSlotOutlet name="details">
                         <slot name="details"></slot>
                       </LayoutSlotOutlet>
@@ -387,6 +446,26 @@
   }
 
   .content-layout {
+    /* Defaults for the side columns. `useResizable` overrides
+       --content-layout-details-width inline once the user drags the handle;
+       clearing it restores this. Not named --details-width: legacy _cp.scss
+       publishes a global custom property under that name. */
+    --content-layout-details-width: clamp(12rem, 20%, 16rem);
+    --content-layout-sidebar-width: clamp(
+      calc(120rem / 16),
+      20%,
+      calc(220rem / 16)
+    );
+
+    /* Hard ceiling on the details track, so a width restored from storage at a
+       wider viewport can't run the layout off the page. `useResizable` clamps
+       to the same share, so the drag stops where the column does. */
+    --content-layout-details-max: 50%;
+    --content-layout-details-track: min(
+      var(--content-layout-details-width),
+      var(--content-layout-details-max)
+    );
+
     display: grid;
     gap: var(--c-spacing-md);
 
@@ -394,21 +473,45 @@
       align-items: start;
 
       &.content-layout--details {
-        grid-template-columns: minmax(0, 1fr) clamp(12rem, 20%, 16rem);
+        grid-template-columns:
+          minmax(0, 1fr)
+          var(--content-layout-details-track);
       }
 
       &.content-layout--sidebar {
         grid-template-columns:
-          clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+          var(--content-layout-sidebar-width)
           minmax(0, 1fr);
       }
 
       &.content-layout--sidebar.content-layout--details {
+        /* Three columns share the width, so the details column gets less. */
+        --content-layout-details-max: 40%;
+
         grid-template-columns:
-          clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+          var(--content-layout-sidebar-width)
           minmax(0, 1fr)
-          clamp(12rem, 20%, 16rem);
+          var(--content-layout-details-track);
       }
+    }
+  }
+
+  .content-layout__details-column {
+    /* Anchors the absolutely positioned resize handle. */
+    position: relative;
+  }
+
+  /* Sits in the gutter between the content and the details column. Only the
+     wide layout has a details track to resize, so the handle stays hidden
+     until the columns actually split. */
+  .content-layout__details-resize-handle {
+    --resize-handle-display: none;
+
+    @container (width >= 768px) {
+      --resize-handle-display: flex;
+
+      /* Centered in the gutter: back off half the gap, then half the handle. */
+      inset-inline-start: calc(var(--c-spacing-md) / -2 - 6px);
     }
   }
 
@@ -431,6 +534,10 @@
   }
 
   .details {
+    /* Query container for content that adapts to the column's width, e.g.
+       .cp-metadata-list. Must be inline-size: `size` would contain the block
+       axis too and collapse the column. */
+    container-type: inline-size;
     display: grid;
     gap: var(--c-spacing-md);
   }
