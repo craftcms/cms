@@ -6,6 +6,7 @@ import type {FormPayload} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
+import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 
@@ -68,6 +69,9 @@ export interface ElementEditPayload {
   submitButtonLabel: string;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<{label: string; url: string}>;
+  elementDisplayName: string;
+  activityUrl: string | null;
+  updatedTimestamps: {element: number | null; canonical: number | null};
   contextMenu: {
     label: string;
     items: Array<ElementContextMenuItem>;
@@ -128,6 +132,16 @@ export function useElementEditPage({saveData}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
+  });
+
+  const activity = useElementActivity({
+    url: props.activityUrl,
+    elementType: props.elementType,
+    elementId: props.canonicalId,
+    draftId: props.draftId,
+    siteId: props.siteId,
+    isProvisionalDraft: props.isProvisionalDraft,
+    updatedTimestamps: props.updatedTimestamps,
   });
 
   /**
@@ -279,6 +293,7 @@ export function useElementEditPage({saveData}: Options = {}) {
   onBeforeUnmount(removeNavigationGuard);
 
   return {
+    activity,
     autosave,
     discardDraft,
     submitAction,

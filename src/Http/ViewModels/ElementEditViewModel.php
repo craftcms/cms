@@ -235,6 +235,39 @@ abstract class ElementEditViewModel extends ViewModel
         return $actions;
     }
 
+    /** The element type's lowercase display name, for user-facing messages. */
+    public function elementDisplayName(): string
+    {
+        return $this->element::lowerDisplayName();
+    }
+
+    /**
+     * Where the screen polls for other people working on this element.
+     *
+     * Revisions are read-only and can't be collaborated on, so they don't poll.
+     */
+    public function activityUrl(): ?string
+    {
+        return $this->element->id && ! $this->element->getIsRevision()
+            ? Url::actionUrl('elements/recent-activity', ['dontExtendSession' => 1])
+            : null;
+    }
+
+    /**
+     * The element's and its canonical's last-modified stamps at render time.
+     * Activity polling compares these against the server's to notice that
+     * something changed underneath the person editing.
+     *
+     * @return array{element: int|null, canonical: int|null}
+     */
+    public function updatedTimestamps(): array
+    {
+        return [
+            'element' => $this->element->dateUpdated?->getTimestamp(),
+            'canonical' => $this->element->getCanonical(true)->dateUpdated?->getTimestamp(),
+        ];
+    }
+
     /**
      * The element's preview targets as ready-to-open links.
      *

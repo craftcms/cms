@@ -378,3 +378,35 @@ it('links preview targets through a token when the element is not public', funct
             ->etc()
         );
 });
+
+it('polls for activity against the canonical element', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('activityUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/recent-activity')
+                && str_contains($url, 'dontExtendSession'))
+            ->where('updatedTimestamps', fn (Collection $stamps) => $stamps->has('element')
+                && $stamps->has('canonical'))
+            ->where('elementDisplayName', 'entry')
+            ->etc()
+        );
+});
+
+it('does not poll for activity on a revision', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes'),
+    );
+
+    get(cp_url(sprintf(
+        'entries/news/%d-%s?revisionId=%d',
+        $this->entry->id,
+        $this->entry->slug,
+        $revision->revisionId,
+    )))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('activityUrl', null)
+            ->etc()
+        );
+});
