@@ -5,10 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
-use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
-use CraftCms\Cms\Image\Enums\ImageTransformPosition;
-use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Url;
@@ -76,6 +73,7 @@ it('requires authentication', function () {
     get(action([ImageTransformsController::class, 'index']))->assertRedirect();
     get(action([ImageTransformsController::class, 'create']))->assertRedirect();
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
+    postJson(action([ImageTransformsController::class, 'renderForm']))->assertUnauthorized();
     postJson(action([ImageTransformsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
 });
@@ -92,6 +90,7 @@ it('requires admin changes', function () {
             ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'renderForm']))->assertForbidden();
     postJson(action([ImageTransformsController::class, 'store']), validTransformData())->assertForbidden();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
 });
@@ -101,16 +100,18 @@ it('renders index', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/Index'));
 });
 
-it('renders create', function () {
+it('renders a functional create form', function () {
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/assets/transforms/Edit')
             ->where('title', t('Create a new image transform'))
-            ->where('transform.id', null)
-            ->has('modeOptions', count(ImageTransformMode::cases()))
-            ->has('positionOptions', count(ImageTransformPosition::cases()))
-            ->has('interlaceOptions', count(ImageTransformInterlace::cases()))
-            ->has('qualityOptions', count(ImageTransformQuality::cases())));
+            ->where('form.values.transformId', null)
+            ->where('form.values.mode', ImageTransformMode::Crop->value)
+            ->where('submit.url', action([ImageTransformsController::class, 'store']))
+            ->where('refreshUrl', action([ImageTransformsController::class, 'renderForm']))
+            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+                ->pluck('control.path')
+                ->contains(['mode'])));
 });
 
 it('renders edit for an existing transform', function () {
@@ -120,9 +121,46 @@ it('renders edit for an existing transform', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/assets/transforms/Edit')
             ->where('title', $transform->name)
-            ->where('transform.id', $transform->id)
-            ->where('transform.name', $transform->name)
-            ->where('transform.handle', $transform->handle));
+            ->where('form.values.transformId', $transform->id)
+            ->where('form.values.name', $transform->name)
+            ->where('form.values.handle', $transform->handle));
+});
+
+it('refreshes mode-dependent controls without saving', function () {
+    $values = validTransformData([
+        'transformId' => null,
+        'fill' => 'abc',
+        'quality' => '',
+        'format' => '',
+        'upscale' => true,
+    ]);
+
+    $fitNodes = postJson(action([ImageTransformsController::class, 'renderForm']), [
+        'values' => [...$values, 'mode' => ImageTransformMode::Fit->value],
+        'scope' => [],
+    ])->assertOk()->json('form.nodes');
+    $letterboxNodes = postJson(action([ImageTransformsController::class, 'renderForm']), [
+        'values' => [...$values, 'mode' => ImageTransformMode::Letterbox->value],
+        'scope' => [],
+    ])->assertOk()->json('form.nodes');
+
+    $fitFields = collect($fitNodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $letterboxFields = collect($letterboxNodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+
+    expect($fitFields['fill']['component'])->toBe('craft:hidden-field')
+        ->and($fitFields['position']['component'])->toBe('craft:hidden-field')
+        ->and($letterboxFields['fill']['component'])->toBe('craft:field')
+        ->and($letterboxFields['position']['component'])->toBe('craft:field')
+        ->and($letterboxFields['position']['props']['label'])->toBe(t('Image Position'))
+        ->and(ImageTransformModel::count())->toBe(0);
+});
+
+it('rejects invalid refresh values', function () {
+    postJson(action([ImageTransformsController::class, 'renderForm']), [
+        'values' => validTransformData(['mode' => 'invalid']),
+        'scope' => [],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('values.mode');
 });
 
 it('returns 404 for a missing transform handle', function () {

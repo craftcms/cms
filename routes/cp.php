@@ -411,6 +411,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::middleware(RequireAdminChanges::class)->group(function () {
                 Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
                 Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::post('form', [ImageTransformsController::class, 'renderForm']);
                 Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
             });
 
