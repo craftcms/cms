@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  defineOptions({inheritAttrs: false});
+
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -142,6 +144,7 @@
 
 <template>
   <craft-input
+    v-bind="$attrs"
     :id="id"
     :label="label"
     :name="name"

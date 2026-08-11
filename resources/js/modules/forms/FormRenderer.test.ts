@@ -312,8 +312,14 @@ describe('FormRenderer', () => {
 
     expect(placeholder.value).toBe('Submitted placeholder');
     expect(placeholder.getAttribute('aria-invalid')).toBe('true');
-    expect(placeholder.labels?.[0]?.textContent).toBe('Placeholder Text');
     const placeholderField = placeholder.closest('craft-field')!;
+    const placeholderLabel = placeholderField.querySelector<HTMLElement>(
+      ':scope > [slot="label"]'
+    )!;
+    expect(placeholder.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      placeholderLabel.id
+    );
+    expect(placeholderLabel.textContent).toContain('Placeholder Text');
     expect(
       placeholderField.querySelector(':scope > [slot="help-text"]')?.textContent
     ).toBe('The text that will be shown if the field doesn’t have a value.');
@@ -892,7 +898,9 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(localized);
 
-    expect(container.querySelector('label')?.textContent).toBe('UI-Modus');
+    expect(
+      container.querySelector('craft-field > [slot="label"]')?.textContent
+    ).toBe('UI-Modus');
   });
 
   it('invalidates the complete Form when a payload component is not registered', async () => {

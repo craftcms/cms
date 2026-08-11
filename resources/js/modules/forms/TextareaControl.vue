@@ -37,8 +37,6 @@
 
 <template>
   <craft-textarea
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :rows="control.props.rows ?? 2"

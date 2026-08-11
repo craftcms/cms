@@ -59,8 +59,6 @@
 
 <template>
   <craft-input
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
     .modelValue="String(value ?? '')"

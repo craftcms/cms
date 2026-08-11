@@ -33,8 +33,6 @@
 
 <template>
   <craft-switch
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     .checked="Boolean(value)"
     .indeterminate="Boolean(control.props.indeterminate)"

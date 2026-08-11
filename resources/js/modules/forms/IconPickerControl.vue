@@ -18,15 +18,12 @@
 </script>
 
 <template>
-  <div>
-    <IconPicker
-      :model-value="value ?? ''"
-      :label="label"
-      :name="editable ? inputName(control.path) : ''"
-      :error="invalid ? 'error' : undefined"
-      :free-only="control.props.freeOnly"
-      :disabled="!editable"
-      @update:model-value="emit('update:value', $event ?? '', 'discrete')"
-    />
-  </div>
+  <IconPicker
+    :model-value="value ?? ''"
+    :name="editable ? inputName(control.path) : ''"
+    :error="invalid ? 'error' : undefined"
+    :free-only="control.props.freeOnly"
+    :disabled="!editable"
+    @update:model-value="emit('update:value', $event ?? '', 'discrete')"
+  />
 </template>
