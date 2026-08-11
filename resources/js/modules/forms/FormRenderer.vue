@@ -242,7 +242,17 @@
   }
 
   function currentValues(): FormPayload['values'] {
-    return cloneRaw(values);
+    const result: FormPayload['values'] = {};
+
+    visitControls(payload.value.nodes, (control) => {
+      const value = valueAt(values, control.path);
+
+      if (value !== undefined) {
+        setPathValue(result, control.path, cloneRaw(value));
+      }
+    });
+
+    return result;
   }
 
   function setValue(

@@ -419,7 +419,7 @@ describe('FormRenderer', () => {
     });
   });
 
-  it('keeps hidden values in complete form values', async () => {
+  it('includes hidden controls but not unowned values in complete form values', async () => {
     const hidden: FormPayload = {
       scope: [],
       refreshable: false,
@@ -438,7 +438,7 @@ describe('FormRenderer', () => {
           },
         },
       ],
-      values: {siteId: 42},
+      values: {siteId: 42, stale: 'not owned by a control'},
       errors: [],
       globalErrors: [],
     };
@@ -1103,7 +1103,7 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
-  it('keeps current and hidden values while submitting changed visible groups', async () => {
+  it('retains removed values without including them in submissions', async () => {
     let mutation: FormPayload['values'] = {};
     app.unmount();
     await mount(structuredClone(payload) as FormPayload, {
@@ -1126,6 +1126,7 @@ describe('FormRenderer', () => {
     await nextTick();
 
     expect(mutation).not.toHaveProperty('settings.placeholder');
+    expect(renderer.currentValues()).not.toHaveProperty('settings.placeholder');
 
     currentPayload.value = structuredClone(payload) as FormPayload;
     await nextTick();
@@ -1134,6 +1135,10 @@ describe('FormRenderer', () => {
         'input[name="settings[placeholder]"]'
       )?.value
     ).toBe('Unsaved');
+    expect(renderer.currentValues()).toHaveProperty(
+      'settings.placeholder',
+      'Unsaved'
+    );
     expect(
       container
         .querySelector('input[name="settings[placeholder]"]')
