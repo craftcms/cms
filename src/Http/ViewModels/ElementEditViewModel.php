@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
@@ -14,8 +15,12 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+
+use function CraftCms\Cms\t;
 
 /**
  * The shared Inertia payload for an element edit screen.
@@ -102,16 +107,84 @@ abstract class ElementEditViewModel extends ViewModel
         return $this->editElementTitles($this->element)[0];
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * The screen's breadcrumbs. On a multi-site install a localized element
+     * leads with a site crumb whose menu switches sites, mirroring the legacy
+     * editor.
+     *
+     * @return list<array<string, mixed>>
+     */
     public function crumbs(): array
     {
-        return array_map(function (array $crumb): array {
+        $crumbs = array_map(function (array $crumb): array {
             if (isset($crumb['url'])) {
                 $crumb['url'] = Url::cpUrl($crumb['url']);
             }
 
             return $crumb;
         }, $this->elementCrumbs($this->element));
+
+        $siteCrumb = $this->siteCrumb();
+
+        return $siteCrumb === null ? $crumbs : [$siteCrumb, ...$crumbs];
+    }
+
+    /**
+     * A crumb naming the site being edited, with a menu linking to the same
+     * element on every other editable site it propagates to.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function siteCrumb(): ?array
+    {
+        if (! $this->element::isLocalized() || ! Sites::isMultiSite()) {
+            return null;
+        }
+
+        $editableSiteIds = Sites::getEditableSiteIds()->all();
+        $siteIds = array_values(array_intersect(
+            array_column(
+                array_filter(
+                    ElementHelper::supportedSitesForElement($this->element, true),
+                    fn (array $site): bool => $site['propagate'],
+                ),
+                'siteId',
+            ),
+            $editableSiteIds,
+        ));
+
+        if (count($siteIds) < 2) {
+            return null;
+        }
+
+        $currentSite = $this->element->getSite();
+        // Keep every other query param so switching sites doesn't drop the
+        // draft, revision, or return URL the editor was opened with.
+        $params = Arr::except($this->request->query(), ['fresh', 'site']);
+        $path = $this->request->craftPath();
+
+        $items = [];
+
+        foreach ($siteIds as $siteId) {
+            $site = Sites::getSiteById($siteId);
+
+            if ($site === null) {
+                continue;
+            }
+
+            $items[] = [
+                'type' => 'link',
+                'label' => t($site->getName(), category: 'site'),
+                'href' => Url::cpUrl($path, ['site' => $site->handle] + $params),
+                'selected' => $site->id === $currentSite->id,
+            ];
+        }
+
+        return [
+            'icon' => 'earth',
+            'label' => t($currentSite->getName(), category: 'site'),
+            'actions' => $items,
+        ];
     }
 
     public function readOnly(): bool
