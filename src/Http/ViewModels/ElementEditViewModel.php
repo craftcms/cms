@@ -549,9 +549,15 @@ abstract class ElementEditViewModel extends ViewModel
         return $this->element->draftId;
     }
 
+    /**
+     * Autosaving means writing a provisional draft, so an element type without
+     * drafts — an asset, a user — saves only when the Save button is pressed.
+     */
     public function canAutosave(): bool
     {
-        return $this->canSave && ! $this->element->getIsRevision();
+        return $this->canSave
+            && $this->element::hasDrafts()
+            && ! $this->element->getIsRevision();
     }
 
     /**
@@ -752,7 +758,7 @@ abstract class ElementEditViewModel extends ViewModel
             $this->element,
             new FormContext(
                 namespace: [],
-                errors: $this->element->errors()->getMessages(),
+                errors: $this->element->formErrors(),
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
@@ -785,7 +791,7 @@ abstract class ElementEditViewModel extends ViewModel
     {
         return new FormContext(
             namespace: [],
-            errors: $this->element->errors()->getMessages(),
+            errors: $this->element->formErrors(),
             mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
         );
     }

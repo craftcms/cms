@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\EditAssetController;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
@@ -183,7 +184,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
-    Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
+    Route::get('assets/edit/{id}{slug}', EditAssetController::class)->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug?}', EditEntryController::class)->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug?}', EditEntryController::class)->where([
         ...$idSlugParams,

@@ -1,4 +1,4 @@
-import {useEventListener} from '@vueuse/core';
+import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm, usePage} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
@@ -98,7 +98,13 @@ interface Options {
  */
 export function useElementEditPage({saveData}: Options = {}) {
   const page = usePage<ElementEditPayload>();
-  const props = page.props;
+
+  // `page.props` is a computed, so capturing it once would freeze the payload
+  // at the values the screen first rendered with. Saving in place — the normal
+  // path for an element with no drafts — replaces the props without remounting
+  // this component, so the title, notices, and timestamps below have to track
+  // the live page.
+  const props = toReactive(computed(() => page.props));
 
   const formPayload = computed(() => props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
@@ -221,6 +227,10 @@ export function useElementEditPage({saveData}: Options = {}) {
           advanceBaseline();
           advanceSidebarBaseline();
         });
+
+        // The save itself moved the element's `dateUpdated`; without this the
+        // next poll would report our own write as someone else's change.
+        activity.rebase(props.updatedTimestamps);
       },
     }
   );
