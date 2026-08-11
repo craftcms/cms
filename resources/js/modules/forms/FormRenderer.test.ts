@@ -19,7 +19,7 @@ import {actionClient} from '@craftcms/ui';
 import type CraftPermissionTree from '@craftcms/ui/components/permission-tree/permission-tree';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
-import type {FormChange, FormPayload} from './types';
+import type {FormChange, FormControlOverrideProps, FormPayload} from './types';
 
 const elementSelectMocks = vi.hoisted(() => {
   const base = vi.fn();
@@ -497,6 +497,73 @@ describe('FormRenderer', () => {
       name: 'My Site',
       summary: 'Derived from My Site',
     });
+  });
+
+  it('uses a path slot to override a control without replacing Form behavior', async () => {
+    const overridden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Mode', required: true},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+            component: 'craft:choice',
+            props: {options: []},
+            path: ['mode'],
+            mode: 'editable',
+            deltaGroup: ['mode'],
+          },
+        },
+      ],
+      values: {mode: 'crop'},
+      errors: [{path: ['mode'], messages: ['Choose a mode.']}],
+      globalErrors: [],
+    };
+    const onChange = vi.fn();
+    app.unmount();
+    await mount(overridden, {
+      onChange,
+      slots: {
+        mode: (slot) =>
+          h(
+            'button',
+            {
+              'data-mode-override': '',
+              'data-invalid': String(slot.invalid),
+              onClick: () => slot.setValue('fit'),
+            },
+            String(slot.value)
+          ),
+      },
+    });
+
+    const button = container.querySelector<HTMLButtonElement>(
+      '[data-mode-override]'
+    )!;
+
+    expect(button.textContent).toBe('crop');
+    expect(button.dataset.invalid).toBe('true');
+    expect(container.querySelector('craft-select')).toBeNull();
+    expect(container.querySelector('[slot="feedback"]')?.textContent).toContain(
+      'Choose a mode.'
+    );
+
+    button.click();
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({mode: 'fit'});
+    expect(onChange).toHaveBeenCalledWith(
+      {
+        kind: 'discrete',
+        path: ['mode'],
+        scope: [],
+        refreshable: false,
+      },
+      {mode: 'fit'}
+    );
   });
 
   it('does not report native control events as Form changes', async () => {
@@ -2399,19 +2466,27 @@ describe('FormRenderer', () => {
           'register'
         >
       ) => void;
+      slots?: Record<
+        string,
+        (props: FormControlOverrideProps) => ReturnType<typeof h>
+      >;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(formPayload);
     const rendererRef = ref();
     app = createApp({
       setup: () => () =>
-        h(FormRenderer, {
-          ref: rendererRef,
-          payload: currentPayload.value,
-          refresh: options.refresh,
-          'onUpdate:mutation': options.onMutation,
-          onChange: options.onChange,
-        }),
+        h(
+          FormRenderer,
+          {
+            ref: rendererRef,
+            payload: currentPayload.value,
+            refresh: options.refresh,
+            'onUpdate:mutation': options.onMutation,
+            onChange: options.onChange,
+          },
+          options.slots
+        ),
     });
     const components = createCpComponentRegistry();
     registerFormComponents(components);

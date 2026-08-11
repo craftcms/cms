@@ -9,12 +9,14 @@
     ref,
     shallowRef,
     toRaw,
+    useSlots,
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
   import FormNodeList from './FormNodeList.vue';
   import {
     FormFailure,
+    FormControlOverrides,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -40,6 +42,7 @@
     (event: 'update:mutation', mutation: FormPayload['values']): void;
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
+  const slots = useSlots();
   const payload = shallowRef(props.payload);
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
@@ -59,6 +62,7 @@
   const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
+  provide(FormControlOverrides, slots);
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {
@@ -190,9 +194,16 @@
 
     if (focusedPath) {
       nextTick(() => {
-        [...document.querySelectorAll<HTMLElement>('[data-form-control-path]')]
-          .find((element) => element.dataset.formControlPath === focusedPath)
-          ?.focus();
+        const control = [
+          ...document.querySelectorAll<HTMLElement>('[data-form-control-path]'),
+        ].find((element) => element.dataset.formControlPath === focusedPath);
+        const focusTarget = control?.hasAttribute('data-form-control-override')
+          ? control.querySelector<HTMLElement>(
+              'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+          : control;
+
+        focusTarget?.focus();
       });
     }
   }

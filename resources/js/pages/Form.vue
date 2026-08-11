@@ -109,7 +109,15 @@
           :errors="errors"
           @update:mutation="onMutation"
           @change="onChange"
-        />
+        >
+          <template
+            v-for="(_, slotName) in $slots"
+            :key="slotName"
+            #[slotName]="slotProps"
+          >
+            <slot :name="slotName" v-bind="slotProps" />
+          </template>
+        </FormRenderer>
       </craft-field-group>
     </Pane>
   </form>

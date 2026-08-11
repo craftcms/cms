@@ -2,6 +2,7 @@
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import {
+    FormControlOverrides,
     FormFailure,
     formChangeFromEvent,
     pathsMatch,
@@ -40,6 +41,7 @@
     (event: 'change', change: FormChange): void;
   }>();
   const invalidate = inject(FormFailure)!;
+  const overrides = inject(FormControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
   const component = computed(() => {
@@ -53,6 +55,7 @@
 
     return component;
   });
+  const override = computed(() => overrides[control.value.path.join('.')]);
 
   onErrorCaptured((error) => {
     invalidate(
@@ -84,6 +87,19 @@
     });
   }
 
+  function renderOverride() {
+    return override.value?.({
+      control: control.value,
+      value: value.value,
+      values: props.values,
+      label: props.node.props.label ?? undefined,
+      editable: editable.value,
+      invalid: controlErrors.value.length > 0,
+      required: Boolean(props.node.props.required),
+      setValue,
+    });
+  }
+
   function onChange(change: FormChange | Event): void {
     const formChange = formChangeFromEvent(change);
 
@@ -111,7 +127,18 @@
       slot="warning"
       v-html="node.props.warningHtml"
     />
+    <div
+      v-if="override"
+      slot="input"
+      data-form-control-override
+      :aria-invalid="controlErrors.length ? 'true' : undefined"
+      :data-form-control-path="JSON.stringify(control.path)"
+      :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
+    >
+      <component :is="renderOverride" />
+    </div>
     <component
+      v-else
       :is="component"
       slot="input"
       :control="control"

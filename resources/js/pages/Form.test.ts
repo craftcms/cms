@@ -75,7 +75,7 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   default: defineComponent({
     props: ['refresh'],
     emits: ['change', 'update:mutation'],
-    setup: (props, {emit, expose}) => {
+    setup: (props, {emit, expose, slots}) => {
       state.refresh = props.refresh;
       state.change = (change, values) => emit('change', change, values);
       expose({
@@ -85,7 +85,7 @@ vi.mock('@/modules/forms/FormRenderer.vue', () => ({
       });
       onMounted(() => emit('update:mutation', {name: 'Changed'}));
 
-      return () => h('div');
+      return () => h('div', slots.name?.({value: 'Original'}));
     },
   }),
 }));
@@ -214,5 +214,28 @@ it('forwards control changes and external value updates', async () => {
     ['baseUrl'],
     '$MY_SITE_URL',
     'typing'
+  );
+});
+
+it('forwards path-keyed control slots to the Form renderer', async () => {
+  app = createApp({
+    setup: () => () =>
+      h(
+        FormPage,
+        {
+          form: payload,
+          submit: {method: 'post', url: '/settings/sites'},
+        },
+        {
+          name: ({value}: {value: string}) =>
+            h('span', {'data-name-override': ''}, value),
+        }
+      ),
+  });
+  app.mount(container);
+  await nextTick();
+
+  expect(container.querySelector('[data-name-override]')?.textContent).toBe(
+    'Original'
   );
 });

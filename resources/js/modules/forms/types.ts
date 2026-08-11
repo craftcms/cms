@@ -40,3 +40,14 @@ export type FormChange = {
   scope?: string[];
   refreshable?: boolean;
 };
+
+export type FormControlOverrideProps = {
+  control: FormControlPayload;
+  value: unknown;
+  values: FormPayload['values'];
+  label?: string;
+  editable: boolean;
+  invalid: boolean;
+  required: boolean;
+  setValue(value: unknown, kind?: FormChangeKind): void;
+};
