@@ -1,5 +1,5 @@
 import {router} from '@inertiajs/vue3';
-import {t} from '@craftcms/ui';
+import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
@@ -27,6 +27,8 @@ export type ElementActionBehavior =
       /** Pre-encrypted by the server. */
       redirect?: string;
       confirm?: string;
+      /** Re-authenticate before submitting, e.g. signing in as another user. */
+      requireElevatedSession?: boolean;
     }
   | {type: 'copy'; elements: Array<ElementCopyRef>}
   | {
@@ -53,7 +55,17 @@ export type ElementActionBehavior =
     }
   | {type: 'download'; actionUrl: string; params?: Record<string, unknown>}
   | {type: 'replaceFile'; assetId: number; fsType: string}
-  | {type: 'editImage'; assetId: number};
+  | {type: 'editImage'; assetId: number}
+  /**
+   * Fetches a single-use URL and offers it for copying. Always behind an
+   * elevated session — these URLs grant access to the account.
+   */
+  | {
+      type: 'copyUrl';
+      actionUrl: string;
+      params?: Record<string, unknown>;
+      prompt: string;
+    };
 
 export interface ElementActionMenuItem {
   label: string;
@@ -96,10 +108,19 @@ export function useElementActionMenu(
           return;
         }
 
-        router.post(behavior.actionUrl, {
-          ...behavior.params,
-          ...(behavior.redirect ? {redirect: behavior.redirect} : {}),
-        });
+        const post = () =>
+          router.post(behavior.actionUrl, {
+            ...behavior.params,
+            ...(behavior.redirect ? {redirect: behavior.redirect} : {}),
+          });
+
+        if (behavior.requireElevatedSession) {
+          void Craft.elevatedSessionManager.requireElevatedSession(post);
+
+          return;
+        }
+
+        post();
 
         return;
       }
@@ -156,6 +177,27 @@ export function useElementActionMenu(
 
       case 'replaceFile':
         replaceFile(behavior.assetId, behavior.fsType);
+
+        return;
+
+      case 'copyUrl':
+        void Craft.elevatedSessionManager.requireElevatedSession(async () => {
+          try {
+            const {data} = await actionClient.post(
+              behavior.actionUrl,
+              behavior.params ?? {}
+            );
+
+            Craft.ui.createCopyTextPrompt({
+              label: behavior.prompt,
+              value: data.url,
+            });
+          } catch (error: any) {
+            Craft.cp?.displayError?.(
+              error?.response?.data?.message ?? t('A server error occurred.')
+            );
+          }
+        });
 
         return;
 
