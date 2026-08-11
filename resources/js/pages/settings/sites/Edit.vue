@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type {Site} from '@/common/types';
+  import type {UrlMethodPair} from '@inertiajs/core';
   import {t, toEnvVar} from '@craftcms/ui';
   import {ref} from 'vue';
   import Badge from '@/common/components/Badge.vue';
@@ -15,10 +16,7 @@
   const props = defineProps<{
     site: Site;
     form: FormPayload;
-    submit: {
-      method: 'delete' | 'get' | 'patch' | 'post' | 'put';
-      url: string;
-    };
+    submit: UrlMethodPair;
     refreshUrl: string;
   }>();
 
