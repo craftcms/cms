@@ -279,14 +279,15 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
+            Route::post('entry-types/render-form', [EntryTypesController::class, 'renderForm']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
 
         // Fields
+        Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('fields/render-form', [FieldsController::class, 'renderForm']);
-            Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
             Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
             Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
             Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);

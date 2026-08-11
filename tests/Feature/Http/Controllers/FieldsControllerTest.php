@@ -49,7 +49,7 @@ it('needs authentication and admin changes for the routes', function (string $me
     ['getJson', [FieldsController::class, 'index'], false],
     ['getJson', [FieldsController::class, 'edit'], false],
     ['postJson', [FieldsController::class, 'renderForm'], true],
-    ['postJson', [FieldsController::class, 'renderFieldLayoutDesigner'], true],
+    ['postJson', [FieldsController::class, 'renderFieldLayoutDesigner'], false],
     ['postJson', [FieldsController::class, 'renderGroupedEntryTypeManager'], true],
     ['postJson', [FieldsController::class, 'renderConditionBuilder'], true],
     ['postJson', [FieldsController::class, 'normalizeConditionBuilder'], true],
@@ -287,6 +287,20 @@ it('renders composite field settings Controls', function (string $type, string $
     'grouped entry type manager' => [Matrix::class, 'craft:grouped-entry-type-manager', 'renderGroupedEntryTypeManager', 'craft-entry-type-manager'],
     'condition builder' => [Entries::class, 'craft:condition-builder', 'renderConditionBuilder', 'condition-container'],
 ]);
+
+it('renders a disabled field layout designer when admin changes are disabled', function () {
+    Cms::config()->allowAdminChanges(false);
+
+    $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
+        'value' => [],
+        'elementType' => Entry::class,
+        'name' => 'fieldLayout',
+        'disabled' => false,
+        'customizableTabs' => true,
+        'withGeneratedFields' => true,
+        'withCardViewDesigner' => true,
+    ])->assertOk();
+});
 
 it('renders root field layout input names that can be expanded as post data', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
