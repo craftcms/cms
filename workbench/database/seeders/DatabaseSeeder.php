@@ -6,6 +6,7 @@ namespace Workbench\Database\Seeders;
 
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -70,6 +71,8 @@ class DatabaseSeeder extends Seeder
             email: 'support@craftcms.com',
             site: $site,
         )->up();
+
+        Edition::set(Edition::Pro);
 
         app(LaravelMigrations::class)->ensureSessionsTable();
 
