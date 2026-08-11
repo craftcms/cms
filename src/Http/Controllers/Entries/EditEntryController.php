@@ -47,9 +47,10 @@ class EditEntryController
             abort(400, 'No entry was identified by the request.');
         }
 
-        // Visiting a canonical entry resolves to the author's provisional draft
-        // when one exists, so this covers provisional drafts too.
-        if ($element->getIsDraft() || $element->getIsRevision()) {
+        // Provisional drafts are the normal state of any entry someone has
+        // edited, so they render here. Named drafts and revisions still need
+        // the legacy editor's apply/revert controls.
+        if (($element->getIsDraft() && ! $element->isProvisionalDraft) || $element->getIsRevision()) {
             return app(EditElementController::class)->setElement($element)();
         }
 

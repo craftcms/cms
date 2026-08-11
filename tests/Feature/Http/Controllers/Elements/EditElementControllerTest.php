@@ -330,28 +330,6 @@ it('renders revision notices and controls for revisions', function () {
         ->assertSee('elements/revert', false);
 });
 
-it('renders provisional draft notices when a provisional draft exists', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-
-    app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-    )))
-        ->assertOk()
-        ->assertSeeText('Showing your unsaved changes.')
-        ->assertSee('elements/apply-draft', false);
-});
-
 it('renders unpublished draft controls', function () {
     /** @var Entry $draft */
     $draft = app(Entry::class);

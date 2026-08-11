@@ -1,9 +1,10 @@
 import {useEventListener} from '@vueuse/core';
 import {router, useForm, usePage} from '@inertiajs/vue3';
-import {t} from '@craftcms/ui';
-import {computed, onBeforeUnmount} from 'vue';
+import {actionClient, t} from '@craftcms/ui';
+import {computed, onBeforeUnmount, watch} from 'vue';
 import type {FormPayload} from '@/modules/forms/types';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
+import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 
@@ -22,6 +23,13 @@ export interface ElementEditPayload {
   sidebarForm: FormPayload | null;
   metadataHtml: string | null;
   saveUrl: string;
+  applyDraftUrl: string;
+  autosaveUrl: string;
+  discardDraftUrl: string;
+  isProvisionalDraft: boolean;
+  draftId: number | null;
+  canAutosave: boolean;
+  notice: string | null;
   // Element-type view models add their own keys on top of the shared payload.
   [key: string]: unknown;
 }
@@ -53,40 +61,119 @@ export function useElementEditPage({saveData}: Options = {}) {
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a
   // mutation — so neither can claim the other's keys.
-  const {advanceBaseline, errors, onMutation, renderer, values} =
-    useInertiaFormRenderer(form, formPayload);
+  const {
+    advanceBaseline,
+    errors,
+    onMutation: onLayoutMutation,
+    renderer,
+    values,
+  } = useInertiaFormRenderer(form, formPayload);
 
   const {
     advanceBaseline: advanceSidebarBaseline,
     errors: sidebarErrors,
-    onMutation: onSidebarMutation,
+    onMutation: onSidebarFormMutation,
     renderer: sidebarRenderer,
   } = useInertiaFormRenderer(form, sidebarPayload);
 
   useSiteStatuses(form);
 
+  const autosave = useElementAutosave(form, {
+    url: props.autosaveUrl,
+    elementType: props.elementType,
+    elementId: props.canonicalId,
+    siteId: props.siteId,
+    draftId: props.draftId,
+    enabled: props.canAutosave,
+  });
+
+  // Applying a draft consumes it, and Inertia preserves this component across
+  // the visit, so the server's view of the draft is authoritative afterwards.
+  watch(
+    () => props.draftId,
+    (draftId) => autosave.setDraftId(draftId)
+  );
+
+  // The renderers' change callbacks are the authoritative "content changed"
+  // signal, so autosave hangs off them rather than watching the form.
+  function onMutation(mutation: FormPayload['values']): void {
+    onLayoutMutation(mutation);
+    autosave.schedule();
+  }
+
+  function onSidebarMutation(mutation: FormPayload['values']): void {
+    onSidebarFormMutation(mutation);
+    autosave.schedule();
+  }
+
   const {save} = useSettingsSave(
     form,
+    // Applying a draft and saving the element are different endpoints, and
+    // which one applies depends on whether autosave has created a draft by the
+    // time the user submits — not on how the page was first rendered.
     () => ({
-      url: props.saveUrl,
+      url:
+        autosave.draftId.value !== null ? props.applyDraftUrl : props.saveUrl,
       method: 'post' as const,
     }),
     {
       transform: (data) => ({
         ...data,
         ...saveData?.(),
+        // Once autosave has created a provisional draft, the submission has to
+        // target it — otherwise applying would save the canonical element and
+        // strand the draft holding the newer values.
+        //
+        // This posts to a shared `elements/*` action rather than the element
+        // type's own, so it needs the generic identity params: the type-specific
+        // ones (an entry's `entryId`) mean nothing there.
+        ...(autosave.draftId.value !== null
+          ? {
+              elementType: props.elementType,
+              elementId: props.canonicalId,
+              draftId: autosave.draftId.value,
+              provisional: 1,
+            }
+          : {}),
       }),
       onSuccess: () => {
-        advanceBaseline();
-        advanceSidebarBaseline();
+        autosave.suspend(() => {
+          advanceBaseline();
+          advanceSidebarBaseline();
+        });
       },
     }
   );
 
+  /** Throws away the provisional draft, reverting to the canonical element. */
+  async function discardDraft(): Promise<void> {
+    if (autosave.draftId.value === null) {
+      return;
+    }
+
+    await actionClient.post(props.discardDraftUrl, {
+      elementType: props.elementType,
+      elementId: props.canonicalId,
+      siteId: props.siteId,
+      draftId: autosave.draftId.value,
+      provisional: 1,
+    });
+
+    // Re-render from the canonical element rather than patching state here.
+    router.reload();
+  }
+
   // Both the field layout and the sidebar feed the same Inertia form, so its
   // own dirty state covers the whole screen.
+  //
+  // When autosave is running, edits are already safe in a provisional draft, so
+  // only warn if it hasn't caught up — mid-save, or after a failed write.
   function hasUnsavedChanges(): boolean {
-    return !form.processing && form.isDirty;
+    if (form.processing || !form.isDirty) {
+      return false;
+    }
+
+    return !props.canAutosave || autosave.status.value !== 'saved';
   }
 
   useEventListener(window, 'beforeunload', (event) => {
@@ -111,6 +198,8 @@ export function useElementEditPage({saveData}: Options = {}) {
   onBeforeUnmount(removeNavigationGuard);
 
   return {
+    autosave,
+    discardDraft,
     errors,
     form,
     formPayload,
