@@ -1112,6 +1112,7 @@ JS,
                 ...$owner->getCrumbs(),
                 [
                     'html' => app(ElementHtml::class)->elementChipHtml($owner, [
+                        'appearance' => 'plain',
                         'showDraftName' => false,
                         'class' => 'chromeless',
                         'hyperlink' => true,
