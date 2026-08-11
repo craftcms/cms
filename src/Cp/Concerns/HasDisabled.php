@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Concerns;
 
-use Closure;
-
 /** Fluent `disabled` support. */
 trait HasDisabled
 {
-    protected bool|Closure $disabled = false;
+    protected bool $disabled = false;
 
-    public function disabled(bool|Closure $disabled = true): static
+    public function disabled(bool $disabled = true): static
     {
         $this->disabled = $disabled;
 
@@ -20,6 +18,6 @@ trait HasDisabled
 
     public function isDisabled(): bool
     {
-        return (bool) $this->evaluate($this->disabled);
+        return $this->disabled;
     }
 }

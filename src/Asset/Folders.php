@@ -301,6 +301,7 @@ class Folders
     }
 
     /**
+     * @param  int|list<int>  $folderIds
      * @param  bool  $deleteDir  Whether the volume directory should be deleted along the record.
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void

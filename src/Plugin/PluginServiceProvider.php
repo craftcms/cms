@@ -16,7 +16,7 @@ class PluginServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        $this->app->booting(fn () => $this->app->make(Plugins::class)->loadPlugins());
+        $this->app->booted(fn () => $this->app->make(Plugins::class)->loadPlugins());
     }
 
     public function boot(): void

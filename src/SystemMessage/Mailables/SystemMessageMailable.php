@@ -11,6 +11,9 @@ use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 
 class SystemMessageMailable extends CraftMailable
 {
+    /**
+     * @param  array<string, mixed>  $variables
+     */
     public function __construct(
         public string $key,
         public array $variables = [],

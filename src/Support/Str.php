@@ -18,10 +18,18 @@ use voku\helper\ASCII;
 
 class Str extends \Illuminate\Support\Str
 {
-    /** @see asciiCharMap() */
+    /**
+     * @var array<string, array<string, string|list<string>>>|null
+     *
+     * @see asciiCharMap()
+     */
     private static ?array $asciiCharMaps = null;
 
-    /** @see escapeShortcodes() */
+    /**
+     * @var array<string, string>|null
+     *
+     * @see escapeShortcodes()
+     */
     private static ?array $shortcodeEscapeMap = null;
 
     /**
@@ -30,7 +38,7 @@ class Str extends \Illuminate\Support\Str
      *
      * @param  bool  $flat  Whether the mappings should be returned as a flat array (é => e)
      * @param  string|null  $language  Whether to include language-specific mappings (only applied if $flat is true)
-     * @return array The fully merged ASCII character mappings.
+     * @return array<string, string|list<string>> The fully merged ASCII character mappings.
      */
     public static function asciiCharMap(bool $flat = false, ?string $language = '*'): array
     {
@@ -439,6 +447,7 @@ class Str extends \Illuminate\Support\Str
         return $r;
     }
 
+    /** @return array<string, string> */
     private static function shortcodeEscapeMap(): array
     {
         if (isset(self::$shortcodeEscapeMap)) {

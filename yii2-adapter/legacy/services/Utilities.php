@@ -67,7 +67,7 @@ class Utilities extends Component
     /**
      * Returns all utility type classes that the user has permission to use.
      *
-     * @return array<class-string<UtilityInterface>>
+     * @return array<class-string<\CraftCms\Cms\Utility\Utility>>
      */
     public function getAuthorizedUtilityTypes(): array
     {

@@ -91,6 +91,9 @@ JS, [
         return true;
     }
 
+    /**
+     * @param  array<int|string, true>  $duplicatedElementIds
+     */
     private function _duplicateElements(ElementQueryInterface $query, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ?ElementInterface $newParent = null): void
     {
         foreach ($query->cursor() as $element) {

@@ -1,15 +1,17 @@
 <script setup lang="ts">
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, serializeFormInputs, t, toHandle} from '@craftcms/ui';
+  import {actionClient, t, toHandle} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/ui/vue/CraftSelect.vue';
-  import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import type {FormPayload} from '@/modules/forms/types';
+  import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {
@@ -41,7 +43,7 @@
     supportedTranslationMethods: Record<string, string[]>;
     translationMethodOptions: Array<{value: string; label: string}>;
     isMultiSite: boolean;
-    settings: CraftCms.Cms.View.HtmlFragment;
+    settingsForm: FormPayload | null;
     readOnly: boolean;
     metadataHtml: string | null;
     missingFieldPlaceholder: string | null;
@@ -57,6 +59,7 @@
     searchable: props.field.searchable,
     translationMethod: props.field.translationMethod,
     translationKeyFormat: props.field.translationKeyFormat ?? '',
+    settings: {} as Record<string, any>,
   });
 
   // Auto-generate the handle from the name until the user edits it directly.
@@ -69,14 +72,16 @@
     handleGenerator.stop();
   }
 
-  // The field type's own settings are a server-rendered legacy HTML island
-  // (each type's getSettingsHtml()), swapped out via `fields/render-settings`
-  // when the type changes. Its inputs — namespaced `types[<typeId>]` — aren't
-  // part of the Inertia form, so they're serialized out of the DOM at submit.
-  const settingsHost = ref<HTMLElement | null>(null);
-  const settingsFragment = ref<CraftCms.Cms.View.HtmlFragment | null>(
-    props.settings
-  );
+  const settingsPayload = ref<FormPayload | null>(props.settingsForm);
+  const {
+    advanceBaseline: advanceSettingsBaseline,
+    errors: settingsErrors,
+    onMutation: onSettingsMutation,
+    renderer: settingsRenderer,
+    values: settingsValues,
+  } = useInertiaFormRenderer(form, settingsPayload, {
+    mutationKey: 'settings',
+  });
   const settingsLoading = ref(false);
   let settingsRequestId = 0;
 
@@ -87,37 +92,25 @@
   watch(
     () => form.type,
     async (type, oldType) => {
-      // Serialize before the island unmounts so compatible settings carry over.
-      const settings = settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '';
+      const values = settingsValues.value.settings;
 
       const requestId = ++settingsRequestId;
       settingsLoading.value = true;
-      settingsFragment.value = null;
 
       try {
         const {data} = await actionClient.post(renderSettings().url, {
           type,
           oldType,
-          settings,
-          namespace: `types[${typeOptionFor(type)?.id ?? ''}]`,
-          oldNamespace: `types[${typeOptionFor(oldType)?.id ?? ''}]`,
+          values,
         });
 
         if (requestId !== settingsRequestId) {
           return;
         }
 
-        settingsFragment.value = {
-          html: data.settingsHtml ?? '',
-          headHtml: data.headHtml ?? '',
-          bodyHtml: data.bodyHtml ?? '',
-        };
+        settingsPayload.value = data.form ?? null;
       } catch {
-        if (requestId === settingsRequestId) {
-          settingsFragment.value = {html: '', headHtml: '', bodyHtml: ''};
-        }
+        // Keep the last valid presentation and current values.
       } finally {
         if (requestId === settingsRequestId) {
           settingsLoading.value = false;
@@ -152,13 +145,24 @@
     () => !props.brandNew && !form.errors.type
   );
 
+  async function refreshSettings(
+    values: FormPayload['values']
+  ): Promise<FormPayload> {
+    const {data} = await actionClient.post(renderSettings().url, {
+      type: form.type,
+      oldType: form.type,
+      values,
+    });
+
+    if (!data.form) {
+      throw new Error('The field type did not return a Form payload.');
+    }
+
+    return data.form;
+  }
+
   const {save} = useSettingsSave(form, store, {
-    transform: (data) => ({
-      ...data,
-      typeSettings: settingsHost.value
-        ? serializeFormInputs(settingsHost.value)
-        : '',
-    }),
+    onSuccess: advanceSettingsBaseline,
   });
 
   const formActionItems = computed(() => [
@@ -301,14 +305,18 @@
 
         <hr />
 
-        <div ref="settingsHost">
+        <div>
           <div :id="currentTypeOption?.id">
             <div v-if="settingsLoading" class="flex justify-center p-4">
               <craft-spinner></craft-spinner>
             </div>
-            <HtmlFragmentRenderer
-              as="craft-field-group"
-              :fragment="settingsFragment"
+            <FormRenderer
+              v-if="settingsPayload"
+              ref="settingsRenderer"
+              :payload="settingsPayload"
+              :refresh="refreshSettings"
+              :errors="settingsErrors"
+              @update:mutation="onSettingsMutation"
             />
           </div>
         </div>

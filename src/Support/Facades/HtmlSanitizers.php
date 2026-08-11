@@ -10,7 +10,7 @@ use Override;
 
 /**
  * @method static string getDefaultDriver()
- * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager extend(string $driver, \Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface|array $definition)
+ * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager extend(string $driver, array|\Closure|\Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface $definition)
  * @method static \CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager defaults(\Closure $callback)
  * @method static bool has(string $name)
  * @method static array names()

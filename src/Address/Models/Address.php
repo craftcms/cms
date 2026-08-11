@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Models;
 
+use CraftCms\Cms\Database\Factories\AddressFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Address extends BaseModel
 {
+    /** @use HasFactory<AddressFactory> */
     use HasFactory;
 
     #[\Override]

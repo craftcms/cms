@@ -74,6 +74,7 @@ readonly class PreviewHtml
 
     /**
      * @param  Chippable[]  $components
+     * @param  array<string, mixed>  $chipConfig
      */
     public function componentPreviewHtml(array $components, array $chipConfig = []): string
     {
@@ -94,7 +95,7 @@ readonly class PreviewHtml
                 'type' => 'button',
                 'label' => implode(', ', array_map(fn (Chippable $component) => $component->getId(), $components)),
                 'size' => 'small',
-                'appearance' => 'filled',
+                'variant' => 'fill',
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],

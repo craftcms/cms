@@ -11,7 +11,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
-use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
@@ -35,7 +35,7 @@ use function CraftCms\Cms\t;
  * @property string $transformSubpath
  */
 #[Ruleset(VolumeRules::class)]
-class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
+class Volume extends Component implements CpEditable, CustomFieldLayoutProviderInterface
 {
     use HasFieldLayout;
 
@@ -382,6 +382,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         return $this->resolveStorageTargetKey($this->_transformFsHandle, $parse);
     }
 
+    /** @return array<string, array<string, array<string, list<array<string, mixed>|string>|string|null>>|int|string|null> */
     public function getConfig(): array
     {
         $config = [

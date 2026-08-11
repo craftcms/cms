@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 
 class DefineSettingsAttributes
 {
+    /** @param list<string> $attributes */
     public function __construct(
         public ConfigurableComponentInterface $component,
         public array $attributes,

@@ -12,10 +12,12 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Generators\UserType;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
+/** @phpstan-import-type FieldDefinitionConfig from FieldDefinition */
 class User extends Element
 {
     #[Override]
@@ -49,6 +51,7 @@ class User extends Element
         return 'UserInterface';
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     #[Override]
     public static function getFieldDefinitions(): array
     {
@@ -121,6 +124,7 @@ class User extends Element
         ]), self::getName());
     }
 
+    /** @return array<string, FieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
         $volumeUid = ProjectConfig::get('users.photoVolumeUid');

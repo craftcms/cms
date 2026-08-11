@@ -12,18 +12,19 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
 {
     use FieldConditionRuleTrait;
 
+    /** @return list<string>|string|null */
     protected function elementQueryParam(): string|array|null
     {
         return $this->paramValue();
     }
 
-    protected function matchFieldValue($value): bool
+    /** @param Money|float|int|null $value */
+    protected function matchFieldValue(mixed $value): bool
     {
         if ($value instanceof Money) {
             $value = (float) $value->getAmount();
         }
 
-        /** @var int|float|null $value */
         return $this->matchValue($value);
     }
 }

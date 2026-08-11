@@ -333,6 +333,10 @@ class UpdaterController extends BaseUpdaterController
     /**
      * Parses the 'install` param and returns handle => version pairs.
      */
+    /**
+     * @param  array<array-key, scalar>  $installParam
+     * @return array<string, string>
+     */
     private function parseInstallParam(array $installParam): array
     {
         $install = [];

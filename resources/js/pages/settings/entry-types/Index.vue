@@ -146,7 +146,7 @@
   <LayoutSlot name="actions">
     <CpLink
       appearance="button"
-      :href="create['/{cpTrigger?}/settings/entry-types/new']().url"
+      :href="create().url"
       variant="accent"
       :inertia="false"
       icon="plus"

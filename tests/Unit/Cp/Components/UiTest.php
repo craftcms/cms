@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\Components\Callout;
 use CraftCms\Cms\Cp\Components\ComponentRegistry;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\MissingComponent;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\View\TemplateMode;
 use Twig\Markup;
@@ -40,7 +41,7 @@ describe('configure', function () {
     it('rejects getter and rendering method names as config keys', function (string $key) {
         expect(fn () => Callout::make()->configure([$key => 'x']))
             ->toThrow(InvalidArgumentException::class, $key);
-    })->with(['getVariant', 'isDisabled', 'toHtml', 'evaluate', 'renderSlots']);
+    })->with(['getVariant', 'isDisabled', 'toHtml', 'renderSlots']);
 });
 
 describe('ui()', function () {
@@ -50,6 +51,19 @@ describe('ui()', function () {
         expect($component)->toBeInstanceOf(Callout::class)
             ->and($component->toHtml())->toContain('variant="info"')
             ->and($component->toHtml())->toContain('Hi');
+    });
+
+    it('creates missing component placeholders with slots', function () {
+        $component = ui('missing-component', [
+            'error' => 'Plugin disabled.',
+            'pluginName' => 'Example',
+            'action' => new Markup('<button>Enable</button>', 'UTF-8'),
+        ]);
+
+        expect($component)->toBeInstanceOf(MissingComponent::class)
+            ->and($component->toHtml())->toContain('error="Plugin disabled."')
+            ->and($component->toHtml())->toContain('plugin-name="Example"')
+            ->and($component->toHtml())->toContain('<button slot="action">Enable</button>');
     });
 
     it('remains chainable after creation', function () {

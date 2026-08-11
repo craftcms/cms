@@ -38,7 +38,7 @@ class ElementIndexes
      * Resolves a source key to its source config for the given context.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return array{0: ?string, 1: ?array}
+     * @return array{0:?string,1:?array<string,mixed>}
      */
     public function resolveSource(string $elementType, ?string $sourceKey, string $context): array
     {
@@ -70,6 +70,11 @@ class ElementIndexes
      * condition, and collapsed-element exclusions.
      *
      * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string,mixed>|null  $source
+     * @param  array<string,mixed>  $baseCriteria
+     * @param  array<string,mixed>  $criteria
+     * @param  array<string,mixed>|null  $filterConditionConfig
+     * @param  int[]  $collapsedElementIds
      * @return array{query: ElementQueryInterface, unfilteredQuery: ElementQueryInterface|null}
      */
     public function buildQueryState(
@@ -207,6 +212,7 @@ class ElementIndexes
 
     /**
      * @param  class-string<ElementInterface>  $elementType
+     * @return array<array-key,mixed>|null
      */
     public function availableExporters(string $elementType, string $sourceKey, bool $mobileBrowser = false): ?array
     {
@@ -220,6 +226,8 @@ class ElementIndexes
     /**
      * Scopes a filter-HUD condition's selectable rules to the query params the
      * source and current condition already claim exclusively.
+     *
+     * @param  array<string,mixed>|null  $source
      */
     public function populateFilterHudQueryParams(
         ElementConditionInterface $condition,

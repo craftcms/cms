@@ -35,6 +35,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Missing as MissingLayoutElement;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -60,6 +61,38 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-type FieldConfig array{
+ *     name:string|null,
+ *     handle:string|null,
+ *     instructions:string|null,
+ *     searchable?:bool,
+ *     translationMethod:string,
+ *     translationKeyFormat:string|null,
+ *     type:string,
+ *     settings?:array<array-key, mixed>
+ * }
+ * @phpstan-type PaginationData array{
+ *     total:int,
+ *     per_page:int,
+ *     current_page:int,
+ *     last_page:int,
+ *     next_page_url:string|null,
+ *     prev_page_url:string|null,
+ *     from:int|null,
+ *     to:int|null
+ * }
+ * @phpstan-type FieldTableRow array{
+ *     id:int|null,
+ *     title:string,
+ *     translatable:string|false,
+ *     searchable:bool,
+ *     url:string|null,
+ *     handle:string|null,
+ *     type:array{isMissing:bool, label:string|null, icon:array{name:string, family:string}|null},
+ *     usages:string|null
+ * }
+ */
 #[Singleton]
 class Fields
 {
@@ -82,6 +115,7 @@ class Fields
      */
     private ?MemoizableArray $_layouts = null;
 
+    /** @var array<string, FieldInterface> */
     private array $_savingFields = [];
 
     /**
@@ -212,7 +246,7 @@ class Fields
     /**
      * Returns all available field type classes.
      *
-     * @return Collection<class-string<FieldInterface>>
+     * @return Collection<int, class-string<FieldInterface>>
      */
     public function getAllFieldTypes(): Collection
     {
@@ -222,12 +256,11 @@ class Fields
     /**
      * Returns all field types that have a column in the content table.
      *
-     * @phpstan-return Collection<class-string<FieldInterface>>
+     * @return Collection<int, class-string<FieldInterface>>
      */
     public function getFieldTypesWithContent(): Collection
     {
         return $this->getAllFieldTypes()
-            /** @var class-string<FieldInterface> $class */
             ->filter(fn (string $class) => $class::dbType() !== null)
             ->values();
     }
@@ -237,7 +270,7 @@ class Fields
      *
      * @param  FieldInterface  $field  The current field to base compatible fields on
      * @param  bool  $includeCurrent  Whether $field's class should be included
-     * @return Collection<class-string<FieldInterface>>
+     * @return Collection<int, class-string<FieldInterface>>
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): Collection
     {
@@ -251,7 +284,6 @@ class Fields
 
         if (is_string($dbType)) {
             foreach ($this->getAllFieldTypes() as $class) {
-                /** @var class-string<FieldInterface> $class */
                 if (
                     ($includeCurrent || $class !== $field::class) &&
                     $this->areFieldTypesCompatible($field::class, $class)
@@ -262,7 +294,6 @@ class Fields
         }
 
         // Make sure the current field class is in there if it's supposed to be
-        /** @var FieldInterface $field */
         if ($includeCurrent && $types->doesntContain($field::class)) {
             $types->add($field::class);
         }
@@ -300,7 +331,7 @@ class Fields
     /**
      * Returns all field types which manage nested entries.
      *
-     * @return Collection<class-string<ElementContainerFieldInterface>> The field type classes which manage nested entries
+     * @return Collection<int, class-string<ElementContainerFieldInterface>> The field type classes which manage nested entries
      */
     public function getNestedEntryFieldTypes(): Collection
     {
@@ -310,7 +341,7 @@ class Fields
     /**
      * Returns all available relational field type classes.
      *
-     * @return Collection<class-string<BaseRelationField>> The available relational field type classes
+     * @return Collection<int, class-string<BaseRelationField>> The available relational field type classes
      */
     public function getRelationalFieldTypes(): Collection
     {
@@ -324,11 +355,8 @@ class Fields
      *
      * @template T of FieldInterface
      *
-     * @param  class-string<T>|array  $config  The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
-     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
-     *
-     * @return T The field
+     * @param  class-string<T>|array{type:string, id?:int|string, uid?:string, ...}  $config  The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @return ($config is string ? T : FieldInterface)
      */
     public function createField(mixed $config): FieldInterface
     {
@@ -390,7 +418,7 @@ class Fields
      *
      * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
-     * @return Collection<FieldInterface> The fields
+     * @return Collection<int, FieldInterface> The fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
@@ -402,7 +430,7 @@ class Fields
      *
      * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
-     * @return Collection<FieldInterface> The fields
+     * @return Collection<int, FieldInterface> The fields
      */
     public function getFieldsWithContent(mixed $context = null): Collection
     {
@@ -415,7 +443,7 @@ class Fields
      *
      * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
-     * @return Collection<FieldInterface> The fields
+     * @return Collection<int, FieldInterface> The fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
@@ -431,7 +459,7 @@ class Fields
      * @param  class-string<T>  $type  The field type
      * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
-     * @return Collection<T> The fields
+     * @return Collection<int, T> The fields
      */
     public function getFieldsByType(string $type, mixed $context = null): Collection
     {
@@ -498,6 +526,8 @@ class Fields
 
     /**
      * Returns the config for the given field.
+     *
+     * @return FieldConfig
      */
     public function createFieldConfig(FieldInterface $field): array
     {
@@ -528,8 +558,10 @@ class Fields
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
-            'type' => $field::class,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($settings),
+            'type' => $field instanceof MissingField ? $field->expectedType : $field::class,
+            'settings' => ProjectConfigHelper::packAssociativeArrays(
+                $field instanceof MissingField ? ($field->settings ?? []) : $settings,
+            ),
         ];
     }
 
@@ -748,7 +780,7 @@ class Fields
      * Returns all the field layouts that contain the given field.
      *
      *
-     * @return Collection<FieldLayout>
+     * @return Collection<int, FieldLayout>
      */
     public function findFieldUsages(FieldInterface $field): Collection
     {
@@ -898,6 +930,7 @@ class Fields
         return $this->_layouts = $layouts;
     }
 
+    /** @param array<string, mixed> $config */
     private function _layoutFromConfig(array $config): FieldLayout
     {
         $nestedConfig = Arr::pull($config, 'config');
@@ -912,7 +945,7 @@ class Fields
     /**
      * Returns all saved field layouts.
      *
-     * @return Collection<FieldLayout>
+     * @return Collection<int, FieldLayout>
      */
     public function getAllLayouts(): Collection
     {
@@ -955,7 +988,7 @@ class Fields
      * Returns field layouts by their IDs.
      *
      * @param  int[]  $layoutIds  The field layouts’ IDs
-     * @return Collection<FieldLayout> The field layouts
+     * @return Collection<int, FieldLayout> The field layouts
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
@@ -984,7 +1017,7 @@ class Fields
      * Returns all of the field layouts associated with a given element type.
      *
      * @param  class-string<ElementInterface>  $type
-     * @return Collection<FieldLayout> The field layouts
+     * @return Collection<int, FieldLayout> The field layouts
      */
     public function getLayoutsByType(string $type): Collection
     {
@@ -993,6 +1026,8 @@ class Fields
 
     /**
      * Creates a field layout from the given config.
+     *
+     * @param  array<string, mixed>|string  $config
      */
     public function createLayout(array|string $config): FieldLayout
     {
@@ -1020,8 +1055,24 @@ class Fields
     {
         $type = Arr::pull($config, 'type');
 
-        if (! $type || ! is_subclass_of($type, FieldLayoutElement::class)) {
+        if (! $type) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");
+        }
+
+        if (class_exists($type) && ! is_subclass_of($type, FieldLayoutElement::class)) {
+            throw new InvalidArgumentException("Invalid field layout element class: $type");
+        }
+
+        try {
+            ComponentHelper::validateComponentClass($type, FieldLayoutElement::class, true);
+        } catch (MissingComponentException $exception) {
+            return new MissingLayoutElement([
+                'expectedType' => $type,
+                'errorMessage' => $exception->getMessage(),
+                'settings' => $config,
+                'uid' => $config['uid'] ?? null,
+                'width' => $config['width'] ?? 100,
+            ]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
@@ -1207,6 +1258,7 @@ class Fields
     /**
      * Applies a field save to the database.
      */
+    /** @param FieldConfig $data */
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
         $fieldRecord = $this->_getFieldModel($fieldUid, true);
@@ -1244,7 +1296,7 @@ class Fields
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
-            $fieldRecord->settings = $data['settings'] ?? null;
+            $fieldRecord->setAttribute('settings', $data['settings'] ?? null);
 
             if ($fieldRecord->dateDeleted) {
                 $fieldRecord->dateDeleted = null;
@@ -1295,6 +1347,8 @@ class Fields
      *
      *
      * @internal
+     *
+     * @return array{0:PaginationData, 1:list<FieldTableRow>}
      */
     public function getTableData(
         int $page,
@@ -1313,7 +1367,6 @@ class Fields
 
         if ($orderBy === 'type') {
             $types = $this->getAllFieldTypes()->sortBy(
-                /** @var class-string<FieldInterface> $class */
                 fn (string $class) => $class::displayName(),
                 descending: $sortDir === 'desc',
             );
@@ -1393,6 +1446,7 @@ class Fields
     /**
      * Returns the array of sql "like" params to be used in the 'where' param for the query.
      */
+    /** @return list<array{string, 'ilike'|'like', string}> */
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle', 'instructions', 'type'];

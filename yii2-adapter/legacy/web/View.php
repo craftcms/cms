@@ -36,6 +36,7 @@ use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateHooks;
@@ -2147,6 +2148,7 @@ JS;
         }
         $this->_registeredAssetBundles[$hash] = true;
         parent::registerAssetFiles($name);
+        app(InternalAssetRegistry::class)->flush();
     }
 
     /**

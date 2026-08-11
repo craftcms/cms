@@ -155,6 +155,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         }
     }
 
+    /** @param array<string, string> $paths */
     protected function copyPublishableFiles(array $paths): void
     {
         foreach ($paths as $from => $to) {
@@ -169,6 +170,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         }
     }
 
+    /** @param class-string[] $classes */
     protected function registerSerializableClasses(array $classes): void
     {
         $existing = $this->app->make(Repository::class)->get('cache.serializable_classes');
@@ -213,6 +215,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     }
 
     #[Override]
+    /** @param array<string, mixed> $config */
     public static function create(array $config): PluginInterface
     {
         $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));

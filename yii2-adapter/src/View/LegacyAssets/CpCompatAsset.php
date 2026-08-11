@@ -16,14 +16,14 @@ use function CraftCms\Cms\craftAsset;
  *
  * Core no longer uses these plugins; the shims exist so third-party code that
  * still calls them keeps working, while logging a deprecation warning. The
- * shims live in legacy/web/assets/cpcompat/cp-compat.js (published to
- * public/vendor/craft/adapter/cpcompat). Loaded CP-wide via {@see RegisterLegacyCompatAssets}.
+ * shims live in the craftcms-legacy cpcompat bundle. Loaded CP-wide via
+ * {@see RegisterLegacyCompatAssets}.
  *
  * component-select-input.js is a related but distinct case: the real (not
- * stubbed) legacy `Craft.ComponentSelectInput` implementation, relocated here
- * so the core bundle can drop it while the `componentSelect.twig` `jsClass`
- * escape hatch keeps working for plugin subclasses. It defines its class at
- * top-level eval, so it is registered ahead of cp-compat.js.
+ * stubbed) legacy `Craft.ComponentSelectInput` implementation, relocated into
+ * that bundle so the core CP bundle can drop it while the `componentSelect.twig`
+ * `jsClass` escape hatch keeps working for plugin subclasses. It defines its
+ * class at top-level eval, so it is registered ahead of cp-compat.js.
  *
  * @internal
  */
@@ -33,7 +33,8 @@ class CpCompatAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
-        $htmlStack->jsFile(craftAsset('adapter/cpcompat/component-select-input.js'));
-        $htmlStack->jsFile(craftAsset('adapter/cpcompat/cp-compat.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/component-select-input.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/legacy-html-control.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/cp-compat.js'));
     }
 }

@@ -36,7 +36,7 @@ use Tpetry\QueryExpressions\Value\Value;
 #[Scoped]
 class SystemMessages
 {
-    /** @var Collection<SystemMessage>|null */
+    /** @var Collection<string, SystemMessage>|null */
     private ?Collection $defaultMessages = null;
 
     public function __construct(
@@ -63,7 +63,7 @@ class SystemMessages
     /**
      * Returns all the default system email messages, without subject/body overrides.
      *
-     * @return Collection<SystemMessage>
+     * @return Collection<string, SystemMessage>
      */
     public function getAllDefaultMessages(): Collection
     {
@@ -85,7 +85,7 @@ class SystemMessages
     /**
      * Returns all the system email messages in a given language, with subject/body overrides.
      *
-     * @return Collection<SystemMessage>
+     * @return Collection<string, SystemMessage>
      */
     public function getAllMessages(?string $language = null): Collection
     {
@@ -186,6 +186,9 @@ class SystemMessages
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $variables
+     */
     public function mailable(string $key, User $user, array $variables = []): SystemMessageMailable
     {
         $siteId = null;

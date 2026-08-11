@@ -18,7 +18,7 @@ export default css`
     border-radius: var(--c-radius-md);
     position: relative;
   }
-  
+
   craft-badge-indicator {
       position: absolute;
       inset-inline-end: 0;
@@ -33,6 +33,10 @@ export default css`
 
   .nav-item--flush {
     margin-inline-start: calc(var(--_padding-inline) * -1);
+  }
+
+  :host([group]) {
+    margin-block-start: var(--c-spacing-sm);
   }
 
   :host([active]) .nav-item {
@@ -83,7 +87,7 @@ export default css`
     }
   }
 
-  .subnav {
+  :host(:not([group])) .subnav {
     margin-block-start: var(--c-spacing-sm);
     margin-inline-start: calc(
       (var(--c-size-icon-md) / 2) + var(--c-spacing-sm) + 1px

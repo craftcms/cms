@@ -25,6 +25,7 @@ class TableRequest extends FormRequest
         return $this->input('search');
     }
 
+    /** @return list<array{field:string, direction:string}> */
     public function sort(): array
     {
         return ! empty($this->array('sort')) ? $this->array('sort') : [

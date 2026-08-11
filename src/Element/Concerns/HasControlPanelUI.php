@@ -43,7 +43,7 @@ use function CraftCms\Cms\t;
  * including edit URLs, sidebar HTML, metadata, action menus, and attribute rendering.
  *
  * @property string|null $ref The reference string to this element
- * @property array $htmlAttributes Any attributes that should be included in the element's DOM representation in the control panel
+ * @property array<string,mixed> $htmlAttributes Any attributes that should be included in the element's DOM representation in the control panel
  *
  * @internal
  */
@@ -178,6 +178,7 @@ trait HasControlPanelUI
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
      */
+    /** @return array<array-key,array<string,mixed>> */
     protected function safeActionMenuItems(): array
     {
         $items = [];
@@ -312,6 +313,7 @@ JS, [
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
      */
+    /** @return array<array-key,array<string,mixed>> */
     protected function destructiveActionMenuItems(): array
     {
         $items = [];
@@ -448,6 +450,7 @@ JS,
         return $items;
     }
 
+    /** @return array<string,mixed> */
     public function getHtmlAttributes(string $context): array
     {
         $htmlAttributes = Arr::merge($this->htmlAttributes($context), [
@@ -468,6 +471,7 @@ JS,
      *
      * @see getHtmlAttributes()
      */
+    /** @return array<string,mixed> */
     protected function htmlAttributes(string $context): array
     {
         return [];
@@ -692,6 +696,7 @@ JS,
         return $fieldLayout && ! empty($fieldLayout->getTabs());
     }
 
+    /** @return array<string,mixed> */
     public function getMetadata(): array
     {
         $metadata = $this->metadata();
@@ -752,8 +757,8 @@ JS,
     /**
      * Returns element metadata that should be shown within the editor sidebar.
      *
-     * @return array The data, with keys representing the labels. The values can either be strings or callables.
-     *               If a value is `false`, it will be omitted.
+     * @return array<string,mixed> The data, with keys representing the labels. The values can either be strings or callables.
+     *                             If a value is `false`, it will be omitted.
      */
     protected function metadata(): array
     {
@@ -790,6 +795,7 @@ JS,
      *
      * @see getCrumbs()
      */
+    /** @return array<array-key,mixed> */
     protected function crumbs(): array
     {
         return [];

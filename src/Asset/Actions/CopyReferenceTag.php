@@ -18,6 +18,12 @@ class CopyReferenceTag extends ElementAction
         return t('Copy reference tag');
     }
 
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
+    }
+
     public function getTriggerHtml(): ?string
     {
         $refHandle = $this->elementType::refHandle();

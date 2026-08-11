@@ -4,11 +4,23 @@ includes:
 
 parameters:
     phpVersion: 80500
-    level: 5
+    level: 6
     paths:
         - src
         - config
+    excludePaths:
+        analyse:
+            - src/Support/Facades
+    ignoreErrors:
+        -
+            message: '#CraftCms\\Cms\\Support\\Facades\\Elements::eagerLoadElements\(\)#'
+            identifier: argument.type
+        -
+            message: '#Unable to resolve the template type (TKey|TValue) in call to function collect#'
+            identifier: argument.templateType
+            path: src/Asset/Commands/Concerns/IndexesAssets.php
     stubFiles:
+        - yii2-adapter/stubs/laravel-ruleset-validation.stub
         - yii2-adapter/stubs/_generated.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/ResolveInfo.stub
@@ -30,5 +42,3 @@ parameters:
     configDirectories:
         - tests
     tmpDir: /tmp/phpstan
-    ignoreErrors:
-        - '#^Call to function class_exists\(\) with .* will always evaluate to false.$#'

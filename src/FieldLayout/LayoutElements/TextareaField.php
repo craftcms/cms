@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Override;
@@ -73,6 +77,19 @@ class TextareaField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return Textarea::make($this->name ?? $this->attribute())
+            ->value($this->value($context->element))
+            ->mode($this->disabled
+                ? ControlMode::Disabled
+                : ($this->readonly ? ControlMode::ReadOnly : ControlMode::Editable))
+            ->rows($this->rows ?? 2)
+            ->maxLength($this->maxlength)
+            ->placeholder($this->placeholder);
+    }
+
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return template(
@@ -86,6 +103,7 @@ class TextareaField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array{class: list<string>, id: string, describedBy: string|null, rows: int|null, cols: int|null, name: string, value: mixed, maxlength: int|null, autofocus: bool, disabled: bool, readonly: bool, required: bool, title: string|null, placeholder: string|null}
      */
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
@@ -119,6 +137,7 @@ class TextareaField extends BaseNativeField
         return $this->name ?? parent::errorKey();
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

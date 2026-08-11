@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -56,6 +60,23 @@ class PhotoField extends BaseNativeField
         return t('Photo');
     }
 
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        if ($context->element && ! $context->element instanceof User) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
+        }
+
+        if (! $context->element?->id || ! ProjectConfig::get('users.photoVolumeUid')) {
+            return null;
+        }
+
+        return ElementSelect::make($this->attribute())
+            ->elementType(Asset::class)
+            ->limit(1)
+            ->value($context->element->photoId ? [$context->element->photoId] : []);
+    }
+
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ! $element instanceof User) {
@@ -94,6 +115,7 @@ JS, [
         ]);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

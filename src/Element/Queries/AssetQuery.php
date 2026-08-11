@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Database\Query\Builder;
@@ -37,6 +38,7 @@ class AssetQuery extends ElementQuery
     #[Override]
     protected string $table = Table::ASSETS;
 
+    /** @var array<string, int> */
     #[Override]
     protected array $defaultOrderBy = [
         'assets.dateCreated' => SORT_DESC,
@@ -57,6 +59,7 @@ class AssetQuery extends ElementQuery
      */
     public ?bool $savable = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         parent::__construct(Asset::class, $config);
@@ -186,6 +189,7 @@ class AssetQuery extends ElementQuery
         });
     }
 
+    /** @param array<string, mixed> $row */
     #[Override]
     public function createElement(array $row): ElementInterface
     {
@@ -213,6 +217,7 @@ class AssetQuery extends ElementQuery
         return $tags;
     }
 
+    /** @return Collection<int, FieldLayout> */
     #[Override]
     protected function fieldLayouts(): Collection
     {

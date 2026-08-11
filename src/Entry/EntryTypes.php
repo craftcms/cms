@@ -86,7 +86,7 @@ class EntryTypes
      * ```
      *
      *
-     * @return Collection<EntryType>
+     * @return Collection<int, EntryType>
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {
@@ -161,7 +161,7 @@ class EntryTypes
      * $entryTypes = Craft::$app->entries->getAllEntryTypes();
      * ```
      *
-     * @return Collection<EntryType>
+     * @return Collection<int, EntryType>
      */
     public function getAllEntryTypes(): Collection
     {
@@ -568,6 +568,7 @@ class EntryTypes
      *
      * @internal
      */
+    /** @return array{array<string, int|string|null>, EntryTypeIndexData[]} */
     public function getTableData(
         int $page,
         int $limit,
@@ -584,7 +585,7 @@ class EntryTypes
             sortDir: $sortDir,
         );
 
-        /** @var Collection<EntryType> $entryTypes */
+        /** @var Collection<int, EntryType> $entryTypes */
         $entryTypes = $results->map(fn (object $result) => $this->entryTypes()->firstWhere('id',
             $result->id))->filter()->values();
 
@@ -631,7 +632,7 @@ class EntryTypes
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection, 1: LengthAwarePaginator}
+     * @return array{0: Collection<int, object>, 1: LengthAwarePaginator<int, object>}
      */
     private function prepTableData(
         Builder $query,
@@ -698,6 +699,7 @@ class EntryTypes
     /**
      * Returns the sql expression to be used in the 'where' param for the query.
      */
+    /** @return array<int, array{string, string, string}> */
     private function getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];

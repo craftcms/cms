@@ -51,6 +51,7 @@ class Filesystems
         private readonly FilesystemTypes $filesystemTypes,
     ) {}
 
+    /** @return array<string,mixed> */
     public function createFilesystemConfig(FsInterface $fs): array
     {
         $config = [
@@ -89,7 +90,12 @@ class Filesystems
             return $this->filesystems;
         }
 
-        $filesystems = collect($this->projectConfig->get(ProjectConfig::PATH_FS) ?? [])
+        $configs = $this->projectConfig->get(ProjectConfig::PATH_FS);
+        if (! is_array($configs)) {
+            $configs = [];
+        }
+
+        $filesystems = collect($configs)
             ->mapWithKeys(function (array $config, string $handle): array {
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
@@ -286,13 +292,7 @@ class Filesystems
     /**
      * Creates a filesystem from a given config.
      *
-     * @template T of FsInterface
-     *
-     * @param  class-string<T>|array  $config
-     *
-     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
-     *
-     * @return T
+     * @param  class-string<FsInterface>|array<string,mixed>  $config
      */
     public function createFilesystem(mixed $config): FsInterface
     {
@@ -552,6 +552,10 @@ class Filesystems
         return $resolved !== '' ? $resolved : null;
     }
 
+    /**
+     * @param  array<string,mixed>  $config
+     * @return array<string,mixed>
+     */
     private function generatedDiskConfig(array $config): array
     {
         $config[self::GENERATED_CONFIG_KEY] = true;
@@ -572,6 +576,10 @@ class Filesystems
         return ($config['driver'] ?? null) === 'craft-fs-bridge';
     }
 
+    /**
+     * @param  array<string,mixed>  $config
+     * @return array<string,mixed>
+     */
     private function validateDiskConfig(string $handle, array $config): array
     {
         if (! is_string($config['driver'] ?? null) || $config['driver'] === '') {

@@ -108,6 +108,7 @@ class TemplateManager extends Manager
         return $this->isRenderingPageTemplate;
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderTemplate(
         string $template,
         array $variables = [],
@@ -118,6 +119,7 @@ class TemplateManager extends Manager
         return $this->renderFileTemplate($template, $variables, $templateMode, $publicOnly, $renderer);
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedTemplate(
         string $template,
         array $variables = [],
@@ -134,6 +136,7 @@ class TemplateManager extends Manager
         );
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderPageTemplate(
         string $template,
         array $variables = [],
@@ -191,6 +194,7 @@ class TemplateManager extends Manager
         return $event->output;
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderString(
         string $template,
         array $variables = [],
@@ -206,6 +210,7 @@ class TemplateManager extends Manager
         );
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderTwigString(
         string $template,
         array $variables = [],
@@ -221,6 +226,7 @@ class TemplateManager extends Manager
         );
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedString(
         string $template,
         array $variables = [],
@@ -236,21 +242,24 @@ class TemplateManager extends Manager
         );
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderObjectTemplate(
         string $template,
         mixed $object,
         array $variables = [],
         TemplateMode $templateMode = TemplateMode::Site,
+        string|false $escaperStrategy = false,
     ): string {
         $renderer = $this->twigRenderer();
 
         return $this->withRenderingState(
             'string:'.$template,
             $templateMode,
-            fn () => $renderer->renderObjectTemplate($template, $object, $variables, $templateMode),
+            fn () => $renderer->renderObjectTemplate($template, $object, $variables, $templateMode, $escaperStrategy),
         );
     }
 
+    /** @param array<string, mixed> $variables */
     public function renderSandboxedObjectTemplate(
         string $template,
         mixed $object,
@@ -281,6 +290,7 @@ class TemplateManager extends Manager
         return $this->container->make(BladeRenderer::class);
     }
 
+    /** @param array<string, mixed> $variables */
     private function renderFileTemplate(
         string $template,
         array $variables,

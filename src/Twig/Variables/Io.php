@@ -13,6 +13,7 @@ class Io
         return AssetsHelper::getMaxUploadSize();
     }
 
+    /** @return array<string, mixed> */
     public function getFileKinds(): array
     {
         return AssetsHelper::getFileKinds();

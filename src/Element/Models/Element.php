@@ -9,6 +9,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Site\Models\Site;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,7 +18,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Element extends BaseModel
 {
+    /** @use HasFactory<Factory<Element>> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

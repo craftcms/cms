@@ -25,7 +25,7 @@ trait HasUtilities
     protected array $utilities = [];
 
     /**
-     * @return array<string, array{label:string, action:callable|string, info?:string, params?:array}|Closure>
+     * @return array<string, array{label:string, action:callable|string, info?:string, params?:array<string, mixed>}|Closure>
      */
     protected function getCacheOptions(): array
     {

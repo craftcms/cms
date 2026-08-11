@@ -47,6 +47,9 @@ enum JobStatus: int implements JsonSerializable
         return null;
     }
 
+    /**
+     * @return array{label: string, value: int}
+     */
     public function jsonSerialize(): array
     {
         return [

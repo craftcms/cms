@@ -15,11 +15,14 @@ use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Gql;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition */
 class Entry extends Query
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getQueries(bool $checkToken = true): array
     {
         if ($checkToken && ! GqlHelper::canQueryEntries()) {
@@ -70,6 +73,7 @@ class Entry extends Query
 
     /**
      * @param  EntryGqlType[]  $entryTypeGqlTypes
+     * @return array<string, UnnamedFieldDefinitionConfig>
      */
     private static function sectionLevelFields(array $entryTypeGqlTypes): array
     {
@@ -135,6 +139,7 @@ class Entry extends Query
 
     /**
      * @param  EntryGqlType[]  $entryTypeGqlTypes
+     * @return array<string, UnnamedFieldDefinitionConfig>
      */
     private static function nestedEntryFieldLevelFields(array $entryTypeGqlTypes): array
     {

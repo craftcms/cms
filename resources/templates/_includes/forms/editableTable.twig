@@ -133,7 +133,7 @@
             {% else %}
               {% set headingId = "#{id}-heading-#{loop.index}" %}
               {% set hasErrors = cell.errors.isNotEmpty() ?? false %}
-              {% set cellName = name~'['~rowId~']['~colId~']' %}
+              {% set cellName = static ? null : name~'['~rowId~']['~colId~']' %}
               {% set isCode = (col.code ?? false) or col.type == 'color' %}
               <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>
                 {% block tablecell %}
@@ -268,11 +268,10 @@
               <craft-button
                 icon="x"
                 size="small"
-                appearance="plain"
                 aria-label="{{ 'Delete row {index}'|t('app', {
                   index: rowNumber,
                 }) }}"
-                variant="danger"
+                variant="danger-plain"
                 command="--delete-row"
                 {% if minRows and totalRows <= minRows %}disabled{% endif %}
               >
@@ -295,7 +294,7 @@
     <div
       class="border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
     >
-      <craft-button type="button" appearance="plain" size="small" class="w-full" command="--add-row">
+      <craft-button type="button" variant="plain" size="small" class="w-full" command="--add-row">
         <craft-icon name="plus"></craft-icon>
         {{ buttonText }}
       </craft-button>

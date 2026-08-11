@@ -9,6 +9,9 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -63,11 +66,10 @@ abstract class BaseElementLinkType extends BaseLinkType
         return static::elementType()::baseGqlType();
     }
 
-    /**
-     * @return string|string[] The element sources elements can be linked from
-     */
+    /** @var list<string>|null The element sources elements can be linked from */
     public ?array $sources = null;
 
+    /** @param array<string, bool|list<string>|null> $config */
     public function __construct($config = [])
     {
         if (
@@ -80,38 +82,36 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): ?string
-    {
-        return $this->sourcesSettingHtml();
-    }
-
-    /**
-     * Returns the HTML for the “Sources” setting
-     */
-    protected function sourcesSettingHtml(): ?string
-    {
-        $sources = Collection::make($this->availableSources())
-            ->keyBy(fn (array $source) => $source['key'])
-            ->map(fn (array $source) => $source['label']);
-
-        if ($sources->isEmpty()) {
-            return null;
-        }
-
-        return FormFields::checkboxSelectFieldHtml([
-            'label' => t('{type} Sources', [
-                'type' => static::elementType()::displayName(),
-            ]),
-            'name' => 'sources',
-            'options' => $sources->all(),
-            'values' => $this->sources ?? '*',
-            'showAllOption' => true,
-        ]);
-    }
-
     public function supports(string $value): bool
     {
         return (bool) preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
+    }
+
+    #[Override]
+    public function settingsNodes(string $prefix): array
+    {
+        $sources = Collection::make($this->availableSources())
+            ->map(fn (array $source): array => [
+                'label' => (string) $source['label'],
+                'value' => $source['key'],
+            ])
+            ->values()
+            ->all();
+
+        if ($sources === []) {
+            return [];
+        }
+
+        array_unshift($sources, ['label' => t('All'), 'value' => '*']);
+
+        return [
+            FormField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
+                ->control(Choice::make($this->settingPath($prefix, 'sources'))
+                    ->multiple()
+                    ->presentation(ChoicePresentation::Checkboxes)
+                    ->options($sources)
+                    ->value($this->sources ?? ['*'])),
+        ];
     }
 
     #[Override]
@@ -171,6 +171,8 @@ JS, [
     /**
      * Returns all sources available to the field, based on
      * [[availableSources()]] plus any custom sources for the element type.
+     *
+     * @return array<int, array{key:string, label:string, type:string}>
      */
     protected function availableSources(): array
     {
@@ -189,7 +191,7 @@ JS, [
     /**
      * Returns an array of source keys for the element type, filtering out any sources that can’t be linked to.
      *
-     * @return string[]
+     * @return list<string>
      */
     protected function availableSourceKeys(): array
     {
@@ -198,6 +200,14 @@ JS, [
 
     /**
      * Returns the config array that will be passed to [[\CraftCms\Cms\Cp\FormFields::elementSelectHtml()]].
+     *
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     * }
      */
     protected function elementSelectConfig(): array
     {
@@ -210,6 +220,7 @@ JS, [
         ];
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     protected function selectionCriteria(): array
     {
         return [
@@ -217,6 +228,22 @@ JS, [
         ];
     }
 
+    /**
+     * @return array{
+     *     id: string,
+     *     label: string,
+     *     kind: string,
+     *     elementType: class-string<ElementInterface>,
+     *     refHandle: string,
+     *     elementSelectConfig: array{
+     *         elementType: class-string<ElementInterface>,
+     *         limit: int,
+     *         single: bool,
+     *         sources: string|array<int, string>,
+     *         criteria: array<string, bool|list<string>|string|null>,
+     *     },
+     * }
+     */
     #[Override]
     public function pickerConfig(): array
     {

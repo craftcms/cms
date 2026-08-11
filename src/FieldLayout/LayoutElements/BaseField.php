@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -145,6 +147,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card preview options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getPreviewOptions(): ?array
     {
@@ -162,6 +166,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card thumbnail options supplied by this field.
+     *
+     * @return list<array{label: string, value: string}>|null
      */
     public function getThumbOptions(): ?array
     {
@@ -245,6 +251,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns HTML attributes that should be added to the selector container.
+     *
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null}}
      */
     protected function selectorAttributes(): array
     {
@@ -284,6 +292,8 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the indicators that should be shown within the selector.
+     *
+     * @return list<array{label: string, icon: string, iconColor: string}>
      */
     protected function selectorIndicators(): array
     {
@@ -346,89 +356,35 @@ abstract class BaseField extends FieldLayoutElement
         ]);
     }
 
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
     {
-        $inputHtml = $this->inputHtml($element, $static);
-        if ($inputHtml === null) {
+        $control = $this->formControl($context);
+
+        if ($control === null) {
             return null;
         }
 
-        $showStatus = $this->showStatus();
-        $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
-        $label = $this->showLabel() ? $this->label() : null;
-        $instructions = $this->instructionsText($element, $static);
-        $tip = $this->tipText($element, $static);
-        $warning = $this->warningText($element, $static);
-        $translatable = $this->translatable($element, $static);
-        $actionMenuItems = $this->actionMenuItems($element, $static);
-
-        event($event = new FieldLayoutActionMenuItemsResolving($element, $actionMenuItems, $static));
-        $actionMenuItems = $event->items;
-
-        if (
-            $this->uid &&
-            $element?->id &&
-            ! $static &&
-            $this->isCrossSiteCopyable($element) &&
-            $this->translatable($element, $static) &&
-            $element->getIsCrossSiteCopyable()
-        ) {
-            // prepare namespace for the purpose of copying
-            $namespace = InputNamespace::get();
-
-            $actionMenuItems = array_filter([
-                [
-                    'icon' => 'clone',
-                    'label' => t('Copy value from site…'),
-                    'attributes' => [
-                        'data' => [
-                            'cross-site-copy' => true,
-                            'element-id' => $element->id,
-                            'layout-element' => $this->uid,
-                            'label' => $label,
-                            'namespace' => ($namespace && $namespace !== 'fields')
-                                ? Str::chopEnd($namespace, '[fields]')
-                                : null,
-                        ],
-                    ],
-                ],
-                ! empty($actionMenuItems) ? ['type' => 'hr'] : null,
-                ...$actionMenuItems,
-            ]);
+        if ($context->mode !== ControlMode::Editable) {
+            $control->mode($context->mode);
         }
 
-        return FormFields::fieldHtml($inputHtml, [
-            'fieldClass' => array_keys(array_filter([
-                'no-status' => ! $showStatus,
-            ])),
-            'fieldset' => $this->useFieldset(),
-            'id' => $this->id(),
-            'labelId' => $this->labelId(),
-            'instructionsId' => $this->instructionsId(),
-            'tipId' => $this->tipId(),
-            'warningId' => $this->warningId(),
-            'errorsId' => $this->errorsId(),
-            'statusId' => $showStatus ? $this->statusId() : null,
-            'fieldAttributes' => $this->containerAttributes($element, $static),
-            'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
-            'labelAttributes' => $this->labelAttributes($element, $static),
-            'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
-            'static' => $static,
-            'label' => $label !== null ? Html::encode($label) : null,
-            'attribute' => $this->attribute(),
-            'showAttribute' => $this->showAttribute(),
-            'required' => ! $static && $this->required,
-            'instructions' => $instructions !== null ? Html::encode($instructions) : null,
-            'instructionsPosition' => $this->instructionsPosition,
-            'tip' => $tip !== null ? Html::encode($tip) : null,
-            'warning' => $warning !== null ? Html::encode($warning) : null,
-            'orientation' => $this->orientation($element, $static),
-            'translatable' => $translatable,
-            'translationDescription' => $this->translationDescription($element, $static),
-            'actionMenuItems' => $actionMenuItems,
-            // show errors regardless of whether the field is static
-            'errors' => $this->fieldErrors($element),
-        ]);
+        return Field::make(
+            $this->showLabel() ? $this->label() : null,
+            $control,
+        )
+            ->instructions($this->instructionsText($context->element))
+            ->instructionsPosition($this->instructionsPosition)
+            ->tip($this->tipText($context->element))
+            ->warning($this->warningText($context->element))
+            ->required($this->required)
+            ->layoutUid($this->uid)
+            ->width($this->width);
+    }
+
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return null;
     }
 
     /**
@@ -553,6 +509,7 @@ abstract class BaseField extends FieldLayoutElement
         return $ids ? implode(' ', $ids) : null;
     }
 
+    /** @return array{class?: list<string>, data: array{base-input-name: string, error-key: string}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -585,6 +542,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -596,6 +554,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array<string, scalar|array<array-key, scalar|null>|null>
      */
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -605,10 +564,10 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns or sets the field’s label.
      */
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() !== 0) {
-            $this->label = $this->evaluate($label);
+            $this->label = $label;
 
             return $this;
         }
@@ -620,17 +579,15 @@ abstract class BaseField extends FieldLayoutElement
         return $this->defaultLabel();
     }
 
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
-        $this->instructions = $this->evaluate($instructions);
+        $this->instructions = $instructions;
 
         return $this;
     }
 
-    public function instructionsPosition(string|Closure $position): static
+    public function instructionsPosition(string $position): static
     {
-        $position = $this->evaluate($position);
-
         if (! in_array($position, ['before', 'after'], true)) {
             throw new InvalidArgumentException("Invalid instructions position: $position");
         }
@@ -640,31 +597,29 @@ abstract class BaseField extends FieldLayoutElement
         return $this;
     }
 
-    public function tip(string|Closure|null $tip): static
+    public function tip(?string $tip): static
     {
-        $this->tip = $this->evaluate($tip);
+        $this->tip = $tip;
 
         return $this;
     }
 
-    public function warning(string|Closure|null $warning): static
+    public function warning(?string $warning): static
     {
-        $this->warning = $this->evaluate($warning);
+        $this->warning = $warning;
 
         return $this;
     }
 
-    public function required(bool|Closure $required = true): static
+    public function required(bool $required = true): static
     {
-        $this->required = $this->evaluate($required);
+        $this->required = $required;
 
         return $this;
     }
 
-    public function labelHidden(bool|Closure $labelHidden = true): static
+    public function labelHidden(bool $labelHidden = true): static
     {
-        $labelHidden = $this->evaluate($labelHidden);
-
         return $this->label($labelHidden ? '__blank__' : null);
     }
 
@@ -753,8 +708,6 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
-    abstract protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string;
-
     /**
      * Returns the field’s tip text.
      *
@@ -837,6 +790,7 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return list<array<string, mixed>>
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
@@ -845,6 +799,9 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param  array{id?: string, icon?: string, label?: string, promptLabel?: string, attribute?: string}  $config
+     * @return array{id: string, icon: string, label: string}
      */
     protected function copyAttributeAction(array $config = []): array
     {

@@ -22,7 +22,7 @@ class D3Asset implements LegacyAssetInterface
     public array $depends = [];
 
     /**
-     * @var array The default language format files to use
+     * @var array<string, string> The default language format files to use
      */
     private array $_defaultLanguages = [
         'ar' => 'ar-SA',

@@ -194,7 +194,7 @@
                 v-for="option in props.notificationPositionOptions"
                 :key="option.value"
                 type="button"
-                appearance="outline"
+                variant="outline"
                 :active="
                   form.notificationPosition === option.value ? 'true' : null
                 "
@@ -217,7 +217,7 @@
                 v-for="option in props.slideoutPositionOptions"
                 :key="option.value"
                 type="button"
-                appearance="outline"
+                variant="outline"
                 :active="form.slideoutPosition === option.value ? 'true' : null"
                 :aria-pressed="form.slideoutPosition === option.value"
                 :title="option.label"

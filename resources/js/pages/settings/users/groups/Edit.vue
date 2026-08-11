@@ -5,7 +5,7 @@
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftHandleInput from '@craftcms/ui/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import {destroy, store} from '@actions/Settings/Users/UserGroupsController';
   import {computed} from 'vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -134,15 +134,6 @@
 
     <h2 class="text-lg mb-3">{{ t('Permissions') }}</h2>
 
-    <div class="grid gap-3">
-      <div v-for="set in permissions" :key="set.handle">
-        <PermissionList
-          :heading="set.heading"
-          :permissions="set.permissions"
-          :permission-keys="set.keys"
-          v-model="form.permissions"
-        />
-      </div>
-    </div>
+    <PermissionTree :groups="permissions" v-model="form.permissions" />
   </craft-pane>
 </template>

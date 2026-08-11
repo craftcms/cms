@@ -144,7 +144,7 @@
             slot="suffix"
             type="button"
             size="small"
-            appearance="plain"
+            variant="plain"
             :disabled="loadingToken"
             @click="copyHeader"
           >

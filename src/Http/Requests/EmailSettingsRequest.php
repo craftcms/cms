@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 class EmailSettingsRequest extends FormRequest
 {
+    /** @return array<string, list<string|object>> */
     public function rules(): array
     {
         $validMailers = array_keys(config('mail.mailers', []));

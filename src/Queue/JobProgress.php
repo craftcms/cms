@@ -79,7 +79,7 @@ readonly class JobProgress
     }
 
     /**
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getJobInfo(?int $limit = null): Collection
     {
@@ -118,7 +118,7 @@ readonly class JobProgress
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getAll(): Collection
     {
@@ -146,7 +146,7 @@ readonly class JobProgress
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getActive(): Collection
     {
@@ -167,7 +167,7 @@ readonly class JobProgress
     /**
      * Gets all jobs with a specific status.
      *
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getByStatus(JobStatus $status): Collection
     {
@@ -177,7 +177,7 @@ readonly class JobProgress
     }
 
     /**
-     * @return Collection<JobProgressModel>
+     * @return Collection<int, JobProgressModel>
      */
     public function getFailed(): Collection
     {
@@ -271,6 +271,9 @@ readonly class JobProgress
 
     /**
      * Upserts a job entry.
+     */
+    /**
+     * @param  array<string, mixed>  $attributes
      */
     private function upsertJob(
         string $uid,

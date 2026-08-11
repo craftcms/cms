@@ -9,6 +9,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 
 class ReadOnlyProjectConfigData
 {
+    /** @param array<string|int, mixed> $data */
     public function __construct(
         public array $data,
         public ProjectConfig $projectConfig,
@@ -27,6 +28,7 @@ class ReadOnlyProjectConfigData
     /**
      * Export the data to an array.
      */
+    /** @return array<string|int, mixed> */
     public function export(): array
     {
         return $this->data;

@@ -91,6 +91,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
         ];
     }
 
+    /** @param EntryQuery<Entry> $query */
     private function resaveEntries(EntryQuery $query): void
     {
         $count = $query->count();
@@ -130,6 +131,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
         $this->resaveQuery($query);
     }
 
+    /** @param EntryQuery<Entry> $query */
     private function resaveQuery(EntryQuery $query): void
     {
         event(new ElementsResaving($query));

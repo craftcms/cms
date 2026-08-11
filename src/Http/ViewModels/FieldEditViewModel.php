@@ -10,17 +10,22 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\View\HtmlFragment;
-use CraftCms\Cms\View\TemplateMode;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class FieldEditViewModel extends ViewModel
 {
+    private ?Form $settingsForm = null;
+
+    private bool $settingsFormResolved = false;
+
     public function __construct(
         private readonly Field $field,
         private readonly Fields $fieldsService,
@@ -164,18 +169,34 @@ class FieldEditViewModel extends ViewModel
         return Sites::isMultiSite();
     }
 
-    /**
-     * The current field type's settings, rendered as a legacy HTML island.
-     * Inputs are namespaced `types[<typeId>]` to match what the save and
-     * render-settings endpoints expect.
-     */
-    public function settings(): HtmlFragment
+    public function settingsForm(): ?FormPayload
     {
-        return HtmlStack::capture(fn (): string => template('settings/fields/_type-settings', [
-            'field' => $this->field,
-            'namespace' => sprintf('types[%s]', Html::id($this->typeClass())),
-            'readOnly' => $this->readOnly,
-        ], templateMode: TemplateMode::Cp));
+        $form = $this->settingsFormDefinition();
+
+        if ($form === null) {
+            return null;
+        }
+
+        return app(FormResolver::class)->resolve($form, $this->settingsFormContext());
+    }
+
+    private function settingsFormDefinition(): ?Form
+    {
+        if (! $this->settingsFormResolved) {
+            $this->settingsForm = $this->field->settingsForm($this->settingsFormContext());
+            $this->settingsFormResolved = true;
+        }
+
+        return $this->settingsForm;
+    }
+
+    private function settingsFormContext(): FormContext
+    {
+        return new FormContext(
+            namespace: 'settings',
+            mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+            refreshable: true,
+        );
     }
 
     /**

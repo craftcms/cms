@@ -12,8 +12,9 @@ use GraphQL\Error\Error;
 abstract class MutationResolver extends Component
 {
     /**
-     * @param  array  $_resolutionData  Resolver data
-     * @param  array  $_valueNormalizers  Data normalizers
+     * @param  array<string, mixed>  $_resolutionData  Resolver data
+     * @param  array<string, callable(mixed): mixed>  $_valueNormalizers  Data normalizers
+     * @param  array<string, mixed>  $config  Component config
      */
     public function __construct(private array $_resolutionData = [], private array $_valueNormalizers = [], array $config = [])
     {

@@ -18,7 +18,7 @@ class ElementHtmlAttributesResolving
     /**
      * @param  ElementInterface  $element  The element
      * @param  string  $context  The context that the element is being rendered in
-     * @param  array  $htmlAttributes  The HTML attributes
+     * @param  array<string, mixed>  $htmlAttributes  The HTML attributes
      */
     public function __construct(
         public ElementInterface $element,

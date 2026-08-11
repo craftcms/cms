@@ -62,6 +62,7 @@ trait InstallsPlugin
         $this->app->forgetInstance(Plugins::class);
     }
 
+    /** @return array{name: string, extra: array{handle: string}} */
     private function getComposerInfo(): array
     {
         return once(fn () => Json::decode(File::get(package_path('composer.json'))));

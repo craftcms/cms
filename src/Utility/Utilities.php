@@ -22,7 +22,7 @@ readonly class Utilities
     /**
      * Returns all available utility type classes.
      *
-     * @return Collection<class-string<Utility>>
+     * @return Collection<int, class-string<Utility>>
      */
     public function getAllUtilityTypes(): Collection
     {
@@ -32,7 +32,7 @@ readonly class Utilities
     /**
      * Returns all utility type classes that the user has permission to use.
      *
-     * @return Collection<class-string<Utility>>
+     * @return Collection<int, class-string<Utility>>
      */
     public function getAuthorizedUtilityTypes(): Collection
     {

@@ -60,6 +60,7 @@ class UserSettingsController extends BaseUserSettingsController
         return $this->asSuccess(t('User settings saved.'));
     }
 
+    /** @return Collection<int, array{label:string, value:string}> */
     private function photoVolumeOptions(): Collection
     {
         return $this->volumes->getAllVolumes()
@@ -71,6 +72,7 @@ class UserSettingsController extends BaseUserSettingsController
             ->values();
     }
 
+    /** @return Collection<int, array{label:string, value:string}> */
     private function userGroupOptions(): Collection
     {
         return $this->userGroups->getAllGroups()

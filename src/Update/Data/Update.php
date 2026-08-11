@@ -9,6 +9,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * @internal
+ *
+ * @implements Arrayable<string, UpdateStatus|UpdateRelease[]|bool|float|string|null>
  */
 readonly class Update implements Arrayable
 {
@@ -45,6 +47,7 @@ readonly class Update implements Arrayable
         return $this->releases[0] ?? null;
     }
 
+    /** @param array<string, bool|float|string|array<array-key, array<string, bool|string|null>>|null> $data */
     public static function fromArray(array $data): self
     {
         $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '');

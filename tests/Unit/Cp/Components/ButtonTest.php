@@ -3,25 +3,28 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Enums\Appearance;
+use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Enums\Size;
-use CraftCms\Cms\Cp\Enums\Variant;
 use Illuminate\Support\HtmlString;
 
 describe('attributes', function () {
-    it('renders variant, appearance, size, and icon', function () {
+    it('renders variant, size, and icon', function () {
         $html = Button::make()
-            ->variant(Variant::Danger)
-            ->appearance(Appearance::Outline)
+            ->variant(ButtonVariant::Outline)
             ->size(Size::Small)
             ->icon('trash')
             ->toHtml();
 
         expect($html)->toStartWith('<craft-button')
-            ->and($html)->toContain('variant="danger"')
-            ->and($html)->toContain('appearance="outline"')
+            ->and($html)->toContain('variant="outline"')
+            ->and($html)->not->toContain('appearance=')
             ->and($html)->toContain('size="small"')
             ->and($html)->toContain('icon="trash"');
+    });
+
+    it('renders the inherit flag when set', function () {
+        expect(Button::make()->toHtml())->not->toContain('inherit');
+        expect(Button::make()->inherit()->toHtml())->toContain('inherit');
     });
 
     it('always renders an explicit type, since the web component defaults to submit', function () {
@@ -74,14 +77,4 @@ describe('slots', function () {
         expect($html)->toContain('<craft-icon name="plus" slot="prefix">')
             ->and($html)->toContain('<craft-icon name="chevron-down" slot="suffix">');
     });
-});
-
-it('evaluates closures with injection', function () {
-    $html = Button::make()
-        ->label(fn (Button $button): string => 'Lazy')
-        ->loading(fn (): bool => true)
-        ->toHtml();
-
-    expect($html)->toContain('Lazy')
-        ->and($html)->toContain(' loading');
 });

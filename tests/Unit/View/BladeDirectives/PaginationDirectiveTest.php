@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Blade\BladeRenderer;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 beforeEach(function () {
@@ -14,7 +15,7 @@ beforeEach(function () {
 });
 
 it('assigns pagination variables from a query', function () {
-    $query = new class
+    $query = new class implements Builder
     {
         public function paginate(?int $perPage = null, array|string $columns = ['*'], string $pageName = 'page', ?int $page = null): LengthAwarePaginator
         {

@@ -45,8 +45,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     abstract protected function elementType(): string;
 
+    /** @param  array<string, mixed>  $values */
     #[Override]
-    public function setAttributes($values, $safeOnly = true): void
+    public function setAttributes($values, bool $safeOnly = true): void
     {
         if (isset($values['elementId'])) {
             $values['elementIds'] = Arr::pull($values, 'elementId');
@@ -57,6 +58,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the element source(s) that the element can be selected from.
+     *
+     * @return string[]|null
      */
     protected function sources(): ?array
     {
@@ -73,6 +76,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the criteria that determines which elements can be selected.
+     *
+     * @return array<string, mixed>|null
      */
     protected function criteria(): ?array
     {
@@ -89,6 +94,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Defines the element select config.
+     *
+     * @return array<string, mixed>
      */
     protected function elementSelectConfig(): array
     {
@@ -172,6 +179,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         $this->setElementIds($elementId);
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
     {

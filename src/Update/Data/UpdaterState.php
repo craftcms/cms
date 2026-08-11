@@ -10,6 +10,8 @@ use Spatie\TypeScriptTransformer\Attributes\Optional;
 
 /**
  * @internal
+ *
+ * @implements Arrayable<string, mixed>
  */
 class UpdaterState implements Arrayable
 {
@@ -33,6 +35,7 @@ class UpdaterState implements Arrayable
         public ?string $returnUrl = null,
     ) {}
 
+    /** @param array<string, mixed> $state */
     public static function fromArray(array $state): self
     {
         $state['options'] = isset($state['options']) ? array_map(UpdaterOption::fromArray(...), $state['options']) : null;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
@@ -175,8 +175,7 @@
       <craft-button
         slot="invoker"
         type="button"
-        appearance="solid"
-        variant="accent"
+        :variant="ButtonVariant.Primary"
         icon="plus"
       >
         {{ t('New {type}', {type: elementDisplayName}) }}

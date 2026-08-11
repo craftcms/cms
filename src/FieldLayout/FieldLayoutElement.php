@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use DateTimeInterface;
 use Override;
 
@@ -52,9 +53,9 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
         return false;
     }
 
-    public function width(int|Closure $width): static
+    public function width(int $width): static
     {
-        $this->width = $this->evaluate($width);
+        $this->width = $width;
 
         return $this;
     }
@@ -64,22 +65,11 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     abstract public function selectorHtml(): string;
 
-    /**
-     * Returns the element’s form HTMl.
-     *
-     * Return `null` if the element should not be present within the form.
-     *
-     * @param  ElementInterface|null  $element  The element the form is being rendered for
-     * @param  bool  $static  Whether the form should be static (non-interactive)
-     */
-    abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
+    abstract public function formNode(FieldLayoutElementContext $context): ?Node;
 
-    /**
-     * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
-     */
-    public function alwaysRefresh(): bool
+    public function formMode(?ElementInterface $element): ControlMode
     {
-        return false;
+        return ControlMode::Editable;
     }
 
     /**
@@ -87,6 +77,7 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
+     * @return array{class?: list<string>}
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {

@@ -8,7 +8,7 @@ class AddressCountriesResolving
 {
     public function __construct(
         public string $locale,
-        /** @var array list of countries keyed by their country code. */
+        /** @var array<string, string> List of countries keyed by their country code. */
         public array $countries,
     ) {}
 }

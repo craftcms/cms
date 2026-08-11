@@ -421,7 +421,7 @@ class DeprecatedConcepts
                     $newItems[] = [
                         'label' => t('Globals', category: 'yii2-adapter'),
                         'url' => 'globals',
-                        'icon' => 'globe',
+                        'icon' => 'regular/globe',
                     ];
                 }
                 if (

@@ -103,6 +103,10 @@ class ElementActions
     /**
      * @param  iterable<ElementActionInterface>  $actions
      */
+    /**
+     * @param  iterable<array-key,mixed>  $actions
+     * @return array<array-key,mixed>
+     */
     public function serializeActions(iterable $actions): array
     {
         $data = [];

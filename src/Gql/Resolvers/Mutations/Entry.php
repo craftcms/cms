@@ -31,6 +31,7 @@ class Entry extends ElementMutationResolver
     #[Override]
     protected array $immutableAttributes = ['id', 'uid', 'draftId'];
 
+    /** @param array<string, mixed> $arguments */
     public function saveEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): EntryElement
     {
         $entry = $this->getEntryElement($arguments);
@@ -94,7 +95,7 @@ class Entry extends ElementMutationResolver
 
         $this->performStructureOperations($entry, $arguments);
 
-        /** @var EntryQuery $query */
+        /** @var EntryQuery<EntryElement> $query */
         $query = Elements::createElementQuery(EntryElement::class)
             ->siteId($entry->siteId)
             ->status(null);
@@ -112,6 +113,7 @@ class Entry extends ElementMutationResolver
         return $query->first();
     }
 
+    /** @param array<string, mixed> $arguments */
     public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $entryId = $arguments['id'];
@@ -135,6 +137,7 @@ class Entry extends ElementMutationResolver
         return Elements::deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
+    /** @param array<string, mixed> $arguments */
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
@@ -166,6 +169,7 @@ class Entry extends ElementMutationResolver
         )->draftId;
     }
 
+    /** @param array<string, mixed> $arguments */
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
     {
         /** @var EntryElement|null $draft */
@@ -196,6 +200,7 @@ class Entry extends ElementMutationResolver
         return $draft->id;
     }
 
+    /** @param array<string, mixed> $arguments */
     protected function getEntryElement(array $arguments): EntryElement
     {
         /** @var Section|null $section */
@@ -236,7 +241,7 @@ class Entry extends ElementMutationResolver
             }
 
             // Prepare the element query
-            /** @var EntryQuery $entryQuery */
+            /** @var EntryQuery<EntryElement> $entryQuery */
             $entryQuery = Elements::createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);
 
@@ -275,6 +280,11 @@ class Entry extends ElementMutationResolver
         return $entry;
     }
 
+    /**
+     * @param  EntryQuery<EntryElement>  $entryQuery
+     * @param  array<string, mixed>  $arguments
+     * @return EntryQuery<EntryElement>
+     */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
         /** @var Section|null $section */

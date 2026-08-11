@@ -61,7 +61,7 @@ class FieldsMergeCommand extends Command
             return self::FAILURE;
         }
 
-        /** @var Collection<string,FieldInterface> $fields */
+        /** @var Collection<string, FieldInterface&MergeableFieldInterface> $fields */
         $fields = $handles
             ->map(function (string $handle) use ($fieldsService) {
                 $field = $fieldsService->getFieldByHandle($handle);
@@ -75,10 +75,10 @@ class FieldsMergeCommand extends Command
             })
             ->keyBy(fn (FieldInterface $field) => $field->handle);
 
-        /** @var Collection<string,FieldLayout[]> $layoutsByField */
+        /** @var Collection<string, Collection<int, FieldLayout>> $layoutsByField */
         $layoutsByField = $fields->map(fn (FieldInterface $field) => $fieldsService->findFieldUsages($field));
 
-        /** @var Collection<FieldLayout> $layouts */
+        /** @var Collection<int, FieldLayout> $layouts */
         $layouts = $layoutsByField->values()->flatten(1)->unique();
 
         // Make sure all the layouts either have an ID or UUID; otherwise we wouldn't know what to do with it
@@ -225,6 +225,11 @@ class FieldsMergeCommand extends Command
             );
     }
 
+    /**
+     * @param  Collection<string, FieldInterface&MergeableFieldInterface>  $fields
+     * @param  Collection<string, Collection<int, FieldLayout>>  $layoutsByField
+     * @param  Collection<string, string>  $mergeableFields
+     */
     private function choosePersistingField(
         Collection $fields,
         Collection $layoutsByField,

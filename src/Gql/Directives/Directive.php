@@ -25,5 +25,6 @@ abstract class Directive extends GqlDirective
      * @param  array  $arguments  for the directive
      * @param  ResolveInfo  $resolveInfo  resolve info object
      */
+    /** @param array<string, mixed> $arguments */
     abstract public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed;
 }

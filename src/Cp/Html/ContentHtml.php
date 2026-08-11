@@ -14,6 +14,7 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class ContentHtml
 {
+    /** @param array<string, mixed> $data */
     public function metadataHtml(array $data): string
     {
         $defs = [];

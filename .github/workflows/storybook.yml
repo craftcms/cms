@@ -77,15 +77,16 @@ jobs:
             resources/js/generated
           key: ${{ steps.cache-key.outputs.value }}
 
-      - name: Install Composer dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: composer install --no-interaction --no-progress
+      - parallel:
+          - name: Install Composer dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: composer install --no-interaction --no-progress
 
-      - name: Install frontend dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: vp install --frozen-lockfile
-        env:
-          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+          - name: Install frontend dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: vp install --frozen-lockfile
+            env:
+              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
@@ -190,6 +191,11 @@ jobs:
           key: ${{ needs.build-assets.outputs.cache-key }}
 
       - name: Build Storybook
+        # build-assets already ran the transformer and Wayfinder, and their
+        # output is restored from the cache above. Regenerating would shell out
+        # to ./vendor/bin/testbench, and this job installs no PHP.
+        env:
+          CRAFT_SKIP_PHP_CODEGEN: '1'
         run: vp run build:storybook
 
       - name: Deploy to Cloudflare Pages

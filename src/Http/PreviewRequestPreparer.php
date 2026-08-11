@@ -17,6 +17,7 @@ readonly class PreviewRequestPreparer
         private Elements $elements,
     ) {}
 
+    /** @param array<string, mixed> $data */
     public function prepare(array $data): void
     {
         $tokenData = new RouteToken($data);

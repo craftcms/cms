@@ -152,6 +152,7 @@ JS, [
      *
      * @param  bool  $withPermissions  Whether permissions should be included
      */
+    /** @return array<string, string|string[]|null> */
     public function getConfig(bool $withPermissions = true): array
     {
         $config = [

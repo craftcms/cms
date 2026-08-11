@@ -6,12 +6,19 @@ namespace CraftCms\Cms\Console;
 
 use Closure;
 use Laravel\Prompts\Output\ConsoleOutput;
+use Laravel\Prompts\Support\Logger;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\task;
 
 class PromptTask
 {
+    /**
+     * @template TReturn
+     *
+     * @param  Closure(Logger): TReturn  $callback
+     * @return TReturn
+     */
     public static function run(
         string $label,
         Closure $callback,

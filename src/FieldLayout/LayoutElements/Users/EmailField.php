@@ -6,7 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -82,6 +84,22 @@ class EmailField extends TextField
     }
 
     #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        $element = $context->element;
+
+        if ($element && ! $element instanceof User) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
+        }
+
+        if ($element && ! $element->getIsCurrent() && ! $element->getIsDraft() && ! Gate::check('administrateUsers')) {
+            return null;
+        }
+
+        return parent::formControl($context);
+    }
+
+    #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element) {
@@ -107,6 +125,7 @@ JS, [
         return parent::inputHtml($element, $static);
     }
 
+    /** @return array<string, string|array<string, string>> */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

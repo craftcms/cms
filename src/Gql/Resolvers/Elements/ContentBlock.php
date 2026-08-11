@@ -11,6 +11,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 class ContentBlock extends Resolver
 {
+    /** @param array<string, mixed> $arguments */
     public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);

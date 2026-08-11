@@ -72,6 +72,9 @@ export default class CraftCombobox extends LionCombobox {
   /** Shows a clear button when a value is present. */
   @property({type: Boolean, reflect: true}) clearable = false;
 
+  /** Placeholder shown when the textbox is empty. */
+  @property({type: String, reflect: true}) placeholder = '';
+
   constructor() {
     super();
     // Configure validators on construction.
@@ -99,6 +102,9 @@ export default class CraftCombobox extends LionCombobox {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    if (changed.has('placeholder')) {
+      this._inputNode.placeholder = this.placeholder;
+    }
     if (
       changed.has('options') ||
       changed.has('limit') ||

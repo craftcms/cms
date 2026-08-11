@@ -7,7 +7,11 @@ namespace CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -20,9 +24,7 @@ use function CraftCms\Cms\t;
  */
 class Asset extends BaseElementLinkType
 {
-    /**
-     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true).
-     */
+    /** @var list<string>|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true). */
     public ?array $allowedKinds = null;
 
     /**
@@ -54,34 +56,29 @@ class Asset extends BaseElementLinkType
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsNodes(string $prefix): array
     {
-        return
-            parent::getSettingsHtml().
-            FormFields::checkboxSelectFieldHtml([
-                'label' => t('Allowed File Types'),
-                'name' => 'allowedKinds',
-                'options' => Collection::make(AssetsHelper::getAllowedFileKinds())
-                    ->map(fn (array $kind, string $value) => [
-                        'value' => $value,
-                        'label' => $kind['label'],
-                    ])
-                    ->all(),
-                'values' => $this->allowedKinds ?? '*',
-                'showAllOption' => true,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted volumes'),
-                'instructions' => t('Whether to show volumes that the user doesn’t have permission to view.'),
-                'name' => 'showUnpermittedVolumes',
-                'on' => $this->showUnpermittedVolumes,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted files'),
-                'instructions' => t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'),
-                'name' => 'showUnpermittedFiles',
-                'on' => $this->showUnpermittedFiles,
-            ]);
+        return [
+            ...parent::settingsNodes($prefix),
+            FormField::make(t('Allowed File Types'))
+                ->control(Choice::make($this->settingPath($prefix, 'allowedKinds'))
+                    ->multiple()
+                    ->presentation(ChoicePresentation::Checkboxes)
+                    ->options(Collection::make(AssetsHelper::getAllowedFileKinds())
+                        ->map(fn (array $kind, string $value): array => [
+                            'value' => $value,
+                            'label' => $kind['label'],
+                        ])
+                        ->values()
+                        ->all())
+                    ->value($this->allowedKinds ?? [])),
+            FormField::make(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedVolumes'))->value($this->showUnpermittedVolumes)),
+            FormField::make(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedFiles'))->value($this->showUnpermittedFiles)),
+        ];
     }
 
     #[Override]
@@ -99,6 +96,7 @@ class Asset extends BaseElementLinkType
             ->all();
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     #[Override]
     protected function selectionCriteria(): array
     {
@@ -114,6 +112,16 @@ class Asset extends BaseElementLinkType
         return $criteria;
     }
 
+    /**
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     *     jsClass: string,
+     * }
+     */
     #[Override]
     protected function elementSelectConfig(): array
     {

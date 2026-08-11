@@ -14,7 +14,7 @@ class ElementExportersResolving
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $source  The selected source's key
-     * @param  array  $exporters  List of registered exporters for the element type
+     * @param  list<class-string>  $exporters  List of registered exporters for the element type
      */
     public function __construct(
         public string $elementType,

@@ -11,6 +11,12 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Time as TimeControl;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -94,36 +100,42 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $increments = array_map(fn (int $increment): array => [
+            'label' => (string) $increment,
+            'value' => $increment,
+        ], [5, 10, 15, 30, 60]);
+
+        return Form::make([
+            FormField::make(t('Minute Increment'))
+                ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
+                ->control(Choice::make('minuteIncrement')->options($increments)->value($this->minuteIncrement)),
+            FormField::make(t('Min Time'), TimeControl::make('min')->value($this->min)),
+            FormField::make(t('Max Time'), TimeControl::make('max')->value($this->max)),
+        ]);
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof DateTimeInterface
+            ? $context->value->format('H:i')
+            : $context->value;
+
+        return TimeControl::make($context->path)
+            ->min($this->min)
+            ->max($this->max)
+            ->step($this->minuteIncrement * 60)
+            ->value($value);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'minuteIncrement' => ['nullable', 'integer', 'min:1', 'max:60'],
             'min' => ['nullable', new TimeRule],
-        ]);
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $incrementOptions = [5, 10, 15, 30, 60];
-        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
-
-        return template('_components/fieldtypes/Time/settings', [
-            'incrementOptions' => $incrementOptions,
-            'field' => $this,
-            'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
-            'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
-            'readOnly' => $readOnly,
         ]);
     }
 
@@ -147,6 +159,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         ]);
     }
 
+    /** @return list<TimeRule> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -228,6 +241,7 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return DateTimeType::getType();
     }
 
+    /** @return array{name: string, type: Type, description: string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

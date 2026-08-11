@@ -1,5 +1,6 @@
 import '@craftcms/ui';
 import Cp from './bootstrap/cp.js';
+import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
 
@@ -29,7 +30,24 @@ import './modules/interval-manager';
 import './modules/entry-mover';
 import './modules/prompt-handler';
 import './modules/link-field';
+import './modules/cp-modal';
+import './modules/tabs';
+import './modules/grid';
+import './modules/chart';
+import './modules/data-table-sorter';
+import './modules/element-action-trigger';
+import './modules/element-thumb-loader';
+import './modules/element-table-sorter';
+import './modules/asset-mover';
+import './modules/element-selector-modal';
+import './modules/element-select-input';
+import './modules/preview-file-modal';
+import './modules/asset-select-input';
+import './modules/customize-sources-modal';
+import './modules/element-deletion-manager';
+import './modules/uploader';
 import './modules/nested-element-manager';
 import './modules/ui';
 
 window.Cp = Cp as unknown as typeof window.Cp;
+defineEntryFieldLayoutFormHost(Cp.$components);

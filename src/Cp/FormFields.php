@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
+use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Components\InputDate;
+use CraftCms\Cms\Cp\Components\InputDateTime;
 use CraftCms\Cms\Cp\Components\InputPassword;
+use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -32,10 +37,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use DateTimeInterface;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
-use Illuminate\Validation\ConditionalRules;
-use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
 use Stringable;
 
@@ -43,6 +48,7 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/** @phpstan-import-type AddressFormField from Addresses */
 readonly class FormFields
 {
     /**
@@ -52,6 +58,7 @@ readonly class FormFields
      * slotted control happens client-side, so `labelledBy`/`describedBy` are
      * only passed to input templates when explicitly configured.
      */
+    /** @param array<string, mixed> $config */
     public static function fieldHtml(string|Stringable|callable $input, array $config = []): string
     {
         return self::fieldFromConfig($input, $config)->toHtml();
@@ -61,6 +68,7 @@ readonly class FormFields
      * Maps the legacy field config surface onto the {@see Field} component —
      * the PHP twin of the `_includes/forms/field` glue template.
      */
+    /** @param array<string, mixed> $config */
     private static function fieldFromConfig(string|Stringable|callable $input, array $config): Field
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
@@ -130,6 +138,8 @@ readonly class FormFields
             isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
         ]));
 
+        $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
+
         return Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
@@ -175,6 +185,7 @@ readonly class FormFields
      * longer support (or support with changed behavior). Keys that map
      * faithfully onto the components don't warn.
      *
+     * @param  array<string, mixed>  $config
      * @param  array<string, string>  $messages  Key => what to use instead
      */
     private static function deprecateConfig(string $component, array $config, array $messages): void
@@ -196,6 +207,7 @@ readonly class FormFields
      * spinner when loading); the busy/failure/retry/success messages pass
      * through as data attributes for the legacy submit JS.
      */
+    /** @param array<string, mixed> $config */
     public static function buttonFromConfig(array $config): Button
     {
         self::deprecateConfig('button', $config, [
@@ -227,7 +239,7 @@ readonly class FormFields
             ->prefix(! isset($config['icon']) ? ($config['iconHtml'] ?? null) : null)
             ->disabled((bool) ($config['disabled'] ?? $readOnly))
             ->size($size)
-            ->appearance($config['appearance'] ?? null)
+            ->variant($config['variant'] ?? $config['appearance'] ?? null)
             ->command($config['command'] ?? null)
             ->attributes(Arr::merge(
                 [
@@ -246,6 +258,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function buttonGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'buttongroup'.mt_rand();
@@ -262,10 +275,11 @@ readonly class FormFields
      * component, applying the group-level appearance/size defaults and the
      * selected state to each option's button.
      */
+    /** @param array<string, mixed> $config */
     public static function buttonGroupFromConfig(array $config): ButtonGroup
     {
         $value = $config['value'] ?? null;
-        $appearance = $config['appearance'] ?? 'outline';
+        $variant = $config['variant'] ?? $config['appearance'] ?? 'outline';
         $size = $config['size'] ?? null;
         $disabled = ($config['disabled'] ?? false) || ($config['static'] ?? false);
 
@@ -284,7 +298,7 @@ readonly class FormFields
                     ? new HtmlString((string) $option['labelHtml'])
                     : ($option['label'] ?? null))
                 ->icon($option['icon'] ?? null)
-                ->appearance($option['appearance'] ?? $appearance)
+                ->variant($option['variant'] ?? $option['appearance'] ?? $variant)
                 ->size($option['size'] ?? $size)
                 ->active($selected)
                 ->disabled($disabled)
@@ -312,6 +326,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkbox'.mt_rand();
@@ -335,6 +350,7 @@ readonly class FormFields
      * `label`, aria-labelledby is suppressed when an `aria-label` is
      * configured, and custom-option mode renders a text input for the value.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxFromConfig(array $config): Checkbox
     {
         $id = $config['id'] ?? 'checkbox'.mt_rand();
@@ -376,6 +392,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxselect'.mt_rand();
@@ -394,6 +411,7 @@ readonly class FormFields
      * preserved: sortable pre-orders options by the `values` order, and a
      * checked "All" option checks and disables every item.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxSelectFromConfig(array $config): CheckboxSelect
     {
         $id = $config['id'] ?? 'checkbox-select-'.mt_rand();
@@ -402,7 +420,10 @@ readonly class FormFields
         $disabled = (bool) ($config['disabled'] ?? false);
         $sortable = (bool) ($config['sortable'] ?? false);
 
-        $options = collect($config['options'] ?? [])
+        $rawOptions = $config['options'] ?? [];
+        $rawOptions = is_iterable($rawOptions) ? $rawOptions : [$rawOptions];
+
+        $options = collect($rawOptions)
             ->map(fn ($option, $key) => is_array($option) ? $option : [
                 'label' => $option,
                 'value' => $key,
@@ -465,6 +486,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function radioGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'radiogroup'.mt_rand();
@@ -482,6 +504,7 @@ readonly class FormFields
      * semantics preserved: `radioLabel` wins over `label`, and custom-option
      * mode renders an "Other:" text input that syncs its value to the radio.
      */
+    /** @param array<string, mixed> $config */
     public static function radioFromConfig(array $config): Radio
     {
         $id = $config['id'] ?? 'radio'.mt_rand();
@@ -535,6 +558,7 @@ readonly class FormFields
      * component — the PHP twin of the `_includes/forms/radioGroup` glue
      * template.
      */
+    /** @param array<string, mixed> $config */
     public static function radioGroupFromConfig(array $config): RadioGroup
     {
         $id = $config['id'] ?? 'radio-group-'.mt_rand();
@@ -573,6 +597,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup'.mt_rand();
@@ -588,6 +613,7 @@ readonly class FormFields
      * {@see CheckboxGroup} component — the PHP twin of the
      * `_includes/forms/checkboxGroup` glue template.
      */
+    /** @param array<string, mixed> $config */
     public static function checkboxGroupFromConfig(array $config): CheckboxGroup
     {
         $id = $config['id'] ?? 'checkbox-group-'.mt_rand();
@@ -639,6 +665,7 @@ readonly class FormFields
             ->attributes($config['containerAttributes'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorHtml(array $config): string
     {
         return self::colorFromConfig($config)->toHtml();
@@ -651,6 +678,8 @@ readonly class FormFields
      * native picker, replacing the legacy Craft.ColorInput markup + JS), and
      * `presets` pass through to the picker datalist. The legacy `.color-input`
      * input class is preserved for any CSS/JS still keyed on it.
+     *
+     * @param  array<string, mixed>  $config
      */
     public static function colorFromConfig(array $config): InputColor
     {
@@ -670,6 +699,7 @@ readonly class FormFields
         return $input->presets($config['presets'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorFieldHtml(array $config): string
     {
         $config['id'] ??= 'color'.mt_rand();
@@ -681,6 +711,7 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function colorSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'colorselect'.mt_rand();
@@ -688,11 +719,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/colorSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function iconPickerHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/iconPicker', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker'.mt_rand();
@@ -704,11 +737,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function editableTableHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/editableTable', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable'.mt_rand();
@@ -717,6 +752,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function lightswitchFieldHtml(array $config): string
     {
         $config['id'] ??= 'lightswitch'.mt_rand();
@@ -740,6 +776,7 @@ readonly class FormFields
      * template. Legacy semantics preserved: `label` is an `onLabel` fallback,
      * not a field label.
      */
+    /** @param array<string, mixed> $config */
     public static function lightswitchFromConfig(array $config): Lightswitch
     {
         self::deprecateConfig('lightswitch', $config, [
@@ -764,11 +801,13 @@ readonly class FormFields
             ->attributes($config['containerAttributes'] ?? []);
     }
 
+    /** @param array<string, mixed> $config */
     public static function rangeHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/range', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function rangeFieldHtml(array $config): string
     {
         $config['id'] ??= 'range'.mt_rand();
@@ -776,11 +815,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/range', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function moneyInputHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/money', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money'.mt_rand();
@@ -788,11 +829,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/money', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/select', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select'.mt_rand();
@@ -800,11 +843,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/select', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function customSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/customSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function customSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'customselect'.mt_rand();
@@ -812,11 +857,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/customSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectizeHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/selectize', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] ??= 'selectize'.mt_rand();
@@ -824,11 +871,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/selectize', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function multiSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/multiselect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'multiselect'.mt_rand();
@@ -836,6 +885,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/multiselect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function textHtml(array $config): string
     {
         return self::textFromConfig($config)->toHtml();
@@ -850,6 +900,7 @@ readonly class FormFields
      * A `maxlength` alone keeps the legacy full-width behavior unless a
      * `width` is configured, since the web component would otherwise shrink.
      */
+    /** @param array<string, mixed> $config */
     public static function textFromConfig(array $config, ?Input $input = null): Input
     {
         $inputAttributes = $config['inputAttributes'] ?? [];
@@ -891,6 +942,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text'.mt_rand();
@@ -901,6 +953,52 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
+    public static function copytextHtml(array $config): string
+    {
+        return self::copytextFromConfig($config)->toHtml();
+    }
+
+    /**
+     * Maps the legacy copytext config surface onto the {@see InputCopy}
+     * component — the PHP twin of the `_includes/forms/copytext` glue
+     * template. The `class` key targets the native input (matching the legacy
+     * text input convention). Pass `copy-value` (or `copyValue`) when the
+     * clipboard value should differ from the displayed one.
+     */
+    /** @param array<string, mixed> $config */
+    public static function copytextFromConfig(array $config): InputCopy
+    {
+        $value = $config['value'] ?? null;
+        $copyValue = $config['copyValue'] ?? $config['copy-value'] ?? false;
+
+        return InputCopy::make()
+            ->id($config['id'] ?? 'copytext'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->value($value !== false ? $value : null)
+            ->copyValue($copyValue !== false ? $copyValue : null)
+            ->monospace((bool) ($config['monospace'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->labelledBy(empty($config['inputAttributes']['aria']['label'] ?? null) ? ($config['labelledBy'] ?? null) : null)
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['inputAttributes'] ?? [],
+            ));
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function copytextFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'copytext'.mt_rand();
+
+        return self::fieldHtml(
+            fn (array $c): string => self::copytextFromConfig($c)->toHtml(),
+            $config,
+        );
+    }
+
+    /** @param array<string, mixed> $config */
     public static function passwordHtml(array $config): string
     {
         return self::passwordFromConfig($config)->toHtml();
@@ -913,6 +1011,8 @@ readonly class FormFields
      * built-in reveal toggle (which replaces the legacy Craft.PasswordInput JS),
      * so this reuses the text mapping and swaps the component. The legacy
      * `.password` input class is preserved for any CSS/JS still keyed on it.
+     *
+     * @param  array<string, mixed>  $config
      */
     public static function passwordFromConfig(array $config): InputPassword
     {
@@ -927,6 +1027,7 @@ readonly class FormFields
         return $input;
     }
 
+    /** @param array<string, mixed> $config */
     public static function passwordFieldHtml(array $config): string
     {
         $config['id'] ??= 'password'.mt_rand();
@@ -937,6 +1038,7 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function textareaHtml(array $config): string
     {
         return self::textareaFromConfig($config)->toHtml();
@@ -948,6 +1050,7 @@ readonly class FormFields
      * template. Legacy semantics preserved: unlike {@see textFromConfig()},
      * autofocus isn't gated on the current user's autofocus preference.
      */
+    /** @param array<string, mixed> $config */
     public static function textareaFromConfig(array $config): Textarea
     {
         $cols = ($config['cols'] ?? false) ?: null;
@@ -974,6 +1077,7 @@ readonly class FormFields
             ));
     }
 
+    /** @param array<string, mixed> $config */
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea'.mt_rand();
@@ -984,30 +1088,170 @@ readonly class FormFields
         );
     }
 
+    /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/date', $config);
+        $html = self::dateFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
     }
 
+    /** @param array<string, mixed> $config */
+    public static function dateFromConfig(array $config): InputDate
+    {
+        $id = ($config['id'] ?? 'date'.mt_rand()).'-date';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDate::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'Y-m-d', $config['timeZone'] ?? null))
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Date') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+    }
+
+    /** @param array<string, mixed> $config */
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] ??= 'date'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/date', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateHtml($c),
+            $config,
+        );
     }
 
+    /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/time', $config);
+        $html = self::timeFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
     }
 
+    /** @param array<string, mixed> $config */
+    public static function timeFromConfig(array $config): InputTime
+    {
+        $id = ($config['id'] ?? 'time'.mt_rand()).'-time';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputTime::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'H:i', $config['timeZone'] ?? null))
+            ->min(self::formattedTime($config['minTime'] ?? null))
+            ->max(self::formattedTime($config['maxTime'] ?? null))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Time') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+    }
+
+    /** @param array<string, mixed> $config */
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] ??= 'time'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/time', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::timeHtml($c),
+            $config,
+        );
     }
 
+    /** @param array<string, mixed> $config */
+    public static function dateTimeHtml(array $config): string
+    {
+        return self::dateTimeFromConfig($config)->toHtml();
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateTimeFromConfig(array $config): InputDateTime
+    {
+        $value = $config['value'] ?? null;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($value)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDateTime::make()
+            ->id($config['id'] ?? 'datetime'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->dateValue(self::formattedDateTimeValue($value, 'Y-m-d', $config['timeZone'] ?? null))
+            ->timeValue(self::formattedDateTimeValue($value, 'H:i', $config['timeZone'] ?? null))
+            ->timezone($timezone)
+            ->locale(I18N::getFormattingLocale()->id)
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->minTime(self::formattedTime($config['minTime'] ?? null))
+            ->maxTime(self::formattedTime($config['maxTime'] ?? null))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
+    }
+
+    /** @param array<string, mixed> $config */
     public static function dateTimeFieldHtml(array $config): string
     {
         $config += [
@@ -1015,14 +1259,52 @@ readonly class FormFields
             'fieldset' => true,
         ];
 
-        return self::fieldHtml('template:_includes/forms/datetime', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateTimeHtml($c),
+            $config,
+        );
     }
 
+    private static function formattedDateTimeValue(mixed $value, string $format, bool|string|null $timezone = null): ?string
+    {
+        $date = DateTimeHelper::toDateTime($value, true, $timezone !== false);
+
+        if (! $date) {
+            return null;
+        }
+
+        if (is_string($timezone)) {
+            $date = Date::instance($date)->setTimezone($timezone);
+        }
+
+        return $date->format($format);
+    }
+
+    private static function formattedTime(mixed $value): ?string
+    {
+        if (is_numeric($value)) {
+            $seconds = (int) $value;
+
+            return sprintf('%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60));
+        }
+
+        return self::formattedDateTimeValue($value, 'H:i');
+    }
+
+    private static function valueTimezone(mixed $value): string
+    {
+        return $value instanceof DateTimeInterface
+            ? $value->getTimezone()->getName()
+            : Cms::timezone();
+    }
+
+    /** @param array<string, mixed> $config */
     public static function elementSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'elementselect'.mt_rand();
@@ -1030,11 +1312,13 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function entryTypeSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
@@ -1042,6 +1326,7 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
     }
 
+    /** @param array<string, mixed> $config */
     public static function autosuggestFieldHtml(array $config): string
     {
         $config['id'] ??= 'autosuggest'.mt_rand();
@@ -1070,277 +1355,69 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/autosuggest', $config);
     }
 
-    public static function addressFieldsHtml(Address $address, bool $static = false): string
-    {
-        $requiredFields = [];
-        $scenario = $address->ruleset->getScenario();
-        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-
-        $activeRules = $address->ruleset->rules();
-
-        foreach ($activeRules as $attribute => $rules) {
-            foreach (Arr::wrap($rules) as $rule) {
-                if (self::isRequiredRule($rule)) {
-                    $requiredFields[$attribute] = true;
-
-                    break;
-                }
-            }
-        }
-
-        $address->ruleset->useScenario($scenario);
-        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
-
-        $addressesService = app(Addresses::class);
-        $visibleFields = array_flip(array_merge(
-            $addressesService->getUsedFields($address->countryCode),
-            $addressesService->getUsedSubdivisionFields($address->countryCode),
-        )) + $requiredFields;
-
-        $parents = self::subdivisionParents($address, $visibleFields);
-
-        return
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine1'),
-                'label' => $address->getAttributeLabel('addressLine1'),
-                'id' => 'addressLine1',
-                'name' => 'addressLine1',
-                'value' => $address->addressLine1,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
-                'required' => isset($requiredFields['addressLine1']),
-                'errors' => ! $static ? $address->errors()->get('addressLine1') : [],
-                'data' => [
-                    'error-key' => 'addressLine1',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine2'),
-                'label' => $address->getAttributeLabel('addressLine2'),
-                'id' => 'addressLine2',
-                'name' => 'addressLine2',
-                'value' => $address->addressLine2,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
-                'required' => isset($requiredFields['addressLine2']),
-                'errors' => ! $static ? $address->errors()->get('addressLine2') : [],
-                'data' => [
-                    'error-key' => 'addressLine2',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine3'),
-                'label' => $address->getAttributeLabel('addressLine3'),
-                'id' => 'addressLine3',
-                'name' => 'addressLine3',
-                'value' => $address->addressLine3,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line3' : 'off',
-                'required' => isset($requiredFields['addressLine3']),
-                'errors' => ! $static ? $address->errors()->get('addressLine3') : [],
-                'data' => [
-                    'error-key' => 'addressLine3',
-                ],
-                'disabled' => $static,
-            ]).
-            self::subdivisionField(
-                $address,
-                'administrativeArea',
-                $belongsToCurrentUser ? 'address-level1' : 'off',
-                isset($visibleFields['administrativeArea']),
-                isset($requiredFields['administrativeArea']),
-                [$address->countryCode],
-                true,
-                $static,
-            ).
-            self::subdivisionField(
-                $address,
-                'locality',
-                $belongsToCurrentUser ? 'address-level2' : 'off',
-                isset($visibleFields['locality']),
-                isset($requiredFields['locality']),
-                $parents['locality'],
-                true,
-                $static,
-            ).
-            self::subdivisionField(
-                $address,
-                'dependentLocality',
-                $belongsToCurrentUser ? 'address-level3' : 'off',
-                isset($visibleFields['dependentLocality']),
-                isset($requiredFields['dependentLocality']),
-                $parents['dependentLocality'],
-                false,
-                $static,
-            ).
-            self::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    ! isset($visibleFields['postalCode']) ? 'hidden' : null,
-                ]),
-                'status' => $address->getAttributeStatus('postalCode'),
-                'label' => $address->getAttributeLabel('postalCode'),
-                'id' => 'postalCode',
-                'name' => 'postalCode',
-                'value' => $address->postalCode,
-                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
-                'required' => isset($requiredFields['postalCode']),
-                'errors' => ! $static ? $address->errors()->get('postalCode') : [],
-                'data' => [
-                    'error-key' => 'postalCode',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    ! isset($visibleFields['sortingCode']) ? 'hidden' : null,
-                ]),
-                'status' => $address->getAttributeStatus('sortingCode'),
-                'label' => $address->getAttributeLabel('sortingCode'),
-                'id' => 'sortingCode',
-                'name' => 'sortingCode',
-                'value' => $address->sortingCode,
-                'required' => isset($requiredFields['sortingCode']),
-                'errors' => ! $static ? $address->errors()->get('sortingCode') : [],
-                'data' => [
-                    'error-key' => 'sortingCode',
-                ],
-                'disabled' => $static,
-            ]);
-    }
-
-    private static function isRequiredRule(mixed $rule): bool
-    {
-        if ($rule === 'required') {
-            return true;
-        }
-
-        if ($rule instanceof RequiredIf) {
-            return (string) $rule === 'required';
-        }
-
-        if ($rule instanceof ConditionalRules) {
-            $conditionalRules = $rule->passes() ? $rule->rules() : $rule->defaultRules();
-
-            foreach (Arr::wrap($conditionalRules) as $conditionalRule) {
-                if (self::isRequiredRule($conditionalRule)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static function subdivisionParents(Address $address, array $visibleFields): array
-    {
-        $baseSubdivisionRepository = new BaseSubdivisionRepository;
-
-        $localityParents = [$address->countryCode];
-        $administrativeAreas = $baseSubdivisionRepository->getList([$address->countryCode]);
-
-        if (array_key_exists('administrativeArea', $visibleFields) || empty($administrativeAreas)) {
-            $localityParents[] = $address->administrativeArea;
-        }
-
-        $dependentLocalityParents = $localityParents;
-        $localities = $baseSubdivisionRepository->getList($localityParents);
-        if (array_key_exists('locality', $visibleFields) || empty($localities)) {
-            $dependentLocalityParents[] = $address->locality;
-        }
-
-        return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
-    }
-
-    private static function subdivisionField(
+    public static function addressFieldsHtml(
         Address $address,
-        string $name,
-        string $autocomplete,
-        bool $visible,
-        bool $required,
-        ?array $parents,
-        bool $spinner,
         bool $static = false,
+        ?bool $belongsToCurrentUser = null,
     ): string {
-        $value = $address->$name;
-        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, app()->getLocale());
+        return FieldGroup::make()
+            ->children(array_map(
+                fn (array $field): HtmlString => new HtmlString(self::addressFieldHtml($field, $static)),
+                app(Addresses::class)->getFormFieldDefinitions($address, $belongsToCurrentUser),
+            ))
+            ->toHtml();
+    }
 
-        if ($options) {
-            // Persist invalid values in the UI
-            if ($value && ! isset($options[$value])) {
-                $options[$value] = $value;
-            }
+    /** @param AddressFormField $field */
+    private static function addressFieldHtml(array $field, bool $static): string
+    {
+        $errors = $static && ($field['type'] === 'text' || ($field['spinner'] ?? false))
+            ? []
+            : $field['errors'];
+        $fieldClass = array_filter([
+            isset($field['width']) ? "width-{$field['width']}" : null,
+            $field['visible'] ? null : 'hidden',
+        ]);
+        $config = [
+            'fieldClass' => $fieldClass,
+            'status' => $field['status'] ?? null,
+            'label' => $field['label'],
+            'id' => $field['name'],
+            'name' => $field['name'],
+            'value' => $field['value'],
+            'options' => $field['options'] ?? null,
+            'autocomplete' => $field['autocomplete'] ?? null,
+            'required' => $field['required'],
+            'errors' => $errors,
+            'data' => ['error-key' => $field['name']],
+            'disabled' => $static,
+        ];
 
-            if ($spinner) {
-                $errors = ! $static ? $address->errors()->get($name) : [];
-                $input =
-                    Html::beginTag('div', [
-                        'class' => ['flex', 'flex-nowrap'],
-                    ]).
-                    self::selectizeHtml([
-                        'id' => $name,
-                        'name' => $name,
-                        'value' => $value,
-                        'options' => $options,
-                        'errors' => $errors,
-                        'autocomplete' => $autocomplete,
-                        'disabled' => $static,
-                    ]).
-                    Html::tag('div', '', [
-                        'id' => "$name-spinner",
-                        'class' => ['spinner', 'hidden'],
-                    ]).
-                    Html::endTag('div');
-
-                return self::fieldHtml($input, [
-                    'fieldClass' => ! $visible ? 'hidden' : null,
-                    'label' => $address->getAttributeLabel($name),
-                    'id' => $name,
-                    'required' => $required,
-                    'errors' => $errors,
-                    'data' => [
-                        'error-key' => $name,
-                    ],
-                    'disabled' => $static,
-                ]);
-            }
-
-            return self::selectizeFieldHtml([
-                'fieldClass' => ! $visible ? 'hidden' : null,
-                'status' => $address->getAttributeStatus($name),
-                'label' => $address->getAttributeLabel($name),
-                'id' => $name,
-                'name' => $name,
-                'value' => $value,
-                'options' => $options,
-                'required' => $required,
-                'errors' => $address->errors()->get($name),
-                'autocomplete' => $autocomplete,
-                'data' => [
-                    'error-key' => $name,
-                ],
-                'disabled' => $static,
-            ]);
+        if ($field['type'] === 'text') {
+            return self::textFieldHtml($config);
         }
 
-        // No preconfigured subdivisions for the given parents, so just output a text input
-        return self::textFieldHtml([
-            'fieldClass' => ! $visible ? 'hidden' : null,
-            'status' => $address->getAttributeStatus($name),
-            'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $autocomplete,
-            'id' => $name,
-            'name' => $name,
-            'value' => $value,
-            'required' => $required,
-            'errors' => ! $static ? $address->errors()->get($name) : [],
-            'data' => [
-                'error-key' => $name,
-            ],
+        if (! ($field['spinner'] ?? false)) {
+            return self::selectizeFieldHtml($config);
+        }
+
+        $input = Html::tag('div', self::selectizeHtml($config).Html::tag('div', '', [
+            'id' => "{$field['name']}-spinner",
+            'class' => ['spinner', 'hidden'],
+        ]), ['class' => ['flex', 'flex-nowrap']]);
+
+        return self::fieldHtml($input, [
+            'fieldClass' => $fieldClass,
+            'label' => $field['label'],
+            'id' => $field['name'],
+            'required' => $field['required'],
+            'errors' => $errors,
+            'data' => ['error-key' => $field['name']],
             'disabled' => $static,
         ]);
     }
 
+    /** @param array<string, mixed> $variables */
     private static function renderTemplate(string $template, array $variables = []): string
     {
         return template(''.$template, $variables, templateMode: TemplateMode::Cp);

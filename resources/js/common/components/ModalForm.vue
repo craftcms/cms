@@ -98,7 +98,7 @@
           slot="secondary-action"
           type="reset"
           @click="emit('close')"
-          appearance="plain"
+          variant="plain"
         >
           {{ resetLabel }}
         </craft-button>

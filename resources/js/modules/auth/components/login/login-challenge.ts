@@ -144,7 +144,7 @@ export default class CraftLoginChallenge extends LitElement {
           ? html`
               <hr />
               <craft-action-menu>
-                <craft-button slot="invoker" appearance="plain" size="zero">
+                <craft-button slot="invoker" variant="plain" size="zero">
                   <craft-icon slot="prefix" name="chevron-down"></craft-icon>
                   ${t('Try another way')}
                 </craft-button>

@@ -38,6 +38,7 @@ class StripTags extends Directive
         return 'stripTags';
     }
 
+    /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         return strip_tags((string) $value, $arguments['allowed'] ?? null);
