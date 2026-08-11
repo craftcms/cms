@@ -363,7 +363,23 @@
   }
 
   function cloneRaw<T>(value: T): T {
-    return structuredClone(toRaw(value));
+    return structuredClone(unwrap(value)) as T;
+  }
+
+  function unwrap(value: unknown): unknown {
+    const raw = toRaw(value);
+
+    if (Array.isArray(raw)) {
+      return raw.map(unwrap);
+    }
+
+    if (isRecord(raw)) {
+      return Object.fromEntries(
+        Object.entries(raw).map(([key, value]) => [key, unwrap(value)])
+      );
+    }
+
+    return raw;
   }
 
   function canonical(value: unknown): string {

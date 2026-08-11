@@ -566,6 +566,61 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('accepts override values derived from reactive arrays', async () => {
+    const overridden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Preview Targets'},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {}},
+            path: ['previewTargets'],
+            mode: 'editable',
+            deltaGroup: ['previewTargets'],
+          },
+        },
+      ],
+      values: {
+        previewTargets: [{label: 'Primary', urlFormat: '{url}', refresh: true}],
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(overridden, {
+      slots: {
+        previewTargets: (slot) =>
+          h(
+            'button',
+            {
+              'data-add-target': '',
+              onClick: () =>
+                slot.setValue([
+                  ...(slot.value as unknown[]),
+                  {label: '', urlFormat: '', refresh: true},
+                ]),
+            },
+            'Add a target'
+          ),
+      },
+    });
+
+    container.querySelector<HTMLButtonElement>('[data-add-target]')!.click();
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({
+      previewTargets: [
+        {label: 'Primary', urlFormat: '{url}', refresh: true},
+        {label: '', urlFormat: '', refresh: true},
+      ],
+    });
+  });
+
   it('does not report native control events as Form changes', async () => {
     const onChange = vi.fn();
     app.unmount();
