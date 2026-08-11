@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {h} from 'vue';
   import {t} from '@craftcms/ui';
-  import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -95,7 +94,7 @@
       >{{ t('New schema') }}</CpLink
     >
   </LayoutSlot>
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table" />
-  </Pane>
+  </craft-pane>
 </template>

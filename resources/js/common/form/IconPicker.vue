@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {
     type ComponentPublicInstance,
     computed,
@@ -187,23 +186,22 @@
     @close="modalActive = false"
     @opened="focusSearch"
   >
-    <Pane class="h-full">
-      <template #header>
-        <form
-          role="search"
-          @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-4 px-4 pb-2 bg-white"
-        >
-          <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
-            <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
-              <craft-spinner
-                style="--size: 1em"
-                :visible="http.processing && iconHtml !== null"
-              ></craft-spinner>
-            </div>
-          </CraftInput>
-        </form>
-      </template>
+    <craft-pane class="h-full">
+      <form
+        slot="header"
+        role="search"
+        @submit.prevent="loadIcons()"
+        class="sticky top-0 pt-4 px-4 pb-2 bg-white"
+      >
+        <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
+          <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
+            <craft-spinner
+              style="--size: 1em"
+              :visible="http.processing && iconHtml !== null"
+            ></craft-spinner>
+          </div>
+        </CraftInput>
+      </form>
       <div>
         <!-- This only shows on the initial load -->
         <template v-if="http.processing && iconHtml === null">
@@ -225,7 +223,7 @@
           ></ul>
         </template>
       </div>
-    </Pane>
+    </craft-pane>
   </Modal>
 </template>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui/utilities/translate';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {h, ref} from 'vue';
   import {
     createColumnHelper,
@@ -104,19 +103,18 @@
 
 <template>
   <template v-if="jobs.length > 0">
-    <Pane :padding="0">
+    <craft-pane padding="0">
       <AdminTable :table="jobsTable" :reorderable="false" layout="fixed" />
-      <template #footer>
-        <div
-          class="flex p-2 bg-slate-100"
-          v-text="
-            t('{totalJobs, plural, =0{No jobs} =1{# job} other{# jobs}}', {
-              totalJobs,
-            })
-          "
-        ></div>
-      </template>
-    </Pane>
+      <div
+        slot="footer"
+        class="flex p-2 bg-slate-100"
+        v-text="
+          t('{totalJobs, plural, =0{No jobs} =1{# job} other{# jobs}}', {
+            totalJobs,
+          })
+        "
+      ></div>
+    </craft-pane>
   </template>
   <template v-else>
     <Empty icon="play" :label="t('There are no jobs in the queue')" />

@@ -4,7 +4,6 @@
   import {useForm} from '@inertiajs/vue3';
   import {store} from '@actions/Settings/Users/UserSettingsController';
   import {create as createVolume} from '@actions/Settings/VolumesController';
-  import Pane from '@/common/components/Pane.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -147,7 +146,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <div class="grid gap-6 p-4">
       <section class="grid gap-3">
         <h2 v-if="canRequire2fa" class="text-base">{{ t('User Photos') }}</h2>
@@ -332,5 +331,5 @@
         </section>
       </template>
     </div>
-  </Pane>
+  </craft-pane>
 </template>

@@ -5,7 +5,6 @@
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftHandleInput from '@craftcms/ui/vue/CraftInputHandle.vue';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
-  import Pane from '@/common/components/Pane.vue';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import {destroy, store} from '@actions/Settings/Users/UserGroupsController';
   import {computed} from 'vue';
@@ -92,7 +91,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <CraftInput
         :label="t('Name')"
@@ -145,5 +144,5 @@
         />
       </div>
     </div>
-  </Pane>
+  </craft-pane>
 </template>

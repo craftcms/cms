@@ -4,7 +4,6 @@
   import {useEventListener} from '@vueuse/core';
   import {attrs, t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
@@ -132,7 +131,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div ref="cardsContainer" class="grid gap-3">
       <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
 
@@ -176,7 +175,7 @@
         </craft-button>
       </div>
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.details" name="details">
     <div v-html="props.details"></div>

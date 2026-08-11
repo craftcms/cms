@@ -10,7 +10,6 @@
   import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import LiveRegion from '@/common/components/LiveRegion.vue';
-  import Pane from '@/common/components/Pane.vue';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import UserMenu from '@/common/components/UserMenu.vue';
@@ -367,13 +366,13 @@
                   <LayoutSlot> content can mount before registration flips
                   hasDetails. -->
                 <aside v-show="hasDetails">
-                  <Pane appearance="raised">
+                  <craft-pane appearance="raised">
                     <div class="details">
                       <LayoutSlotOutlet name="details">
                         <slot name="details"></slot>
                       </LayoutSlotOutlet>
                     </div>
-                  </Pane>
+                  </craft-pane>
                 </aside>
               </div>
             </div>

@@ -4,7 +4,6 @@
   import {useForm, usePage} from '@inertiajs/vue3';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
@@ -100,7 +99,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised" :padding="0">
+  <craft-pane appearance="raised" padding="0">
     <div class="grid gap-6 p-4">
       <section class="grid gap-3">
         <h2 class="text-base">{{ t('General') }}</h2>
@@ -252,7 +251,7 @@
 
       <HtmlFragmentRenderer :fragment="props.prefsHook" />
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.details" name="details">
     <div v-html="props.details"></div>

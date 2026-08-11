@@ -4,7 +4,6 @@
   import {useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import PermissionList from '@/modules/permissions/components/PermissionList.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
@@ -77,7 +76,7 @@
     :value="form.permissions.join(',')"
   />
 
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
       <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
@@ -150,7 +149,7 @@
         </div>
       </craft-field-group>
     </craft-field-group>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.details" name="details">
     <div v-html="props.details"></div>
