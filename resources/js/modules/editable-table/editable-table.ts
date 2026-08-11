@@ -852,11 +852,13 @@ export class Row extends Base {
         } else {
           $input = $('textarea', td);
           this.$textareas = this.$textareas.add($input);
-          this.niceTexts.push(
-            new Garnish.NiceText($input, {
-              onHeightChange: this.onTextareaHeightChange.bind(this),
-            })
-          );
+          if (typeof Garnish.NiceText === 'function') {
+            this.niceTexts.push(
+              new Garnish.NiceText($input, {
+                onHeightChange: this.onTextareaHeightChange.bind(this),
+              })
+            );
+          }
         }
 
         this.addListener($input, 'focus', 'onTextareaFocus');
