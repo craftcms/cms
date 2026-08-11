@@ -299,12 +299,7 @@
     @submit="saveGroup"
     :loading="form.processing"
   >
-    <craft-input
-      name="id"
-      id="id"
-      v-model="form.id"
-      type="hidden"
-    ></craft-input>
+    <craft-input name="id" id="id" v-model="form.id" hidden-input></craft-input>
     <Deferred data="nameSuggestions">
       <template #fallback>
         <craft-input
