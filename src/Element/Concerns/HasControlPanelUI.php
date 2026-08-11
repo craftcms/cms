@@ -26,6 +26,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -577,13 +578,7 @@ JS,
         $nodes = $this->metaFieldsNodes($static);
 
         if (! $static && static::hasStatuses() && $this->showStatusField()) {
-            $nodes[] = Field::make(t('Status'))
-                ->control(
-                    Lightswitch::make('enabled')
-                        ->value((bool) $this->enabled)
-                        ->onLabel(t('Enabled'))
-                        ->offLabel(t('Disabled')),
-                );
+            $nodes = [...$nodes, ...$this->statusNodes()];
         }
 
         if ($this->hasRevisions() && ! $this->getIsRevision()) {
@@ -596,6 +591,104 @@ JS,
         }
 
         return $nodes === [] ? null : Form::make($nodes);
+    }
+
+    /**
+     * The status Node(s) for the sidebar Form.
+     *
+     * On a single-site install (or an element supported by one site) this is a
+     * lone `enabled` switch. Otherwise it mirrors the legacy editor: a global
+     * "Enabled for all sites" switch plus a per-site switch for every editable
+     * site the element propagates to, the latter collapsed behind a group. The
+     * global switch is indeterminate when the sites disagree, and the client
+     * keeps the two in sync.
+     *
+     * @return list<Node>
+     */
+    private function statusNodes(): array
+    {
+        $siteIds = $this->editableStatusSiteIds();
+
+        // One editable site (or a non-localized element) keeps the plain
+        // global switch the single-site editor has always shown.
+        if (count($siteIds) < 2) {
+            return [
+                Field::make(t('Status'))
+                    ->control(
+                        Lightswitch::make('enabled')
+                            ->value((bool) $this->enabled)
+                            ->onLabel(t('Enabled'))
+                            ->offLabel(t('Disabled')),
+                    ),
+            ];
+        }
+
+        // Sites the element hasn't propagated to yet are absent from the status
+        // map; the legacy editor defaults those to enabled, so match it.
+        $siteStatuses = ElementHelper::siteStatusesForElement($this, true);
+        $statuses = [];
+
+        foreach ($siteIds as $siteId) {
+            $statuses[$siteId] = (bool) ($siteStatuses[$siteId] ?? true);
+        }
+
+        $values = array_values($statuses);
+        $allEnabled = ! in_array(false, $values, true);
+        $allDisabled = ! in_array(true, $values, true);
+
+        $siteFields = [];
+
+        foreach ($statuses as $siteId => $enabled) {
+            $site = Sites::getSiteById($siteId);
+
+            if ($site === null) {
+                continue;
+            }
+
+            $siteFields[] = Field::make(t($site->getName(), category: 'site'))
+                ->control(
+                    Lightswitch::make(['enabledForSite', (string) $siteId])
+                        ->value($enabled),
+                );
+        }
+
+        return [
+            Field::make(t('Enabled for all sites'))
+                ->control(
+                    Lightswitch::make('enabled')
+                        ->value($allEnabled)
+                        ->indeterminate(! $allEnabled && ! $allDisabled)
+                        ->onLabel(t('Enabled'))
+                        ->offLabel(t('Disabled')),
+                ),
+            Group::make('site-statuses', $siteFields)
+                ->label(t('Update status for individual sites'))
+                ->collapsible(),
+        ];
+    }
+
+    /**
+     * The sites whose statuses the current user can edit from this screen —
+     * the element's propagating supported sites, limited to editable ones.
+     *
+     * @return list<int>
+     */
+    private function editableStatusSiteIds(): array
+    {
+        if (! static::isLocalized()) {
+            return [];
+        }
+
+        return array_values(array_intersect(
+            array_column(
+                array_filter(
+                    ElementHelper::supportedSitesForElement($this, true),
+                    fn (array $site): bool => $site['propagate'],
+                ),
+                'siteId',
+            ),
+            Sites::getEditableSiteIds()->all(),
+        ));
     }
 
     /**

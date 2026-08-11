@@ -4,6 +4,7 @@ import {t} from '@craftcms/ui';
 import {computed, onBeforeUnmount} from 'vue';
 import type {FormPayload} from '@/modules/forms/types';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
+import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 
 /** The shared payload every {@link ElementEditViewModel} emits. */
@@ -61,6 +62,8 @@ export function useElementEditPage({saveData}: Options = {}) {
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
   } = useInertiaFormRenderer(form, sidebarPayload);
+
+  useSiteStatuses(form);
 
   const {save} = useSettingsSave(
     form,
