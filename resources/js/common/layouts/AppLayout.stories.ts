@@ -1,14 +1,14 @@
-import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import {useForm} from '@inertiajs/vue3';
+import type { Meta, StoryObj } from "@storybook/vue3-vite";
+import { useForm } from "@inertiajs/vue3";
 
-import AppLayout from './AppLayout.vue';
+import AppLayout from "./AppLayout.vue";
 
 /**
  * Highlights a slot's rendered area so each extension point is easy to spot.
  */
 const SlotMarker = {
   props: {
-    name: {type: String, required: true},
+    name: { type: String, required: true },
   },
   template: `
     <div class="slot-marker">
@@ -43,12 +43,12 @@ const markerStyles = `
 const meta = {
   component: AppLayout,
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
     inertia: {
-      title: 'Page Title',
+      title: "Page Title",
       crumbs: [
-        {label: 'Content', url: '#'},
-        {label: 'Entries', url: '#'},
+        { label: "Content", url: "#" },
+        { label: "Entries", url: "#" },
       ],
       queue: {
         enabled: false,
@@ -58,9 +58,9 @@ const meta = {
       },
       craft: {
         nav: [
-          {label: 'Dashboard', url: '#', icon: 'gauge', selected: false},
-          {label: 'Entries', url: '#', icon: 'newspaper', selected: true},
-          {label: 'Settings', url: '#', icon: 'gear', selected: false},
+          { label: "Dashboard", url: "#", icon: "gauge", selected: false },
+          { label: "Entries", url: "#", icon: "newspaper", selected: true },
+          { label: "Settings", url: "#", icon: "gear", selected: false },
         ],
       },
     },
@@ -103,15 +103,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const sampleContent = `
-  <div class="p-4 bg-white border border-neutral-border-quiet rounded-sm shadow-sm">
-    <p>Page content goes in the default slot.</p>
-  </div>
+  <p>Page content goes in the default slot.</p>
 `;
 
 export const Default: Story = {
   render: (args) => ({
-    components: {AppLayout},
-    setup: () => ({args}),
+    components: { AppLayout },
+    setup: () => ({ args }),
     template: `
       <AppLayout v-bind="args">
         ${sampleContent}
@@ -119,7 +117,7 @@ export const Default: Story = {
     `,
   }),
   args: {
-    title: 'Default Layout',
+    title: "Default Layout",
   },
 };
 
@@ -128,10 +126,10 @@ export const Default: Story = {
  */
 export const AllExtensionPoints: Story = {
   render: (args) => ({
-    components: {AppLayout, SlotMarker},
+    components: { AppLayout, SlotMarker },
     setup() {
-      const form = useForm({name: ''});
-      return {args, form};
+      const form = useForm({ name: "" });
+      return { args, form };
     },
     template: `
       <div>
@@ -211,7 +209,7 @@ export const AllExtensionPoints: Story = {
     `,
   }),
   args: {
-    title: 'All Extension Points',
+    title: "All Extension Points",
   },
 };
 
@@ -221,10 +219,10 @@ export const AllExtensionPoints: Story = {
  */
 export const FullPageForm: Story = {
   render: (args) => ({
-    components: {AppLayout},
+    components: { AppLayout },
     setup() {
-      const form = useForm({name: ''});
-      return {args, form};
+      const form = useForm({ name: "" });
+      return { args, form };
     },
     template: `
       <AppLayout
@@ -237,7 +235,7 @@ export const FullPageForm: Story = {
     `,
   }),
   args: {
-    title: 'Edit Entry',
+    title: "Edit Entry",
   },
 };
 
@@ -247,15 +245,15 @@ export const FullPageForm: Story = {
  */
 export const FormWithErrors: Story = {
   render: (args) => ({
-    components: {AppLayout},
+    components: { AppLayout },
     setup() {
-      const form = useForm({name: '', handle: ''});
+      const form = useForm({ name: "", handle: "" });
       form.errors = {
-        name: 'Name cannot be blank.',
-        handle: 'Handle is already in use.',
+        name: "Name cannot be blank.",
+        handle: "Handle is already in use.",
       };
       form.hasErrors = true;
-      return {args, form};
+      return { args, form };
     },
     template: `
       <AppLayout v-bind="args" :form="form">
@@ -264,7 +262,7 @@ export const FormWithErrors: Story = {
     `,
   }),
   args: {
-    title: 'Edit Entry',
+    title: "Edit Entry",
   },
 };
 
@@ -275,8 +273,8 @@ export const FormWithErrors: Story = {
  */
 export const SecondaryNavigation: Story = {
   render: (args) => ({
-    components: {AppLayout},
-    setup: () => ({args}),
+    components: { AppLayout },
+    setup: () => ({ args }),
     template: `
       <AppLayout v-bind="args">
         <template #subnav-actions>
@@ -290,15 +288,14 @@ export const SecondaryNavigation: Story = {
     `,
   }),
   args: {
-    title: 'Sites',
-    fullWidth: true,
+    title: "Sites",
   },
   parameters: {
     inertia: {
       subnav: [
-        {label: 'All Sites', url: '#', selected: true},
-        {label: 'Europe', url: '#', selected: false},
-        {label: 'North America', url: '#', selected: false},
+        { label: "All Sites", url: "#", selected: true },
+        { label: "Europe", url: "#", selected: false },
+        { label: "North America", url: "#", selected: false },
       ],
     },
   },
@@ -310,8 +307,8 @@ export const SecondaryNavigation: Story = {
  */
 export const SidebarAndDetails: Story = {
   render: (args) => ({
-    components: {AppLayout, SlotMarker},
-    setup: () => ({args}),
+    components: { AppLayout, SlotMarker },
+    setup: () => ({ args }),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -330,7 +327,7 @@ export const SidebarAndDetails: Story = {
     `,
   }),
   args: {
-    title: 'Sidebar and Details',
+    title: "Sidebar and Details",
   },
 };
 
@@ -340,8 +337,8 @@ export const SidebarAndDetails: Story = {
  */
 export const ContentNoticeAndTabs: Story = {
   render: (args) => ({
-    components: {AppLayout, SlotMarker},
-    setup: () => ({args}),
+    components: { AppLayout, SlotMarker },
+    setup: () => ({ args }),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -365,7 +362,7 @@ export const ContentNoticeAndTabs: Story = {
     `,
   }),
   args: {
-    title: 'Content Notice and Tabs',
+    title: "Content Notice and Tabs",
   },
 };
 
@@ -375,8 +372,8 @@ export const ContentNoticeAndTabs: Story = {
  */
 export const ContextMenuAndToolbar: Story = {
   render: (args) => ({
-    components: {AppLayout, SlotMarker},
-    setup: () => ({args}),
+    components: { AppLayout, SlotMarker },
+    setup: () => ({ args }),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -399,7 +396,7 @@ export const ContextMenuAndToolbar: Story = {
     `,
   }),
   args: {
-    title: 'Context Menu and Toolbar',
+    title: "Context Menu and Toolbar",
   },
 };
 
@@ -409,10 +406,10 @@ export const ContextMenuAndToolbar: Story = {
  */
 export const CustomSubmitButton: Story = {
   render: (args) => ({
-    components: {AppLayout},
+    components: { AppLayout },
     setup() {
-      const form = useForm({name: ''});
-      return {args, form};
+      const form = useForm({ name: "" });
+      return { args, form };
     },
     template: `
       <AppLayout v-bind="args" :form="form">
@@ -429,7 +426,7 @@ export const CustomSubmitButton: Story = {
     `,
   }),
   args: {
-    title: 'Custom Submit Button',
+    title: "Custom Submit Button",
   },
 };
 
@@ -438,8 +435,8 @@ export const CustomSubmitButton: Story = {
  */
 export const HiddenHeader: Story = {
   render: (args) => ({
-    components: {AppLayout},
-    setup: () => ({args}),
+    components: { AppLayout },
+    setup: () => ({ args }),
     template: `
       <AppLayout v-bind="args">
         <template #header><span></span></template>
@@ -448,6 +445,6 @@ export const HiddenHeader: Story = {
     `,
   }),
   args: {
-    title: 'Hidden Header',
+    title: "Hidden Header",
   },
 };

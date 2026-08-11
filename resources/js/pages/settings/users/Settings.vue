@@ -115,7 +115,7 @@
     }),
   });
 
-  useAppLayout({fullWidth: true, form, defaultFormActions: [], onSave: save});
+  useAppLayout({form, defaultFormActions: [], onSave: save});
 
   function updateRequire2fa(event: CustomEvent) {
     const target = event.currentTarget as HTMLElement & {

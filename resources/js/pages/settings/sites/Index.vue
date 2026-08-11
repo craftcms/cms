@@ -210,7 +210,7 @@
     return t('Sites');
   });
 
-  useAppLayout(() => ({fullWidth: true, title: pageTitle.value}));
+  useAppLayout(() => ({title: pageTitle.value}));
 </script>
 
 <template>

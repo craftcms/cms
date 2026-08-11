@@ -133,7 +133,7 @@
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
-  useAppLayout({title: props.title, fullWidth: true});
+  useAppLayout({title: props.title});
 </script>
 
 <template>

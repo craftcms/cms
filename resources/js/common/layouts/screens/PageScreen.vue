@@ -50,7 +50,6 @@
   }>();
 
   const props = withDefaults(defineProps<ScreenProps>(), {
-    fullWidth: false,
     form: null,
     defaultFormActions: () => ['saveAndContinueEditing'],
     formAdditionalButtons: () => [],
@@ -260,7 +259,7 @@
         <main id="main" tabindex="-1" class="pb-2xl">
           <form method="post" @submit.prevent="form && save()">
             <slot name="header">
-              <div :class="{container: true, 'container--full': fullWidth}">
+              <div class="container">
                 <div class="index-grid index-grid--header">
                   <div class="index-grid__aside">
                     <LayoutSlotOutlet name="title">
@@ -310,7 +309,7 @@
                 </div>
               </div>
             </slot>
-            <div :class="{container: true, 'container--full': fullWidth}">
+            <div class="container">
               <LayoutSlotOutlet name="error-summary">
                 <slot name="error-summary">
                   <ErrorSummary
@@ -403,7 +402,7 @@
     </div>
     <div class="cp__footer">
       <footer>
-        <div :class="{container: true, 'container--full': fullWidth}">
+        <div class="container">
           <LayoutSlotOutlet name="footer">
             <slot name="footer"></slot>
           </LayoutSlotOutlet>
@@ -435,14 +434,15 @@
     background-color: var(--color-slate-950);
   }
 
+  /* Every page runs the full width of the viewport. `max-width: none` is doing
+     real work: `container` is also a Tailwind utility, and cp.css pulls in
+     tailwindcss/utilities.css — dropping the declaration entirely lets
+     Tailwind's breakpoint caps (1536px at xl) take over instead of removing
+     the limit. */
   .container {
-    max-width: var(--global-content-width);
+    max-width: none;
     margin: 0 auto;
     padding-inline: var(--c-spacing-lg);
-  }
-
-  .container--full {
-    max-width: none;
   }
 
   .content-layout {
