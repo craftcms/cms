@@ -23,7 +23,7 @@ class EntryEditViewModel extends ElementEditViewModel
     }
 
     #[Override]
-    public function saveUrl(): string
+    protected function elementSaveUrl(): string
     {
         return Url::actionUrl('entries/save-entry');
     }

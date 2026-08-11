@@ -65,11 +65,71 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
-     * Where the edit form posts. Element types point this at their own store
-     * action — the Form payload submits ordinary nested input names, so the
-     * existing save controllers read it without a translation layer.
+     * The element type's own store action. The Form payload submits ordinary
+     * nested input names, so the existing save controllers read it without a
+     * translation layer.
      */
-    abstract public function saveUrl(): string;
+    abstract protected function elementSaveUrl(): string;
+
+    /** Where the edit form posts when there are no provisional changes to apply. */
+    public function saveUrl(): string
+    {
+        return $this->elementSaveUrl();
+    }
+
+    /**
+     * Where the edit form posts once provisional changes exist.
+     *
+     * The client picks between this and {@see saveUrl()} at submit time rather
+     * than relying on the state at page load: autosave can create a provisional
+     * draft partway through editing a canonical element, and from that point on
+     * saving means applying the draft, not saving the element under it.
+     */
+    public function applyDraftUrl(): string
+    {
+        return Url::actionUrl('elements/apply-draft');
+    }
+
+    /**
+     * Where unsaved changes are autosaved. Posting here with no draft yet
+     * creates the provisional draft; afterwards it updates it in place.
+     */
+    public function autosaveUrl(): string
+    {
+        return Url::actionUrl('elements/save-draft');
+    }
+
+    /** Where a provisional draft is discarded, reverting to the canonical element. */
+    public function discardDraftUrl(): string
+    {
+        return Url::actionUrl('elements/delete-draft');
+    }
+
+    public function isProvisionalDraft(): bool
+    {
+        return (bool) $this->element->isProvisionalDraft;
+    }
+
+    public function draftId(): ?int
+    {
+        return $this->element->draftId;
+    }
+
+    public function canAutosave(): bool
+    {
+        return $this->canSave && ! $this->element->getIsRevision();
+    }
+
+    /**
+     * The notice shown above the editor when the screen is showing unsaved
+     * provisional changes rather than the canonical element.
+     */
+    public function notice(): ?string
+    {
+        return $this->element->isProvisionalDraft
+            ? t('Showing your unsaved changes.')
+            : null;
+    }
 
     public function elementId(): ?int
     {

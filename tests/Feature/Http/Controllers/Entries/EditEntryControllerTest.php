@@ -147,10 +147,31 @@ it('falls back to the legacy editor for revisions', function () {
         ->assertSee('elements/revert', false);
 });
 
-it('falls back to the legacy editor when a provisional draft exists', function () {
-    app(Drafts::class)->createDraft($this->entry, auth()->id(), provisional: true);
+it('renders a provisional draft in the Inertia editor', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), provisional: true);
 
     get($this->entry->getCpEditUrl())
         ->assertOk()
-        ->assertSee('elements/apply-draft', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('isProvisionalDraft', true)
+            ->where('draftId', $draft->draftId)
+            ->where('canonicalId', $this->entry->id)
+            ->where('notice', 'Showing your unsaved changes.')
+            ->where('applyDraftUrl', fn (string $url) => str_contains($url, 'elements/apply-draft'))
+            ->etc()
+        );
+});
+
+it('autosaves against the shared draft action', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('autosaveUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
+            ->where('discardDraftUrl', fn (string $url) => str_contains($url, 'elements/delete-draft'))
+            ->where('canAutosave', true)
+            ->where('isProvisionalDraft', false)
+            ->where('draftId', null)
+            ->etc()
+        );
 });

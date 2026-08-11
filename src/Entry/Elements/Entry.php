@@ -2126,6 +2126,11 @@ JS, [
                 ->control(
                     DateTime::make('postDate')
                         ->showTime()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
                         ->value(self::dateTimeControlValue($this->postDate))
                         ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
                 );
@@ -2134,6 +2139,11 @@ JS, [
                 ->control(
                     DateTime::make('expiryDate')
                         ->showTime()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
                         ->value(self::dateTimeControlValue($this->expiryDate))
                         ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
                 );
