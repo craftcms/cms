@@ -751,10 +751,11 @@ JS,
     private function statusNodes(): array
     {
         $siteIds = $this->editableStatusSiteIds();
+        $additionalSiteIds = $this->additionalStatusSiteIds();
 
-        // One editable site (or a non-localized element) keeps the plain
-        // global switch the single-site editor has always shown.
-        if (count($siteIds) < 2) {
+        // One editable site in total (or a non-localized element) keeps the
+        // plain global switch the single-site editor has always shown.
+        if (count($siteIds) + count($additionalSiteIds) < 2) {
             return [
                 Field::make(t('Status'))
                     ->control(
@@ -773,6 +774,14 @@ JS,
 
         foreach ($siteIds as $siteId) {
             $statuses[$siteId] = (bool) ($siteStatuses[$siteId] ?? true);
+        }
+
+        // Supported sites the element doesn't propagate to are offered here too,
+        // switched off. The legacy editor hides these behind an "Add a site…"
+        // select; turning one on has the same effect — the element is saved for
+        // that site — without the dynamic field building.
+        foreach ($additionalSiteIds as $siteId) {
+            $statuses[$siteId] ??= false;
         }
 
         $values = array_values($statuses);
@@ -808,6 +817,30 @@ JS,
                 ->label(t('Update status for individual sites'))
                 ->collapsible(),
         ];
+    }
+
+    /**
+     * Supported sites the element does *not* propagate to, limited to editable
+     * ones — the sites it could be added to.
+     *
+     * @return list<int>
+     */
+    private function additionalStatusSiteIds(): array
+    {
+        if (! static::isLocalized()) {
+            return [];
+        }
+
+        return array_values(array_intersect(
+            array_column(
+                array_filter(
+                    ElementHelper::supportedSitesForElement($this, true),
+                    fn (array $site): bool => ! $site['propagate'],
+                ),
+                'siteId',
+            ),
+            Sites::getEditableSiteIds()->all(),
+        ));
     }
 
     /**

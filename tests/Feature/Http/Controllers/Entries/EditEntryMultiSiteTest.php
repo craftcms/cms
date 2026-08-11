@@ -133,3 +133,29 @@ it('omits the site switcher and per-site switches when the section is single-sit
             ->etc()
         );
 });
+
+it('offers a switch for every site the section is enabled for', function () {
+    $extraSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $this->section->id,
+        'siteId' => $extraSite->id,
+        'hasUrls' => true,
+        'dateCreated' => $this->section->dateCreated,
+        'dateUpdated' => $this->section->dateUpdated,
+    ]);
+    Sections::refreshSections();
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarForm.nodes', function (Collection $nodes) use ($extraSite) {
+                $group = $nodes->first(fn (array $node) => ($node['uid'] ?? null) === 'site-statuses');
+
+                return collect($group['children'] ?? [])
+                    ->map(fn (array $child) => implode('.', $child['control']['path'] ?? []))
+                    ->contains("enabledForSite.{$extraSite->id}");
+            })
+            ->etc()
+        );
+});
