@@ -267,3 +267,70 @@ it('renders an unpublished draft as a create screen', function () {
             ->etc()
         );
 });
+
+it('exposes the action menu as behavior descriptors', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actionMenu', function (Collection $items) {
+                $labels = $items->pluck('label');
+                $behaviors = $items->pluck('behavior.type');
+
+                return $labels->contains('Validate entry')
+                    && $labels->contains('Copy entry')
+                    && $labels->contains('Entry type settings')
+                    && $labels->contains('Section settings')
+                    && $behaviors->contains('submit')
+                    && $behaviors->contains('copy')
+                    && $behaviors->contains('slideout');
+            })
+            ->etc()
+        );
+});
+
+it('routes deletion through the deletion-blockers flow', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actionMenu', function (Collection $items) {
+                $delete = $items->first(fn (array $item) => ($item['behavior']['type'] ?? null) === 'delete');
+
+                return $delete !== null
+                    && ($delete['destructive'] ?? false) === true
+                    && $delete['behavior']['elementId'] === $this->entry->id
+                    && is_string($delete['behavior']['confirm'])
+                    && is_string($delete['behavior']['redirect']);
+            })
+            ->etc()
+        );
+});
+
+it('omits the Edit action and never offers it on the edit screen', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actionMenu', fn (Collection $items) => $items
+                ->pluck('label')
+                ->doesntContain(fn (string $label) => str_starts_with($label, 'Edit ')))
+            ->etc()
+        );
+});
+
+it('drops the View action for revisions, which have no editable URL context', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes'),
+    );
+
+    get(cp_url(sprintf(
+        'entries/news/%d-%s?revisionId=%d',
+        $this->entry->id,
+        $this->entry->slug,
+        $revision->revisionId,
+    )))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actionMenu', fn (Collection $items) => $items
+                ->pluck('label')->doesntContain('Validate entry'))
+            ->etc()
+        );
+});

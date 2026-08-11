@@ -235,6 +235,31 @@ abstract class ElementEditViewModel extends ViewModel
     }
 
     /**
+     * The element's action menu, as behavior descriptors the client dispatches.
+     *
+     * "View in a new tab" is dropped once preview targets exist, since the
+     * preview control already covers it, and "Edit" never appears — this screen
+     * is the edit screen.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function actionMenu(): array
+    {
+        if (! $this->element->id) {
+            return [];
+        }
+
+        $hidesView = $this->element->getPreviewTargets() !== [];
+
+        return array_values(array_filter(
+            $this->element->actionMenuDescriptors(),
+            fn (array $item): bool => ! (
+                $hidesView && ($item['behavior']['type'] ?? null) === 'link'
+            ),
+        ));
+    }
+
+    /**
      * The drafts-and-revisions switcher shown beside the breadcrumbs.
      *
      * Groups are flattened into a single item list — headings become `heading`
