@@ -1,4 +1,5 @@
 import {router} from '@inertiajs/vue3';
+import {t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
@@ -42,7 +43,17 @@ export type ElementActionBehavior =
       action?: string;
       params?: Record<string, unknown>;
       entryTypeFromField?: boolean;
-    };
+    }
+  // The asset behaviors below all hand off to a legacy modal or uploader, and
+  // reload the page afterwards rather than patching the file's details into it.
+  | {
+      type: 'previewFile';
+      assetId: number;
+      settings?: Record<string, unknown>;
+    }
+  | {type: 'download'; actionUrl: string; params?: Record<string, unknown>}
+  | {type: 'replaceFile'; assetId: number; fsType: string}
+  | {type: 'editImage'; assetId: number};
 
 export interface ElementActionMenuItem {
   label: string;
@@ -128,8 +139,121 @@ export function useElementActionMenu(
             params: behavior.params,
           });
         }
+
+        return;
       }
+
+      case 'previewFile':
+        new Craft.PreviewFileModal(behavior.assetId, behavior.settings ?? {});
+
+        return;
+
+      case 'download':
+        // A real form post, not an Inertia visit: the response is the file.
+        submitNativeForm(behavior.actionUrl, behavior.params ?? {});
+
+        return;
+
+      case 'replaceFile':
+        replaceFile(behavior.assetId, behavior.fsType);
+
+        return;
+
+      case 'editImage':
+        new Craft.AssetImageEditor(behavior.assetId, {
+          allowDegreeFractions: Craft.isImagick,
+          // A new asset means a different element entirely, so only an in-place
+          // edit is worth refreshing this screen for.
+          onSave: (data: {newAssetId?: number}) => {
+            if (!data.newAssetId) {
+              router.reload();
+            }
+          },
+        });
     }
+  }
+
+  /**
+   * Posts to an action the browser should handle itself — a file download,
+   * which can't come back through Inertia.
+   */
+  function submitNativeForm(
+    action: string,
+    params: Record<string, unknown>
+  ): void {
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = action;
+    form.hidden = true;
+
+    const fields: Record<string, unknown> = {
+      ...(Craft.csrfTokenName
+        ? {[Craft.csrfTokenName]: Craft.csrfTokenValue}
+        : {}),
+      ...params,
+    };
+
+    for (const [name, value] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = String(value);
+      form.append(input);
+    }
+
+    document.body.append(form);
+    form.submit();
+    form.remove();
+  }
+
+  /**
+   * Swaps the asset's file for a newly uploaded one through the legacy
+   * uploader, then reloads so the filename, size, dimensions, and thumbnail all
+   * come back from the server together.
+   */
+  function replaceFile(assetId: number, fsType: string): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.name = 'replaceFile';
+    input.hidden = true;
+    document.body.append(input);
+
+    const uploader = Craft.createUploader(fsType, $(input), {
+      dropZone: null,
+      fileInput: $(input),
+      paramName: 'replaceFile',
+      replace: true,
+      events: {
+        fileuploaddone: (event: any, data: any) => {
+          const result =
+            event instanceof CustomEvent ? event.detail : data.result;
+
+          if (result?.error) {
+            Craft.cp?.displayError?.(result.error);
+
+            return;
+          }
+
+          Craft.cp?.displayNotice?.(t('New file uploaded.'));
+          Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
+          router.reload();
+        },
+        fileuploadfail: (event: any, data: any) => {
+          const response =
+            event instanceof CustomEvent
+              ? event.detail
+              : data?.jqXHR?.responseJSON;
+
+          Craft.cp?.displayError?.(
+            response?.message ?? t('Replace file failed.')
+          );
+        },
+        fileuploadalways: () => input.remove(),
+      },
+    });
+
+    uploader.setParams({assetId});
+    input.click();
   }
 
   return computed(() =>

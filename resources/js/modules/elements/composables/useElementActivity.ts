@@ -39,6 +39,7 @@ export function useElementActivity(options: Options): {
   isStale: Readonly<Ref<boolean>>;
   staleType: Readonly<Ref<'element' | 'canonical' | null>>;
   poll: () => Promise<void>;
+  rebase: (timestamps: Options['updatedTimestamps']) => void;
 } {
   const activity = ref<Array<ElementActivityEntry>>([]);
   const isStale = ref(false);
@@ -84,6 +85,19 @@ export function useElementActivity(options: Options): {
     }
   }
 
+  /**
+   * Re-baselines against the stamps the screen has just re-rendered with.
+   *
+   * Saving in place bumps the element's `dateUpdated` without navigating away,
+   * which the next poll would otherwise report as someone else's change.
+   */
+  function rebase(timestamps: Options['updatedTimestamps']): void {
+    elementStamp = timestamps.element;
+    canonicalStamp = timestamps.canonical;
+    isStale.value = false;
+    staleType.value = null;
+  }
+
   const visibility = useDocumentVisibility();
 
   const {pause, resume} = useIntervalFn(
@@ -112,5 +126,6 @@ export function useElementActivity(options: Options): {
     isStale: readonly(isStale),
     staleType: readonly(staleType),
     poll,
+    rebase,
   };
 }

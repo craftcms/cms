@@ -1613,6 +1613,18 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function sidebarForm(FormContext $context = new FormContext): ?Form;
 
     /**
+     * Returns the element's validation errors keyed the way the editor's Forms
+     * address them.
+     *
+     * A Form matches errors to Controls by path, so an attribute validated
+     * under one name but posted under another needs remapping here, or its
+     * messages never reach the field that produced them.
+     *
+     * @return array<string, list<string>>
+     */
+    public function formErrors(): array;
+
+    /**
      * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array<string,mixed> The data, with keys representing the labels. The values can either be strings or callables.

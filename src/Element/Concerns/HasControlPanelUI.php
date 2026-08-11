@@ -881,6 +881,22 @@ JS,
     }
 
     /**
+     * Returns the element's validation errors keyed the way the editor's Forms
+     * address them.
+     *
+     * A Form matches errors to Controls by path, so an attribute validated
+     * under one name but posted under another — an asset's `newLocation` versus
+     * its `newFilename` field — needs remapping here, or its messages never
+     * reach the field that produced them.
+     *
+     * @return array<string, list<string>>
+     */
+    public function formErrors(): array
+    {
+        return $this->errors()->getMessages();
+    }
+
+    /**
      * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param  bool  $static  Whether the fields should be static (non-interactive)
