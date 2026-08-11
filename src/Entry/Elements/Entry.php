@@ -1841,6 +1841,43 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(): array
+    {
+        if (! currentUser()?->isAdmin() || ! Cms::config()->allowAdminChanges) {
+            return [];
+        }
+
+        $items = [[
+            'label' => t('Entry type settings'),
+            'icon' => 'gear',
+            'behavior' => [
+                'type' => 'slideout',
+                'url' => Url::cpUrl("settings/entry-types/$this->typeId"),
+                // A non-nested entry can have its type switched in the sidebar,
+                // so the slideout follows the field rather than the saved value.
+                'entryTypeFromField' => ! isset($this->fieldId),
+            ],
+        ]];
+
+        if (! empty($this->sectionId)) {
+            $items[] = [
+                'label' => t('Section settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'action' => 'sections/edit-section',
+                    'params' => ['sectionId' => $this->sectionId],
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
     /** @return array<int, array<string, scalar|null>> */
     #[Override]
     protected function safeActionMenuItems(): array

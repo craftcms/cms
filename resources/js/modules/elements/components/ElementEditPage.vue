@@ -8,6 +8,7 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
 
   const props = defineProps<{
     /**
@@ -50,6 +51,14 @@
     }))
   );
 
+  // The element's own actions (Validate, Copy, Delete, …). Behaviors are
+  // dispatched client-side rather than via registered jQuery handlers.
+  const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
+    // The entry type can be switched in the sidebar without saving, so the
+    // settings slideout should follow the field rather than the stored value.
+    currentEntryTypeId: () => form.typeId,
+  });
+
   const autosaveMessage = computed(() => {
     switch (autosave.status.value) {
       case 'saving':
@@ -75,6 +84,7 @@
     defaultFormActions: [],
     formActions: formActionItems.value,
     formAdditionalButtons: headerButtons.value,
+    formAdditionalActions: actionMenuItems.value,
   }));
 </script>
 

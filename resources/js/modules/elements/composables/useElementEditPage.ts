@@ -3,6 +3,7 @@ import {router, useForm, usePage} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
 import type {FormPayload} from '@/modules/forms/types';
+import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
@@ -65,6 +66,7 @@ export interface ElementEditPayload {
   mergeNotice: string | null;
   canDiscardDraft: boolean;
   submitButtonLabel: string;
+  actionMenu: Array<ElementActionMenuItem>;
   contextMenu: {
     label: string;
     items: Array<ElementContextMenuItem>;
