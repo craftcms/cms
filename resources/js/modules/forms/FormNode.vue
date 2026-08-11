@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
-  import {FormFailure} from './runtime';
+  import {FormFailure, formChangeFromEvent} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
 
   defineOptions({name: 'FormNode'});
@@ -48,8 +48,12 @@
     return error instanceof Error ? error.message : String(error);
   }
 
-  function onChange(change: FormChange | CustomEvent<FormChange>): void {
-    emit('change', change instanceof CustomEvent ? change.detail : change);
+  function onChange(change: FormChange | Event): void {
+    const formChange = formChangeFromEvent(change);
+
+    if (formChange) {
+      emit('change', formChange);
+    }
   }
 </script>
 

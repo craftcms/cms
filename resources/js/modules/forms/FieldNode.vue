@@ -3,6 +3,7 @@
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import {
     FormFailure,
+    formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
     valueAt,
@@ -82,6 +83,14 @@
       refreshable: props.refreshable,
     });
   }
+
+  function onChange(change: FormChange | Event): void {
+    const formChange = formChangeFromEvent(change);
+
+    if (formChange) {
+      emit('change', formChange);
+    }
+  }
 </script>
 
 <template>
@@ -120,7 +129,7 @@
       :data-form-control-path="JSON.stringify(control.path)"
       :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
       @update:value="setValue"
-      @change="emit('change', $event)"
+      @change="onChange"
     />
     <ul v-if="controlErrors.length" slot="feedback" class="error-list">
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>

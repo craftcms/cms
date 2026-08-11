@@ -419,6 +419,19 @@ describe('FormRenderer', () => {
     });
   });
 
+  it('does not report native control events as Form changes', async () => {
+    const onChange = vi.fn();
+    app.unmount();
+    await mount(structuredClone(payload) as FormPayload, {onChange});
+
+    container
+      .querySelector('craft-input')!
+      .dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('includes hidden controls but not unowned values in complete form values', async () => {
     const hidden: FormPayload = {
       scope: [],

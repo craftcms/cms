@@ -864,7 +864,9 @@ class CpScreenResponse implements Responsable
             'tabs' => $tabs,
             'content' => $content,
             'inertiaPage' => $this->inertiaPage,
-            'inertiaProps' => $this->inertiaProps,
+            'inertiaProps' => $this->inertiaProps instanceof Arrayable
+                ? $this->inertiaProps->toArray()
+                : $this->inertiaProps,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
             'actionMenu' => $this->actionMenu(withDestructive: false, config: [
@@ -955,12 +957,14 @@ class CpScreenResponse implements Responsable
      * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
-    private function screenProps(string $mode, array $extra = []): array
+    private function screenProps(string $mode, array $extra = [], bool $withAssets = true): array
     {
         return [
             'screen' => ['mode' => $mode] + $extra + $this->screenData,
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
+            ...($withAssets ? [
+                'headHtml' => HtmlStack::headHtml(),
+                'bodyHtml' => HtmlStack::bodyHtml(),
+            ] : []),
         ];
     }
 
@@ -1069,7 +1073,7 @@ class CpScreenResponse implements Responsable
 
             return Inertia::render($this->inertiaPage, $this->inertiaProps)
                 ->with($templateProps)
-                ->with($this->screenProps('page'))
+                ->with($this->screenProps('page', withAssets: $request->inertia()))
                 ->toResponse($request);
         }
 
