@@ -26,6 +26,18 @@ export interface ElementFormAction {
   shift?: boolean;
 }
 
+/**
+ * An entry in the drafts-and-revisions switcher. Groups arrive flattened, with
+ * `heading` rows standing in for the nesting the action menu has no shape for.
+ */
+export interface ElementContextMenuItem {
+  type: 'link' | 'heading' | 'hr';
+  label?: string;
+  description?: string;
+  href?: string;
+  selected?: boolean;
+}
+
 /** The shared payload every {@link ElementEditViewModel} emits. */
 export interface ElementEditPayload {
   elementId: number | null;
@@ -50,6 +62,13 @@ export interface ElementEditPayload {
   draftId: number | null;
   canAutosave: boolean;
   notice: string | null;
+  mergeNotice: string | null;
+  canDiscardDraft: boolean;
+  submitButtonLabel: string;
+  contextMenu: {
+    label: string;
+    items: Array<ElementContextMenuItem>;
+  } | null;
   // Element-type view models add their own keys on top of the shared payload.
   [key: string]: unknown;
 }
@@ -104,8 +123,20 @@ export function useElementEditPage({saveData}: Options = {}) {
     elementId: props.canonicalId,
     siteId: props.siteId,
     draftId: props.draftId,
+    isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
   });
+
+  /**
+   * Whether the draft the screen is working against is provisional — either it
+   * loaded that way, or autosave created one on a canonical element (autosave
+   * only ever creates provisional drafts).
+   */
+  const draftIsProvisional = computed(
+    () =>
+      props.isProvisionalDraft ||
+      (props.draftId === null && autosave.draftId.value !== null)
+  );
 
   // Applying a draft consumes it, and Inertia preserves this component across
   // the visit, so the server's view of the draft is authoritative afterwards.
@@ -158,7 +189,7 @@ export function useElementEditPage({saveData}: Options = {}) {
               elementType: props.elementType,
               elementId: props.canonicalId,
               draftId: autosave.draftId.value,
-              provisional: 1,
+              ...(draftIsProvisional.value ? {provisional: 1} : {}),
             }
           : {}),
         // An alternate action's own params win — "Create a draft" has to be

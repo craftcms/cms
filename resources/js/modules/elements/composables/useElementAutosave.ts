@@ -15,6 +15,13 @@ interface Options {
   siteId: number | null;
   /** The provisional draft's id, once one exists. */
   draftId: number | null;
+  /**
+   * Whether the draft being edited is provisional. Sending `provisional` for a
+   * named draft narrows the server's lookup to provisional drafts and it stops
+   * resolving, so it's only ever sent when true — or when this request is the
+   * one creating the draft, which always creates a provisional one.
+   */
+  isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
   enabled: boolean;
   /** How long to wait after the last edit before saving. */
@@ -72,7 +79,9 @@ export function useElementAutosave(
       payload.draftId = draftId.value;
     }
 
-    payload.provisional = 1;
+    if (options.isProvisional || draftId.value === null) {
+      payload.provisional = 1;
+    }
 
     try {
       const {data} = await actionClient.post(options.url, payload);

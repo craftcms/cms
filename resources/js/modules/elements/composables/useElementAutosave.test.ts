@@ -39,6 +39,7 @@ describe('useElementAutosave', () => {
             elementId: 12,
             siteId: 1,
             draftId: null,
+            isProvisional: false,
             enabled: true,
             ...overrides,
           });
@@ -69,10 +70,10 @@ describe('useElementAutosave', () => {
 
     await autosave.save();
 
-    expect(postSpy.mock.calls[1]![1]).toMatchObject({
-      draftId: 7,
-      provisional: 1,
-    });
+    // The second save targets the existing draft; `provisional` is dropped
+    // because sending it would narrow the server's lookup.
+    expect(postSpy.mock.calls[1]![1]).toMatchObject({draftId: 7});
+    expect(postSpy.mock.calls[1]![1].provisional).toBeUndefined();
   });
 
   it('reports status and the saved timestamp', async () => {
@@ -153,6 +154,17 @@ describe('useElementAutosave', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('keeps sending provisional while editing a provisional draft', async () => {
+    const {autosave} = mount({draftId: 7, isProvisional: true});
+
+    await autosave.save();
+
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({
+      draftId: 7,
+      provisional: 1,
+    });
   });
 
   it('adopts a draft id supplied by the server', async () => {

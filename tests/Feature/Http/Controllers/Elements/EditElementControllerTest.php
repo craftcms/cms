@@ -6,7 +6,6 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -20,12 +19,10 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
-use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -280,72 +277,6 @@ it('prevalidates enabled live elements and returns an error summary', function (
                 && str_contains($summary, 'field-error-key'))
             ->etc()
         );
-});
-
-it('renders draft editing controls for saved drafts', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-    /** @var Entry $draft */
-    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Working Draft');
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s?draftId=%d',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-        $draft->draftId,
-    )))
-        ->assertOk()
-        ->assertSeeText('Apply draft')
-        ->assertSeeText(mb_ucfirst(t('Save {type}', ['type' => t('draft')])))
-        ->assertSee('elements/save-draft', false);
-});
-
-it('renders revision notices and controls for revisions', function () {
-    $entry = EntryModel::factory()
-        ->forSection($this->section)
-        ->forEntryType($this->entryType)
-        ->createElement([
-            'title' => 'Canonical Title',
-            'slug' => 'canonical-title',
-        ]);
-    /** @var Entry $revision */
-    $revision = Elements::getElementById(app(Revisions::class)->createRevision($entry, auth()->id(), 'Revision notes'));
-
-    get(cp_url(sprintf(
-        'entries/%s/%d-%s?revisionId=%d',
-        $entry->getSection()->handle,
-        $entry->id,
-        $entry->slug,
-        $revision->revisionId,
-    )))
-        ->assertOk()
-        ->assertSeeText('viewing a revision')
-        ->assertSeeText('Revert content from this revision')
-        ->assertSee('elements/revert', false);
-});
-
-it('renders unpublished draft controls', function () {
-    /** @var Entry $draft */
-    $draft = app(Entry::class);
-    $draft->siteId = Sites::getPrimarySite()->id;
-    $draft->sectionId = $this->section->id;
-    $draft->typeId = $this->entryType->id;
-    $draft->title = 'Unpublished Draft';
-    $draft->slug = Str::slug($draft->title);
-    $draft->setAuthorIds([auth()->id()]);
-
-    app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
-
-    get($draft->getCpEditUrl())
-        ->assertOk()
-        ->assertSeeText(mb_ucfirst(t('Create {type}', ['type' => Entry::lowerDisplayName()])))
-        ->assertSee('elements/apply-draft', false);
 });
 
 it('merges canonical changes into outdated drafts before rendering', function () {

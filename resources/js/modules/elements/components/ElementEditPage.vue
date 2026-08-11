@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -68,6 +69,7 @@
     title: payload.title,
     form,
     onSave: save,
+    submitButtonLabel: payload.submitButtonLabel,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
@@ -77,6 +79,13 @@
 </script>
 
 <template>
+  <LayoutSlot v-if="payload.contextMenu" name="context-menu">
+    <ElementContextMenu
+      :label="payload.contextMenu.label"
+      :items="payload.contextMenu.items"
+    />
+  </LayoutSlot>
+
   <!--
     Tabs are rendered by `FormNodeList` inside the form itself, and header
     actions come through `useAppLayout`'s form-action props — filling the
@@ -111,6 +120,7 @@
       {{ payload.notice }}
 
       <craft-button
+        v-if="payload.canDiscardDraft"
         slot="action"
         type="button"
         appearance="outline"
@@ -119,6 +129,15 @@
       >
         {{ t('Discard changes') }}
       </craft-button>
+    </craft-callout>
+
+    <craft-callout
+      v-if="payload.mergeNotice"
+      variant="warning"
+      icon="triangle-exclamation"
+      class="mb-4"
+    >
+      {{ payload.mergeNotice }}
     </craft-callout>
 
     <FormRenderer

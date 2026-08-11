@@ -247,6 +247,7 @@
                           :action-items="formActionItems"
                           :additional-actions="formAdditionalActions"
                           :additional-buttons="formAdditionalButtons"
+                          :submit-label="submitButtonLabel"
                           :read-only="readOnly"
                         >
                           <template

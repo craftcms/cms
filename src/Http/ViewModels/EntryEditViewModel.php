@@ -18,8 +18,9 @@ class EntryEditViewModel extends ElementEditViewModel
         private readonly Entry $entry,
         ElementRequest $request,
         bool $canSave = true,
+        bool $mergedCanonicalChanges = false,
     ) {
-        parent::__construct($entry, $request, $canSave);
+        parent::__construct($entry, $request, $canSave, $mergedCanonicalChanges);
     }
 
     #[Override]

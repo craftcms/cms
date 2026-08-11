@@ -153,7 +153,7 @@ it('offers the alternate save actions beside Save', function () {
         );
 });
 
-it('falls back to the legacy editor for drafts', function () {
+it('renders a named draft in the Inertia editor', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
 
     get(cp_url(sprintf(
@@ -163,10 +163,19 @@ it('falls back to the legacy editor for drafts', function () {
         $draft->draftId,
     )))
         ->assertOk()
-        ->assertSee('elements/save-draft', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('draftId', $draft->draftId)
+            ->where('isProvisionalDraft', false)
+            ->where('readOnly', false)
+            ->where('submitButtonLabel', 'Save draft')
+            ->where('headerActions', fn (Collection $actions) => $actions
+                ->pluck('label')->contains('Apply draft'))
+            ->etc()
+        );
 });
 
-it('falls back to the legacy editor for revisions', function () {
+it('renders a revision read-only in the Inertia editor', function () {
     $revision = Elements::getElementById(
         app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes'),
     );
@@ -178,7 +187,35 @@ it('falls back to the legacy editor for revisions', function () {
         $revision->revisionId,
     )))
         ->assertOk()
-        ->assertSee('elements/revert', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('readOnly', true)
+            ->where('canAutosave', false)
+            ->where('notice', fn (?string $notice) => is_string($notice)
+                && str_contains($notice, 'viewing a revision'))
+            ->where('headerActions', fn (Collection $actions) => $actions
+                ->pluck('label')->contains('Revert content from this revision'))
+            ->etc()
+        );
+});
+
+it('lists drafts and revisions in the context menu', function () {
+    app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+    app(Revisions::class)->createRevision($this->entry, auth()->id(), 'Revision notes');
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contextMenu.items', function (Collection $items) {
+                $labels = $items->pluck('label');
+
+                return $labels->contains('Current')
+                    && $labels->contains('Drafts')
+                    && $labels->contains('Working Draft')
+                    && $items->contains(fn (array $item) => ($item['selected'] ?? false) === true);
+            })
+            ->etc()
+        );
 });
 
 it('renders a provisional draft in the Inertia editor', function () {
@@ -206,6 +243,27 @@ it('autosaves against the shared draft action', function () {
             ->where('canAutosave', true)
             ->where('isProvisionalDraft', false)
             ->where('draftId', null)
+            ->etc()
+        );
+});
+
+it('renders an unpublished draft as a create screen', function () {
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Unpublished Draft';
+    $draft->slug = 'unpublished-draft';
+    $draft->setAuthorIds([auth()->id()]);
+
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id(), markAsSaved: false);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('content/Edit')
+            ->where('submitButtonLabel', 'Create entry')
+            ->where('contextMenu', null)
             ->etc()
         );
 });
