@@ -30,7 +30,24 @@
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
+    submitAction,
   } = useElementEditPage({saveData: props.saveData});
+
+  // Alternate saves in the Save button's menu, and the buttons beside it.
+  const formActionItems = computed(() =>
+    payload.formActions.map((action) => ({
+      label: action.label,
+      onClick: () => submitAction(action),
+    }))
+  );
+
+  const headerButtons = computed(() =>
+    payload.headerActions.map((action) => ({
+      label: action.label,
+      variant: action.variant,
+      onClick: () => submitAction(action),
+    }))
+  );
 
   const autosaveMessage = computed(() => {
     switch (autosave.status.value) {
@@ -51,6 +68,11 @@
     title: payload.title,
     form,
     onSave: save,
+    // The element supplies its own full set of alternate saves — including its
+    // own "Save and continue editing" — so the layout's default would duplicate.
+    defaultFormActions: [],
+    formActions: formActionItems.value,
+    formAdditionalButtons: headerButtons.value,
   }));
 </script>
 
