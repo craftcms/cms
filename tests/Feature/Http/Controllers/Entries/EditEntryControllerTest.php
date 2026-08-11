@@ -119,6 +119,40 @@ it('saves the meta fields the sidebar form submits', function () {
         ->and($entry->postDate->format('Y-m-d'))->toBe('2027-03-04');
 });
 
+it('offers a Create a draft button on a canonical entry', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('headerActions', function (Collection $actions) {
+                $create = $actions->firstWhere('label', 'Create a draft');
+
+                return $create !== null
+                    && str_contains((string) $create['actionUrl'], 'elements/save-draft')
+                    && ($create['params']['dropProvisional'] ?? null) === 1
+                    && is_string($create['redirect']);
+            })
+            ->etc()
+        );
+});
+
+it('offers the alternate save actions beside Save', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('formActions', function (Collection $actions) {
+                $labels = $actions->pluck('label');
+
+                return $labels->contains('Save and continue editing')
+                    && $labels->contains('Save and add another')
+                    && $actions->contains(fn (array $action) => str_contains(
+                        (string) ($action['actionUrl'] ?? ''),
+                        'elements/duplicate',
+                    ));
+            })
+            ->etc()
+        );
+});
+
 it('falls back to the legacy editor for drafts', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
 

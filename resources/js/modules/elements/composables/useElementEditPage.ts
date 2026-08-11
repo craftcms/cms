@@ -1,12 +1,30 @@
 import {useEventListener} from '@vueuse/core';
 import {router, useForm, usePage} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {computed, onBeforeUnmount, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
 import type {FormPayload} from '@/modules/forms/types';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+
+/**
+ * A save the screen can perform besides the plain Save button — an alternate
+ * save action, or a header button like "Create a draft".
+ *
+ * `actionUrl` of `null` means "the screen's ordinary save target", which
+ * depends on whether a provisional draft exists by the time it's submitted.
+ */
+export interface ElementFormAction {
+  label: string;
+  actionUrl: string | null;
+  params: Record<string, unknown>;
+  /** Pre-encrypted by the server; the save controllers decrypt it. */
+  redirect: string | null;
+  variant?: string;
+  shortcut?: boolean;
+  shift?: boolean;
+}
 
 /** The shared payload every {@link ElementEditViewModel} emits. */
 export interface ElementEditPayload {
@@ -24,6 +42,8 @@ export interface ElementEditPayload {
   metadataHtml: string | null;
   saveUrl: string;
   applyDraftUrl: string;
+  formActions: Array<ElementFormAction>;
+  headerActions: Array<ElementFormAction>;
   autosaveUrl: string;
   discardDraftUrl: string;
   isProvisionalDraft: boolean;
@@ -106,6 +126,11 @@ export function useElementEditPage({saveData}: Options = {}) {
     autosave.schedule();
   }
 
+  // Set for the duration of one submission when an alternate action owns it,
+  // so the shared save pipeline (elevated sessions, error handling, the
+  // processing flag) is reused rather than reimplemented per action.
+  const pendingAction = ref<ElementFormAction | null>(null);
+
   const {save} = useSettingsSave(
     form,
     // Applying a draft and saving the element are different endpoints, and
@@ -113,7 +138,8 @@ export function useElementEditPage({saveData}: Options = {}) {
     // time the user submits — not on how the page was first rendered.
     () => ({
       url:
-        autosave.draftId.value !== null ? props.applyDraftUrl : props.saveUrl,
+        pendingAction.value?.actionUrl ??
+        (autosave.draftId.value !== null ? props.applyDraftUrl : props.saveUrl),
       method: 'post' as const,
     }),
     {
@@ -135,6 +161,12 @@ export function useElementEditPage({saveData}: Options = {}) {
               provisional: 1,
             }
           : {}),
+        // An alternate action's own params win — "Create a draft" has to be
+        // able to override the provisional targeting above.
+        ...pendingAction.value?.params,
+        ...(pendingAction.value?.redirect
+          ? {redirect: pendingAction.value.redirect}
+          : {}),
       }),
       onSuccess: () => {
         autosave.suspend(() => {
@@ -144,6 +176,21 @@ export function useElementEditPage({saveData}: Options = {}) {
       },
     }
   );
+
+  /**
+   * Submits the edit form under an alternate action — a Save-menu entry or a
+   * header button. The action owns the request only until it settles, so the
+   * plain Save button reverts to the normal target afterwards.
+   */
+  function submitAction(action: ElementFormAction): void {
+    pendingAction.value = action;
+
+    // `redirect: false` keeps `useSettingsSave` from layering the screen's own
+    // redirect on top of the one this action carries.
+    save({redirect: false});
+
+    void nextTick(() => (pendingAction.value = null));
+  }
 
   /** Throws away the provisional draft, reverting to the canonical element. */
   async function discardDraft(): Promise<void> {
@@ -200,6 +247,7 @@ export function useElementEditPage({saveData}: Options = {}) {
   return {
     autosave,
     discardDraft,
+    submitAction,
     errors,
     form,
     formPayload,

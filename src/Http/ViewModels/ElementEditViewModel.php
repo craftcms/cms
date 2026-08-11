@@ -19,6 +19,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 
@@ -103,6 +105,106 @@ abstract class ElementEditViewModel extends ViewModel
     public function discardDraftUrl(): string
     {
         return Url::actionUrl('elements/delete-draft');
+    }
+
+    /**
+     * The alternate save actions offered beside the Save button — "Save and
+     * continue editing", "Save as a new …", and friends.
+     *
+     * Each entry submits the edit form as it stands, optionally to a different
+     * action and with extra params. `actionUrl` is null when the item posts to
+     * the screen's ordinary save target, which the client resolves at submit
+     * time (see {@see applyDraftUrl()}).
+     *
+     * @return list<array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: string|null, shortcut: bool, shift: bool}>
+     */
+    public function formActions(): array
+    {
+        if (! $this->canSave) {
+            return [];
+        }
+
+        return array_map(fn (array $action): array => [
+            'label' => (string) $action['label'],
+            'actionUrl' => isset($action['action']) ? Url::actionUrl($action['action']) : null,
+            'params' => isset($action['action'])
+                ? [...$this->genericIdentityParams(), ...($action['params'] ?? [])]
+                : ($action['params'] ?? []),
+            // Redirects cross the wire encrypted; the save controllers decrypt
+            // them and render `{cpEditUrl}` against the saved element.
+            'redirect' => isset($action['redirect']) ? Crypt::encrypt($action['redirect']) : null,
+            'shortcut' => (bool) ($action['shortcut'] ?? false),
+            'shift' => (bool) ($action['shift'] ?? false),
+        ], $this->element->getAltActions());
+    }
+
+    /**
+     * Buttons shown beside Save.
+     *
+     * Applying a named draft and reverting a revision belong here too, but
+     * those screens still render through the legacy editor, so they arrive with
+     * the draft/revision work rather than as unreachable buttons.
+     *
+     * @return list<array{label: string, actionUrl: string, params: array<string, mixed>, redirect: string|null, variant: string}>
+     */
+    public function headerActions(): array
+    {
+        $element = $this->element;
+        $canonical = $element->getCanonical(true);
+        $isCurrent = $element->getIsCanonical() || $element->isProvisionalDraft;
+        $actions = [];
+
+        if ($isCurrent && ! $element->getIsUnpublishedDraft() && Gate::check('createDrafts', $canonical)) {
+            $actions[] = [
+                'label' => t('Create a draft'),
+                'actionUrl' => Url::actionUrl('elements/save-draft'),
+                'params' => [
+                    ...$this->genericIdentityParams(),
+                    // Without this the provisional draft is promoted in place
+                    // rather than a separate named draft being created.
+                    'dropProvisional' => 1,
+                ],
+                'redirect' => Crypt::encrypt('{cpEditUrl}'),
+                'variant' => 'outline',
+            ];
+        }
+
+        // Read-only users who may still branch the element get the duplicate
+        // path instead, since they can't save over the canonical one.
+        if (
+            ! $this->canSave &&
+            ! $element->getIsRevision() &&
+            Gate::check('duplicateAsDraft', $element)
+        ) {
+            $actions[] = [
+                'label' => t('Save as a new {type}', ['type' => $element::lowerDisplayName()]),
+                'actionUrl' => Url::actionUrl('elements/duplicate'),
+                'params' => [
+                    ...$this->genericIdentityParams(),
+                    'asUnpublishedDraft' => 1,
+                ],
+                'redirect' => Crypt::encrypt('{cpEditUrl}'),
+                'variant' => 'outline',
+            ];
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Identity params the shared `elements/*` actions need to resolve the
+     * element. The type-specific save controllers key off their own params
+     * (an entry's `entryId`), so these only apply to the generic endpoints.
+     *
+     * @return array{elementType: class-string<ElementInterface>, elementId: int|null, siteId: int|null}
+     */
+    private function genericIdentityParams(): array
+    {
+        return [
+            'elementType' => $this->element::class,
+            'elementId' => $this->element->getCanonical(true)->id,
+            'siteId' => $this->element->siteId,
+        ];
     }
 
     public function isProvisionalDraft(): bool
