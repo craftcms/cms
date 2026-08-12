@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Revisions;
@@ -30,7 +31,7 @@ it('renders preview pages for saved drafts and honors signed return urls', funct
     $draft->title = 'Draft Title';
     Elements::saveElement($draft);
 
-    $request = Mockery::mock(ElementRequest::class);
+    $request = Double::for(ElementRequest::class);
     $request->shouldReceive('element')
         ->once()
         ->with(['id' => $entry->id], true)
@@ -64,7 +65,7 @@ it('renders preview pages for provisional drafts using canonical ids in the prev
     $draft->title = 'Edited Title';
     Elements::saveElement($draft);
 
-    $request = Mockery::mock(ElementRequest::class);
+    $request = Double::for(ElementRequest::class);
     $request->shouldReceive('element')
         ->once()
         ->with(['id' => $entry->id], true)
@@ -97,7 +98,7 @@ it('renders preview pages for revisions', function () {
     $revisionElementId = app(Revisions::class)->createRevision($entry, auth()->id());
     $revision = Elements::getElementById($revisionElementId, Entry::class, $entry->siteId);
 
-    $request = Mockery::mock(ElementRequest::class);
+    $request = Double::for(ElementRequest::class);
     $request->shouldReceive('element')
         ->once()
         ->with(['id' => $entry->id], true)
@@ -127,7 +128,7 @@ it('redirects to the canonical edit url when the requested draft is invalid', fu
 
     $redirect = redirect($entry->getCpEditUrl());
 
-    $request = Mockery::mock(ElementRequest::class);
+    $request = Double::for(ElementRequest::class);
     $request->shouldReceive('element')
         ->once()
         ->with(['id' => $entry->id], true)

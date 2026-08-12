@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
@@ -55,7 +56,7 @@ beforeEach(function () {
     TemplateMode::set(TemplateMode::Site);
     app()->forgetScopedInstances();
 
-    $this->resolver = Mockery::mock(TemplateResolver::class);
+    $this->resolver = Double::for(TemplateResolver::class);
     $this->resolver->shouldReceive('resolve')->byDefault()->andReturn('/tmp/example.test');
     $this->renderer = new TemplateManagerLifecycleTestRenderer;
     $this->manager = new TemplateManager(app(), $this->resolver, app(PageLifecycle::class));

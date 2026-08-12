@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -220,7 +221,7 @@ it('uses the provided asset when immediately generating transforms', function ()
     $asset = ($this->createImageAsset)([
         'filename' => 'transform-test.txt',
     ]);
-    $assets = Mockery::mock(Assets::class);
+    $assets = Double::for(Assets::class);
     $assets->shouldNotReceive('getAssetById');
     app()->instance(Assets::class, $assets);
 

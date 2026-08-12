@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
@@ -161,7 +162,7 @@ describe('config deprecations', function () {
     it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
         $logged = false;
 
-        $mock = Mockery::mock(Deprecator::class);
+        $mock = Double::for(Deprecator::class);
         $mock->shouldReceive('log')
             ->once()
             ->withArgs(function (string $key, string $message) use (&$logged, $needle) {
@@ -180,7 +181,7 @@ describe('config deprecations', function () {
     ]);
 
     it('logs nothing for faithfully mapped configs', function () {
-        $mock = Mockery::mock(Deprecator::class);
+        $mock = Double::for(Deprecator::class);
         $mock->shouldNotReceive('log');
         app()->scoped(Deprecator::class, fn () => $mock);
 

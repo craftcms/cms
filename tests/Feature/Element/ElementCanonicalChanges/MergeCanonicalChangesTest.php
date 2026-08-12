@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -200,7 +201,7 @@ it('merges and saves localized derivatives before the requested site', function 
     Elements::saveElement($secondaryDraft, false, false);
 
     $saveCalls = [];
-    $writes = Mockery::mock(ElementWrites::class);
+    $writes = Double::for(ElementWrites::class);
     $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(function (Entry $element, bool $runValidation, bool $propagate, ?bool $updateSearchIndex = null, ?array $supportedSites = null) use (&$saveCalls) {
@@ -218,7 +219,7 @@ it('merges and saves localized derivatives before the requested site', function 
             return true;
         });
 
-    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
+    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Double::for(ElementDuplicates::class));
 
     $originalDuplicate = new Entry;
     $draft->duplicateOf = $originalDuplicate;
@@ -277,12 +278,12 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
 
     $currentSiteElement->localizedQuery = new TestMergeCanonicalChangesQuery([$otherSiteElement]);
 
-    $writes = Mockery::mock(ElementWrites::class);
+    $writes = Double::for(ElementWrites::class);
     $writes->shouldReceive('save')
         ->twice()
         ->andReturnUsing(fn () => true);
 
-    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
+    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Double::for(ElementDuplicates::class));
 
     $service->mergeCanonicalChanges($currentSiteElement);
 

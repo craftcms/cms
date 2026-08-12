@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -52,7 +53,7 @@ it('adds the migration track column before checking pending migrations', functio
 });
 
 it('runs additional migrators', function () {
-    $migrator = Mockery::mock(Migrator::class);
+    $migrator = Double::for(Migrator::class);
     $migrator->expects('getTrack')->andReturn('custom');
     $migrator->expects('getPendingMigrations')->andReturn(['2026_01_01_000000_custom']);
     $migrator->allows('setOutput')->andReturnSelf();
@@ -70,7 +71,7 @@ it('runs additional migrators', function () {
 });
 
 it('skips additional migrators without a track', function () {
-    $migrator = Mockery::mock(Migrator::class);
+    $migrator = Double::for(Migrator::class);
     $migrator->expects('getTrack')->andReturnNull();
 
     MigrateCommand::registerMigrator(fn () => $migrator);

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\ElementSources;
@@ -26,7 +27,7 @@ beforeEach(function () {
     Sections::shouldReceive('getTotalEditableSections')->andReturn(0);
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
-    $user = Mockery::mock(CraftUser::class);
+    $user = Double::for(CraftUser::class);
     $user->shouldReceive('isAdmin')->andReturnTrue();
     $user->shouldReceive('can')->andReturnTrue();
 
@@ -41,7 +42,7 @@ it('selects nav items from paths with the cp trigger', function () {
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
         Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Double::for(ElementSources::class),
     );
 
     $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
@@ -57,7 +58,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
         Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
         Cms::config(),
-        Mockery::mock(ElementSources::class),
+        Double::for(ElementSources::class),
     );
 
     $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');

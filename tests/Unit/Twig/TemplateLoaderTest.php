@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File as Path;
@@ -117,7 +118,7 @@ describe('isFresh', function () {
         // Make request()->isCpRequest() return true
         Cms::config()->cpTrigger = '';
 
-        $updates = Mockery::mock(Updates::class);
+        $updates = Double::for(Updates::class);
         $updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
         app()->instance(Updates::class, $updates);
 
@@ -131,7 +132,7 @@ describe('isFresh', function () {
         // Make request()->isCpRequest() return true
         Cms::config()->cpTrigger = '';
 
-        $updates = Mockery::mock(Updates::class);
+        $updates = Double::for(Updates::class);
         $updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
         app()->instance(Updates::class, $updates);
 
@@ -146,7 +147,7 @@ describe('isFresh', function () {
 
         // Even if an update is pending, site requests should not force recompile
         // The Updates mock should NOT be called
-        $updates = Mockery::mock(Updates::class);
+        $updates = Double::for(Updates::class);
         $updates->shouldNotReceive('isCraftUpdatePending');
         app()->instance(Updates::class, $updates);
 

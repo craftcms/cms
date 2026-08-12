@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -36,8 +37,8 @@ beforeEach(function () {
     $this->executor = new TestPropagateElementWrites(
         $this->elements,
         $this->uris,
-        Mockery::mock(ElementCaches::class),
-        Mockery::mock(Search::class),
+        Double::for(ElementCaches::class),
+        Double::for(Search::class),
         $this->sites,
     );
 

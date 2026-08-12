@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\CredentialRepository;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -112,7 +113,7 @@ test('verifyPasskey persists the validated credential source', function () {
     $requestOptionsJson = '{"challenge":"test-challenge"}';
     $responseJson = '{"id":"test-credential-id"}';
     $requestOptions = PublicKeyCredentialRequestOptions::create(challenge: 'test-challenge');
-    $authenticatorAssertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
+    $authenticatorAssertionResponse = Double::for(AuthenticatorAssertionResponse::class);
     $publicKeyCredential = PublicKeyCredential::create(
         type: 'public-key',
         rawId: 'test-credential-id',
@@ -130,7 +131,7 @@ test('verifyPasskey persists the validated credential source', function () {
         counter: 1,
     );
 
-    $serializer = Mockery::mock(SerializerInterface::class);
+    $serializer = Double::for(SerializerInterface::class);
     $serializer
         ->shouldReceive('deserialize')
         ->once()
@@ -142,7 +143,7 @@ test('verifyPasskey persists the validated credential source', function () {
         ->with($responseJson, PublicKeyCredential::class, 'json')
         ->andReturn($publicKeyCredential);
 
-    $credentialRepository = Mockery::mock(CredentialRepository::class);
+    $credentialRepository = Double::for(CredentialRepository::class);
     $credentialRepository
         ->shouldReceive('findOneByCredentialId')
         ->once()
@@ -153,14 +154,14 @@ test('verifyPasskey persists the validated credential source', function () {
         ->once()
         ->with($credentialRecord);
 
-    $assertionResponseValidator = Mockery::mock(AuthenticatorAssertionResponseValidator::class);
+    $assertionResponseValidator = Double::for(AuthenticatorAssertionResponseValidator::class);
     $assertionResponseValidator
         ->shouldReceive('check')
         ->once()
         ->with($credentialRecord, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
         ->andReturn($credentialRecord);
 
-    $webauthnServer = Mockery::mock(WebauthnServer::class);
+    $webauthnServer = Double::for(WebauthnServer::class);
     $webauthnServer->shouldReceive('getSerializer')->andReturn($serializer);
     $webauthnServer->shouldReceive('getCredentialRepository')->andReturn($credentialRepository);
     $webauthnServer->shouldReceive('getAuthenticatorAssertionResponseValidator')->andReturn($assertionResponseValidator);

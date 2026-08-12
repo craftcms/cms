@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Queue\JobProgress;
@@ -131,7 +132,7 @@ it('returns total jobs and job info without a limit', function () {
 });
 
 it('does not require Queue Manager utility access for job info', function () {
-    $utilities = Mockery::mock(Utilities::class);
+    $utilities = Double::for(Utilities::class);
     $utilities->shouldNotReceive('checkAuthorization');
     app()->instance(Utilities::class, $utilities);
 

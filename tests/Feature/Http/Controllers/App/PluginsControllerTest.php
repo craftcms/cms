@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Http\Controllers\App\PluginsController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -18,7 +19,7 @@ beforeEach(function () {
 });
 
 test('get plugin license info validates and sorts plugin results', function () {
-    $api = Mockery::mock(Api::class);
+    $api = Double::for(Api::class);
     $api->shouldReceive('getLicenseInfo')
         ->once()
         ->with(['plugins'])

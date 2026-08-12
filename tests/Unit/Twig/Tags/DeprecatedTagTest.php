@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\View\TemplateManager;
 
@@ -12,7 +13,7 @@ beforeEach(function () {
 it('logs a deprecation warning and continues rendering', function () {
     $logged = false;
 
-    $mock = Mockery::mock(Deprecator::class);
+    $mock = Double::for(Deprecator::class);
     $mock->shouldReceive('log')
         ->once()
         ->withArgs(function (string $key, string $message) use (&$logged) {
@@ -33,7 +34,7 @@ it('logs a deprecation warning and continues rendering', function () {
 
 it('continues rendering after the deprecation tag', function () {
     // Suppress the deprecation log by using a no-op mock
-    $mock = Mockery::mock(Deprecator::class);
+    $mock = Double::for(Deprecator::class);
     $mock->shouldReceive('log');
     app()->scoped(Deprecator::class, fn () => $mock);
 

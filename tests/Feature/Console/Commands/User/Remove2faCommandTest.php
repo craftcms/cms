@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\BaseAuthMethod;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
@@ -90,7 +91,7 @@ function mockRemove2faAuthMethods(
     Closure $activeMethodsAfterRemoval,
     bool $expectAfterRemovalCheck = true,
 ): AuthMethods {
-    $auth = Mockery::mock(AuthMethods::class);
+    $auth = Double::for(AuthMethods::class);
     $auth->shouldReceive('getActiveMethods')
         ->once()
         ->with(Mockery::type(UserElement::class))

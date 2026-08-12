@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Route\Routes;
@@ -118,7 +119,7 @@ it('can delete a route by uid', function () {
 });
 
 it('returns no project config routes when no current site exists yet', function () {
-    $sites = mock(Sites::class);
+    $sites = Double::for(Sites::class);
     $sites->shouldReceive('getCurrentSite')->andThrow(new SiteNotFoundException('No primary site exists'));
 
     $routes = new Routes($this->projectConfig, $sites);

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -172,7 +173,7 @@ it('uses a valid CP user language preference', function () {
     Cms::setIsInstalled();
     Cms::config()->cpTrigger = 'admin';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    $user = Mockery::mock(CraftUser::class);
+    $user = Double::for(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
     Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
@@ -196,7 +197,7 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Cms::config()->cpTrigger = 'admin';
     Cms::config()->defaultCpLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
-    $user = Mockery::mock(CraftUser::class);
+    $user = Double::for(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
     Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');

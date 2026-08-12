@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -142,7 +143,7 @@ describe('mergeCanonicalChanges', function () {
         $canonical->testAttr = 'Canonical Value';
 
         // Create a derivative with a mock for getOutdatedAttributes and isAttributeModified
-        $derivative = Mockery::mock(TestHasCanonicalElement::class)->makePartial();
+        $derivative = Double::for(TestHasCanonicalElement::class)->passthru();
         $derivative->id = 200;
         $derivative->setCanonicalId($canonical->id);
         $derivative->testAttr = 'Old Value';
@@ -177,7 +178,7 @@ describe('mergeCanonicalChanges', function () {
         $canonical->testAttr = 'Canonical Value';
 
         // Create a derivative
-        $derivative = Mockery::mock(TestHasCanonicalElement::class)->makePartial();
+        $derivative = Double::for(TestHasCanonicalElement::class)->passthru();
         $derivative->id = 200;
         $derivative->setCanonicalId($canonical->id);
         $derivative->testAttr = 'My Custom Value';

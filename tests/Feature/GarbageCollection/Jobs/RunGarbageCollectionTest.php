@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -11,7 +12,7 @@ it('is unique while queued or running', function () {
 });
 
 it('forces garbage collection when handled', function () {
-    $garbageCollection = Mockery::mock(GarbageCollection::class);
+    $garbageCollection = Double::for(GarbageCollection::class);
     $garbageCollection->shouldReceive('run')->once()->with(true);
 
     new RunGarbageCollection()->handle($garbageCollection);

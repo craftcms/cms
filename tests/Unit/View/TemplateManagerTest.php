@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Blade\BladeRenderer;
 use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
@@ -113,7 +114,7 @@ beforeEach(function () {
     TemplateMode::set(TemplateMode::Site);
     app()->forgetScopedInstances();
 
-    $this->resolver = Mockery::mock(TemplateResolver::class);
+    $this->resolver = Double::for(TemplateResolver::class);
     $this->manager = new TemplateManager(app(), $this->resolver, app(PageLifecycle::class));
 });
 

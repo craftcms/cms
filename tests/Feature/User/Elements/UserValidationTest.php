@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -498,10 +499,10 @@ describe('Name field validation with field layout', function () {
     test('firstName and lastName are required when showFirstAndLastNameFields is true and FullNameField is required in SCENARIO_LIVE', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
-        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField = Double::for(FullNameField::class);
         $fullNameField->required = true;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
@@ -526,10 +527,10 @@ describe('Name field validation with field layout', function () {
     test('firstName and lastName are not required when showFirstAndLastNameFields is true but FullNameField is not required in SCENARIO_LIVE', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
-        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField = Double::for(FullNameField::class);
         $fullNameField->required = false;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
@@ -551,10 +552,10 @@ describe('Name field validation with field layout', function () {
     test('fullName is required when showFirstAndLastNameFields is false and FullNameField is required in SCENARIO_LIVE', function () {
         Cms::config()->showFirstAndLastNameFields = false;
 
-        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField = Double::for(FullNameField::class);
         $fullNameField->required = true;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
@@ -575,10 +576,10 @@ describe('Name field validation with field layout', function () {
     test('fullName is not required when showFirstAndLastNameFields is false but FullNameField is not required in SCENARIO_LIVE', function () {
         Cms::config()->showFirstAndLastNameFields = false;
 
-        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField = Double::for(FullNameField::class);
         $fullNameField->required = false;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
@@ -598,10 +599,10 @@ describe('Name field validation with field layout', function () {
     test('name field required validation does not apply outside SCENARIO_LIVE', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
-        $fullNameField = Mockery::mock(FullNameField::class);
+        $fullNameField = Double::for(FullNameField::class);
         $fullNameField->required = true;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn($fullNameField);
@@ -623,7 +624,7 @@ describe('Name field validation with field layout', function () {
     test('handles missing FullNameField gracefully using null coalescing', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
-        $fieldLayout = Mockery::mock(FieldLayout::class);
+        $fieldLayout = Double::for(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')
             ->with(FullNameField::class, Mockery::any())
             ->andReturn(null);

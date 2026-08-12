@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\Authenticator;
@@ -34,7 +35,7 @@ test('verifyMethod returns false without verifying when the per-user lock cannot
     Cache::shouldReceive('lock')
         ->with("auth-verify:{$userModel->id}", 10)
         ->andReturn(
-            Mockery::mock(Lock::class)
+            Double::for(Lock::class)
                 ->shouldReceive('block')
                 ->andThrow(LockTimeoutException::class)
                 ->getMock()

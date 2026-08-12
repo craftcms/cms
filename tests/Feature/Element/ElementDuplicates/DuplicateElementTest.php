@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -103,7 +104,7 @@ test('creates an unpublished draft and deletes provisional source draft', functi
     $deletedElements = [];
     $saveCalls = [];
 
-    $deletions = Mockery::mock(ElementDeletions::class);
+    $deletions = Double::for(ElementDeletions::class);
     $deletions->shouldReceive('deleteElementById')
         ->once()
         ->andReturnUsing(function (
@@ -121,7 +122,7 @@ test('creates an unpublished draft and deletes provisional source draft', functi
             return true;
         });
 
-    $drafts = Mockery::mock(Drafts::class);
+    $drafts = Double::for(Drafts::class);
     $drafts->shouldReceive('insertDraftRow')
         ->once()
         ->andReturnUsing(function (
@@ -274,7 +275,7 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
 
     $structureCalls = [];
 
-    $mockStructures = Mockery::mock(Structures::class);
+    $mockStructures = Double::for(Structures::class);
     $mockStructures->shouldReceive('moveAfter')
         ->once()
         ->andReturnUsing(function (int $structureId, ElementInterface $element, ElementInterface|int $prevElement, Mode $mode = Mode::Auto) use (&$structureCalls): bool {
@@ -287,9 +288,9 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
 
     $action = new ElementDuplicates(
         $writes,
-        Mockery::mock(ElementUris::class),
-        Mockery::mock(ElementDeletions::class),
-        drafts: Mockery::mock(Drafts::class),
+        Double::for(ElementUris::class),
+        Double::for(ElementDeletions::class),
+        drafts: Double::for(Drafts::class),
         structures: $mockStructures,
     );
 
@@ -329,7 +330,7 @@ test('throws when a localized site clone has an invalid slug', function () {
 test('continues when setting uri for a localized clone is aborted', function () {
     $saveCalls = [];
 
-    $uris = Mockery::mock(ElementUris::class);
+    $uris = Double::for(ElementUris::class);
     $uris->shouldReceive('setElementUri')
         ->once()
         ->andReturnUsing(function (ElementInterface $element): void {
@@ -451,17 +452,17 @@ function duplicateAction(
     ?Structures $structures = null,
 ): ElementDuplicates {
     return new ElementDuplicates(
-        $writes ?? Mockery::mock(ElementWrites::class),
-        $uris ?? Mockery::mock(ElementUris::class),
-        $deletions ?? Mockery::mock(ElementDeletions::class),
-        $drafts ?? Mockery::mock(Drafts::class),
-        $structures ?? Mockery::mock(Structures::class),
+        $writes ?? Double::for(ElementWrites::class),
+        $uris ?? Double::for(ElementUris::class),
+        $deletions ?? Double::for(ElementDeletions::class),
+        $drafts ?? Double::for(Drafts::class),
+        $structures ?? Double::for(Structures::class),
     );
 }
 
 function successfulElementWrites(array &$calls, array $idsToAssign = [], int $expectedSaveCalls = 1): ElementWrites
 {
-    $writes = Mockery::mock(ElementWrites::class);
+    $writes = Double::for(ElementWrites::class);
     $writes->shouldReceive('save')
         ->times($expectedSaveCalls)
         ->andReturnUsing(function (

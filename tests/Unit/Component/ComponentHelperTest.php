@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use Carbon\CarbonInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -121,7 +122,7 @@ describe('validateComponentClass', function () {
     })->throws(RuntimeException::class, 'is not an instance of');
 
     test('returns false when class belongs to a disabled plugin', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
         $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
         app()->instance(Plugins::class, $pluginsMock);
@@ -130,7 +131,7 @@ describe('validateComponentClass', function () {
     });
 
     test('throws MissingComponentException for a disabled plugin class when throwException is true', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
         $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
         $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(true);
@@ -141,7 +142,7 @@ describe('validateComponentClass', function () {
     })->throws(MissingComponentException::class, 'belongs to a disabled plugin (My Plugin)');
 
     test('throws MissingComponentException for an uninstalled plugin class when throwException is true', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
         $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
         $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(false);
@@ -152,7 +153,7 @@ describe('validateComponentClass', function () {
     })->throws(MissingComponentException::class, 'belongs to an uninstalled plugin (My Plugin)');
 
     test('uses plugin handle as fallback name when composer info has no name', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
         $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
         $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(false);
@@ -172,7 +173,7 @@ describe('validateComponentClass', function () {
     })->throws(RuntimeException::class, 'is not an instance of');
 
     test('returns true when class belongs to an enabled plugin', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
         $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(true);
         app()->instance(Plugins::class, $pluginsMock);
@@ -181,7 +182,7 @@ describe('validateComponentClass', function () {
     });
 
     test('returns true when class does not belong to any plugin', function () {
-        $pluginsMock = Mockery::mock(Plugins::class);
+        $pluginsMock = Double::for(Plugins::class);
         $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn(null);
         app()->instance(Plugins::class, $pluginsMock);
 

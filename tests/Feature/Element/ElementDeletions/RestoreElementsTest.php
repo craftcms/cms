@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -104,7 +105,7 @@ it('throws and rolls back when another supported site fails essential validation
     $siteElement->id = $elementRecord->id;
     $siteElement->siteId = $otherSite->id;
 
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
     $query->shouldReceive('siteId')->once()->andReturnSelf();
     $query->shouldReceive('status')->once()->andReturnSelf();
     $query->shouldReceive('trashed')->once()->andReturnSelf();
@@ -162,7 +163,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
     $siteElement->id = $elementRecord->id;
     $siteElement->siteId = $otherSite->id;
 
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
     $query->shouldReceive('siteId')->once()->andReturnSelf();
     $query->shouldReceive('status')->once()->andReturnSelf();
     $query->shouldReceive('trashed')->once()->andReturnSelf();
@@ -171,7 +172,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
     $indexed = [];
     $invalidated = [];
 
-    $search = Mockery::mock(Search::class);
+    $search = Double::for(Search::class);
     $search->shouldReceive('indexElementAttributes')
         ->twice()
         ->andReturnUsing(function (ElementInterface $element, ?array $fieldHandles = null) use (&$indexed): bool {
@@ -180,7 +181,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
             return true;
         });
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
+    $elementCaches = Double::for(ElementCaches::class);
     $elementCaches->shouldReceive('invalidateForElement')
         ->once()
         ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): array {
@@ -190,8 +191,8 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
         });
 
     $deletions = new ElementDeletions(
-        Mockery::mock(Elements::class),
-        Mockery::mock(ElementWrites::class),
+        Double::for(Elements::class),
+        Double::for(ElementWrites::class),
         $elementCaches,
         $search,
     );
@@ -220,15 +221,15 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
 
 function restoreElementsService(): ElementDeletions
 {
-    $search = Mockery::mock(Search::class);
+    $search = Double::for(Search::class);
     $search->shouldReceive('indexElementAttributes')->andReturn(true);
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
+    $elementCaches = Double::for(ElementCaches::class);
     $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
 
     return new ElementDeletions(
-        Mockery::mock(Elements::class),
-        Mockery::mock(ElementWrites::class),
+        Double::for(Elements::class),
+        Double::for(ElementWrites::class),
         $elementCaches,
         $search,
     );
@@ -287,7 +288,7 @@ class TestRestoreElement extends Element
             return $this->localizedQuery;
         }
 
-        $query = Mockery::mock(ElementQueryInterface::class);
+        $query = Double::for(ElementQueryInterface::class);
         $query->shouldReceive('siteId')->andReturnSelf();
         $query->shouldReceive('status')->andReturnSelf();
         $query->shouldReceive('trashed')->andReturnSelf();

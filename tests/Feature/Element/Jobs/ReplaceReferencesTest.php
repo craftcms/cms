@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements as ElementsService;
@@ -168,7 +169,7 @@ it('continues when saving a changed element fails', function () {
     $source = $result->element;
 
     $realElements = app(ElementsService::class);
-    $elements = Mockery::mock($realElements)->makePartial();
+    $elements = Double::for($realElements)->passthru();
     $elements->shouldReceive('saveElement')
         ->once()
         ->andThrow(new RuntimeException('Save failed'));

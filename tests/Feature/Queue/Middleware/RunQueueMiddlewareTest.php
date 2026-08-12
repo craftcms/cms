@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Queue\JobProgress;
@@ -10,8 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 beforeEach(function () {
-    $this->queue = Mockery::mock(Queue::class);
-    $this->progressService = Mockery::mock(JobProgress::class);
+    $this->queue = Double::for(Queue::class);
+    $this->progressService = Double::for(JobProgress::class);
     $this->middleware = new RunQueue($this->queue, $this->progressService);
     $this->generalConfig = Cms::config();
 });

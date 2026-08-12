@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -250,7 +251,7 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
         public ?array $duplicateCall = null;
     };
 
-    $duplicates = Mockery::mock(ElementDuplicates::class);
+    $duplicates = Double::for(ElementDuplicates::class);
     $duplicates->shouldReceive('duplicateElement')
         ->andReturnUsing(function (
             ElementInterface $element,
@@ -272,5 +273,5 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
             return $duplicateResult ?? $element;
         });
 
-    return [new ElementCanonicalChanges(Mockery::mock(BulkOps::class), Mockery::mock(ElementWrites::class), $duplicates), $state];
+    return [new ElementCanonicalChanges(Double::for(BulkOps::class), Double::for(ElementWrites::class), $duplicates), $state];
 }

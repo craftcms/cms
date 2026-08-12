@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -95,7 +96,7 @@ it('returns null for plugin classes that do not implement the plugin interface',
 it('rejects plugin classes discovered as Laravel providers', function () {
     app()->forgetInstance(Plugins::class);
 
-    $manifest = Mockery::mock(PackageManifest::class);
+    $manifest = Double::for(PackageManifest::class);
     $manifest->shouldReceive('providers')->andReturn([FirstLifecycleTestPlugin::class]);
     app()->instance(PackageManifest::class, $manifest);
 

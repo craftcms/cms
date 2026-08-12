@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Events\UserAuthenticating;
@@ -46,13 +47,13 @@ test('authenticateWithPasskey enforces user status after a valid response', func
     $passkeys = mockAuthPasskeys();
     Session::put($passkeys->passkeyCredSourceParam, $updatedCredentialSource);
 
-    $credentialRepository = Mockery::mock(CredentialRepository::class);
+    $credentialRepository = Double::for(CredentialRepository::class);
     $credentialRepository
         ->shouldReceive('saveCredentialSource')
         ->once()
         ->with($updatedCredentialSource);
 
-    $webauthnServer = Mockery::mock(WebauthnServer::class);
+    $webauthnServer = Double::for(WebauthnServer::class);
     $webauthnServer
         ->shouldReceive('getCredentialRepository')
         ->once()
@@ -158,7 +159,7 @@ test('authenticateWithPasskey event can skip verification', function () {
 
 function mockAuthPasskeys(): Passkeys
 {
-    $passkeys = Mockery::mock(Passkeys::class, ['pkCredCreationOptions', 'pkReqOptions', 'pkCredSource'])->makePartial();
+    $passkeys = Double::for(Passkeys::class)->passthru(new Passkeys('pkCredCreationOptions', 'pkReqOptions', 'pkCredSource'));
 
     app()->instance(Passkeys::class, $passkeys);
     app()->forgetInstance(AuthMethods::class);

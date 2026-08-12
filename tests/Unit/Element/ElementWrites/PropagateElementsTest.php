@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -113,14 +114,14 @@ beforeEach(function () {
     Facade::clearResolvedInstance(SitesService::class);
     Sites::setCurrentSite($primarySite);
 
-    $this->elementCaches = Mockery::mock(ElementCaches::class);
-    $this->elements = Mockery::mock(Elements::class);
+    $this->elementCaches = Double::for(ElementCaches::class);
+    $this->elements = Double::for(Elements::class);
 
     $this->action = new TestPropagateElementsWrites(
         $this->elements,
-        Mockery::mock(ElementUris::class),
+        Double::for(ElementUris::class),
         $this->elementCaches,
-        Mockery::mock(Search::class),
+        Double::for(Search::class),
         app(SitesService::class),
     );
     $this->writes = $this->action;
@@ -162,7 +163,7 @@ function fakeBulkOps(): void
 
 function createQueryMock(array $elements): ElementQueryInterface
 {
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
 
     $query->shouldReceive('cursor')
         ->once()
@@ -328,7 +329,7 @@ it('swallows aborted queries and still dispatches the final event', function () 
     fakeBulkOps();
     Event::fake([ElementsPropagating::class, ElementsPropagated::class]);
 
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
     $query->shouldReceive('cursor')
         ->once()
         ->andThrow(new QueryAbortedException);

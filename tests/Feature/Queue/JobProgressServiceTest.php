@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\Enums\JobStatus;
@@ -104,7 +105,7 @@ it('clears the Laravel queue when clearing all job progress', function () {
     Cms::config()->lowPriorityQueueName = 'test-low-prio-queue';
 
     // Create a mock queue connection that implements ClearableQueue
-    $queueConnection = Mockery::mock(QueueContract::class, ClearableQueue::class);
+    $queueConnection = Double::for(QueueContract::class, ClearableQueue::class);
 
     $queueConnection->shouldReceive('clear')->once()->with('test-queue');
     $queueConnection->shouldReceive('clear')->once()->with('test-low-prio-queue');

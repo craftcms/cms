@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -121,7 +122,7 @@ describe('ensure', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
 
-        $request = Mockery::mock(ElementRequest::class);
+        $request = Double::for(ElementRequest::class);
         $request->shouldReceive('element')
             ->once()
             ->with([], true)

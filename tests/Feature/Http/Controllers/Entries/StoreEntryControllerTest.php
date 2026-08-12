@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -301,7 +302,7 @@ it('throws exception when entry is locked', function () {
     Cache::shouldReceive('lock')
         ->with("entry:{$entryModel->id}", 15)
         ->andReturn(
-            Mockery::mock(Lock::class)
+            Double::for(Lock::class)
                 ->shouldReceive('get')
                 ->andReturn(false)
                 ->getMock()

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
@@ -13,7 +14,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
 
 it('uses the write connection for unsafe requests', function (string $method) {
-    $db = Mockery::mock(Connection::class);
+    $db = Double::for(Connection::class);
     $db->expects('useWriteConnectionWhenReading')->with(true)->once()->andReturnSelf();
     $request = Request::create('/articles', $method);
 
@@ -23,7 +24,7 @@ it('uses the write connection for unsafe requests', function (string $method) {
 })->with(['POST', 'PATCH', 'DELETE']);
 
 it('keeps safe requests on the read connection', function (string $method) {
-    $db = Mockery::mock(Connection::class);
+    $db = Double::for(Connection::class);
     $db->expects('useWriteConnectionWhenReading')->with(false)->once()->andReturnSelf();
     $request = Request::create('/articles', $method);
 
@@ -33,7 +34,7 @@ it('keeps safe requests on the read connection', function (string $method) {
 })->with(['GET', 'HEAD']);
 
 it('keeps read-only controller actions on the read connection', function (string $controller, string $method) {
-    $db = Mockery::mock(Connection::class);
+    $db = Double::for(Connection::class);
     $db->expects('useWriteConnectionWhenReading')->with(false)->once()->andReturnSelf();
     $request = Request::create('/renamed-endpoint', 'POST');
     $route = new Route(['POST'], '/renamed-endpoint', $method === '__invoke' ? $controller : [$controller, $method]);

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\NativeFields;
@@ -15,7 +16,7 @@ it('applies native field providers', function () {
 });
 
 it('resolves provider dependencies from the current scope with contextual arguments', function () {
-    app()->scoped(Sites::class, fn () => Mockery::mock(Sites::class));
+    app()->scoped(Sites::class, fn () => Double::for(Sites::class));
 
     $registry = app(NativeFields::class);
     $registry->remove('craft');

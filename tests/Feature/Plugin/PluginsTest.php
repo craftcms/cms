@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
@@ -209,7 +210,7 @@ it('ignores missing transaction exceptions during uninstall commits', function (
     $manager = DB::getFacadeRoot();
     $connectionName = DB::getDefaultConnection();
     $connection = DB::connection();
-    $connectionMock = Mockery::mock($connection)->makePartial();
+    $connectionMock = Double::for($connection)->passthru();
 
     $connections = new ReflectionProperty($manager, 'connections');
     $resolvedConnections = $connections->getValue($manager);

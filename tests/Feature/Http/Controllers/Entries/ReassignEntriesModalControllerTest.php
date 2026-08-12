@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\Controllers\Entries\ReassignEntriesModalController;
 use CraftCms\Cms\User\Elements\User;
@@ -94,7 +95,7 @@ it('fails when no new author is selected', function () {
 });
 
 it('reassigns entries to the selected author', function (int $count, string $message) {
-    $entries = Mockery::mock(Entries::class);
+    $entries = Double::for(Entries::class);
     $entries->shouldReceive('reassignEntries')
         ->once()
         ->with([1, 2], 3)

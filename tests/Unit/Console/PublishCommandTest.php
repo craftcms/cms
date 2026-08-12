@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\File;
@@ -21,7 +22,7 @@ it('removes stale Craft public assets before publishing', function () {
     app()->usePublicPath($publicPath);
 
     try {
-        $plugins = Mockery::mock(Plugins::class);
+        $plugins = Double::for(Plugins::class);
         $plugins->shouldReceive('publishPluginAssets')->once();
 
         $command = new class extends PublishCommand

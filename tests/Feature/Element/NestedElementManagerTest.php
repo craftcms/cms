@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Database\Table;
@@ -642,7 +643,7 @@ it('creates eager-loaded field addresses with the requested source owner', funct
             'addressLine1' => '123 Main St',
         ]);
     $map = $field->getEagerLoadingMap([$firstEntry]);
-    $query = Mockery::mock(AddressQuery::class);
+    $query = Double::for(AddressQuery::class);
     $result = [
         'id' => $address->id,
         'siteId' => $firstEntry->siteId,

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\BulkOp\BulkOps as BulkOpsService;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -36,11 +37,11 @@ beforeEach(function () {
     app(BulkOpsService::class)->resume('test-bulk-op');
 
     $this->action = new TestResaveElementWrites(
-        Mockery::mock(Elements::class),
-        Mockery::mock(ElementUris::class),
-        Mockery::mock(ElementCaches::class),
-        Mockery::mock(Search::class),
-        Mockery::mock(Sites::class),
+        Double::for(Elements::class),
+        Double::for(ElementUris::class),
+        Double::for(ElementCaches::class),
+        Double::for(Search::class),
+        Double::for(Sites::class),
     );
     $this->saveElementAction = $this->action;
 });
@@ -186,7 +187,7 @@ it('fails silently when the query aborts', function () {
 
 function mockResaveQuery(array $elements): ElementQueryInterface
 {
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
     $query->shouldReceive('cursor')
         ->once()
         ->andReturn(LazyCollection::make(fn () => yield from $elements));
@@ -196,7 +197,7 @@ function mockResaveQuery(array $elements): ElementQueryInterface
 
 function mockAbortedResaveQuery(): ElementQueryInterface
 {
-    $query = Mockery::mock(ElementQueryInterface::class);
+    $query = Double::for(ElementQueryInterface::class);
     $query->shouldReceive('cursor')
         ->once()
         ->andThrow(new QueryAbortedException);

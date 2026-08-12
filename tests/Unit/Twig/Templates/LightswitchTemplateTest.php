@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\View\TemplateMode;
 
 use function CraftCms\Cms\renderString;
 
 it('renders the web component from the legacy variable API', function () {
-    $mock = Mockery::mock(Deprecator::class);
+    $mock = Double::for(Deprecator::class);
     $mock->shouldNotReceive('log');
     app()->scoped(Deprecator::class, fn () => $mock);
 
@@ -25,7 +26,7 @@ it('renders the web component from the legacy variable API', function () {
 it('logs a deprecation for the unsupported descriptionId param', function () {
     $logged = false;
 
-    $mock = Mockery::mock(Deprecator::class);
+    $mock = Double::for(Deprecator::class);
     $mock->shouldReceive('log')
         ->once()
         ->withArgs(function (string $key, string $message) use (&$logged) {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -104,7 +105,7 @@ describe('duplicate', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        $elements = Mockery::mock(ElementsService::class);
+        $elements = Double::for(ElementsService::class);
         $elements->shouldReceive('duplicateElement')
             ->once()
             ->andThrow(new InvalidElementException($entry));
@@ -316,7 +317,7 @@ describe('bulkDuplicate', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        $elements = Mockery::mock(ElementsService::class);
+        $elements = Double::for(ElementsService::class);
         $elements->shouldReceive('duplicateElement')
             ->once()
             ->andThrow(new InvalidElementException($entry));

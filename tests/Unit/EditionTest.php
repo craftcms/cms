@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -126,10 +127,10 @@ it('determines if the edition can be upgraded', function () {
     Edition::set(Edition::Solo);
     Cms::setIsInstalled();
 
-    $user = Mockery::mock(CraftUser::class);
+    $user = Double::for(CraftUser::class);
     $user->shouldReceive('isAdmin')->andReturnFalse();
 
-    $admin = Mockery::mock(CraftUser::class);
+    $admin = Double::for(CraftUser::class);
     $admin->shouldReceive('isAdmin')->andReturnTrue();
 
     Auth::shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
