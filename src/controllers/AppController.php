@@ -18,6 +18,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -164,11 +165,12 @@ class AppController extends Controller
      */
     public function actionCacheUpdates(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
+        $updates = $updatesService->cacheUpdates(Component::cleanseConfig($updateData));
         $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
