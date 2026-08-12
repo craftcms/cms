@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-5m2g-hhqr-84pc)
 
 ## 5.10.13.2 - 2026-08-05
 

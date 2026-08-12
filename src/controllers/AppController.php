@@ -189,11 +189,12 @@ class AppController extends Controller
      */
     public function actionCacheUpdates(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
+        $updates = $updatesService->cacheUpdates(Component::cleanseConfig($updateData));
         $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
