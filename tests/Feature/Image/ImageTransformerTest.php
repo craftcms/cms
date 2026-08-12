@@ -222,7 +222,7 @@ it('uses the provided asset when immediately generating transforms', function ()
         'filename' => 'transform-test.txt',
     ]);
     $assets = Double::for(Assets::class);
-    $assets->shouldNotReceive('getAssetById');
+    $assets->expects('getAssetById')->never();
     app()->instance(Assets::class, $assets);
 
     $transform = new ImageTransform([

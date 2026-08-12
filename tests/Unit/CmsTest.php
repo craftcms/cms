@@ -73,8 +73,7 @@ it('uses the logged-in CP user timezone preference first', function () {
     Cms::config()->cpTrigger = 'admin';
     app()->instance('request', Request::create('/admin'));
 
-    Auth::shouldReceive('hasUser')->andReturnTrue()
-        ->shouldReceive('id')->once()->andReturn(42);
+    Auth::shouldReceive('hasUser')->andReturnTrue()->expects('id')->returns(42);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'timeZone')->andReturn('Europe/Brussels');
 
     expect(Cms::timezone())->toBe('Europe/Brussels');
@@ -174,7 +173,7 @@ it('uses a valid CP user language preference', function () {
     Cms::config()->cpTrigger = 'admin';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Double::for(CraftUser::class);
-    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    $user->expects('getAuthIdentifier')->returns(42);
     Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('pt-BR');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('pt-BR')->andReturn(true);
@@ -198,7 +197,7 @@ it('falls back to the accepted language when the CP user preference is invalid a
     Cms::config()->defaultCpLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Double::for(CraftUser::class);
-    $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
+    $user->expects('getAuthIdentifier')->returns(42);
     Auth::shouldReceive('user')->once()->andReturn($user);
     Users::shouldReceive('getUserPreference')->once()->with(42, 'language')->andReturn('not-real');
     I18N::shouldReceive('validateAppLocaleId')->once()->with('not-real')->andReturn(false);

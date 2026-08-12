@@ -182,7 +182,7 @@ describe('config deprecations', function () {
 
     it('logs nothing for faithfully mapped configs', function () {
         $mock = Double::for(Deprecator::class);
-        $mock->shouldNotReceive('log');
+        $mock->expects('log')->never();
         app()->scoped(Deprecator::class, fn () => $mock);
 
         FormFields::lightswitchFromConfig(['id' => 'ls', 'on' => true, 'label' => 'Enabled']);

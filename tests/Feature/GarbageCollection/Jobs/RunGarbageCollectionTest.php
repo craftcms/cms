@@ -13,7 +13,7 @@ it('is unique while queued or running', function () {
 
 it('forces garbage collection when handled', function () {
     $garbageCollection = Double::for(GarbageCollection::class);
-    $garbageCollection->shouldReceive('run')->once()->with(true);
+    $garbageCollection->expects('run')->with(true);
 
     new RunGarbageCollection()->handle($garbageCollection);
 });

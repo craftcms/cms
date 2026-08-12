@@ -188,9 +188,7 @@ it('fails silently when the query aborts', function () {
 function mockResaveQuery(array $elements): ElementQueryInterface
 {
     $query = Double::for(ElementQueryInterface::class);
-    $query->shouldReceive('cursor')
-        ->once()
-        ->andReturn(LazyCollection::make(fn () => yield from $elements));
+    $query->expects('cursor')->returns(LazyCollection::make(fn () => yield from $elements));
 
     return $query;
 }
@@ -198,9 +196,7 @@ function mockResaveQuery(array $elements): ElementQueryInterface
 function mockAbortedResaveQuery(): ElementQueryInterface
 {
     $query = Double::for(ElementQueryInterface::class);
-    $query->shouldReceive('cursor')
-        ->once()
-        ->andThrow(new QueryAbortedException);
+    $query->expects('cursor')->throws(new QueryAbortedException);
 
     return $query;
 }

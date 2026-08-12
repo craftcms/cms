@@ -132,39 +132,20 @@ test('verifyPasskey persists the validated credential source', function () {
     );
 
     $serializer = Double::for(SerializerInterface::class);
-    $serializer
-        ->shouldReceive('deserialize')
-        ->once()
-        ->with($requestOptionsJson, PublicKeyCredentialRequestOptions::class, 'json')
-        ->andReturn($requestOptions);
-    $serializer
-        ->shouldReceive('deserialize')
-        ->once()
-        ->with($responseJson, PublicKeyCredential::class, 'json')
-        ->andReturn($publicKeyCredential);
+    $serializer->expects('deserialize')->with($requestOptionsJson, PublicKeyCredentialRequestOptions::class, 'json')->returns($requestOptions);
+    $serializer->expects('deserialize')->with($responseJson, PublicKeyCredential::class, 'json')->returns($publicKeyCredential);
 
     $credentialRepository = Double::for(CredentialRepository::class);
-    $credentialRepository
-        ->shouldReceive('findOneByCredentialId')
-        ->once()
-        ->with('test-credential-id', false)
-        ->andReturn($credentialRecord);
-    $credentialRepository
-        ->shouldReceive('saveCredentialSource')
-        ->once()
-        ->with($credentialRecord);
+    $credentialRepository->expects('findOneByCredentialId')->with('test-credential-id', false)->returns($credentialRecord);
+    $credentialRepository->expects('saveCredentialSource')->with($credentialRecord);
 
     $assertionResponseValidator = Double::for(AuthenticatorAssertionResponseValidator::class);
-    $assertionResponseValidator
-        ->shouldReceive('check')
-        ->once()
-        ->with($credentialRecord, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
-        ->andReturn($credentialRecord);
+    $assertionResponseValidator->expects('check')->with($credentialRecord, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)->returns($credentialRecord);
 
     $webauthnServer = Double::for(WebauthnServer::class);
-    $webauthnServer->shouldReceive('getSerializer')->andReturn($serializer);
-    $webauthnServer->shouldReceive('getCredentialRepository')->andReturn($credentialRepository);
-    $webauthnServer->shouldReceive('getAuthenticatorAssertionResponseValidator')->andReturn($assertionResponseValidator);
+    $webauthnServer->allows('getSerializer')->returns($serializer);
+    $webauthnServer->allows('getCredentialRepository')->returns($credentialRepository);
+    $webauthnServer->allows('getAuthenticatorAssertionResponseValidator')->returns($assertionResponseValidator);
 
     $property = new ReflectionProperty($this->passkeys, 'webauthnServer');
     $property->setValue($this->passkeys, $webauthnServer);

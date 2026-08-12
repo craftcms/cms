@@ -38,7 +38,7 @@ it('passes through if no license issues', function () {
     putenv('CRAFT_NO_TRIALS=true');
 
     $mockLicense = Double::for(License::class)->passthru();
-    $mockLicense->shouldReceive('issues')->with(false)->andReturn([]);
+    $mockLicense->allows('issues')->with(false)->returns([]);
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');
@@ -58,9 +58,9 @@ it('shows licensing screen when license issues exist', function () {
     $hash = 'abc123';
 
     $mockLicense = Double::for(License::class)->passthru();
-    $mockLicense->shouldReceive('issues')->andReturn($licenseIssues);
-    $mockLicense->shouldReceive('issuesHash')->with($licenseIssues)->andReturn($hash);
-    $mockLicense->shouldReceive('shunCookieName')->andReturn('craft_license_shun');
+    $mockLicense->allows('issues')->returns($licenseIssues);
+    $mockLicense->allows('issuesHash')->with($licenseIssues)->returns($hash);
+    $mockLicense->allows('shunCookieName')->returns('craft_license_shun');
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');

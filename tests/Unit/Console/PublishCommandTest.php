@@ -23,7 +23,7 @@ it('removes stale Craft public assets before publishing', function () {
 
     try {
         $plugins = Double::for(Plugins::class);
-        $plugins->shouldReceive('publishPluginAssets')->once();
+        $plugins->expects('publishPluginAssets');
 
         $command = new class extends PublishCommand
         {

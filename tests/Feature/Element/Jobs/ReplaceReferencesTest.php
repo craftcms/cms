@@ -170,9 +170,7 @@ it('continues when saving a changed element fails', function () {
 
     $realElements = app(ElementsService::class);
     $elements = Double::for($realElements)->passthru();
-    $elements->shouldReceive('saveElement')
-        ->once()
-        ->andThrow(new RuntimeException('Save failed'));
+    $elements->expects('saveElement')->throws(new RuntimeException('Save failed'));
     Elements::swap($elements);
 
     $job = new TestReplaceReferences(

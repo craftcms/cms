@@ -66,16 +66,12 @@ it('reports entry author blockers with details and actions', function () {
         ->create();
 
     $this->mock(ElementIndexHtml::class, function (MockInterface $mock) use ($author) {
-        $mock
-            ->shouldReceive('html')
-            ->once()
-            ->with(Entry::class, Mockery::on(fn (array $config) => $config['context'] === 'pane' &&
+        $mock->expects('html')->with(Entry::class, Mockery::on(fn (array $config) => $config['context'] === 'pane' &&
                 $config['sources'] === false &&
                 $config['defaultTableColumns'] === [['authors'], ['section']] &&
                 $config['defaultSort'] === ['section', 'asc'] &&
                 $config['jsSettings']['criteria']['authorId'] === [$author->id] &&
-                $config['jsSettings']['criteria']['status'] === null))
-            ->andReturn('<div>author details</div>');
+                $config['jsSettings']['criteria']['status'] === null))->returns('<div>author details</div>');
     });
 
     $blocker = new EntryAuthorsBlocker(ElementCollection::make([$author]), false);
@@ -149,10 +145,7 @@ it('reports relation blockers with details and actions', function () {
     ]);
 
     $this->mock(ElementIndexHtml::class, function (MockInterface $mock) {
-        $mock
-            ->shouldReceive('html')
-            ->once()
-            ->andReturn('<div>relation details</div>');
+        $mock->expects('html')->returns('<div>relation details</div>');
     });
 
     $blocker = new RelationDeletionBlocker(Entry::class, ElementCollection::make([$target]), true, [

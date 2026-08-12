@@ -246,13 +246,9 @@ it('generates the expected permission list through the new service', function ()
         'entryTypes' => [$typeB],
     ]);
 
-    Sections::partialMock()
-        ->shouldReceive('getAllSections')
-        ->andReturn(collect([$sectionA, $sectionB]));
+    Sections::partialMock()->allows('getAllSections')->returns(collect([$sectionA, $sectionB]));
 
-    Volumes::partialMock()
-        ->shouldReceive('getAllVolumes')
-        ->andReturn(collect([
+    Volumes::partialMock()->allows('getAllVolumes')->returns(collect([
             new Local([
                 'id' => 1,
                 'name' => 'Test volume',

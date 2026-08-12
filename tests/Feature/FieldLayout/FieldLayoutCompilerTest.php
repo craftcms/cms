@@ -217,22 +217,18 @@ it('preserves missing persisted form providers without submitting their values',
     $missingControlType = 'Acme\\Forms\\MissingField';
     actingAs(User::find()->one());
     app()->instance(Plugins::class, Mockery::mock(Plugins::class, function ($plugins) use ($missingNodeType, $missingControlType) {
-        $plugins->shouldReceive('getPluginHandleByClass')->andReturn(null)->byDefault();
-        $plugins->shouldReceive('getPluginHandleByClass')->with($missingNodeType)->andReturnUsing(
-            fn () => class_exists($missingNodeType, false) ? null : 'missing-node-plugin',
-        );
-        $plugins->shouldReceive('getPluginHandleByClass')->with($missingControlType)->andReturnUsing(
-            fn () => class_exists($missingControlType, false) ? null : 'missing-control-plugin',
-        );
-        $plugins->shouldReceive('getPluginInfo')->with('missing-node-plugin')->andReturn([
+        $plugins->allows('getPluginHandleByClass')->returns(null);
+        $plugins->allows('getPluginHandleByClass')->with($missingNodeType)->resolves(fn () => class_exists($missingNodeType, false) ? null : 'missing-node-plugin');
+        $plugins->allows('getPluginHandleByClass')->with($missingControlType)->resolves(fn () => class_exists($missingControlType, false) ? null : 'missing-control-plugin');
+        $plugins->allows('getPluginInfo')->with('missing-node-plugin')->returns([
             'isInstalled' => true,
             'name' => 'Missing Node Plugin',
         ]);
-        $plugins->shouldReceive('getPluginInfo')->with('missing-control-plugin')->andReturn([
+        $plugins->allows('getPluginInfo')->with('missing-control-plugin')->returns([
             'isInstalled' => false,
             'name' => 'Missing Control Plugin',
         ]);
-        $plugins->shouldReceive('getPluginIconSvg')->andReturn('<svg></svg>');
+        $plugins->allows('getPluginIconSvg')->returns('<svg></svg>');
     }));
     $layout = FieldLayout::make(CraftCms\Cms\Entry\Elements\Entry::class)
         ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(

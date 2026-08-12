@@ -564,9 +564,7 @@ describe('normalizeTransform', function () {
 
     test('throws for invalid string handle', function () {
         $this->mock(ImageTransforms::class, function ($mock) {
-            $mock->shouldReceive('getTransformByHandle')
-                ->with('nonExistent')
-                ->andReturn(null);
+            $mock->allows('getTransformByHandle')->with('nonExistent')->returns(null);
         });
 
         ImageTransformHelper::normalizeTransform('nonExistent');
@@ -576,9 +574,7 @@ describe('normalizeTransform', function () {
         $transform = new ImageTransform(['handle' => 'myHandle', 'width' => 500]);
 
         $this->mock(ImageTransforms::class, function ($mock) use ($transform) {
-            $mock->shouldReceive('getTransformByHandle')
-                ->with('myHandle')
-                ->andReturn($transform);
+            $mock->allows('getTransformByHandle')->with('myHandle')->returns($transform);
         });
 
         $result = ImageTransformHelper::normalizeTransform($handleInput);

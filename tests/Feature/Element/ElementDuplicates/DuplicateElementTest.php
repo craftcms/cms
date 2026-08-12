@@ -105,9 +105,7 @@ test('creates an unpublished draft and deletes provisional source draft', functi
     $saveCalls = [];
 
     $deletions = Double::for(ElementDeletions::class);
-    $deletions->shouldReceive('deleteElementById')
-        ->once()
-        ->andReturnUsing(function (
+    $deletions->expects('deleteElementById')->resolves(function (
             int $elementId,
             ?string $elementType = null,
             ?int $siteId = null,
@@ -123,9 +121,7 @@ test('creates an unpublished draft and deletes provisional source draft', functi
         });
 
     $drafts = Double::for(Drafts::class);
-    $drafts->shouldReceive('insertDraftRow')
-        ->once()
-        ->andReturnUsing(function (
+    $drafts->expects('insertDraftRow')->resolves(function (
             ?string $name,
             ?string $notes = null,
             ?int $creatorId = null,
@@ -276,9 +272,7 @@ test('uses auto mode when forcing an id in new attributes for structure placemen
     $structureCalls = [];
 
     $mockStructures = Double::for(Structures::class);
-    $mockStructures->shouldReceive('moveAfter')
-        ->once()
-        ->andReturnUsing(function (int $structureId, ElementInterface $element, ElementInterface|int $prevElement, Mode $mode = Mode::Auto) use (&$structureCalls): bool {
+    $mockStructures->expects('moveAfter')->resolves(function (int $structureId, ElementInterface $element, ElementInterface|int $prevElement, Mode $mode = Mode::Auto) use (&$structureCalls): bool {
             $structureCalls[] = compact('structureId', 'mode');
             $element->structureId = $structureId;
             $element->root = 1;
@@ -331,9 +325,7 @@ test('continues when setting uri for a localized clone is aborted', function () 
     $saveCalls = [];
 
     $uris = Double::for(ElementUris::class);
-    $uris->shouldReceive('setElementUri')
-        ->once()
-        ->andReturnUsing(function (ElementInterface $element): void {
+    $uris->expects('setElementUri')->resolves(function (ElementInterface $element): void {
             throw new OperationAbortedException('URI aborted.');
         });
 
@@ -463,9 +455,7 @@ function duplicateAction(
 function successfulElementWrites(array &$calls, array $idsToAssign = [], int $expectedSaveCalls = 1): ElementWrites
 {
     $writes = Double::for(ElementWrites::class);
-    $writes->shouldReceive('save')
-        ->times($expectedSaveCalls)
-        ->andReturnUsing(function (
+    $writes->expects('save')->times($expectedSaveCalls)->resolves(function (
             ElementInterface $element,
             bool $runValidation = true,
             bool $propagate = true,
@@ -497,9 +487,7 @@ function successfulElementWrites(array &$calls, array $idsToAssign = [], int $ex
 function elementWritesForMissingSitePropagation(array &$saveCalls, array &$propagateCalls, bool $result = true): ElementWrites
 {
     $writes = successfulElementWrites($saveCalls);
-    $writes->shouldReceive('propagate')
-        ->once()
-        ->andReturnUsing(function (
+    $writes->expects('propagate')->resolves(function (
             ElementInterface $element,
             array $supportedSites,
             int $siteId,

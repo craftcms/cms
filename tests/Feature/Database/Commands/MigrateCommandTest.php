@@ -54,11 +54,11 @@ it('adds the migration track column before checking pending migrations', functio
 
 it('runs additional migrators', function () {
     $migrator = Double::for(Migrator::class);
-    $migrator->expects('getTrack')->andReturn('custom');
-    $migrator->expects('getPendingMigrations')->andReturn(['2026_01_01_000000_custom']);
-    $migrator->allows('setOutput')->andReturnSelf();
-    $migrator->allows('getMigrationName')->andReturn('Custom migration');
-    $migrator->expects('run')->once()->andReturn([]);
+    $migrator->expects('getTrack')->returns('custom');
+    $migrator->expects('getPendingMigrations')->returns(['2026_01_01_000000_custom']);
+    $migrator->allows('setOutput')->returns($migrator);
+    $migrator->allows('getMigrationName')->returns('Custom migration');
+    $migrator->expects('run')->returns([]);
 
     MigrateCommand::registerMigrator(fn () => $migrator);
 
@@ -72,7 +72,7 @@ it('runs additional migrators', function () {
 
 it('skips additional migrators without a track', function () {
     $migrator = Double::for(Migrator::class);
-    $migrator->expects('getTrack')->andReturnNull();
+    $migrator->expects('getTrack')->returns(null);
 
     MigrateCommand::registerMigrator(fn () => $migrator);
 

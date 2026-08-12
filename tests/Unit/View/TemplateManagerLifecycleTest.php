@@ -57,7 +57,7 @@ beforeEach(function () {
     app()->forgetScopedInstances();
 
     $this->resolver = Double::for(TemplateResolver::class);
-    $this->resolver->shouldReceive('resolve')->byDefault()->andReturn('/tmp/example.test');
+    $this->resolver->allows('resolve')->returns('/tmp/example.test');
     $this->renderer = new TemplateManagerLifecycleTestRenderer;
     $this->manager = new TemplateManager(app(), $this->resolver, app(PageLifecycle::class));
     $renderer = $this->renderer;
@@ -97,11 +97,7 @@ it('allows template events to mutate input and output', function () {
         $event->templateMode = TemplateMode::Cp;
     });
 
-    $this->resolver
-        ->shouldReceive('resolve')
-        ->once()
-        ->with('mutated', TemplateMode::Cp, false)
-        ->andReturn('/tmp/mutated.test');
+    $this->resolver->expects('resolve')->with('mutated', TemplateMode::Cp, false)->returns('/tmp/mutated.test');
 
     Event::listen(TemplateRendered::class, function (TemplateRendered $event) {
         $event->output = strtoupper($event->output);
@@ -116,7 +112,7 @@ it('allows before events to cancel before template resolution', function () {
         $event->isValid = false;
     });
 
-    $this->resolver->shouldNotReceive('resolve');
+    $this->resolver->expects('resolve')->never();
 
     expect($this->manager->renderTemplate('example', ['value' => 'test'], renderer: 'test'))
         ->toBe('');
@@ -208,7 +204,7 @@ it('returns empty output when page rendering is cancelled', function () {
         $event->isValid = false;
     });
 
-    $this->resolver->shouldNotReceive('resolve');
+    $this->resolver->expects('resolve')->never();
 
     expect($this->manager->renderPageTemplate('example', ['value' => 'test'], renderer: 'test'))
         ->toBe('');
@@ -223,7 +219,7 @@ it('reports the requested renderer when inner template rendering is cancelled', 
         expect($event->rendererName)->toBe('test');
     });
 
-    $this->resolver->shouldNotReceive('resolve');
+    $this->resolver->expects('resolve')->never();
 
     expect($this->manager->renderPageTemplate('example', renderer: 'test'))->toBe('');
 });

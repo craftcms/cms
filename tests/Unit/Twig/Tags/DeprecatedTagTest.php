@@ -35,7 +35,7 @@ it('logs a deprecation warning and continues rendering', function () {
 it('continues rendering after the deprecation tag', function () {
     // Suppress the deprecation log by using a no-op mock
     $mock = Double::for(Deprecator::class);
-    $mock->shouldReceive('log');
+    $mock->allows('log');
     app()->scoped(Deprecator::class, fn () => $mock);
 
     $result = $this->manager->renderString(

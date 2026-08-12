@@ -120,7 +120,7 @@ it('can delete a route by uid', function () {
 
 it('returns no project config routes when no current site exists yet', function () {
     $sites = Double::for(Sites::class);
-    $sites->shouldReceive('getCurrentSite')->andThrow(new SiteNotFoundException('No primary site exists'));
+    $sites->allows('getCurrentSite')->throws(new SiteNotFoundException('No primary site exists'));
 
     $routes = new Routes($this->projectConfig, $sites);
 

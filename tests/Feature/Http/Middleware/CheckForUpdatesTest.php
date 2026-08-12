@@ -14,19 +14,19 @@ use function CraftCms\Cms\cp_url;
 
 beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
-    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(true)->byDefault();
+    $this->updates->allows('isCraftSchemaVersionCompatible')->returns(true);
 
     TemplateMode::set(TemplateMode::Cp);
 });
 
 it('aborts 503 for site requests when the schema version is incompatible', function () {
-    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+    $this->updates->allows('isCraftSchemaVersionCompatible')->returns(false);
 
     app(CheckForUpdates::class)->handle(Request::create('/site-page'), fn () => 'passed');
 })->throws(HttpException::class);
 
 it('throws for CP requests when the schema version is incompatible', function () {
-    $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
+    $this->updates->allows('isCraftSchemaVersionCompatible')->returns(false);
 
     app(CheckForUpdates::class)->handle(
         Request::create('/'.Cms::config()->cpTrigger.'/dashboard'),
@@ -35,9 +35,9 @@ it('throws for CP requests when the schema version is incompatible', function ()
 })->throws(RuntimeException::class);
 
 it('passes through when no updates pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(false);
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(false);
+    $this->updates->allows('isPluginUpdatePending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('foo');
@@ -48,9 +48,9 @@ it('passes through when no updates pending', function () {
 });
 
 it('passes through for regular site request when no updates pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(false);
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(false);
+    $this->updates->allows('isPluginUpdatePending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/site-page');
@@ -61,9 +61,9 @@ it('passes through for regular site request when no updates pending', function (
 });
 
 it('passes through for action request when no updates pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(false);
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(false);
+    $this->updates->allows('isPluginUpdatePending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/app/health-check');
@@ -74,10 +74,10 @@ it('passes through for action request when no updates pending', function () {
 });
 
 it('cleans compiled templates when craft version changed', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(true);
-    $this->updates->shouldReceive('updateCraftVersionInfo')->once();
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(true);
+    $this->updates->expects('updateCraftVersionInfo');
+    $this->updates->allows('isPluginUpdatePending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/site-page');
@@ -88,10 +88,10 @@ it('cleans compiled templates when craft version changed', function () {
 });
 
 it('renders db update page for cp request when craft update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
-    $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(false);
-    $this->updates->shouldReceive('isUpdateInfoCached')->andReturn(false);
-    $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
+    $this->updates->allows('wasCraftBreakpointSkipped')->returns(false);
+    $this->updates->allows('isUpdateInfoCached')->returns(false);
+    $this->updates->allows('areMigrationsPending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create(Cms::config()->cpTrigger);
@@ -105,12 +105,12 @@ it('renders db update page for cp request when craft update pending', function (
 });
 
 it('renders db update page for cp request when plugin update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(false);
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(true);
-    $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(false);
-    $this->updates->shouldReceive('isUpdateInfoCached')->andReturn(false);
-    $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(false);
+    $this->updates->allows('isPluginUpdatePending')->returns(true);
+    $this->updates->allows('wasCraftBreakpointSkipped')->returns(false);
+    $this->updates->allows('isUpdateInfoCached')->returns(false);
+    $this->updates->allows('areMigrationsPending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create(Cms::config()->cpTrigger);
@@ -121,7 +121,7 @@ it('renders db update page for cp request when plugin update pending', function 
 });
 
 it('aborts 503 for site request when craft update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/site-page');
@@ -130,9 +130,9 @@ it('aborts 503 for site request when craft update pending', function () {
 })->throws(HttpException::class);
 
 it('aborts 503 for site request when plugin update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
-    $this->updates->shouldReceive('hasCraftVersionChanged')->andReturn(false);
-    $this->updates->shouldReceive('isPluginUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(false);
+    $this->updates->allows('hasCraftVersionChanged')->returns(false);
+    $this->updates->allows('isPluginUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/site-page');
@@ -141,7 +141,7 @@ it('aborts 503 for site request when plugin update pending', function () {
 })->throws(HttpException::class);
 
 it('allows updater CP routes when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/'.Cms::config()->cpTrigger.'/updates/migrate');
@@ -153,7 +153,7 @@ it('allows updater CP routes when update pending', function () {
 });
 
 it('allows health check action when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/app/health-check');
@@ -164,7 +164,7 @@ it('allows health check action when update pending', function () {
 });
 
 it('allows migrate action when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/app/migrate');
@@ -175,7 +175,7 @@ it('allows migrate action when update pending', function () {
 });
 
 it('allows pluginstore install migrate action when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/pluginstore/install/migrate');
@@ -186,10 +186,10 @@ it('allows pluginstore install migrate action when update pending', function () 
 });
 
 it('allows users login action when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
-    $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(false);
-    $this->updates->shouldReceive('isUpdateInfoCached')->andReturn(false);
-    $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
+    $this->updates->allows('wasCraftBreakpointSkipped')->returns(false);
+    $this->updates->allows('isUpdateInfoCached')->returns(false);
+    $this->updates->allows('areMigrationsPending')->returns(false);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create(Cms::config()->cpTrigger.'/actions/users/login');
@@ -200,7 +200,7 @@ it('allows users login action when update pending', function () {
 });
 
 it('aborts 503 for disallowed action when update pending', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create('/actions/entries/save');
@@ -209,8 +209,8 @@ it('aborts 503 for disallowed action when update pending', function () {
 })->throws(HttpException::class);
 
 it('throws exception when craft breakpoint was skipped', function () {
-    $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
-    $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(true);
+    $this->updates->allows('isCraftUpdatePending')->returns(true);
+    $this->updates->allows('wasCraftBreakpointSkipped')->returns(true);
 
     $middleware = app(CheckForUpdates::class);
     $request = Request::create(Cms::config()->cpTrigger);

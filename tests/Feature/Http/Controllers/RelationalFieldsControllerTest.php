@@ -82,17 +82,11 @@ it('renders an empty structured input', function () {
 it('fills structure gaps and loads provisional changes', function () {
     ['siteId' => $siteId, 'root' => $root, 'child' => $child] = createRelationalFieldEntries();
 
-    StructuresFacade::partialMock()
-        ->shouldReceive('fillGapsInElements')
-        ->once()
-        ->andReturnUsing(function (array &$elements) use ($root, $child) {
+    StructuresFacade::partialMock()->expects('fillGapsInElements')->resolves(function (array &$elements) use ($root, $child) {
             $elements = [$root, $child];
         });
 
-    DraftsFacade::partialMock()
-        ->shouldReceive('loadProvisionalChanges')
-        ->once()
-        ->andReturnUsing(function (array $elements) {
+    DraftsFacade::partialMock()->expects('loadProvisionalChanges')->resolves(function (array $elements) {
             $elements[0]->title = 'Draft Root';
         });
 
@@ -118,10 +112,7 @@ it('fills structure gaps and loads provisional changes', function () {
 it('applies the branch limit to structured elements', function () {
     ['siteId' => $siteId, 'root' => $root, 'child' => $child, 'secondRoot' => $secondRoot] = createRelationalFieldEntries();
 
-    StructuresFacade::partialMock()
-        ->shouldReceive('fillGapsInElements')
-        ->once()
-        ->andReturnUsing(function (array &$elements) use ($root, $child, $secondRoot) {
+    StructuresFacade::partialMock()->expects('fillGapsInElements')->resolves(function (array &$elements) use ($root, $child, $secondRoot) {
             $elements = [$root, $child, $secondRoot];
         });
 

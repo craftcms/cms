@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 it('uses the write connection for unsafe requests', function (string $method) {
     $db = Double::for(Connection::class);
-    $db->expects('useWriteConnectionWhenReading')->with(true)->once()->andReturnSelf();
+    $db->expects('useWriteConnectionWhenReading')->with(true)->returns($db);
     $request = Request::create('/articles', $method);
 
     $response = new UseWriteConnection($db)->handle($request, fn () => 'response');
@@ -25,7 +25,7 @@ it('uses the write connection for unsafe requests', function (string $method) {
 
 it('keeps safe requests on the read connection', function (string $method) {
     $db = Double::for(Connection::class);
-    $db->expects('useWriteConnectionWhenReading')->with(false)->once()->andReturnSelf();
+    $db->expects('useWriteConnectionWhenReading')->with(false)->returns($db);
     $request = Request::create('/articles', $method);
 
     $response = new UseWriteConnection($db)->handle($request, fn () => 'response');
@@ -35,7 +35,7 @@ it('keeps safe requests on the read connection', function (string $method) {
 
 it('keeps read-only controller actions on the read connection', function (string $controller, string $method) {
     $db = Double::for(Connection::class);
-    $db->expects('useWriteConnectionWhenReading')->with(false)->once()->andReturnSelf();
+    $db->expects('useWriteConnectionWhenReading')->with(false)->returns($db);
     $request = Request::create('/renamed-endpoint', 'POST');
     $route = new Route(['POST'], '/renamed-endpoint', $method === '__invoke' ? $controller : [$controller, $method]);
     $request->setRouteResolver(fn () => $route);

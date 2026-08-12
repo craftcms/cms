@@ -165,9 +165,7 @@ function createQueryMock(array $elements): ElementQueryInterface
 {
     $query = Double::for(ElementQueryInterface::class);
 
-    $query->shouldReceive('cursor')
-        ->once()
-        ->andReturn(LazyCollection::make(fn () => yield from $elements));
+    $query->expects('cursor')->returns(LazyCollection::make(fn () => yield from $elements));
 
     return $query;
 }
@@ -196,22 +194,11 @@ it('propagates elements to supported target sites and dispatches lifecycle event
     $query = createQueryMock([$element]);
     $olderSiteElement = createElement(100, 2, new DateTime('2026-03-31 12:00:00'));
 
-    $this->elements
-        ->shouldReceive('getElementById')
-        ->once()
-        ->with(100, TestPropagateElementsActionElement::class, 2)
-        ->andReturn($olderSiteElement);
+    $this->elements->expects('getElementById')->with(100, TestPropagateElementsActionElement::class, 2)->returns($olderSiteElement);
 
-    $this->elements
-        ->shouldReceive('getElementById')
-        ->once()
-        ->with(100, TestPropagateElementsActionElement::class, 3)
-        ->andReturnNull();
+    $this->elements->expects('getElementById')->with(100, TestPropagateElementsActionElement::class, 3)->returns(null);
 
-    $this->elementCaches
-        ->shouldReceive('invalidateForElement')
-        ->once()
-        ->with($element);
+    $this->elementCaches->expects('invalidateForElement')->with($element);
 
     $this->action->propagateElements($query);
 
@@ -249,16 +236,9 @@ it('filters requested site ids and skips the source site and newer localized ele
     $query = createQueryMock([$element]);
     $newerSiteElement = createElement(200, 3, new DateTime('2026-04-02 12:00:00'));
 
-    $this->elements
-        ->shouldReceive('getElementById')
-        ->once()
-        ->with(200, TestPropagateElementsActionElement::class, 3)
-        ->andReturn($newerSiteElement);
+    $this->elements->expects('getElementById')->with(200, TestPropagateElementsActionElement::class, 3)->returns($newerSiteElement);
 
-    $this->elementCaches
-        ->shouldReceive('invalidateForElement')
-        ->once()
-        ->with($element);
+    $this->elementCaches->expects('invalidateForElement')->with($element);
 
     $this->action->propagateElements($query, [1, 3, 99]);
 
@@ -273,16 +253,11 @@ it('rethrows propagation errors when continueOnError is false', function () {
     $query = createQueryMock([$element]);
     $exception = new RuntimeException('Propagation failed.');
 
-    $this->elements
-        ->shouldReceive('getElementById')
-        ->once()
-        ->with(300, TestPropagateElementsActionElement::class, 2)
-        ->andReturnNull();
+    $this->elements->expects('getElementById')->with(300, TestPropagateElementsActionElement::class, 2)->returns(null);
 
     $this->writes->exceptionToThrow = $exception;
 
-    $this->elementCaches
-        ->shouldNotReceive('invalidateForElement');
+    $this->elementCaches->expects('invalidateForElement')->never();
 
     expect(fn () => $this->action->propagateElements($query, 2))
         ->toThrow($exception);
@@ -301,18 +276,11 @@ it('continues after propagation errors when continueOnError is true', function (
     $query = createQueryMock([$element]);
     $exception = new RuntimeException('Propagation failed.');
 
-    $this->elements
-        ->shouldReceive('getElementById')
-        ->once()
-        ->with(400, TestPropagateElementsActionElement::class, 2)
-        ->andReturnNull();
+    $this->elements->expects('getElementById')->with(400, TestPropagateElementsActionElement::class, 2)->returns(null);
 
     $this->writes->exceptionToThrow = $exception;
 
-    $this->elementCaches
-        ->shouldReceive('invalidateForElement')
-        ->once()
-        ->with($element);
+    $this->elementCaches->expects('invalidateForElement')->with($element);
 
     $this->action->propagateElements($query, 2, true);
 
@@ -330,12 +298,9 @@ it('swallows aborted queries and still dispatches the final event', function () 
     Event::fake([ElementsPropagating::class, ElementsPropagated::class]);
 
     $query = Double::for(ElementQueryInterface::class);
-    $query->shouldReceive('cursor')
-        ->once()
-        ->andThrow(new QueryAbortedException);
+    $query->expects('cursor')->throws(new QueryAbortedException);
 
-    $this->elementCaches
-        ->shouldNotReceive('invalidateForElement');
+    $this->elementCaches->expects('invalidateForElement')->never();
 
     $this->action->propagateElements($query);
 

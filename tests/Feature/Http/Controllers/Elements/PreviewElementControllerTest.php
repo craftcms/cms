@@ -32,14 +32,8 @@ it('renders preview pages for saved drafts and honors signed return urls', funct
     Elements::saveElement($draft);
 
     $request = Double::for(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($draft);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($draft))
-        ->andReturn('entries');
+    $request->expects('element')->with(['id' => $entry->id], true)->returns($draft);
+    $request->expects('getSigned')->with('returnUrl', ElementHelper::postEditUrl($draft))->returns('entries');
 
     HtmlStack::clear();
 
@@ -66,14 +60,8 @@ it('renders preview pages for provisional drafts using canonical ids in the prev
     Elements::saveElement($draft);
 
     $request = Double::for(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($draft);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($draft))
-        ->andReturn(ElementHelper::postEditUrl($draft));
+    $request->expects('element')->with(['id' => $entry->id], true)->returns($draft);
+    $request->expects('getSigned')->with('returnUrl', ElementHelper::postEditUrl($draft))->returns(ElementHelper::postEditUrl($draft));
 
     HtmlStack::clear();
 
@@ -99,14 +87,8 @@ it('renders preview pages for revisions', function () {
     $revision = Elements::getElementById($revisionElementId, Entry::class, $entry->siteId);
 
     $request = Double::for(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($revision);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($revision))
-        ->andReturn(ElementHelper::postEditUrl($revision));
+    $request->expects('element')->with(['id' => $entry->id], true)->returns($revision);
+    $request->expects('getSigned')->with('returnUrl', ElementHelper::postEditUrl($revision))->returns(ElementHelper::postEditUrl($revision));
 
     HtmlStack::clear();
 
@@ -129,10 +111,7 @@ it('redirects to the canonical edit url when the requested draft is invalid', fu
     $redirect = redirect($entry->getCpEditUrl());
 
     $request = Double::for(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($redirect);
+    $request->expects('element')->with(['id' => $entry->id], true)->returns($redirect);
 
     $response = new PreviewElementController($request)->__invoke($entry->id, "-$entry->slug");
 

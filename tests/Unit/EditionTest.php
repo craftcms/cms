@@ -128,10 +128,10 @@ it('determines if the edition can be upgraded', function () {
     Cms::setIsInstalled();
 
     $user = Double::for(CraftUser::class);
-    $user->shouldReceive('isAdmin')->andReturnFalse();
+    $user->allows('isAdmin')->returns(false);
 
     $admin = Double::for(CraftUser::class);
-    $admin->shouldReceive('isAdmin')->andReturnTrue();
+    $admin->allows('isAdmin')->returns(true);
 
     Auth::shouldReceive('user')->andReturn(null, $user, $admin, $admin, $admin);
 

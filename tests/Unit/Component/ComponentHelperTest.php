@@ -123,8 +123,8 @@ describe('validateComponentClass', function () {
 
     test('returns false when class belongs to a disabled plugin', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
-        $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
+        $pluginsMock->allows('getPluginHandleByClass')->returns('my-plugin');
+        $pluginsMock->allows('isPluginEnabled')->with('my-plugin')->returns(false);
         app()->instance(Plugins::class, $pluginsMock);
 
         expect(ComponentHelper::validateComponentClass(StubComponent::class))->toBeFalse();
@@ -132,10 +132,10 @@ describe('validateComponentClass', function () {
 
     test('throws MissingComponentException for a disabled plugin class when throwException is true', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
-        $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
-        $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(true);
-        $pluginsMock->shouldReceive('getComposerPluginInfo')->with('my-plugin')->andReturn(['name' => 'My Plugin']);
+        $pluginsMock->allows('getPluginHandleByClass')->returns('my-plugin');
+        $pluginsMock->allows('isPluginEnabled')->with('my-plugin')->returns(false);
+        $pluginsMock->allows('isPluginInstalled')->with('my-plugin')->returns(true);
+        $pluginsMock->allows('getComposerPluginInfo')->with('my-plugin')->returns(['name' => 'My Plugin']);
         app()->instance(Plugins::class, $pluginsMock);
 
         ComponentHelper::validateComponentClass(StubComponent::class, throwException: true);
@@ -143,10 +143,10 @@ describe('validateComponentClass', function () {
 
     test('throws MissingComponentException for an uninstalled plugin class when throwException is true', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
-        $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
-        $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(false);
-        $pluginsMock->shouldReceive('getComposerPluginInfo')->with('my-plugin')->andReturn(['name' => 'My Plugin']);
+        $pluginsMock->allows('getPluginHandleByClass')->returns('my-plugin');
+        $pluginsMock->allows('isPluginEnabled')->with('my-plugin')->returns(false);
+        $pluginsMock->allows('isPluginInstalled')->with('my-plugin')->returns(false);
+        $pluginsMock->allows('getComposerPluginInfo')->with('my-plugin')->returns(['name' => 'My Plugin']);
         app()->instance(Plugins::class, $pluginsMock);
 
         ComponentHelper::validateComponentClass(StubComponent::class, throwException: true);
@@ -154,10 +154,10 @@ describe('validateComponentClass', function () {
 
     test('uses plugin handle as fallback name when composer info has no name', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
-        $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(false);
-        $pluginsMock->shouldReceive('isPluginInstalled')->with('my-plugin')->andReturn(false);
-        $pluginsMock->shouldReceive('getComposerPluginInfo')->with('my-plugin')->andReturn([]);
+        $pluginsMock->allows('getPluginHandleByClass')->returns('my-plugin');
+        $pluginsMock->allows('isPluginEnabled')->with('my-plugin')->returns(false);
+        $pluginsMock->allows('isPluginInstalled')->with('my-plugin')->returns(false);
+        $pluginsMock->allows('getComposerPluginInfo')->with('my-plugin')->returns([]);
         app()->instance(Plugins::class, $pluginsMock);
 
         expect(fn () => ComponentHelper::validateComponentClass(StubComponent::class, throwException: true))
@@ -174,8 +174,8 @@ describe('validateComponentClass', function () {
 
     test('returns true when class belongs to an enabled plugin', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn('my-plugin');
-        $pluginsMock->shouldReceive('isPluginEnabled')->with('my-plugin')->andReturn(true);
+        $pluginsMock->allows('getPluginHandleByClass')->returns('my-plugin');
+        $pluginsMock->allows('isPluginEnabled')->with('my-plugin')->returns(true);
         app()->instance(Plugins::class, $pluginsMock);
 
         expect(ComponentHelper::validateComponentClass(StubComponent::class))->toBeTrue();
@@ -183,7 +183,7 @@ describe('validateComponentClass', function () {
 
     test('returns true when class does not belong to any plugin', function () {
         $pluginsMock = Double::for(Plugins::class);
-        $pluginsMock->shouldReceive('getPluginHandleByClass')->andReturn(null);
+        $pluginsMock->allows('getPluginHandleByClass')->returns(null);
         app()->instance(Plugins::class, $pluginsMock);
 
         expect(ComponentHelper::validateComponentClass(StubComponent::class))->toBeTrue();

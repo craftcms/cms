@@ -107,8 +107,8 @@ it('clears the Laravel queue when clearing all job progress', function () {
     // Create a mock queue connection that implements ClearableQueue
     $queueConnection = Double::for(QueueContract::class, ClearableQueue::class);
 
-    $queueConnection->shouldReceive('clear')->once()->with('test-queue');
-    $queueConnection->shouldReceive('clear')->once()->with('test-low-prio-queue');
+    $queueConnection->expects('clear')->with('test-queue');
+    $queueConnection->expects('clear')->with('test-low-prio-queue');
 
     Queue::shouldReceive('connection')->once()->andReturn($queueConnection);
 

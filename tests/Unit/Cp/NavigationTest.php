@@ -28,8 +28,8 @@ beforeEach(function () {
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
     $user = Double::for(CraftUser::class);
-    $user->shouldReceive('isAdmin')->andReturnTrue();
-    $user->shouldReceive('can')->andReturnTrue();
+    $user->allows('isAdmin')->returns(true);
+    $user->allows('can')->returns(true);
 
     Auth::shouldReceive('user')->andReturn($user);
     Auth::shouldReceive('userResolver')->andReturn(fn () => $user);
@@ -73,10 +73,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
 it('uses the cp navigation service for the twig variable', function () {
     app()->instance(
         Navigation::class,
-        Mockery::mock(Navigation::class, fn ($mock) => $mock
-            ->shouldReceive('getItems')
-            ->once()
-            ->andReturn([
+        Mockery::mock(Navigation::class, fn ($mock) => $mock->expects('getItems')->returns([
                 ['label' => 'Dashboard'],
             ])),
     );

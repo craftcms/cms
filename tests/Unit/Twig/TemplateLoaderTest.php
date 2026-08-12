@@ -119,7 +119,7 @@ describe('isFresh', function () {
         Cms::config()->cpTrigger = '';
 
         $updates = Double::for(Updates::class);
-        $updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
+        $updates->allows('isCraftUpdatePending')->returns(true);
         app()->instance(Updates::class, $updates);
 
         expect($this->loader->isFresh('update-check', time() + 3600))->toBeFalse();
@@ -133,7 +133,7 @@ describe('isFresh', function () {
         Cms::config()->cpTrigger = '';
 
         $updates = Double::for(Updates::class);
-        $updates->shouldReceive('isCraftUpdatePending')->andReturn(false);
+        $updates->allows('isCraftUpdatePending')->returns(false);
         app()->instance(Updates::class, $updates);
 
         expect($this->loader->isFresh('no-update', time() + 3600))->toBeTrue();
@@ -148,7 +148,7 @@ describe('isFresh', function () {
         // Even if an update is pending, site requests should not force recompile
         // The Updates mock should NOT be called
         $updates = Double::for(Updates::class);
-        $updates->shouldNotReceive('isCraftUpdatePending');
+        $updates->expects('isCraftUpdatePending')->never();
         app()->instance(Updates::class, $updates);
 
         expect($this->loader->isFresh('site-fresh', time() + 3600))->toBeTrue();

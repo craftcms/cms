@@ -96,10 +96,7 @@ it('fails when no new author is selected', function () {
 
 it('reassigns entries to the selected author', function (int $count, string $message) {
     $entries = Double::for(Entries::class);
-    $entries->shouldReceive('reassignEntries')
-        ->once()
-        ->with([1, 2], 3)
-        ->andReturn($count);
+    $entries->expects('reassignEntries')->with([1, 2], 3)->returns($count);
 
     app()->instance(Entries::class, $entries);
 

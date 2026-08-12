@@ -149,21 +149,16 @@ describe('mergeCanonicalChanges', function () {
         $derivative->testAttr = 'Old Value';
 
         // Mock getOutdatedAttributes to return our test attribute
-        $derivative->shouldReceive('getOutdatedAttributes')
-            ->andReturn(['testAttr']);
+        $derivative->allows('getOutdatedAttributes')->returns(['testAttr']);
 
         // Mock isAttributeModified to return false (not modified)
-        $derivative->shouldReceive('isAttributeModified')
-            ->with('testAttr')
-            ->andReturn(false);
+        $derivative->allows('isAttributeModified')->with('testAttr')->returns(false);
 
         // Mock getOutdatedFields to return empty array
-        $derivative->shouldReceive('getOutdatedFields')
-            ->andReturn([]);
+        $derivative->allows('getOutdatedFields')->returns([]);
 
         // Mock getCanonical to return our canonical element
-        $derivative->shouldReceive('getCanonical')
-            ->andReturn($canonical);
+        $derivative->allows('getCanonical')->returns($canonical);
 
         // Run merge
         $derivative->mergeCanonicalChanges();
@@ -184,21 +179,16 @@ describe('mergeCanonicalChanges', function () {
         $derivative->testAttr = 'My Custom Value';
 
         // Mock getOutdatedAttributes to return our test attribute
-        $derivative->shouldReceive('getOutdatedAttributes')
-            ->andReturn(['testAttr']);
+        $derivative->allows('getOutdatedAttributes')->returns(['testAttr']);
 
         // Mock isAttributeModified to return true (modified)
-        $derivative->shouldReceive('isAttributeModified')
-            ->with('testAttr')
-            ->andReturn(true);
+        $derivative->allows('isAttributeModified')->with('testAttr')->returns(true);
 
         // Mock getOutdatedFields to return empty array
-        $derivative->shouldReceive('getOutdatedFields')
-            ->andReturn([]);
+        $derivative->allows('getOutdatedFields')->returns([]);
 
         // Mock getCanonical to return our canonical element
-        $derivative->shouldReceive('getCanonical')
-            ->andReturn($canonical);
+        $derivative->allows('getCanonical')->returns($canonical);
 
         // Run merge
         $derivative->mergeCanonicalChanges();

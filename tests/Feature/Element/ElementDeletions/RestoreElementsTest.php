@@ -106,10 +106,10 @@ it('throws and rolls back when another supported site fails essential validation
     $siteElement->siteId = $otherSite->id;
 
     $query = Double::for(ElementQueryInterface::class);
-    $query->shouldReceive('siteId')->once()->andReturnSelf();
-    $query->shouldReceive('status')->once()->andReturnSelf();
-    $query->shouldReceive('trashed')->once()->andReturnSelf();
-    $query->shouldReceive('all')->once()->andReturn([$siteElement]);
+    $query->expects('siteId')->returns($query);
+    $query->expects('status')->returns($query);
+    $query->expects('trashed')->returns($query);
+    $query->expects('all')->returns([$siteElement]);
 
     $action = restoreElementsService();
     $element = new TestRestoreElement(localizedQuery: $query, supportedSites: [
@@ -164,27 +164,23 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
     $siteElement->siteId = $otherSite->id;
 
     $query = Double::for(ElementQueryInterface::class);
-    $query->shouldReceive('siteId')->once()->andReturnSelf();
-    $query->shouldReceive('status')->once()->andReturnSelf();
-    $query->shouldReceive('trashed')->once()->andReturnSelf();
-    $query->shouldReceive('all')->once()->andReturn([$siteElement]);
+    $query->expects('siteId')->returns($query);
+    $query->expects('status')->returns($query);
+    $query->expects('trashed')->returns($query);
+    $query->expects('all')->returns([$siteElement]);
 
     $indexed = [];
     $invalidated = [];
 
     $search = Double::for(Search::class);
-    $search->shouldReceive('indexElementAttributes')
-        ->twice()
-        ->andReturnUsing(function (ElementInterface $element, ?array $fieldHandles = null) use (&$indexed): bool {
+    $search->expects('indexElementAttributes')->times(2)->resolves(function (ElementInterface $element, ?array $fieldHandles = null) use (&$indexed): bool {
             $indexed[] = [$element->id, $element->siteId];
 
             return true;
         });
 
     $elementCaches = Double::for(ElementCaches::class);
-    $elementCaches->shouldReceive('invalidateForElement')
-        ->once()
-        ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): array {
+    $elementCaches->expects('invalidateForElement')->resolves(function (ElementInterface $element) use (&$invalidated): array {
             $invalidated[] = [$element->id, $element->siteId];
 
             return [];
@@ -222,10 +218,10 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
 function restoreElementsService(): ElementDeletions
 {
     $search = Double::for(Search::class);
-    $search->shouldReceive('indexElementAttributes')->andReturn(true);
+    $search->allows('indexElementAttributes')->returns(true);
 
     $elementCaches = Double::for(ElementCaches::class);
-    $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
+    $elementCaches->allows('invalidateForElement')->returns([]);
 
     return new ElementDeletions(
         Double::for(Elements::class),
@@ -289,10 +285,10 @@ class TestRestoreElement extends Element
         }
 
         $query = Double::for(ElementQueryInterface::class);
-        $query->shouldReceive('siteId')->andReturnSelf();
-        $query->shouldReceive('status')->andReturnSelf();
-        $query->shouldReceive('trashed')->andReturnSelf();
-        $query->shouldReceive('all')->andReturn([]);
+        $query->allows('siteId')->returns($query);
+        $query->allows('status')->returns($query);
+        $query->allows('trashed')->returns($query);
+        $query->allows('all')->returns([]);
 
         return $query;
     }

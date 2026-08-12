@@ -20,10 +20,7 @@ beforeEach(function () {
 
 test('get plugin license info validates and sorts plugin results', function () {
     $api = Double::for(Api::class);
-    $api->shouldReceive('getLicenseInfo')
-        ->once()
-        ->with(['plugins'])
-        ->andReturn([
+    $api->expects('getLicenseInfo')->with(['plugins'])->returns([
             'pluginLicenses' => [
                 [
                     'key' => 'ABC123ABC123ABC123ABC123',

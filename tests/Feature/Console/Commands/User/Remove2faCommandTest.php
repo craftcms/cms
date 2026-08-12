@@ -46,10 +46,7 @@ test('removes all methods when all is passed', function () {
         activeMethods: collect([$sms, $email]),
         activeMethodsAfterRemoval: fn () => TestRemove2faEmailMethod::$removeCount === 0 ? collect([$email]) : collect(),
     );
-    $auth->shouldReceive('getMethod')
-        ->once()
-        ->with(RecoveryCodes::class, Mockery::type(UserElement::class))
-        ->andReturn(tap(new RecoveryCodes, fn (RecoveryCodes $method) => $method->setUser($user)));
+    $auth->expects('getMethod')->with(RecoveryCodes::class, Mockery::type(UserElement::class))->returns(tap(new RecoveryCodes, fn (RecoveryCodes $method) => $method->setUser($user)));
 
     app()->instance(AuthMethods::class, $auth);
 
@@ -92,16 +89,10 @@ function mockRemove2faAuthMethods(
     bool $expectAfterRemovalCheck = true,
 ): AuthMethods {
     $auth = Double::for(AuthMethods::class);
-    $auth->shouldReceive('getActiveMethods')
-        ->once()
-        ->with(Mockery::type(UserElement::class))
-        ->andReturn($activeMethods);
+    $auth->expects('getActiveMethods')->with(Mockery::type(UserElement::class))->returns($activeMethods);
 
     if ($expectAfterRemovalCheck) {
-        $auth->shouldReceive('getActiveMethods')
-            ->zeroOrMoreTimes()
-            ->with(Mockery::type(UserElement::class))
-            ->andReturnUsing($activeMethodsAfterRemoval);
+        $auth->allows('getActiveMethods')->with(Mockery::type(UserElement::class))->resolves($activeMethodsAfterRemoval);
     }
 
     return $auth;

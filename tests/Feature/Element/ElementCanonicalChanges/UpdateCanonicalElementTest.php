@@ -252,8 +252,7 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
     };
 
     $duplicates = Double::for(ElementDuplicates::class);
-    $duplicates->shouldReceive('duplicateElement')
-        ->andReturnUsing(function (
+    $duplicates->allows('duplicateElement')->resolves(function (
             ElementInterface $element,
             array $newAttributes = [],
             bool $placeInStructure = true,

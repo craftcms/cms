@@ -202,9 +202,7 @@ it('merges and saves localized derivatives before the requested site', function 
 
     $saveCalls = [];
     $writes = Double::for(ElementWrites::class);
-    $writes->shouldReceive('save')
-        ->twice()
-        ->andReturnUsing(function (Entry $element, bool $runValidation, bool $propagate, ?bool $updateSearchIndex = null, ?array $supportedSites = null) use (&$saveCalls) {
+    $writes->expects('save')->times(2)->resolves(function (Entry $element, bool $runValidation, bool $propagate, ?bool $updateSearchIndex = null, ?array $supportedSites = null) use (&$saveCalls) {
             $saveCalls[] = [
                 'id' => $element->id,
                 'siteId' => $element->siteId,
@@ -279,9 +277,7 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
     $currentSiteElement->localizedQuery = new TestMergeCanonicalChangesQuery([$otherSiteElement]);
 
     $writes = Double::for(ElementWrites::class);
-    $writes->shouldReceive('save')
-        ->twice()
-        ->andReturnUsing(fn () => true);
+    $writes->expects('save')->times(2)->resolves(fn () => true);
 
     $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Double::for(ElementDuplicates::class));
 

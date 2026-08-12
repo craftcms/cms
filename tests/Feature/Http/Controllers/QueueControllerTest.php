@@ -133,7 +133,7 @@ it('returns total jobs and job info without a limit', function () {
 
 it('does not require Queue Manager utility access for job info', function () {
     $utilities = Double::for(Utilities::class);
-    $utilities->shouldNotReceive('checkAuthorization');
+    $utilities->expects('checkAuthorization')->never();
     app()->instance(Utilities::class, $utilities);
 
     getJson(action([QueueController::class, 'jobInfo']))->assertOk();

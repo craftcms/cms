@@ -649,14 +649,8 @@ it('creates eager-loaded field addresses with the requested source owner', funct
         'siteId' => $firstEntry->siteId,
     ];
 
-    $query->shouldReceive('owner')
-        ->once()
-        ->with($firstEntry)
-        ->andReturnSelf();
-    $query->shouldReceive('createElement')
-        ->once()
-        ->with($result)
-        ->andReturn($address);
+    $query->expects('owner')->with($firstEntry)->returns($query);
+    $query->expects('createElement')->with($result)->returns($address);
 
     $created = $map['createElement']($query, $result, $firstEntry);
 

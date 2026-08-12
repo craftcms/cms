@@ -217,10 +217,7 @@ it('ignores missing transaction exceptions during uninstall commits', function (
     $resolvedConnections[$connectionName] = $connectionMock;
     $connections->setValue($manager, $resolvedConnections);
 
-    $connectionMock
-        ->shouldReceive('commit')
-        ->once()
-        ->andThrow(new PDOException('There is no active transaction'));
+    $connectionMock->expects('commit')->throws(new PDOException('There is no active transaction'));
 
     try {
         $this->plugins->uninstallPlugin('test-plugin');

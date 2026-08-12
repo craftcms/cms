@@ -97,7 +97,7 @@ it('rejects plugin classes discovered as Laravel providers', function () {
     app()->forgetInstance(Plugins::class);
 
     $manifest = Double::for(PackageManifest::class);
-    $manifest->shouldReceive('providers')->andReturn([FirstLifecycleTestPlugin::class]);
+    $manifest->allows('providers')->returns([FirstLifecycleTestPlugin::class]);
     app()->instance(PackageManifest::class, $manifest);
 
     $plugins = app(Plugins::class);

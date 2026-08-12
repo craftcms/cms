@@ -178,11 +178,7 @@ it('selects the first supporting renderer and appends custom renderers', functio
     $this->manager->extend('first', static fn () => $first);
     $this->manager->extend('second', static fn () => $second);
 
-    $this->resolver
-        ->shouldReceive('resolve')
-        ->once()
-        ->with('example', TemplateMode::Cp, false)
-        ->andReturn('/tmp/example.custom');
+    $this->resolver->expects('resolve')->with('example', TemplateMode::Cp, false)->returns('/tmp/example.custom');
 
     expect($this->manager->renderTemplate('example', ['value' => 'test'], TemplateMode::Cp))
         ->toBe('first')
@@ -200,7 +196,7 @@ it('keeps a replaced renderer in its existing automatic-selection position', fun
     $this->manager->extend('second', static fn () => $second);
     $this->manager->extend('first', static fn () => $replacement);
 
-    $this->resolver->shouldReceive('resolve')->andReturn('/tmp/example.custom');
+    $this->resolver->allows('resolve')->returns('/tmp/example.custom');
 
     expect($this->manager->renderTemplate('example'))->toBe('replacement');
 });
@@ -208,7 +204,7 @@ it('keeps a replaced renderer in its existing automatic-selection position', fun
 it('falls back to Twig for unmatched configured extensions', function () {
     $twig = new TemplateManagerTestTwigRenderer([], 'twig-fallback');
     $this->manager->extend(TemplateEngine::Twig, static fn () => $twig);
-    $this->resolver->shouldReceive('resolve')->andReturn('/tmp/example.txt');
+    $this->resolver->allows('resolve')->returns('/tmp/example.txt');
 
     expect($this->manager->renderTemplate('example'))->toBe('twig-fallback');
 });
@@ -216,7 +212,7 @@ it('falls back to Twig for unmatched configured extensions', function () {
 it('honors an explicitly requested renderer without requiring supports', function () {
     $renderer = new TemplateManagerTestRenderer([], 'explicit');
     $this->manager->extend('custom', static fn () => $renderer);
-    $this->resolver->shouldReceive('resolve')->andReturn('/tmp/example.twig');
+    $this->resolver->allows('resolve')->returns('/tmp/example.twig');
 
     expect($this->manager->renderTemplate('example', renderer: 'custom'))->toBe('explicit');
 });
@@ -232,11 +228,7 @@ it('selects the renderer after before-event template mutation', function () {
         $event->template = 'mutated';
     });
 
-    $this->resolver
-        ->shouldReceive('resolve')
-        ->once()
-        ->with('mutated', TemplateMode::Site, false)
-        ->andReturn('/tmp/mutated.blade.php');
+    $this->resolver->expects('resolve')->with('mutated', TemplateMode::Site, false)->returns('/tmp/mutated.blade.php');
 
     $renderedRendererName = null;
     Event::listen(TemplateRendered::class, function (TemplateRendered $event) use (&$renderedRendererName) {
@@ -248,11 +240,7 @@ it('selects the renderer after before-event template mutation', function () {
 });
 
 it('throws a template loader exception for missing templates', function () {
-    $this->resolver
-        ->shouldReceive('resolve')
-        ->once()
-        ->with('missing/template', TemplateMode::Cp, false)
-        ->andReturnFalse();
+    $this->resolver->expects('resolve')->with('missing/template', TemplateMode::Cp, false)->returns(false);
 
     expect(fn () => $this->manager->renderTemplate('missing/template', templateMode: TemplateMode::Cp))
         ->toThrow(TemplateLoaderException::class);
@@ -261,11 +249,7 @@ it('throws a template loader exception for missing templates', function () {
 it('passes public-only resolution through unchanged', function () {
     $renderer = new TemplateManagerTestRenderer(['/tmp/example.custom'], 'public');
     $this->manager->extend('custom', static fn () => $renderer);
-    $this->resolver
-        ->shouldReceive('resolve')
-        ->once()
-        ->with('example', TemplateMode::Site, true)
-        ->andReturn('/tmp/example.custom');
+    $this->resolver->expects('resolve')->with('example', TemplateMode::Site, true)->returns('/tmp/example.custom');
 
     expect($this->manager->renderTemplate('example', publicOnly: true))->toBe('public');
 });

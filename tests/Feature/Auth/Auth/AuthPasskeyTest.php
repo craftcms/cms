@@ -48,26 +48,13 @@ test('authenticateWithPasskey enforces user status after a valid response', func
     Session::put($passkeys->passkeyCredSourceParam, $updatedCredentialSource);
 
     $credentialRepository = Double::for(CredentialRepository::class);
-    $credentialRepository
-        ->shouldReceive('saveCredentialSource')
-        ->once()
-        ->with($updatedCredentialSource);
+    $credentialRepository->expects('saveCredentialSource')->with($updatedCredentialSource);
 
     $webauthnServer = Double::for(WebauthnServer::class);
-    $webauthnServer
-        ->shouldReceive('getCredentialRepository')
-        ->once()
-        ->andReturn($credentialRepository);
+    $webauthnServer->expects('getCredentialRepository')->returns($credentialRepository);
 
-    $passkeys
-        ->shouldReceive('verifyPasskey')
-        ->once()
-        ->with(Mockery::type(UserElement::class), $requestOptions, $response)
-        ->andReturn(true);
-    $passkeys
-        ->shouldReceive('webauthnServer')
-        ->once()
-        ->andReturn($webauthnServer);
+    $passkeys->expects('verifyPasskey')->with(Mockery::type(UserElement::class), $requestOptions, $response)->returns(true);
+    $passkeys->expects('webauthnServer')->returns($webauthnServer);
 
     $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 
@@ -102,11 +89,8 @@ test('authenticateWithPasskey with invalid response', function () {
     $passkeys = mockAuthPasskeys();
     Session::put($passkeys->passkeyCredSourceParam, $updatedCredentialSource);
 
-    $passkeys
-        ->shouldReceive('verifyPasskey')
-        ->once()
-        ->andReturn(false);
-    $passkeys->shouldNotReceive('webauthnServer');
+    $passkeys->expects('verifyPasskey')->returns(false);
+    $passkeys->expects('webauthnServer')->never();
 
     $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);
 

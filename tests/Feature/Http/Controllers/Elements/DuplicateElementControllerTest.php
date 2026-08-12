@@ -106,9 +106,7 @@ describe('duplicate', function () {
         $entry->errors()->add('title', 'Title is invalid.');
 
         $elements = Double::for(ElementsService::class);
-        $elements->shouldReceive('duplicateElement')
-            ->once()
-            ->andThrow(new InvalidElementException($entry));
+        $elements->expects('duplicateElement')->throws(new InvalidElementException($entry));
 
         app()->instance(ElementsService::class, $elements);
 
@@ -318,9 +316,7 @@ describe('bulkDuplicate', function () {
         $entry->errors()->add('title', 'Title is invalid.');
 
         $elements = Double::for(ElementsService::class);
-        $elements->shouldReceive('duplicateElement')
-            ->once()
-            ->andThrow(new InvalidElementException($entry));
+        $elements->expects('duplicateElement')->throws(new InvalidElementException($entry));
 
         app()->instance(ElementsService::class, $elements);
 

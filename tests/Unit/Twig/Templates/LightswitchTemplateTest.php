@@ -10,7 +10,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders the web component from the legacy variable API', function () {
     $mock = Double::for(Deprecator::class);
-    $mock->shouldNotReceive('log');
+    $mock->expects('log')->never();
     app()->scoped(Deprecator::class, fn () => $mock);
 
     $html = renderString(

@@ -503,12 +503,10 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn($fullNameField);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
@@ -531,12 +529,10 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = false;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn($fullNameField);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
@@ -556,12 +552,10 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn($fullNameField);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
@@ -580,12 +574,10 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = false;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn($fullNameField);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
@@ -603,12 +595,10 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn($fullNameField);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);
@@ -625,12 +615,10 @@ describe('Name field validation with field layout', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->shouldReceive('getFirstVisibleElementByType')
-            ->with(FullNameField::class, Mockery::any())
-            ->andReturn(null);
-        $fieldLayout->shouldReceive('getVisibleCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getEditableCustomFieldElements')->andReturn([]);
-        $fieldLayout->shouldReceive('getTabs')->andReturn([]);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns(null);
+        $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
+        $fieldLayout->allows('getTabs')->returns([]);
 
         $user = new TestUserWithFieldLayout;
         $user->setMockFieldLayout($fieldLayout);

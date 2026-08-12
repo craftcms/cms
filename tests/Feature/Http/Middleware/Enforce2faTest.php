@@ -61,7 +61,7 @@ test('allows user through when 2fa is required and active', function () {
 
     // Mock active method
     $auth = Double::for(app(AuthMethods::class))->passthru();
-    $auth->shouldReceive('hasActiveMethod')->andReturn(true);
+    $auth->allows('hasActiveMethod')->returns(true);
 
     $this->actingAs($user)
         ->get('/test-2fa')

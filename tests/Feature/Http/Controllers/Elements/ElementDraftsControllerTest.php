@@ -123,13 +123,8 @@ describe('ensure', function () {
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
 
         $request = Double::for(ElementRequest::class);
-        $request->shouldReceive('element')
-            ->once()
-            ->with([], true)
-            ->andReturn($entry);
-        $request->shouldReceive('craftUser')
-            ->once()
-            ->andReturn(currentUser());
+        $request->expects('element')->with([], true)->returns($entry);
+        $request->expects('craftUser')->returns(currentUser());
 
         app()->instance('request', Request::create('/actions/elements/ensure-draft', 'POST', [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
