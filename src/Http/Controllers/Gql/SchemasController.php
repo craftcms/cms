@@ -39,7 +39,7 @@ readonly class SchemasController extends GqlController
 
         return Inertia::render('graphql/schemas/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/schemas')],
+                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/schemas')],
                 ['label' => t('Schemas')],
             ],
             'title' => t('GraphQL Schemas'),
@@ -145,7 +145,7 @@ readonly class SchemasController extends GqlController
             ->title($title)
             ->selectedSubnavItem('schemas')
             ->crumbs([
-                ['label' => t('GraphQL Schemas'), 'url' => 'graphql/schemas'],
+                ['label' => t('GraphQL Schemas'), 'href' => Url::cpUrl('graphql/schemas')],
                 ['label' => $title],
             ])
             ->redirectUrl('graphql/schemas')

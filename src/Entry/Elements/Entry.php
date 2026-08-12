@@ -1189,7 +1189,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $crumbs = [
             [
                 'label' => $page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'),
-                'url' => sprintf('content/%s', $page ? Str::slug($page) : 'entries'),
+                'href' => Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries')),
             ],
         ];
 
@@ -1216,8 +1216,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $sectionOptions = $sections
                 ->filter(fn (Section $s) => $s->type !== SectionType::Single)
                 ->map(fn (Section $s) => [
+                    'type' => 'link',
                     'label' => $s->getUiLabel(),
-                    'url' => $s->getCpIndexUri(),
+                    'href' => Url::cpUrl($s->getCpIndexUri()),
                     'selected' => $s->id === $section->id,
                 ]);
 
@@ -1225,21 +1226,31 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $firstSingle = $sections->first(fn (Section $s) => $s->type === SectionType::Single);
             if ($firstSingle) {
                 $sectionOptions->prepend([
+                    'type' => 'link',
                     'label' => t('Singles'),
-                    'url' => $firstSingle->getCpIndexUri(),
+                    'href' => Url::cpUrl($firstSingle->getCpIndexUri()),
                     'selected' => $section->type === SectionType::Single,
                 ]);
             }
 
+            // The crumb names whichever option is current — for a Single that's
+            // the “Singles” pseudo-option, not the single's own name.
+            $current = $sectionOptions->first(fn (array $o) => $o['selected'])
+                ?? $sectionOptions->first();
+
             if ($sectionOptions->count() > 1) {
+                // A crumb is shaped like a link action item, so the current
+                // option doubles as the crumb and the whole set as its menu.
                 $crumbs[] = [
-                    'menu' => [
-                        'label' => t('Select section'),
-                        'items' => $sectionOptions->all(),
-                    ],
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                    'actions' => $sectionOptions->all(),
                 ];
             } else {
-                $crumbs[] = $sectionOptions->first();
+                $crumbs[] = [
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                ];
             }
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
@@ -1851,17 +1862,19 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             return [];
         }
 
-        $items = [[
-            'label' => t('Entry type settings'),
-            'icon' => 'gear',
-            'behavior' => [
-                'type' => 'slideout',
-                'url' => Url::cpUrl("settings/entry-types/$this->typeId"),
-                // A non-nested entry can have its type switched in the sidebar,
-                // so the slideout follows the field rather than the saved value.
-                'entryTypeFromField' => ! isset($this->fieldId),
+        $items = [
+            [
+                'label' => t('Entry type settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/entry-types/$this->typeId"),
+                    // A non-nested entry can have its type switched in the sidebar,
+                    // so the slideout follows the field rather than the saved value.
+                    'entryTypeFromField' => ! isset($this->fieldId),
+                ],
             ],
-        ]];
+        ];
 
         if (! empty($this->sectionId)) {
             $items[] = [

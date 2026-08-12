@@ -1223,7 +1223,7 @@ class Asset extends Element
         return $tags;
     }
 
-    /** @return list<array{label?: string, url?: string, selected?: bool, menu?: array{label: string, items: array<int, array{label: string, url: string, selected: bool}>}}|null> */
+    /** @return list<array{label?: string, href?: string, actions?: list<array{type: string, label: string, href: string, selected: bool}>}|null> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1232,7 +1232,7 @@ class Asset extends Element
         $crumbs = [
             [
                 'label' => t('Assets'),
-                'url' => Url::cpUrl('assets'),
+                'href' => Url::cpUrl('assets'),
             ],
         ];
 
@@ -1246,20 +1246,28 @@ class Asset extends Element
             $volumes = $volumes->filter(fn (Volume $v) => isset($sourceKeys["volume:$v->uid"]));
 
             $volumeOptions = $volumes->map(fn (Volume $v) => [
+                'type' => 'link',
                 'label' => $v->getUiLabel(),
-                'url' => "assets/$v->handle",
+                'href' => Url::cpUrl("assets/$v->handle"),
                 'selected' => $v->id === $volume->id,
             ]);
 
+            $current = $volumeOptions->first(fn (array $o) => $o['selected'])
+                ?? $volumeOptions->first();
+
             if ($volumeOptions->count() > 1) {
+                // A crumb is shaped like a link action item, so the current
+                // option doubles as the crumb and the whole set as its menu.
                 $crumbs[] = [
-                    'menu' => [
-                        'label' => t('Select volume'),
-                        'items' => $volumeOptions->all(),
-                    ],
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                    'actions' => $volumeOptions->all(),
                 ];
             } else {
-                $crumbs[] = $volumeOptions->first();
+                $crumbs[] = [
+                    'label' => $current['label'],
+                    'href' => $current['href'],
+                ];
             }
         } else {
             // Just show its name w/o a link
@@ -1276,7 +1284,7 @@ class Asset extends Element
                 $uri .= "/$subfolder";
                 $crumbs[] = [
                     'label' => $subfolder,
-                    'url' => Url::cpUrl($uri),
+                    'href' => Url::cpUrl($uri),
                 ];
             }
         }

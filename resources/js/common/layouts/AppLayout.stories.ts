@@ -47,8 +47,8 @@ const meta = {
     inertia: {
       title: 'Page Title',
       crumbs: [
-        {label: 'Content', url: '#'},
-        {label: 'Entries', url: '#'},
+        {label: 'Content', href: '#'},
+        {label: 'Entries', href: '#'},
       ],
       queue: {
         enabled: false,
@@ -399,9 +399,9 @@ export const AllExtensionPointsInContext: Story = {
     inertia: {
       title: 'Summer sale: up to 40% off',
       crumbs: [
-        {label: 'Content', url: '#'},
-        {label: 'Entries', url: '#'},
-        {label: 'News', url: '#'},
+        {label: 'Content', href: '#'},
+        {label: 'Entries', href: '#'},
+        {label: 'News', href: '#'},
       ],
       subnav: [
         {label: 'All entries', url: '#', selected: false},

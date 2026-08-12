@@ -339,14 +339,24 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the breadcrumbs.
      *
-     * Breadcrumbs should be defined by arrays with the following keys:
+     * A breadcrumb is shaped like a link action item, so the same array can be
+     * used as a crumb and as an entry in another crumb's menu:
      *
      * - `label` – The breadcrumb label, to be HTML-encoded
-     * - `url` – The URL that the breadcrumb should link to
-     * - `icon` – The icon which should be displayed beside the label
-     * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
-     * - `current` – Whether the breadcrumb represents the current page
+     * - `href` – The URL the breadcrumb links to. Absolute: nothing normalizes
+     *   it downstream, so build it with [[\CraftCms\Cms\Support\Url::cpUrl()]]
+     * - `icon` – The icon displayed beside the label
+     *
+     * Plus three keys only a crumb uses:
+     *
+     * - `html` – Server-rendered crumb content (e.g. an element chip), used
+     *   instead of `label`
+     * - `attrs` – Extra HTML attributes for the crumb
+     * - `actions` – A dropdown of link action items shown alongside the crumb
+     *   (e.g. the other sections available from an entry's section crumb)
+     *
+     * The last crumb is treated as the current page — `aria-current` is derived
+     * from position, so there is no `current` key.
      *
      * This will only be used by full-page screens.
      */
@@ -371,7 +381,7 @@ class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => $url ? Url::cpUrl($url) : null,
+            'href' => $url ? Url::cpUrl($url) : null,
         ];
 
         return $this;
@@ -1028,13 +1038,7 @@ class CpScreenResponse implements Responsable
             'docTitle' => $docTitle,
             'title' => $this->title,
             'selectedSubnavItem' => $this->selectedSubnavItem,
-            'crumbs' => array_map(function (array $crumb): array {
-                if (isset($crumb['url'])) {
-                    $crumb['url'] = Url::cpUrl($crumb['url']);
-                }
-
-                return $crumb;
-            }, $crumbs ?? []),
+            'crumbs' => $crumbs ?? [],
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
             'actionMenuItems' => $this->actionMenuItemProps(),

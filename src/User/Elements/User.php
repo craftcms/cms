@@ -828,7 +828,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return [
             [
                 'label' => t('Users'),
-                'url' => 'users',
+                'href' => Url::cpUrl('users'),
             ],
         ];
     }

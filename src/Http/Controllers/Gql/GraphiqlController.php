@@ -59,7 +59,7 @@ readonly class GraphiqlController extends GqlController
             ->title(t('Explore the GraphQL API'))
             ->selectedSubnavItem('explore')
             ->crumbs([
-                ['label' => 'GraphQL', 'url' => 'graphql/explore'],
+                ['label' => 'GraphQL', 'href' => Url::cpUrl('graphql/explore')],
                 ['label' => 'GraphiQL'],
             ])
             ->inertiaPage('graphql/Explore', [

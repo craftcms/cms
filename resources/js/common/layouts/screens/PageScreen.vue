@@ -68,7 +68,7 @@
     title: string;
     readOnly?: boolean;
     crumbs?: Array<{
-      url?: string;
+      href?: string;
       label: string;
     }> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
