@@ -132,6 +132,20 @@ it('submits complete current values after a partial mutation', async () => {
   );
 });
 
+it('passes screen layout options through to the app layout', () => {
+  app = createApp(FormPage, {
+    form: payload,
+    submit: {method: 'post', url: '/settings/users'},
+    fullWidth: true,
+    defaultFormActions: [],
+  });
+  app.mount(container);
+
+  expect(state.layout).toHaveBeenCalledWith(
+    expect.objectContaining({fullWidth: true, defaultFormActions: []})
+  );
+});
+
 it('accepts reactive Inertia form values', () => {
   app = createApp(FormPage, {
     form: reactive(payload),

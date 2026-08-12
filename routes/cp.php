@@ -468,8 +468,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
-        Route::middleware(RequireAdminChanges::class)
-            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::post('settings/users/settings/render-form', [UserSettingsController::class, 'renderForm']);
+            Route::post('settings/users/settings', [UserSettingsController::class, 'store']);
+        });
     });
 
     Route::prefix('settings/filesystems')->group(function () {
