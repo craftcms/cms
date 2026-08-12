@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'サブフォルダを検索',
     'Search plugins' => 'プラグインを検索',
     'Search' => '検索',
+    'Secondary' => 'Secondary',
     'Seconds' => '秒',
     'Section - {section}' => 'セクション - {section}',
     'Section Type' => 'セクションタイプ',
