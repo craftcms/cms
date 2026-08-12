@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Αναζήτηση σε υποφακέλους',
     'Search plugins' => 'Αναζήτηση plugins',
     'Search' => 'Αναζήτηση',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Δευτερόλεπτα',
     'Section - {section}' => 'Ενότητα - {section}',
     'Section Type' => 'Τύπος Ενότητας',
