@@ -2,7 +2,6 @@
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {MixedInputPart} from '@/pages/settings/routes/types';
   import MixedInput from '@/common/form/MixedInput.vue';
-  import Pane from '@/common/components/Pane.vue';
   import Select from '@/common/form/Select.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import type {RouteData, RouteFormData} from './types';
@@ -102,7 +101,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="route-form">
       <Select
         :label="t('Site')"
@@ -166,7 +165,7 @@
         :options="templateOptions"
       />
     </div>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

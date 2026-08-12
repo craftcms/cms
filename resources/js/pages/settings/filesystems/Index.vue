@@ -9,7 +9,6 @@
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import {router} from '@inertiajs/vue3';
-  import Pane from '@/common/components/Pane.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface FileSystemData {
@@ -111,7 +110,7 @@
     >
   </LayoutSlot>
 
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table" :reorderable="false">
       <template #empty-row>
         <Empty :label="t('No filesystems exist yet.')" icon="light/folder-open">
@@ -121,5 +120,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

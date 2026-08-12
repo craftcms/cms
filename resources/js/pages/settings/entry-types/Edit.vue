@@ -11,7 +11,7 @@
   import CraftSelectColor from '@craftcms/ui/vue/CraftSelectColor.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
+  import useCraftData from '@/common/composables/useCraftData';
   import {store} from '@/actions/CraftCms/Cms/Http/Controllers/Settings/EntryTypesController';
   import type {SelectOption} from '@/common/types';
   import IconPicker from '@/common/form/IconPicker.vue';
@@ -138,7 +138,7 @@
 
 <template>
   <div class="grid gap-6 grid-cols-4">
-    <Pane appearance="raised" class="col-span-3">
+    <craft-pane appearance="raised" class="col-span-3">
       <craft-field-group>
         <input
           v-if="entryType.id"
@@ -329,7 +329,7 @@
           <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
         </div>
       </craft-field-group>
-    </Pane>
+    </craft-pane>
     <div class="col-span-1">
       <div class="sticky top-4">
         <DynamicHtmlRenderer :html="metadataHtml" v-if="metadataHtml" />

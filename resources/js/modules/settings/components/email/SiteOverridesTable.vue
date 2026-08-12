@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
   import type {SelectItem} from '@/common/types';
@@ -80,9 +79,9 @@
 </script>
 
 <template>
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable :table="table" :reorderable="false" />
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss"></style>

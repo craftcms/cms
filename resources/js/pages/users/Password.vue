@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
-  import Pane from '@/common/components/Pane.vue';
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -41,7 +40,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised" :padding="0">
+  <craft-pane appearance="raised" :padding="0">
     <div class="grid gap-6 p-4">
       <section class="grid gap-3">
         <h2 class="text-base">{{ t('Change your Password') }}</h2>
@@ -75,5 +74,5 @@
         <TwoStepVerification :methods="page.props.authMethods" />
       </section>
     </div>
-  </Pane>
+  </craft-pane>
 </template>

@@ -3,7 +3,6 @@
   import {onMounted} from 'vue';
   import {usePost} from '@/common/composables/useFetch';
   import {install as installAction} from '@actions/InstallController';
-  import Pane from '@/common/components/Pane.vue';
 
   type InstallResponse = {
     redirect: string;
@@ -33,7 +32,7 @@
 </script>
 
 <template>
-  <Pane class="max-w-[80ch] mx-auto">
+  <craft-pane class="max-w-[80ch] mx-auto">
     <template v-if="isLoading">
       <div class="content">
         <h2>{{ t('Installing Craft CMS…') }}</h2>
@@ -65,7 +64,7 @@
         </div>
       </div>
     </template>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

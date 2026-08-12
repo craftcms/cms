@@ -13,7 +13,6 @@
   import CpLink from '@/common/components/CpLink.vue';
   import Badge from '@/common/components/Badge.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import Pane from '@/common/components/Pane.vue';
   import useCraftData from '@/common/composables/useCraftData';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import Empty from '@/common/components/Empty.vue';
@@ -263,7 +262,7 @@
     </div>
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -288,7 +287,7 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 
   <ModalForm
     :is-active="modalActive"
@@ -299,12 +298,7 @@
     @submit="saveGroup"
     :loading="form.processing"
   >
-    <craft-input
-      name="id"
-      id="id"
-      v-model="form.id"
-      type="hidden"
-    ></craft-input>
+    <craft-input name="id" id="id" v-model="form.id" hidden-input></craft-input>
     <Deferred data="nameSuggestions">
       <template #fallback>
         <craft-input

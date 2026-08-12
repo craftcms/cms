@@ -5,7 +5,6 @@
   import {nextTick, onBeforeUnmount, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import Modal from '@/common/components/Modal.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {elevatedSessionManager} from './manager';
   import '@/modules/auth/components/login/login-form.js';
   import type CraftLoginForm from '@/modules/auth/components/login/login-form';
@@ -58,7 +57,7 @@
 
 <template>
   <Modal :is-active="state.active" width="sm" @close="close" @opened="opened">
-    <Pane
+    <craft-pane
       data-elevated-session-dialog
       role="dialog"
       aria-modal="true"
@@ -90,6 +89,6 @@
           :fragment="state.alternativeLoginMethods"
         />
       </craft-login-form>
-    </Pane>
+    </craft-pane>
   </Modal>
 </template>

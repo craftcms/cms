@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
   import {t} from '@craftcms/ui';
-  import Pane from '@/common/components/Pane.vue';
   import ProjectConfigController from '@actions/Utilities/ProjectConfigController';
   import {useFetch} from '@/common/composables/useFetch';
 
@@ -40,7 +39,13 @@
 </script>
 
 <template>
-  <Pane variant="code" :padding="0" :class="{loading: isLoading}" tabindex="0">
+  <!-- craft-pane makes its own scroll container the tab stop -->
+  <craft-pane
+    variant="code"
+    padding="0"
+    :class="{loading: isLoading}"
+    :aria-label="t('Project config changes')"
+  >
     <!-- Loading state -->
     <div v-if="isLoading" class="diff-loading">
       <craft-spinner :visible="true" class="spinner"></craft-spinner>
@@ -73,7 +78,7 @@
         </craft-button>
       </div>
     </template>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss">

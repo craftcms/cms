@@ -8,7 +8,6 @@
     startRegistration,
   } from '@simplewebauthn/browser';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-  import Pane from '@/common/components/Pane.vue';
   import CraftDate from '@/common/components/Date.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
@@ -212,9 +211,9 @@
         {{ t('This browser doesn’t support passkeys.') }}
       </craft-callout>
 
-      <Pane :padding="0" appearance="raised">
+      <craft-pane :padding="0" appearance="raised">
         <AdminTable :table="table" />
-      </Pane>
+      </craft-pane>
 
       <div v-if="supported">
         <craft-button

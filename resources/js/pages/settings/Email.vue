@@ -6,7 +6,6 @@
   import SiteOverridesTable from '@/modules/settings/components/email/SiteOverridesTable.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {store, test} from '@routes/cp/settings/email';
-  import Pane from '@/common/components/Pane.vue';
   import InlineFlash from '@/common/components/InlineFlash.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -97,7 +96,7 @@
 <template>
   <div class="grid gap-3">
     <!-- Email Settings Form -->
-    <Pane appearance="raised">
+    <craft-pane appearance="raised">
       <div class="grid gap-3">
         <CraftCombobox
           :label="t('System Email Address')"
@@ -207,10 +206,10 @@
           :callouts="['envVars']"
         />
       </div>
-    </Pane>
+    </craft-pane>
 
     <!-- Test Email -->
-    <Pane appearance="raised">
+    <craft-pane appearance="raised">
       <h2 class="mb-3">{{ t('Send a test email') }}</h2>
 
       <div class="grid gap-3">
@@ -235,6 +234,6 @@
           />
         </div>
       </div>
-    </Pane>
+    </craft-pane>
   </div>
 </template>
