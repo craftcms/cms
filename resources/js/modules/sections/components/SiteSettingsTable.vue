@@ -23,6 +23,7 @@
       selectedType?: string;
       isMultiSite?: boolean;
       isHeadless?: boolean;
+      disabled?: boolean;
     }>(),
     {isMultiSite: false, isHeadless: false}
   );
@@ -64,6 +65,7 @@
       }),
       columnHelper.lightswitch('enabled', {
         header: t('Enabled'),
+        disabled: () => props.disabled,
         meta: {
           trackSize: '80px',
           cellClass: 'bg-[var(--c-color-neutral-fill-quiet)]',
@@ -91,13 +93,16 @@
             emit('update:modelValue', newValue);
           }
         },
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
       }),
       columnHelper.text('singleUri', {
         header: t('URI'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        disabled: (row) => !row.original.enabled || row.original.singleHomepage,
+        disabled: (row) =>
+          props.disabled ||
+          !row.original.enabled ||
+          row.original.singleHomepage,
         meta: {
           headerTip: t(
             'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'
@@ -108,7 +113,7 @@
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
         meta: {
           headerTip: t(
             'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'
@@ -119,7 +124,7 @@
         header: t('Template'),
         class: 'w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]',
         options: templateOptions.value,
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
         meta: {
           headerTip: t(
             'Which template should be loaded when an entry’s URL is requested.'
@@ -131,7 +136,7 @@
         meta: {
           trackSize: '120px',
         },
-        disabled: (row) => !row.original.enabled,
+        disabled: (row) => props.disabled || !row.original.enabled,
       }),
     ],
   });

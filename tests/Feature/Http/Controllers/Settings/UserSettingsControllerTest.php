@@ -36,6 +36,7 @@ it('requires authentication', function () {
     Auth::logout();
 
     get(action([UserSettingsController::class, 'index']))->assertRedirect();
+    post(action([UserSettingsController::class, 'renderForm']))->assertRedirect();
     post(action([UserSettingsController::class, 'store']))->assertRedirect();
 });
 
@@ -47,6 +48,7 @@ it('requires admin changes to save settings', function () {
             ->component('settings/users/Settings')
             ->where('readOnly', true));
 
+    post(action([UserSettingsController::class, 'renderForm']))->assertForbidden();
     post(action([UserSettingsController::class, 'store']))->assertForbidden();
 });
 
@@ -55,12 +57,34 @@ it('renders the inertia user settings screen', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/users/Settings')
             ->where('title', 'User Settings')
-            ->where('settings.requireEmailVerification', true)
-            ->where('settings.allowPublicRegistration', false)
-            ->where('canRequire2fa', true)
-            ->where('canManagePublicRegistration', true)
+            ->where('form.values.requireEmailVerification', true)
+            ->where('form.values.allowPublicRegistration', false)
+            ->where('form.refreshable', true)
+            ->where('submit.method', 'post')
+            ->where('submit.url', action([UserSettingsController::class, 'store']))
+            ->where('refreshUrl', action([UserSettingsController::class, 'renderForm']))
+            ->where('form.nodes', function ($nodes) {
+                $paths = collect($nodes)->pluck('control.path');
+
+                return $paths->contains(['require2fa'])
+                    && $paths->contains(['allowPublicRegistration']);
+            })
             ->has('subnav', 3))
         ->assertOk();
+});
+
+it('only shows settings supported by the current edition', function () {
+    Edition::set(Edition::Solo);
+
+    get(action([UserSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('refreshUrl', null)
+            ->where('form.nodes', function ($nodes) {
+                $paths = collect($nodes)->pluck('control.path');
+
+                return $paths->doesntContain(['require2fa'])
+                    && $paths->doesntContain(['allowPublicRegistration']);
+            }));
 });
 
 it('uses the control panel route for saving settings', function () {
@@ -90,12 +114,49 @@ it('exposes all user photo volumes', function () {
 
     get(action([UserSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('photoVolumeOptions', function ($options) use ($publicVolume, $privateVolume) {
-                $values = collect($options)->pluck('value');
+            ->where('form.nodes', function ($nodes) use ($publicVolume, $privateVolume) {
+                $control = collect($nodes)
+                    ->pluck('control')
+                    ->firstWhere('path', ['photoVolumeUid']);
+                $values = collect($control['props']['options'])->pluck('value');
 
                 return $values->contains((string) $publicVolume->uid)
-                    && $values->contains((string) $privateVolume->uid);
+                    && $values->contains((string) $privateVolume->uid)
+                    && $values->contains('__createVolume__');
             }));
+});
+
+it('refreshes public registration fields without losing their current values', function () {
+    $values = [
+        'photoVolumeUid' => '',
+        'photoSubpath' => '',
+        'require2fa' => false,
+        'requireEmailVerification' => true,
+        'allowPublicRegistration' => true,
+        'validateOnPublicRegistration' => true,
+        'deactivateByDefault' => true,
+        'defaultGroup' => '',
+    ];
+
+    $shown = post(action([UserSettingsController::class, 'renderForm']), [
+        'values' => $values,
+        'scope' => [],
+    ])->assertOk()
+        ->assertJsonPath('form.values.allowPublicRegistration', true)
+        ->assertJsonPath('form.values.validateOnPublicRegistration', true);
+
+    $hidden = post(action([UserSettingsController::class, 'renderForm']), [
+        'values' => [...$values, 'allowPublicRegistration' => false],
+        'scope' => [],
+    ])->assertOk()
+        ->assertJsonPath('form.values.allowPublicRegistration', false)
+        ->assertJsonPath('form.values.validateOnPublicRegistration', true);
+
+    $shownNode = collect($shown->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
+    $hiddenNode = collect($hidden->json('form.nodes'))->firstWhere('control.path', ['validateOnPublicRegistration']);
+
+    expect($shownNode['component'])->toBe('craft:field')
+        ->and($hiddenNode['component'])->toBe('craft:hidden-field');
 });
 
 it('rejects unknown user photo volume uids', function () {

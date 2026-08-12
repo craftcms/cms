@@ -277,14 +277,14 @@
           :description="entryType.description"
           :draggable="modelValue.length > 1"
           :indicators="entryType.indicators"
-          :actions="[
-            {
-              label: t('Settings'),
-              icon: 'gear',
-              onClick: () => openSlideout(entryType.id),
-            },
-            ...(!readOnly
+          :actions="
+            !readOnly
               ? [
+                  {
+                    label: t('Settings'),
+                    icon: 'gear',
+                    onClick: () => openSlideout(entryType.id),
+                  },
                   {
                     label: t('Remove'),
                     variant: 'danger',
@@ -292,8 +292,8 @@
                     onClick: () => removeItem(entryType.id),
                   },
                 ]
-              : []),
-          ]"
+              : []
+          "
           @handle-ref="(el) => setHandleRef(el, entryType.id)"
         >
           <template #drag-handle>
