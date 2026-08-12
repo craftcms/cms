@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -87,6 +88,9 @@ trait EditUserTrait
                     'showDraftName' => false,
                     'class' => 'chromeless',
                     'hyperlink' => true,
+                    'attributes' => [
+                        'appearance' => Appearance::Plain->value,
+                    ],
                 ]),
             ],
             ['label' => $pageName],
