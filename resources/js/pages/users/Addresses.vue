@@ -4,7 +4,7 @@
   import {useEventListener} from '@vueuse/core';
   import {attrs, t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
+  import {openSlideout} from '@/common/slideouts';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
@@ -85,24 +85,36 @@
         }
       );
 
-      const slideout = Craft.createElementEditor(data.elementType, {
-        siteId: response.element.siteId,
-        elementId: response.element.id,
-        draftId: response.element.draftId,
-        params: {fresh: 1},
-      });
+      // `elements/create` hands back where the new draft is edited — the
+      // element's own CP edit URL, or an `elements/edit` action URL for
+      // element types that don't have one. It's only omitted outside the CP,
+      // but checking beats opening a panel on `/undefined`.
+      if (!response.cpEditUrl) {
+        throw new Error('The new address came back without an edit URL.');
+      }
 
-      slideout.on('submit', () => {
-        router.reload({only: ['data']});
-      });
+      // `fresh` is what tells the editor this draft has never been saved, so
+      // cancelling discards it. The legacy editor passed it the same way.
+      const editUrl = new URL(response.cpEditUrl, window.location.origin);
+      editUrl.searchParams.set('fresh', '1');
 
-      slideout.on('close', () => {
-        createBtn.value?.focus();
+      // Focus returns to the create button when the panel closes.
+      void openSlideout(editUrl.toString(), {
+        opener: createBtn.value,
+        onSaved: (result) => {
+          // Drafts autosave as the user types; the cards only need
+          // re-rendering once the address is actually saved.
+          if (!result.draft) {
+            router.reload({only: ['data']});
+          }
+        },
       });
     } catch (error) {
+      // Prefer the server's message; fall back to the thrown one so a local
+      // failure doesn't surface as an empty notification.
       Craft.cp?.displayError?.(
         (error as {response?: {data?: {message?: string}}})?.response?.data
-          ?.message
+          ?.message ?? (error as Error)?.message
       );
     } finally {
       creating.value = false;
@@ -132,7 +144,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div ref="cardsContainer" class="grid gap-3">
       <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
 
@@ -176,7 +188,7 @@
         </craft-button>
       </div>
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.details" name="details">
     <div v-html="props.details"></div>

@@ -23,6 +23,15 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
@@ -35,8 +44,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -47,10 +54,8 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
@@ -177,6 +182,28 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         if ($this->maxAddresses === 0) {
             $this->maxAddresses = null;
         }
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
+            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
+            FormField::make(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                        ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                    ])
+                    ->value($this->viewMode)),
+        ]);
     }
 
     #[Override]
@@ -318,26 +345,33 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $addresses = match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof AddressQuery => $context->value->all(),
+            default => [],
+        };
+        $values = $forms = $sortOrder = [];
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        foreach ($addresses as $address) {
+            $uid = $address->uid ?? (string) $address->id;
+            $values[$uid] = ['type' => 'address'];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $address->getFieldLayout(),
+                $address,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
 
-        return template('_components/fieldtypes/Addresses/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-        ]);
+        return MatrixControl::make($context->path)
+            ->entryTypes(['address' => Address::displayName()])
+            ->forms($forms)
+            ->minEntries($this->minAddresses)
+            ->maxEntries($this->maxAddresses)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     #[Override]
@@ -667,12 +701,6 @@ JS, [
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($element);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($element, true);
     }
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string

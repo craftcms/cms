@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => '在子文件中搜索',
     'Search plugins' => '搜索插件',
     'Search' => '搜索',
+    'Secondary' => 'Secondary',
     'Seconds' => '秒',
     'Section - {section}' => '版块 - {section}',
     'Section Type' => '版块类型',

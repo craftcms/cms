@@ -8,14 +8,15 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -84,18 +85,26 @@ readonly class CopyElementValuesController
             $element->$attribute = $fromElement->$attribute;
         }
 
-        $html = InputNamespace::namespaceInputs(
-            html: fn () => $layoutElement->formHtml($element),
-            namespace: $namespace
+        $payload = app(FieldLayoutCompiler::class)->compile(
+            $element->getFieldLayout(),
+            $element,
+            new FormContext(namespace: $namespace ?? []),
         );
+        $renderer = app(FormHtmlRenderer::class);
+        $node = null;
 
-        if ($html) {
-            $html = Html::modifyTagAttributes($html, [
-                'data' => [
-                    'layout-element' => $layoutElement->uid,
-                ],
-            ]);
+        foreach ($payload->nodes as $tab) {
+            $node = array_find(
+                $tab->children ?? [],
+                fn ($node): bool => ($node->props['layoutUid'] ?? $node->uid) === $layoutElementUid,
+            );
+
+            if ($node !== null) {
+                break;
+            }
         }
+
+        $html = $node === null ? null : $renderer->renderNodes([$node], $payload);
 
         return new ElementResponse()->success($element, t('Field value copied.'), [
             'fieldHtml' => $html,

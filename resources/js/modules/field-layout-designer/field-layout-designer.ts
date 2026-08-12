@@ -1,5 +1,6 @@
 import {
   Base,
+  deferUntil,
   ESC_KEY,
   type GarnishEvent,
   hasAttr,
@@ -14,6 +15,7 @@ import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
+import {openSlideout} from '@/common/slideouts';
 import {Slideout} from '@/modules/slideout';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
@@ -98,7 +100,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     this.$fieldLibrary = this.$selectedLibrary =
       this.$libraryContainer.querySelector(':scope > .fld-field-library');
-    this.$fieldSearch = this.$fieldLibrary.querySelector('[type="search"]');
     this.$fieldGroups = Array.from(
       this.$libraryContainer.querySelectorAll('.fld-field-group')
     );
@@ -111,6 +112,21 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (this.settings!.readOnly) {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
+
+    void deferUntil(
+      () =>
+        !!Craft?.Grid &&
+        typeof $ === 'function' &&
+        !!this.$fieldLibrary.querySelector('input[type="search"]')
+    ).then(() => {
+      this.$fieldSearch = this.$fieldLibrary.querySelector(
+        'input[type="search"]'
+      );
+      this.deferredInit();
+    });
+  }
+
+  deferredInit(): void {
     // Set up the layout grids — Craft.Grid is a jQuery seam.
     this.tabGrid = new Craft.Grid($(this.$tabContainer), {
       itemSelector: '.fld-tab',
@@ -447,25 +463,26 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   createField(): void {
-    const slideout = new Craft.CpScreenSlideout(
-      Craft.getCpUrl('settings/fields/edit')
-    );
+    void openSlideout(Craft.getCpUrl('settings/fields/edit'), {
+      opener: this.$createFieldBtn,
+      onSaved: ({data}) => {
+        // add the library selector
+        const $selector = htmlToElement(
+          (data as {selectorHtml: string}).selectorHtml
+        );
+        const $lastGroup = this.$fieldGroups[this.$fieldGroups.length - 1];
+        $lastGroup.appendChild($selector);
+        $lastGroup.classList.remove('hidden');
+        this.refreshLibraryFields();
+        this.initLibraryElements($selector);
 
-    slideout.on('submit', async ({response}: any) => {
-      // add the library selector
-      const $selector = htmlToElement(response.data.selectorHtml);
-      const $lastGroup = this.$fieldGroups[this.$fieldGroups.length - 1];
-      $lastGroup.appendChild($selector);
-      $lastGroup.classList.remove('hidden');
-      this.refreshLibraryFields();
-      this.initLibraryElements($selector);
+        // add it to the active tab
+        this.addLibraryElementToActiveTab($selector);
 
-      // add it to the active tab
-      this.addLibraryElementToActiveTab($selector);
-
-      requestAnimationFrame(() => {
-        this.getActiveHud()?.hide();
-      });
+        requestAnimationFrame(() => {
+          this.getActiveHud()?.hide();
+        });
+      },
     });
   }
 
@@ -553,6 +570,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $footer.appendChild(cancelBtn);
 
     const submitBtn = document.createElement('craft-button');
+    submitBtn.type = 'submit';
     submitBtn.variant = ButtonVariant.Primary;
     submitBtn.innerText = t('Apply');
     $footer.appendChild(submitBtn);

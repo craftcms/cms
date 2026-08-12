@@ -9,10 +9,9 @@ use CraftCms\Cms\Cp\Concerns\HasId;
 
 /**
  * PHP counterpart to the `<craft-button-group>` web component: a group of
- * buttons. With `name` set the component enters radio mode — it owns single
- * selection and, being form-associated, submits the selected `value` itself
- * (no hidden input needed). Each option button carries its own `value`, which
- * the component matches against the group's `value`.
+ * buttons. With `name` set the component owns selection and, being
+ * form-associated, submits the selected value itself. Each option button
+ * carries its own `value`.
  *
  *     ButtonGroup::make()
  *         ->name('alignment')
@@ -32,6 +31,8 @@ class ButtonGroup extends ViewComponent
     protected ?string $name = null;
 
     protected ?string $value = null;
+
+    protected bool $multiple = false;
 
     protected function tagName(): string
     {
@@ -57,7 +58,7 @@ class ButtonGroup extends ViewComponent
         return $this;
     }
 
-    /** Renders a hidden input posting the selected value under this name. */
+    /** The form field name. */
     public function name(?string $name): static
     {
         $this->name = $name;
@@ -65,7 +66,7 @@ class ButtonGroup extends ViewComponent
         return $this;
     }
 
-    /** The currently selected value, posted by the hidden input. */
+    /** The currently selected value. */
     public function value(?string $value): static
     {
         $this->value = $value;
@@ -73,12 +74,17 @@ class ButtonGroup extends ViewComponent
         return $this;
     }
 
+    public function multiple(bool $multiple = true): static
+    {
+        $this->multiple = $multiple;
+
+        return $this;
+    }
+
     /**
      * The `<craft-button-group>` web component is form-associated: with `name`
-     * set it enters radio mode, owns selection, and submits the selected
-     * `value` itself (via ElementInternals). So `name`/`value` ride on the host
-     * — no wrapping `<craft-listbox>` or hidden input is needed. Child buttons
-     * carry their own `value`, which the component matches against the group's.
+     * set it owns selection and submits through ElementInternals. `name` and
+     * `value` therefore belong on the host.
      */
     #[\Override]
     protected function hostAttributes(): array
@@ -87,7 +93,8 @@ class ButtonGroup extends ViewComponent
             'id' => $this->getId(),
             'name' => $this->name,
             'value' => $this->value,
-            'role' => 'group',
+            'multiple' => $this->multiple,
+            'role' => $this->name !== null && ! $this->multiple ? 'radiogroup' : 'group',
             'aria' => [
                 'labelledby' => $this->labelledBy,
             ],

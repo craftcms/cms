@@ -66,12 +66,6 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    #[\Override]
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
-    {
-        return $this->inputHtmlInternal($value, $element, true);
-    }
-
     private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         /** @var SingleOptionFieldData $value */

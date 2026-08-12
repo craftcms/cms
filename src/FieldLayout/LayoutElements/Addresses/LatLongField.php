@@ -7,7 +7,12 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
@@ -66,6 +71,25 @@ class LatLongField extends BaseNativeField
         }
 
         return sprintf('%s, %s', $element->longitude ?? '0', $element->latitude ?? '0');
+    }
+
+    #[Override]
+    public function formNode(FieldLayoutElementContext $context): ?Node
+    {
+        if (! $context->element instanceof Address) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
+        }
+
+        if (! $this->uid) {
+            throw new InvalidArgumentException('Persisted Latitude/Longitude FieldLayout elements require stable UIDs.');
+        }
+
+        return Group::make($this->uid, [
+            Field::make(t('Latitude'), Text::make('latitude')->value($context->element->latitude))
+                ->required($this->required),
+            Field::make(t('Longitude'), Text::make('longitude')->value($context->element->longitude))
+                ->required($this->required),
+        ]);
     }
 
     #[Override]

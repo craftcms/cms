@@ -17,6 +17,7 @@ import {
   Base,
   DragSort,
   type GarnishBaseSettings,
+  deferUntil,
   firstFocusableElement,
   prefersReducedMotion,
   scrollContainerToElement,
@@ -56,6 +57,7 @@ export interface MatrixInputSettings extends GarnishBaseSettings {
    * the auto-added entries still register as changes).
    */
   addDefaultEntries: {type: string; count: number} | null;
+  formControl: boolean;
 }
 
 /** The jQuery `'fast'` duration the legacy velocity calls used. */
@@ -77,7 +79,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     siteId: null,
     staticEntries: false,
     addDefaultEntries: null,
+    formControl: false,
   };
+
+  entryFactory: ((type: string) => HTMLElement) | null = null;
 
   static get collapsedEntryStorageKey(): string {
     return `Craft-${craft().systemUid}.MatrixInput.collapsedEntries`;
@@ -121,7 +126,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   entryTypes: MatrixEntryType[];
   entryTypesByHandle: Record<string, MatrixEntryType> = {};
   inputNamePrefix: string;
-  inputIdPrefix: string;
 
   container: HTMLElement | null = null;
   form: HTMLElement | null = null;
@@ -136,6 +140,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   entrySelect: LegacySelect | null = null;
 
   elementEditor: LegacyElementEditor | null = null;
+  /** Aborts the after-init `elementEditor` lookup on `destroy()`. */
+  private elementEditorController: AbortController | null = null;
 
   addingEntry = false;
 
@@ -150,7 +156,6 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     this.id = id;
     this.entryTypes = entryTypes;
     this.inputNamePrefix = inputNamePrefix;
-    this.inputIdPrefix = craft().formatInputId(inputNamePrefix);
 
     // see if settings was actually set to the maxEntries value
     if (typeof settings === 'number') {
@@ -183,10 +188,12 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     const entries = this.entryElements();
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
+    const collapsedEntries = this.settings!.formControl
+      ? []
+      : MatrixInput.getCollapsedEntryIds();
 
     // only initialise drag-sort if the device has mouse events
-    if (craft().hasMousePointerEvents()) {
+    if (this.settings!.formControl || craft().hasMousePointerEvents()) {
       this.entrySort = new DragSort(entries, {
         // Native querySelector needs `:scope` for a leading combinator
         // (the legacy jQuery selector was `> .actions > .move-btn`).
@@ -224,18 +231,20 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     // `Garnish.Select` has no modern port yet — see ./interop.
-    this.entrySelect = new (legacyGarnish().Select)(
-      this.entriesContainer,
-      entries,
-      {
-        multi: true,
-        vertical: true,
-        handle: '> .actions > .checkbox, > .titlebar',
-        filter: (target: unknown) =>
-          !(target as HTMLElement).closest?.('.tab-label'),
-        checkboxMode: true,
-      }
-    );
+    if (!this.settings!.formControl) {
+      this.entrySelect = new (legacyGarnish().Select)(
+        this.entriesContainer,
+        entries,
+        {
+          multi: true,
+          vertical: true,
+          handle: '> .actions > .checkbox, > .titlebar',
+          filter: (target: unknown) =>
+            !(target as HTMLElement).closest?.('.tab-label'),
+          checkboxMode: true,
+        }
+      );
+    }
 
     for (const container of entries) {
       const entry = new MatrixEntry(this, container);
@@ -244,7 +253,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       }
     }
 
-    if (this.addEntryBtn) {
+    if (this.addEntryBtn && !this.settings!.formControl) {
       this.addListener(this.addEntryBtn, 'activate', async () => {
         const btn = this.addEntryBtn!;
         if (btn.classList.contains('loading')) {
@@ -260,7 +269,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    for (const btn of this.addEntryMenuBtns) {
+    for (const btn of this.settings!.formControl ? [] : this.addEntryMenuBtns) {
       // The disclosure menu is initialized by the legacy bundle and stored in
       // jQuery data; its container holds the per-type buttons.
       const menu = jqData(btn, 'disclosureMenu') as
@@ -288,18 +297,16 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
     this.updateAddEntryBtn();
 
-    setTimeout(() => {
-      this.elementEditor = this.form
-        ? ((jqData(this.form, 'elementEditor') as LegacyElementEditor) ?? null)
-        : null;
-
-      if (this.elementEditor) {
-        this.elementEditor.on('update', () => {
-          this.settings!.ownerId = this.elementEditor!.getDraftElementId(
-            this.settings!.ownerId
-          ) as MatrixInputSettings['ownerId'];
-        });
-      }
+    // The owner's element editor boots after this input does; keep checking
+    // until it's attached (legacy parity: the poll interval mirrors the old
+    // fixed delay, but retries instead of gambling on a single check).
+    const finishInit = (elementEditor: LegacyElementEditor | null): void => {
+      this.elementEditor = elementEditor;
+      this.elementEditor?.on('update', () => {
+        this.settings!.ownerId = this.elementEditor!.getDraftElementId(
+          this.settings!.ownerId
+        ) as MatrixInputSettings['ownerId'];
+      });
 
       this.trigger('afterInit');
 
@@ -307,7 +314,24 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       if (defaultEntries && defaultEntries.count > 0) {
         void this.addDefaultEntries(defaultEntries.type, defaultEntries.count);
       }
-    }, 100);
+    };
+
+    this.elementEditorController = new AbortController();
+
+    const form = this.form;
+    if (form) {
+      deferUntil(
+        () => jqData(form, 'elementEditor') as LegacyElementEditor | undefined,
+        100,
+        this.elementEditorController.signal
+      )
+        .then((elementEditor) => finishInit(elementEditor ?? null))
+        .catch(() => {
+          // Destroyed before the editor showed up — nothing left to do.
+        });
+    } else {
+      finishInit(null);
+    }
 
     // If this field is nested within something that's deletable, be ready to
     // handle that
@@ -322,15 +346,17 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       });
     }
 
-    craft().cp.onCopyElements((elementInfo, buttonLabel) => {
-      this.updatePasteBtn(elementInfo);
-      if (this.pasteBtn && buttonLabel) {
-        const label = this.pasteBtn.querySelector('.label');
-        if (label) {
-          label.textContent = buttonLabel;
+    if (!this.settings!.formControl) {
+      craft().cp.onCopyElements((elementInfo, buttonLabel) => {
+        this.updatePasteBtn(elementInfo);
+        if (this.pasteBtn && buttonLabel) {
+          const label = this.pasteBtn.querySelector('.label');
+          if (label) {
+            label.textContent = buttonLabel;
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /** The field's current top-level `.matrixblock` elements. */
@@ -357,6 +383,10 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   canPaste(elementInfo: CopiedElementInfo[]): boolean {
+    if (this.settings!.formControl) {
+      return false;
+    }
+
     if (!this.canAddMoreEntries(elementInfo.length)) {
       return false;
     }
@@ -444,7 +474,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
       await craft().appendHeadHtml(data.headHtml);
       await craft().appendBodyHtml(data.bodyHtml);
-      Craft.initUiElements(newEntries);
+      Craft.initUiElements($(newEntries));
 
       for (const entry of newEntries) {
         new MatrixEntry(this, entry);
@@ -464,7 +494,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     // Resume the element editor
-    this.elementEditor?.resume();
+    void this.elementEditor?.resume();
   }
 
   updateAddEntryBtn(): void {
@@ -486,13 +516,17 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   updatePasteBtn(elementInfo: CopiedElementInfo[] | null = null): void {
+    if (this.settings!.formControl) {
+      return;
+    }
+
     elementInfo = elementInfo || craft().cp.getCopiedElements();
     if (this.canPaste(elementInfo)) {
       if (!this.pasteBtn) {
         this.pasteBtn = createPasteButton();
         this.addEntryBtnContainer?.append(this.pasteBtn);
         this.addListener(this.pasteBtn, 'activate', () => {
-          this.pasteEntries();
+          void this.pasteEntries();
         });
       } else {
         this.pasteBtn.hidden = false;
@@ -528,6 +562,24 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   ): Promise<void> {
     if (!this.canAddMoreEntries()) {
       this.updateStatusMessage();
+      return;
+    }
+
+    if (this.entryFactory) {
+      const entry = this.entryFactory(type);
+
+      if (insertBefore?.isConnected) {
+        insertBefore.before(entry);
+      } else {
+        this.entriesContainer?.append(entry);
+      }
+
+      new MatrixEntry(this, entry);
+      this.entrySort?.addItems(entry);
+      this.entrySelect?.addItems(entry);
+      this.updateAddEntryBtn();
+      this.trigger('entryAdded', {$entry: entry});
+
       return;
     }
 
@@ -630,7 +682,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
           }
 
           // Resume the element editor
-          this.elementEditor?.resume();
+          void this.elementEditor?.resume();
         });
       } finally {
         this.addingEntry = false;
@@ -650,7 +702,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
     setTimeout(() => {
       requestAnimationFrame(() => {
-        this.elementEditor?.resume();
+        void this.elementEditor?.resume();
       });
     }, 100);
   }
@@ -698,6 +750,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   override destroy(): void {
+    this.elementEditorController?.abort();
+    this.elementEditorController = null;
+
     this.entrySort?.destroy();
     this.entrySelect?.destroy();
     this.entrySort = null;

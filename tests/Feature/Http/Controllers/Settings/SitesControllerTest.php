@@ -15,7 +15,6 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
-use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
@@ -35,6 +34,7 @@ it('requires authentication', function () {
     get(action([SitesController::class, 'index']))->assertRedirect();
     get(action([SitesController::class, 'create']))->assertRedirect();
     get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertRedirect();
+    postJson(action([SitesController::class, 'renderForm']))->assertUnauthorized();
     postJson(action([SitesController::class, 'store']))->assertUnauthorized();
     postJson(action([SitesController::class, 'reorder']))->assertUnauthorized();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertUnauthorized();
@@ -45,12 +45,15 @@ it('requires admin changes', function () {
 
     // Read only
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/sites/Edit')
-            ->where('readOnly', true));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/sites/Edit')
+            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+                ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')));
 
     // Not allowed
     get(action([SitesController::class, 'create']))->assertForbidden();
     postJson(action([SitesController::class, 'store']))->assertForbidden();
+    postJson(action([SitesController::class, 'renderForm']))->assertForbidden();
     postJson(action([SitesController::class, 'reorder']))->assertForbidden();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertForbidden();
 });
@@ -96,8 +99,14 @@ test('index can filter by group', function () {
 
 test('create can be loaded', function () {
     get(action([SitesController::class, 'create']))
-        ->assertOk()
-        ->assertSee(t('Create a new site'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/sites/Edit')
+            ->where('form.values.siteId', null)
+            ->where('form.values.group', SiteGroup::first()->id)
+            ->where('form.refreshable', true)
+            ->where('submit.url', action([SitesController::class, 'store']))
+            ->where('refreshUrl', action([SitesController::class, 'renderForm'])))
+        ->assertOk();
 });
 
 test('create errors if no groups exist', function () {
@@ -118,11 +127,39 @@ test('it can edit a site', function () {
     get(action([SitesController::class, 'edit'], [$site->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('site.name', $site->getName())
-            ->where('site.languageRaw', $site->getLanguage(false))
-            ->where('site.baseUrlRaw', $site->getBaseUrl(false))
-            ->etc()
+            ->where('form.values.siteId', $site->id)
+            ->where('form.values.name', $site->getName(false))
+            ->where('form.values.language', $site->getLanguage(false))
+            ->where('form.values.baseUrl', $site->getBaseUrl(false))
+            ->where('form.values.primary', true)
         );
+});
+
+it('refreshes base URL visibility from current form values', function () {
+    $values = [
+        'siteId' => null,
+        'group' => SiteGroup::first()->id,
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'en-US',
+        'enabled' => '1',
+        'primary' => false,
+        'hasUrls' => false,
+        'baseUrl' => '',
+    ];
+
+    $withoutBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+        'values' => $values,
+        'scope' => [],
+    ])->json('form.nodes');
+
+    $withBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+        'values' => [...$values, 'hasUrls' => true],
+        'scope' => [],
+    ])->json('form.nodes');
+
+    expect(collect($withoutBaseUrl)->pluck('control.path'))->not->toContain(['baseUrl'])
+        ->and(collect($withBaseUrl)->pluck('control.path'))->toContain(['baseUrl']);
 });
 
 it('404s when a site does not exist', function () {
@@ -141,6 +178,23 @@ it('can save a site', function () {
     ])->assertRedirect(route('craft.cp.settings.sites.index'));
 
     expect(Site::count())->toBe(2);
+});
+
+it('uses the hidden site ID to update the existing site', function () {
+    $site = Site::first();
+
+    post(action([SitesController::class, 'store']), [
+        'siteId' => $site->id,
+        'name' => 'Updated site',
+        'handle' => $site->handle,
+        'language' => $site->language,
+        'group' => $site->groupId,
+        'hasUrls' => $site->hasUrls,
+        'baseUrl' => $site->baseUrl,
+    ])->assertSessionHasNoErrors();
+
+    expect(Site::count())->toBe(1)
+        ->and(Site::findOrFail($site->id)->name)->toBe('Updated site');
 });
 
 test('name is required', function () {

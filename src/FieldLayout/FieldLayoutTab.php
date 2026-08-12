@@ -17,6 +17,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
+use CraftCms\Cms\FieldLayout\LayoutElements\Missing;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Plugin\Plugins;
@@ -212,7 +213,9 @@ class FieldLayoutTab extends FieldLayoutComponent
                 $layoutElement->uid = Str::uuid()->toString();
             }
 
-            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->toArray();
+            $elementConfigs[] = $layoutElement instanceof Missing
+                ? ['type' => $layoutElement->expectedType] + ($layoutElement->settings ?? [])
+                : ['type' => $layoutElement::class] + $layoutElement->toArray();
         }
 
         return $elementConfigs;

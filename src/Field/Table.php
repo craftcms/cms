@@ -5,19 +5,24 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Table as TableControl;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -25,7 +30,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\TableSettingsAsset;
 use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
@@ -102,6 +106,80 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public static function dbType(): string
     {
         return Query::TYPE_JSON;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $columns = collect($this->columns)
+            ->map(fn (array $column): array => Arr::only($column, ['heading', 'type', 'width', 'options']))
+            ->all();
+
+        return TableControl::make($context->path)
+            ->columns($columns)
+            ->allowAdd(! $this->staticRows)
+            ->allowDelete(! $this->staticRows)
+            ->allowReorder(! $this->staticRows)
+            ->minRows($this->minRows)
+            ->maxRows($this->maxRows)
+            ->value($this->serializeValue($context->value, $context->element));
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $columnRows = [];
+        foreach ($this->columns as $id => $column) {
+            $columnRows[$id] = [
+                ...$column,
+                'options' => isset($column['options']) ? Json::encode($column['options']) : '',
+            ];
+        }
+        $defaultColumns = array_map(function (array $column): array {
+            if ($column['type'] === 'heading') {
+                $column['type'] = 'singleline';
+            }
+
+            return $column;
+        }, $this->columns);
+
+        return Form::make([
+            FormField::make(t('Columns'))
+                ->instructions(t('Define the columns your table should have. Dropdown options are entered as JSON arrays.'))
+                ->control(TableControl::make('columns')
+                    ->keyed()
+                    ->columns([
+                        'heading' => ['heading' => t('Column Heading'), 'type' => 'singleline', 'autopopulate' => 'handle'],
+                        'handle' => ['heading' => t('Handle'), 'type' => 'singleline', 'code' => true],
+                        'width' => ['heading' => t('Width'), 'type' => 'singleline', 'code' => true, 'width' => 50],
+                        'type' => ['heading' => t('Type'), 'type' => 'select', 'options' => self::typeOptions()],
+                        'options' => ['heading' => t('Dropdown Options'), 'type' => 'multiline', 'code' => true],
+                    ])
+                    ->allowAdd()
+                    ->allowDelete()
+                    ->allowReorder()
+                    ->value($columnRows)),
+            FormField::make(t('Default Values'))
+                ->instructions(t('Define the default values for the field.'))
+                ->control(TableControl::make('defaults')
+                    ->columns($defaultColumns)
+                    ->allowAdd()
+                    ->allowDelete()
+                    ->allowReorder()
+                    ->value($this->defaults ?? [])),
+            FormField::make(t('Static Rows'))
+                ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
+                ->control(Lightswitch::make('staticRows')->value($this->staticRows)),
+            FormField::make(t('Min Rows'))
+                ->instructions(t('The minimum number of rows the field is allowed to have.'))
+                ->control(Number::make('minRows')->min(0)->value($this->minRows)),
+            FormField::make(t('Max Rows'))
+                ->instructions(t('The maximum number of rows the field is allowed to have.'))
+                ->control(Number::make('maxRows')->min(0)->value($this->maxRows)),
+            FormField::make(t('Add Row Label'))
+                ->instructions(t('Insert the button label for adding a new row to the table.'))
+                ->control(Text::make('addRowLabel')->value($this->addRowLabel)),
+        ]);
     }
 
     /**
@@ -264,135 +342,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return (bool) $this->maxRows;
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $columnSettings = [
-            'heading' => [
-                'heading' => t('Column Heading'),
-                'type' => 'singleline',
-                'autopopulate' => 'handle',
-            ],
-            'handle' => [
-                'heading' => t('Handle'),
-                'code' => true,
-                'type' => 'singleline',
-            ],
-            'width' => [
-                'heading' => t('Width'),
-                'code' => true,
-                'type' => 'singleline',
-                'width' => 50,
-            ],
-            'type' => [
-                'heading' => t('Type'),
-                'class' => 'thin',
-                'type' => 'select',
-                'options' => self::typeOptions(),
-            ],
-        ];
-
-        $dropdownSettingsCols = [
-            'label' => [
-                'heading' => t('Option Label'),
-                'type' => 'singleline',
-                'autopopulate' => 'value',
-                'class' => 'option-label',
-            ],
-            'value' => [
-                'heading' => t('Value'),
-                'type' => 'singleline',
-                'class' => 'option-value code',
-            ],
-            'default' => [
-                'heading' => t('Default?'),
-                'type' => 'checkbox',
-                'radioMode' => true,
-                'class' => 'option-default thin',
-            ],
-        ];
-
-        $dropdownSettingsHtml = FormFields::editableTableFieldHtml([
-            'label' => t('Dropdown Options'),
-            'instructions' => t('Define the available options.'),
-            'id' => '__ID__',
-            'name' => '__NAME__',
-            'addRowLabel' => t('Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $dropdownSettingsCols,
-            'initJs' => false,
-        ]);
-
-        // Replace heading columns with singleline, for the Default Values table
-        $columns = array_map(function (array $column) {
-            if ($column['type'] === 'heading') {
-                $column['type'] = 'singleline';
-                $column['class'] = 'heading';
-            }
-
-            return $column;
-        }, $this->columns);
-
-        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
-        app(InternalAssetRegistry::class)->register(TableSettingsAsset::class);
-        HtmlStack::js('new Craft.TableFieldSettings('.
-            Json::encode(InputNamespace::namespaceInputName('columns')).', '.
-            Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
-            Json::encode($columns).', '.
-            Json::encode($this->defaults ?? []).', '.
-            Json::encode($columnSettings).', '.
-            Json::encode($dropdownSettingsHtml).', '.
-            Json::encode($dropdownSettingsCols).', '.
-            Json::encode($this->staticRows).', '.
-            ');');
-
-        $columnsField = template('_components/fieldtypes/Table/columntable', [
-            'cols' => $columnSettings,
-            'rows' => $this->columns,
-            'errors' => $this->errors()->get('columns'),
-            'readOnly' => $readOnly,
-        ]);
-
-        $defaultsField = FormFields::editableTableFieldHtml([
-            'label' => t('Default Values'),
-            'instructions' => t('Define the default values for the field.'),
-            'id' => 'defaults',
-            'name' => 'defaults',
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $columns,
-            'rows' => array_map(function (array $row) {
-                // make sure the row has a UUID
-                $row['rowId'] ??= Str::uuid()->toString();
-
-                return $row;
-            }, $this->defaults ?? []),
-            'initJs' => false,
-            'static' => $readOnly,
-            'includeRowId' => true,
-        ]);
-
-        return template('_components/fieldtypes/Table/settings', [
-            'field' => $this,
-            'columnsField' => $columnsField,
-            'defaultsField' => $defaultsField,
-            'readOnly' => $readOnly,
-        ]);
-    }
-
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
@@ -427,7 +376,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     {
         app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
 
-        return $this->_getInputHtml($value, $element, false);
+        return $this->inlineInputHtml($value, $element);
     }
 
     /** @return list<Closure> */
@@ -698,12 +647,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->_getInputHtml($value, $element, true);
-    }
-
-    #[Override]
     public function getContentGqlType(): Type
     {
         $type = TableRowType::generateType($this);
@@ -836,7 +779,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     /**
      * Returns the field's input HTML.
      */
-    private function _getInputHtml(mixed $value, ?ElementInterface $element, bool $static): string
+    private function inlineInputHtml(mixed $value, ?ElementInterface $element): string
     {
         if (empty($this->columns)) {
             return '';
@@ -898,7 +841,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             'rows' => $value,
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
-            'static' => $static,
+            'static' => false,
             'staticRows' => $this->staticRows,
             'allowAdd' => true,
             'allowDelete' => true,

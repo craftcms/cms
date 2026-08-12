@@ -333,12 +333,11 @@ export class CardViewDesigner extends Base {
 
   /**
    * Tear down the CVD so the FLD can be re-booted (host innerHTML swap): cancel any
-   * in-flight preview, dispose the checkbox library, clear the `cvdData`
-   * back-reference, then run the base teardown. Detached-DOM listeners are GC'd.
+   * in-flight preview, clear the `cvdData` back-reference, then run the base
+   * teardown. The sortable checkbox custom element owns its controller teardown.
    */
   override destroy(): void {
     this.cancelToken?.cancel();
-    this.sortableCheckboxSelect?.destroy();
     this.sortableCheckboxSelect = null;
 
     if (this.$container) {

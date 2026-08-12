@@ -16,6 +16,7 @@ export type CpComponentRegistration = Component | CpComponentLoader;
 export interface CpComponentRegistry {
   register(name: string, componentOrLoader: CpComponentRegistration): void;
   install(app: App): void;
+  uninstall(app: App): void;
 }
 
 function isLoader(
@@ -42,7 +43,7 @@ function asyncComponent(loader: CpComponentLoader): Component {
 
 export function createCpComponentRegistry(): CpComponentRegistry {
   const components = new Map<string, CpComponentRegistration>();
-  let app: App | null = null;
+  const apps = new Set<App>();
 
   function registerWithApp(
     app: App,
@@ -73,20 +74,26 @@ export function createCpComponentRegistry(): CpComponentRegistry {
       }
 
       components.set(name, componentOrLoader);
-      if (app) {
+      for (const app of apps) {
         registerWithApp(app, name, componentOrLoader);
       }
     },
 
     install(installedApp) {
-      if (app === installedApp) {
+      if (apps.has(installedApp)) {
         return;
       }
 
-      app = installedApp;
+      apps.add(installedApp);
       components.forEach((componentOrLoader, name) => {
         registerWithApp(installedApp, name, componentOrLoader);
       });
     },
+
+    uninstall(app) {
+      apps.delete(app);
+    },
   };
 }
+
+export const cpComponentRegistry = createCpComponentRegistry();

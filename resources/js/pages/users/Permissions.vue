@@ -4,9 +4,8 @@
   import {useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
-  import PermissionList from '@/modules/permissions/components/PermissionList.vue';
+  import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -77,7 +76,7 @@
     :value="form.permissions.join(',')"
   />
 
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
       <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
@@ -134,23 +133,15 @@
       </craft-callout>
 
       <craft-field-group v-if="!form.admin">
-        <div
-          v-for="group in props.permissions"
-          :key="group.handle"
-          class="user-permissions"
-        >
-          <PermissionList
-            :heading="group.heading"
-            :permissions="group.permissions"
-            :permission-keys="group.keys"
-            :locked-permissions="lockedPermissions"
-            :disabled="Boolean(props.teamPermissionsNotice)"
-            v-model="form.permissions"
-          />
-        </div>
+        <PermissionTree
+          :groups="props.permissions"
+          :locked-permissions="lockedPermissions"
+          :disabled="Boolean(props.teamPermissionsNotice)"
+          v-model="form.permissions"
+        />
       </craft-field-group>
     </craft-field-group>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.details" name="details">
     <div v-html="props.details"></div>

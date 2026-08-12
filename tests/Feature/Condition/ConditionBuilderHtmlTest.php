@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -55,6 +56,21 @@ describe('BaseCondition::getBuilderHtml()', function () {
 
         expect($jsBuffer)->toContain('Craft.initUiElements');
     });
+});
+
+it('renders Form control inputs with the requested nested name', function () {
+    $html = ConditionBuilder::builderHtml(
+        [],
+        EntryCondition::class,
+        ['site'],
+        true,
+        'settings[selectionCondition]',
+        false,
+    );
+
+    expect($html)
+        ->toContain('name="settings[selectionCondition][class]"')
+        ->not->toContain('name="settings[selectionCondition]][class]"');
 });
 
 describe('BaseCondition::getBuilderInnerHtml()', function () {

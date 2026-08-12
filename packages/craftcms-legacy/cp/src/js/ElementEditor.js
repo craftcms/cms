@@ -36,6 +36,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @type {?Craft.FormObserver}
      */
     formObserver: null,
+    formHost: null,
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -96,6 +97,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$sidebar =
         this.settings.$sidebar ??
         (this.isFullPage ? $('#details .details') : $());
+      this.formHost = this.$contentContainer.find(
+        'craft-entry-field-layout-form'
+      )[0];
 
       this.queue = this._createQueue();
       this.previewTokenQueue = this._createQueue();
@@ -1382,6 +1386,8 @@ Craft.ElementEditor = Garnish.Base.extend(
                   console.warn('Couldn’t save draft:', e);
                   reject(e);
                 });
+            } else if (this.formHost) {
+              resolve();
             } else {
               this.updateFieldLayout(data)
                 .then(resolve)
@@ -1399,8 +1405,6 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise<void>}
      */
     async refreshContent(params) {
-      this.settings.visibleLayoutElements = {};
-      this.settings.staticLayoutElements = {};
       const data = [this.serializeForm(true)];
       data.push(
         $.param({
@@ -1488,17 +1492,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .add($field.parentsUntil(this.$container, '.field'));
       }
 
-      params.push(
-        $.param({
-          [this.namespaceInputName('visibleLayoutElements')]:
-            this.settings.visibleLayoutElements,
-        }),
-        $.param({
-          [this.namespaceInputName('staticLayoutElements')]:
-            this.settings.staticLayoutElements,
-        })
-      );
-
       // Are we saving a provisional draft?
       if (this.settings.isProvisionalDraft || !this.settings.draftId) {
         params.push(`${this.namespaceInputName('provisional')}=1`);
@@ -1552,7 +1545,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this._afterSaveDraft();
       this.settings.previewParamValue = response.data.previewParamValue;
-      await this._afterUpdateFieldLayout(data, selectedTabId, response);
+      await this._afterUpdateFieldLayout(response);
       const newInitialDeltaValues = {};
 
       if (response.data.deltaNames?.length) {
@@ -1573,7 +1566,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.serializeForm(),
             newDeltaNames
           );
-          for (const [deltaName, params] of Object.entries(groupedParams)) {
+          for (const params of Object.values(groupedParams)) {
             for (const param of params) {
               const [name, value] = param.split('=', 2);
               newInitialDeltaValues[decodeURIComponent(name)] =
@@ -1770,12 +1763,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Prep the data to be saved, keeping track of the first input name for each delta group
       let preparedData = this.prepareData(data);
 
-      const extraData = {
-        [this.namespaceInputName('visibleLayoutElements')]:
-          this.settings.visibleLayoutElements,
-        [this.namespaceInputName('staticLayoutElements')]:
-          this.settings.staticLayoutElements,
-      };
+      const extraData = {};
 
       // Are we editing a provisional draft?
       if (this.settings.isProvisionalDraft) {
@@ -1820,7 +1808,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      await this._afterUpdateFieldLayout(data, selectedTabId, response);
+      await this._afterUpdateFieldLayout(response);
     },
 
     /**
@@ -1923,162 +1911,21 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    async _afterUpdateFieldLayout(data, selectedTabId, response) {
-      // Keep track of whether anything changed while we were waiting.
-      // If not, we can safely update lastSerializedValue after swapping out the fields
-      const noChanges = this.serializeForm(true) === data;
-
-      // capture the new selected tab ID, in case it just changed
-      const newSelectedTabId = this.$contentContainer
-        .children('[data-layout-tab]:not(.hidden)')
-        .data('id');
-
-      // Update the visible elements
-      let $allTabContainers = $();
-      const visibleLayoutElements = {};
-      const staticLayoutElements = {};
-      let changedElements = false;
-
-      for (const tabInfo of response.data.missingElements) {
-        let $tabContainer = this.$contentContainer.children(
-          `[data-layout-tab="${tabInfo.uid}"]`
-        );
-
-        if (!$tabContainer.length) {
-          $tabContainer = $('<div/>', {
-            id: this.namespaceId(tabInfo.id),
-            class: 'flex-fields',
-            'data-id': tabInfo.id,
-            'data-layout-tab': tabInfo.uid,
-          });
-          if (tabInfo.id !== selectedTabId) {
-            $tabContainer.addClass('hidden');
-          }
-          $tabContainer.appendTo(this.$contentContainer);
-        }
-
-        $allTabContainers = $allTabContainers.add($tabContainer);
-
-        for (const elementInfo of tabInfo.elements) {
-          if (elementInfo.html !== false) {
-            if (!visibleLayoutElements[tabInfo.uid]) {
-              visibleLayoutElements[tabInfo.uid] = [];
-            }
-            visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
-
-            if (elementInfo.static) {
-              if (!staticLayoutElements[tabInfo.uid]) {
-                staticLayoutElements[tabInfo.uid] = [];
-              }
-              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
-            }
-
-            if (typeof elementInfo.html === 'string') {
-              const $oldElement = $tabContainer.children(
-                `[data-layout-element="${elementInfo.uid}"]`
-              );
-              const $newElement = $(elementInfo.html);
-              if ($oldElement.length) {
-                $oldElement.replaceWith($newElement);
-              } else {
-                $newElement.appendTo($tabContainer);
-              }
-              Craft.cp.elementThumbLoader.load($newElement);
-              changedElements = true;
-            }
-          } else {
-            const $oldElement = $tabContainer.children(
-              `[data-layout-element="${elementInfo.uid}"]`
-            );
-            if (
-              !$oldElement.length ||
-              !Garnish.hasAttr($oldElement, 'data-layout-element-placeholder')
-            ) {
-              const $placeholder = $('<div/>', {
-                class: 'hidden',
-                'data-layout-element': elementInfo.uid,
-                'data-layout-element-placeholder': '',
-              });
-
-              if ($oldElement.length) {
-                $oldElement.replaceWith($placeholder);
-              } else {
-                $placeholder.appendTo($tabContainer);
-              }
-
-              changedElements = true;
-            }
-          }
-        }
+    async _afterUpdateFieldLayout(response) {
+      if (!this.formHost || !response.data.form) {
+        throw new Error('Entry Form refresh requires a Form host.');
       }
 
-      // Remove any unused tab content containers
-      // (`[data-layout-tab=""]` == unconditional containers, so ignore those)
-      const $unusedTabContainers = this.$contentContainer
-        .children('[data-layout-tab]')
-        .not($allTabContainers)
-        .not('[data-layout-tab=""]');
-      if ($unusedTabContainers.length) {
-        $unusedTabContainers.remove();
-        changedElements = true;
-      }
-
-      // Make the first tab visible if no others are
-      if (!$allTabContainers.filter(':not(.hidden)').length) {
-        $allTabContainers.first().removeClass('hidden');
-      }
-
-      this.settings.visibleLayoutElements = visibleLayoutElements;
-      this.settings.staticLayoutElements = staticLayoutElements;
-
-      // Update the tabs
+      this.formHost.payload = response.data.form;
       const updateTabs =
         this.settings.updateTabs ??
-        (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : () => {});
-      updateTabs(response.data.tabs);
-
-      // was a new tab selected after the request was kicked off?
-      if (
-        selectedTabId &&
-        newSelectedTabId &&
-        selectedTabId !== newSelectedTabId
-      ) {
-        const tabManager = this.tabManager;
-        if (tabManager) {
-          const $newSelectedTab = tabManager.$tabs.filter(
-            `[data-id="${newSelectedTabId}"]`
-          );
-          if ($newSelectedTab.length) {
-            // if the new tab is visible - switch to it
-            tabManager.selectTab($newSelectedTab);
-          } else {
-            // if the new tab is not visible (e.g. hidden by a condition)
-            // switch to the first tab
-            tabManager.selectTab(tabManager.$tabs.first());
-          }
-        }
+        (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : null);
+      if (!updateTabs) {
+        throw new Error('Entry Form refresh requires a tab updater.');
       }
-
+      updateTabs(response.data.tabs);
       await Craft.appendHeadHtml(response.data.headHtml);
       await Craft.appendBodyHtml(response.data.bodyHtml);
-      Craft.initUiElements(this.$contentContainer);
-
-      // Did any layout elements get added or removed?
-      if (changedElements) {
-        if (response.data.initialDeltaValues) {
-          Object.assign(
-            this.$container.data('initial-delta-values'),
-            response.data.initialDeltaValues
-          );
-        }
-
-        if (noChanges) {
-          // Update our record of the last serialized value to avoid a pointless resave
-          this.lastSerializedValue = this.serializeForm(true);
-        }
-      }
-
-      // re-grab dismissible tips, re-attach listener, hide on re-load
       this.handleDismissibleTips();
     },
 
@@ -2539,8 +2386,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       siteStatuses: [],
       saveParams: null,
       siteToken: null,
-      visibleLayoutElements: {},
-      staticLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,

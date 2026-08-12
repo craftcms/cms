@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Chercher dans les sous-dossiers',
     'Search plugins' => 'Rechercher des plugins',
     'Search' => 'Rechercher',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Secondes',
     'Section - {section}' => 'Section - {section}',
     'Section Type' => 'Type de section',

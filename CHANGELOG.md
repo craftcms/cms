@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
+- Added a slideout system for the Inertia/Vue Control Panel, which renders any `CpScreenResponse`-based screen as an in-page panel from a normal Inertia response, alongside the existing legacy `Craft.CpScreenSlideout`. ([#19354](https://github.com/craftcms/cms/pull/19354))
+- Added `CraftCms\Cms\Http\Responses\CpScreenResponse::screenData()`. ([#19354](https://github.com/craftcms/cms/pull/19354))
+- Removed the `Pane.vue` Vue component in favor of the `craft-pane` web component. ([#19398](https://github.com/craftcms/cms/pull/19398))
+- Fixed a bug where cache options and tags registered via `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()` were unavailable as Artisan commands.
+- Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380](https://github.com/craftcms/cms/discussions/19380))
+- Fixed a bug where Yii asset bundles registered with `craft\web\View::registerAssetBundle()` during plugin initialization were not included in rendered pages. ([#19393](https://github.com/craftcms/cms/pull/19393))
+- Fixed a bug where legacy asset bundle dependencies could be rendered after their dependent resources when using `craftcms/yii2-adapter`. ([#19394](https://github.com/craftcms/cms/pull/19394))
+
 ## 6.0.0-alpha.16 - 2026-08-05
 
 - Fixed a bug where Yii-style migrations could be required twice. ([#19376](https://github.com/craftcms/cms/pull/19376))
@@ -13,6 +24,7 @@
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
 - Added support for configuring field layout field instruction positions.
 - Added fluent APIs for creating and modifying `CraftCms\Cms\FieldLayout\FieldLayout`, `CraftCms\Cms\FieldLayout\FieldLayoutTab`, and field layout elements.
+- Added a renderer-neutral Control Panel Form system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
 - Changed `craft:resave:all` to discover registered `craft:resave:*` Artisan commands directly, rather than relying on a resolving event. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Changed the My Account → Addresses page to a full Inertia/Vue page, rendering nested-element cards from data instead of server-rendered HTML. ([#19324](https://github.com/craftcms/cms/pull/19324))
 - Changed `CraftCms\Cms\Cp\FormFields::textFromConfig()` to accept an optional `CraftCms\Cms\Cp\Components\Input` instance as a second argument, so callers can build on an existing component instead of always creating a plain `Input`. ([#19323](https://github.com/craftcms/cms/pull/19323))

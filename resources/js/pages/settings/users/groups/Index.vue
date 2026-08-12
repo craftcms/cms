@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {h} from 'vue';
-  import Pane from '@/common/components/Pane.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -72,7 +71,7 @@
     >
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">
@@ -87,5 +86,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

@@ -26,7 +26,7 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  background-color: var(--c-bg-body);
+  background-color: var(--c-surface-overlay);
   text-decoration: none;
   padding-block: var(--c-spacing-md);
   padding-inline: var(--c-spacing-lg);
@@ -36,7 +36,7 @@
   font-weight: var(--font-weight-medium);
   border-radius: var(--c-radius-md);
 
-  &:focus {
+  &:focus-visible {
     width: auto;
     height: auto;
     overflow: visible;

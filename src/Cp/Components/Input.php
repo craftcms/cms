@@ -373,6 +373,7 @@ class Input extends ViewComponent
             // keeps them too, for pre-upgrade correctness (form posts,
             // password masking, CSS).
             'type' => $this->type !== 'text' ? $this->type : null,
+            'inputmode' => $this->inputmode,
             'placeholder' => $this->placeholder !== null && $this->placeholder !== '' ? $this->placeholder : null,
             'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),

@@ -24,6 +24,7 @@
  */
 
 import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
@@ -277,9 +278,6 @@ export class CpScreenSlideout extends Slideout {
     this.addListener(this.$cancelBtn, 'click', () => {
       this.closeMeMaybe();
     });
-    this.addListener(this.$shade, 'click', () => {
-      this.closeMeMaybe();
-    });
     this.addListener(this.$container, 'click', (ev: any) => {
       const $target = $(ev.target);
 
@@ -416,8 +414,7 @@ export class CpScreenSlideout extends Slideout {
         this.$body.addClass(data.bodyClass);
       }
 
-      this.inertiaApp?.unmount();
-      this.inertiaApp = null;
+      this.unmountInertiaApp();
       this.$content.html(data.content);
       if (this.$actionBtn) {
         this.$actionBtn.data('disclosureMenu')?.destroy();
@@ -518,8 +515,7 @@ export class CpScreenSlideout extends Slideout {
             ...data.inertiaProps,
             slideout: true,
           });
-          this.inertiaApp.config.compilerOptions.isCustomElement = (tag) =>
-            tag.includes('-');
+          installCpApp(this.inertiaApp);
           this.inertiaApp.mount(this.$content[0]);
         }
 
@@ -932,6 +928,15 @@ export class CpScreenSlideout extends Slideout {
     return initialValue !== serializer();
   }
 
+  /**
+   * A CP screen always checks for unsaved changes before a shade click can
+   * dismiss it, whatever `closeOnShadeClick` says — which is how this has
+   * always behaved, back when it bound its own listener to the shade.
+   */
+  override handleShadeClick(): void {
+    this.closeMeMaybe();
+  }
+
   closeMeMaybe(): void {
     if (!this.isOpen) {
       return;
@@ -951,8 +956,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override close(): void {
-    this.inertiaApp?.unmount();
-    this.inertiaApp = null;
+    this.unmountInertiaApp();
 
     if (this.showingSidebar) {
       this.hideSidebar();
@@ -964,6 +968,15 @@ export class CpScreenSlideout extends Slideout {
       this.ignoreFailedRequest = true;
       this.cancelToken.cancel();
     }
+  }
+
+  private unmountInertiaApp(): void {
+    if (!this.inertiaApp) {
+      return;
+    }
+
+    this.inertiaApp.unmount();
+    this.inertiaApp = null;
   }
 }
 

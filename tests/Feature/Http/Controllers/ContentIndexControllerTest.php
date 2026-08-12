@@ -342,3 +342,24 @@ it('serializes tableColumns as a list, unpolluted by the legacy context shape', 
             })
         );
 });
+
+it('renders title cells as element chips carrying the CP element metadata', function () {
+    // The Vue index identifies an element from the DOM by the `element` class
+    // and these `data-` attributes — double-click-to-edit reads `data-cp-url`
+    // and gates on `data-editable`/`data-trashed`. Only `elementChipHtml()`
+    // emits them; the generic `chipHtml()` does not, and swapping back to it
+    // silently breaks every element interaction on the index.
+    EntryModel::factory()->createElement(['title' => 'Hello']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data', function ($rows) {
+                $title = (string) (collect($rows)->first()['title'] ?? '');
+
+                return preg_match('/class="[^"]*\belement\b/', $title) === 1
+                    && str_contains($title, 'data-cp-url=')
+                    && str_contains($title, 'data-editable');
+            })
+        );
+});

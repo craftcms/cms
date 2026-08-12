@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Sök i undermappar',
     'Search plugins' => 'Sök plugins',
     'Search' => 'Sök',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Sekunder',
     'Section - {section}' => 'Sektion - {section}',
     'Section Type' => 'Sektionstyp',

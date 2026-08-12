@@ -35,14 +35,30 @@ export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';
 export {default as CraftInputColor} from './components/input-color/input-color.js';
 export {default as CraftInputCopy} from './components/input-copy/input-copy.js';
+export {default as CraftInputDate} from './components/input-date/input-date.js';
+export {default as CraftInputDateTime} from './components/input-date-time/input-date-time.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
+export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
+export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
+export {default as CraftMissingComponent} from './components/missing-component/missing-component.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftOption} from './components/option/option.js';
-export {default as CraftPane} from './components/pane/pane.js';
+export {
+  default as CraftPane,
+  PaneAppearance,
+  PaneVariant,
+  type PaneAppearanceValue,
+  type PaneVariantValue,
+} from './components/pane/pane.js';
+export {
+  default as CraftPermissionTree,
+  type PermissionTreeGroup,
+  type PermissionTreeItem,
+} from './components/permission-tree/permission-tree.js';
 export {default as CraftPopover} from './components/popover/popover.js';
 export {default as CraftProgressBar} from './components/progress-bar/progress-bar.js';
 export {default as CraftProgress} from './components/progress/progress.js';

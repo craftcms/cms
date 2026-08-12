@@ -26,6 +26,8 @@
 {% endif %}
 
 {% if showPermissions %}
+  {% requireEdition CraftTeam %}
+
   {% if showUserGroups %}
     <hr>
   {% endif %}

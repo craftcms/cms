@@ -1,8 +1,16 @@
 import {t} from '@craftcms/ui';
-import {html, LitElement, nothing, type TemplateResult} from 'lit';
+import '@craftcms/ui/components/disclosure/disclosure';
+import '@craftcms/ui/components/field-group/field-group';
+import {
+  html,
+  LitElement,
+  nothing,
+  type PropertyValues,
+  type TemplateResult,
+} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
-type LinkTypeConfig = {
+export type LinkTypeConfig = {
   id: string;
   label: string;
   kind: 'custom' | 'element' | 'text';
@@ -38,11 +46,13 @@ type ElementSelectStartDetail = {
   waitUntil: (promise: Promise<unknown>) => void;
 };
 
+const formValueKeys = ['type', 'value', 'label', 'urlSuffix', 'title'] as const;
+
 let advancedPanelIndex = 0;
 
 @customElement('craft-link-field')
 class CraftLinkField extends LitElement {
-  @property({type: Array})
+  @property({attribute: 'advanced-fields', type: Array})
   advancedFields: string[] = [];
 
   @property({attribute: 'show-label-field', type: Boolean})
@@ -50,6 +60,15 @@ class CraftLinkField extends LitElement {
 
   @property({type: Array})
   types: LinkTypeConfig[] = [];
+
+  @property({attribute: 'model-value', type: Object})
+  modelValue: Partial<LinkFieldValue> | null = null;
+
+  @property()
+  name = '';
+
+  @property({reflect: true, type: Boolean})
+  disabled = false;
 
   @state()
   private defaultLabel = '';
@@ -72,9 +91,6 @@ class CraftLinkField extends LitElement {
   @state()
   private valueError = '';
 
-  @state()
-  private advancedExpanded = false;
-
   private readonly advancedPanelId = `craft-link-field-advanced-${++advancedPanelIndex}`;
 
   private readonly valueErrorId = `${this.advancedPanelId}-value-errors`;
@@ -87,7 +103,17 @@ class CraftLinkField extends LitElement {
     }
   }
 
-  override willUpdate(): void {
+  override willUpdate(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('modelValue')) {
+      const value = this.modelValue ?? {};
+      this.defaultLabel = value.defaultLabel ?? '';
+      this.label = value.label ?? '';
+      this.linkTitle = value.title ?? '';
+      this.typeId = value.type ?? '';
+      this.urlSuffix = value.urlSuffix ?? '';
+      this.value = value.value ?? '';
+    }
+
     if (!this.typeId || !this.types.some((type) => type.id === this.typeId)) {
       this.typeId = this.types[0]?.id ?? '';
     }
@@ -316,28 +342,26 @@ class CraftLinkField extends LitElement {
     const destination =
       type.kind === 'text' ? this.renderTextDestination(type.id, value) : value;
 
+    const linkValue: LinkFieldValue = {
+      defaultLabel: this.defaultLabelFor(value),
+      href: `${destination}${urlSuffix}`,
+      label: this.label.trim(),
+      title: this.linkTitle.trim(),
+      type: type.id,
+      urlSuffix,
+      value,
+    };
+    this.modelValue = linkValue;
     this.dispatchEvent(
       new CustomEvent<LinkFieldValue>('apply', {
         bubbles: true,
-        detail: {
-          defaultLabel: this.defaultLabelFor(value),
-          href: `${destination}${urlSuffix}`,
-          label: this.label.trim(),
-          title: this.linkTitle.trim(),
-          type: type.id,
-          urlSuffix,
-          value,
-        },
+        detail: linkValue,
       })
     );
   }
 
   private cancel(): void {
     this.dispatchEvent(new CustomEvent('cancel', {bubbles: true}));
-  }
-
-  private toggleAdvanced(): void {
-    this.advancedExpanded = !this.advancedExpanded;
   }
 
   private renderTypeInput(): TemplateResult | typeof nothing {
@@ -355,6 +379,7 @@ class CraftLinkField extends LitElement {
             <craft-button
               type="button"
               variant="fill"
+              ?disabled=${this.disabled}
               aria-describedby=${this.valueError ? this.valueErrorId : nothing}
               aria-invalid=${this.valueError ? 'true' : nothing}
               @click=${this.chooseElement}
@@ -384,6 +409,7 @@ class CraftLinkField extends LitElement {
         aria-describedby=${this.valueError ? this.valueErrorId : nothing}
         aria-invalid=${this.valueError ? 'true' : nothing}
         .modelValue=${this.value}
+        .disabled=${this.disabled}
         @model-value-changed=${this.handleValueChange}
       >
         ${this.renderValueError('feedback')}
@@ -428,6 +454,7 @@ class CraftLinkField extends LitElement {
             id=${inputId}
             class="text fullwidth"
             type="text"
+            ?disabled=${this.disabled}
             .value=${this.urlSuffix}
             @input=${(event: Event) =>
               (this.urlSuffix = this.textInputValue(event))}
@@ -450,6 +477,7 @@ class CraftLinkField extends LitElement {
             id=${inputId}
             class="text fullwidth"
             type="text"
+            ?disabled=${this.disabled}
             .value=${this.linkTitle}
             @input=${(event: Event) =>
               (this.linkTitle = this.textInputValue(event))}
@@ -465,36 +493,34 @@ class CraftLinkField extends LitElement {
     }
 
     return html`
-      <button
-        type="button"
-        class=${this.advancedExpanded
-          ? 'fieldtoggle mb-0 expanded'
-          : 'fieldtoggle mb-0'}
-        data-target=${this.advancedPanelId}
-        aria-expanded=${String(this.advancedExpanded)}
-        aria-controls=${this.advancedPanelId}
-        @click=${this.toggleAdvanced}
-      >
-        ${t('Advanced')}
-      </button>
-      <div
-        id=${this.advancedPanelId}
-        class=${this.advancedExpanded
-          ? 'meta pane hairline'
-          : 'hidden meta pane hairline'}
-      >
-        ${this.showUrlSuffixField ? this.renderUrlSuffixField() : nothing}
-        ${this.showTitleField ? this.renderTitleField() : nothing}
-      </div>
+      <craft-disclosure id=${this.advancedPanelId}>
+        <craft-button
+          slot="invoker"
+          type="button"
+          appearance="plain"
+          icon="chevron-down"
+          ?disabled=${this.disabled}
+        >
+          ${t('Advanced')}
+        </craft-button>
+        <craft-field-group slot="content" class="meta pane hairline">
+          ${this.showUrlSuffixField ? this.renderUrlSuffixField() : nothing}
+          ${this.showTitleField ? this.renderTitleField() : nothing}
+        </craft-field-group>
+      </craft-disclosure>
     `;
   }
 
   override render(): TemplateResult {
     return html`
-      <div class="craft-link-field">
+      <craft-field-group class="craft-link-field">
         ${this.types.length > 1
           ? html`
-              <craft-select label=${t('Link Type')} .modelValue=${this.typeId}>
+              <craft-select
+                label=${t('Link Type')}
+                .modelValue=${this.typeId}
+                .disabled=${this.disabled}
+              >
                 <select
                   slot="input"
                   .value=${this.typeId}
@@ -515,6 +541,7 @@ class CraftLinkField extends LitElement {
                 label=${t('Label')}
                 type="text"
                 .modelValue=${this.label}
+                .disabled=${this.disabled}
                 @model-value-changed=${(event: Event) =>
                   (this.label = this.inputValue(
                     event.target as HTMLElementTagNameMap['craft-input']
@@ -529,15 +556,33 @@ class CraftLinkField extends LitElement {
             type="button"
             variant="plain"
             size="small"
+            ?disabled=${this.disabled}
             @click=${this.cancel}
           >
             ${t('Cancel')}
           </craft-button>
-          <craft-button type="button" size="small" @click=${this.apply}>
+          <craft-button
+            type="button"
+            size="small"
+            ?disabled=${this.disabled}
+            @click=${this.apply}
+          >
             ${t('Apply')}
           </craft-button>
         </div>
-      </div>
+        ${this.name
+          ? formValueKeys.map(
+              (key) => html`
+                <input
+                  type="hidden"
+                  name=${`${this.name}[${key}]`}
+                  .value=${this.modelValue?.[key] ?? ''}
+                  ?disabled=${this.disabled}
+                />
+              `
+            )
+          : nothing}
+      </craft-field-group>
     `;
   }
 

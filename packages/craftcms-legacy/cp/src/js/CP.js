@@ -251,18 +251,20 @@ Craft.CP = Garnish.Base.extend(
         }
       }
 
-      this.initTabs();
+      Garnish.$doc.ready(() => {
+        this.initTabs();
 
-      if (this.tabManager) {
-        if (window.LOCATION_HASH) {
-          const $tab = this.tabManager.$tabs.filter(
-            `[href="#${window.LOCATION_HASH}"]`
-          );
-          if ($tab.length) {
-            this.tabManager.selectTab($tab);
+        if (this.tabManager) {
+          if (window.LOCATION_HASH) {
+            const $tab = this.tabManager.$tabs.filter(
+              `[href="#${window.LOCATION_HASH}"]`
+            );
+            if ($tab.length) {
+              this.tabManager.selectTab($tab);
+            }
           }
         }
-      }
+      });
 
       // Should we match the previous scroll position?
       let scrollY;

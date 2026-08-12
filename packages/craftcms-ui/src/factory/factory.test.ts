@@ -12,6 +12,18 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+it('leaves custom element registration to the application entry', () => {
+  for (const tag of [
+    'craft-dialog',
+    'craft-input-color',
+    'craft-input-password',
+    'craft-slide-picker',
+    'craft-switch',
+  ]) {
+    expect(customElements.get(tag)).toBeUndefined();
+  }
+});
+
 describe('createCopyTextPrompt', () => {
   it('opens a craft-dialog with a readonly input and a copy button', () => {
     const dialog = createCopyTextPrompt({

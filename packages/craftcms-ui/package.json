@@ -116,9 +116,9 @@
     "unplugin-dts": "^1.0.0",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
     "vite-plugin-dts": "^5.0.0",
+    "vite-plus": "0.2.6",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "4.1.10",
-    "vite-plus": "0.2.6"
+    "vitest": "4.1.10"
   },
   "dependencies": {
     "@chromatic-com/storybook": "^5.1.2",
@@ -126,7 +126,8 @@
     "@github/relative-time-element": "^5.0.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@vitest/browser-playwright": "4.1.10",
-    "axios": "^1.17.0"
+    "axios": "^1.17.0",
+    "inputmask": "^5.0.10"
   },
   "customElements": "dist/custom-elements.json"
 }

@@ -2,7 +2,6 @@
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/ui';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {Form, router} from '@inertiajs/vue3';
   import {
     discard,
@@ -218,9 +217,14 @@
     <hr />
     <section class="config-section">
       <h2>{{ t('Loaded Project Config Data') }}</h2>
-      <Pane variant="code" tabindex="0" class="my-3">
+      <!-- craft-pane makes its own scroll container the tab stop -->
+      <craft-pane
+        variant="code"
+        class="my-3"
+        :aria-label="t('Loaded Project Config Data')"
+      >
         <pre><code>{{ entireConfig }}</code></pre>
-      </Pane>
+      </craft-pane>
       <div class="buttons">
         <craft-button :href="download().url">
           <craft-icon name="download" slot="prefix"></craft-icon>

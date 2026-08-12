@@ -1510,6 +1510,7 @@ return [
     'Search in subfolders' => 'ค้นหาในโฟลเดอร์ย่อย',
     'Search plugins' => 'ค้นหาปลั๊กอิน',
     'Search' => 'ค้นหา',
+    'Secondary' => 'Secondary',
     'Seconds' => 'วินาที',
     'Section - {section}' => 'ส่วน - {section}',
     'Section Type' => 'ประเภทส่วน',

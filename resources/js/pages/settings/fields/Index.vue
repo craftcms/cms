@@ -9,7 +9,6 @@
   import {computed, h, ref} from 'vue';
   import type {PaginationData, SortItem} from '@/common/types';
   import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
-  import Pane from '@/common/components/Pane.vue';
   import {router} from '@inertiajs/vue3';
   import {create, destroy, index} from '@actions/FieldsController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -228,7 +227,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <Pane :padding="0" appearance="raised">
+  <craft-pane padding="0" appearance="raised">
     <AdminTable
       :table="table"
       :reorderable="false"
@@ -244,5 +243,5 @@
         <SearchForm v-model="searchTerm" />
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

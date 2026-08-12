@@ -8,6 +8,7 @@ module.exports = getConfig({
     entry: {
       'component-select-input': './component-select-input.js',
       'cp-compat': './cp-compat.js',
+      'legacy-html-control': './legacy-html-control.js',
     },
     output: {
       path: __dirname + '/../../../cms-assets/resources/legacy/cpcompat/dist',

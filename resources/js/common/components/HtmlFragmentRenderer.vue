@@ -19,6 +19,11 @@
     }
   );
 
+  const emit = defineEmits<{
+    /** The fragment — assets included — is in the document. */
+    (e: 'ready', element: HTMLElement): void;
+  }>();
+
   const container = ref<HTMLElement | null>(null);
   const disposers: AppendHtmlDisposer[] = [];
   let lastKey = '';
@@ -105,6 +110,8 @@
       if (html) {
         (window as any).Craft?.initUiElements?.(element);
       }
+
+      emit('ready', element);
     },
     {immediate: true}
   );

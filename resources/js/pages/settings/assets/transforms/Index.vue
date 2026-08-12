@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {capitalize, t} from '@craftcms/ui';
-  import Pane from '@/common/components/Pane.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {h, ref} from 'vue';
@@ -120,8 +119,7 @@
     >
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
-    hey hney
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
@@ -135,5 +133,5 @@
         </Empty>
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>
