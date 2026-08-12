@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\EditAssetController;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
@@ -182,9 +184,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
-    Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
-    Route::get('entries/{section}/{id}{slug?}', EditElementController::class)->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug?}', EditElementController::class)->where([
+    Route::get('assets/edit/{id}{slug}', EditAssetController::class)->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug?}', EditEntryController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}', EditEntryController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);

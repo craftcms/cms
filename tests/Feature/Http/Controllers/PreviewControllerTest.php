@@ -96,3 +96,23 @@ test('it can preview elements', function () {
         ->assertSee('previewing')
         ->assertDontSee('not previewing');
 });
+
+it('accepts token params from the query string', function () {
+    get(action([PreviewController::class, 'createToken'], [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'redirect' => 'https://example.com',
+    ]))->assertRedirect('https://example.com');
+});
+
+it('ignores params that are not part of the token', function () {
+    get(action([PreviewController::class, 'createToken'], [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'redirect' => 'https://example.com',
+        // Control panel URLs carry this; it isn't a token property.
+        'site' => 'default',
+    ]))->assertRedirect('https://example.com');
+});
