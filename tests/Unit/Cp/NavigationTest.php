@@ -37,10 +37,16 @@ beforeEach(function () {
 
 it('selects nav items from paths with the cp trigger', function () {
     $request = Request::create('/admin/settings/fields');
+    $plugins2 = Double::for(Plugins::class);
+    $plugins2->allows('getAllPlugins')->returns([]);
+
+    $utilities2 = Double::for(Utilities::class);
+    $utilities2->allows('getAuthorizedUtilityTypes')->returns(new Collection);
+
     $navigation = new Navigation(
         $request,
-        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
-        Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+        $plugins2,
+        $utilities2,
         Cms::config(),
         Double::for(ElementSources::class),
     );
@@ -53,10 +59,16 @@ it('selects nav items from paths with the cp trigger', function () {
 
 it('selects parent nav items when a subnav item matches the cp path', function () {
     $request = Request::create('/admin/graphql/tokens');
+    $plugins = Double::for(Plugins::class);
+    $plugins->allows('getAllPlugins')->returns([]);
+
+    $utilities = Double::for(Utilities::class);
+    $utilities->allows('getAuthorizedUtilityTypes')->returns(new Collection);
+
     $navigation = new Navigation(
         $request,
-        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
-        Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+        $plugins,
+        $utilities,
         Cms::config(),
         Double::for(ElementSources::class),
     );
