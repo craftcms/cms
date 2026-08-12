@@ -234,6 +234,11 @@ function cpDriftExpectedPhpOnly(): array
         // craft-icon: `data-color` is the global palette-scoping attribute
         // (colorable.css), not a declared component property.
         'craft-icon' => ['data-color'],
+
+        // craft-tabs: `selected-index` is declared by LionTabs, so it is a real
+        // public input but absent from the manifest, which only lists own
+        // declarations.
+        'craft-tabs' => ['selected-index'],
     ];
 }
 
