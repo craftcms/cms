@@ -183,6 +183,10 @@
   --c-select-spacing-block: var(--c-form-control-spacing-block);
   --c-select-shadow: var(--shadow-sm);
 
+  /* Checkbox */
+  --c-checkbox-size: var(--c-size-control-xs);
+  --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
+
   /** Appearances **/
   /* Generic Panes */
   --c-pane-fill: var(--c-surface-overlay);

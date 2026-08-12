@@ -17,10 +17,16 @@ registerCraftGlobals({
   VolumeFolderSelectorModal,
 });
 
-Craft.registerElementSelectorModalClass?.(
-  'CraftCms\\Cms\\Asset\\Elements\\Asset',
-  AssetSelectorModal
-);
+if (
+  typeof Craft._elementSelectorModalClasses?.[
+    'CraftCms\\Cms\\Asset\\Elements\\Asset'
+  ] === 'undefined'
+) {
+  Craft.registerElementSelectorModalClass?.(
+    'CraftCms\\Cms\\Asset\\Elements\\Asset',
+    AssetSelectorModal
+  );
+}
 
 export {BaseElementSelectorModal} from './base-element-selector-modal';
 export {AssetSelectorModal} from './asset-selector-modal';
