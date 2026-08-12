@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Closure;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
@@ -17,11 +16,15 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Missing as MissingControl;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -73,6 +76,8 @@ class CustomField extends BaseField
     public ?string $handle = null;
 
     private ?FieldInterface $_field = null;
+
+    private ?FieldInterface $_sourceField = null;
 
     private ?string $_fieldUid = null;
 
@@ -129,7 +134,7 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function label(string|Closure|null $label = null): static|string|null
+    public function label(?string $label = null): static|string|null
     {
         if (func_num_args() === 0) {
             return parent::label();
@@ -145,7 +150,7 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function instructions(string|Closure|null $instructions): static
+    public function instructions(?string $instructions): static
     {
         parent::instructions($instructions);
 
@@ -156,9 +161,8 @@ class CustomField extends BaseField
         return $this;
     }
 
-    public function handle(string|Closure|null $handle): static
+    public function handle(?string $handle): static
     {
-        $handle = $this->evaluate($handle);
         $this->handle = $handle;
 
         if ($this->_field !== null) {
@@ -170,14 +174,14 @@ class CustomField extends BaseField
 
     public function editCondition(mixed $editCondition): static
     {
-        $this->setEditCondition($this->evaluate($editCondition));
+        $this->setEditCondition($editCondition);
 
         return $this;
     }
 
     public function elementEditCondition(mixed $elementEditCondition): static
     {
-        $this->setElementEditCondition($this->evaluate($elementEditCondition));
+        $this->setElementEditCondition($elementEditCondition);
 
         return $this;
     }
@@ -282,6 +286,7 @@ class CustomField extends BaseField
         return $field instanceof PreviewableFieldInterface;
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getPreviewOptions(): ?array
     {
@@ -317,6 +322,7 @@ class CustomField extends BaseField
         ];
     }
 
+    /** @return list<array{label: string, value: string}>|null */
     #[Override]
     public function getThumbOptions(): ?array
     {
@@ -431,6 +437,7 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
+        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -459,6 +466,7 @@ class CustomField extends BaseField
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
+        $this->_sourceField = null;
     }
 
     /**
@@ -565,6 +573,9 @@ class CustomField extends BaseField
         ];
     }
 
+    /**
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null, id?: int}}
+     */
     #[Override]
     protected function selectorAttributes(): array
     {
@@ -598,6 +609,7 @@ class CustomField extends BaseField
         ]);
     }
 
+    /** @return array{class?: list<string>, id?: string, data: array{base-input-name: string, error-key: string, type?: class-string<FieldInterface>}} */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -658,6 +670,7 @@ class CustomField extends BaseField
         return $field::icon();
     }
 
+    /** @return list<array{label: string, icon: string, iconColor: string}> */
     #[Override]
     protected function selectorIndicators(): array
     {
@@ -806,15 +819,35 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    public function formMode(?ElementInterface $element): ControlMode
     {
-        $active = DeltaRegistry::isActive() &&
-            ($element->id ?? false) &&
-            ! $static;
+        return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
+    }
 
-        return DeltaRegistry::withActive($active, fn () => InputNamespace::namespaceInputs(
-            fn () => (string) parent::formHtml($element, $static),
-            'fields',
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        try {
+            $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        $field = $this->_sourceField;
+
+        if ($field instanceof MissingField) {
+            return MissingControl::make(['fields', $this->attribute()])
+                ->provider($field->expectedType)
+                ->mode(ControlMode::Disabled)
+                ->value($this->value($context->element));
+        }
+
+        return $field->formControl(new FieldContext(
+            ['fields', $this->attribute()],
+            $this->value($context->element),
+            $context->element,
+            $context->form,
+            $context->mode,
         ));
     }
 
@@ -852,34 +885,6 @@ class CustomField extends BaseField
         }
 
         return $field->getLabelId();
-    }
-
-    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return null;
-        }
-
-        $field->static = $static;
-        $value = $element ? $element->getFieldValue($field->handle) : $field->normalizeValue(null, null);
-
-        if ($static) {
-            return $field->getStaticHtml($value, $element);
-        }
-
-        $isDirty = $element?->isFieldDirty($field->handle);
-        DeltaRegistry::registerName($field->handle, $isDirty);
-
-        $describedBy = $field->describedBy;
-        $field->describedBy = $this->describedBy($element, $static);
-
-        $html = $field->getInputHtml($value, $element);
-
-        $field->describedBy = $describedBy;
-
-        return $html !== '' ? $html : null;
     }
 
     #[Override]
@@ -929,6 +934,7 @@ class CustomField extends BaseField
         return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

@@ -221,7 +221,7 @@
                 <craft-button
                   type="button"
                   @click="goToPrevious"
-                  appearance="plain"
+                  variant="plain"
                   class="justify-self-start"
                 >
                   {{ t('Back') }}

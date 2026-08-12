@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Models;
 
+use CraftCms\Cms\Database\Factories\FieldFactory;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -12,7 +13,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Field extends BaseModel
 {
+    /** @use HasFactory<FieldFactory> */
     use HasFactory;
+
     use HasUid;
     use SoftDeletes;
 

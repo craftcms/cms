@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Facades\Twig;
 use Exception;
-use Illuminate\Support\Collection;
 use ReflectionProperty;
 use Throwable;
 use Twig\Error\RuntimeError;
@@ -40,12 +39,13 @@ readonly class TwigExceptionMapper
                 }
 
                 return $frame;
-            })
-            ->when(
-                $viewIndex !== null && str_ends_with($exception->getFile(), '.twig'),
-                fn (Collection $trace) => $trace->slice($viewIndex + 1)  // Remove all traces before the view
-            )
-            ->all();
+            });
+
+        if ($viewIndex !== null && str_ends_with($exception->getFile(), '.twig')) {
+            $trace = $trace->slice($viewIndex + 1);
+        }
+
+        $trace = $trace->all();
 
         if ($exception instanceof Exception) {
             $traceProperty = new ReflectionProperty('Exception', 'trace');
@@ -60,8 +60,8 @@ readonly class TwigExceptionMapper
      *
      * @param  string  $path  The compiled template path
      * @param  int|null  $line  The line number from the compiled template
-     * @return array|false The resolved template path and line number, or `false` if the path couldn’t be determined.
-     *                     If a template path could be determined but not the template line number, the line number will be null.
+     * @return array{string, int|null}|false The resolved template path and line number, or `false` if the path couldn’t be determined.
+     *                                       If a template path could be determined but not the template line number, the line number will be null.
      */
     public function resolveTemplatePathAndLine(string $path, ?int $line): array|false
     {

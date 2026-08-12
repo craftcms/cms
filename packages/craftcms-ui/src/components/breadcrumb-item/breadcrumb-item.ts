@@ -20,6 +20,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     :host {
       white-space: nowrap;
       display: inline-flex;
+      gap: var(--c-spacing-sm);
       align-items: center;
       color: inherit;
     }
@@ -36,11 +37,11 @@ export default class CraftBreadcrumbItem extends LitElement {
       text-decoration: underline;
     }
 
-    slot[name='start']::slotted(*) {
+    slot[name='prefix']::slotted(*) {
       margin-inline-end: var(--c-spacing-sm);
     }
 
-    slot[name='end']::slotted(*) {
+    slot[name='suffix']::slotted(*) {
       margin-inline-start: var(--c-spacing-sm);
     }
 
@@ -63,9 +64,9 @@ export default class CraftBreadcrumbItem extends LitElement {
       : html`<span part="label" class="label"><slot></slot></span>`;
 
     return html`
-      <slot name="start" part="start"></slot>
+      <slot name="prefix" part="prefix"></slot>
       ${label}
-      <slot name="end" part="end"></slot>
+      <slot name="suffix" part="suffix"></slot>
       <slot name="separator" part="separator" aria-hidden="true"></slot>
     `;
   }

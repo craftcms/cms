@@ -105,9 +105,8 @@ Server-rendered CP UI is moving onto the `@craftcms/ui` web components via PHP c
 `src/Cp/Components/`:
 
 - Each component (e.g. `Button`, `Checkbox`, `Lightswitch`, `Field`) extends `ViewComponent` and renders its custom
-  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters, named-slot handling, and lazily
-  evaluated Closure values (DI-resolved, Filament-style). Build instances with `Component::make()->…`;
-  `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
+  element tag (`<craft-button>`, `<craft-field>`, …) with typed fluent setters and named-slot handling. Build instances
+  with `Component::make()->…`; `configure(array)` maps config-array keys (kebab/snake camelized) onto the setters.
 - `ComponentRegistry` (`#[Singleton]`, plugin-extensible) maps template-facing names to component classes and backs
   the `ui()` PHP helper and the `ui` Twig function.
 - `CraftCms\Cms\Cp\FormFields` is the legacy shim layer. Its `*FromConfig()` methods translate the legacy Twig

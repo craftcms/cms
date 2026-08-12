@@ -18,6 +18,9 @@ it('can list fields with a namespace and countryCode', function () {
         'countryCode' => 'US',
     ]))->assertOk()->assertJsonStructure([
         'fieldsHtml',
+        'fieldDefinitions' => [
+            '*' => ['name', 'label', 'type', 'visible', 'required'],
+        ],
         'headHtml',
         'bodyHtml',
     ]);

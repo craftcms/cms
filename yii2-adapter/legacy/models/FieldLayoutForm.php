@@ -10,10 +10,11 @@ if (false) {
      * FieldLayoutForm model class.
      *
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\FieldLayoutForm} instead.
+     * @deprecated 6.0.0 use the renderer-neutral Form interfaces instead.
      */
-    class FieldLayoutForm extends \CraftCms\Cms\FieldLayout\FieldLayoutForm
+    class FieldLayoutForm extends \CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm
     {
     }
 }

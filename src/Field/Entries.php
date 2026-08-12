@@ -12,6 +12,10 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -29,6 +33,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Entries represents an Entries field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
  */
 class Entries extends BaseRelationField
 {
@@ -78,6 +84,7 @@ class Entries extends BaseRelationField
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -89,6 +96,20 @@ class Entries extends BaseRelationField
         parent::__construct($config);
     }
 
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return parent::settingsForm($context)->add(
+            FormField::make(t('Show unpermitted sections'))
+                ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make('showUnpermittedSections')->value($this->showUnpermittedSections)),
+            FormField::make(t('Show unpermitted entries'))
+                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
+                ->control(Lightswitch::make('showUnpermittedEntries')->value($this->showUnpermittedEntries)),
+        );
+    }
+
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -113,6 +134,15 @@ class Entries extends BaseRelationField
         return Gql::canQueryEntries($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig|Type>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -128,6 +158,7 @@ class Entries extends BaseRelationField
         ];
     }
 
+    /** @return array{sectionId:list<int>, typeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -157,6 +188,7 @@ class Entries extends BaseRelationField
         ];
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -198,6 +230,7 @@ class Entries extends BaseRelationField
         return app(ElementHtml::class)->chipHtml($mockup);
     }
 
+    /** @return list<string>|string|null */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {

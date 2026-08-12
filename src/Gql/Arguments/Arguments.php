@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Arguments;
 
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 abstract class Arguments
 {
-    /**
-     * @return array $fields
-     */
+    /** @return array<string, ArgumentConfig> */
     public static function getArguments(): array
     {
         return [
@@ -28,6 +28,7 @@ abstract class Arguments
         ];
     }
 
+    /** @return array<string, ArgumentConfig> */
     public static function getContentArguments(): array
     {
         return [];

@@ -294,6 +294,10 @@ export class Element extends Base {
     const $fieldsContainer =
       this.slideout.$container[0].querySelector('.fields');
 
+    this.addListener($fieldsContainer, 'field-saved', (event) => {
+      this.refreshField((event as unknown as CustomEvent).detail.selectorHtml);
+    });
+
     if (this.isField) {
       const $handleInput = $fieldsContainer?.querySelector(
         'input[name$="[handle]"]'
@@ -321,31 +325,35 @@ export class Element extends Base {
   }
 
   async showFieldEditor(): Promise<void> {
-    const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
-      params: {
-        fieldId: this.fieldId,
-        multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
-      },
-    });
+    const slideout = new Craft.CpScreenSlideout(
+      Craft.getCpUrl('settings/fields/edit'),
+      {
+        params: {
+          fieldId: this.fieldId,
+          multiInstanceTypesOnly: this.isMultiInstance ? 1 : 0,
+        },
+      }
+    );
 
     slideout.on('submit', async ({response}: any) => {
-      const designer = this.tab.designer;
-
-      // refresh the library selector
-      const $oldSelector = designer.$fieldLibrary.querySelector(
-        `.fld-field[data-id=${this.fieldId}]`
-      );
-      const $newSelector = htmlToElement(response.data.selectorHtml);
-      $oldSelector?.replaceWith($newSelector);
-      designer.refreshLibraryFields();
-      designer.elementDrag!.removeItems($oldSelector);
-      designer.elementDrag!.addItems($newSelector);
-
-      // refresh all instances of this field
-      designer.$tabContainer
-        .querySelectorAll(`.fld-field[data-id=${this.fieldId}]`)
-        .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
+      this.refreshField(response.data.selectorHtml);
     });
+  }
+
+  private refreshField(selectorHtml: string): void {
+    const designer = this.tab.designer;
+    const $oldSelector = designer.$fieldLibrary.querySelector(
+      `.fld-field[data-id=${this.fieldId}]`
+    );
+    const $newSelector = htmlToElement(selectorHtml);
+    $oldSelector?.replaceWith($newSelector);
+    designer.refreshLibraryFields();
+    designer.elementDrag!.removeItems($oldSelector);
+    designer.elementDrag!.addItems($newSelector);
+
+    designer.$tabContainer
+      .querySelectorAll(`.fld-field[data-id=${this.fieldId}]`)
+      .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
   }
 
   async makeRequired(): Promise<void> {
@@ -380,7 +388,8 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    withSettings = false
+    withSettings = false,
+    closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
     if (config === false) {
@@ -466,7 +475,7 @@ export class Element extends Base {
     designer.elementDrag!.removeItems($oldContainer);
     designer.elementDrag!.addItems($newContainer);
 
-    if (this.slideout) {
+    if (closeSlideout && this.slideout) {
       this.slideout.close();
       this.slideout.destroy();
       this.slideout = null;
@@ -489,7 +498,7 @@ export class Element extends Base {
   }
 
   async refresh(): Promise<void> {
-    await this.applyConfig((config: any) => config);
+    await this.applyConfig((config: any) => config, false, false);
   }
 
   get index(): number {

@@ -1,7 +1,7 @@
 import type {SortItem} from '@/common/types';
 
 export type ViewMode = {
-  mode: 'table' | 'cards' | 'structure';
+  mode: 'table' | 'cards' | 'structure' | 'thumbs';
   title: string;
   icon: string;
   structuresOnly?: boolean;

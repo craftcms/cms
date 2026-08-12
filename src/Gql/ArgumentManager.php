@@ -48,6 +48,9 @@ class ArgumentManager extends Component
     }
 
     /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     *
      * @throws GqlException
      */
     public function prepareArguments(array $arguments): array

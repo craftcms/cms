@@ -13,18 +13,20 @@ use Override;
 
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
+    /** @var array<string, list<list<int>>> */
     private array $_memoizedValues = [];
 
     /**
      * @param  class-string<ElementInterface>  $elementType
-     * @return int[][]
+     * @param  array<array-key, array<string, mixed>>  $criteriaList
+     * @return list<list<int>>
      */
     protected function getIds(string $elementType, array $criteriaList = []): array
     {
         $idSets = [];
 
         foreach ($criteriaList as $criteria) {
-            /** @var ElementQuery $elementQuery */
+            /** @var ElementQuery<ElementInterface> $elementQuery */
             $elementQuery = Typecast::configure(Elements::createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }
@@ -82,7 +84,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         return $argumentList;
     }
 
-    protected function handleArgument($argumentValue): mixed
+    protected function handleArgument(mixed $argumentValue): mixed
     {
         // Recursively parse nested arguments.
         if (is_array($argumentValue) && Arr::isAssoc($argumentValue)) {
@@ -101,6 +103,10 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         return $argumentValue;
     }
 
+    /**
+     * @param  array<array-key, mixed>  $relatedTo
+     * @return array<array-key, mixed>
+     */
     protected function prepareRelatedTo(array $relatedTo): array
     {
         // Convert numeric arrays to ['and', ['element' => [...]]]

@@ -137,6 +137,7 @@ trait EditUserTrait
                     'label' => t('Account Security'),
                     'url' => '#',
                     'selected' => false,
+                    'group' => true,
                     'subnav' => [],
                 ]);
                 $subnavItems[] = $accountSecurityItem;

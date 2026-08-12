@@ -35,10 +35,11 @@ class GeneralConfig extends BaseConfig
     public const string SNAKE_CASE = 'snake';
 
     #[Override]
+    /** @var array<string, string> */
     protected static array $renamedSettings = [];
 
     /**
-     * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
      *
@@ -558,7 +559,7 @@ class GeneralConfig extends BaseConfig
     public mixed $cooldownDuration = 300;
 
     /**
-     * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     * @var list<array{0: string, 1?: array<string, mixed>}> List of additional HTML tags that should be included in the `<head>` of control panel pages.
      *
      * Each tag can be specified as an array of the tag name and its attributes.
      *
@@ -736,7 +737,7 @@ class GeneralConfig extends BaseConfig
     public int $defaultImageQuality = 82;
 
     /**
-     * @var array The default options that should be applied to each search term.
+     * @var array<string, bool|string> The default options that should be applied to each search term.
      *
      * Options include:
      *
@@ -1112,8 +1113,8 @@ class GeneralConfig extends BaseConfig
     public array $extraAppLocales = [];
 
     /**
-     * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
-     *            `\craft\helpers\Assets::_buildFileKinds()`.
+     * @var array<string, array<string, mixed>> List of additional file kinds Craft should support. This array will get merged with the one defined in
+     *                                          `\craft\helpers\Assets::_buildFileKinds()`.
      *
      * ```php Static Config
      * ->extraFileKinds([
@@ -1364,8 +1365,8 @@ class GeneralConfig extends BaseConfig
     public mixed $imageDriver = self::IMAGE_DRIVER_AUTO;
 
     /**
-     * @var array An array containing the selectable image aspect ratios for the image editor. The array must be in the format
-     *            of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
+     * @var array<string, float|int|string> An array containing the selectable image aspect ratios for the image editor. The array must be in the format
+     *                                      of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
      *
      * ```php Static Config
      * ->imageEditorRatios([
@@ -1529,7 +1530,7 @@ class GeneralConfig extends BaseConfig
     public bool $limitAutoSlugsToAscii = false;
 
     /**
-     * @var array Custom locale aliases, which will be included when fetching all known locales.
+     * @var array<string, array{aliasOf: string, displayName?: string}> Custom locale aliases, which will be included when fetching all known locales.
      *
      * Each locale alias should be defined as an array with the following keys:
      *
@@ -2080,7 +2081,7 @@ class GeneralConfig extends BaseConfig
     public bool $preventUserEnumeration = true;
 
     /**
-     * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
+     * @var array<string, mixed> Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
      *
      * ```php Static Config
      * ->previewIframeResizerOptions([
@@ -2482,7 +2483,7 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
-     * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
+     * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
      *
      * See [[\yii\web\Request::secureHeaders]] for more details.
      *
@@ -2509,7 +2510,7 @@ class GeneralConfig extends BaseConfig
     public ?array $secureHeaders = null;
 
     /**
-     * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
+     * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
      *
      * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
      *
@@ -2884,7 +2885,7 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var array The configuration for trusted security-related headers.
+     * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
      *
      * See [[\yii\web\Request::trustedHosts]] for more details.
      *
@@ -3140,6 +3141,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  array<string, bool|int|string>  $value
      *
      * @see $accessibilityDefaults
      */
@@ -3631,6 +3634,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @param  list<array{0: string, 1?: array<string, mixed>}>  $value
+     *
      * @see $cpHeadTags
      */
     public function cpHeadTags(array $value): self
@@ -3858,6 +3863,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @param  array<string, bool|string>  $value
+     *
      * @see $defaultSearchTermOptions
      */
     public function defaultSearchTermOptions(array $value): self
@@ -3875,6 +3882,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>  $value
      *
      * @see $defaultTemplateExtensions
      */
@@ -4008,6 +4017,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>|string|null  $value
      *
      * @see $disabledPlugins
      */
@@ -4267,6 +4278,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
+     *
+     * @param  array<string, array<string, mixed>>  $value
      *
      * @see $extraFileKinds
      */
@@ -4546,6 +4559,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Image Handling
      *
+     * @param  array<string, float|int|string>  $value
+     *
      * @see $imageEditorRatios
      */
     public function imageEditorRatios(array $value): self
@@ -4716,6 +4731,8 @@ class GeneralConfig extends BaseConfig
      * - `displayName`: The locale alias’s display name _(optional)_
      *
      * @group System
+     *
+     * @param  array<string, array{aliasOf: string, displayName?: string}>  $value
      */
     public function localeAliases(array $value): self
     {
@@ -4750,6 +4767,8 @@ class GeneralConfig extends BaseConfig
      * The OAuth providers that should be available for login.
      *
      * @group Users
+     *
+     * @param  array<int|string, array<string, mixed>|string>  $value
      *
      * @see $oauthProviders
      */
@@ -5278,6 +5297,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @param  array<string, mixed>  $value
+     *
      * @see $previewIframeResizerOptions
      */
     public function previewIframeResizerOptions(array $value): self
@@ -5616,6 +5637,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
+     * @param  list<string>  $value
      *
      * @see $trackedQueueNames
      */

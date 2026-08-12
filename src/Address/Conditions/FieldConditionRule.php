@@ -68,7 +68,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @return Collection<Addresses>
+     * @return Collection<int, Addresses>
      */
     private function addressFields(): Collection
     {

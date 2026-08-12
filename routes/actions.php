@@ -69,7 +69,7 @@ use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
-use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -277,29 +277,24 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 
         // Entry Types
-        Route::get('entry-types/table-data', [EntryTypesController::class, 'tableData']);
-        Route::get('entry-types/edit/{entryType?}', [EntryTypesController::class, 'edit']);
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
-            Route::get('entry-types/new', [EntryTypesController::class, 'create']);
-            Route::post('entry-types/save', [EntryTypesController::class, 'store']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
 
         // Fields
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::get('fields/edit-field', [FieldsController::class, 'edit']);
             Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
-            Route::post('fields/save-field', [FieldsController::class, 'store']);
+            Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
+            Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
+            Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
+            Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
-        });
-        Route::middleware([RequireAdmin::class])->group(function () {
-            Route::get('fields/table-data', [FieldsController::class, 'tableData']);
         });
 
         // Matrix
@@ -347,6 +342,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
         Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
+        Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
@@ -354,15 +350,15 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data']);
 
-        // Volumes
+        // Filesystems
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
-            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+            Route::post('filesystems/render-settings', [FilesystemsController::class, 'renderSettings']);
         });
 
-        // Sections
-        Route::get('sections/table-data', [SectionsController::class, 'tableData']);
-        Route::get('sections/edit/{section}', [SectionsController::class, 'edit']);
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+        });
 
         // Structures
         Route::post('structures/get-element-level-delta', [StructuresController::class, 'getElementLevelDelta']);

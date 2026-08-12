@@ -9,12 +9,14 @@ use Illuminate\Http\Request;
 
 readonly class ActionRoute
 {
+    /** @param list<string> $segments */
     public function __construct(
         public array $segments,
         public string $uri,
         public bool $isCp,
     ) {}
 
+    /** @param array<array-key, string> $segments */
     public static function fromSegments(array $segments, bool $isCp): ?self
     {
         $segments = array_values($segments);
@@ -30,6 +32,7 @@ readonly class ActionRoute
         );
     }
 
+    /** @param list<string> $segments */
     public static function uriForSegments(array $segments, bool $isCp): string
     {
         return '/'.implode('/', array_filter([

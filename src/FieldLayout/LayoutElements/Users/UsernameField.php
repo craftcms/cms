@@ -6,7 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
@@ -60,6 +62,12 @@ class UsernameField extends TextField
     }
 
     #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return Cms::config()->useEmailAsUsername ? null : parent::formControl($context);
+    }
+
+    #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (Cms::config()->useEmailAsUsername) {
@@ -69,6 +77,7 @@ class UsernameField extends TextField
         return parent::inputHtml($element, $static);
     }
 
+    /** @return array<string, string|array<string, string>> */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

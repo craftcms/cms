@@ -21,6 +21,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 #[Scoped]
 class ElementRequest extends FormRequest
 {
+    /** @var array<string, mixed> */
     private array $overrides = [];
 
     private bool $checkForProvisionalDraft = false;
@@ -34,6 +35,7 @@ class ElementRequest extends FormRequest
 
     public ?ElementInterface $element = null;
 
+    /** @return array<string, list<string>> */
     public function rules(): array
     {
         $fieldsLocation = $this->input('fieldsLocation', 'fields');
@@ -68,8 +70,6 @@ class ElementRequest extends FormRequest
             'provisional' => ['exclude'],
             'dropProvisional' => ['exclude'],
             'addAnother' => ['exclude'],
-            'visibleLayoutElements' => ['exclude'],
-            'staticLayoutElements' => ['exclude'],
             'selectedTab' => ['exclude'],
             'applyParams' => ['exclude'],
             'prevalidate' => ['exclude'],
@@ -83,6 +83,7 @@ class ElementRequest extends FormRequest
         ];
     }
 
+    /** @param array<string, mixed> $overrides */
     public function element(array $overrides = [], bool $checkForProvisionalDraft = false, bool $strictSite = true): ElementInterface|Response|null
     {
         $this->overrides = $overrides;

@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
 use stdClass;
 
 /**
- * @template TValue
+ * @template TValue of ElementInterface
  *
  * @internal
  */
@@ -29,7 +29,8 @@ trait HydratesElements
     /**
      * Create a collection of elements from plain arrays.
      *
-     * @return TValue[]|array<array>
+     * @param  stdClass[]  $items
+     * @return TValue[]|array<array<string, mixed>>
      */
     public function hydrate(array $items): array
     {
@@ -96,11 +97,19 @@ trait HydratesElements
         return $event->elements;
     }
 
+    /**
+     * @param  Collection<array-key, TValue>  $elements
+     * @return Collection<array-key, TValue>
+     */
     public function afterHydrate(Collection $elements): Collection
     {
         return $elements;
     }
 
+    /**
+     * @param  array<string, mixed>  $row
+     * @return TValue
+     */
     public function createElement(array $row): ElementInterface
     {
         // Do we have a placeholder for this element?

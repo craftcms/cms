@@ -317,6 +317,7 @@ trait StructureNode
             ->delete();
     }
 
+    /** @return Builder<static> */
     public function parents(?int $depth = null): Builder
     {
         return $this->treeQuery()
@@ -329,6 +330,7 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function children(?int $depth = null): Builder
     {
         return $this->treeQuery()
@@ -341,6 +343,7 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function leaves(): Builder
     {
         return $this->treeQuery()
@@ -350,11 +353,13 @@ trait StructureNode
             ->orderBy('lft');
     }
 
+    /** @return Builder<static> */
     public function prev(): Builder
     {
         return $this->treeQuery()->where('rgt', '=', $this->lft - 1);
     }
 
+    /** @return Builder<static> */
     public function next(): Builder
     {
         return $this->treeQuery()->where('lft', '=', $this->rgt + 1);
@@ -382,6 +387,10 @@ trait StructureNode
         return $this->rgt - $this->lft === 1;
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     protected function scopeRoots(Builder $query): Builder
     {
         return $query
@@ -389,6 +398,10 @@ trait StructureNode
             ->orderBy($this->getKeyName());
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     protected function scopeLeaves(Builder $query): Builder
     {
         return $query
@@ -397,7 +410,10 @@ trait StructureNode
             ->orderBy('lft');
     }
 
-    /** @return Builder<static> */
+    /**
+     * @param  Builder<static>|null  $query
+     * @return Builder<static>
+     */
     protected function treeQuery(?Builder $query = null): Builder
     {
         $query ??= static::query();

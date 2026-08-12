@@ -204,6 +204,7 @@ class Path
         return $this->license->keyPath();
     }
 
+    /** @return string[] */
     public function system(): array
     {
         return [

@@ -6,6 +6,11 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -32,6 +37,12 @@ class QuickPost extends Widget
     public static function icon(): string
     {
         return 'file-circle-plus';
+    }
+
+    #[Override]
+    public static function isSelectable(): bool
+    {
+        return parent::isSelectable() && self::availableSections() !== [];
     }
 
     /**
@@ -64,6 +75,7 @@ class QuickPost extends Widget
      */
     private EntryType|false $_entryType;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // If we're saving the widget settings, all of the section-specific
@@ -97,28 +109,55 @@ class QuickPost extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
-        // Find the sections the user has permission to create entries in
-        $sections = [];
+        $sections = self::availableSections();
 
-        foreach (Sections::getAllSections() as $section) {
-            if ($section->type === SectionType::Single) {
-                continue;
-            }
-            if (! currentUser()->can('createEntries:'.$section->uid)) {
-                continue;
-            }
-            $sections[] = $section;
+        if ($sections === []) {
+            return null;
         }
 
-        return template('_components/widgets/QuickPost/settings', [
-            'sections' => $sections,
-            'widget' => $this,
-            'siteId' => $this->siteId,
-            'section' => $this->section(),
-            'entryType' => $this->entryType(),
-        ]);
+        $form = Form::make();
+        $editableSites = Sites::getEditableSites();
+
+        if (Sites::isMultiSite() && $editableSites->count() > 1) {
+            $form->add(Field::make(t('Site'))
+                ->control(Choice::make('siteId')->value($this->siteId)->options($editableSites
+                    ->map(fn ($site): array => [
+                        'label' => t($site->getName(), category: 'site'),
+                        'value' => $site->id,
+                    ])
+                    ->values()
+                    ->all())));
+        }
+
+        $section = $this->section() ?? $sections[0];
+        $entryTypes = $section->getEntryTypes();
+
+        return $form->add(
+            Field::make(t('Section'))
+                ->instructions(t('Which section do you want to save entries to?'))
+                ->control(Choice::make('section')->value($section->id)->options(array_map(
+                    fn (Section $section): array => [
+                        'label' => t($section->name, category: 'site'),
+                        'value' => $section->id,
+                    ],
+                    $sections,
+                ))),
+            Field::make(t('Entry Type'))
+                ->instructions(count($entryTypes) > 1 ? t('Which type of entries do you want to create?') : null)
+                ->control(Choice::make('entryType')->value($this->entryType()?->id)->options(array_map(
+                    fn (EntryType $entryType): array => [
+                        'label' => t($entryType->name, category: 'site'),
+                        'value' => $entryType->id,
+                    ],
+                    $entryTypes,
+                ))),
+            Field::make(t('Widget Title'))
+                ->control(Text::make('customTitle')
+                    ->value($this->customTitle)
+                    ->placeholder(t('Create a new {section} entry', ['section' => $section->getUiLabel()]))),
+        );
     }
 
     #[Override]
@@ -264,5 +303,15 @@ JS, [
         }
 
         return $this->_entryType ?: null;
+    }
+
+    /** @return list<Section> */
+    private static function availableSections(): array
+    {
+        return Sections::getAllSections()
+            ->filter(fn (Section $section): bool => $section->type !== SectionType::Single
+                && (currentUser()?->can('createEntries:'.$section->uid) ?? false))
+            ->values()
+            ->all();
     }
 }

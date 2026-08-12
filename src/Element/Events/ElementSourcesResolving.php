@@ -17,7 +17,7 @@ class ElementSourcesResolving
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $context  The context ('index', 'modal', 'field', or 'settings')
-     * @param  array  $sources  The registered sources
+     * @param  list<array<string, mixed>>  $sources  The registered sources
      */
     public function __construct(
         public string $elementType,

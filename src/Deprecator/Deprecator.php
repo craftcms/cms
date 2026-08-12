@@ -113,6 +113,7 @@ class Deprecator
         $this->pendingRequestLogs = [];
     }
 
+    /** @return list<DeprecationError> */
     public function getRequestLogs(): array
     {
         return $this->requestLogs;
@@ -123,6 +124,7 @@ class Deprecator
         return DeprecationError::count();
     }
 
+    /** @return list<DeprecationError> */
     public function getLogs(?int $limit = null): array
     {
         return $this->allLogs ?? $this->allLogs = DeprecationError::query()
@@ -155,7 +157,7 @@ class Deprecator
     /**
      * Returns the file and line number that should be associated with the error.
      *
-     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
      * @return array{0: string, 1: ?int} [file, line]
      */
     private function findOrigin(array $traces): array
@@ -228,7 +230,7 @@ class Deprecator
     /**
      * Returns whether the given trace is a call to [[Template::attribute()]]
      *
-     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
      * @param  int  $index  The trace index to check
      */
     private function isTemplateAttributeCall(array $traces, int $index): bool
@@ -248,7 +250,8 @@ class Deprecator
     /**
      * Returns a simplified version of the stack trace.
      *
-     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
+     * @return list<array{objectClass: class-string|null, file: string|null, line: int|null, class: class-string|null, method: string|null, args: string|null}>
      */
     private function processStackTrace(array $traces): array
     {
@@ -295,6 +298,8 @@ class Deprecator
 
     /**
      * Converts an array of method arguments to a string.
+     *
+     * @param  array<array-key, mixed>  $args
      */
     private function argsToString(array $args): string
     {

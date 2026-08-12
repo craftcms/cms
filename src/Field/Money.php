@@ -13,6 +13,14 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Money as MoneyControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -28,13 +36,12 @@ use Money\Money as MoneyLibrary;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Money field type
  *
- * @property-read array $contentGqlMutationArgumentType
- * @property-read array[] $elementValidationRules
+ * @property-read array{name:string,type:Type,description:string|null} $contentGqlMutationArgumentType
+ * @property-read list<MoneyRule> $elementValidationRules
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
@@ -142,37 +149,45 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function getIcon(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return self::currencyIcon($this->currency);
+        $currencyOptions = [];
+        foreach ($this->_isoCurrencies as $currency) {
+            $currencyOptions[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
+        }
+
+        return Form::make([
+            FormField::make(t('Currency'))
+                ->required()
+                ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),
+            FormField::make(t('Default Value'))
+                ->control(Number::make('defaultValue')->step('any')->value($this->decimalSetting($this->defaultValue))),
+            FormField::make(t('Min Value'))
+                ->control(Number::make('min')->step('any')->value($this->decimalSetting($this->min))),
+            FormField::make(t('Max Value'))
+                ->control(Number::make('max')->step('any')->value($this->decimalSetting($this->max))),
+            FormField::make(t('Show Currency'))
+                ->control(Lightswitch::make('showCurrency')->value($this->showCurrency)),
+            FormField::make(t('Size'))
+                ->control(Number::make('size')->min(1)->value($this->size)),
+        ]);
     }
 
-    public function getSettingsHtml(): string
+    private function decimalSetting(int|float|null $value): ?float
     {
-        return $this->settingsHtml(false);
+        if ($value === null) {
+            return null;
+        }
+
+        $decimal = MoneyHelper::toDecimal(new MoneyLibrary($value, new Currency($this->currency)));
+
+        return $decimal === false ? null : (float) $decimal;
     }
 
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function getIcon(): string
     {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        foreach (['defaultValue', 'min', 'max'] as $attr) {
-            if ($this->$attr !== null) {
-                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
-                $this->$attr = $value !== false ? (float) $value : null;
-            }
-        }
-
-        return template('_components/fieldtypes/Money/settings', [
-            'field' => $this,
-            'currencies' => $this->_isoCurrencies,
-            'subUnits' => $this->subunits(),
-            'readOnly' => $readOnly,
-        ]);
+        return self::currencyIcon($this->currency);
     }
 
     #[Override]
@@ -192,6 +207,25 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getDefaultValue(): float|int|null
     {
         return $this->defaultValue;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $value = $context->value instanceof MoneyLibrary
+            ? MoneyHelper::toNumber($context->value)
+            : $context->value;
+
+        return MoneyControl::make($context->path)
+            ->currency($this->currency)
+            ->min($this->min)
+            ->max($this->max)
+            ->size($this->size)
+            ->showCurrency($this->showCurrency)
+            ->value([
+                'value' => $value,
+                'locale' => I18N::getFormattingLocale()->id,
+            ]);
     }
 
     #[Override]
@@ -353,6 +387,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $value;
     }
 
+    /** @return list<MoneyRule> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -388,6 +423,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return MoneyType::getType();
     }
 
+    /** @return array{name:string,type:Type,description:string|null} */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

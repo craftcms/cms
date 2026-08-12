@@ -7,11 +7,21 @@ namespace Workbench\App\Providers;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Http\ViewModels\FilesystemsEditViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
+use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
@@ -48,6 +58,11 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    ChoicePresentation::class,
+                    ControlMode::class,
+                    ControlPayload::class,
+                    FormPayload::class,
+                    NodePayload::class,
                     FilesystemsEditViewModel::class,
                     NavItem::class,
                     Permission::class,
@@ -56,8 +71,13 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     Updates::class,
                     UpdaterState::class,
                     HtmlFragment::class,
+                    AssetIndexViewModel::class,
+                    ContentIndexViewModel::class,
+                    EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     UserAddressesViewModel::class,
+                    UserIndexViewModel::class,
+                    UserPasskeysViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
                     UserProfileViewModel::class,

@@ -23,6 +23,15 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
@@ -35,8 +44,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -47,15 +54,20 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
  *
- * @phpstan-import-type EagerLoadingMap from ElementInterface
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type AddressEagerLoadingMap array{
+ *     elementType:class-string<Address>,
+ *     map:list<array{source:int, target:int}>,
+ *     criteria:array{fieldId:int|null, allowOwnerDrafts:true, allowOwnerRevisions:true},
+ *     createElement:callable,
+ * }
  */
 class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
@@ -173,6 +185,28 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
+            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
+            FormField::make(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                        ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                    ])
+                    ->value($this->viewMode)),
+        ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         $rules = parent::getRules();
@@ -217,6 +251,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return null;
     }
 
+    /** @return list<int> */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -296,7 +331,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     private function totalAddresses(ElementInterface $owner): int
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $value = $owner->getFieldValue($this->handle);
 
         if ($value instanceof AddressQuery) {
@@ -310,26 +345,33 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $addresses = match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof AddressQuery => $context->value->all(),
+            default => [],
+        };
+        $values = $forms = $sortOrder = [];
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        foreach ($addresses as $address) {
+            $uid = $address->uid ?? (string) $address->id;
+            $values[$uid] = ['type' => 'address'];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $address->getFieldLayout(),
+                $address,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
 
-        return template('_components/fieldtypes/Addresses/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-        ]);
+        return MatrixControl::make($context->path)
+            ->entryTypes(['address' => Address::displayName()])
+            ->forms($forms)
+            ->minEntries($this->minAddresses)
+            ->maxEntries($this->maxAddresses)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     #[Override]
@@ -369,6 +411,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $query;
     }
 
+    /**
+     * @param  array<array-key, array<string, mixed>>  $value
+     * @return list<Address>
+     */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Get the old addresses
@@ -526,7 +572,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         $serialized = [];
         $new = 0;
 
@@ -578,6 +624,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $this->addressManager()->getTranslationDescription($element);
     }
 
+    /** @return list<array<string, bool|string|Color>> */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -600,6 +647,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return [...$items, ...$parentItems];
     }
 
+    /** @return array{id:string, icon:string, color:Color, label:string, showInChips:false} */
     private function copyAction(): array
     {
         $id = sprintf('action-copy-%s', mt_rand());
@@ -626,7 +674,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
+      btn.toggleClass('disabled', !getAddresses().length);
     });
   }, 1);
 })();
@@ -653,12 +701,6 @@ JS, [
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($element);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($element, true);
     }
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string
@@ -694,6 +736,7 @@ JS, [
         return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -709,10 +752,11 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var AddressQuery|ElementCollection $value */
+        /** @var AddressQuery|ElementCollection<int, Address> $value */
         return $value->count() === 0;
     }
 
+    /** @param ElementCollection<int, Address>|AddressQuery $value */
     private function validateAddresses(ElementInterface $element, AddressQuery|ElementCollection $value, Closure $fail): void
     {
         if ($value instanceof AddressQuery) {
@@ -792,7 +836,8 @@ JS, [
     }
 
     /**
-     * @return EagerLoadingMap
+     * @param  list<ElementInterface>  $sourceElements
+     * @return AddressEagerLoadingMap|list<AddressEagerLoadingMap>
      */
     public function getEagerLoadingMap(array $sourceElements): array
     {
@@ -843,6 +888,15 @@ JS, [
         parent::afterMergeFrom($outgoingField);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -855,6 +909,7 @@ JS, [
         ];
     }
 
+    /** @return array{withProvisionalDrafts:bool} */
     #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
@@ -866,7 +921,13 @@ JS, [
     #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {
-        return Type::listOf(AddressesInput::getType());
+        $type = AddressesInput::getType();
+
+        if (! $type instanceof Type) {
+            throw new RuntimeException('AddressesInput::getType() must return a GraphQL type.');
+        }
+
+        return Type::listOf($type);
     }
 
     #[Override]

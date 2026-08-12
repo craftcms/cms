@@ -90,6 +90,9 @@ readonly class ElementCanonicalChanges
         event(new CanonicalChangesMerged($element));
     }
 
+    /**
+     * @param  array<string, mixed>  $newAttributes
+     */
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
         if ($element->getIsCanonical()) {

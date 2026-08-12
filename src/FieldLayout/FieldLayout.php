@@ -15,7 +15,6 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\LegacyConstants;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormCreating;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement;
@@ -24,13 +23,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use CraftCms\Cms\FieldLayout\LayoutElements\LineBreak;
 use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
-use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\EvaluatesClosures;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -43,10 +38,14 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-/** @phpstan-consistent-constructor */
+/**
+ * @phpstan-consistent-constructor
+ *
+ * @phpstan-type GeneratedField array{uid: string, name?: string, handle?: string|array{value: string, hasErrors: bool}, template?: string}
+ * @phpstan-type GeneratedFieldConfig array{uid?: string, name?: string, handle?: string, template?: string}
+ */
 class FieldLayout extends Component
 {
-    use EvaluatesClosures;
     use LegacyConstants;
 
     public ?int $id = null;
@@ -107,18 +106,24 @@ class FieldLayout extends Component
     private ?array $_indexedCustomFields = null;
 
     /**
+     * @var list<GeneratedField>|null
+     *
      * @see getGeneratedFields()
      * @see setGeneratedFields()
      */
     private ?array $_generatedFields = null;
 
     /**
+     * @var list<string>
+     *
      * @see getCardView()
      * @see setCardView()
      */
     private array $_cardView;
 
     /**
+     * @var array<string, array{label: string, placeholder?: mixed}>
+     *
      * @see cardAttributes()
      */
     private array $_cardAttributes;
@@ -129,6 +134,7 @@ class FieldLayout extends Component
      */
     private string $_cardThumbAlignment;
 
+    /** @param array<string, mixed> $config */
     public function __construct(
         array $config = [],
     ) {
@@ -176,9 +182,8 @@ class FieldLayout extends Component
      *
      * @param  Closure(FieldLayoutTab): mixed|null  $configure
      */
-    public function tab(string|Closure $name, ?Closure $configure = null): static
+    public function tab(string $name, ?Closure $configure = null): static
     {
-        $name = $this->evaluate($name);
         $tab = array_find($this->getTabs(), fn (FieldLayoutTab $tab) => $tab->name === $name);
 
         if ($tab === null) {
@@ -239,6 +244,7 @@ class FieldLayout extends Component
     /**
      * Creates a new field layout from the given config.
      */
+    /** @param array<string, mixed> $config */
     public static function createFromConfig(array $config): self
     {
         $tabConfigs = Arr::pull($config, 'tabs');
@@ -275,6 +281,7 @@ class FieldLayout extends Component
         ]);
     }
 
+    /** @param list<FieldInterface> $customFields */
     public function validateFields(array $customFields, Closure $fail): void
     {
         // Make sure no field handles are duplicated or using one of our reserved attribute names
@@ -360,7 +367,7 @@ class FieldLayout extends Component
      *
      * @param  array  $tabs  An array of the layout’s tabs, which can either be FieldLayoutTab objects or arrays defining the tab’s attributes.
      *
-     * @phpstan-param array<array|FieldLayoutTab> $tabs
+     * @phpstan-param array<array<string, mixed>|FieldLayoutTab> $tabs
      */
     public function setTabs(array $tabs): void
     {
@@ -412,16 +419,19 @@ class FieldLayout extends Component
         $this->reset();
     }
 
+    /** @return list<GeneratedField> */
     public function getGeneratedFields(): array
     {
         return $this->_generatedFields ?? [];
     }
 
+    /** @return GeneratedField|null */
     public function getGeneratedFieldByUid(string $uid): ?array
     {
         return array_find($this->getGeneratedFields(), fn (array $field) => $field['uid'] === $uid);
     }
 
+    /** @param list<GeneratedFieldConfig>|null $fields */
     public function setGeneratedFields(?array $fields): void
     {
         if (empty($fields)) {
@@ -438,13 +448,15 @@ class FieldLayout extends Component
         $this->_generatedFields = array_values($fields);
     }
 
-    public function generatedFields(array|Closure|null $fields): static
+    /** @param list<GeneratedFieldConfig>|null $fields */
+    public function generatedFields(?array $fields): static
     {
-        $this->setGeneratedFields($this->evaluate($fields));
+        $this->setGeneratedFields($fields);
 
         return $this;
     }
 
+    /** @return list<string> */
     public function getCardView(): array
     {
         if (! isset($this->_cardView)) {
@@ -457,7 +469,7 @@ class FieldLayout extends Component
     /**
      * Sets the layout’s card view makeup.
      *
-     * @param  array|null  $items  An array of the layout’s card view items
+     * @param  list<string>|null  $items  An array of the layout’s card view items
      */
     public function setCardView(?array $items): void
     {
@@ -466,16 +478,17 @@ class FieldLayout extends Component
         $this->reset();
     }
 
-    public function cardView(array|Closure|null $items): static
+    /** @param list<string>|null $items */
+    public function cardView(?array $items): static
     {
-        $this->setCardView($this->evaluate($items));
+        $this->setCardView($items);
 
         return $this;
     }
 
-    public function thumbFieldKey(string|Closure|null $key): static
+    public function thumbFieldKey(?string $key): static
     {
-        $this->thumbFieldKey = $this->evaluate($key);
+        $this->thumbFieldKey = $key;
 
         return $this;
     }
@@ -510,10 +523,8 @@ class FieldLayout extends Component
         $this->_cardThumbAlignment = $alignment ?? 'end';
     }
 
-    public function cardThumbAlignment(string|Closure|null $alignment = null): static
+    public function cardThumbAlignment(?string $alignment = null): static
     {
-        $alignment = $this->evaluate($alignment);
-
         if ($alignment !== null && ! in_array($alignment, ['start', 'end'], true)) {
             throw new InvalidArgumentException("Invalid card thumbnail alignment: $alignment");
         }
@@ -591,7 +602,6 @@ class FieldLayout extends Component
             new Tip(['style' => Tip::STYLE_TIP]),
             new Tip(['style' => Tip::STYLE_WARNING]),
             new Markdown,
-            new Template,
         ];
 
         event($event = new FieldLayoutUIElementsResolving($this, $elements));
@@ -684,6 +694,9 @@ class FieldLayout extends Component
 
     /**
      * Returns the field layout’s config.
+     */
+    /**
+     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string}|null
      */
     public function getConfig(): ?array
     {
@@ -1181,6 +1194,7 @@ class FieldLayout extends Component
         return $html;
     }
 
+    /** @return array<string, array{label: string, placeholder?: mixed}> */
     private function cardAttributes(): array
     {
         return $this->_cardAttributes ??= $this->type::cardAttributes($this);
@@ -1230,129 +1244,6 @@ class FieldLayout extends Component
         $this->_indexedCustomFields ??= Arr::keyBy($this->getCustomFields(), fn (FieldInterface $field) => $field->handle);
 
         return $this->_indexedCustomFields[$handle] ?? null;
-    }
-
-    /**
-     * Creates a new [[FieldLayoutForm]] object for the given element.
-     *
-     * The `$config` array can contain the following keys:
-     *
-     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
-     * - `namespace` – Namespace that should be applied to the tab contents
-     * - `registerDeltas` – Whether delta name registration should be enabled/disabled for the form (by default its state will be left alone)
-     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
-     *
-     * @param  ElementInterface|null  $element  The element the form is being rendered for
-     * @param  bool  $static  Whether the form should be static (non-interactive)
-     * @param  array  $config  The [[FieldLayoutForm]] config
-     */
-    public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
-    {
-        // Calling this with an existing namespace isn't fully supported,
-        // since the tab anchors' `href` attributes won't end up getting set properly
-        $namespace = Arr::pull($config, 'namespace');
-
-        // Register delta names?
-        $registerDeltas = Arr::pull($config, 'registerDeltas');
-
-        $buildForm = function () use ($element, $static, $config, $namespace): FieldLayoutForm {
-            // Any already-included layout elements?
-            $visibleElements = Arr::pull($config, 'visibleElements');
-            $staticElements = Arr::pull($config, 'staticElements');
-
-            $form = new FieldLayoutForm($config);
-            $tabs = $this->getTabs();
-
-            event($event = new FieldLayoutFormCreating(
-                fieldLayout: $this,
-                form: $form,
-                element: $element,
-                static: $static,
-                tabs: $tabs,
-            ));
-
-            $static = $event->static;
-
-            foreach ($event->tabs as $tab) {
-                $layoutElements = [];
-                $showTab = ! isset($tab->uid) || $tab->showInForm($element);
-                $hasVisibleFields = false;
-
-                foreach ($tab->getElements() as $layoutElement) {
-                    // Only tabs + elements that were saved with UUIDs can be conditional
-                    $isConditional = isset($tab->uid, $layoutElement->uid);
-
-                    if ($showTab && (! $isConditional || $layoutElement->showInForm($element))) {
-                        if ($layoutElement instanceof CustomField) {
-                            $isStatic = $static || ! $layoutElement->editable($element);
-                        } else {
-                            $isStatic = $static;
-                        }
-
-                        // If it was already included and we just need the missing elements, only keep track that it's still included
-                        if (
-                            ! $layoutElement->alwaysRefresh() &&
-                            $visibleElements !== null &&
-                            (! $isConditional || (
-                                (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) &&
-                                ($staticElements === null || $isStatic === in_array($layoutElement->uid, $staticElements[$tab->uid] ?? []))
-                            ))
-                        ) {
-                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, true, $isStatic);
-                            $hasVisibleFields = true;
-                        } else {
-                            $html = InputNamespace::namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
-
-                            if ($html) {
-                                $errorKey = null;
-                                // if error key prefix was set on the FieldLayoutForm - use it
-                                if ($form->errorKeyPrefix) {
-                                    $tagAttributes = Html::parseTagAttributes($html);
-                                    // if we already have an error-key for this field, prefix it
-                                    if (isset($tagAttributes['data']['error-key'])) {
-                                        $errorKey = $form->errorKeyPrefix.'.'.$tagAttributes['data']['error-key'];
-                                    } elseif ($layoutElement instanceof BaseField) {
-                                        // otherwise let's construct it
-                                        $errorKey = $form->errorKeyPrefix.'.'.($layoutElement->name ?? $layoutElement->attribute());
-                                    }
-                                }
-
-                                $html = Html::modifyTagAttributes($html, [
-                                    'data' => array_filter([
-                                        'layout-element' => $isConditional ? $layoutElement->uid : true,
-                                        'error-key' => $errorKey,
-                                        'static' => $isStatic,
-                                    ]),
-                                ]);
-
-                                $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, $html, $isStatic);
-                                $hasVisibleFields = true;
-                            } else {
-                                $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
-                            }
-                        }
-                    } else {
-                        $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
-                    }
-                }
-
-                if ($hasVisibleFields) {
-                    $form->tabs[] = new FieldLayoutFormTab([
-                        'layoutTab' => $tab,
-                        'hasErrors' => $element && $tab->elementHasErrors($element),
-                        'elements' => $layoutElements,
-                    ]);
-                }
-            }
-
-            return $form;
-        };
-
-        if ($registerDeltas !== null) {
-            return DeltaRegistry::withActive($registerDeltas, $buildForm);
-        }
-
-        return $buildForm();
     }
 
     private function _element(callable $filter, ?ElementInterface $element = null): ?FieldLayoutElement

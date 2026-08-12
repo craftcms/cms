@@ -1,7 +1,19 @@
 import {css} from 'lit';
 
 export default css`
-  :host([variant~='default']) {
+  :host([variant~='accent']) {
+    --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-on-loud: var(--c-color-accent-on-loud);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+  }
+
+  :host([variant='neutral']) {
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);

@@ -13,6 +13,7 @@ readonly class SearchPerformed
     public function __construct(
         public ElementQueryInterface $elementQuery,
         public SearchQuery $query,
+        /** @var list<array{elementId: int|string, siteId: int|string, keywords: string, attribute: string}> */
         public array $results,
         /** @var array<string,int> */
         public array $scores,

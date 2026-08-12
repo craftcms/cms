@@ -33,12 +33,16 @@ interface ConditionInterface
     /**
      * Returns configuration that should be maintained for the builder.
      *
+     * @return array<string, mixed>
+     *
      * @since 5.1.0
      */
     public function getBuilderConfig(): array;
 
     /**
      * Returns the condition’s portable config.
+     *
+     * @return array<string, mixed>
      */
     public function getConfig(): array;
 
@@ -70,7 +74,7 @@ interface ConditionInterface
     /**
      * Sets the rules this condition should be configured with.
      *
-     * @param  ConditionRuleInterface[]|array[]  $rules
+     * @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules
      *
      * @throws InvalidArgumentException if any of the rules are not selectable
      */

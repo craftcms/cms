@@ -333,6 +333,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return EntryQuery<self> */
     #[Override]
     public static function find(): EntryQuery
     {
@@ -354,6 +355,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return true;
     }
 
+    /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -449,6 +451,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sources;
     }
 
+    /**
+     * @param  array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}  $config
+     * @return array{condition?: array{conditionRules?: array<int, array{class: class-string, values?: string[]}>}, data?: array<string, string>}
+     */
     #[Override]
     public static function modifyCustomSource(array $config): array
     {
@@ -513,6 +519,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
     }
 
+    /** @return array<int, class-string|array<string, scalar|null>|object> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -635,6 +642,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return true;
     }
 
+    /** @return array<string, scalar|null> */
     #[Override]
     public static function baseBulkDuplicateAttributes(): array
     {
@@ -644,6 +652,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<array-key, string|array<string, scalar|callable|null>> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -720,6 +729,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<string, array<string, string>> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -764,6 +774,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
+    /** @return array<string, array<string, string|callable>> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -824,6 +835,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
+    /** @param array<string, scalar|callable|null> $attribute */
     #[Override]
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -833,6 +845,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
+    /** @return array<string, class-string|array<array-key, scalar|array<string, int>|null>>|null|false */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -882,6 +895,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return EntryInterface::getType();
     }
 
+    /** @return string[] */
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
@@ -900,6 +914,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
+    /** @return string[] */
     #[Override]
     public function attributes(): array
     {
@@ -942,6 +957,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ]);
     }
 
+    /** @param array<string, array<array-key, int|string>|int|string|null> $values */
     #[Override]
     public function setAttributesFromRequest(array $values): void
     {
@@ -994,6 +1010,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getColor();
     }
 
+    /** @return array<int, array{siteId: int, propagate: bool, enabledByDefault: bool}> */
     #[Override]
     public function getSupportedSites(): array
     {
@@ -1122,6 +1139,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
+    /** @return array{string, array{template: string, variables: array{entry: self}}}|null */
     protected function route(): ?array
     {
         // Make sure that the entry is actually live
@@ -1150,6 +1168,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
+    /** @return array<int, array<string, bool|string|array<string, string|array<int, array<string, bool|string>>>>|null> */
     #[Override]
     protected function crumbs(): array
     {
@@ -1311,6 +1330,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getUiLabel();
     }
 
+    /** @return array<int, array{label: string, urlFormat: string}> */
     #[Override]
     protected function previewTargets(): array
     {
@@ -1557,6 +1577,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->_authorIds ??= array_map(fn (User $author) => $author->id, $this->getAuthors());
     }
 
+    /** @return int[]|null */
     public function getOldAuthorIds(): ?array
     {
         return $this->_oldAuthorIds;
@@ -1579,6 +1600,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $this->_authors = null;
     }
 
+    /**
+     * @param  array<array-key, User|int|string>|string|int|null  $authorIds
+     * @return int[]
+     */
     private function normalizeAuthorIds(array|string|int|null $authorIds): array
     {
         if ($authorIds === '' || $authorIds === null) {
@@ -1809,6 +1834,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
+    /** @return array<int, array<string, scalar|null>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1837,7 +1863,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
           params.entryTypeId = input.val();
         }
     }
-    new Craft.CpScreenSlideout('entry-types/edit', {params});
+    new Craft.CpScreenSlideout(Craft.getCpUrl('settings/entry-types/' + params.entryTypeId));
   });
 })();
 JS, [
@@ -1879,7 +1905,7 @@ JS, [
                 HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
       });
     })();
     JS, [
@@ -1989,6 +2015,7 @@ JS, [
         }
     }
 
+    /** @return array<string, array<string, scalar>> */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -2219,6 +2246,7 @@ JS;
         return $showStatusField;
     }
 
+    /** @return array<string, array<array-key, int|string>|bool|int|string|null> */
     private function _parentOptionCriteria(Section $section): array
     {
         $parentOptionCriteria = [
@@ -2490,9 +2518,13 @@ JS;
                 ->all();
         }
 
-        DB::table(Table::ENTRIES_AUTHORS)
-            ->where('entryId', $this->id)
-            ->delete();
+        // Only issue the delete if there’s something to delete: an unconditional delete for a brand-new
+        // entry ID can take a gap lock on the primary index and deadlock against other transactions
+        // inserting authors for their own new entries.
+        $authorsQuery = DB::table(Table::ENTRIES_AUTHORS)->where('entryId', $this->id);
+        if ($authorsQuery->exists()) {
+            $authorsQuery->delete();
+        }
 
         if (! empty($this->_authorIds)) {
             $data = [];
@@ -2692,6 +2724,7 @@ JS;
      * Check if current typeId is in the array of passed in entry types.
      * If no entry types are passed, check get all the available ones.
      */
+    /** @param EntryType[]|null $entryTypes */
     public function isEntryTypeAllowed(?array $entryTypes = null): bool
     {
         if ($entryTypes === null) {

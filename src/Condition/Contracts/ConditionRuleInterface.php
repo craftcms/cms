@@ -14,7 +14,7 @@ use RuntimeException;
  * A base implementation is provided by [[BaseConditionRule]].
  *
  * @property ConditionInterface $condition The condition associated with this rule
- * @property-read array $config The rule’s portable config
+ * @property-read array<string, mixed> $config The rule’s portable config
  * @property-read string $label The rule’s option label
  *
  * @mixin BaseConditionRule
@@ -50,6 +50,8 @@ interface ConditionRuleInterface extends ComponentInterface
 
     /**
      * Returns the rule’s portable config.
+     *
+     * @return array<string, mixed>
      *
      * @throws RuntimeException if the rule is misconfigured
      */

@@ -1,28 +1,13 @@
-import {ConfigService} from '@craftcms/ui';
-import {QueueService} from '@/modules/queue/queue';
 import {createInertiaApp, router} from '@inertiajs/vue3';
-import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/common/types/keys';
 import axios from 'axios';
-import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
-import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
-import ClearCaches from '@/modules/utilities/components/clear-caches/ClearCaches.vue';
-import FindReplace from '@/modules/utilities/components/find-replace/FindReplace.vue';
-import DatabaseBackup from '@/modules/utilities/components/DatabaseBackup.vue';
-import Migrations from '@/modules/utilities/components/Migrations.vue';
-import Updates from '@/modules/updater/components/Updates.vue';
-import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
-import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
-import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
-import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import CpLink from '@/common/components/CpLink.vue';
 import {setTranslations} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
-import {createCpComponentRegistry} from './components.js';
+import {registerSlideoutGlobals} from '@/common/slideouts';
 import {configureIcons} from './icons.js';
-import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
+import {config, installCpApp, queue} from './cp-app';
+import {cpComponentRegistry} from './components.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -44,11 +29,6 @@ function defaultPageLayout(name: string) {
 
   return AppLayout;
 }
-
-// Instantiate services
-const config = ConfigService.getInstance();
-const queue = QueueService.getInstance();
-const components = createCpComponentRegistry();
 
 function routeSegment(value: unknown): string {
   if (value === null || value === undefined) {
@@ -79,7 +59,7 @@ const Cp = {
   },
 
   get $components() {
-    return components;
+    return cpComponentRegistry;
   },
 
   booted(callback: (instance: any) => void) {
@@ -133,34 +113,13 @@ const Cp = {
       layout: defaultPageLayout,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
-        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
-
-        app.provide(Queue, queue);
-        app.provide(Axios, axios);
-        app.provide(Config, config);
-        app.provide(Craft, config);
-
-        app.component('QueueManager', QueueManager);
-        app.component('QueueManagerToolbar', QueueManagerToolbar);
-        app.component('DeprecationErrors', DeprecationErrors);
-        app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
-        app.component('ClearCaches', ClearCaches);
-        app.component('FindReplace', FindReplace);
-        app.component('DatabaseBackup', DatabaseBackup);
-        app.component('Migrations', Migrations);
-        app.component('Updates', Updates);
-        app.component('ProjectConfig', ProjectConfig);
-        app.component('AssetIndexes', AssetIndexes);
-        app.component('SystemMessages', SystemMessages);
-        app.component('CpLink', CpLink);
-        app.component('LocalFsSettings', LocalFsSettings);
-
-        components.install(app);
+        installCpApp(app);
       },
     });
 
     handleNonInertiaRequests();
     ensureLegacyNotificationContainer();
+    registerSlideoutGlobals();
 
     console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));

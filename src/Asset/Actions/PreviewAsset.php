@@ -13,6 +13,7 @@ class PreviewAsset extends ElementAction
 {
     public ?string $label = null;
 
+    /** @param array<string, mixed>|object $config */
     public function __construct(array|object $config = [])
     {
         parent::__construct($config);
@@ -24,6 +25,12 @@ class PreviewAsset extends ElementAction
     public function getTriggerLabel(): string
     {
         return $this->label;
+    }
+
+    #[\Override]
+    public static function supportsBulk(): bool
+    {
+        return false;
     }
 
     public function getTriggerHtml(): ?string

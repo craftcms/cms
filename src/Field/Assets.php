@@ -25,6 +25,12 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -55,6 +61,10 @@ use function CraftCms\Cms\t;
 
 /**
  * Assets represents an Assets field.
+ *
+ * @phpstan-import-type ArgumentConfig from \GraphQL\Type\Definition\Argument
+ *
+ * @phpstan-type UploadedFileData array{type:'data', filename:string, mimeType:string, data:string}|array{type:'file'|'upload', filename:string, mimeType:string|null, path:string}
  */
 class Assets extends BaseRelationField
 {
@@ -144,8 +154,8 @@ class Assets extends BaseRelationField
     public bool $restrictFiles = false;
 
     /**
-     * @var array|null The file kinds that the field should be restricted to
-     *                 (only used if [[restrictFiles]] is true)
+     * @var list<string>|null The file kinds that the field should be restricted to
+     *                        (only used if [[restrictFiles]] is true)
      */
     public ?array $allowedKinds = null;
 
@@ -179,11 +189,10 @@ class Assets extends BaseRelationField
     #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
-    /**
-     * @var array|null References for files uploaded as data strings for this field.
-     */
+    /** @var array{data:array<array-key, string>, filename:array<array-key, string>}|null References for files uploaded as data strings for this field. */
     private ?array $_uploadedDataFiles = null;
 
+    /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
         // Rename old settings
@@ -217,6 +226,58 @@ class Assets extends BaseRelationField
     }
 
     #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $sourceOptions = array_map(fn (array $option): array => [
+            'label' => (string) $option['label'],
+            'value' => $option['value'],
+        ], $this->getSourceOptions());
+        $form = parent::settingsForm($context);
+
+        return $form->add(
+            FormField::make(t('Restrict assets to a single location'))
+                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
+            FormField::make(t('Restricted Location Source'))
+                ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource)),
+            FormField::make(t('Restricted Location Subpath'))
+                ->control(Text::make('restrictedLocationSubpath')->placeholder(t('path/to/subfolder'))->value($this->restrictedLocationSubpath)),
+            FormField::make(t('Allow subfolders'))
+                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders)),
+            FormField::make(t('Restricted Default Upload Subpath'))
+                ->control(Text::make('restrictedDefaultUploadSubpath')->placeholder(t('path/to/subfolder'))->value($this->restrictedDefaultUploadSubpath)),
+            FormField::make(t('Default Upload Location Source'))
+                ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource)),
+            FormField::make(t('Default Upload Location Subpath'))
+                ->control(Text::make('defaultUploadLocationSubpath')->placeholder(t('path/to/subfolder'))->value($this->defaultUploadLocationSubpath)),
+            FormField::make(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
+            FormField::make(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+            FormField::make(t('Restrict allowed file types'))
+                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles)),
+            FormField::make(t('Allowed Kinds'))
+                ->control(Choice::make('allowedKinds')
+                    ->multiple()
+                    ->options($this->getFileKindOptions())
+                    ->value($this->allowedKinds ?? [])),
+            FormField::make(t('Allow uploading directly to the field'))
+                ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
+                ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
+            FormField::make(t('Preview Mode'))
+                ->instructions(t('How the related {type} should be displayed within element indexes.', [
+                    'type' => Asset::pluralLowerDisplayName(),
+                ]))
+                ->control(Choice::make('previewMode')->options([
+                    ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                    ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+                ])->value($this->previewMode)),
+        );
+    }
+
+    /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */
+    #[Override]
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
@@ -226,6 +287,9 @@ class Assets extends BaseRelationField
                 $sourceOptions[] = [
                     'label' => $volume['label'],
                     'value' => $volume['key'],
+                    'data' => [
+                        'structure-id' => $volume['structureId'] ?? null,
+                    ],
                 ];
             }
         }
@@ -233,9 +297,7 @@ class Assets extends BaseRelationField
         return $sourceOptions;
     }
 
-    /**
-     * Returns the available file kind options for the settings
-     */
+    /** @return list<array{value:string, label:string}> */
     public function getFileKindOptions(): array
     {
         $fileKindOptions = [];
@@ -265,6 +327,7 @@ class Assets extends BaseRelationField
         }
     }
 
+    /** @return list<Closure> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -277,6 +340,8 @@ class Assets extends BaseRelationField
 
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
+     *
+     * @param  ElementQuery<Asset>  $value
      */
     public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
@@ -400,6 +465,15 @@ class Assets extends BaseRelationField
         return Gql::canQueryAssets($schema);
     }
 
+    /**
+     * @return array{
+     *     name: string|null,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -412,6 +486,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @param ElementCollection<int, covariant ElementInterface> $elements */
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -593,6 +668,7 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
+    /** @return array{volumeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -614,6 +690,7 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /** @return list<string> */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
@@ -680,6 +757,7 @@ class Assets extends BaseRelationField
         return $sources;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -718,6 +796,7 @@ class Assets extends BaseRelationField
         return $variables;
     }
 
+    /** @return array<string, mixed> */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -752,9 +831,7 @@ class Assets extends BaseRelationField
         return count($sources) === 1;
     }
 
-    /**
-     * Returns any files that were uploaded to the field.
-     */
+    /** @return list<UploadedFileData> */
     private function _getUploadedFiles(ElementInterface $element): array
     {
         $files = [];
@@ -861,9 +938,7 @@ class Assets extends BaseRelationField
         return $folder;
     }
 
-    /**
-     * Get a list of allowed extensions for a list of file kinds.
-     */
+    /** @return list<string> */
     private function _getAllowedExtensions(): array
     {
         if (! is_array($this->allowedKinds)) {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Contracts;
 
+use Illuminate\Contracts\Database\Query\Expression;
+
 /**
  * SortableFieldInterface defines the common interface to be implemented by field classes that can be available as
  * sort options on element indexes.
@@ -20,5 +22,6 @@ interface SortableFieldInterface extends FieldInterface
      * - `attribute` – The table attribute name that this option is associated with
      *   (required if `orderBy` is an array or more than one column name)
      */
+    /** @return array{label: string, orderBy: array<array-key, mixed>|string|Expression, attribute?: string, defaultDir?: 'asc'|'desc'} */
     public function getSortOption(): array;
 }

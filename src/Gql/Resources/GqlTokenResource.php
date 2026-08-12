@@ -14,6 +14,9 @@ use Illuminate\Http\Request;
  */
 class GqlTokenResource extends JsonResource
 {
+    /**
+     * @return array{id: ?int, name: ?string, dateCreated: ?string, lastUsed: ?string, expiryDate: ?string, enabled: bool, isTemporary: bool, isValid: bool, isExpired: bool, isPublic: bool}
+     */
     #[\Override]
     public function toArray(Request $request): array
     {

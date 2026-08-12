@@ -1,7 +1,8 @@
-import {computed, onMounted, type Ref} from 'vue';
+import {computed, type Ref} from 'vue';
 import {
   createIndexVisitor,
   type ElementIndexRoute,
+  type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
@@ -35,21 +36,19 @@ export function useElementIndexViewMode(
 
   // On a fresh full-page load the server renders for the default `table` mode
   // (it has no access to the persisted view state), so if local storage restored
-  // a non-table mode, re-request the server-rendered elements for it — mirroring
-  // how `useElementIndexSort` restores a persisted sort into the URL on load.
-  onMounted(() => {
+  // a non-table mode, re-request the server-rendered elements for it. The page
+  // folds this into one mount-time restore visit alongside the sort/column
+  // restores (see `useElementIndexPage`), so they can't interrupt each other.
+  function restore(): IndexRestore | null {
     const params = new URLSearchParams(window.location.search);
     const persisted = viewState.value.mode;
 
     if (params.has('viewMode') || persisted === 'table') {
-      return;
+      return null;
     }
 
-    visitor.merge(
-      {viewMode: persisted},
-      {only: ['data', 'pagination'], replace: true}
-    );
-  });
+    return {params: {viewMode: persisted}, only: ['data', 'pagination']};
+  }
 
-  return {mode};
+  return {mode, restore};
 }

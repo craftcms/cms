@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
@@ -44,6 +44,16 @@ beforeEach(() => {
 });
 
 describe('craft-combobox', () => {
+  it('forwards its placeholder to the textbox', async () => {
+    const combobox = await createFixture((c) => {
+      c.placeholder = 'Choose an option';
+    });
+
+    expect((combobox._inputNode as HTMLInputElement).placeholder).toBe(
+      'Choose an option'
+    );
+  });
+
   it('renders options from the array property', async () => {
     const combobox = await createFixture((c) => {
       c.options = makeOptions(5);
@@ -184,6 +194,20 @@ describe('craft-combobox', () => {
       c.modelValue = 'en-US';
     });
     expect(combobox.modelValue).toBe('en-US');
+  });
+
+  it('displays the matching option label for an initial value', async () => {
+    const combobox = await createFixture();
+    combobox.options = [
+      {label: 'Online', value: '1'},
+      {label: 'Offline', value: '0'},
+    ];
+    combobox.modelValue = '1';
+
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('1');
+      expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
   });
 
   it('preserves a custom value on mount', async () => {

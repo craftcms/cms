@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -40,6 +42,7 @@ class Entry extends BaseElementLinkType
         return EntryElement::class;
     }
 
+    /** @param array<string, bool|list<string>|null> $config */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -52,24 +55,17 @@ class Entry extends BaseElementLinkType
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsNodes(string $prefix): array
     {
-        return
-            parent::getSettingsHtml().
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted sections'),
-                'instructions' => t('Whether to show sections that the user doesn’t have permission to view.'),
-                'id' => 'showUnpermittedSections',
-                'name' => 'showUnpermittedSections',
-                'on' => $this->showUnpermittedSections,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show unpermitted entries'),
-                'instructions' => t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'),
-                'id' => 'showUnpermittedEntries',
-                'name' => 'showUnpermittedEntries',
-                'on' => $this->showUnpermittedEntries,
-            ]);
+        return [
+            ...parent::settingsNodes($prefix),
+            FormField::make(t('Show unpermitted sections'))
+                ->instructions(t('Whether to show sections that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedSections'))->value($this->showUnpermittedSections)),
+            FormField::make(t('Show unpermitted entries'))
+                ->instructions(t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'))
+                ->control(Lightswitch::make($this->settingPath($prefix, 'showUnpermittedEntries'))->value($this->showUnpermittedEntries)),
+        ];
     }
 
     #[Override]
@@ -110,6 +106,7 @@ class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
+    /** @return array<string, bool|list<string>|string|null> */
     #[Override]
     protected function selectionCriteria(): array
     {
@@ -122,6 +119,15 @@ class Entry extends BaseElementLinkType
         return $criteria;
     }
 
+    /**
+     * @return array{
+     *     elementType: class-string<ElementInterface>,
+     *     limit: int,
+     *     single: bool,
+     *     sources: string|array<int, string>,
+     *     criteria: array<string, bool|list<string>|string|null>,
+     * }
+     */
     #[Override]
     protected function elementSelectConfig(): array
     {

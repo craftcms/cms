@@ -89,11 +89,13 @@ type FieldLayoutDesignerInstance = any;
 interface ElementSelectorModalSettings {
   closeOtherModals?: boolean;
   criteria?: Record<string, unknown>;
+  disabledElementIds?: number[];
   hideOnSelect?: boolean;
   modalTitle?: string;
   multiSelect?: boolean;
   onSelect?: (elements: any[]) => void;
-  sources?: string[];
+  showSiteMenu?: boolean;
+  sources?: string[] | null;
 }
 
 interface CraftStatic {
@@ -103,6 +105,7 @@ interface CraftStatic {
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: object, category?: string): string;
   sendActionRequest(method: string, action: string, options?: object): Promise;
+  namespaceId(id: string, namespace?: string | null): string;
   initUiElements(container: Element | JQuery): void;
   createElementSelectorModal(
     elementType: string,

@@ -210,6 +210,57 @@ describe('JS deduplication', () => {
 
     expect(parent.querySelector('#after-script')).not.toBeNull();
   });
+
+  test('rejects failed external scripts and removes them', async () => {
+    const {appendElementHtml} = await freshImport();
+    const append = appendElementHtml(
+      '<script src="https://example.com/missing.js"></script>',
+      document.body,
+      true
+    );
+    const script = document.body.querySelector('script')!;
+
+    script.dispatchEvent(new Event('error'));
+
+    await expect(append).rejects.toThrow('https://example.com/missing.js');
+    expect(script.isConnected).toBe(false);
+  });
+
+  test('preserves script failures for strict shared consumers', async () => {
+    const {appendElementHtml} = await freshImport();
+    const html =
+      '<script src="https://example.com/shared-missing.js"></script>';
+    const firstAppend = appendElementHtml(html, document.body);
+
+    document.body.querySelector('script')!.dispatchEvent(new Event('error'));
+    const firstDispose = await firstAppend;
+
+    await expect(appendElementHtml(html, document.body, true)).rejects.toThrow(
+      'https://example.com/shared-missing.js'
+    );
+
+    firstDispose();
+  });
+
+  test('keeps shared assets until every owner disposes them', async () => {
+    const {appendBodyHtml} = await freshImport();
+    const firstAppend = appendBodyHtml(
+      '<script src="https://example.com/shared.js"></script>'
+    );
+    const script = document.body.querySelector('script')!;
+
+    script.dispatchEvent(new Event('load'));
+    const firstDispose = await firstAppend;
+    const secondDispose = await appendBodyHtml(
+      '<script src="https://example.com/shared.js"></script>'
+    );
+
+    firstDispose();
+    expect(script.isConnected).toBe(true);
+
+    secondDispose();
+    expect(script.isConnected).toBe(false);
+  });
 });
 
 describe('serializeFormInputs', () => {

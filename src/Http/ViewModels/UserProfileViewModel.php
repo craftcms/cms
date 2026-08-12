@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\Html\ContentHtml;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\HtmlFragment;
@@ -14,7 +17,7 @@ class UserProfileViewModel extends ViewModel
 {
     private bool $formRendered = false;
 
-    private ?FieldLayoutForm $form = null;
+    private ?FormPayload $form = null;
 
     private HtmlFragment $formHtml;
 
@@ -35,7 +38,9 @@ class UserProfileViewModel extends ViewModel
     /** @return array<int, array{containerId: string, tabId: string, label: string, hasErrors: bool}> */
     public function tabMenu(): array
     {
-        return collect($this->form()?->getTabMenu() ?? [])
+        $form = $this->form();
+
+        return collect($form === null ? [] : app(FormHtmlRenderer::class)->tabMenu($form))
             ->map(fn (array $tab, string $containerId): array => [
                 'containerId' => $containerId,
                 'tabId' => $tab['tabId'],
@@ -63,13 +68,16 @@ class UserProfileViewModel extends ViewModel
         return $fragment->isEmpty() ? null : $fragment;
     }
 
-    private function form(): ?FieldLayoutForm
+    private function form(): ?FormPayload
     {
         if (! $this->formRendered) {
             $this->formHtml = HtmlStack::capture(function (): string {
-                $this->form = $this->user->getFieldLayout()?->createForm($this->user);
+                $layout = $this->user->getFieldLayout();
+                $this->form = $layout === null
+                    ? null
+                    : app(FieldLayoutCompiler::class)->compile($layout, $this->user, new FormContext);
 
-                return $this->form?->render() ?? '';
+                return $this->form === null ? '' : app(FormHtmlRenderer::class)->render($this->form);
             });
             $this->formRendered = true;
         }

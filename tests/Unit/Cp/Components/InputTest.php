@@ -38,6 +38,13 @@ describe('input', function () {
             ->and($html)->toContain('maxlength="255" ');
     });
 
+    it('reflects inputmode on the host and the native input', function () {
+        $html = Input::make()->id('i')->inputmode('numeric')->toHtml();
+
+        expect($html)->toContain('<craft-input inputmode="numeric">')
+            ->and(substr_count($html, 'inputmode="numeric"'))->toBe(2);
+    });
+
     it('maps autocomplete booleans to on/off and passes strings through', function () {
         expect(Input::make()->id('i')->autocomplete(true)->toHtml())->toContain('autocomplete="on"')
             ->and(Input::make()->id('i')->autocomplete('postal-code')->toHtml())->toContain('autocomplete="postal-code"');
@@ -153,13 +160,4 @@ describe('suffix', function () {
         expect(Input::make()->id('i')->suffix('<b>MB</b>')->toHtml())
             ->toContain('&lt;b&gt;MB&lt;/b&gt;');
     });
-});
-
-it('evaluates closures with injection', function () {
-    $html = Input::make()
-        ->id('i')
-        ->value(fn (Input $input): string => 'computed')
-        ->toHtml();
-
-    expect($html)->toContain('value="computed"');
 });

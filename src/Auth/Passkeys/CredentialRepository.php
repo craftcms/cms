@@ -53,6 +53,8 @@ readonly class CredentialRepository
 
     /**
      * Finds all webauthn records for given user and returns an array of CredentialRecords for their credential values.
+     *
+     * @return list<CredentialRecord>
      */
     public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
     {

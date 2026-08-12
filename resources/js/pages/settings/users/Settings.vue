@@ -5,6 +5,7 @@
   import {store} from '@actions/Settings/Users/UserSettingsController';
   import {create as createVolume} from '@actions/Settings/VolumesController';
   import Pane from '@/common/components/Pane.vue';
+  import {openSlideout} from '@/common/slideouts';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -26,8 +27,13 @@
     defaultGroup: string;
   }
 
-  interface VolumeSlideoutSubmitEvent {
-    data: {
+  /**
+   * What `VolumesController::store()` sends back. It answers with
+   * `asModelSuccess($volume, …, 'volume')`, so the volume is nested under its
+   * model name rather than spread across the top level.
+   */
+  interface VolumeSaveData {
+    volume?: {
       name: string;
       uid: string;
     };
@@ -128,20 +134,29 @@
   }
 
   function createPhotoVolume() {
-    const slideout = new Craft.CpScreenSlideout(createVolume.url());
+    // No `opener`: the combobox still has focus when its "Create a new
+    // volume…" option fires this, so the default picks it up and focus
+    // returns there when the panel closes.
+    void openSlideout(createVolume.url(), {
+      onSaved: ({data}) => {
+        const volume = (data as VolumeSaveData | undefined)?.volume;
 
-    slideout.on('submit', ({data}: VolumeSlideoutSubmitEvent) => {
-      createdPhotoVolumeOptions.value = [
-        ...createdPhotoVolumeOptions.value.filter((option) => {
-          return option.value !== data.uid;
-        }),
-        {
-          label: data.name,
-          value: data.uid,
-        },
-      ];
+        if (!volume) {
+          return;
+        }
 
-      form.photoVolumeUid = data.uid;
+        createdPhotoVolumeOptions.value = [
+          ...createdPhotoVolumeOptions.value.filter((option) => {
+            return option.value !== volume.uid;
+          }),
+          {
+            label: volume.name,
+            value: volume.uid,
+          },
+        ];
+
+        form.photoVolumeUid = volume.uid;
+      },
     });
   }
 </script>

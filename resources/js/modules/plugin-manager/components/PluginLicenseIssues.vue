@@ -36,11 +36,7 @@
         v-slot="{processing}"
       >
         <input type="hidden" name="edition" :value="plugin.licensedEdition" />
-        <craft-button
-          type="submit"
-          appearance="inline"
-          variant="inherit"
-          :loading="processing"
+        <craft-button type="submit" inherit :loading="processing"
           >Switch</craft-button
         >
       </Form>

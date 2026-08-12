@@ -11,11 +11,14 @@ use CraftCms\Cms\Gql\Types\Input\Criteria\AssetRelation;
 use CraftCms\Cms\Gql\Types\Input\Criteria\EntryRelation;
 use CraftCms\Cms\Gql\Types\Input\Criteria\UserRelation;
 use CraftCms\Cms\Gql\Types\QueryArgument;
+use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
+/** @phpstan-import-type ArgumentConfig from Argument */
 abstract class ElementArguments extends Arguments
 {
+    /** @return array<string, ArgumentConfig> */
     #[\Override]
     public static function getArguments(): array
     {
@@ -178,6 +181,7 @@ abstract class ElementArguments extends Arguments
         return $event->arguments;
     }
 
+    /** @return array<string, ArgumentConfig> */
     public static function getStatusArguments(): array
     {
         if (! Gql::canQueryInactiveElements()) {
@@ -203,6 +207,7 @@ abstract class ElementArguments extends Arguments
         ];
     }
 
+    /** @return array<string, ArgumentConfig> */
     public static function getDraftArguments(): array
     {
         if (! Gql::canQueryDrafts()) {
@@ -243,6 +248,7 @@ abstract class ElementArguments extends Arguments
         ];
     }
 
+    /** @return array<string, ArgumentConfig> */
     public static function getRevisionArguments(): array
     {
         if (! Gql::canQueryRevisions()) {

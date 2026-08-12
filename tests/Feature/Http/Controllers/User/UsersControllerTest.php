@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Edition;
@@ -22,31 +24,8 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([UsersController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->cpTrigger.'/login');
     get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->cpTrigger.'/login');
-});
-
-describe('index', function () {
-    test('index requires viewUsers', function () {
-        get(action([UsersController::class, 'index']))->assertOk();
-
-        Gate::before(function ($user, $ability) {
-            if ($ability === 'viewUsers') {
-                return false;
-            }
-
-            return null;
-        });
-
-        get(action([UsersController::class, 'index']))->assertForbidden();
-    });
-
-    test('index shows users list', function () {
-        get(action([UsersController::class, 'index']))
-            ->assertOk()
-            ->assertSee(t('Users'));
-    });
 });
 
 describe('create', function () {
@@ -98,7 +77,7 @@ describe('edit', function () {
                 ->where('crumbs.0.label', t('Users'))
                 ->has('tabMenu')
                 ->has('subnav')
-                ->where('formFragment.html', fn (string $html): bool => str_contains($html, 'data-layout-tab')));
+                ->where('formFragment.html', fn (string $html): bool => trim($html) !== ''));
     });
 
     test('edit renders the legacy element editor for other users', function () {

@@ -62,6 +62,15 @@ class EventTagAdder extends BaseEventTagVisitor
         return 1;
     }
 
+    /**
+     * Resets the node visitor's per-template parse state.
+     */
+    public function reset(): void
+    {
+        $this->bodyTag = null;
+        $this->bodyAttrOffset = null;
+    }
+
     private function processTextNode(TextNode $node): Node
     {
         $data = $node->getAttribute('data');

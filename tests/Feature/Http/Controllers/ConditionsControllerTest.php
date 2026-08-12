@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -123,6 +124,27 @@ describe('show', function () {
 
         $payload = ($this->sourcesPayload)($condition);
         postJson(action([ConditionsController::class, 'show']), $payload)->assertOk();
+    });
+
+    it('queues rule scripts after their dependencies for htmx requests', function () {
+        $condition = new EntryCondition(Entry::class);
+        $condition->id = 'entry-condition';
+        $condition->forProjectConfig = true;
+
+        $response = post(
+            action([ConditionsController::class, 'show']),
+            ($this->conditionPayload)($condition, ['new-rule-type' => AuthorConditionRule::class]),
+            ['HX-Request' => 'true'],
+        );
+
+        $response->assertOk();
+
+        $html = $response->getContent();
+
+        expect(strpos($html, 'hx-body-html'))
+            ->toBeLessThan(strpos($html, 'legacy/vue/dist/vue.js'))
+            ->and(strpos($html, 'legacy/vue/dist/vue.js'))
+            ->toBeLessThan(strpos($html, 'new Vue'));
     });
 });
 

@@ -21,6 +21,7 @@ abstract class BaseAuthMethod implements AuthMethodInterface
         $this->user = $user;
     }
 
+    /** @return list<array<string, mixed>> */
     public function getActionMenuItems(): array
     {
         return [];

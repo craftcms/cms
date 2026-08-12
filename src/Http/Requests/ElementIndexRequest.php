@@ -111,6 +111,7 @@ class ElementIndexRequest extends FormRequest
     /**
      * Returns the posted view state, normalized to always carry a mode.
      */
+    /** @return array<string, mixed> */
     public function viewState(): array
     {
         $viewState = $this->input('viewState', []);
@@ -153,16 +154,19 @@ class ElementIndexRequest extends FormRequest
         return $returnUrl ? str_replace('?', ':QS:', $returnUrl) : null;
     }
 
+    /** @return array<string, mixed> */
     public function criteria(): array
     {
         return $this->array('criteria');
     }
 
+    /** @return array<string, mixed> */
     public function baseCriteria(): array
     {
         return $this->array('baseCriteria');
     }
 
+    /** @return list<int> */
     public function collapsedElementIds(): array
     {
         return $this->array('collapsedElementIds');
@@ -172,6 +176,7 @@ class ElementIndexRequest extends FormRequest
      * Returns the filter condition config, posted either as a `filterConfig`
      * array or as a `filters` query string.
      */
+    /** @return array<string, mixed>|null */
     public function filterConditionConfig(): ?array
     {
         $config = $this->input('filterConfig');

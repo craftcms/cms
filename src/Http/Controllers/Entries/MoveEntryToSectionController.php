@@ -99,7 +99,7 @@ readonly class MoveEntryToSectionController
 
         $this->requirePermission("saveEntries:$section->uid");
 
-        /** @var Collection<Entry> $entries */
+        /** @var Collection<int, Entry> $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)

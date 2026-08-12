@@ -32,7 +32,7 @@ readonly class SchemasController extends GqlController
         $this->ensureGqlEnabled();
     }
 
-    public function index()
+    public function index(): \Inertia\Response
     {
         // Ensure the public schema exists so the table stays aligned with the legacy UI.
         $this->gql->getPublicSchema();
@@ -114,6 +114,7 @@ readonly class SchemasController extends GqlController
         return $this->asSuccess(t('Schema saved.'));
     }
 
+    /** @return array{GqlSchema, GqlToken|null} */
     private function resolveSchema(string|int $schemaId): array
     {
         if ($schemaId === 'public') {
@@ -190,7 +191,10 @@ readonly class SchemasController extends GqlController
             ));
     }
 
-    /** @return Collection<int, PermissionGroup> */
+    /**
+     * @param  array<string, array<string, array<string, mixed>>>  $categories
+     * @return Collection<int, PermissionGroup>
+     */
     private function permissionGroups(array $categories): Collection
     {
         return collect($categories)
@@ -203,7 +207,10 @@ readonly class SchemasController extends GqlController
             ->values();
     }
 
-    /** @return Collection<int, Permission> */
+    /**
+     * @param  array<string, array<string, mixed>>  $permissions
+     * @return Collection<int, Permission>
+     */
     private function permissionList(array $permissions): Collection
     {
         return collect($permissions)

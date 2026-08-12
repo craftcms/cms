@@ -176,6 +176,19 @@ test('save creates filesystem with valid data', function () {
     ]);
 });
 
+test('refreshes filesystem settings without saving', function () {
+    postJson(action([FilesystemsController::class, 'renderSettings']), [
+        'type' => Local::class,
+        'settings' => [
+            'hasUrls' => true,
+            'url' => '@web/uploads',
+            'path' => '@webroot/uploads',
+        ],
+    ])->assertOk()
+        ->assertJsonPath('form.scope', ['settings'])
+        ->assertJsonPath('form.values.settings.url', '@web/uploads');
+});
+
 test('save ignores null transient filesystem settings', function () {
     $response = postJson(action([FilesystemsController::class, 'store']), [
         'type' => TransientSettingsFilesystem::class,
@@ -230,6 +243,25 @@ test('save updates existing filesystem with oldHandle', function () {
     $newFs = Filesystems::getFilesystemByHandle('updatedHandle');
     expect($newFs)->not()->toBeNull();
     expect($newFs->name)->toBe('Updated Name');
+});
+
+test('save does not carry settings across filesystem types', function () {
+    Filesystems::saveFilesystem(Filesystems::createFilesystem([
+        'type' => Local::class,
+        'name' => 'Original Filesystem',
+        'handle' => 'originalFilesystem',
+        'settings' => ['path' => sys_get_temp_dir().'/original-filesystem'],
+    ]));
+
+    postJson(action([FilesystemsController::class, 'store']), [
+        'type' => TransientSettingsFilesystem::class,
+        'name' => 'Changed Filesystem',
+        'handle' => 'changedFilesystem',
+        'oldHandle' => 'originalFilesystem',
+    ])->assertOk();
+
+    expect(Filesystems::getFilesystemByHandle('changedFilesystem'))
+        ->toBeInstanceOf(TransientSettingsFilesystem::class);
 });
 
 test('save returns failure on invalid data', function () {

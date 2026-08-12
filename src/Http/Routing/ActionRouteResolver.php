@@ -37,6 +37,7 @@ readonly class ActionRouteResolver
         return $actionRoute;
     }
 
+    /** @return list<string>|null */
     private function segmentsFromPath(Request $request): ?array
     {
         $actionTrigger = trim(Cms::config()->actionTrigger, '/');
@@ -49,6 +50,7 @@ readonly class ActionRouteResolver
         return null;
     }
 
+    /** @return list<string>|null */
     private function segmentsFromActionParam(Request $request): ?array
     {
         $actionParam = $request->input('action');

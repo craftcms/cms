@@ -1,4 +1,5 @@
 import {Base} from '@craftcms/garnish';
+import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
@@ -693,6 +694,21 @@ export class EditableTable extends Base<EditableTableSettings> {
               .appendTo($cell);
             break;
 
+          case 'autosuggest':
+          case 'template': {
+            const combobox = document.createElement(
+              'craft-combobox'
+            ) as CraftCombobox;
+            combobox.name = name;
+            combobox.label = col.heading ?? colId;
+            combobox.options = Array.isArray(col.options) ? col.options : [];
+            combobox.modelValue = String(value ?? '');
+            combobox.showAllOnEmpty = true;
+            combobox.setAttribute('label-sr-only', '');
+            $cell.append(combobox);
+            break;
+          }
+
           default:
             if (col.type === 'number' && col.locale) {
               $('<input/>', {
@@ -747,8 +763,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             type: 'button',
             icon: 'x',
             size: 'small',
-            variant: 'danger',
-            appearance: 'plain',
+            variant: 'danger-plain',
             'aria-label': Craft.t('app', 'Delete'),
             command: '--delete-row',
           })
@@ -853,11 +868,13 @@ export class Row extends Base {
         } else {
           $input = $('textarea', td);
           this.$textareas = this.$textareas.add($input);
-          this.niceTexts.push(
-            new Garnish.NiceText($input, {
-              onHeightChange: this.onTextareaHeightChange.bind(this),
-            })
-          );
+          if (typeof Garnish.NiceText === 'function') {
+            this.niceTexts.push(
+              new Garnish.NiceText($input, {
+                onHeightChange: this.onTextareaHeightChange.bind(this),
+              })
+            );
+          }
         }
 
         this.addListener($input, 'focus', 'onTextareaFocus');

@@ -24,6 +24,7 @@ class ElementResponse
 {
     use RespondsWithFlash;
 
+    /** @param array<string, mixed> $data */
     public function success(ElementInterface $element, string $message, array $data = [], bool $supportsAddAnother = false): Response
     {
         // Don't call asModelSuccess() here so we can avoid including custom fields in the element data

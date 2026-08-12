@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 class ElementQueryCacheTagsResolving
 {
     public function __construct(
+        /** @var ElementQuery<*> */
         public ElementQuery $query,
         /** @var string[] */
         public array $tags,

@@ -39,6 +39,7 @@ use Illuminate\Support\ServiceProvider;
  */
 class ConsoleServiceProvider extends ServiceProvider
 {
+    /** @var list<class-string> */
     private array $commands = [
         // Install
         UpCommand::class,
@@ -94,21 +95,23 @@ class ConsoleServiceProvider extends ServiceProvider
 
         $this->commands($this->commands);
 
-        foreach (ClearCachesCommand::signatures() as $signature) {
-            $this->commands(new ClearCachesCommand(
-                signature: $signature['signature'],
-                description: $signature['description'],
-                aliases: $signature['aliases'] ?? [],
-            ));
-        }
+        $this->app->booted(function () {
+            foreach (ClearCachesCommand::signatures() as $signature) {
+                $this->commands(new ClearCachesCommand(
+                    signature: $signature['signature'],
+                    description: $signature['description'],
+                    aliases: $signature['aliases'] ?? [],
+                ));
+            }
 
-        foreach (InvalidateTagsCommand::signatures() as $signature) {
-            $this->commands(new InvalidateTagsCommand(
-                signature: $signature['signature'],
-                description: $signature['description'],
-                aliases: $signature['aliases'] ?? [],
-            ));
-        }
+            foreach (InvalidateTagsCommand::signatures() as $signature) {
+                $this->commands(new InvalidateTagsCommand(
+                    signature: $signature['signature'],
+                    description: $signature['description'],
+                    aliases: $signature['aliases'] ?? [],
+                ));
+            }
+        });
 
         $this->optimizes(
             optimize: 'craft:twig:cache',

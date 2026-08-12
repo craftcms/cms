@@ -102,9 +102,10 @@ class InputNamespace
      * registered by the callable.
      *
      * ```php
-     * $settingsHtml = InputNamespace::namespaceInputs(function() use ($widget) {
-     *     return $widget->getSettingsHtml();
-     * }, 'widget-settings');
+     * $html = InputNamespace::namespaceInputs(
+     *     fn () => Html::textInput('title'),
+     *     'widget-settings',
+     * );
      * ```
      *
      * @param  callable|string|Stringable  $html  The HTML code, or a callable that returns the HTML code

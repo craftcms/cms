@@ -9,6 +9,9 @@ use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 
 class FieldLayoutActionMenuItemsResolving extends ElementActionMenuItemsResolving
 {
+    /**
+     * @param  list<array<string, mixed>>  $items
+     */
     public function __construct(
         ElementInterface $element,
         array $items = [],

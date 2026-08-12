@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
+  import {t, ButtonVariant} from '@craftcms/ui';
   import CpLink from '@/common/components/CpLink.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import {useForm, usePage} from '@inertiajs/vue3';
@@ -104,7 +104,7 @@
         <craft-button
           type="submit"
           :loading="form.processing"
-          variant="primary"
+          :variant="ButtonVariant.Fill"
         >
           {{ t('Update') }}
         </craft-button>

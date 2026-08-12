@@ -55,6 +55,7 @@ enum FileKind: string
         };
     }
 
+    /** @return list<string> */
     public function extensions(): array
     {
         return match ($this) {
@@ -81,6 +82,7 @@ enum FileKind: string
         };
     }
 
+    /** @return array{label: string, extensions: list<string>} */
     public function toArray(): array
     {
         return [

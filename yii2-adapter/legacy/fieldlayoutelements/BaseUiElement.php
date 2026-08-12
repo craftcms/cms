@@ -21,7 +21,7 @@ if (false) {
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement} instead.
      */
-    abstract class BaseUiElement extends \CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement
+    abstract class BaseUiElement extends \CraftCms\Yii2Adapter\FieldLayout\LayoutElements\BaseUiElement
     {
     }
 }

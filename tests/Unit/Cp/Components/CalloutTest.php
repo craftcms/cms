@@ -51,16 +51,6 @@ it('renders a nested component as content', function () {
     expect($html)->toContain('<craft-field label="Inner">');
 });
 
-it('evaluates closures with injection', function () {
-    $html = Callout::make()
-        ->variant(fn (Callout $callout): string => 'info')
-        ->content(fn (): string => 'Lazy')
-        ->toHtml();
-
-    expect($html)->toContain('variant="info"')
-        ->and($html)->toContain('Lazy');
-});
-
 it('accepts enum variants and appearances', function () {
     $html = Callout::make()
         ->variant(Variant::Danger)

@@ -18,10 +18,16 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\Type;
 
+/**
+ * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
+ * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
+ */
 class Entry extends Mutation
 {
+    /** @return array<string, UnnamedFieldDefinitionConfig> */
     public static function getMutations(): array
     {
         $mutationList = [];
@@ -156,6 +162,7 @@ class Entry extends Mutation
         return $mutationList;
     }
 
+    /** @return list<FieldDefinitionConfig> */
     public static function createSaveMutations(
         Section $section,
         EntryTypeData $entryType,
@@ -221,6 +228,7 @@ class Entry extends Mutation
     /**
      * Create the per-entry-type save mutations for a nested entry field.
      */
+    /** @return list<FieldDefinitionConfig> */
     public static function createSaveMutationsForField(
         ElementContainerFieldInterface $field,
         EntryTypeData $entryType,

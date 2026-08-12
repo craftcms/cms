@@ -51,6 +51,7 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
+use UnexpectedValueException;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -59,7 +60,7 @@ use function CraftCms\Cms\t;
 class Plugins
 {
     /**
-     * @var array[] Custom plugin configurations.
+     * @var array<string, array<string, mixed>> Custom plugin configurations.
      */
     public array $pluginConfigs;
 
@@ -79,12 +80,12 @@ class Plugins
     private ?array $plugins = null;
 
     /**
-     * @var array Plugin info provided by Composer, indexed by handles
+     * @var array<string, array<string, mixed>> Plugin info provided by Composer, indexed by handles
      */
     private array $composerPluginInfo;
 
     /**
-     * @var array All of the stored info for plugins (enabled or disabled), indexed by handles
+     * @var array<string, array<string, mixed>> All of the stored info for plugins (enabled or disabled), indexed by handles
      *
      * @see getStoredPluginInfo()
      */
@@ -100,10 +101,13 @@ class Plugins
      */
     private array $classPluginHandles = [];
 
+    /** @var array<string, array{hotFile: string, buildDirectory: string, input: string[]}> */
     private array $viteConfigs = [];
 
+    /** @var array<string, string[]> */
     private array $styles = [];
 
+    /** @var array<string, string[]> */
     private array $scripts = [];
 
     public function __construct(
@@ -127,8 +131,11 @@ class Plugins
             return;
         }
 
-        /** @var array $plugins */
         $plugins = require $path;
+
+        if (! is_array($plugins)) {
+            throw new UnexpectedValueException("Plugin manifest [$path] must return an array.");
+        }
 
         foreach ($plugins as $packageName => $plugin) {
             $plugin['packageName'] = $packageName;
@@ -702,7 +709,7 @@ class Plugins
      * Saves a plugin’s settings.
      *
      * @param  PluginInterface  $plugin  The plugin
-     * @param  array  $settings  The plugin’s new settings
+     * @param  array<string, mixed>  $settings  The plugin’s new settings
      * @return bool Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
@@ -816,7 +823,7 @@ class Plugins
      * Returns the stored info for a given plugin.
      *
      * @param  string  $handle  The plugin handle
-     * @return array|null The stored info, if there is any
+     * @return array<string, mixed>|null The stored info, if there is any
      */
     public function getStoredPluginInfo(string $handle): ?array
     {
@@ -859,7 +866,7 @@ class Plugins
      * Returns the Composer-supplied info
      *
      * @param  string|null  $handle  The plugin handle. If null is passed, info for all Composer-installed plugins will be returned.
-     * @return array|null The plugin info, or null if an unknown handle was passed.
+     * @return array<string, array<string, mixed>>|array<string, mixed>|null The plugin info, or null if an unknown handle was passed.
      */
     public function getComposerPluginInfo(?string $handle = null): ?array
     {
@@ -874,7 +881,7 @@ class Plugins
      * Creates and returns a new plugin instance based on its handle.
      *
      * @param  string  $handle  The plugin’s handle
-     * @param  array|null  $info  The plugin’s stored info, if any
+     * @param  array<string, mixed>|null  $info  The plugin’s stored info, if any
      *
      * @throws InvalidPluginException if $handle is invalid
      */
@@ -936,6 +943,7 @@ class Plugins
     /**
      * Returns info about all of the plugins we can find, whether they’re installed or not.
      */
+    /** @return Collection<string, array<string, mixed>> */
     public function getAllPluginInfo(): Collection
     {
         $this->loadPlugins();
@@ -953,6 +961,7 @@ class Plugins
      *
      * @throws InvalidPluginException if the plugin isn't Composer-installed
      */
+    /** @return array<string, mixed> */
     public function getPluginInfo(string $handle): array
     {
         if (! isset($this->composerPluginInfo[$handle])) {
@@ -1243,6 +1252,7 @@ class Plugins
         return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
     }
 
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
     public function addViteConfig(string $handle, array $config): void
     {
         $this->viteConfigs[$handle] = $config;
@@ -1327,6 +1337,7 @@ class Plugins
      *
      * @throws InvalidPluginException if plugin not found
      */
+    /** @return array<string, mixed> */
     private function getPluginConfigData(string $handle): array
     {
         $projectConfig = app(ProjectConfig::class);

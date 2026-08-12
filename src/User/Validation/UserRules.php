@@ -63,6 +63,7 @@ class UserRules extends ElementRules
         }
     }
 
+    /** @return array<string, array<mixed>> */
     #[Override]
     public function rules(): array
     {

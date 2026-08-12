@@ -166,9 +166,7 @@ class ElementDraftsController
         if ($this->request->isCpRequest()) {
             [$docTitle, $title] = $this->editElementTitles($element);
             $previewTargets = $element->getPreviewTargets();
-            $data += $this->fieldLayoutData($element, [
-                'registerDeltas' => true,
-            ]);
+            $data += $this->fieldLayoutData($element);
             $data += [
                 'docTitle' => $docTitle,
                 'title' => $title,

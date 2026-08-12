@@ -1,5 +1,4 @@
 import type CraftSlidePicker from '../components/slide-picker/slide-picker.js';
-import '../components/slide-picker/slide-picker.js';
 import {t} from '@src/utilities/translate';
 
 export interface SlidePickerConfig {

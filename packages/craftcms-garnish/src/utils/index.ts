@@ -75,6 +75,7 @@ export {
   isArray,
   isPlainObject,
   isTextNode,
+  deferUntil,
   log,
   handleActivatingKeypress,
 } from './misc';

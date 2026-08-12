@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -15,7 +19,6 @@ use CraftCms\Cms\View\LegacyAssets\NewUsersAsset;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 class NewUsers extends Widget
 {
@@ -85,11 +88,29 @@ class NewUsers extends Widget
     }
 
     #[Override]
-    public function getSettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return template('_components/widgets/NewUsers/settings',
-            [
-                'widget' => $this,
-            ]);
+        $form = Form::make([
+            Field::make(t('Date Range'))
+                ->control(Choice::make('dateRange')->value($this->dateRange)->options([
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
+                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
+                    ['label' => t('Last Week'), 'value' => 'lastweek'],
+                    ['label' => t('Last Month'), 'value' => 'lastmonth'],
+                ])),
+        ]);
+
+        $userGroups = UserGroups::getAllGroups();
+
+        return $form->when($userGroups->isNotEmpty(), fn (Form $form) => $form->add(
+            Field::make(t('User Group'))
+                ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
+                    ['label' => t('All'), 'value' => ''],
+                    ...$userGroups->map(fn ($userGroup): array => [
+                        'label' => t($userGroup->name, category: 'site'),
+                        'value' => $userGroup->id,
+                    ])->all(),
+                ])),
+        ));
     }
 }

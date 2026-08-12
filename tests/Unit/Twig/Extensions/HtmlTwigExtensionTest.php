@@ -59,6 +59,30 @@ describe('HtmlTwigExtension', function () {
         expect($extension->dataUrlFunction('/no/such/file.txt'))->toBe('');
     });
 
+    it('dedents indented markdown so it is not parsed as a code block', function () {
+        $extension = new HtmlTwigExtension;
+
+        // The shape captured by an indented `{% apply md %}` block: every line
+        // shares six spaces of leading indentation.
+        $indented = "      ## Heading\n      Some text\n\n      - one\n      - two\n";
+
+        expect($extension->markdownFilter($indented))
+            ->toContain('<h2>Heading</h2>')
+            ->toContain('<li>one</li>')
+            ->not->toContain('<pre>');
+    });
+
+    it('preserves genuine code blocks when dedenting', function () {
+        $extension = new HtmlTwigExtension;
+
+        // Flush-left content, so the common indentation is zero and the
+        // four-space code block keeps its relative indentation.
+        $withCode = "Intro\n\n    genuine_code();\n\nOutro\n";
+
+        expect($extension->markdownFilter($withCode))
+            ->toContain('<pre><code>genuine_code();');
+    });
+
     it('rejects custom flavors when encode is enabled', function () {
         $extension = new HtmlTwigExtension;
 

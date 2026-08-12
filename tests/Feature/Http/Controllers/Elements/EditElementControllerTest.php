@@ -10,6 +10,10 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -68,7 +72,12 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/edit-element-controller-test'),
     ]);
 
-    $this->entryType = EntryType::factory()->create();
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new EntryTitleField(['uid' => 'entry-title'])));
+    $config = $layout->getConfig();
+    $config['tabs'][0]['uid'] = 'entry-content';
+    $layout = FieldLayoutModel::factory()->create(['type' => Entry::class, 'config' => $config]);
+    $this->entryType = EntryType::factory()->create(['fieldLayoutId' => $layout->id]);
     $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'news',
         'enableVersioning' => true,
@@ -124,6 +133,7 @@ it('renders the current entry edit screen for each control panel route', functio
     get($route($entry))
         ->assertOk()
         ->assertSeeText('Current Title')
+        ->assertSee('data-form-tab="entry-content"', false)
         ->assertSeeText('Create a draft')
         ->assertSee('elements/save', false);
 })->with('editElementEntryRoutes');
@@ -187,8 +197,10 @@ it('returns a json editor payload for the current element', function () {
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('action', 'elements/save')
             ->where('notice', null)
-            ->where('content', fn (string $content) => $content !== ''
+            ->where('content', fn (string $content) => str_contains($content, 'craft-entry-field-layout-form')
                 && str_contains($content, 'elements/save'))
+            ->where('deltaNames', fn ($names) => collect($names)
+                ->doesntContain(fn (string $name) => str_ends_with($name, '[title]')))
             ->where('bodyHtml', fn (string $html) => str_contains($html, sprintf('"elementId":%d', $entry->id))
                 && str_contains($html, sprintf('"canonicalId":%d', $entry->id))
                 && str_contains($html, '"isStatic":false')
@@ -200,6 +212,40 @@ it('returns a json editor payload for the current element', function () {
             ->has('initialDeltaValues')
             ->etc()
         );
+});
+
+/**
+ * The Vue slideout builds its own `Craft.ElementEditor`, so it needs the same
+ * settings — but not the same delivery. The injected script looks the
+ * container up by id, and it runs while Vue still has the panel's subtree
+ * detached from the document, so the settings travel as a prop instead.
+ */
+it('sends element editor settings as a prop to an Inertia slideout', function () {
+    $entry = EntryModel::factory()
+        ->forSection($this->section)
+        ->forEntryType($this->entryType)
+        ->createElement(['title' => 'Prop Delivery', 'slug' => 'prop-delivery']);
+
+    $response = getJson(action(EditElementController::class, [
+        'elementType' => $entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Craft-Container-Id' => 'slideout-1',
+    ])->assertOk();
+
+    expect($response->json('props.screen.elementEditorSettings'))
+        ->toMatchArray([
+            'elementId' => $entry->id,
+            'canonicalId' => $entry->id,
+            'isStatic' => false,
+            'isProvisionalDraft' => false,
+        ])
+        // The jQuery hand-off is the other branch's job, and emitting both
+        // would double-instantiate the editor.
+        ->and($response->json('props.bodyHtml'))
+        ->not->toContain('elementEditorSettings');
 });
 
 it('prevalidates enabled live elements and returns an error summary', function () {

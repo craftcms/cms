@@ -9,6 +9,7 @@ use Illuminate\Database\Connection;
 
 class PostgresBackupCommand extends BackupCommand
 {
+    /** @param string[] $ignoreTables */
     public function __construct(
         Connection $connection,
         string $filePath,

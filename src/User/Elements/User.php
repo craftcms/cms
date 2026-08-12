@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Elements;
 
+use Closure;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\AuthMethods;
@@ -17,6 +18,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -93,7 +95,7 @@ use function CraftCms\Cms\t;
  * @property-read Address[]|null $addresses the user’s addresses
  * @property-read DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  * @property-read DateTimeInterface|null $cooldownEndTime the time when the user will be over their cooldown period
- * @property-read array $preferences the user’s preferences
+ * @property-read array<string, mixed> $preferences the user’s preferences
  * @property-read bool $isCredentialed whether the user account can be logged into
  * @property-read bool $isCurrent whether this is the current logged-in user
  * @property-read string|null $preferredLanguage the user’s preferred language
@@ -117,6 +119,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public const string GQL_TYPE_NAME = 'User';
 
+    /** @var string[] */
     private static array $photoColors = [
         'red',
         'orange',
@@ -298,7 +301,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public ?string $remember_token = null;
 
     /**
-     * @var ElementCollection<Address> Addresses
+     * @var ElementCollection<int, Address> Addresses
      *
      * @see getAddresses()
      */
@@ -491,6 +494,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return new UserCondition(self::class);
     }
 
+    /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -565,6 +569,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $sources;
     }
 
+    /** @return array<int, class-string|object> */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -580,6 +585,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
+    /** @return array<array-key, string|array<string, scalar|callable|null>> */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -631,6 +637,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
+    /** @return array<string, array<string, string>> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -673,6 +680,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
+    /** @return array<string, array<string, string|Stringable|callable>> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -736,6 +744,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]);
     }
 
+    /** @return array<string, class-string|array<array-key, mixed>|callable>|null|false */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -808,6 +817,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
+    /** @return array<int, array<string, string>> */
     #[Override]
     protected function crumbs(): array
     {
@@ -828,6 +838,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->getName() ?: $this->email;
     }
 
+    /** @return string[] */
     #[Override]
     public function attributes(): array
     {
@@ -872,14 +883,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $labels;
     }
 
+    /** @return string[] */
     #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
     }
 
+    /** @param array<string, mixed> $values */
     #[Override]
-    public function setAttributesFromRequest($values): void
+    public function setAttributesFromRequest(array $values): void
     {
         unset(
             $values['invalidLoginCount'],
@@ -895,7 +908,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         );
 
         if (isset($values['email'])) {
-            $values['email'] = trim($values['email']);
+            $values['email'] = trim((string) $values['email']);
             if ($values['email'] === '' || $values['email'] === $this->email) {
                 unset($values['email']);
             }
@@ -981,7 +994,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Gets the user’s addresses.
      *
-     * @return ElementCollection<Address>
+     * @return ElementCollection<int, Address>
      */
     #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
@@ -991,14 +1004,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         if (! $this->id) {
-            /**
-             * @var ElementCollection<Address> $addresses
-             *
-             * @noRector
-             */
-            $addresses = new ElementCollection;
-
-            return $addresses;
+            return new ElementCollection;
         }
 
         return $this->_addresses = $this->createAddressQuery()
@@ -1340,6 +1346,7 @@ XML;
         return Url::cpUrl("users/$this->id");
     }
 
+    /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1540,6 +1547,7 @@ JS, [
         ];
     }
 
+    /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function destructiveActionMenuItems(): array
     {
@@ -1592,6 +1600,7 @@ JS, [
         ];
     }
 
+    /** @return array<string, string> */
     private function _copyPasswordResetUrlActionItem(string $label): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
@@ -1627,7 +1636,7 @@ JS, [
     /**
      * Returns the user’s preferences.
      *
-     * @return array The user’s preferences.
+     * @return array<string, mixed> The user’s preferences.
      */
     public function getPreferences(): array
     {
@@ -1794,6 +1803,7 @@ JS, [
         return parent::attributeHtml($attribute);
     }
 
+    /** @return array<string, array<string, bool>> */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -1813,6 +1823,7 @@ JS, [
         return '';
     }
 
+    /** @return array<string, Closure|string|Stringable> */
     #[Override]
     protected function metadata(): array
     {
@@ -1859,6 +1870,10 @@ JS, [
         ];
     }
 
+    /**
+     * @param  ElementCollection<int, User>  $elements
+     * @return DeletionBlockerInterface[]
+     */
     #[Override]
     public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {

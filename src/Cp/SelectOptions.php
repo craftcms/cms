@@ -43,7 +43,7 @@ class SelectOptions
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: array}, 1?: array{type: 'optgroup', label: string, options: array}}
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}, 1?: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}}
      */
     public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
     {
@@ -106,6 +106,10 @@ class SelectOptions
     /**
      * Returns environment variable options for a select input.
      */
+    /**
+     * @param  list<scalar>|null  $allowedValues
+     * @return list<array<string, mixed>>
+     */
     public static function getEnvOptions(?array $allowedValues = null): array
     {
         if ($allowedValues !== null) {
@@ -144,6 +148,7 @@ class SelectOptions
     /**
      * Returns environment variable options for a boolean menu.
      */
+    /** @return list<array<string, mixed>> */
     public static function getBooleanEnvOptions(): array
     {
         $options = [];
@@ -185,6 +190,7 @@ class SelectOptions
      *
      * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
      */
+    /** @return list<array<string, mixed>> */
     public static function getLanguageEnvOptions(bool $appOnly = false): array
     {
         $options = [];
@@ -232,6 +238,7 @@ class SelectOptions
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
      */
+    /** @return list<array<string, mixed>> */
     public static function getLanguageOptions(
         bool $showLocaleIds = false,
         bool $showLocalizedNames = false,
@@ -280,6 +287,7 @@ class SelectOptions
     /**
      * Returns all options for a filesystem input.
      */
+    /** @return list<array{label: string, value: string}> */
     public static function getFsOptions(): array
     {
         $craftFilesystemOptions = Filesystems::getAllFilesystems()
@@ -289,7 +297,7 @@ class SelectOptions
                 'value' => $fs->handle,
             ]);
 
-        $diskOptions = Collection::make(config('filesystems.disks', []))
+        $diskOptions = Collection::make(Arr::wrap(config('filesystems.disks', [])))
             ->keys()
             ->filter(function (mixed $diskName): bool {
                 if (! is_string($diskName)) {
@@ -318,6 +326,7 @@ class SelectOptions
     /**
      * Returns all options for a volume input.
      */
+    /** @return array<int|string, array{label: string, value: int}> */
     public static function getVolumeOptions(): array
     {
         return Volumes::getAllVolumes()
@@ -329,6 +338,7 @@ class SelectOptions
             ->all();
     }
 
+    /** @return list<array<string, mixed>> */
     public static function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
@@ -379,6 +389,10 @@ class SelectOptions
         return $options;
     }
 
+    /**
+     * @param  list<array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
     public static function formatEnvOptions(array $options): array
     {
         return [

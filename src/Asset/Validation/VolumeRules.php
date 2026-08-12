@@ -23,6 +23,7 @@ use function CraftCms\Cms\t;
 /** @extends Ruleset<Volume> */
 class VolumeRules extends Ruleset
 {
+    /** @return array<string, list<Closure|object|string>> */
     public function rules(): array
     {
         $rules = [

@@ -63,7 +63,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public ?string $addRuleLabel = null;
 
     /**
-     * @var array The condition’s portable config
+     * @var array<string, mixed> The condition’s portable config
      */
     public array $config {
         get => $this->getConfig();
@@ -72,6 +72,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * @see getConditionRules()
      * @see setConditionRules()
+     *
+     * @var Collection<int, ConditionRuleInterface>
      */
     private Collection $_conditionRules;
 
@@ -106,6 +108,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         get => $this->getBuilderInnerHtml();
     }
 
+    /** @param  array<string, mixed>  $config */
     public function __construct(array $config = [])
     {
         parent::__construct($config);
@@ -192,6 +195,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return $this->_conditionRules->all();
     }
 
+    /** @param  array<ConditionRuleInterface|array{class: string}|array{type: string}|string>  $rules */
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
@@ -350,8 +354,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 'type' => 'button',
                                 'icon' => 'x',
                                 'aria-label' => t('Remove'),
-                                'appearance' => 'plain',
-                                'variant' => 'danger',
+                                'variant' => 'danger-plain',
                                 'size' => 'small',
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
@@ -373,6 +376,10 @@ JS, [InputNamespace::namespaceId($this->id)]);
             }
 
             $rulesJs = HtmlStack::clearJsBuffer(false);
+
+            if ($rulesJs) {
+                HtmlStack::js($rulesJs);
+            }
 
             // Sortable rules div
             $html .= Html::tag('div', $allRulesHtml, [
@@ -407,14 +414,6 @@ JS, [InputNamespace::namespaceId($this->id)]);
                 ]).
                 Html::endTag('div'); // flex-nowrap
 
-            if ($rulesJs) {
-                if ($isHtmxRequest) {
-                    $html .= Html::tag('script', $rulesJs, ['type' => 'text/javascript']);
-                } else {
-                    HtmlStack::js($rulesJs);
-                }
-            }
-
             // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
@@ -444,6 +443,7 @@ JS,
 
     /**
      * @param  ConditionRuleInterface[]  $selectableRules
+     * @param  array<string, mixed>  $buttonAttributes
      */
     private function _ruleTypeMenu(
         array $selectableRules,
@@ -546,7 +546,7 @@ JS,
             'buttonAttributes' => Arr::merge([
                 'id' => $buttonId,
                 'type' => 'button',
-                'appearance' => 'fill',
+                'variant' => 'fill',
                 'autofocus' => $rule?->getAutofocus(),
             ], $buttonAttributes),
             'inputName' => $rule ? 'type' : 'new-rule-type',
@@ -567,11 +567,13 @@ JS,
         ];
     }
 
+    /** @return array<string, mixed> */
     public function getBuilderConfig(): array
     {
         return $this->config();
     }
 
+    /** @return array<string, mixed> */
     final public function getConfig(): array
     {
         return array_merge($this->config(), [
@@ -593,6 +595,8 @@ JS,
 
     /**
      * Returns the base config that should be maintained by the builder and included in the condition’s portable config.
+     *
+     * @return array<string, mixed>
      */
     protected function config(): array
     {

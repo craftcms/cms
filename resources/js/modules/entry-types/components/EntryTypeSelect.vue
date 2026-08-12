@@ -4,6 +4,7 @@
   import {
     appendBodyHtml,
     appendHeadHtml,
+    ButtonVariant,
     serializeFormInputs,
     t,
   } from '@craftcms/ui';
@@ -17,6 +18,7 @@
   import type {SlideoutInstance} from '@/common/types/globals';
   import EntryTypeChip from '@/modules/entry-types/components/EntryTypeChip.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
+  import type {SlideoutSaveResult} from '@/common/slideouts';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -88,9 +90,21 @@
   }
 
   function removeItem(itemId: number) {
-    emit('update:modelValue', [
-      ...props.modelValue.filter((item) => item.id !== itemId),
-    ]);
+    emit(
+      'update:modelValue',
+      props.modelValue.filter((item) => item.id !== itemId)
+    );
+  }
+
+  function selectCreatedEntryType({data}: SlideoutSaveResult) {
+    const entryType = data?.entryType as EntryType | undefined;
+
+    if (!entryType) {
+      throw new Error('The created entry type was not returned.');
+    }
+
+    emit('update:modelValue', [...props.modelValue, entryType]);
+    router.reload({only: ['entryTypes']});
   }
 
   const slideout = ref<SlideoutInstance | undefined>(undefined);
@@ -126,10 +140,7 @@
       },
     });
 
-    const form = slideout.$container[0];
-    if (!form) {
-      return;
-    }
+    const form = slideout.$container[0]!;
 
     form.addEventListener('submit', async (event: SubmitEvent) => {
       event.preventDefault();
@@ -180,7 +191,7 @@
     });
 
     // Bind up the buttons
-    form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
+    form.querySelectorAll<HTMLElement>('[data-action]').forEach((el) => {
       el.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
         if (!target) {
@@ -315,7 +326,7 @@
       <craft-button
         type="button"
         slot="invoker"
-        appearance="filled"
+        :variant="ButtonVariant.Dashed"
         v-if="!readOnly"
       >
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
@@ -367,8 +378,8 @@
     </craft-action-menu>
     <SlideoutButton
       v-if="!readOnly"
-      :url="create['/{cpTrigger?}/settings/entry-types/new']().url"
-      @success="router.reload({only: ['entryTypes']})"
+      :url="create().url"
+      @success="selectCreatedEntryType"
     >
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}

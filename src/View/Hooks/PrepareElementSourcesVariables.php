@@ -13,6 +13,7 @@ readonly class PrepareElementSourcesVariables
         private ElementSources $elementSources,
     ) {}
 
+    /** @param array<string, mixed> $context */
     public function __invoke(array &$context): void
     {
         /** @var class-string<ElementInterface> $elementType */
