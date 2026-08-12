@@ -62,15 +62,6 @@ vi.mock('@/modules/auth/elevated-session', () => ({
   elevatedSessionManager: {require: state.confirmElevation},
 }));
 
-vi.mock('@/common/components/Pane.vue', () => ({
-  default: defineComponent({
-    setup:
-      (_, {slots}) =>
-      () =>
-        h('div', slots.default?.()),
-  }),
-}));
-
 vi.mock('@/modules/forms/FormRenderer.vue', () => ({
   default: defineComponent({
     props: ['refresh'],
