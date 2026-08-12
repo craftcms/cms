@@ -24,6 +24,7 @@
  */
 
 import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
@@ -413,8 +414,7 @@ export class CpScreenSlideout extends Slideout {
         this.$body.addClass(data.bodyClass);
       }
 
-      this.inertiaApp?.unmount();
-      this.inertiaApp = null;
+      this.unmountInertiaApp();
       this.$content.html(data.content);
       if (this.$actionBtn) {
         this.$actionBtn.data('disclosureMenu')?.destroy();
@@ -515,8 +515,7 @@ export class CpScreenSlideout extends Slideout {
             ...data.inertiaProps,
             slideout: true,
           });
-          this.inertiaApp.config.compilerOptions.isCustomElement = (tag) =>
-            tag.includes('-');
+          installCpApp(this.inertiaApp);
           this.inertiaApp.mount(this.$content[0]);
         }
 
@@ -957,8 +956,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override close(): void {
-    this.inertiaApp?.unmount();
-    this.inertiaApp = null;
+    this.unmountInertiaApp();
 
     if (this.showingSidebar) {
       this.hideSidebar();
@@ -970,6 +968,15 @@ export class CpScreenSlideout extends Slideout {
       this.ignoreFailedRequest = true;
       this.cancelToken.cancel();
     }
+  }
+
+  private unmountInertiaApp(): void {
+    if (!this.inertiaApp) {
+      return;
+    }
+
+    this.inertiaApp.unmount();
+    this.inertiaApp = null;
   }
 }
 

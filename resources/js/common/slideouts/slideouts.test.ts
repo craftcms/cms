@@ -404,6 +404,20 @@ describe('SlideoutHost', () => {
     expect(shade!.classList.contains('slideout-shade')).toBe(false);
   });
 
+  it('places the first Vue slideout above an open legacy slideout', async () => {
+    await mountHost();
+    const legacy = document.body.appendChild(document.createElement('div'));
+    legacy.className = 'slideout-container';
+
+    await openSlideout('/a');
+    await nextTick();
+
+    const panel = document.querySelector('.slideout-panel')!;
+    expect(
+      legacy.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).not.toBe(0);
+  });
+
   it('hides the shade again once the last slideout closes', async () => {
     await mountHost();
     const panel = (await openSlideout('/a'))!;

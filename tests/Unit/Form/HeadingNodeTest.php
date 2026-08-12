@@ -11,14 +11,18 @@ use Symfony\Component\DomCrawler\Crawler;
 
 it('renders the configured heading level and defaults to level two', function () {
     $form = Form::make([
-        Heading::make('custom', 'Custom')->level(3),
+        Heading::make('custom', 'Custom')->level(3)->description('Supporting copy.'),
         Heading::make('default', 'Default'),
     ]);
     $payload = app(FormResolver::class)->resolve($form, new FormContext);
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($payload->nodes[0]->props['level'])->toBe(3)
-        ->and($crawler->filter('h3[data-form-node="custom"]')->text())->toBe('Custom')
+        ->and($crawler->filter('[data-form-node="custom"] h3')->text())->toBe('Custom')
+        ->and($crawler->filter('[data-form-node="custom"] h3.my-0'))->toHaveCount(1)
+        ->and($crawler->filter('[data-form-node="custom"] p')->text())->toBe('Supporting copy.')
+        ->and($crawler->filter('[data-form-node="custom"] p.my-0'))->toHaveCount(1)
+        ->and($crawler->filter('[data-form-node="custom"].gap-1'))->toHaveCount(1)
         ->and($payload->nodes[1]->props['level'])->toBe(2)
-        ->and($crawler->filter('h2[data-form-node="default"]')->text())->toBe('Default');
+        ->and($crawler->filter('[data-form-node="default"] h2')->text())->toBe('Default');
 });

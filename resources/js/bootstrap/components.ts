@@ -95,3 +95,5 @@ export function createCpComponentRegistry(): CpComponentRegistry {
     },
   };
 }
+
+export const cpComponentRegistry = createCpComponentRegistry();

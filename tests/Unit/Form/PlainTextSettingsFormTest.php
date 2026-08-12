@@ -153,6 +153,18 @@ it('resolves Plain Text settings to the shared JSON-safe payload', function () {
         ->and(json_encode(plainTextPayload(), JSON_THROW_ON_ERROR))->toBeString();
 });
 
+it('only includes Initial Rows for multiline fields', function (bool $multiline, bool $included) {
+    $payload = app(FormResolver::class)->resolve(
+        new PlainText(['multiline' => $multiline])->settingsForm(),
+        new FormContext(namespace: 'settings'),
+    );
+
+    expect(array_key_exists('initialRows', $payload->values['settings']))->toBe($included);
+})->with([
+    'single line' => [false, false],
+    'multiline' => [true, true],
+]);
+
 it('renders an accessible editable PHP form with ordinary nested names', function () {
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render(plainTextPayload()));
 
@@ -179,7 +191,7 @@ it('uses the payload renderer for the production Plain Text PHP settings form', 
     expect($editable->filter('[data-form-node="plain-text-field-limit"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="placeholder"][value="Production value"]'))->toHaveCount(1)
         ->and($editable->filter('input[name="fieldLimit"][aria-invalid="true"]'))->toHaveCount(1)
-        ->and($editable->filter('input[name="initialRows"]'))->toHaveCount(1)
+        ->and($editable->filter('input[name="initialRows"]'))->toHaveCount(0)
         ->and($editable->filter('craft-field[has-errors] [slot="feedback"]')->text())->toContain('The field limit is invalid.')
         ->and($readOnly->filter('input[value="Production value"]'))->toHaveCount(1)
         ->and($readOnly->filter('[name]'))->toHaveCount(0);

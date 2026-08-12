@@ -184,10 +184,3 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
     this.settings.onSelect(elementInfo, this._selectedTransform);
   }
 }
-
-// Register as the element selector modal class for Asset elements.
-// This call mutates `Craft._elementSelectorModalClasses` on the legacy global.
-Craft.registerElementSelectorModalClass(
-  'CraftCms\\Cms\\Asset\\Elements\\Asset',
-  AssetSelectorModal
-);

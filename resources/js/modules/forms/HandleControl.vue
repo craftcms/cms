@@ -57,8 +57,6 @@
 
 <template>
   <craft-input-handle
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :required="editable && required"

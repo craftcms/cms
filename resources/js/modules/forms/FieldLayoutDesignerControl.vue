@@ -8,6 +8,8 @@
   type FieldLayoutDesignerProps = {
     elementType: string;
     customizableTabs: boolean;
+    withGeneratedFields: boolean;
+    withCardViewDesigner: boolean;
   };
 
   const props = defineProps<{
@@ -34,19 +36,28 @@
           name: inputName(props.control.path),
           disabled: !props.editable,
           customizableTabs: props.control.props.customizableTabs,
+          withGeneratedFields: props.control.props.withGeneratedFields,
+          withCardViewDesigner: props.control.props.withCardViewDesigner,
         }
       );
 
       return response.data.html;
     },
     readValue(host) {
-      const input = host.querySelector<HTMLInputElement>(
-        '[name$="[fieldLayout]"]'
-      );
+      const input = host.querySelector<HTMLInputElement>('[data-config-input]');
 
-      return input
-        ? (JSON.parse(input.value) as Record<string, unknown>)
-        : undefined;
+      if (!input) {
+        return undefined;
+      }
+
+      const value = JSON.parse(input.value) as Record<string, unknown>;
+      const generatedFields = host.querySelector<
+        HTMLElement & {serialize(): unknown[]}
+      >('craft-generated-fields-table');
+
+      return generatedFields
+        ? {...value, generatedFields: generatedFields.serialize()}
+        : value;
     },
     update: (value) => emit('update:value', value, 'discrete'),
   });

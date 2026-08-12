@@ -39,6 +39,7 @@
   let instance: EditableTable | undefined;
 
   useEventListener(host, 'input', () => emitRows('typing'));
+  useEventListener(host, 'model-value-changed', () => emitRows('typing'));
   useEventListener(host, 'change', () => emitRows('discrete'));
   const {takeRecords} = useMutationObserver(
     tableBody,
@@ -156,6 +157,7 @@
   ): unknown {
     const rowId = row.dataset.id!;
     const name = `${inputName(props.control.path)}[${rowId}][${column}]`;
+    const type = props.control.props.columns[column]?.type ?? '';
     const entries = [...data.entries()].filter(
       ([key]) => key === name || key.startsWith(`${name}[`)
     );
@@ -164,11 +166,14 @@
       return rowValue(rows, rowId)?.[column] ?? '';
     }
 
-    if (
-      ['checkbox', 'lightswitch'].includes(
-        props.control.props.columns[column]?.type ?? ''
-      )
-    ) {
+    if (['autosuggest', 'template'].includes(type)) {
+      return (
+        cell.querySelector<HTMLElement & {modelValue: string}>('craft-combobox')
+          ?.modelValue ?? ''
+      );
+    }
+
+    if (['checkbox', 'lightswitch'].includes(type)) {
       return entries.some(
         ([key, value]) => key === name && String(value) !== ''
       );
@@ -210,7 +215,11 @@
   <div ref="host" slot="input" :inert="!editable">
     <span role="status" class="sr-only" data-status-message />
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
-    <table :id="id" ref="table" class="editable cp-table cp-table--editable">
+    <table
+      :id="id"
+      ref="table"
+      class="editable cp-table cp-table--editable w-full"
+    >
       <thead>
         <tr>
           <th

@@ -1,8 +1,13 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey} from 'vue';
+import type {InjectionKey, Slots} from 'vue';
+import type {FormChange} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
+
+export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
+  'FormControlOverrides'
+);
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
@@ -31,6 +36,16 @@ export function ignoreModelValueInitialization(
       callback(event);
     }
   };
+}
+
+export function formChangeFromEvent(
+  change: FormChange | Event
+): FormChange | null {
+  if (!(change instanceof Event)) {
+    return change;
+  }
+
+  return change instanceof CustomEvent ? (change.detail ?? null) : null;
 }
 
 export function inputName(path: string[]): string {

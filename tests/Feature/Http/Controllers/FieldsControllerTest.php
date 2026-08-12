@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Matrix;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 
@@ -213,6 +215,22 @@ it('renders composite field settings Controls', function (string $type, string $
     'grouped entry type manager' => [Matrix::class, 'craft:grouped-entry-type-manager', 'renderGroupedEntryTypeManager', 'craft-entry-type-manager'],
     'condition builder' => [Entries::class, 'craft:condition-builder', 'renderConditionBuilder', 'condition-container'],
 ]);
+
+it('renders root field layout input names that can be expanded as post data', function () {
+    $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
+        'value' => [],
+        'elementType' => Entry::class,
+        'name' => 'fieldLayout',
+        'disabled' => false,
+        'customizableTabs' => true,
+        'withGeneratedFields' => true,
+        'withCardViewDesigner' => true,
+    ])->assertOk();
+    $crawler = new Crawler($response->json('html'));
+
+    expect($crawler->filter('[data-config-input][name="fieldLayout"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-generated-fields-table[name="generatedFields"]'))->toHaveCount(1);
+});
 
 it('rejects non-condition classes from the condition builder endpoint', function () {
     $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [

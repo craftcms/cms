@@ -7,11 +7,12 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue';
-import type {FormPayload} from './types';
+import type {FormChangeKind, FormPayload} from './types';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
   currentValues(): FormPayload['values'];
+  setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
 }
 
 interface Options<

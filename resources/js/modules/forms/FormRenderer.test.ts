@@ -19,7 +19,7 @@ import {actionClient} from '@craftcms/ui';
 import type CraftPermissionTree from '@craftcms/ui/components/permission-tree/permission-tree';
 import FormRenderer from './FormRenderer.vue';
 import {registerFormComponents} from './register';
-import type {FormPayload} from './types';
+import type {FormChange, FormControlOverrideProps, FormPayload} from './types';
 
 const elementSelectMocks = vi.hoisted(() => {
   const base = vi.fn();
@@ -210,15 +210,35 @@ vi.mock('../editable-table', () => ({
 
       for (const [key, column] of Object.entries(columns)) {
         const cell = row.insertCell();
+        const value = values[key];
+        const stringValue =
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+            ? String(value)
+            : '';
+        if (['autosuggest', 'template'].includes(column.type)) {
+          const combobox = document.createElement(
+            'craft-combobox'
+          ) as HTMLElement & {
+            modelValue: string;
+            name: string;
+          };
+          combobox.name = `${baseName}[${rowId}][${key}]`;
+          combobox.modelValue = stringValue;
+          cell.append(combobox);
+          continue;
+        }
+
         const input = document.createElement(
           column.type === 'checkbox' ? 'input' : 'textarea'
         );
         input.name = `${baseName}[${rowId}][${key}]`;
         if (input instanceof HTMLInputElement) {
           input.type = 'checkbox';
-          input.checked = Boolean(values[key]);
+          input.checked = Boolean(value);
         } else {
-          input.value = String(values[key] ?? '');
+          input.value = stringValue;
         }
         cell.append(input);
       }
@@ -247,6 +267,11 @@ describe('FormRenderer', () => {
   let renderer: {
     advanceBaseline: () => void;
     currentValues: () => FormPayload['values'];
+    setValue: (
+      path: string[],
+      value: unknown,
+      kind?: FormChange['kind']
+    ) => void;
   };
 
   beforeEach(async () => {
@@ -287,8 +312,14 @@ describe('FormRenderer', () => {
 
     expect(placeholder.value).toBe('Submitted placeholder');
     expect(placeholder.getAttribute('aria-invalid')).toBe('true');
-    expect(placeholder.labels?.[0]?.textContent).toBe('Placeholder Text');
     const placeholderField = placeholder.closest('craft-field')!;
+    const placeholderLabel = placeholderField.querySelector<HTMLElement>(
+      ':scope > [slot="label"]'
+    )!;
+    expect(placeholder.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      placeholderLabel.id
+    );
+    expect(placeholderLabel.textContent).toContain('Placeholder Text');
     expect(
       placeholderField.querySelector(':scope > [slot="help-text"]')?.textContent
     ).toBe('The text that will be shown if the field doesn’t have a value.');
@@ -306,6 +337,331 @@ describe('FormRenderer', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(
       'The settings could not be saved.'
     );
+  });
+
+  it('displays a combobox option label for its initial value', async () => {
+    const status: FormPayload = {
+      scope: ['settings'],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'System Status', required: true},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+            component: 'craft:combobox',
+            props: {
+              options: [
+                {label: 'Online', value: '1'},
+                {label: 'Offline', value: '0'},
+              ],
+            },
+            path: ['settings', 'live'],
+            mode: 'editable',
+            deltaGroup: ['settings', 'live'],
+          },
+        },
+      ],
+      values: {settings: {live: '1'}},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(status);
+
+    const combobox = container.querySelector<
+      HTMLElement & {modelValue: string}
+    >('craft-combobox')!;
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('1');
+      expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
+  });
+
+  it('includes editable table combobox changes in current values', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: {
+                fromEmail: {type: 'autosuggest'},
+              },
+              keyed: true,
+            },
+            path: ['siteOverrides'],
+            mode: 'editable',
+            deltaGroup: ['siteOverrides'],
+          },
+        },
+      ],
+      values: {
+        siteOverrides: {
+          'site-uid': {fromEmail: ''},
+        },
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    const combobox = container.querySelector('craft-combobox')!;
+    await vi.waitFor(() =>
+      expect(combobox.querySelector('input')).not.toBeNull()
+    );
+    const input = combobox.querySelector('input')!;
+    input.value = '$SITE_EMAIL';
+    input.dispatchEvent(
+      new InputEvent('input', {bubbles: true, composed: true})
+    );
+
+    await vi.waitFor(() =>
+      expect(renderer.currentValues()).toEqual({
+        siteOverrides: {
+          'site-uid': {fromEmail: '$SITE_EMAIL'},
+        },
+      })
+    );
+  });
+
+  it('reports control changes and applies external value updates', async () => {
+    const derived: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: ['name', 'summary'].map((path) => ({
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: path},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Combobox',
+          component: 'craft:combobox',
+          props: {options: []},
+          path: [path],
+          mode: 'editable',
+          deltaGroup: [path],
+        },
+      })),
+      values: {name: '', summary: ''},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    let mutation: FormPayload['values'] = {};
+    const onChange = vi.fn(
+      (change: FormChange, values: FormPayload['values']) => {
+        renderer.setValue(
+          ['summary'],
+          `Derived from ${String(values.name)}`,
+          change.kind
+        );
+      }
+    );
+    await mount(derived, {
+      onChange,
+      onMutation: (current) => (mutation = current),
+    });
+
+    const [name] = container.querySelectorAll<
+      HTMLElement & {modelValue: string}
+    >('craft-combobox');
+    name!.modelValue = 'My Site';
+    name!.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith(
+      {
+        kind: 'typing',
+        path: ['name'],
+        scope: [],
+        refreshable: false,
+      },
+      {name: 'My Site', summary: ''}
+    );
+    expect(renderer.currentValues()).toEqual({
+      name: 'My Site',
+      summary: 'Derived from My Site',
+    });
+    expect(mutation).toEqual({
+      name: 'My Site',
+      summary: 'Derived from My Site',
+    });
+  });
+
+  it('uses a path slot to override a control without replacing Form behavior', async () => {
+    const overridden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Mode', required: true},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Choice',
+            component: 'craft:choice',
+            props: {options: []},
+            path: ['mode'],
+            mode: 'editable',
+            deltaGroup: ['mode'],
+          },
+        },
+      ],
+      values: {mode: 'crop'},
+      errors: [{path: ['mode'], messages: ['Choose a mode.']}],
+      globalErrors: [],
+    };
+    const onChange = vi.fn();
+    app.unmount();
+    await mount(overridden, {
+      onChange,
+      slots: {
+        mode: (slot) =>
+          h(
+            'button',
+            {
+              'data-mode-override': '',
+              'data-invalid': String(slot.invalid),
+              onClick: () => slot.setValue('fit'),
+            },
+            String(slot.value)
+          ),
+      },
+    });
+
+    const button = container.querySelector<HTMLButtonElement>(
+      '[data-mode-override]'
+    )!;
+
+    expect(button.textContent).toBe('crop');
+    expect(button.dataset.invalid).toBe('true');
+    expect(container.querySelector('craft-select')).toBeNull();
+    expect(container.querySelector('[slot="feedback"]')?.textContent).toContain(
+      'Choose a mode.'
+    );
+
+    button.click();
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({mode: 'fit'});
+    expect(onChange).toHaveBeenCalledWith(
+      {
+        kind: 'discrete',
+        path: ['mode'],
+        scope: [],
+        refreshable: false,
+      },
+      {mode: 'fit'}
+    );
+  });
+
+  it('accepts override values derived from reactive arrays', async () => {
+    const overridden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Preview Targets'},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {}},
+            path: ['previewTargets'],
+            mode: 'editable',
+            deltaGroup: ['previewTargets'],
+          },
+        },
+      ],
+      values: {
+        previewTargets: [{label: 'Primary', urlFormat: '{url}', refresh: true}],
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(overridden, {
+      slots: {
+        previewTargets: (slot) =>
+          h(
+            'button',
+            {
+              'data-add-target': '',
+              onClick: () =>
+                slot.setValue([
+                  ...(slot.value as unknown[]),
+                  {label: '', urlFormat: '', refresh: true},
+                ]),
+            },
+            'Add a target'
+          ),
+      },
+    });
+
+    container.querySelector<HTMLButtonElement>('[data-add-target]')!.click();
+    await nextTick();
+
+    expect(renderer.currentValues()).toEqual({
+      previewTargets: [
+        {label: 'Primary', urlFormat: '{url}', refresh: true},
+        {label: '', urlFormat: '', refresh: true},
+      ],
+    });
+  });
+
+  it('does not report native control events as Form changes', async () => {
+    const onChange = vi.fn();
+    app.unmount();
+    await mount(structuredClone(payload) as FormPayload, {onChange});
+
+    container
+      .querySelector('craft-input')!
+      .dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('includes hidden controls but not unowned values in complete form values', async () => {
+    const hidden: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\HiddenField',
+          component: 'craft:hidden-field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Hidden',
+            component: 'craft:hidden',
+            props: {},
+            path: ['siteId'],
+            mode: 'editable',
+            deltaGroup: ['siteId'],
+          },
+        },
+      ],
+      values: {siteId: 42, stale: 'not owned by a control'},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(hidden);
+
+    expect(new FormData(form).get('siteId')).toBe('42');
+    expect(renderer.currentValues()).toEqual({siteId: 42});
   });
 
   it('renders collapsible groups with the shared disclosure component', async () => {
@@ -443,8 +799,10 @@ describe('FormRenderer', () => {
                 label: 'Headline',
                 instructions: 'Keep it short.',
                 instructionsPosition: 'after',
-                tip: 'Use sentence case.',
-                warning: 'This appears publicly.',
+                tip: 'Use *sentence* case.',
+                tipHtml: 'Use <em>sentence</em> case.',
+                warning: 'This appears **publicly**.',
+                warningHtml: 'This appears <strong>publicly</strong>.',
                 required: true,
                 layoutUid: 'field-title',
                 width: 50,
@@ -482,7 +840,12 @@ describe('FormRenderer', () => {
             {
               type: 'CraftCms\\Cms\\Form\\Nodes\\Heading',
               component: 'craft:heading',
-              props: {content: 'Details', level: 3, width: 100},
+              props: {
+                content: 'Details',
+                description: 'Supporting copy.',
+                level: 3,
+                width: 100,
+              },
               uid: 'heading',
               children: [],
             },
@@ -603,11 +966,9 @@ describe('FormRenderer', () => {
     expect(tab?.querySelector('craft-field')?.dataset.layoutElement).toBe(
       'field-title'
     );
-    expect(tab?.querySelector('[slot="tip"]')?.textContent).toContain(
-      'Use sentence case.'
-    );
-    expect(tab?.querySelector('[slot="warning"]')?.textContent).toContain(
-      'This appears publicly.'
+    expect(tab?.querySelector('[slot="tip"] em')?.textContent).toBe('sentence');
+    expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
+      'publicly'
     );
     expect(content?.classList.contains('pane')).toBe(true);
     expect(content?.classList.contains('width-50')).toBe(true);
@@ -619,9 +980,12 @@ describe('FormRenderer', () => {
     expect(templateContent?.querySelector('strong')?.textContent).toBe(
       'Template note'
     );
-    expect(
-      tab?.querySelector('h3[data-form-node="heading"]')?.textContent
-    ).toBe('Details');
+    const heading = tab?.querySelector('[data-form-node="heading"]');
+    expect(heading?.querySelector('h3')?.textContent).toBe('Details');
+    expect(heading?.querySelector('h3')?.classList).toContain('my-0');
+    expect(heading?.querySelector('p')?.textContent).toBe('Supporting copy.');
+    expect(heading?.querySelector('p')?.classList).toContain('my-0');
+    expect(heading?.classList).toContain('gap-1');
     expect(tab?.querySelector('hr[data-form-node="separator"]')).not.toBeNull();
     expect(
       tab?.querySelector('[data-form-node="line-break"]')?.classList
@@ -656,7 +1020,9 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(localized);
 
-    expect(container.querySelector('label')?.textContent).toBe('UI-Modus');
+    expect(
+      container.querySelector('craft-field > [slot="label"]')?.textContent
+    ).toBe('UI-Modus');
   });
 
   it('invalidates the complete Form when a payload component is not registered', async () => {
@@ -962,7 +1328,7 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
-  it('keeps current and hidden values while submitting changed visible groups', async () => {
+  it('retains removed values without including them in submissions', async () => {
     let mutation: FormPayload['values'] = {};
     app.unmount();
     await mount(structuredClone(payload) as FormPayload, {
@@ -985,6 +1351,7 @@ describe('FormRenderer', () => {
     await nextTick();
 
     expect(mutation).not.toHaveProperty('settings.placeholder');
+    expect(renderer.currentValues()).not.toHaveProperty('settings.placeholder');
 
     currentPayload.value = structuredClone(payload) as FormPayload;
     await nextTick();
@@ -993,6 +1360,10 @@ describe('FormRenderer', () => {
         'input[name="settings[placeholder]"]'
       )?.value
     ).toBe('Unsaved');
+    expect(renderer.currentValues()).toHaveProperty(
+      'settings.placeholder',
+      'Unsaved'
+    );
     expect(
       container
         .querySelector('input[name="settings[placeholder]"]')
@@ -2142,6 +2513,7 @@ describe('FormRenderer', () => {
         scope?: string[]
       ) => Promise<FormPayload>;
       onMutation?: (mutation: FormPayload['values']) => void;
+      onChange?: (change: FormChange, values: FormPayload['values']) => void;
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
         components: Pick<
@@ -2149,18 +2521,27 @@ describe('FormRenderer', () => {
           'register'
         >
       ) => void;
+      slots?: Record<
+        string,
+        (props: FormControlOverrideProps) => ReturnType<typeof h>
+      >;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(formPayload);
     const rendererRef = ref();
     app = createApp({
       setup: () => () =>
-        h(FormRenderer, {
-          ref: rendererRef,
-          payload: currentPayload.value,
-          refresh: options.refresh,
-          'onUpdate:mutation': options.onMutation,
-        }),
+        h(
+          FormRenderer,
+          {
+            ref: rendererRef,
+            payload: currentPayload.value,
+            refresh: options.refresh,
+            'onUpdate:mutation': options.onMutation,
+            onChange: options.onChange,
+          },
+          options.slots
+        ),
     });
     const components = createCpComponentRegistry();
     registerFormComponents(components);

@@ -490,9 +490,15 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             ];
             HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 (() => {
-$('#' + $id).on('activate', () => {
-new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {
-  params: $params,
+const action = $('#' + $id);
+action.on('activate', () => {
+Craft.openSlideout(Craft.getCpUrl('settings/fields/edit', $params), {
+  onSaved: ({data}) => {
+    action[0].dispatchEvent(new CustomEvent('field-saved', {
+      bubbles: true,
+      detail: data,
+    }));
+  },
 })
 });
 })();

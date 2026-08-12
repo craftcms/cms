@@ -16,6 +16,7 @@ use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Hidden as HiddenControl;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -43,6 +44,7 @@ use CraftCms\Cms\Form\Nodes\Container;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Form\Nodes\LineBreak;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
@@ -58,7 +60,7 @@ it('registers core and plugin Node and Control types separately', function () {
     $nodeTypes = app(FormNodeTypes::class);
     $controlTypes = app(FormControlTypes::class);
 
-    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
+    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
             Choice::class,
@@ -72,6 +74,7 @@ it('registers core and plugin Node and Control types separately', function () {
             FieldLayoutDesigner::class,
             GroupedEntryTypeManager::class,
             Handle::class,
+            HiddenControl::class,
             IconPicker::class,
             Lightswitch::class,
             Link::class,
@@ -90,7 +93,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
-    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
+    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
         ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);

@@ -2,7 +2,9 @@
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import {
+    FormControlOverrides,
     FormFailure,
+    formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
     valueAt,
@@ -20,7 +22,9 @@
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
     tip?: string;
+    tipHtml?: string;
     warning?: string;
+    warningHtml?: string;
     layoutUid?: string;
     width?: number;
   };
@@ -37,6 +41,7 @@
     (event: 'change', change: FormChange): void;
   }>();
   const invalidate = inject(FormFailure)!;
+  const overrides = inject(FormControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
   const component = computed(() => {
@@ -50,6 +55,7 @@
 
     return component;
   });
+  const override = computed(() => overrides[control.value.path.join('.')]);
 
   onErrorCaptured((error) => {
     invalidate(
@@ -80,6 +86,27 @@
       refreshable: props.refreshable,
     });
   }
+
+  function renderOverride() {
+    return override.value?.({
+      control: control.value,
+      value: value.value,
+      values: props.values,
+      label: props.node.props.label ?? undefined,
+      editable: editable.value,
+      invalid: controlErrors.value.length > 0,
+      required: Boolean(props.node.props.required),
+      setValue,
+    });
+  }
+
+  function onChange(change: FormChange | Event): void {
+    const formChange = formChangeFromEvent(change);
+
+    if (formChange) {
+      emit('change', formChange);
+    }
+  }
 </script>
 
 <template>
@@ -94,11 +121,24 @@
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >
-    <span v-if="node.props.tip" slot="tip">{{ node.props.tip }}</span>
-    <span v-if="node.props.warning" slot="warning">
-      {{ node.props.warning }}
-    </span>
+    <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
+    <span
+      v-if="node.props.warningHtml"
+      slot="warning"
+      v-html="node.props.warningHtml"
+    />
+    <div
+      v-if="override"
+      slot="input"
+      data-form-control-override
+      :aria-invalid="controlErrors.length ? 'true' : undefined"
+      :data-form-control-path="JSON.stringify(control.path)"
+      :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
+    >
+      <component :is="renderOverride" />
+    </div>
     <component
+      v-else
       :is="component"
       slot="input"
       :control="control"
@@ -116,7 +156,7 @@
       :data-form-control-path="JSON.stringify(control.path)"
       :data-form-touched="touchedPaths.has(JSON.stringify(control.path))"
       @update:value="setValue"
-      @change="emit('change', $event)"
+      @change="onChange"
     />
     <ul v-if="controlErrors.length" slot="feedback" class="error-list">
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>

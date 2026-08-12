@@ -29,7 +29,7 @@
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport v-if="panels.length" to="body">
     <SlideoutPanel v-for="panel in panels" :key="panel.id" :instance="panel" />
   </Teleport>
 </template>
