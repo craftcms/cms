@@ -24,6 +24,8 @@ export interface ScreenProps {
   formActions?: Array<ActionItem>;
   formAdditionalActions?: Array<ActionItem>;
   formAdditionalButtons?: Array<ActionItemButton>;
+  /** Overrides the submit button's text. Craft 5: `submitButtonLabel`. */
+  submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;
 }
 
