@@ -658,13 +658,7 @@ abstract class ElementEditViewModel extends ViewModel
      */
     public function crumbs(): array
     {
-        $crumbs = array_map(function (array $crumb): array {
-            if (isset($crumb['url'])) {
-                $crumb['url'] = Url::cpUrl($crumb['url']);
-            }
-
-            return $crumb;
-        }, $this->elementCrumbs($this->element));
+        $crumbs = $this->elementCrumbs($this->element);
 
         $siteCrumb = $this->siteCrumb();
 
