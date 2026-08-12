@@ -244,7 +244,7 @@ class FieldsController
                 $data['value'],
                 $data['elementType'],
                 $data['name'],
-                $data['disabled'],
+                $this->readOnly || $data['disabled'],
                 $data['customizableTabs'],
                 $data['withGeneratedFields'],
                 $data['withCardViewDesigner'],
