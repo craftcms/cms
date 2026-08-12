@@ -84,7 +84,7 @@ export default css`
     flex-wrap: nowrap;
   }
 
-  .cp-chip__suffix {
+  .cp-chip__suffix > * {
     padding-inline-start: var(--c-spacing-md);
   }
 
