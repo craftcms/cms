@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Поиск во вложенных папках',
     'Search plugins' => 'Искать плагины',
     'Search' => 'Поиск',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Секунды',
     'Section - {section}' => 'Раздел - {section}',
     'Section Type' => 'Тип раздела',

@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Пошук у вкладених папках',
     'Search plugins' => 'Пошук плагінів',
     'Search' => 'Пошук',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Секунди',
     'Section - {section}' => 'Розділ — {section}',
     'Section Type' => 'Тип розділу',
