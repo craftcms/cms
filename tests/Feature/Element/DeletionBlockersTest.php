@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Matching\Argument;
 use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
@@ -66,7 +67,7 @@ it('reports entry author blockers with details and actions', function () {
         ->create();
 
     $this->mock(ElementIndexHtml::class, function (MockInterface $mock) use ($author) {
-        $mock->expects('html')->with(Entry::class, Mockery::on(fn (array $config) => $config['context'] === 'pane' &&
+        $mock->expects('html')->with(Entry::class, Argument::satisfies(fn (array $config) => $config['context'] === 'pane' &&
                 $config['sources'] === false &&
                 $config['defaultTableColumns'] === [['authors'], ['section']] &&
                 $config['defaultSort'] === ['section', 'asc'] &&

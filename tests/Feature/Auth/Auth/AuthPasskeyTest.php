@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Matching\Argument;
 use JMac\Testing\Double;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
@@ -53,7 +54,7 @@ test('authenticateWithPasskey enforces user status after a valid response', func
     $webauthnServer = Double::for(WebauthnServer::class);
     $webauthnServer->expects('getCredentialRepository')->returns($credentialRepository);
 
-    $passkeys->expects('verifyPasskey')->with(Mockery::type(UserElement::class), $requestOptions, $response)->returns(true);
+    $passkeys->expects('verifyPasskey')->with(Argument::type(UserElement::class), $requestOptions, $response)->returns(true);
     $passkeys->expects('webauthnServer')->returns($webauthnServer);
 
     $result = app(AuthMethods::class)->authenticateWithPasskey($user, $requestOptions, $response);

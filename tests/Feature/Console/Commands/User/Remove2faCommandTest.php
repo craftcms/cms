@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Matching\Argument;
 use JMac\Testing\Double;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\BaseAuthMethod;
@@ -46,7 +47,7 @@ test('removes all methods when all is passed', function () {
         activeMethods: collect([$sms, $email]),
         activeMethodsAfterRemoval: fn () => TestRemove2faEmailMethod::$removeCount === 0 ? collect([$email]) : collect(),
     );
-    $auth->expects('getMethod')->with(RecoveryCodes::class, Mockery::type(UserElement::class))->returns(tap(new RecoveryCodes, fn (RecoveryCodes $method) => $method->setUser($user)));
+    $auth->expects('getMethod')->with(RecoveryCodes::class, Argument::type(UserElement::class))->returns(tap(new RecoveryCodes, fn (RecoveryCodes $method) => $method->setUser($user)));
 
     app()->instance(AuthMethods::class, $auth);
 
@@ -89,10 +90,10 @@ function mockRemove2faAuthMethods(
     bool $expectAfterRemovalCheck = true,
 ): AuthMethods {
     $auth = Double::for(AuthMethods::class);
-    $auth->expects('getActiveMethods')->with(Mockery::type(UserElement::class))->returns($activeMethods);
+    $auth->expects('getActiveMethods')->with(Argument::type(UserElement::class))->returns($activeMethods);
 
     if ($expectAfterRemovalCheck) {
-        $auth->allows('getActiveMethods')->with(Mockery::type(UserElement::class))->resolves($activeMethodsAfterRemoval);
+        $auth->allows('getActiveMethods')->with(Argument::type(UserElement::class))->resolves($activeMethodsAfterRemoval);
     }
 
     return $auth;

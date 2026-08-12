@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use JMac\Testing\Matching\Argument;
 use JMac\Testing\Double;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -503,7 +504,7 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns($fullNameField);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
@@ -529,7 +530,7 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = false;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns($fullNameField);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
@@ -552,7 +553,7 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns($fullNameField);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
@@ -574,7 +575,7 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = false;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns($fullNameField);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
@@ -595,7 +596,7 @@ describe('Name field validation with field layout', function () {
         $fullNameField->required = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns($fullNameField);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns($fullNameField);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
@@ -615,7 +616,7 @@ describe('Name field validation with field layout', function () {
         Cms::config()->showFirstAndLastNameFields = true;
 
         $fieldLayout = Double::for(FieldLayout::class);
-        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Mockery::any())->returns(null);
+        $fieldLayout->allows('getFirstVisibleElementByType')->with(FullNameField::class, Argument::any())->returns(null);
         $fieldLayout->allows('getVisibleCustomFieldElements')->returns([]);
         $fieldLayout->allows('getEditableCustomFieldElements')->returns([]);
         $fieldLayout->allows('getTabs')->returns([]);
