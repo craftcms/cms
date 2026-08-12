@@ -120,7 +120,6 @@
   </LayoutSlot>
 
   <craft-pane appearance="raised" padding="0" class="@container">
-    hey hney
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">
