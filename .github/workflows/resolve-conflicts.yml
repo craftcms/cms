@@ -105,7 +105,8 @@ jobs:
 
           Finish by summarizing, in a few sentences, which conflicts you found and how you
           resolved each one, highlighting any ambiguous conflicts that need extra attention —
-          this summary is posted to the PR for human review.
+          this summary is posted to the PR for human review. When referencing GitHub issue/PR
+          IDs and git commit SHAs, do not wrap them in backticks. 
           PROMPT_EOF
 
           claude -p \
