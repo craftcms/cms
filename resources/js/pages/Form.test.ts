@@ -21,7 +21,10 @@ const state = vi.hoisted(() => ({
   change: undefined as
     | ((change: FormChange, values: FormPayload['values']) => void)
     | undefined,
-  currentValues: {name: 'Changed', live: '1'} as Record<string, unknown>,
+  currentValues: {siteId: 42, name: 'Changed', live: '1'} as Record<
+    string,
+    unknown
+  >,
   confirmElevation: vi.fn(),
 }));
 
@@ -125,7 +128,7 @@ it('submits complete current values after a partial mutation', async () => {
 
   expect(state.submit).toHaveBeenCalledWith(
     {method: 'post', url: '/settings/general'},
-    expect.objectContaining({name: 'Changed', live: '1'})
+    expect.objectContaining({siteId: 42, name: 'Changed', live: '1'})
   );
 });
 
