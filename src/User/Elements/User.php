@@ -2069,7 +2069,11 @@ JS, [
         $formatter = I18N::getFormatter();
 
         return [
-            t('Email') => Html::a($this->email, "mailto:$this->email"),
+            // A brand-new account has no email yet, and the editor renders this
+            // for unsaved drafts too.
+            t('Email') => fn () => $this->email
+                ? Html::a($this->email, "mailto:$this->email")
+                : false,
             t('Cooldown Time Remaining') => function () use ($formatter) {
                 if (
                     ! $this->locked ||

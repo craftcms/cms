@@ -40,6 +40,18 @@ describe('create', function () {
             ->assertRedirectContains('users/');
     });
 
+    // The draft has no email or username yet, which the editor's metadata has
+    // to survive.
+    test('the new draft’s edit screen renders', function () {
+        $redirect = get(action([UsersController::class, 'create']))->headers->get('Location');
+
+        get($redirect)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('users/Edit')
+                ->has('metadataHtml'));
+    });
+
     test('create requires proper authorization', function () {
         Gate::before(function ($user, $ability) {
             if ($ability === 'registerUsers') {
