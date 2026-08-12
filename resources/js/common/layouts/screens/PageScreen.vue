@@ -41,161 +41,161 @@
   import {ButtonVariant} from '@craftcms/ui';
   import type {DefaultFormAction, ScreenProps, ScreenSlots} from './types';
 
-/** Resize bounds for the details column, in px — 12rem to 30rem. */
-const DETAILS_MIN_WIDTH = 192;
-const DETAILS_MAX_WIDTH = 480;
+  /** Resize bounds for the details column, in px — 12rem to 30rem. */
+  const DETAILS_MIN_WIDTH = 192;
+  const DETAILS_MAX_WIDTH = 480;
 
-const emit = defineEmits<{
-  (e: "save", options?: FormSaveOptions): void;
-}>();
+  const emit = defineEmits<{
+    (e: 'save', options?: FormSaveOptions): void;
+  }>();
 
-const props = withDefaults(defineProps<ScreenProps>(), {
-  form: null,
-  defaultFormActions: () => ["saveAndContinueEditing"],
-  formAdditionalButtons: () => [],
-});
+  const props = withDefaults(defineProps<ScreenProps>(), {
+    form: null,
+    defaultFormActions: () => ['saveAndContinueEditing'],
+    formAdditionalButtons: () => [],
+  });
 
-const slots = defineSlots<ScreenSlots>();
+  const slots = defineSlots<ScreenSlots>();
 
-const registry = provideLayoutSlotRegistry();
-provideScreenContext("page");
+  const registry = provideLayoutSlotRegistry();
+  provideScreenContext('page');
 
-// A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
-// second one — it renders transparently instead.
-provide(ScreenShellKey, PassthroughScreen);
+  // A page rendering `<AppLayout>` inline inside this shell shouldn't stack a
+  // second one — it renders transparently instead.
+  provide(ScreenShellKey, PassthroughScreen);
 
-const page = usePage<{
-  title: string;
-  readOnly?: boolean;
-  crumbs?: Array<{
-    url?: string;
-    label: string;
-  }> | null;
-  subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
-}>();
+  const page = usePage<{
+    title: string;
+    readOnly?: boolean;
+    crumbs?: Array<{
+      url?: string;
+      label: string;
+    }> | null;
+    subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
+  }>();
 
-// Page chrome from props and shared page data.
-const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
-const crumbs = computed(() => page.props.crumbs ?? null);
-const subnav = computed(() => page.props.subnav ?? []);
-const readOnly = computed(() => Boolean(page.props.readOnly));
+  // Page chrome from props and shared page data.
+  const pageTitle = computed(() => props.title?.trim() ?? page.props.title);
+  const crumbs = computed(() => page.props.crumbs ?? null);
+  const subnav = computed(() => page.props.subnav ?? []);
+  const readOnly = computed(() => Boolean(page.props.readOnly));
 
-// Which optional layout regions are in play — filled either by an inline
-// slot or by a page-side <LayoutSlot> teleport. These computeds may only
-// toggle visibility (v-show) and classes, never remove an outlet's
-// wrapper from the DOM: teleport targets must persist.
-const hasContextMenu = computed(
-  () => Boolean(slots["context-menu"]) || registry.has("context-menu"),
-);
-const hasToolbar = computed(
-  () => Boolean(slots.toolbar) || registry.has("toolbar"),
-);
-const hasContentNotice = computed(
-  () => Boolean(slots["content-notice"]) || registry.has("content-notice"),
-);
-const hasContentFooter = computed(
-  () => Boolean(slots["content-footer"]) || registry.has("content-footer"),
-);
-const hasDetails = computed(
-  () => Boolean(slots.details) || registry.has("details"),
-);
-const hasSidebar = computed(
-  () =>
-    Boolean(slots.sidebar) ||
-    Boolean(slots["subnav-actions"]) ||
-    registry.has("sidebar") ||
-    registry.has("subnav-actions") ||
-    subnav.value.length > 0,
-);
-
-const skipLinks = computed(() => [
-  { label: t("Skip to main section"), url: "#main" },
-  ...(hasSidebar.value
-    ? [{ label: t("Skip to secondary navigation"), url: "#secondary-nav" }]
-    : []),
-  ...(props.additionalSkipLinks ?? []),
-]);
-
-const {
-  isLargeScreen,
-  sidebar: globalSidebar,
-  toggle: toggleSidebar,
-  close: closeSidebar,
-  icon: sidebarIcon,
-  width: sidebarWidth,
-} = useGlobalSidebar();
-
-// The details column is user-resizable. The width lands on
-// `--content-layout-details-width`, which `.content-layout` uses for its
-// trailing grid track, so leaving it unset keeps the stylesheet's
-// responsive default. The name is deliberately not `--details-width`:
-// legacy `_cp.scss` already publishes one of those globally.
-const contentLayout = useTemplateRef<HTMLElement>("contentLayout");
-const detailsColumn = useTemplateRef<HTMLElement>("detailsColumn");
-const { width: contentLayoutWidth } = useElementSize(contentLayout);
-
-// Ceiling on the details column so a wide drag — or a width restored from
-// storage at a narrower viewport — can never squeeze the main column off the
-// page. Mirrors the `min()` cap on the grid track, and stays put during a
-// drag because it keys off the layout rather than the columns inside it.
-const detailsMaxWidth = computed(() => {
-  if (!contentLayoutWidth.value) {
-    return DETAILS_MAX_WIDTH;
-  }
-
-  const share = contentLayoutWidth.value * (hasSidebar.value ? 0.4 : 0.5);
-
-  return Math.max(
-    DETAILS_MIN_WIDTH,
-    Math.min(DETAILS_MAX_WIDTH, Math.round(share)),
+  // Which optional layout regions are in play — filled either by an inline
+  // slot or by a page-side <LayoutSlot> teleport. These computeds may only
+  // toggle visibility (v-show) and classes, never remove an outlet's
+  // wrapper from the DOM: teleport targets must persist.
+  const hasContextMenu = computed(
+    () => Boolean(slots['context-menu']) || registry.has('context-menu')
   );
-});
+  const hasToolbar = computed(
+    () => Boolean(slots.toolbar) || registry.has('toolbar')
+  );
+  const hasContentNotice = computed(
+    () => Boolean(slots['content-notice']) || registry.has('content-notice')
+  );
+  const hasContentFooter = computed(
+    () => Boolean(slots['content-footer']) || registry.has('content-footer')
+  );
+  const hasDetails = computed(
+    () => Boolean(slots.details) || registry.has('details')
+  );
+  const hasSidebar = computed(
+    () =>
+      Boolean(slots.sidebar) ||
+      Boolean(slots['subnav-actions']) ||
+      registry.has('sidebar') ||
+      registry.has('subnav-actions') ||
+      subnav.value.length > 0
+  );
 
-const detailsResizer = useResizable({
-  target: detailsColumn,
-  edge: "inline-start",
-  minWidth: DETAILS_MIN_WIDTH,
-  maxWidth: detailsMaxWidth,
-  cssVariable: "--content-layout-details-width",
-  storageKey: "AppLayout.detailsWidth",
-});
+  const skipLinks = computed(() => [
+    {label: t('Skip to main section'), url: '#main'},
+    ...(hasSidebar.value
+      ? [{label: t('Skip to secondary navigation'), url: '#secondary-nav'}]
+      : []),
+    ...(props.additionalSkipLinks ?? []),
+  ]);
 
-// `aria-controls` needs a real id, and `details` is taken: legacy CSS pins
-// `#details` to 350px, which would override the grid track and push the
-// column off the page.
-const detailsId = `content-layout-details-${useId()}`;
+  const {
+    isLargeScreen,
+    sidebar: globalSidebar,
+    toggle: toggleSidebar,
+    close: closeSidebar,
+    icon: sidebarIcon,
+    width: sidebarWidth,
+  } = useGlobalSidebar();
 
-const formActionItems = computed(() => [
-  ...props.defaultFormActions.map(defaultFormActionItem),
-  ...(props.formActions ?? []),
-]);
+  // The details column is user-resizable. The width lands on
+  // `--content-layout-details-width`, which `.content-layout` uses for its
+  // trailing grid track, so leaving it unset keeps the stylesheet's
+  // responsive default. The name is deliberately not `--details-width`:
+  // legacy `_cp.scss` already publishes one of those globally.
+  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
+  const detailsColumn = useTemplateRef<HTMLElement>('detailsColumn');
+  const {width: contentLayoutWidth} = useElementSize(contentLayout);
 
-function defaultFormActionItem(action: DefaultFormAction): ActionItem {
-  if (action === "saveAndContinueEditing") {
-    return {
-      label: t("Save and continue editing"),
-      onClick: () => save({ redirect: false }),
-      shortcut: "S",
-    };
+  // Ceiling on the details column so a wide drag — or a width restored from
+  // storage at a narrower viewport — can never squeeze the main column off the
+  // page. Mirrors the `min()` cap on the grid track, and stays put during a
+  // drag because it keys off the layout rather than the columns inside it.
+  const detailsMaxWidth = computed(() => {
+    if (!contentLayoutWidth.value) {
+      return DETAILS_MAX_WIDTH;
+    }
+
+    const share = contentLayoutWidth.value * (hasSidebar.value ? 0.4 : 0.5);
+
+    return Math.max(
+      DETAILS_MIN_WIDTH,
+      Math.min(DETAILS_MAX_WIDTH, Math.round(share))
+    );
+  });
+
+  const detailsResizer = useResizable({
+    target: detailsColumn,
+    edge: 'inline-start',
+    minWidth: DETAILS_MIN_WIDTH,
+    maxWidth: detailsMaxWidth,
+    cssVariable: '--content-layout-details-width',
+    storageKey: 'AppLayout.detailsWidth',
+  });
+
+  // `aria-controls` needs a real id, and `details` is taken: legacy CSS pins
+  // `#details` to 350px, which would override the grid track and push the
+  // column off the page.
+  const detailsId = `content-layout-details-${useId()}`;
+
+  const formActionItems = computed(() => [
+    ...props.defaultFormActions.map(defaultFormActionItem),
+    ...(props.formActions ?? []),
+  ]);
+
+  function defaultFormActionItem(action: DefaultFormAction): ActionItem {
+    if (action === 'saveAndContinueEditing') {
+      return {
+        label: t('Save and continue editing'),
+        onClick: () => save({redirect: false}),
+        shortcut: 'S',
+      };
+    }
+
+    throw new Error(`Unknown default form action: ${action}`);
   }
 
-  throw new Error(`Unknown default form action: ${action}`);
-}
+  function save(options?: FormSaveOptions) {
+    emit('save', options);
+  }
 
-function save(options?: FormSaveOptions) {
-  emit("save", options);
-}
+  // Announce flash messages to screen readers.
+  const {announce} = useAnnouncer();
+  const {errorFlash, successFlash} = useFlash();
+  watch(successFlash, (newMessage) => announce(newMessage));
+  watch(errorFlash, (newMessage) => announce(newMessage));
 
-// Announce flash messages to screen readers.
-const { announce } = useAnnouncer();
-const { errorFlash, successFlash } = useFlash();
-watch(successFlash, (newMessage) => announce(newMessage));
-watch(errorFlash, (newMessage) => announce(newMessage));
+  useAppendHtml();
 
-useAppendHtml();
-
-// Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
-useActionRedirect();
+  // Bridge `@craftcms/ui` action redirects into Inertia SPA visits.
+  useActionRedirect();
 </script>
 
 <template>
@@ -256,12 +256,12 @@ useActionRedirect();
             </div>
           </div>
         </slot>
-        <main id="main" tabindex="-1" class="pb-2xl">
-          <form method="post" @submit.prevent="form && save()">
+        <main id="main" tabindex="-1">
+          <form method="post" @submit.prevent="form && save()" class="cp-main">
             <slot name="header">
               <div class="container">
-                <div class="index-grid index-grid--header">
-                  <div class="index-grid__aside">
+                <div class="flex gap-4 justify-between items-center pt-4 pb-2">
+                  <div class="flex gap-2 items-center">
                     <LayoutSlotOutlet name="title">
                       <slot name="title">
                         <h1 class="text-xl">{{ pageTitle }}</h1>
@@ -272,17 +272,17 @@ useActionRedirect();
                     </LayoutSlotOutlet>
                   </div>
 
-                  <div class="index-grid__main">
-                    <div
-                      v-show="hasToolbar"
-                      id="toolbar"
-                      class="flex items-center gap-2"
-                    >
-                      <LayoutSlotOutlet name="toolbar">
-                        <slot name="toolbar"></slot>
-                      </LayoutSlotOutlet>
-                    </div>
+                  <div
+                    v-show="hasToolbar"
+                    id="toolbar"
+                    class="flex items-center gap-2"
+                  >
+                    <LayoutSlotOutlet name="toolbar">
+                      <slot name="toolbar"></slot>
+                    </LayoutSlotOutlet>
+                  </div>
 
+                  <div class="flex gap-2 items-center">
                     <LayoutSlotOutlet name="actions">
                       <slot name="actions">
                         <slot name="additional-buttons"></slot>
@@ -418,159 +418,159 @@ useActionRedirect();
 </template>
 
 <style scoped lang="css">
-.cp {
-  display: grid;
-}
+  .cp {
+    display: grid;
+  }
 
-.cp__main {
-  container-type: size;
-}
+  .cp__main {
+    container-type: size;
+  }
 
-.cp__header {
-  --c-color-focus-outline: var(--color-blue-300);
-  color: var(--color-slate-200);
-  background-color: var(--color-slate-950);
-}
+  .cp__header {
+    --c-color-focus-outline: var(--color-blue-300);
+    color: var(--color-slate-200);
+    background-color: var(--color-slate-950);
+  }
 
-/* Every page runs the full width of the viewport. `max-width: none` is doing
+  /* Every page runs the full width of the viewport. `max-width: none` is doing
      real work: `container` is also a Tailwind utility, and cp.css pulls in
      tailwindcss/utilities.css — dropping the declaration entirely lets
      Tailwind's breakpoint caps (1536px at xl) take over instead of removing
      the limit. */
-.container {
-  max-width: none;
-  margin: 0 auto;
-  padding-inline: var(--c-spacing-lg);
-}
+  .container {
+    max-width: none;
+    margin: 0 auto;
+    padding-inline: var(--c-spacing-lg);
+  }
 
-.content-layout {
-  /* Defaults for the side columns. `useResizable` overrides
+  .content-layout {
+    /* Defaults for the side columns. `useResizable` overrides
        --content-layout-details-width inline once the user drags the handle;
        clearing it restores this. Not named --details-width: legacy _cp.scss
        publishes a global custom property under that name. */
-  --content-layout-details-width: clamp(12rem, 20%, 16rem);
-  --content-layout-sidebar-width: clamp(
-    calc(120rem / 16),
-    20%,
-    calc(220rem / 16)
-  );
+    --content-layout-details-width: clamp(12rem, 20%, 16rem);
+    --content-layout-sidebar-width: clamp(
+      calc(120rem / 16),
+      20%,
+      calc(220rem / 16)
+    );
 
-  /* Hard ceiling on the details track, so a width restored from storage at a
+    /* Hard ceiling on the details track, so a width restored from storage at a
        wider viewport can't run the layout off the page. `useResizable` clamps
        to the same share, so the drag stops where the column does. */
-  --content-layout-details-max: 50%;
-  --content-layout-details-track: min(
-    var(--content-layout-details-width),
-    var(--content-layout-details-max)
-  );
+    --content-layout-details-max: 50%;
+    --content-layout-details-track: min(
+      var(--content-layout-details-width),
+      var(--content-layout-details-max)
+    );
 
-  display: grid;
-  gap: var(--c-spacing-md);
+    display: grid;
+    gap: var(--c-spacing-md);
 
-  @container (width >= 768px) {
-    align-items: start;
+    @container (width >= 768px) {
+      align-items: start;
 
-    &.content-layout--details {
-      grid-template-columns:
-        minmax(0, 1fr)
-        var(--content-layout-details-track);
-    }
+      &.content-layout--details {
+        grid-template-columns:
+          minmax(0, 1fr)
+          var(--content-layout-details-track);
+      }
 
-    &.content-layout--sidebar {
-      grid-template-columns:
-        var(--content-layout-sidebar-width)
-        minmax(0, 1fr);
-    }
+      &.content-layout--sidebar {
+        grid-template-columns:
+          var(--content-layout-sidebar-width)
+          minmax(0, 1fr);
+      }
 
-    &.content-layout--sidebar.content-layout--details {
-      /* Three columns share the width, so the details column gets less. */
-      --content-layout-details-max: 40%;
+      &.content-layout--sidebar.content-layout--details {
+        /* Three columns share the width, so the details column gets less. */
+        --content-layout-details-max: 40%;
 
-      grid-template-columns:
-        var(--content-layout-sidebar-width)
-        minmax(0, 1fr)
-        var(--content-layout-details-track);
+        grid-template-columns:
+          var(--content-layout-sidebar-width)
+          minmax(0, 1fr)
+          var(--content-layout-details-track);
+      }
     }
   }
-}
 
-.content-layout__details-column {
-  position: relative;
-  container-type: inline-size;
-}
+  .content-layout__details-column {
+    position: relative;
+    container-type: inline-size;
+  }
 
-/* Sits in the gutter between the content and the details column. Only the
+  /* Sits in the gutter between the content and the details column. Only the
      wide layout has a details track to resize, so the handle stays hidden
      until the columns actually split. */
-.content-layout__details-resize-handle {
-  --resize-handle-display: none;
+  .content-layout__details-resize-handle {
+    --resize-handle-display: none;
 
-  @container (width >= 768px) {
-    --resize-handle-display: flex;
+    @container (width >= 768px) {
+      --resize-handle-display: flex;
 
-    /* Centered in the gutter: back off half the gap, then half the handle. */
-    inset-inline-start: calc(var(--c-spacing-md) / -2 - 6px);
+      /* Centered in the gutter: back off half the gap, then half the handle. */
+      inset-inline-start: calc(var(--c-spacing-md) / -2 - 6px);
+    }
   }
-}
 
-main {
-  padding-block-end: var(--c-spacing-xl);
-}
+  main {
+    padding-block-end: var(--c-spacing-xl);
+  }
 
-.content-layout__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--c-spacing-md);
-  align-content: start;
-}
+  .content-layout__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--c-spacing-md);
+    align-content: start;
+  }
 
-/* Wide content — a many-columned table, a long code block — sets a min-content
+  /* Wide content — a many-columned table, a long code block — sets a min-content
    floor that otherwise pushes this column past its track and out of the
    layout. The track is already minmax(0, 1fr); items need min-width: 0 too,
    since `auto` refuses to shrink below min-content. Letting them shrink is
    what lets their own overflow containers (.element-index__body) scroll.
    `:deep()` because these are slotted from the page component, so they carry
    its scope id rather than this one's. */
-.content-layout__main > :deep(*) {
-  min-width: 0;
-}
-
-.content-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--c-spacing-md);
-  margin-block-start: var(--c-spacing-md);
-}
-
-.cp-details {
-  display: grid;
-  gap: var(--c-spacing-md);
-}
-
-@media screen and (min-width: 1024px) {
-  .cp {
-    grid-template-columns: v-bind(sidebarWidth) minmax(0, 1fr);
-    grid-template-areas: "header header" "sidebar main";
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+  .content-layout__main > :deep(*) {
+    min-width: 0;
   }
 
-  .cp__header {
-    grid-area: header;
+  .content-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-md);
   }
 
-  .cp__sidebar {
-    grid-area: sidebar;
+  .cp-details {
+    display: grid;
+    gap: var(--c-spacing-md);
   }
 
-  .cp__main {
-    grid-area: main;
-    overflow: auto;
+  @media screen and (min-width: 1024px) {
+    .cp {
+      grid-template-columns: v-bind(sidebarWidth) minmax(0, 1fr);
+      grid-template-areas: 'header header' 'sidebar main';
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cp__header {
+      grid-area: header;
+    }
+
+    .cp__sidebar {
+      grid-area: sidebar;
+    }
+
+    .cp__main {
+      grid-area: main;
+      overflow: auto;
+    }
   }
-}
 </style>

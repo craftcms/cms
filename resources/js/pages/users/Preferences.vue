@@ -218,7 +218,9 @@
                   :key="option.value"
                   type="button"
                   variant="outline"
-                  :active="form.slideoutPosition === option.value ? 'true' : null"
+                  :active="
+                    form.slideoutPosition === option.value ? 'true' : null
+                  "
                   :aria-pressed="form.slideoutPosition === option.value"
                   :title="option.label"
                   @click="form.slideoutPosition = option.value"

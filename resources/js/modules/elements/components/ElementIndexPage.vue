@@ -45,7 +45,6 @@
     onActionPerformed,
     createCustomizeSourcesModal,
   } = page;
-
 </script>
 
 <template>

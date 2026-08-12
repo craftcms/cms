@@ -60,7 +60,6 @@
   });
 
   const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();
-
 </script>
 
 <template>

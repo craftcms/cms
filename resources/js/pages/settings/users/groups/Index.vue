@@ -53,7 +53,6 @@
     },
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
-
 </script>
 
 <template>

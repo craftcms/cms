@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/vue3-vite";
-import { useForm } from "@inertiajs/vue3";
+import type {Meta, StoryObj} from '@storybook/vue3-vite';
+import {useForm} from '@inertiajs/vue3';
 
-import AppLayout from "./AppLayout.vue";
+import AppLayout from './AppLayout.vue';
 
 /**
  * Highlights a slot's rendered area so each extension point is easy to spot.
  */
 const SlotMarker = {
   props: {
-    name: { type: String, required: true },
+    name: {type: String, required: true},
   },
   template: `
     <div class="slot-marker">
@@ -43,12 +43,12 @@ const markerStyles = `
 const meta = {
   component: AppLayout,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
     inertia: {
-      title: "Page Title",
+      title: 'Page Title',
       crumbs: [
-        { label: "Content", url: "#" },
-        { label: "Entries", url: "#" },
+        {label: 'Content', url: '#'},
+        {label: 'Entries', url: '#'},
       ],
       queue: {
         enabled: false,
@@ -58,9 +58,9 @@ const meta = {
       },
       craft: {
         nav: [
-          { label: "Dashboard", url: "#", icon: "gauge", selected: false },
-          { label: "Entries", url: "#", icon: "newspaper", selected: true },
-          { label: "Settings", url: "#", icon: "gear", selected: false },
+          {label: 'Dashboard', url: '#', icon: 'gauge', selected: false},
+          {label: 'Entries', url: '#', icon: 'newspaper', selected: true},
+          {label: 'Settings', url: '#', icon: 'gear', selected: false},
         ],
       },
     },
@@ -108,8 +108,8 @@ const sampleContent = `
 
 export const Default: Story = {
   render: (args) => ({
-    components: { AppLayout },
-    setup: () => ({ args }),
+    components: {AppLayout},
+    setup: () => ({args}),
     template: `
       <AppLayout v-bind="args">
         ${sampleContent}
@@ -117,7 +117,7 @@ export const Default: Story = {
     `,
   }),
   args: {
-    title: "Default Layout",
+    title: 'Default Layout',
   },
 };
 
@@ -126,10 +126,10 @@ export const Default: Story = {
  */
 export const AllExtensionPoints: Story = {
   render: (args) => ({
-    components: { AppLayout, SlotMarker },
+    components: {AppLayout, SlotMarker},
     setup() {
-      const form = useForm({ name: "" });
-      return { args, form };
+      const form = useForm({name: ''});
+      return {args, form};
     },
     template: `
       <div>
@@ -209,7 +209,207 @@ export const AllExtensionPoints: Story = {
     `,
   }),
   args: {
-    title: "All Extension Points",
+    title: 'All Extension Points',
+  },
+};
+
+/**
+ * The same extension points as `AllExtensionPoints`, but furnished as a real
+ * screen instead of labelled markers — an entry editor part-way through an
+ * edit, so you can judge spacing, density, and how the regions read together.
+ *
+ * Three points are deliberately absent, because each one *replaces* a region
+ * that the others live in, and using them would empty most of this story:
+ * `main` (the whole main column), `header` (title through action buttons), and
+ * `breadcrumbs` (the bar hosting `context-menu`). `actions` is out for the same
+ * reason — it would swallow `additional-buttons` and `submit-button`, which are
+ * shown here instead.
+ *
+ * The left column comes from the `subnav` page prop rather than the `sidebar`
+ * slot: `subnav-actions` renders inside the default nav, so a screen can use
+ * `sidebar` or `subnav-actions`, never both. A real entry editor wouldn't carry
+ * a secondary nav at all — it's here so the region is exercised.
+ */
+export const AllExtensionPointsInContext: Story = {
+  render: (args) => ({
+    components: {AppLayout},
+    setup() {
+      const form = useForm({
+        title: 'Summer sale: up to 40% off',
+        slug: 'summer-sale-up-to-40-off',
+        postDate: '2026-07-14',
+        body: 'Our biggest sale of the year runs through the end of August.',
+      });
+      form.errors = {slug: 'Slug is already in use by another entry.'};
+      form.hasErrors = true;
+      form.isDirty = true;
+      return {args, form};
+    },
+    template: `
+      <AppLayout
+        v-bind="args"
+        :form="form"
+        :form-additional-actions="[
+          {label: 'Save as a draft', onClick: () => {}},
+          {label: 'Duplicate', onClick: () => {}},
+          {label: 'Delete', variant: 'danger', onClick: () => {}},
+        ]"
+      >
+        <template #context-menu>
+          <craft-button size="small" type="button" appearance="outline">
+            <craft-icon name="earth-americas" slot="prefix"></craft-icon>
+            English (Global)
+          </craft-button>
+        </template>
+
+        <template #title>
+          <h1 class="text-xl">Summer sale: up to 40% off</h1>
+        </template>
+
+        <template #title-badge>
+          <craft-status status="pending" label="Draft"></craft-status>
+          <craft-chip>Draft 3</craft-chip>
+        </template>
+
+        <template #toolbar>
+          <craft-button size="small" type="button" appearance="outline">
+            Revisions
+            <craft-icon name="angle-down" slot="suffix"></craft-icon>
+          </craft-button>
+        </template>
+
+        <template #additional-buttons>
+          <craft-button type="button" appearance="outline">Preview</craft-button>
+        </template>
+
+        <template #submit-button>
+          <craft-button type="submit" variant="accent">Publish</craft-button>
+        </template>
+
+        <template #subnav-actions>
+          <div class="mt-4">
+            <craft-button type="button" size="small" appearance="outline">
+              <craft-icon name="plus" slot="prefix"></craft-icon>
+              New entry
+            </craft-button>
+          </div>
+        </template>
+
+        <template #content-notice>
+          <craft-callout data-color="info" size="small">
+            You're editing a draft. It won't be visible on the site until it's
+            published.
+          </craft-callout>
+        </template>
+
+        <template #tabs>
+          <craft-button-group role="tablist">
+            <craft-button type="button" role="tab" appearance="outline" active="true" aria-selected="true">
+              Content
+            </craft-button>
+            <craft-button type="button" role="tab" appearance="outline" aria-selected="false">
+              SEO
+              <craft-icon name="circle-exclamation" slot="suffix"></craft-icon>
+            </craft-button>
+            <craft-button type="button" role="tab" appearance="outline" aria-selected="false">
+              Related
+            </craft-button>
+          </craft-button-group>
+        </template>
+
+        <template #error-summary>
+          <craft-callout data-color="error" title="Couldn't save entry">
+            <ul>
+              <li>Slug is already in use by another entry.</li>
+            </ul>
+          </craft-callout>
+        </template>
+
+        <craft-field-group>
+          <craft-input
+            label="Title"
+            name="title"
+            value="Summer sale: up to 40% off"
+            width="full"
+          ></craft-input>
+
+          <craft-input
+            label="Slug"
+            name="slug"
+            value="summer-sale-up-to-40-off"
+            width="full"
+            error="Slug is already in use by another entry."
+          ></craft-input>
+
+          <craft-field label="Body" instructions="Appears above the fold on the campaign landing page.">
+            <craft-textarea
+              name="body"
+              rows="5"
+              value="Our biggest sale of the year runs through the end of August."
+            ></craft-textarea>
+          </craft-field>
+        </craft-field-group>
+
+        <template #content-footer>
+          <span>Draft saved 4 minutes ago by Priya Raman</span>
+          <craft-button type="button" size="small" appearance="outline">
+            View revision history
+          </craft-button>
+        </template>
+
+        <template #details>
+          <dl class="cp-metadata-list">
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">Status</dt>
+              <dd>Draft</dd>
+            </div>
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">Author</dt>
+              <dd>Priya Raman</dd>
+            </div>
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">Post Date</dt>
+              <dd>7/14/2026, 9:00 AM</dd>
+            </div>
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">Expiry Date</dt>
+              <dd>9/1/2026, 12:00 AM</dd>
+            </div>
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">Slug</dt>
+              <dd>summer-sale-up-to-40-off</dd>
+            </div>
+            <div class="cp-metadata-list__item">
+              <dt class="font-bold text-xs">ID</dt>
+              <dd>4821</dd>
+            </div>
+          </dl>
+        </template>
+
+        <template #footer>
+          <span>Craft Pro 6.0.0</span>
+        </template>
+      </AppLayout>
+    `,
+  }),
+  args: {
+    title: 'Summer sale: up to 40% off',
+  },
+  parameters: {
+    inertia: {
+      title: 'Summer sale: up to 40% off',
+      crumbs: [
+        {label: 'Content', url: '#'},
+        {label: 'Entries', url: '#'},
+        {label: 'News', url: '#'},
+      ],
+      subnav: [
+        {label: 'All entries', url: '#', selected: false},
+        {label: 'News', url: '#', selected: true},
+        {label: 'Blog', url: '#', selected: false},
+        {label: 'Press releases', url: '#', selected: false},
+      ],
+    },
   },
 };
 
@@ -219,10 +419,10 @@ export const AllExtensionPoints: Story = {
  */
 export const FullPageForm: Story = {
   render: (args) => ({
-    components: { AppLayout },
+    components: {AppLayout},
     setup() {
-      const form = useForm({ name: "" });
-      return { args, form };
+      const form = useForm({name: ''});
+      return {args, form};
     },
     template: `
       <AppLayout
@@ -235,7 +435,7 @@ export const FullPageForm: Story = {
     `,
   }),
   args: {
-    title: "Edit Entry",
+    title: 'Edit Entry',
   },
 };
 
@@ -245,15 +445,15 @@ export const FullPageForm: Story = {
  */
 export const FormWithErrors: Story = {
   render: (args) => ({
-    components: { AppLayout },
+    components: {AppLayout},
     setup() {
-      const form = useForm({ name: "", handle: "" });
+      const form = useForm({name: '', handle: ''});
       form.errors = {
-        name: "Name cannot be blank.",
-        handle: "Handle is already in use.",
+        name: 'Name cannot be blank.',
+        handle: 'Handle is already in use.',
       };
       form.hasErrors = true;
-      return { args, form };
+      return {args, form};
     },
     template: `
       <AppLayout v-bind="args" :form="form">
@@ -262,7 +462,7 @@ export const FormWithErrors: Story = {
     `,
   }),
   args: {
-    title: "Edit Entry",
+    title: 'Edit Entry',
   },
 };
 
@@ -273,8 +473,8 @@ export const FormWithErrors: Story = {
  */
 export const SecondaryNavigation: Story = {
   render: (args) => ({
-    components: { AppLayout },
-    setup: () => ({ args }),
+    components: {AppLayout},
+    setup: () => ({args}),
     template: `
       <AppLayout v-bind="args">
         <template #subnav-actions>
@@ -288,14 +488,14 @@ export const SecondaryNavigation: Story = {
     `,
   }),
   args: {
-    title: "Sites",
+    title: 'Sites',
   },
   parameters: {
     inertia: {
       subnav: [
-        { label: "All Sites", url: "#", selected: true },
-        { label: "Europe", url: "#", selected: false },
-        { label: "North America", url: "#", selected: false },
+        {label: 'All Sites', url: '#', selected: true},
+        {label: 'Europe', url: '#', selected: false},
+        {label: 'North America', url: '#', selected: false},
       ],
     },
   },
@@ -307,8 +507,8 @@ export const SecondaryNavigation: Story = {
  */
 export const SidebarAndDetails: Story = {
   render: (args) => ({
-    components: { AppLayout, SlotMarker },
-    setup: () => ({ args }),
+    components: {AppLayout, SlotMarker},
+    setup: () => ({args}),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -327,7 +527,7 @@ export const SidebarAndDetails: Story = {
     `,
   }),
   args: {
-    title: "Sidebar and Details",
+    title: 'Sidebar and Details',
   },
 };
 
@@ -337,8 +537,8 @@ export const SidebarAndDetails: Story = {
  */
 export const ContentNoticeAndTabs: Story = {
   render: (args) => ({
-    components: { AppLayout, SlotMarker },
-    setup: () => ({ args }),
+    components: {AppLayout, SlotMarker},
+    setup: () => ({args}),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -362,7 +562,7 @@ export const ContentNoticeAndTabs: Story = {
     `,
   }),
   args: {
-    title: "Content Notice and Tabs",
+    title: 'Content Notice and Tabs',
   },
 };
 
@@ -372,8 +572,8 @@ export const ContentNoticeAndTabs: Story = {
  */
 export const ContextMenuAndToolbar: Story = {
   render: (args) => ({
-    components: { AppLayout, SlotMarker },
-    setup: () => ({ args }),
+    components: {AppLayout, SlotMarker},
+    setup: () => ({args}),
     template: `
       <div>
         <component is="style">${markerStyles}</component>
@@ -396,7 +596,7 @@ export const ContextMenuAndToolbar: Story = {
     `,
   }),
   args: {
-    title: "Context Menu and Toolbar",
+    title: 'Context Menu and Toolbar',
   },
 };
 
@@ -406,10 +606,10 @@ export const ContextMenuAndToolbar: Story = {
  */
 export const CustomSubmitButton: Story = {
   render: (args) => ({
-    components: { AppLayout },
+    components: {AppLayout},
     setup() {
-      const form = useForm({ name: "" });
-      return { args, form };
+      const form = useForm({name: ''});
+      return {args, form};
     },
     template: `
       <AppLayout v-bind="args" :form="form">
@@ -426,7 +626,7 @@ export const CustomSubmitButton: Story = {
     `,
   }),
   args: {
-    title: "Custom Submit Button",
+    title: 'Custom Submit Button',
   },
 };
 
@@ -435,8 +635,8 @@ export const CustomSubmitButton: Story = {
  */
 export const HiddenHeader: Story = {
   render: (args) => ({
-    components: { AppLayout },
-    setup: () => ({ args }),
+    components: {AppLayout},
+    setup: () => ({args}),
     template: `
       <AppLayout v-bind="args">
         <template #header><span></span></template>
@@ -445,6 +645,6 @@ export const HiddenHeader: Story = {
     `,
   }),
   args: {
-    title: "Hidden Header",
+    title: 'Hidden Header',
   },
 };

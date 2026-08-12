@@ -145,7 +145,9 @@
   <UserScreen>
     <craft-pane appearance="raised">
       <div ref="cardsContainer" class="grid gap-3">
-        <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
+        <h2 v-if="!props.showIndex" class="text-lg m-0!">
+          {{ t('Addresses') }}
+        </h2>
 
         <HtmlFragmentRenderer v-if="indexFragment" :fragment="indexFragment" />
 
