@@ -2,7 +2,6 @@
   import {actionClient} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {shallowRef, toRaw} from 'vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
@@ -100,7 +99,7 @@
 
 <template>
   <form @submit.prevent="save()">
-    <Pane appearance="raised">
+    <craft-pane appearance="raised">
       <craft-field-group>
         <FormRenderer
           ref="renderer"
@@ -119,6 +118,6 @@
           </template>
         </FormRenderer>
       </craft-field-group>
-    </Pane>
+    </craft-pane>
   </form>
 </template>
