@@ -81,8 +81,12 @@ class EditUserScreens
      * The account navigation, with the account-security screens nested under
      * their own heading.
      *
+     * Both levels are lists, not keyed by screen name: the CP shell types this
+     * as `NavItem[]` and decides whether to draw the secondary nav from the
+     * item count, which a JSON object wouldn't have.
+     *
      * @param  array<string, array{label: string, url?: string}>|null  $screens
-     * @return array<string, NavItem>
+     * @return list<NavItem>
      */
     public function subnav(User $user, string $screen, ?array $screens = null): array
     {
@@ -103,7 +107,7 @@ class EditUserScreens
                     'group' => true,
                     'subnav' => [],
                 ]);
-                $items['account-security'] = $securityItem;
+                $items[] = $securityItem;
                 $current = &$securityItem->subnav;
             }
 
@@ -113,7 +117,7 @@ class EditUserScreens
                 $securityItem->selected = true;
             }
 
-            $current[$name] = new NavItem([
+            $current[] = new NavItem([
                 'label' => $info['label'],
                 'url' => $info['url'] ?? $this->url($user, $name),
                 'selected' => $selected,

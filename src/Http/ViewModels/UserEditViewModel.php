@@ -52,9 +52,7 @@ class UserEditViewModel extends ElementEditViewModel
      */
     public function subnav(): array
     {
-        return array_values(
-            app(EditUserScreens::class)->subnav($this->user, EditUserScreens::PROFILE)
-        );
+        return app(EditUserScreens::class)->subnav($this->user, EditUserScreens::PROFILE);
     }
 
     /**

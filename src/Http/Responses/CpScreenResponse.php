@@ -125,7 +125,7 @@ class CpScreenResponse implements Responsable
     public array $tabs = [];
 
     /**
-     * @var array<string, array<string, mixed>|NavItem>|null Secondary navigation items.
+     * @var list<array<string, mixed>|NavItem>|null Secondary navigation items.
      *
      * @see subnav()
      */
@@ -422,8 +422,11 @@ class CpScreenResponse implements Responsable
 
     /**
      * Sets the secondary navigation items.
+     *
+     * A list, not a keyed array: the CP shell counts these to decide whether to
+     * draw the secondary nav, which a JSON object wouldn't let it do.
      */
-    /** @param array<string, array<string, mixed>|NavItem>|null $value */
+    /** @param list<array<string, mixed>|NavItem>|null $value */
     public function subnav(?array $value): self
     {
         $this->subnav = $value;
