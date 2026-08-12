@@ -128,6 +128,11 @@ class Tabs extends ViewComponent
      * Emits each tab immediately followed by its panel, which is the order the
      * web component pairs them in. Any content assigned to the component's own
      * slots follows.
+     *
+     * A tab naming an external panel gets none emitted here — that panel is
+     * rendered elsewhere on the page, and a placeholder would just be dead DOM
+     * inside the strip. Tabs without one always get a panel element, empty or
+     * not, because the pairing is positional.
      */
     #[\Override]
     protected function renderSlots(): string
@@ -136,7 +141,10 @@ class Tabs extends ViewComponent
 
         foreach ($this->items as $tab) {
             $html .= $tab->toHtml();
-            $html .= Html::tag('div', $this->renderContent($tab->getPanel()), ['slot' => 'panel']);
+
+            if ($tab->getControls() === null) {
+                $html .= Html::tag('div', $this->renderContent($tab->getPanel()), ['slot' => 'panel']);
+            }
         }
 
         return $html.parent::renderSlots();

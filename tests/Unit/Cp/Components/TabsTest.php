@@ -103,6 +103,21 @@ it('replaces the tabs when tabs() is called', function () {
         ->and($html)->toContain('Fresh');
 });
 
+it('renders tabs that point at external panels', function () {
+    // External-panel mode: the tabs name panels rendered elsewhere, so the
+    // component emits no panels of its own.
+    $html = Tabs::make()
+        ->tabs([
+            ['label' => 'Content', 'controls' => 'form-tab-1'],
+            ['label' => 'Settings', 'controls' => 'form-tab-2'],
+        ])
+        ->toHtml();
+
+    expect($html)->toContain('<craft-tab slot="tab" controls="form-tab-1">Content</craft-tab>')
+        ->and($html)->toContain('<craft-tab slot="tab" controls="form-tab-2">Settings</craft-tab>')
+        ->and($html)->not->toContain('slot="panel"');
+});
+
 it('keeps a tab in the tab slot', function () {
     // The pairing depends on the slot, so this isn't reassignable the way
     // ViewComponent::slot() normally allows.

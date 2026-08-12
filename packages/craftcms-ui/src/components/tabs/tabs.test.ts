@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftTab from '../tab/tab.js';
 import type CraftTabs from './tabs.js';
 import styles from './tabs.styles.js';
@@ -7,15 +7,16 @@ import './tabs.js';
 
 /*
  * SCOPE: this covers what `CraftTabs` adds on top of `LionTabs` — the wrapper
- * and parts, the `layout` axis, and the tab's own state.
+ * and parts, the `layout` axis, the tab's own state, and external-panel mode
+ * (which this component implements itself, so it is fully covered here).
  *
- * Lion's selection machinery is NOT exercised here, and can't be: it bootstraps
- * from a `slotchange` on the shadow tab slot, and happy-dom never fires one
- * (nodes are assigned — `assignedNodes()` is correct — but the event isn't
- * dispatched). Nothing gets wired, so every selection assertion would fail
- * against a component that works fine in a browser. Selection, keyboard
- * navigation, and disabled-tab skipping are covered by the play functions in
- * tabs.stories.ts, which run in real Chromium.
+ * Lion's *slotted* selection machinery is NOT exercised here, and can't be: it
+ * bootstraps from a `slotchange` on the shadow tab slot, and happy-dom never
+ * fires one (nodes are assigned — `assignedNodes()` is correct — but the event
+ * isn't dispatched). Nothing gets wired, so every selection assertion would
+ * fail against a component that works fine in a browser. Slotted selection,
+ * keyboard navigation, and disabled-tab skipping are covered by the play
+ * functions in tabs.stories.ts, which run in real Chromium.
  */
 
 /** Builds a strip of `count` tabs and matching panels. */
@@ -148,5 +149,246 @@ describe('craft-tab', () => {
     // property.
     tab.setAttribute('selected', 'true');
     expect(tab.selected).toBe(true);
+  });
+});
+
+/**
+ * Builds a strip whose panels live outside it, the shape a server-rendered
+ * field layout produces: the tab bar in one part of the page, the panels
+ * (hidden by the server past the first) in another.
+ */
+async function createExternalTabs({
+  count = 3,
+  disabled = [] as number[],
+  panels = true,
+} = {}): Promise<{
+  element: CraftTabs;
+  tabs: CraftTab[];
+  sections: HTMLElement[];
+}> {
+  const element = document.createElement('craft-tabs') as CraftTabs;
+  const sections: HTMLElement[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const tab = document.createElement('craft-tab') as CraftTab;
+    tab.slot = 'tab';
+    tab.setAttribute('controls', `panel-${i}`);
+    tab.textContent = `Tab ${i}`;
+    if (disabled.includes(i)) {
+      tab.setAttribute('disabled', '');
+    }
+    element.append(tab);
+
+    if (panels) {
+      const section = document.createElement('section');
+      section.id = `panel-${i}`;
+      if (i > 0) {
+        section.classList.add('hidden');
+      }
+      sections.push(section);
+    }
+  }
+
+  document.body.append(element, ...sections);
+  await element.updateComplete;
+
+  return {
+    element,
+    tabs: Array.from(element.querySelectorAll('craft-tab')),
+    sections,
+  };
+}
+
+function arrow(tab: CraftTab, key: string) {
+  tab.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
+  tab.dispatchEvent(new KeyboardEvent('keyup', {key, bubbles: true}));
+}
+
+describe('external-panel mode', () => {
+  it('wires the tab/tabpanel contract across the two halves', async () => {
+    const {tabs, sections} = await createExternalTabs();
+
+    tabs.forEach((tab, index) => {
+      const section = sections[index]!;
+
+      expect(tab.getAttribute('role')).toBe('tab');
+      expect(tab.getAttribute('aria-controls')).toBe(section.id);
+      expect(section.getAttribute('role')).toBe('tabpanel');
+      expect(section.getAttribute('aria-labelledby')).toBe(tab.id);
+      expect(tab.id).not.toBe('');
+      // Panels not starting with something focusable have to be reachable.
+      expect(section.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
+  it('shows only the selected panel, using the server’s hidden class', async () => {
+    const {sections} = await createExternalTabs();
+
+    expect(sections[0]!.classList.contains('hidden')).toBe(false);
+    expect(sections[1]!.classList.contains('hidden')).toBe(true);
+    expect(sections[2]!.classList.contains('hidden')).toBe(true);
+  });
+
+  it('leaves the panels’ ids alone', async () => {
+    // Lion's own pairing renames the panels it sets up; these ids come from
+    // the server and are what `controls` (and other code) references.
+    const {sections} = await createExternalTabs();
+
+    expect(sections.map((section) => section.id)).toEqual([
+      'panel-0',
+      'panel-1',
+      'panel-2',
+    ]);
+  });
+
+  it('switches panels on click and fires selected-changed', async () => {
+    const {element, tabs, sections} = await createExternalTabs();
+    let fired = 0;
+    element.addEventListener('selected-changed', () => {
+      fired++;
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(fired).toBe(1);
+    expect(element.selectedIndex).toBe(2);
+    expect(sections[0]!.classList.contains('hidden')).toBe(true);
+    expect(sections[2]!.classList.contains('hidden')).toBe(false);
+    expect(tabs[2]!.getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('keeps a roving tabindex', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    expect(tabs[0]!.getAttribute('tabindex')).toBe('0');
+    expect(tabs[1]!.getAttribute('tabindex')).toBe('-1');
+
+    tabs[1]!.click();
+    await element.updateComplete;
+
+    expect(tabs[0]!.getAttribute('tabindex')).toBe('-1');
+    expect(tabs[1]!.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('navigates with the arrow keys, wrapping at both ends', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(1);
+
+    arrow(tabs[1]!, 'ArrowLeft');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+
+    // Wraps backwards off the first tab...
+    arrow(tabs[0]!, 'ArrowLeft');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+
+    // ...and forwards off the last.
+    arrow(tabs[2]!, 'ArrowRight');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+  });
+
+  it('jumps to the ends with Home and End', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    arrow(tabs[0]!, 'End');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+
+    arrow(tabs[2]!, 'Home');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+  });
+
+  it('skips disabled tabs when navigating, and refuses to select one', async () => {
+    const {element, tabs} = await createExternalTabs({disabled: [1]});
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+
+    tabs[1]!.click();
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+  });
+
+  it('moves the initial selection off a disabled first tab', async () => {
+    const {element} = await createExternalTabs({disabled: [0]});
+
+    expect(element.selectedIndex).toBe(1);
+  });
+
+  it('honors selected-index set from outside', async () => {
+    const {element, sections} = await createExternalTabs();
+
+    element.setAttribute('selected-index', '2');
+    await element.updateComplete;
+
+    expect(sections[2]!.classList.contains('hidden')).toBe(false);
+    expect(sections[0]!.classList.contains('hidden')).toBe(true);
+  });
+
+  it('rewires replaced panels on refresh()', async () => {
+    const {element, tabs, sections} = await createExternalTabs();
+
+    // Stand in for a re-rendered fragment: same ids, new elements, and back to
+    // the server's initial visibility.
+    const replacements = sections.map((section, index) => {
+      const fresh = document.createElement('section');
+      fresh.id = section.id;
+      if (index > 0) {
+        fresh.classList.add('hidden');
+      }
+      section.replaceWith(fresh);
+      return fresh;
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+    element.refresh();
+
+    expect(replacements[2]!.getAttribute('role')).toBe('tabpanel');
+    expect(replacements[2]!.getAttribute('aria-labelledby')).toBe(tabs[2]!.id);
+    expect(replacements[2]!.classList.contains('hidden')).toBe(false);
+    expect(replacements[0]!.classList.contains('hidden')).toBe(true);
+  });
+
+  it('stays quiet while no panels have been rendered yet', async () => {
+    // The panel markup is often injected after the strip mounts; a strip that
+    // resolves nothing is waiting, not misconfigured.
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await createExternalTabs({panels: false});
+
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it('reports a tab whose panel is missing once the others resolve', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const {element} = await createExternalTabs();
+    document.getElementById('panel-1')!.remove();
+    element.refresh();
+
+    expect(error).toHaveBeenCalledOnce();
+    expect(error.mock.calls[0]![0]).toContain('panel-1');
+    error.mockRestore();
+  });
+
+  it('drops its listeners when disconnected', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    element.remove();
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
   });
 });

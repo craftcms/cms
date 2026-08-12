@@ -138,3 +138,44 @@ export const Disabled: Story = {
     await expect(tabs[2]).toHaveAttribute('aria-selected', 'true');
   },
 };
+
+/**
+ * When the panels can't be slotted next to their tabs — a server-rendered
+ * field layout puts the tab bar in the page header and the sections inside a
+ * pane — each tab names its panel by `id` instead, and the strip drives those
+ * panels where they stand.
+ */
+export const ExternalPanels: Story = {
+  render: () => html`
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+
+    <craft-tabs>
+      <craft-tab slot="tab" controls="external-content">Content</craft-tab>
+      <craft-tab slot="tab" controls="external-settings">Settings</craft-tab>
+    </craft-tabs>
+
+    <p>Anything at all can sit between the strip and its panels.</p>
+
+    <section id="external-content"><p>The content panel.</p></section>
+    <section id="external-settings" class="hidden">
+      <p>The settings panel.</p>
+    </section>
+  `,
+  play: async ({canvas, canvasElement, userEvent}) => {
+    const tabs = canvas.getAllByRole('tab');
+    const content = canvasElement.querySelector('#external-content')!;
+    const settings = canvasElement.querySelector('#external-settings')!;
+
+    await expect(tabs[0]).toHaveAttribute('aria-controls', 'external-content');
+    await expect(content).toHaveAttribute('role', 'tabpanel');
+    await expect(content).toHaveAttribute('aria-labelledby', tabs[0]!.id);
+
+    await userEvent.click(tabs[1]!);
+    await expect(content).toHaveClass('hidden');
+    await expect(settings).not.toHaveClass('hidden');
+  },
+};

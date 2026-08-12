@@ -2,7 +2,7 @@
   import {computed, onBeforeUnmount, ref, watch} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import {router, useForm, usePage} from '@inertiajs/vue3';
-  import {t} from '@craftcms/ui';
+  import {type CraftTabs, t} from '@craftcms/ui';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -25,16 +25,16 @@
 
   const contentEl = ref<HTMLElement | null>(null);
 
-  const activeTab = ref<string | null>(props.tabMenu[0]?.containerId ?? null);
+  // The panels are the server-rendered `<section id="{containerId}">`s inside
+  // the pane, so the strip runs in <craft-tabs>' external-panel mode: the tabs
+  // name their panel by id and the component drives it in place.
+  const tabsEl = ref<CraftTabs | null>(null);
+  const selectedTab = ref(0);
 
-  function selectTab(containerId: string) {
-    activeTab.value = containerId;
-
-    for (const tab of props.tabMenu) {
-      document
-        .getElementById(tab.containerId)
-        ?.classList.toggle('hidden', tab.containerId !== containerId);
-    }
+  // Mirror the component's own selection back, so re-selecting the first tab
+  // below is a real change Vue will push down to the attribute.
+  function onTabSelected(event: Event) {
+    selectedTab.value = (event.target as CraftTabs).selectedIndex;
   }
 
   // A fresh fragment (e.g. after a successful save) renders with the first
@@ -43,10 +43,16 @@
   watch(
     () => props.formFragment,
     () => {
-      activeTab.value = props.tabMenu[0]?.containerId ?? null;
+      selectedTab.value = 0;
       changeBaseline = null;
     }
   );
+
+  // The replacement sections come back with the same ids but as new elements,
+  // dropping the roles and visibility the strip put on them.
+  function onFragmentReady() {
+    tabsEl.value?.refresh();
+  }
 
   function profileData(): Record<string, any> {
     const formEl = hostForm.value;
@@ -141,32 +147,34 @@
 
 <template>
   <LayoutSlot v-if="props.tabMenu.length > 1" name="tabs">
-    <craft-button-group role="tablist">
-      <craft-button
+    <craft-tabs
+      ref="tabsEl"
+      :selected-index="selectedTab"
+      @selected-changed="onTabSelected"
+    >
+      <craft-tab
         v-for="tab in props.tabMenu"
         :key="tab.containerId"
         :id="tab.tabId"
-        type="button"
-        role="tab"
-        appearance="outline"
-        :active="activeTab === tab.containerId ? 'true' : null"
-        :aria-selected="activeTab === tab.containerId"
-        :aria-controls="tab.containerId"
-        @click="selectTab(tab.containerId)"
+        slot="tab"
+        :controls="tab.containerId"
       >
         {{ tab.label }}
         <craft-icon
           v-if="tab.hasErrors"
           name="circle-exclamation"
-          slot="suffix"
+          :label="t('This tab contains errors')"
         />
-      </craft-button>
-    </craft-button-group>
+      </craft-tab>
+    </craft-tabs>
   </LayoutSlot>
 
   <craft-pane appearance="raised">
     <div ref="contentEl">
-      <HtmlFragmentRenderer :fragment="props.formFragment" />
+      <HtmlFragmentRenderer
+        :fragment="props.formFragment"
+        @ready="onFragmentReady"
+      />
     </div>
   </craft-pane>
 

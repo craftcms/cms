@@ -31,6 +31,8 @@ class Tab extends ViewComponent
 
     protected string|Htmlable|Stringable|ViewComponent|null $panel = null;
 
+    protected ?string $controls = null;
+
     protected function tagName(): string
     {
         return 'craft-tab';
@@ -61,6 +63,24 @@ class Tab extends ViewComponent
     }
 
     /**
+     * The `id` of a panel rendered elsewhere in the document, for strips whose
+     * panels can't sit alongside their tabs. Setting it on every tab in a
+     * {@see Tabs} puts the web component into external-panel mode; the tabs
+     * then carry no {@see self::panel()} content of their own.
+     */
+    public function controls(?string $controls): static
+    {
+        $this->controls = $controls;
+
+        return $this;
+    }
+
+    public function getControls(): ?string
+    {
+        return $this->controls;
+    }
+
+    /**
      * `slot` is fixed rather than merged from {@see ViewComponent::slot()}: a
      * tab is only ever a `tab`-slotted child of `<craft-tabs>`, and landing in
      * any other slot would drop it out of the tablist entirely.
@@ -71,6 +91,7 @@ class Tab extends ViewComponent
         return [
             'slot' => 'tab',
             'disabled' => $this->isDisabled(),
+            'controls' => $this->controls,
         ];
     }
 }

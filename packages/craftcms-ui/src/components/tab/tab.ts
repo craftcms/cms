@@ -43,6 +43,15 @@ export default class CraftTab extends LitElement {
   @property({type: Boolean, reflect: true}) disabled = false;
 
   /**
+   * The `id` of a panel living elsewhere in the document, for strips whose
+   * panels can't be slotted alongside their tabs — a server-rendered field
+   * layout, say, where the tab bar sits in the page header and the sections
+   * are inside a pane. Setting this on every tab in a strip switches
+   * `<craft-tabs>` into external-panel mode; see its docs.
+   */
+  @property({reflect: true}) controls: string | null = null;
+
+  /**
    * Whether this is the strip's selected tab.
    *
    * Read-only by design, and intentionally *not* a reactive property: the
