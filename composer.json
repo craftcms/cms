@@ -1,235 +1,236 @@
 {
-  "name": "craftcms/cms",
-  "description": "Craft CMS",
-  "keywords": [
-    "cms",
-    "craftcms",
-    "laravel"
-  ],
-  "homepage": "https://craftcms.com",
-  "license": "proprietary",
-  "authors": [
-    {
-      "name": "Pixel & Tonic",
-      "homepage": "https://pixelandtonic.com/"
-    }
-  ],
-  "support": {
-    "email": "support@craftcms.com",
-    "issues": "https://github.com/craftcms/cms/issues?state=open",
-    "forum": "https://craftcms.stackexchange.com/",
-    "source": "https://github.com/craftcms/cms",
-    "docs": "https://craftcms.com/docs/5.x/",
-    "rss": "https://github.com/craftcms/cms/releases.atom"
-  },
-  "require": {
-    "php": "^8.5",
-    "ext-bcmath": "*",
-    "ext-curl": "*",
-    "ext-dom": "*",
-    "ext-intl": "*",
-    "ext-json": "*",
-    "ext-mbstring": "*",
-    "ext-openssl": "*",
-    "ext-pcre": "*",
-    "ext-pdo": "*",
-    "ext-zip": "*",
-    "bacon/bacon-qr-code": "^3.0",
-    "commerceguys/addressing": "^2.1.1",
-    "composer/semver": "^3.3.2",
-    "craftcms/cms-assets": "self.version",
-    "craftcms/laravel-aliases": "^2.0",
-    "craftcms/laravel-dependency-aware-cache": "^1.2.3",
-    "craftcms/laravel-ruleset-validation": "^1.1",
-    "craftcms/plugin-installer": "~1.6.0",
-    "craftcms/server-check": "~6.0.0",
-    "craftcms/url-validator": "^1.0",
-    "elvanto/litemoji": "^5.2.0",
-    "enshrined/svg-sanitize": "~0.22.0",
-    "guzzlehttp/guzzle": "^7.2.0",
-    "inertiajs/inertia-laravel": "^3.0",
-    "intervention/image": "^4.2",
-    "laravel/framework": "^13.0.0",
-    "laravel/wayfinder": "^0.1.12",
-    "league/commonmark": "^2.8",
-    "league/flysystem-path-prefixing": "^3.31",
-    "league/uri": "^7.0",
-    "moneyphp/money": "^4.0",
-    "phpoffice/phpspreadsheet": "^5.3",
-    "pragmarx/google2fa": "^9.0",
-    "pragmarx/recovery": "^0.2.1",
-    "symfony/css-selector": "^7.0|^8.0",
-    "symfony/dom-crawler": "^7.0|^8.0",
-    "symfony/filesystem": "^7.0|^8.0",
-    "symfony/html-sanitizer": "^7.0|^8.0",
-    "symfony/serializer": "^6.4|^7.0|^8.0",
-    "symfony/yaml": "^7.0|^8.0",
-    "theiconic/name-parser": "^1.2",
-    "tpetry/laravel-query-expressions": "^1.5",
-    "twig/twig": "~3.27.0",
-    "voku/portable-ascii": "^2.0",
-    "web-auth/webauthn-lib": "~5.3.5",
-    "webonyx/graphql-php": "~15.33.1",
-    "yiisoft/arrays": "^3.2",
-    "yiisoft/html": "^4.1",
-    "yiisoft/translator": "^3.2",
-    "yiisoft/translator-message-php": "^1.1"
-  },
-  "require-dev": {
-    "barryvdh/laravel-debugbar": "^4.2",
-    "dg/bypass-finals": "^1.9",
-    "driftingly/rector-laravel": "^2.1",
-    "fakerphp/faker": "^1.19.0",
-    "intervention/image-driver-vips": "^4.1",
-    "larastan/larastan": "^3.4",
-    "laravel/pao": "^1.0",
-    "laravel/pint": "^1.22",
-    "laravel/socialite": "^5.23",
-    "orchestra/testbench": "^11.0",
-    "pestphp/pest": "^5.0",
-    "pestphp/pest-plugin-arch": "^5.0",
-    "pestphp/pest-plugin-laravel": "^5.0",
-    "phpstan/phpstan": "^2.1",
-    "rector/rector": "^2.3",
-    "spatie/laravel-typescript-transformer": "^3.2"
-  },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "./yii2-adapter"
+    "name": "craftcms/cms",
+    "description": "Craft CMS",
+    "keywords": [
+        "cms",
+        "craftcms",
+        "laravel"
+    ],
+    "homepage": "https://craftcms.com",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Pixel & Tonic",
+            "homepage": "https://pixelandtonic.com/"
+        }
+    ],
+    "support": {
+        "email": "support@craftcms.com",
+        "issues": "https://github.com/craftcms/cms/issues?state=open",
+        "forum": "https://craftcms.stackexchange.com/",
+        "source": "https://github.com/craftcms/cms",
+        "docs": "https://craftcms.com/docs/5.x/",
+        "rss": "https://github.com/craftcms/cms/releases.atom"
     },
-    {
-      "type": "path",
-      "url": "./cms-assets"
-    }
-  ],
-  "suggest": {
-    "ext-exif": "Adds support for parsing image EXIF data.",
-    "ext-imagick": "Adds support for more image processing formats and options.",
-    "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
-    "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
-    "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
-  },
-  "autoload": {
-    "psr-4": {
-      "CraftCms\\Cms\\": "src/"
+    "require": {
+        "php": "^8.5",
+        "ext-bcmath": "*",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-intl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pcre": "*",
+        "ext-pdo": "*",
+        "ext-zip": "*",
+        "bacon/bacon-qr-code": "^3.0",
+        "commerceguys/addressing": "^2.1.1",
+        "composer/semver": "^3.3.2",
+        "craftcms/cms-assets": "self.version",
+        "craftcms/laravel-aliases": "^2.0",
+        "craftcms/laravel-dependency-aware-cache": "^1.2.3",
+        "craftcms/laravel-ruleset-validation": "^1.1",
+        "craftcms/plugin-installer": "~1.6.0",
+        "craftcms/server-check": "~6.0.0",
+        "craftcms/url-validator": "^1.0",
+        "elvanto/litemoji": "^5.2.0",
+        "enshrined/svg-sanitize": "~0.22.0",
+        "guzzlehttp/guzzle": "^7.2.0",
+        "inertiajs/inertia-laravel": "^3.0",
+        "intervention/image": "^4.2",
+        "laravel/framework": "^13.0.0",
+        "laravel/wayfinder": "^0.1.12",
+        "league/commonmark": "^2.8",
+        "league/flysystem-path-prefixing": "^3.31",
+        "league/uri": "^7.0",
+        "moneyphp/money": "^4.0",
+        "phpoffice/phpspreadsheet": "^5.3",
+        "pragmarx/google2fa": "^9.0",
+        "pragmarx/recovery": "^0.2.1",
+        "symfony/css-selector": "^7.0|^8.0",
+        "symfony/dom-crawler": "^7.0|^8.0",
+        "symfony/filesystem": "^7.0|^8.0",
+        "symfony/html-sanitizer": "^7.0|^8.0",
+        "symfony/serializer": "^6.4|^7.0|^8.0",
+        "symfony/yaml": "^7.0|^8.0",
+        "theiconic/name-parser": "^1.2",
+        "tpetry/laravel-query-expressions": "^1.5",
+        "twig/twig": "~3.27.0",
+        "voku/portable-ascii": "^2.0",
+        "web-auth/webauthn-lib": "~5.3.5",
+        "webonyx/graphql-php": "~15.33.1",
+        "yiisoft/arrays": "^3.2",
+        "yiisoft/html": "^4.1",
+        "yiisoft/translator": "^3.2",
+        "yiisoft/translator-message-php": "^1.1"
     },
-    "files": [
-      "src/helpers.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "CraftCms\\Cms\\Tests\\": "tests/",
-      "CraftCms\\Cms\\Database\\": "database/",
-      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/",
-      "Workbench\\App\\": "workbench/app/",
-      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
-      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
-    }
-  },
-  "scripts": {
-    "copy-icons": "php ./scripts/copyicons.php",
-    "fix-cs": "npx concurrently -c 'rector' 'pint src --parallel' './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix' --names=rector,pint,ecs",
-    "phpstan": "phpstan --memory-limit=1G",
-    "rector": "rector",
-    "tests": [
-      "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --compact"
-    ],
-    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
-    "post-autoload-dump": [
-      "@clear",
-      "@prepare"
-    ],
-    "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-    "prepare": "@php vendor/bin/testbench package:discover --ansi",
-    "build": [
-      "@php vendor/bin/testbench package:create-sqlite-db --ansi",
-      "@php vendor/bin/testbench workbench:build --ansi"
-    ],
-    "serve": [
-      "Composer\\Config::disableProcessTimeout",
-      "@php vendor/bin/testbench workbench:serve --ansi"
-    ],
-    "ci": [
-      "@php pint --parallel",
-      "@rector",
-      "@phpstan",
-      "@tests",
-      "@tests-adapter"
-    ]
-  },
-  "config": {
-    "sort-packages": true,
-    "platform": {
-      "php": "8.5"
+    "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.2",
+        "dg/bypass-finals": "^1.9",
+        "driftingly/rector-laravel": "^2.1",
+        "fakerphp/faker": "^1.19.0",
+        "intervention/image-driver-vips": "^4.1",
+        "larastan/larastan": "^3.4",
+        "laravel/pao": "^1.0",
+        "laravel/pint": "^1.22",
+        "laravel/socialite": "^5.23",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-arch": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "phpstan/phpstan": "^2.1",
+        "rector/rector": "^2.3",
+        "spatie/laravel-typescript-transformer": "^3.2",
+        "jasonmccreary/double": "^0.3"
     },
-    "platform-check": false,
-    "allow-plugins": {
-      "craftcms/plugin-installer": true,
-      "pestphp/pest-plugin": true,
-      "yiisoft/yii2-composer": true
-    }
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "CraftCms\\Cms\\Providers\\CraftServiceProvider"
-      ],
-      "aliases": {
-        "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
-        "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
-        "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
-        "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
-        "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
-        "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
-        "Conditions": "CraftCms\\Cms\\Support\\Facades\\Conditions",
-        "DeltaRegistry": "CraftCms\\Cms\\Support\\Facades\\DeltaRegistry",
-        "Deprecator": "CraftCms\\Cms\\Support\\Facades\\Deprecator",
-        "Drafts": "CraftCms\\Cms\\Support\\Facades\\Drafts",
-        "ElementActions": "CraftCms\\Cms\\Support\\Facades\\ElementActions",
-        "ElementActivity": "CraftCms\\Cms\\Support\\Facades\\ElementActivity",
-        "ElementCaches": "CraftCms\\Cms\\Support\\Facades\\ElementCaches",
-        "ElementExporters": "CraftCms\\Cms\\Support\\Facades\\ElementExporters",
-        "ElementSources": "CraftCms\\Cms\\Support\\Facades\\ElementSources",
-        "Elements": "CraftCms\\Cms\\Support\\Facades\\Elements",
-        "Entries": "CraftCms\\Cms\\Support\\Facades\\Entries",
-        "EntryTypes": "CraftCms\\Cms\\Support\\Facades\\EntryTypes",
-        "Fields": "CraftCms\\Cms\\Support\\Facades\\Fields",
-        "Filesystems": "CraftCms\\Cms\\Support\\Facades\\Filesystems",
-        "Folders": "CraftCms\\Cms\\Support\\Facades\\Folders",
-        "Gql": "CraftCms\\Cms\\Support\\Facades\\Gql",
-        "HtmlSanitizers": "CraftCms\\Cms\\Support\\Facades\\HtmlSanitizers",
-        "HtmlStack": "CraftCms\\Cms\\Support\\Facades\\HtmlStack",
-        "I18N": "CraftCms\\Cms\\Support\\Facades\\I18N",
-        "ImageTransforms": "CraftCms\\Cms\\Support\\Facades\\ImageTransforms",
-        "Images": "CraftCms\\Cms\\Support\\Facades\\Images",
-        "InputNamespace": "CraftCms\\Cms\\Support\\Facades\\InputNamespace",
-        "JobProgress": "CraftCms\\Cms\\Support\\Facades\\JobProgress",
-        "Markdown": "CraftCms\\Cms\\Support\\Facades\\Markdown",
-        "OAuth": "CraftCms\\Cms\\Support\\Facades\\OAuth",
-        "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
-        "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
-        "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
-        "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
-        "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
-        "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",
-        "Security": "CraftCms\\Cms\\Support\\Facades\\Security",
-        "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
-        "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
-        "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
-        "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
-        "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
-        "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
-        "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",
-        "UserGroups": "CraftCms\\Cms\\Support\\Facades\\UserGroups",
-        "UserPermissions": "CraftCms\\Cms\\Support\\Facades\\UserPermissions",
-        "Users": "CraftCms\\Cms\\Support\\Facades\\Users",
-        "Volumes": "CraftCms\\Cms\\Support\\Facades\\Volumes"
-      }
-    }
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./yii2-adapter"
+        },
+        {
+            "type": "path",
+            "url": "./cms-assets"
+        }
+    ],
+    "suggest": {
+        "ext-exif": "Adds support for parsing image EXIF data.",
+        "ext-imagick": "Adds support for more image processing formats and options.",
+        "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
+        "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+        "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
+    },
+    "autoload": {
+        "psr-4": {
+            "CraftCms\\Cms\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CraftCms\\Cms\\Tests\\": "tests/",
+            "CraftCms\\Cms\\Database\\": "database/",
+            "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+        }
+    },
+    "scripts": {
+        "copy-icons": "php ./scripts/copyicons.php",
+        "fix-cs": "npx concurrently -c 'rector' 'pint src --parallel' './yii2-adapter/vendor/bin/ecs check --config ./yii2-adapter/ecs.php --ansi --fix' --names=rector,pint,ecs",
+        "phpstan": "phpstan --memory-limit=1G",
+        "rector": "rector",
+        "tests": [
+            "Composer\\Config::disableProcessTimeout",
+            "./vendor/bin/pest --compact"
+        ],
+        "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": [
+            "@php vendor/bin/testbench package:create-sqlite-db --ansi",
+            "@php vendor/bin/testbench workbench:build --ansi"
+        ],
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/testbench workbench:serve --ansi"
+        ],
+        "ci": [
+            "@php pint --parallel",
+            "@rector",
+            "@phpstan",
+            "@tests",
+            "@tests-adapter"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.5"
+        },
+        "platform-check": false,
+        "allow-plugins": {
+            "craftcms/plugin-installer": true,
+            "pestphp/pest-plugin": true,
+            "yiisoft/yii2-composer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CraftCms\\Cms\\Providers\\CraftServiceProvider"
+            ],
+            "aliases": {
+                "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
+                "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
+                "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
+                "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
+                "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
+                "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
+                "Conditions": "CraftCms\\Cms\\Support\\Facades\\Conditions",
+                "DeltaRegistry": "CraftCms\\Cms\\Support\\Facades\\DeltaRegistry",
+                "Deprecator": "CraftCms\\Cms\\Support\\Facades\\Deprecator",
+                "Drafts": "CraftCms\\Cms\\Support\\Facades\\Drafts",
+                "ElementActions": "CraftCms\\Cms\\Support\\Facades\\ElementActions",
+                "ElementActivity": "CraftCms\\Cms\\Support\\Facades\\ElementActivity",
+                "ElementCaches": "CraftCms\\Cms\\Support\\Facades\\ElementCaches",
+                "ElementExporters": "CraftCms\\Cms\\Support\\Facades\\ElementExporters",
+                "ElementSources": "CraftCms\\Cms\\Support\\Facades\\ElementSources",
+                "Elements": "CraftCms\\Cms\\Support\\Facades\\Elements",
+                "Entries": "CraftCms\\Cms\\Support\\Facades\\Entries",
+                "EntryTypes": "CraftCms\\Cms\\Support\\Facades\\EntryTypes",
+                "Fields": "CraftCms\\Cms\\Support\\Facades\\Fields",
+                "Filesystems": "CraftCms\\Cms\\Support\\Facades\\Filesystems",
+                "Folders": "CraftCms\\Cms\\Support\\Facades\\Folders",
+                "Gql": "CraftCms\\Cms\\Support\\Facades\\Gql",
+                "HtmlSanitizers": "CraftCms\\Cms\\Support\\Facades\\HtmlSanitizers",
+                "HtmlStack": "CraftCms\\Cms\\Support\\Facades\\HtmlStack",
+                "I18N": "CraftCms\\Cms\\Support\\Facades\\I18N",
+                "ImageTransforms": "CraftCms\\Cms\\Support\\Facades\\ImageTransforms",
+                "Images": "CraftCms\\Cms\\Support\\Facades\\Images",
+                "InputNamespace": "CraftCms\\Cms\\Support\\Facades\\InputNamespace",
+                "JobProgress": "CraftCms\\Cms\\Support\\Facades\\JobProgress",
+                "Markdown": "CraftCms\\Cms\\Support\\Facades\\Markdown",
+                "OAuth": "CraftCms\\Cms\\Support\\Facades\\OAuth",
+                "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
+                "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
+                "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
+                "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
+                "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
+                "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",
+                "Security": "CraftCms\\Cms\\Support\\Facades\\Security",
+                "SiteGroups": "CraftCms\\Cms\\Support\\Facades\\SiteGroups",
+                "Sites": "CraftCms\\Cms\\Support\\Facades\\Sites",
+                "Structures": "CraftCms\\Cms\\Support\\Facades\\Structures",
+                "Template": "CraftCms\\Cms\\Support\\Facades\\Template",
+                "TemplateHooks": "CraftCms\\Cms\\Support\\Facades\\TemplateHooks",
+                "Twig": "CraftCms\\Cms\\Support\\Facades\\Twig",
+                "Updates": "CraftCms\\Cms\\Support\\Facades\\Updates",
+                "UserGroups": "CraftCms\\Cms\\Support\\Facades\\UserGroups",
+                "UserPermissions": "CraftCms\\Cms\\Support\\Facades\\UserPermissions",
+                "Users": "CraftCms\\Cms\\Support\\Facades\\Users",
+                "Volumes": "CraftCms\\Cms\\Support\\Facades\\Volumes"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
