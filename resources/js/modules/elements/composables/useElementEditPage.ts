@@ -1,7 +1,9 @@
 import {toReactive, useEventListener} from '@vueuse/core';
-import {router, useForm, usePage} from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
+import {useScreenPageProps} from '@/common/composables/screen';
+import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {FormPayload} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
@@ -97,14 +99,19 @@ interface Options {
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
 export function useElementEditPage({saveData}: Options = {}) {
-  const page = usePage<ElementEditPayload>();
+  // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
+  // the editor would read the index's props and find no payload at all. This
+  // resolves to the panel's own props there, and to `usePage()` on a full page.
+  const pageProps = useScreenPageProps();
+  const slideout = useSlideout();
 
-  // `page.props` is a computed, so capturing it once would freeze the payload
-  // at the values the screen first rendered with. Saving in place — the normal
-  // path for an element with no drafts — replaces the props without remounting
-  // this component, so the title, notices, and timestamps below have to track
-  // the live page.
-  const props = toReactive(computed(() => page.props));
+  // Read through a computed rather than capturing the props object: it's
+  // replaced wholesale on each visit, and saving in place — the normal path for
+  // an element with no drafts — does that without remounting this component, so
+  // the title, notices, and timestamps below have to track the live payload.
+  const props = toReactive(
+    computed(() => pageProps() as unknown as ElementEditPayload)
+  );
 
   const formPayload = computed(() => props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
@@ -265,7 +272,13 @@ export function useElementEditPage({saveData}: Options = {}) {
     });
 
     // Re-render from the canonical element rather than patching state here.
-    router.reload();
+    // In a panel that's the panel's own request: an Inertia visit would reload
+    // the page behind it and leave the discarded draft on screen.
+    if (slideout) {
+      await slideout.reload();
+    } else {
+      router.reload();
+    }
   }
 
   // Both the field layout and the sidebar feed the same Inertia form, so its
@@ -281,26 +294,32 @@ export function useElementEditPage({saveData}: Options = {}) {
     return !props.canAutosave || autosave.status.value !== 'saved';
   }
 
-  useEventListener(window, 'beforeunload', (event) => {
-    if (hasUnsavedChanges()) {
-      event.preventDefault();
-    }
-  });
+  // Only on a full page. A panel's unsaved changes are the slideout store's to
+  // guard — it prompts on close and on being replaced — and these would fire on
+  // the base page's own navigation, including the reload that follows a
+  // successful save from inside the panel.
+  if (!slideout) {
+    useEventListener(window, 'beforeunload', (event) => {
+      if (hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    });
 
-  const removeNavigationGuard = router.on('before', (event) => {
-    const visit = event.detail.visit;
+    const removeNavigationGuard = router.on('before', (event) => {
+      const visit = event.detail.visit;
 
-    if (
-      visit.method === 'get' &&
-      !visit.prefetch &&
-      hasUnsavedChanges() &&
-      !window.confirm(t('Any changes will be lost if you leave this page.'))
-    ) {
-      event.preventDefault();
-    }
-  });
+      if (
+        visit.method === 'get' &&
+        !visit.prefetch &&
+        hasUnsavedChanges() &&
+        !window.confirm(t('Any changes will be lost if you leave this page.'))
+      ) {
+        event.preventDefault();
+      }
+    });
 
-  onBeforeUnmount(removeNavigationGuard);
+    onBeforeUnmount(removeNavigationGuard);
+  }
 
   return {
     activity,
