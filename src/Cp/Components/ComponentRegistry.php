@@ -43,6 +43,8 @@ class ComponentRegistry
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,
         'select' => Select::class,
+        'tab' => Tab::class,
+        'tabs' => Tabs::class,
         'textarea' => Textarea::class,
     ];
 
