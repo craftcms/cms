@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type {TextExpanderTriggers} from '@craftcms/ui';
+  import {useId} from 'vue';
   import '../markdown-field/markdown-field';
   import type {FormControlPayload} from './types';
   import {inputName} from './runtime';
@@ -9,6 +11,7 @@
     maxLength?: number;
     toolbarButtons?: string[];
     showToolbar?: boolean;
+    textExpanderTriggers?: TextExpanderTriggers;
   };
 
   defineProps<{
@@ -18,6 +21,7 @@
     invalid: boolean;
     required: boolean;
   }>();
+  const inputId = useId();
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
@@ -29,6 +33,8 @@
 
 <template>
   <craft-markdown-field
+    v-bind="$attrs"
+    :id="inputId"
     :name="editable ? inputName(control.path) : ''"
     :rows="control.props.rows ?? 8"
     :placeholder="control.props.placeholder"
@@ -41,5 +47,11 @@
     :aria-invalid="invalid ? 'true' : undefined"
     .value="value ?? ''"
     @input="onInput"
+  />
+  <craft-text-expander
+    v-if="editable && control.props.textExpanderTriggers"
+    slot="input"
+    :for="inputId"
+    .triggers="control.props.textExpanderTriggers"
   />
 </template>

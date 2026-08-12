@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import CraftTextarea from '@craftcms/ui/components/textarea/textarea';
+  import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+  import '@craftcms/ui/components/text-expander/text-expander';
+  import {useId} from 'vue';
   import type {FormControlPayload} from './types';
   import {
     ignoreModelValueInitialization,
@@ -12,6 +15,7 @@
     maxLength?: number;
     placeholder?: string;
     monospace?: boolean;
+    textExpanderTriggers?: TextExpanderTriggers;
   };
 
   defineProps<{
@@ -22,6 +26,7 @@
     invalid: boolean;
     required: boolean;
   }>();
+  const inputId = useId();
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
@@ -37,6 +42,7 @@
 
 <template>
   <craft-textarea
+    v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     :rows="control.props.rows ?? 2"
@@ -50,6 +56,7 @@
     @model-value-changed="onModelValueChanged"
   >
     <textarea
+      :id="inputId"
       slot="input"
       :name="editable ? inputName(control.path) : ''"
       :value="String(value ?? '')"
@@ -62,4 +69,10 @@
       :aria-invalid="invalid ? 'true' : undefined"
     ></textarea>
   </craft-textarea>
+  <craft-text-expander
+    v-if="editable && control.props.textExpanderTriggers"
+    slot="input"
+    :for="inputId"
+    .triggers="control.props.textExpanderTriggers"
+  />
 </template>
