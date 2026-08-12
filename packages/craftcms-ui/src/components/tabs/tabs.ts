@@ -3,8 +3,15 @@ import {LionTabs} from '@lion/ui/tabs.js';
 import {html, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import hostStyles from '@src/styles/host.styles.js';
+import {t} from '@src/utilities/translate.js';
+import type CraftActionMenu from '../action-menu/action-menu.js';
+import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
 import type CraftTab from '../tab/tab.js';
 import styles from './tabs.styles.js';
+
+import '../action-menu/action-menu.js';
+import '../button/button.js';
+import '../icon/icon.js';
 
 export const TabsLayout = {
   Horizontal: 'horizontal',
@@ -24,6 +31,13 @@ const NAVIGATION_KEYS = new Set([
   'Home',
   'End',
 ]);
+
+/**
+ * Slack, in pixels, when deciding whether a tab fits. Sub-pixel layout rounding
+ * routinely leaves a row a hair wider than its container, and without this the
+ * last tab flickers into the overflow menu on a container that does fit it.
+ */
+const FIT_TOLERANCE = 1;
 
 /**
  * @summary A tabbed interface: a strip of `<craft-tab>` triggers over a set of
@@ -78,6 +92,17 @@ const NAVIGATION_KEYS = new Set([
  * Replacing the external panels' markup (re-rendering the fragment they live
  * in) leaves the new elements unwired — call {@link CraftTabs.refresh} after.
  *
+ * ## Overflow
+ *
+ * A horizontal strip too narrow for its tabs collapses the ones that don't fit
+ * into a `<craft-action-menu>` at the end, rather than scrolling or wrapping.
+ * Tabs collapse from the end in document order, and the selected tab is always
+ * kept in the strip — picking a tab from the menu swaps it back into view.
+ *
+ * Collapsed tabs get the `hidden` attribute, so they leave the accessibility
+ * tree along with the layout and are reachable only through the menu. Vertical
+ * strips run down the block axis and are left alone.
+ *
  * @slot tab - The tab triggers, one per panel. Normally `<craft-tab>`.
  * @slot panel - The panels, one per tab, in the same order. Omitted entirely
  *   in external-panel mode.
@@ -86,7 +111,12 @@ const NAVIGATION_KEYS = new Set([
  *   keyboard. Read `selectedIndex` off the target for the new index.
  *
  * @csspart base - The wrapper around both regions, which owns the layout axis.
- * @csspart tab-group - The `role="tablist"` strip holding the tabs.
+ * @csspart strip - The tab row: the tablist plus the overflow menu, and what
+ *   carries the rule along the strip.
+ * @csspart tab-group - The `role="tablist"` element holding the tabs. Kept
+ *   separate from the strip so the overflow menu isn't a child of the tablist.
+ * @csspart overflow-menu - The `<craft-action-menu>` holding the collapsed
+ *   tabs. Present but `hidden` while everything fits.
  * @csspart panels - The container holding the panels.
  *
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
@@ -115,9 +145,24 @@ export default class CraftTabs extends LionTabs {
   /** Whether this strip drives panels elsewhere in the document. */
   #external = false;
 
+  /** Indexes of the tabs currently collapsed into the overflow menu. */
+  #overflowed: number[] = [];
+
+  #resizeObserver?: ResizeObserver;
+
+  #measureQueued = false;
+
   /** The tabs, narrowed — external mode only ever holds `<craft-tab>`s. */
   get #tabs(): CraftTab[] {
     return this.tabs as unknown as CraftTab[];
+  }
+
+  get #tabGroup(): HTMLElement | null {
+    return this.shadowRoot?.querySelector('.tabs__tab-group') ?? null;
+  }
+
+  get #overflowMenu(): CraftActionMenu | null {
+    return this.shadowRoot?.querySelector('.tabs__overflow') ?? null;
   }
 
   /**
@@ -126,12 +171,15 @@ export default class CraftTabs extends LionTabs {
    * the ids come back identical but the elements are new, so the `role`,
    * `aria-labelledby`, and visibility this strip put on them are gone.
    *
-   * A no-op outside external-panel mode.
+   * Also re-measures the overflow. A no-op for the panel half outside
+   * external-panel mode.
    */
   refresh() {
     if (this.#external) {
       this.#applyExternal();
     }
+
+    this.#measureOverflow();
   }
 
   override firstUpdated(changedProperties: PropertyValues) {
@@ -140,20 +188,27 @@ export default class CraftTabs extends LionTabs {
     // land in the wrong mode.
     this.#external = this.#tabs.some((tab) => tab.controls);
 
-    if (!this.#external) {
+    const tabSlot = this.shadowRoot?.querySelector('slot[name="tab"]');
+
+    if (this.#external) {
+      tabSlot?.addEventListener('slotchange', this.#setupExternal);
+      this.#setupExternal();
+    } else {
       super.firstUpdated(changedProperties);
-      return;
     }
 
-    const tabSlot = this.shadowRoot?.querySelector('slot[name="tab"]');
-    tabSlot?.addEventListener('slotchange', this.#setupExternal);
-
-    this.#setupExternal();
+    // Overflow is independent of the mode: the strip is the same either way.
+    tabSlot?.addEventListener('slotchange', this.#queueMeasure);
+    this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
+    this.#resizeObserver.observe(this);
+    this.#measureOverflow();
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.#teardownExternal();
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = undefined;
   }
 
   protected override updated(changedProperties: PropertyValues) {
@@ -161,6 +216,15 @@ export default class CraftTabs extends LionTabs {
 
     if (this.#external && changedProperties.has('selectedIndex')) {
       this.#applyExternal();
+    }
+
+    if (
+      changedProperties.has('selectedIndex') ||
+      changedProperties.has('layout')
+    ) {
+      // The selected tab is never left in the menu, so a selection landing on
+      // a collapsed tab has to redraw the strip.
+      this.#measureOverflow();
     }
   }
 
@@ -265,6 +329,174 @@ export default class CraftTabs extends LionTabs {
     return tab.controls ? document.getElementById(tab.controls) : null;
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  | Overflow
+  |--------------------------------------------------------------------------
+  */
+
+  #queueMeasure = () => {
+    if (this.#measureQueued) {
+      return;
+    }
+
+    // Coalesce the burst of callbacks a resize produces, and get off the
+    // ResizeObserver callback before writing layout back.
+    this.#measureQueued = true;
+    requestAnimationFrame(() => {
+      this.#measureQueued = false;
+      this.#measureOverflow();
+    });
+  };
+
+  /**
+   * Decides which tabs fit and collapses the rest into the menu.
+   *
+   * Reads layout directly rather than going through a render: this runs from a
+   * `ResizeObserver`, and a measurement that waited on Lit's update queue would
+   * show the user a frame of the wrong strip.
+   */
+  #measureOverflow() {
+    const group = this.#tabGroup;
+    const menu = this.#overflowMenu;
+    const tabs = this.#tabs;
+
+    if (!group || !menu) {
+      return;
+    }
+
+    // Vertical strips run down the block axis, which the inline measurement
+    // below doesn't describe, so they never collapse.
+    if (this.layout === TabsLayout.Vertical || tabs.length === 0) {
+      this.#applyOverflow([]);
+      return;
+    }
+
+    // Measure from a clean slate — every tab laid out, the menu taking no room
+    // — so a tab that has since been given space comes back.
+    tabs.forEach((tab) => tab.removeAttribute('hidden'));
+    menu.hidden = true;
+
+    const gap = this.#tabGap(group);
+    const widths = tabs.map((tab) => tab.offsetWidth);
+    const natural = widths.reduce(
+      (total, width, index) => total + width + (index ? gap : 0),
+      0
+    );
+
+    if (natural <= group.clientWidth + FIT_TOLERANCE) {
+      this.#applyOverflow([]);
+      return;
+    }
+
+    // Showing the menu narrows the tablist, so the budget has to be read back
+    // with it in place rather than estimated.
+    menu.hidden = false;
+    const available = group.clientWidth;
+
+    const visible: number[] = [];
+    let used = 0;
+
+    for (let index = 0; index < tabs.length; index++) {
+      const width = widths[index]! + (visible.length ? gap : 0);
+
+      // Collapse from the first tab that doesn't fit onward: a later, narrower
+      // tab jumping the queue would reorder the strip.
+      if (used + width > available + FIT_TOLERANCE) {
+        break;
+      }
+
+      used += width;
+      visible.push(index);
+    }
+
+    // The selected tab always stays in the strip, so evict from the end until
+    // it has room. `visible` is contiguous from 0, so popping walks backwards.
+    const selected = this.selectedIndex;
+
+    if (
+      selected >= 0 &&
+      selected < tabs.length &&
+      !visible.includes(selected)
+    ) {
+      const selectedWidth = widths[selected]!;
+
+      while (visible.length && used + selectedWidth + gap > available) {
+        const evicted = visible.pop()!;
+        used -= widths[evicted]! + (visible.length ? gap : 0);
+      }
+
+      visible.push(selected);
+    }
+
+    const kept = new Set(visible);
+    this.#applyOverflow(
+      tabs.map((_, index) => index).filter((index) => !kept.has(index))
+    );
+  }
+
+  /** The gap between tabs, as laid out. */
+  #tabGap(group: HTMLElement): number {
+    const gap = parseFloat(getComputedStyle(group).columnGap);
+
+    return Number.isFinite(gap) ? gap : 0;
+  }
+
+  #applyOverflow(overflowed: number[]) {
+    const menu = this.#overflowMenu;
+    const collapsed = new Set(overflowed);
+
+    this.#tabs.forEach((tab, index) => {
+      tab.toggleAttribute('hidden', collapsed.has(index));
+    });
+
+    this.#overflowed = overflowed;
+
+    if (menu) {
+      menu.hidden = overflowed.length === 0;
+      menu.actions = this.#overflowActions();
+    }
+  }
+
+  #overflowActions(): ActionMenuItem[] {
+    return this.#overflowed.map((index) => {
+      const tab = this.#tabs[index]!;
+
+      return {
+        label: tab.textContent?.trim() ?? '',
+        disabled: tab.disabled,
+        onClick: () => this.#selectFromMenu(index),
+      };
+    });
+  }
+
+  /**
+   * Selecting a collapsed tab. The measurement that follows pulls it back into
+   * the strip, which has to happen before the focus lands — a `hidden` element
+   * can't take it.
+   */
+  #selectFromMenu(index: number) {
+    const tab = this.#tabs[index];
+
+    if (!tab || tab.disabled) {
+      return;
+    }
+
+    // craft-action-menu closes itself when an item is clicked, but only for
+    // items it can still find assigned to its content slot — which isn't the
+    // case once Lion has moved that content into the overlay container. Close
+    // it here rather than leave the menu hanging open over the strip.
+    const menu = this.#overflowMenu;
+
+    if (menu) {
+      menu.opened = false;
+    }
+
+    this.selectedIndex = index;
+    this.#measureOverflow();
+    tab.focus();
+  }
+
   #select(index: number, withFocus: boolean) {
     const tab = this.#tabs[index];
 
@@ -293,13 +525,18 @@ export default class CraftTabs extends LionTabs {
     }
   }
 
-  /** The next selectable tab for a navigation key, skipping disabled ones. */
+  /**
+   * The next selectable tab for a navigation key. Skips disabled tabs, and
+   * collapsed ones — those are out of the strip entirely, so arrowing into one
+   * would move focus to something the user can't see.
+   */
   #nextIndex(key: string): number {
     const tabs = this.#tabs;
-    const selectable = (index: number) => tabs[index] && !tabs[index].disabled;
+    const selectable = (index: number) =>
+      tabs[index] && !tabs[index].disabled && !tabs[index].hidden;
 
     if (key === 'Home') {
-      return tabs.findIndex((tab) => !tab.disabled);
+      return tabs.findIndex((_, index) => selectable(index));
     }
 
     if (key === 'End') {
@@ -336,13 +573,53 @@ export default class CraftTabs extends LionTabs {
   override render() {
     return html`
       <div class="tabs" part="base">
-        <div
-          class="tabs__tab-group"
-          part="tab-group"
-          role="tablist"
-          aria-orientation="${this.layout}"
-        >
-          <slot name="tab"></slot>
+        <div class="tabs__strip" part="strip">
+          <div
+            class="tabs__tab-group"
+            part="tab-group"
+            role="tablist"
+            aria-orientation="${this.layout}"
+          >
+            <slot name="tab"></slot>
+          </div>
+          <!--
+            The menu sits beside the tablist rather than inside it, so the
+            tablist holds nothing but tabs. Its \`hidden\` state and \`actions\`
+            are driven imperatively from the overflow measurement, not bound
+            here — the measurement runs between renders and would otherwise
+            fight Lit over the same attribute.
+          -->
+          <craft-action-menu
+            class="tabs__overflow"
+            part="overflow-menu"
+            placement="bottom-end"
+            hidden
+          >
+            <!--
+              Slotted rather than left to the menu's generated default, which
+              asks craft-button for a \`variant="inherit"\` that isn't one of its
+              variants — so it falls back to the solid fill and lands a filled
+              button in the middle of the tab strip.
+            -->
+            <craft-button
+              slot="invoker"
+              part="overflow-invoker"
+              type="button"
+              variant="plain"
+              size="small"
+            >
+              <!--
+                The name has to come from the icon: craft-button's
+                \`accessible-name\` only records the name it computed, it doesn't
+                put one in the DOM, so an icon-only button with nothing else to
+                read is nameless.
+              -->
+              <craft-icon
+                name="ellipsis"
+                label="${t('More tabs')}"
+              ></craft-icon>
+            </craft-button>
+          </craft-action-menu>
         </div>
         <div class="tabs__panels" part="panels">
           <slot name="panel"></slot>

@@ -10,6 +10,15 @@ export default css`
   }
 
   /*
+   * The display above is an author style, so it beats the UA's [hidden] rule —
+   * without this a tab collapsed into <craft-tabs>' overflow menu would keep
+   * its space in the strip.
+   */
+  :host([hidden]) {
+    display: none;
+  }
+
+  /*
    * The selected indicator. Its geometry comes from custom properties so the
    * strip can move it without knowing anything about this shadow root:
    * horizontal tabs get a rule underneath (pulled 1px down to sit on top of

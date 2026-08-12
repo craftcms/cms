@@ -179,3 +179,117 @@ export const ExternalPanels: Story = {
     await expect(settings).not.toHaveClass('hidden');
   },
 };
+
+/** Waits out the animation frames the overflow measurement schedules. */
+async function settle() {
+  for (let frame = 0; frame < 3; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
+const OVERFLOW_LABELS = [
+  'Content',
+  'Metadata',
+  'Search Engine Optimization',
+  'Social Sharing',
+  'Advanced Settings',
+  'Permissions',
+];
+
+/**
+ * A strip narrower than its tabs collapses the ones that don't fit into an
+ * action menu at the end, keeping the selected tab in the strip. Drag the
+ * Storybook viewport to watch tabs move in and out of the menu.
+ */
+export const Overflow: Story = {
+  render: () => html`
+    <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
+      <craft-tabs>
+        ${OVERFLOW_LABELS.map(
+          (label, index) => html`
+            <craft-tab slot="tab">${label}</craft-tab>
+            <div slot="panel"><p>Panel ${index + 1}: ${label}</p></div>
+          `
+        )}
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement, userEvent}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const tabs = [...strip.querySelectorAll('craft-tab')];
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    const collapsed = () => tabs.filter((tab) => tab.hasAttribute('hidden'));
+
+    // The strip measures off a rAF, so settle before reading it.
+    await settle();
+
+    // Some tabs don't fit, so the menu is showing and holds exactly them.
+    await expect(collapsed().length).toBeGreaterThan(0);
+    await expect(menu.hidden).toBe(false);
+    await expect(getComputedStyle(menu).display).not.toBe('none');
+
+    // The visible tabs are a contiguous run from the start — collapsing never
+    // reorders the strip.
+    const visible = tabs.filter((tab) => !tab.hasAttribute('hidden'));
+    await expect(tabs.slice(0, visible.length)).toEqual(visible);
+
+    // Pick the last collapsed tab out of the menu.
+    const target = collapsed().at(-1)!;
+    const label = target.textContent!.trim();
+
+    await userEvent.click(menu.querySelector('[slot="invoker"]')!);
+    await settle();
+
+    // The items are the menu's own light DOM, which lives inside the strip's
+    // shadow root — a document-level query wouldn't reach them.
+    const item = [...menu.querySelectorAll('craft-action-item')].find(
+      (el) => el.textContent?.trim() === label
+    );
+    await expect(item).toBeTruthy();
+    await userEvent.click(item as HTMLElement);
+    await settle();
+
+    // It swapped into the strip, selected, and something else took its place
+    // in the menu.
+    // The menu closes behind the selection, and focus lands on the tab that
+    // just came back into the strip.
+    await expect((menu as {opened?: boolean}).opened).toBe(false);
+    await expect(target.hasAttribute('hidden')).toBe(false);
+    await expect(target.getAttribute('aria-selected')).toBe('true');
+    await expect(document.activeElement).toBe(target);
+    await expect(collapsed().length).toBeGreaterThan(0);
+  },
+};
+
+/** Everything fits, so no menu is shown. */
+export const NoOverflow: Story = {
+  render: () => html`
+    <div style="max-inline-size: 60rem;">
+      <craft-tabs>
+        <craft-tab slot="tab">One</craft-tab>
+        <div slot="panel"><p>First</p></div>
+        <craft-tab slot="tab">Two</craft-tab>
+        <div slot="panel"><p>Second</p></div>
+      </craft-tabs>
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    const strip = canvasElement.querySelector('craft-tabs')!;
+    const menu = strip.shadowRoot!.querySelector<HTMLElement>(
+      '[part="overflow-menu"]'
+    )!;
+
+    await settle();
+
+    await expect(menu.hidden).toBe(true);
+    await expect(getComputedStyle(menu).display).toBe('none');
+    await expect(
+      [...strip.querySelectorAll('craft-tab')].some((t) =>
+        t.hasAttribute('hidden')
+      )
+    ).toBe(false);
+  },
+};

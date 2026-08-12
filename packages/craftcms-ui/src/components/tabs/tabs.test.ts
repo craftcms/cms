@@ -82,6 +82,19 @@ describe('structure', () => {
     expect(shadow(element, '[part="panels"]')).not.toBeNull();
   });
 
+  it('keeps the overflow menu out of the tablist, and hidden until needed', async () => {
+    const element = await createTabs();
+    const menu = shadow(element, '[part="overflow-menu"]')!;
+
+    expect(menu).not.toBeNull();
+    // A tablist may only contain tabs, so the menu is its sibling.
+    expect(menu.closest('[role="tablist"]')).toBeNull();
+    expect(shadow(element, '[part="strip"]')!.contains(menu)).toBe(true);
+    // Nothing overflows in this environment (no layout engine), so it stays
+    // out of the way rather than rendering an empty menu.
+    expect((menu as HTMLElement).hidden).toBe(true);
+  });
+
   it('keeps the class names and slots Lion depends on', async () => {
     const element = await createTabs();
 
@@ -380,6 +393,18 @@ describe('external-panel mode', () => {
     expect(error).toHaveBeenCalledOnce();
     expect(error.mock.calls[0]![0]).toContain('panel-1');
     error.mockRestore();
+  });
+
+  it('arrows past collapsed tabs', async () => {
+    // Overflow measurement needs a layout engine, so this stands in for it by
+    // collapsing the middle tab the way #applyOverflow would.
+    const {element, tabs} = await createExternalTabs();
+    tabs[1]!.toggleAttribute('hidden', true);
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
   });
 
   it('drops its listeners when disconnected', async () => {
