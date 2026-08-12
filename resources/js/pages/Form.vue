@@ -1,8 +1,12 @@
 <script setup lang="ts">
   import {actionClient} from '@craftcms/ui';
+  import type {UrlMethodPair} from '@inertiajs/core';
   import {useForm} from '@inertiajs/vue3';
   import {shallowRef, toRaw} from 'vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {
+    useAppLayout,
+    type UseAppLayoutOptions,
+  } from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {
     FormChange,
@@ -14,12 +18,11 @@
 
   const props = defineProps<{
     form: FormPayload;
-    submit: {
-      method: 'delete' | 'get' | 'patch' | 'post' | 'put';
-      url: string;
-    };
+    submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
+    fullWidth?: UseAppLayoutOptions['fullWidth'];
+    defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
   }>();
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
@@ -63,7 +66,12 @@
       : undefined,
   });
 
-  useAppLayout({form: inertiaForm, onSave: save});
+  useAppLayout({
+    fullWidth: props.fullWidth,
+    form: inertiaForm,
+    defaultFormActions: props.defaultFormActions,
+    onSave: save,
+  });
 
   function setValue(
     path: string[],

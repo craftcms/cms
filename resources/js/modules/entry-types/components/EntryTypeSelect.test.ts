@@ -4,6 +4,7 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import EntryTypeSelect from './EntryTypeSelect.vue';
 
 const state = vi.hoisted(() => ({
+  readOnly: false,
   newEntryType: {id: 2, name: 'News', handle: 'news'},
   open: vi.fn(),
   reload: vi.fn(),
@@ -16,7 +17,7 @@ vi.mock('@actions/Settings/EntryTypesController', () => ({
   renderOverrideSettings: () => ({url: '/render'}),
 }));
 vi.mock('@/common/composables/useCraftData', () => ({
-  default: () => ({readOnly: false}),
+  default: () => ({readOnly: state.readOnly}),
 }));
 vi.mock('@/common/composables/useReorderableItems', () => ({
   useReorderableItems: () => ({
@@ -46,6 +47,21 @@ afterEach(() => {
   container.replaceChildren();
   state.open.mockReset();
   state.reload.mockReset();
+  state.readOnly = false;
+});
+
+it('keeps selected entry types visible without edit actions when read-only', () => {
+  state.readOnly = true;
+  app = createApp(EntryTypeSelect, {
+    modelValue: [existingEntryType],
+    entryTypes: [existingEntryType],
+  });
+  app.mount(container);
+
+  expect(container.textContent).toContain('Article');
+  expect(container.textContent).not.toContain('Settings');
+  expect(container.textContent).not.toContain('Remove');
+  expect(container.textContent).not.toContain('Create');
 });
 
 it('selects an entry type created from the picker', async () => {
