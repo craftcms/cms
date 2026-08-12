@@ -9,6 +9,7 @@ use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 
@@ -39,7 +40,7 @@ class MarkdownContent implements Node
     {
         return new self(
             $uid,
-            Markdown::parse(Html::encode($content), 'pre-encoded'),
+            HtmlSanitizers::sanitize(Markdown::parse($content)),
         );
     }
 
