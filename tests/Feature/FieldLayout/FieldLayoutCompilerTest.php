@@ -206,7 +206,7 @@ it('compiles custom fields and shared semantic layout content', function () {
             'variant' => 'warning',
             'dismissible' => false,
         ])
-        ->and($crawler->filter('h2[data-form-node="heading"]')->text())->toBe('Details')
+        ->and($crawler->filter('[data-form-node="heading"] h2')->text())->toBe('Details')
         ->and($crawler->filter('hr[data-form-node="separator"]'))->toHaveCount(1)
         ->and($crawler->filter('.line-break[data-form-node="break"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-callout[data-form-node="warning"]')->text())->toContain('Careful');

@@ -103,8 +103,6 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
-    :label="label"
-    label-sr-only
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
@@ -175,8 +173,6 @@
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
-    :label="label"
-    label-sr-only
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`

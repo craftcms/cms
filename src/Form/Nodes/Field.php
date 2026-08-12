@@ -11,6 +11,8 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
@@ -169,7 +171,9 @@ class Field implements Node
             ...Arr::whereNotNull([
                 'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
                 'tip' => $this->tip,
+                'tipHtml' => $this->noticeHtml($this->tip),
                 'warning' => $this->warning,
+                'warningHtml' => $this->noticeHtml($this->warning),
                 'layoutUid' => $this->layoutUid,
                 'width' => $this->width,
             ]),
@@ -179,5 +183,12 @@ class Field implements Node
     public function children(): array
     {
         return [];
+    }
+
+    private function noticeHtml(?string $notice): ?string
+    {
+        return $notice === null
+            ? null
+            : Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags($notice)));
     }
 }

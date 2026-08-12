@@ -32,8 +32,6 @@
 
 <template>
   <craft-input-color
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     .modelValue="String(value ?? '')"
     .presets="control.props.presets"

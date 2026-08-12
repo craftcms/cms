@@ -33,8 +33,6 @@
 
 <template>
   <CraftCombobox
-    :label="label"
-    label-sr-only
     :name="editable ? inputName(control.path) : ''"
     :model-value="String(value ?? '')"
     :options="control.props.options"

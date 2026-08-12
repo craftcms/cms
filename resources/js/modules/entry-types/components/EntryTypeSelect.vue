@@ -18,6 +18,7 @@
   import type {SlideoutInstance} from '@/common/types/globals';
   import EntryTypeChip from '@/modules/entry-types/components/EntryTypeChip.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
+  import type {SlideoutSaveResult} from '@/common/slideouts';
   import {router} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -93,6 +94,17 @@
       'update:modelValue',
       props.modelValue.filter((item) => item.id !== itemId)
     );
+  }
+
+  function selectCreatedEntryType({data}: SlideoutSaveResult) {
+    const entryType = data?.entryType as EntryType | undefined;
+
+    if (!entryType) {
+      throw new Error('The created entry type was not returned.');
+    }
+
+    emit('update:modelValue', [...props.modelValue, entryType]);
+    router.reload({only: ['entryTypes']});
   }
 
   const slideout = ref<SlideoutInstance | undefined>(undefined);
@@ -367,7 +379,7 @@
     <SlideoutButton
       v-if="!readOnly"
       :url="create().url"
-      @success="router.reload({only: ['entryTypes']})"
+      @success="selectCreatedEntryType"
     >
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}

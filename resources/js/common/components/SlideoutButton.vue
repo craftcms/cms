@@ -10,14 +10,14 @@
    */
   import {useTemplateRef} from 'vue';
   import {ButtonVariant} from '@craftcms/ui';
-  import {useSlideoutOpener} from '@/common/slideouts';
+  import {type SlideoutSaveResult, useSlideoutOpener} from '@/common/slideouts';
 
   defineProps<{
     url: string;
   }>();
 
   const emit = defineEmits<{
-    (e: 'success'): void;
+    (e: 'success', result: SlideoutSaveResult): void;
   }>();
 
   const invoker = useTemplateRef<HTMLElement>('invoker');
@@ -27,7 +27,7 @@
     // Focus goes back to this button on close, courtesy of `opener`.
     void open(url, {
       opener: invoker.value,
-      onSaved: () => emit('success'),
+      onSaved: (result) => emit('success', result),
     });
   }
 </script>

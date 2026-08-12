@@ -75,6 +75,17 @@ export default class CraftCombobox extends LionCombobox {
   /** Placeholder shown when the textbox is empty. */
   @property({type: String, reflect: true}) placeholder = '';
 
+  declare private pendingModelValue: string;
+
+  override get modelValue(): string {
+    return super.modelValue;
+  }
+
+  override set modelValue(value: string) {
+    this.pendingModelValue = value;
+    super.modelValue = value;
+  }
+
   constructor() {
     super();
     // Configure validators on construction.
@@ -113,6 +124,18 @@ export default class CraftCombobox extends LionCombobox {
     ) {
       this.#renderOptions();
     }
+  }
+
+  override addFormElement(option: CraftOption, indexToInsertAt: number) {
+    super.addFormElement(option, indexToInsertAt);
+    option.updateComplete.then(() => {
+      if (String(option.choiceValue) !== String(this.pendingModelValue)) {
+        return;
+      }
+
+      super.modelValue = this.pendingModelValue;
+      this._setTextboxValue(this._getTextboxValueFromOption(option));
+    });
   }
 
   #onInput = () => {

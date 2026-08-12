@@ -13,6 +13,8 @@ use CraftCms\Cms\Support\Html;
 
 class Heading implements Node
 {
+    private ?string $description = null;
+
     private int $level = 2;
 
     private int $width = 100;
@@ -24,8 +26,17 @@ class Heading implements Node
 
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
-        return Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
-            'class' => ["width-{$node->props['width']}"],
+        $heading = Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
+            'class' => ['my-0'],
+        ]);
+        $description = $node->props['description'] === null
+            ? ''
+            : Html::tag('p', Html::encode($node->props['description']), [
+                'class' => ['my-0', 'text-sm', 'text-neutral-text-quiet'],
+            ]);
+
+        return Html::tag('div', $heading.$description, [
+            'class' => ['grid', 'gap-1', "width-{$node->props['width']}"],
             'data-form-node' => $node->uid,
         ]);
     }
@@ -38,6 +49,13 @@ class Heading implements Node
     public function width(int $width): static
     {
         $this->width = $width;
+
+        return $this;
+    }
+
+    public function description(?string $description): static
+    {
+        $this->description = $description;
 
         return $this;
     }
@@ -63,6 +81,7 @@ class Heading implements Node
     {
         return [
             'content' => $this->content,
+            'description' => $this->description,
             'level' => $this->level,
             'width' => $this->width,
         ];

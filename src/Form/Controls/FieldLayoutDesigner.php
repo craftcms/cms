@@ -18,6 +18,10 @@ class FieldLayoutDesigner extends Control
 
     private bool $customizableTabs = true;
 
+    private bool $withGeneratedFields = false;
+
+    private bool $withCardViewDesigner = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         return self::designerHtml(
@@ -26,6 +30,8 @@ class FieldLayoutDesigner extends Control
             $attributes['name'],
             $attributes['name'] === null,
             (bool) $control->props['customizableTabs'],
+            (bool) $control->props['withGeneratedFields'],
+            (bool) $control->props['withCardViewDesigner'],
         );
     }
 
@@ -36,16 +42,25 @@ class FieldLayoutDesigner extends Control
         ?string $name,
         bool $disabled,
         bool $customizableTabs,
+        bool $withGeneratedFields = false,
+        bool $withCardViewDesigner = false,
     ): string {
         $layout = Fields::createLayout($value);
         $layout->type = $elementType;
         $namespace = $name === null ? null : self::parentInputName($name);
 
         return InputNamespace::namespaceInputs(
-            fn (): string => app(Designer::class)->html($layout, [
-                'customizableTabs' => $customizableTabs,
-                'disabled' => $disabled,
-            ]),
+            fn (): string => $withGeneratedFields || $withCardViewDesigner
+                ? app(Designer::class)->fieldHtml($layout, [
+                    'customizableTabs' => $customizableTabs,
+                    'disabled' => $disabled,
+                    'withGeneratedFields' => $withGeneratedFields,
+                    'withCardViewDesigner' => $withCardViewDesigner,
+                ])
+                : app(Designer::class)->html($layout, [
+                    'customizableTabs' => $customizableTabs,
+                    'disabled' => $disabled,
+                ]),
             $namespace,
         );
     }
@@ -69,6 +84,20 @@ class FieldLayoutDesigner extends Control
         return $this;
     }
 
+    public function withGeneratedFields(bool $withGeneratedFields = true): static
+    {
+        $this->withGeneratedFields = $withGeneratedFields;
+
+        return $this;
+    }
+
+    public function withCardViewDesigner(bool $withCardViewDesigner = true): static
+    {
+        $this->withCardViewDesigner = $withCardViewDesigner;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -79,6 +108,8 @@ class FieldLayoutDesigner extends Control
         return [
             'elementType' => $this->elementType,
             'customizableTabs' => $this->customizableTabs,
+            'withGeneratedFields' => $this->withGeneratedFields,
+            'withCardViewDesigner' => $this->withCardViewDesigner,
         ];
     }
 }

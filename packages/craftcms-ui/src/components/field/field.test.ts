@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
+import '../input/input.js';
 
 async function createField(
   attrs: Record<string, string> = {},
@@ -23,7 +24,7 @@ function input(element: CraftField): HTMLElement | null {
 }
 
 function labelNode(element: CraftField): HTMLElement | null {
-  return element.querySelector('[slot="label"]');
+  return element.querySelector(':scope > [slot="label"]');
 }
 
 function describedBy(element: CraftField): string[] {
@@ -63,6 +64,35 @@ describe('craft-field label association', () => {
     );
 
     expect(labelNode(element)!.getAttribute('for')).toBe(input(element)!.id);
+  });
+
+  it('labels a nested form control instead of its wrapper', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<craft-input slot="input"></craft-input>'
+    );
+    const nestedControl = element.querySelector('craft-input')!;
+    await nestedControl.updateComplete;
+
+    const nativeInput = nestedControl.querySelector('input')!;
+    expect(nativeInput.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      labelNode(element)!.id
+    );
+    expect(input(element)!.getAttribute('aria-labelledby') ?? '').toBe('');
+    expect(labelNode(element)!.hasAttribute('for')).toBe(false);
+  });
+
+  it('uses group semantics for a composite control wrapper', async () => {
+    const element = await createField(
+      {label: 'My group'},
+      '<div slot="input"><button type="button">Add</button></div>'
+    );
+
+    expect(element.getAttribute('role')).toBe('group');
+    expect(element.getAttribute('aria-labelledby')).toBe(
+      labelNode(element)!.id
+    );
+    expect(labelNode(element)!.hasAttribute('for')).toBe(false);
   });
 });
 

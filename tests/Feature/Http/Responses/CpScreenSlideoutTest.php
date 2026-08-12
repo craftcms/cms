@@ -37,6 +37,15 @@ it('renders a full page when nothing marks the request as a slideout', function 
             ->where('screen.mode', 'page'));
 });
 
+it('loads screen assets with the initial document', function () {
+    get(editUrl())
+        ->assertOk()
+        ->assertSee('/legacy/jquery/dist/jquery.js', false)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('headHtml')
+            ->missing('bodyHtml'));
+});
+
 /**
  * `assertInertia()` isn't usable here: it reads the `page` view data, which
  * only exists on the blade-rendered response. A slideout is always an XHR

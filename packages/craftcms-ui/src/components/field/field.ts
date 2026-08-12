@@ -10,6 +10,17 @@ import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {t} from '@src/utilities/translate';
 
+type FormControlTarget = HTMLElement & {
+  addToAriaLabelledBy(
+    element: HTMLElement,
+    config?: {idPrefix?: string; reorder?: boolean}
+  ): void;
+  addToAriaDescribedBy(
+    element: HTMLElement,
+    config?: {idPrefix?: string; reorder?: boolean}
+  ): void;
+};
+
 /**
  * A generic form-field shell that renders the standard CP field chrome
  * (label, instructions, tip/warning notices, errors and status badge) around
@@ -188,6 +199,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
   protected override _enhanceLightDomA11y(): void {
     super._enhanceLightDomA11y();
     this.__wireDescribedBy();
+    this.__syncFieldsetSemantics();
+  }
+
+  protected override _onLabelClick(): void {
+    this.__formControlTarget()?.focus();
   }
 
   /**
@@ -201,6 +217,20 @@ export default class CraftField extends FormControlMixin(LitElement) {
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}
   ): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.addToAriaLabelledBy(element, {
+        ...customConfig,
+        idPrefix: `field-${customConfig.idPrefix ?? 'label'}`,
+      });
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__addGroupAriaReference('aria-labelledby', element, 'label');
+      return;
+    }
+
     super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
   }
 
@@ -208,6 +238,24 @@ export default class CraftField extends FormControlMixin(LitElement) {
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}
   ): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.addToAriaDescribedBy(element, {
+        ...customConfig,
+        idPrefix: `field-${customConfig.idPrefix ?? 'description'}`,
+      });
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__addGroupAriaReference(
+        'aria-describedby',
+        element,
+        customConfig.idPrefix ?? 'description'
+      );
+      return;
+    }
+
     super.addToAriaDescribedBy(element, {...customConfig, reorder: false});
   }
 
@@ -341,6 +389,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   private __onLightDomChanged(): void {
     this.__wireDescribedBy();
+    this.__syncFieldsetSemantics();
     this.__syncHasErrors();
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
@@ -360,6 +409,37 @@ export default class CraftField extends FormControlMixin(LitElement) {
     }
   }
 
+  private __formControlTarget(): FormControlTarget | undefined {
+    const input = this._inputNode;
+
+    return input &&
+      'addToAriaLabelledBy' in input &&
+      'addToAriaDescribedBy' in input
+      ? (input as FormControlTarget)
+      : undefined;
+  }
+
+  private __hasNativeLabelTarget(): boolean {
+    return Boolean(
+      this._inputNode?.matches(
+        'button, input, meter, output, progress, select, textarea'
+      )
+    );
+  }
+
+  private __addGroupAriaReference(
+    attribute: 'aria-labelledby' | 'aria-describedby',
+    element: HTMLElement,
+    idPrefix: string
+  ): void {
+    element.id ||= `${idPrefix}-${this._inputId}`;
+    const ids = new Set(
+      (this.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean)
+    );
+    ids.add(element.id);
+    this.setAttribute(attribute, [...ids].join(' '));
+  }
+
   private __syncHasErrors(): void {
     const feedback = this.__lightChild('feedback');
     if (!feedback) {
@@ -373,7 +453,8 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   private __syncFieldsetSemantics(): void {
     const labelNode = this._labelNode;
-    if (this.fieldset) {
+    const control = this.__formControlTarget();
+    if (this.fieldset || (!control && !this.__hasNativeLabelTarget())) {
       this.setAttribute('role', 'group');
       if (labelNode) {
         if (!labelNode.id) {
@@ -387,7 +468,9 @@ export default class CraftField extends FormControlMixin(LitElement) {
         this.removeAttribute('role');
       }
       this.removeAttribute('aria-labelledby');
-      if (labelNode && this._inputNode) {
+      if (labelNode && control) {
+        labelNode.removeAttribute('for');
+      } else if (labelNode && this._inputNode) {
         labelNode.setAttribute('for', this._inputNode.id || this._inputId);
       }
     }

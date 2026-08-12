@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Hidden;
 use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Link;
@@ -57,6 +58,7 @@ class FormControlTypes extends TypeRegistry
         FieldLayoutDesigner::class,
         GroupedEntryTypeManager::class,
         Handle::class,
+        Hidden::class,
         IconPicker::class,
         Lightswitch::class,
         Link::class,

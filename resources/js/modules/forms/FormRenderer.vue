@@ -9,15 +9,17 @@
     ref,
     shallowRef,
     toRaw,
+    useSlots,
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
   import FormNodeList from './FormNodeList.vue';
   import {
     FormFailure,
+    FormControlOverrides,
     isRecord,
     pathsMatch,
-    setValue,
+    setValue as setPathValue,
     unsetValue,
     valueAt,
   } from './runtime';
@@ -38,7 +40,9 @@
   }>();
   const emit = defineEmits<{
     (event: 'update:mutation', mutation: FormPayload['values']): void;
+    (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
+  const slots = useSlots();
   const payload = shallowRef(props.payload);
   const root = ref<HTMLElement>();
   const renderError = ref<string>();
@@ -58,6 +62,7 @@
   const effectiveErrors = computed(() => props.errors ?? payload.value.errors);
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
+  provide(FormControlOverrides, slots);
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {
@@ -77,7 +82,12 @@
   );
   onBeforeUnmount(() => refreshTimers.forEach(clearTimeout));
 
-  function onChange(change: FormChange): void {
+  function onControlChange(change: FormChange): void {
+    recordChange(change);
+    emit('change', change, currentValues());
+  }
+
+  function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
     emitMutation();
 
@@ -151,7 +161,11 @@
     rememberControlPaths(refreshed.nodes);
     visitControls(refreshed.nodes, (control) => {
       if (control.mode !== 'editable') {
-        setValue(values, control.path, valueAt(refreshed.values, control.path));
+        setPathValue(
+          values,
+          control.path,
+          valueAt(refreshed.values, control.path)
+        );
       }
     });
     if (pathsMatch(scope, payload.value.scope)) {
@@ -180,9 +194,16 @@
 
     if (focusedPath) {
       nextTick(() => {
-        [...document.querySelectorAll<HTMLElement>('[data-form-control-path]')]
-          .find((element) => element.dataset.formControlPath === focusedPath)
-          ?.focus();
+        const control = [
+          ...document.querySelectorAll<HTMLElement>('[data-form-control-path]'),
+        ].find((element) => element.dataset.formControlPath === focusedPath);
+        const focusTarget = control?.hasAttribute('data-form-control-override')
+          ? control.querySelector<HTMLElement>(
+              'input:checked, input:not([type="hidden"]), button, select, textarea, [tabindex]:not([tabindex="-1"])'
+            )
+          : control;
+
+        focusTarget?.focus();
       });
     }
   }
@@ -211,7 +232,7 @@
           continue;
         }
 
-        setValue(result, path, current);
+        setPathValue(result, path, current);
       }
     }
 
@@ -232,10 +253,29 @@
   }
 
   function currentValues(): FormPayload['values'] {
-    return cloneRaw(values);
+    const result: FormPayload['values'] = {};
+
+    visitControls(payload.value.nodes, (control) => {
+      const value = valueAt(values, control.path);
+
+      if (value !== undefined) {
+        setPathValue(result, control.path, cloneRaw(value));
+      }
+    });
+
+    return result;
   }
 
-  defineExpose({advanceBaseline, currentValues});
+  function setValue(
+    path: string[],
+    value: unknown,
+    kind: FormChange['kind'] = 'discrete'
+  ): void {
+    setPathValue(values, path, value);
+    recordChange({kind, path});
+  }
+
+  defineExpose({advanceBaseline, currentValues, setValue});
 
   function visitControls(
     nodes: FormNodePayload[],
@@ -323,7 +363,23 @@
   }
 
   function cloneRaw<T>(value: T): T {
-    return structuredClone(toRaw(value));
+    return structuredClone(unwrap(value)) as T;
+  }
+
+  function unwrap(value: unknown): unknown {
+    const raw = toRaw(value);
+
+    if (Array.isArray(raw)) {
+      return raw.map(unwrap);
+    }
+
+    if (isRecord(raw)) {
+      return Object.fromEntries(
+        Object.entries(raw).map(([key, value]) => [key, unwrap(value)])
+      );
+    }
+
+    return raw;
   }
 
   function canonical(value: unknown): string {
@@ -365,7 +421,7 @@
       :touched-paths="touchedPaths"
       :scope="payload.scope"
       :refreshable="payload.refreshable"
-      @change="onChange"
+      @change="onControlChange"
     />
   </template>
 </template>

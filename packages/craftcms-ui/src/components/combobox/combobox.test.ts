@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
@@ -194,6 +194,20 @@ describe('craft-combobox', () => {
       c.modelValue = 'en-US';
     });
     expect(combobox.modelValue).toBe('en-US');
+  });
+
+  it('displays the matching option label for an initial value', async () => {
+    const combobox = await createFixture();
+    combobox.options = [
+      {label: 'Online', value: '1'},
+      {label: 'Offline', value: '0'},
+    ];
+    combobox.modelValue = '1';
+
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('1');
+      expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
   });
 
   it('preserves a custom value on mount', async () => {
