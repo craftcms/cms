@@ -177,6 +177,7 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.role = 'listbox';
     this.#listbox.setAttribute('aria-label', t('Suggestions'));
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
+    this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
     this.append(this.#listbox);
   }
@@ -404,6 +405,12 @@ export default class CraftTextExpander extends LitElement {
       event.target.closest('[role="option"]')
     ) {
       event.preventDefault();
+    }
+  };
+
+  #onOptionPointerUp = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch' && event.target instanceof Element) {
+      (event.target.closest('[role="option"]') as HTMLElement | null)?.click();
     }
   };
 

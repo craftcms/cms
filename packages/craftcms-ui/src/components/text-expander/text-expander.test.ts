@@ -261,6 +261,30 @@ describe('craft-text-expander', () => {
     expect(option.querySelector('[data-online="true"]')).not.toBeNull();
   });
 
+  it('selects options with touch input', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+
+    type(target, '@b');
+    await expander.updateComplete;
+    const option = options(expander)[0]!;
+    expect(
+      option.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          cancelable: true,
+          pointerType: 'touch',
+        })
+      )
+    ).toBe(false);
+    option.dispatchEvent(
+      new PointerEvent('pointerup', {bubbles: true, pointerType: 'touch'})
+    );
+
+    expect(target.value).toBe('@brad');
+  });
+
   it('debounces async sources and discards stale results', async () => {
     vi.useFakeTimers();
     let resolveFirst!: (
