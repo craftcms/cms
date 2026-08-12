@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
 - Added a slideout system for the Inertia/Vue Control Panel, which renders any `CpScreenResponse`-based screen as an in-page panel from a normal Inertia response, alongside the existing legacy `Craft.CpScreenSlideout`. ([#19354](https://github.com/craftcms/cms/pull/19354))
 - Added `CraftCms\Cms\Http\Responses\CpScreenResponse::screenData()`. ([#19354](https://github.com/craftcms/cms/pull/19354))
 - Removed the `Pane.vue` Vue component in favor of the `craft-pane` web component. ([#19398](https://github.com/craftcms/cms/pull/19398))
