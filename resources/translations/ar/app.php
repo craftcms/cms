@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'بحث في المجلدات الفرعية',
     'Search plugins' => 'بحث في الملحقات',
     'Search' => 'بحث',
+    'Secondary' => 'Secondary',
     'Seconds' => 'ثواني',
     'Section - {section}' => 'القسم - {section}',
     'Section Type' => 'نوع القسم',
