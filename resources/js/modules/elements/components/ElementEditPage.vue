@@ -5,7 +5,6 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
@@ -169,7 +168,7 @@
     </div>
   </LayoutSlot>
 
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <craft-callout
       v-if="activity.isStale.value"
       variant="warning"
@@ -231,7 +230,7 @@
     />
 
     <slot :payload="payload" />
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot
     v-if="sidebarPayload || payload.metadataHtml || $slots['details-header']"
