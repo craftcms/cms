@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => '하위 폴더 검색',
     'Search plugins' => '검색 플러그인',
     'Search' => '검색',
+    'Secondary' => 'Secondary',
     'Seconds' => '초',
     'Section - {section}' => '섹션 - {section}',
     'Section Type' => '섹션 타입',
