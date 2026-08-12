@@ -5,7 +5,6 @@
   import {t} from '@craftcms/ui';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {expandFormData} from '@/common/utils/forms';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -165,11 +164,11 @@
     </craft-button-group>
   </LayoutSlot>
 
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div ref="contentEl">
       <HtmlFragmentRenderer :fragment="props.formFragment" />
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="props.detailsFragment" name="details">
     <HtmlFragmentRenderer :fragment="props.detailsFragment" />

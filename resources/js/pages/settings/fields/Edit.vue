@@ -12,7 +12,6 @@
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import type {FormPayload} from '@/modules/forms/types';
   import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
-  import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {
@@ -186,7 +185,7 @@
 
 <template>
   <div class="grid gap-6 grid-cols-4">
-    <Pane
+    <craft-pane
       appearance="raised"
       :class="metadataHtml ? 'col-span-3' : 'col-span-4'"
     >
@@ -322,7 +321,7 @@
           </div>
         </div>
       </craft-field-group>
-    </Pane>
+    </craft-pane>
     <div class="col-span-1" v-if="metadataHtml">
       <div class="sticky top-4">
         <DynamicHtmlRenderer :html="metadataHtml" />

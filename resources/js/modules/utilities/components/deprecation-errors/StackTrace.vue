@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {onMounted, ref} from 'vue';
-  import Pane from '@/common/components/Pane.vue';
   import {useHttp} from '@inertiajs/vue3';
   import {show} from '@actions/Utilities/DeprecationErrorsController';
 
@@ -21,14 +20,14 @@
 </script>
 
 <template>
-  <Pane class="max-w-4xl">
+  <craft-pane class="max-w-4xl">
     <template v-if="http.processing">
       <craft-spinner></craft-spinner>
     </template>
     <template v-if="http.wasSuccessful">
       <div v-html="data?.html"></div>
     </template>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss"></style>

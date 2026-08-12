@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {actionClient, t, toHandle} from '@craftcms/ui';
-  import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/ui/vue/CraftInputHandle.vue';
   import Select from '@/common/form/Select.vue';
@@ -86,7 +85,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <craft-field-group>
       <CraftInput
         v-model="form.name"
@@ -141,7 +140,7 @@
         </template>
       </div>
     </craft-field-group>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped lang="scss"></style>

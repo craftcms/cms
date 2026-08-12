@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import Pane from '@/common/components/Pane.vue';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import useCraftData from '@/common/composables/useCraftData';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -113,7 +112,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <CraftInput
         :label="t('Name')"
@@ -329,7 +328,7 @@
         </select>
       </CraftSelect>
     </div>
-  </Pane>
+  </craft-pane>
 </template>
 
 <style scoped>

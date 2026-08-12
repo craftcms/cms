@@ -38,6 +38,7 @@ class ComponentRegistry
         'input-time' => InputTime::class,
         'lightswitch' => Lightswitch::class,
         'missing-component' => MissingComponent::class,
+        'pane' => Pane::class,
         'permission-tree' => PermissionTree::class,
         'radio' => Radio::class,
         'radio-group' => RadioGroup::class,

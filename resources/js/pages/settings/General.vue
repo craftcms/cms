@@ -7,7 +7,6 @@
   import {computed} from 'vue';
   import type {SelectItem} from '@/common/types';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import {transformBooleanOptions} from '@/common/utils/transformBooleanOptions';
@@ -72,7 +71,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <CraftCombobox
         :label="t('System Name')"
@@ -180,5 +179,5 @@
         </template>
       </CraftCombobox>
     </div>
-  </Pane>
+  </craft-pane>
 </template>

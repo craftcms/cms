@@ -8,7 +8,6 @@
   import {ref} from 'vue';
   import Badge from '@/common/components/Badge.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
@@ -51,11 +50,11 @@
     </craft-callout>
   </LayoutSlot>
 
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <SiteFields :inertia-form="form" />
     </div>
-  </Pane>
+  </craft-pane>
 
   <DeleteSiteModal
     @close="modalActive = false"

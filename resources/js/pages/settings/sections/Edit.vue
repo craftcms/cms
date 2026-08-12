@@ -17,7 +17,6 @@
   import SiteSettingsTable from '@/modules/sections/components/SiteSettingsTable.vue';
   import PreviewTargetsTable from '@/modules/sections/components/PreviewTargetsTable.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
   import {store} from '@actions/Settings/SectionsController';
   import useCraftData from '@/common/composables/useCraftData';
 
@@ -118,7 +117,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <input
         v-if="section.id"
@@ -379,5 +378,5 @@
         :error="errors?.maxAuthors"
       />
     </div>
-  </Pane>
+  </craft-pane>
 </template>
