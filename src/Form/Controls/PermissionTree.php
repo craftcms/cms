@@ -13,6 +13,8 @@ use function CraftCms\Cms\template;
 
 class PermissionTree extends Control
 {
+    private ?string $ariaLabel = null;
+
     /** @var list<array<string, mixed>> */
     private array $groups = [];
 
@@ -34,6 +36,7 @@ class PermissionTree extends Control
             'id' => $attributes['id'],
             'role' => 'group',
             'aria' => [
+                'label' => $control->props['ariaLabel'],
                 'invalid' => $attributes['aria']['invalid'] ?? null,
                 'required' => $attributes['required'] ? 'true' : null,
             ],
@@ -43,6 +46,13 @@ class PermissionTree extends Control
     public function component(): string
     {
         return 'craft:permission-tree';
+    }
+
+    public function ariaLabel(string $label): static
+    {
+        $this->ariaLabel = $label;
+
+        return $this;
     }
 
     /** @param iterable<PermissionGroup> $groups */
@@ -69,6 +79,7 @@ class PermissionTree extends Control
     public function props(mixed $value = null): array
     {
         return [
+            'ariaLabel' => $this->ariaLabel,
             'groups' => $this->groups,
             'lockedPermissions' => $this->lockedPermissions,
         ];
