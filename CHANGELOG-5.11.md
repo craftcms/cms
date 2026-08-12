@@ -19,3 +19,4 @@
 - The front-end login page no longer returns a redirect response for logged-in users, if it’s a preview request. ([#19360](https://github.com/craftcms/cms/discussions/19360))
 - Updated Twig to 3.28.
 - Updated yii2-debug to 2.1.28.
+- Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
