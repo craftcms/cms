@@ -384,7 +384,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
             ->name('settings.sections.index');
-        Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::get('settings/sections/new', [SectionsController::class, 'create']);
+            Route::post('settings/sections/render-form', [SectionsController::class, 'renderForm']);
+        });
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
         Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
@@ -411,6 +414,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::middleware(RequireAdminChanges::class)->group(function () {
                 Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
                 Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::post('form', [ImageTransformsController::class, 'renderForm']);
                 Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
             });
 
@@ -464,8 +468,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
-        Route::middleware(RequireAdminChanges::class)
-            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::post('settings/users/settings/render-form', [UserSettingsController::class, 'renderForm']);
+            Route::post('settings/users/settings', [UserSettingsController::class, 'store']);
+        });
     });
 
     Route::prefix('settings/filesystems')->group(function () {
