@@ -818,6 +818,64 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     * The `has some`/`has every` operators must reject callables that aren't real Closures
+     * (e.g. a bare string naming a PHP function) when rendered within the Twig sandbox,
+     * rather than silently invoking arbitrary PHP functions.
+     *
+     * `str_contains()` is used here (rather than something like `strtoupper()`) because it
+     * happily accepts the two arguments (`$value`, `$key`) that `has some`/`has every` pass
+     * to the callable, so if the sandbox bypass were still present, the function would just
+     * execute and return a boolean rather than incidentally erroring out for unrelated
+     * (arg-count) reasons, which would mask the real vulnerability.
+     */
+    public function testHasSomeSandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some "str_contains" }}'
+        );
+    }
+
+    /**
+     * @see testHasSomeSandboxRejectsNonClosureCallable()
+     */
+    public function testHasEverySandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every "str_contains" }}'
+        );
+    }
+
+    /**
+     * Legitimate arrow-function usages of `has some`/`has every` should still work fine
+     * when rendered within the Twig sandbox.
+     */
+    public function testHasSomeAndHasEveryWorkWithinSandbox(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("z")) ? "yes" : "no" }}'
+        );
+        self::assertSame('no', $result);
+    }
+
+    /**
      *
      */
     public function testHashFilter(): void
