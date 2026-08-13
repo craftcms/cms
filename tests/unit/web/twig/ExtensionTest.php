@@ -17,14 +17,17 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\models\FieldLayout;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use DirectoryIterator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use SimpleXMLElement;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -1052,6 +1055,63 @@ class ExtensionTest extends TestCase
                 'q' => Entry::find()->sectionId(10),
             ]
         );
+    }
+
+    /**
+     * @dataProvider createFunctionDataProvider
+     */
+    public function testCreateFunction(bool $allowed, string $class): void
+    {
+        if (!class_exists($class) && !interface_exists($class)) {
+            self::markTestSkipped(sprintf('%s isn\'t available in this environment.', $class));
+        }
+
+        if (!$allowed) {
+            $this->expectException(RuntimeError::class);
+            $this->expectExceptionMessage(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        $result = $this->view->renderString('{{ create(class) ? "created" : "not created" }}', compact('class'));
+
+        if ($allowed) {
+            self::assertSame('created', $result);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function createFunctionDataProvider(): array
+    {
+        return [
+            // Ordinary classes remain creatable.
+            'Craft model' => [true, FieldLayout::class],
+            'craft\helpers class' => [true, 'craft\\helpers\\StringHelper'],
+            // The read gadget from the report: not on the denylist by class or by the
+            // Spl*/*Iterator name patterns, so it was reachable despite GHSA-957r-qf9p-67xw.
+            'DOMDocument (reported bypass)' => [false, 'DOMDocument'],
+            // Pre-existing denylist entries.
+            'SplFileObject' => [false, 'SplFileObject'],
+            'SimpleXMLElement' => [false, SimpleXMLElement::class],
+            'DirectoryIterator' => [false, DirectoryIterator::class],
+            'AttributeTypecastBehavior' => [false, \yii\behaviors\AttributeTypecastBehavior::class],
+            // Newly added denylist entries.
+            'XMLReader' => [false, \XMLReader::class],
+            'XSLTProcessor' => [false, \XSLTProcessor::class],
+            'SoapClient' => [false, \SoapClient::class],
+            'GuzzleHttp\Client' => [false, \GuzzleHttp\Client::class],
+            'PDO' => [false, \PDO::class],
+            'mysqli' => [false, \mysqli::class],
+            'ReflectionClass (via the Reflector interface)' => [false, \ReflectionClass::class],
+            'ReflectionMethod (via the Reflector interface)' => [false, \ReflectionMethod::class],
+            // Only present when the optional imagick extension is installed; skipped
+            // otherwise (see the class_exists() guard above).
+            'Imagick' => [false, \Imagick::class],
+            // Phar/PharData aren't listed explicitly: they extend RecursiveDirectoryIterator,
+            // which extends FilesystemIterator, which extends DirectoryIterator, so is_a()'s
+            // ancestry walk already denies them via the DirectoryIterator entry above.
+            'PharData (via DirectoryIterator ancestry)' => [false, \PharData::class],
+        ];
     }
 
     /**
