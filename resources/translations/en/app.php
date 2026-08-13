@@ -1083,6 +1083,7 @@ return [
     'Name only' => 'Name only',
     'Name' => 'Name',
     'Native Fields' => 'Native Fields',
+    'Navigated to {title} page' => 'Navigated to {title} page',
     'Neighborhood' => 'Neighborhood',
     'Never' => 'Never',
     'New Issues' => 'New Issues',
