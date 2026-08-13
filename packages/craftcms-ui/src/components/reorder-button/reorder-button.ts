@@ -126,7 +126,6 @@ export default class CraftReorderButton extends LitElement {
           icon
           size="small"
           variant="plain"
-          variant="${this.variant}"
           ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">
