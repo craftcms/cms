@@ -1235,7 +1235,7 @@ class ExtensionTest extends TestCase
             'XMLReader' => [false, \XMLReader::class],
             'XSLTProcessor' => [false, \XSLTProcessor::class],
             'SoapClient' => [false, \SoapClient::class],
-            'GuzzleHttp\Client' => [false, \GuzzleHttp\Client::class],
+            \GuzzleHttp\Client::class => [false, \GuzzleHttp\Client::class],
             'PDO' => [false, \PDO::class],
             'mysqli' => [false, \mysqli::class],
             'ReflectionClass (via the Reflector interface)' => [false, \ReflectionClass::class],
