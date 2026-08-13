@@ -275,3 +275,24 @@ test('showForm handles JSON requests', function () {
     getJson(action([TwoFactorAuthenticationController::class, 'showForm']))
         ->assertJsonStructure(['authMethod', 'otherMethods', 'authForm', 'returnUrl']);
 });
+
+test('showForm strips a javascript: returnUrl', function (string $returnUrl) {
+    $user = User::findOne();
+    Authenticator::create([
+        'userId' => $user->id,
+        'auth2faSecret' => 'secret',
+    ]);
+
+    withSession(['user.id' => $user->id, 'user.pending_2fa_at' => now()->timestamp]);
+
+    $response = getJson(action([TwoFactorAuthenticationController::class, 'showForm'], [
+        'returnUrl' => $returnUrl,
+    ]))->assertOk();
+
+    expect($response->json('returnUrl'))
+        ->not->toContain('javascript:');
+})->with([
+    'javascript:alert(1)',
+    "java\tscript:alert(1)",
+    'JAVASCRIPT:alert(1)',
+]);
