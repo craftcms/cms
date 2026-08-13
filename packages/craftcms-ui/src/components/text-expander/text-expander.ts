@@ -116,10 +116,15 @@ export default class CraftTextExpander extends LitElement {
   #composing = false;
   #inputRange: InputRange | null = null;
   #caretRect = new DOMRect();
+  #targetObserver = new MutationObserver(() => this.#bindTarget());
 
   override connectedCallback(): void {
     super.connectedCallback();
     this.#ensureListbox();
+
+    if (this.hasUpdated) {
+      this.#bindTarget();
+    }
   }
 
   override disconnectedCallback(): void {
@@ -192,9 +197,14 @@ export default class CraftTextExpander extends LitElement {
     this.#unbindTarget();
 
     if (!isTextTarget(target)) {
-      throw new TypeError(
-        'craft-text-expander requires an input[type="text"] or textarea target.'
-      );
+      this.#targetObserver.observe(this.getRootNode(), {
+        attributes: true,
+        attributeFilter: ['id'],
+        childList: true,
+        subtree: true,
+      });
+
+      return;
     }
 
     this.#boundTarget = target;
@@ -243,6 +253,7 @@ export default class CraftTextExpander extends LitElement {
   }
 
   #unbindTarget(): void {
+    this.#targetObserver.disconnect();
     this.#close();
 
     const target = this.#boundTarget;
@@ -740,6 +751,7 @@ function insertReplacement(
 
   if (target.value !== expected) {
     target.setRangeText(value, start, end, 'end');
+    emitted = false;
   }
 
   if (!emitted) {

@@ -102,6 +102,32 @@ describe('craft-text-expander', () => {
     expect(target.getAttribute('aria-controls')).toBe('existing');
   });
 
+  it('binds when a native target replaces an upgrading custom element', async () => {
+    const host = document.createElement('craft-markdown-field');
+    host.id = 'late-target';
+    document.body.append(host);
+
+    const expander = document.createElement(
+      'craft-text-expander'
+    ) as CraftTextExpander;
+    expander.for = host.id;
+    expander.triggers = {
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    };
+    document.body.append(expander);
+    await expander.updateComplete;
+
+    host.id = `${host.id}-editor`;
+    const target = document.createElement('textarea');
+    target.id = 'late-target';
+    host.append(target);
+    await Promise.resolve();
+
+    type(target, '@b');
+
+    expect(options(expander)).toHaveLength(1);
+  });
+
   it('preserves textarea semantics', async () => {
     const {target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
@@ -179,6 +205,35 @@ describe('craft-text-expander', () => {
     expect(events.slice(-2)).toEqual(['input', 'select']);
     expect(detail).toMatchObject({character: '@', query: 'br'});
     expect(bubbledKeydown).not.toHaveBeenCalled();
+  });
+
+  it('emits input for the final fallback replacement value', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+    const values: string[] = [];
+
+    type(target, '@b');
+    await expander.updateComplete;
+    target.addEventListener('input', () => values.push(target.value));
+    Object.defineProperty(document, 'execCommand', {
+      configurable: true,
+      value: () => {
+        target.dispatchEvent(new InputEvent('input', {bubbles: true}));
+
+        return false;
+      },
+    });
+    try {
+      target.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+      );
+
+      expect(target.value).toBe('@brad');
+      expect(values).toEqual(['@b', '@brad']);
+    } finally {
+      Reflect.deleteProperty(document, 'execCommand');
+    }
   });
 
   it('returns to the input at list boundaries and leaves Tab behavior untouched', async () => {
