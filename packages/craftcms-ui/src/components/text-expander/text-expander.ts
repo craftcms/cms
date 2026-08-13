@@ -5,6 +5,8 @@ import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient} from '@src/utilities/api/actionClient';
 import {t} from '@src/utilities/translate';
+import {containingBlockCorrection} from '@src/utilities/containing-block-correction.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './text-expander.styles.js';
 import '../option/option.js';
 
@@ -86,7 +88,7 @@ let nextId = 0;
  * @fires craft-text-expander-error - Fired when a suggestion source fails.
  */
 export default class CraftTextExpander extends LitElement {
-  static override styles = [styles];
+  static override styles = [visuallyHiddenStyles, styles];
 
   /** ID of a native text input or textarea in the same DOM root. */
   @property({reflect: true}) for = '';
@@ -116,7 +118,15 @@ export default class CraftTextExpander extends LitElement {
   #composing = false;
   #inputRange: InputRange | null = null;
   #caretRect = new DOMRect();
-  #targetObserver = new MutationObserver(() => this.#bindTarget());
+  #targetObserver = new MutationObserver(() => {
+    const target = this.#resolveTarget();
+    if (
+      (isTextTarget(target) && target !== this.#boundTarget) ||
+      (this.#boundTarget && !this.#boundTarget.isConnected)
+    ) {
+      this.#bindTarget();
+    }
+  });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -197,12 +207,7 @@ export default class CraftTextExpander extends LitElement {
     this.#unbindTarget();
 
     if (!isTextTarget(target)) {
-      this.#targetObserver.observe(this.getRootNode(), {
-        attributes: true,
-        attributeFilter: ['id'],
-        childList: true,
-        subtree: true,
-      });
+      this.#observeTarget();
 
       return;
     }
@@ -229,7 +234,9 @@ export default class CraftTextExpander extends LitElement {
       this.#onDocumentPointerDown,
       true
     );
-    this.#overlay = new OverlayController({
+    const overlayConfig: NonNullable<
+      ConstructorParameters<typeof OverlayController>[0]
+    > = {
       contentNode: this.popup,
       contentWrapperNode: this.popupWrapper,
       invokerNode: target,
@@ -247,8 +254,24 @@ export default class CraftTextExpander extends LitElement {
         modifiers: [
           {name: 'offset', options: {offset: [0, 4]}},
           {name: 'computeStyles', options: {gpuAcceleration: false}},
+          containingBlockCorrection,
         ],
       },
+    };
+    if (this.#overlay) {
+      this.#overlay.updateConfig(overlayConfig);
+    } else {
+      this.#overlay = new OverlayController(overlayConfig);
+    }
+    this.#observeTarget();
+  }
+
+  #observeTarget(): void {
+    this.#targetObserver.observe(this.getRootNode(), {
+      attributes: true,
+      attributeFilter: ['id'],
+      childList: true,
+      subtree: true,
     });
   }
 
@@ -278,7 +301,6 @@ export default class CraftTextExpander extends LitElement {
     this.#inputRange?.getStyleClone().disconnect();
     this.#inputRange = null;
     this.#overlay?.teardown();
-    this.#overlay = null;
     this.#combobox?.destroy();
     this.#combobox = null;
     this.#restoreTargetAttributes(target);
@@ -360,7 +382,11 @@ export default class CraftTextExpander extends LitElement {
     }
 
     queueMicrotask(() => {
-      if (this.#match) {
+      if (
+        this.#match &&
+        (target.selectionStart !== this.#match.end ||
+          target.selectionEnd !== this.#match.end)
+      ) {
         this.#evaluate();
       }
     });
@@ -443,6 +469,7 @@ export default class CraftTextExpander extends LitElement {
     const limit = match.trigger.limit ?? 8;
 
     if (match.trigger.options) {
+      this.loading = false;
       const query = match.query.toLowerCase();
       const matches = match.trigger.options
         .filter((option) =>
@@ -480,6 +507,9 @@ export default class CraftTextExpander extends LitElement {
           signal: this.#requestController.signal,
         }
       );
+      if (!Array.isArray(response.data)) {
+        throw new TypeError('Text expander sources must return an array.');
+      }
       options = response.data;
     } catch (error) {
       if (request !== this.#request || isAbortError(error)) {
@@ -568,7 +598,7 @@ export default class CraftTextExpander extends LitElement {
 
     void this.updateComplete.then(() => {
       if (this.#match) {
-        this.#openPopup();
+        void this.#openPopup();
       }
     });
   }
@@ -609,7 +639,7 @@ export default class CraftTextExpander extends LitElement {
     );
   }
 
-  #openPopup(): void {
+  async #openPopup(): Promise<void> {
     const target = this.#boundTarget;
     if (!target || !this.#positionPopup()) {
       this.#close();
@@ -620,7 +650,10 @@ export default class CraftTextExpander extends LitElement {
     if (target instanceof HTMLInputElement) {
       target.setAttribute('aria-expanded', 'true');
     }
-    void this.#overlay?.show(target);
+    await this.#overlay?.show(target);
+    if (!this.#match || target !== this.#boundTarget) {
+      return;
+    }
     if (this.#visibleOptions.length) {
       this.#combobox?.start();
 
@@ -733,6 +766,12 @@ function insertReplacement(
   end: number,
   value: string
 ): void {
+  if (target.maxLength >= 0) {
+    value = value.slice(
+      0,
+      Math.max(0, target.maxLength - (target.value.length - (end - start)))
+    );
+  }
   const expected = `${target.value.slice(0, start)}${value}${target.value.slice(end)}`;
   let emitted = false;
   const markEmitted = () => {

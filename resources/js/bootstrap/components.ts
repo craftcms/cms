@@ -19,6 +19,8 @@ export interface CpComponentRegistry {
   uninstall(app: App): void;
 }
 
+let nextAppId = 0;
+
 function isLoader(
   componentOrLoader: CpComponentRegistration
 ): componentOrLoader is CpComponentLoader {
@@ -84,6 +86,7 @@ export function createCpComponentRegistry(): CpComponentRegistry {
         return;
       }
 
+      installedApp.config.idPrefix = `craft-${++nextAppId}`;
       apps.add(installedApp);
       components.forEach((componentOrLoader, name) => {
         registerWithApp(installedApp, name, componentOrLoader);

@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+import {expect, waitFor} from 'storybook/test';
 import {html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import OverType from 'overtype';
@@ -46,6 +47,31 @@ export const TextInput: Story = {
       .triggers=${{'@': {options: people}}}
     ></craft-text-expander>
   `,
+  play: async ({canvas, canvasElement, userEvent}) => {
+    const input = canvas.getByRole('combobox');
+    const expander = canvasElement.querySelector('craft-text-expander')!;
+    const dialog = expander.shadowRoot!.querySelector('dialog')!;
+
+    await userEvent.type(input, '@a');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('option', {name: 'Ada Lovelace'})
+      ).toHaveAttribute('aria-selected', 'true')
+    );
+    await userEvent.clear(input);
+    await userEvent.type(input, '@z');
+    await waitFor(() => expect(dialog.style.display).toBe('none'));
+    await userEvent.clear(input);
+    await userEvent.type(input, '@a');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('option', {name: 'Ada Lovelace'})
+      ).toHaveAttribute('aria-selected', 'true')
+    );
+    await userEvent.keyboard('{Enter}');
+
+    await expect(input).toHaveValue('@ada');
+  },
 };
 
 export const TextareaWithMultipleTriggers: Story = {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type {TextExpanderTriggers} from '@craftcms/ui';
+  import '@craftcms/ui/components/text-expander/text-expander';
   import {useId} from 'vue';
   import '../markdown-field/markdown-field';
   import type {FormControlPayload} from './types';

@@ -42,6 +42,12 @@ function options(expander: CraftTextExpander): HTMLElement[] {
   return Array.from(expander.querySelectorAll('craft-option'));
 }
 
+async function waitForFirstOption(expander: CraftTextExpander): Promise<void> {
+  await vi.waitFor(() => {
+    expect(options(expander)[0]?.getAttribute('aria-selected')).toBe('true');
+  });
+}
+
 beforeEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
@@ -128,6 +134,33 @@ describe('craft-text-expander', () => {
     expect(options(expander)).toHaveLength(1);
   });
 
+  it('rebinds when the native target is replaced', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+    const replacement = document.createElement('textarea');
+    replacement.id = target.id;
+    target.replaceWith(replacement);
+    await Promise.resolve();
+
+    type(replacement, '@b');
+
+    expect(options(expander)).toHaveLength(1);
+  });
+
+  it('reuses its overlay when reconnected', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+
+    expander.remove();
+    document.body.append(expander);
+    await Promise.resolve();
+    type(target, '@b');
+
+    expect(expander.shadowRoot?.querySelectorAll('dialog')).toHaveLength(1);
+  });
+
   it('preserves textarea semantics', async () => {
     const {target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
@@ -156,6 +189,19 @@ describe('craft-text-expander', () => {
     expect(
       options(expander).map((option) => option.textContent?.trim())
     ).toEqual(['Alpha', 'Bravo']);
+  });
+
+  it('does not rebuild options when selectionchange keeps the same caret', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+
+    type(target, '@b');
+    const firstOption = options(expander)[0];
+    document.dispatchEvent(new Event('selectionchange'));
+    await Promise.resolve();
+
+    expect(options(expander)[0]).toBe(firstOption);
   });
 
   it('recognizes multiple triggers only at whitespace boundaries', async () => {
@@ -193,7 +239,7 @@ describe('craft-text-expander', () => {
     type(target, 'Hello @br there');
     target.setSelectionRange(9, 9);
     target.dispatchEvent(new InputEvent('input', {bubbles: true}));
-    await expander.updateComplete;
+    await waitForFirstOption(expander);
     const bubbledKeydown = vi.fn();
     document.addEventListener('keydown', bubbledKeydown);
     target.dispatchEvent(
@@ -207,6 +253,48 @@ describe('craft-text-expander', () => {
     expect(bubbledKeydown).not.toHaveBeenCalled();
   });
 
+  it('selects the first option after the popup closes and reopens', async () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(
+      function (this: HTMLElement) {
+        const expander = this.closest('craft-text-expander');
+        const dialog = expander?.shadowRoot?.querySelector('dialog');
+
+        return dialog?.style.display === 'none' ? 0 : 1;
+      }
+    );
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+
+    type(target, '@b');
+    await vi.waitFor(() => {
+      expect(options(expander)[0]?.getAttribute('aria-selected')).toBe('true');
+    });
+    type(target, '@z');
+    await vi.waitFor(() => {
+      expect(
+        expander.shadowRoot?.querySelector<HTMLDialogElement>('dialog')?.style
+          .display
+      ).toBe('none');
+    });
+    type(target, '@b');
+    await vi.waitFor(() => {
+      expect(
+        expander.shadowRoot?.querySelector<HTMLDialogElement>('dialog')?.style
+          .display
+      ).toBe('');
+    });
+    const enter = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    target.dispatchEvent(enter);
+
+    expect(enter.defaultPrevented).toBe(true);
+    expect(target.value).toBe('@brad');
+  });
+
   it('emits input for the final fallback replacement value', async () => {
     const {expander, target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
@@ -214,7 +302,7 @@ describe('craft-text-expander', () => {
     const values: string[] = [];
 
     type(target, '@b');
-    await expander.updateComplete;
+    await waitForFirstOption(expander);
     target.addEventListener('input', () => values.push(target.value));
     Object.defineProperty(document, 'execCommand', {
       configurable: true,
@@ -236,6 +324,23 @@ describe('craft-text-expander', () => {
     }
   });
 
+  it('honors maxlength when falling back to setRangeText', async () => {
+    const target = document.createElement('textarea');
+    target.maxLength = 3;
+    const {expander} = await createFixture(
+      {'@': {options: [{label: 'Brad', value: '@brad'}]}},
+      target
+    );
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+
+    expect(target.value).toBe('@br');
+  });
+
   it('returns to the input at list boundaries and leaves Tab behavior untouched', async () => {
     const input = document.createElement('input');
     const {expander, target} = await createFixture(
@@ -251,7 +356,7 @@ describe('craft-text-expander', () => {
     );
 
     type(target, '@a');
-    await expander.updateComplete;
+    await waitForFirstOption(expander);
     const firstActive = target.getAttribute('aria-activedescendant');
     expect(firstActive).toBe(options(expander)[0]!.id);
     const up = new KeyboardEvent('keydown', {
@@ -304,7 +409,7 @@ describe('craft-text-expander', () => {
     });
 
     type(target, '@b');
-    await expander.updateComplete;
+    await waitForFirstOption(expander);
     const option = options(expander)[0]!;
     option.dispatchEvent(
       new PointerEvent('pointerdown', {bubbles: true, cancelable: true})
@@ -322,7 +427,7 @@ describe('craft-text-expander', () => {
     });
 
     type(target, '@b');
-    await expander.updateComplete;
+    await waitForFirstOption(expander);
     const option = options(expander)[0]!;
     expect(
       option.dispatchEvent(
@@ -395,6 +500,56 @@ describe('craft-text-expander', () => {
     expect(
       options(expander).map((option) => option.textContent?.trim())
     ).toEqual(['Current']);
+  });
+
+  it('shows static options after canceling an async match', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(actionClient, 'get').mockImplementation(
+      () => new Promise(() => {})
+    );
+    const {expander, target} = await createFixture({
+      ':': {options: [{label: 'Smile', value: '🙂'}]},
+      '@': {source: 'text-expander/options'},
+    });
+
+    type(target, ':sm @br');
+    await expander.updateComplete;
+    target.setSelectionRange(3, 3);
+    document.dispatchEvent(new Event('selectionchange'));
+    await Promise.resolve();
+    await expander.updateComplete;
+
+    expect(
+      options(expander).map((option) => option.textContent?.trim())
+    ).toEqual(['Smile']);
+    expect(
+      expander.querySelector<HTMLElement>('[role="listbox"]')?.hidden
+    ).toBe(false);
+    await vi.waitFor(() => {
+      expect(expander.shadowRoot?.querySelector('[part="loading"]')).toBeNull();
+    });
+  });
+
+  it('reports malformed async responses and clears loading', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(actionClient, 'get').mockResolvedValue({
+      data: {},
+    } as unknown as AxiosResponse<readonly TextExpanderOption[]>);
+    const {expander, target} = await createFixture({
+      '@': {source: 'text-expander/options'},
+    });
+    let detail: TextExpanderErrorDetail | null = null;
+    expander.addEventListener('craft-text-expander-error', (event) => {
+      detail = event.detail;
+    });
+
+    type(target, '@b');
+    await vi.advanceTimersByTimeAsync(150);
+    await Promise.resolve();
+    await expander.updateComplete;
+
+    expect(detail).toMatchObject({error: expect.any(TypeError)});
+    expect(expander.shadowRoot?.querySelector('[part="loading"]')).toBeNull();
   });
 
   it('dispatches provider failures and ignores aborted requests', async () => {
