@@ -10,7 +10,7 @@
 - Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380](https://github.com/craftcms/cms/discussions/19380))
 - Fixed a bug where Yii asset bundles registered with `craft\web\View::registerAssetBundle()` during plugin initialization were not included in rendered pages. ([#19393](https://github.com/craftcms/cms/pull/19393))
 - Fixed a bug where legacy asset bundle dependencies could be rendered after their dependent resources when using `craftcms/yii2-adapter`. ([#19394](https://github.com/craftcms/cms/pull/19394))
-- Fixed a bug where jobs run on the sync queue could remain marked as reserved after completing.
+- Fixed a bug where jobs run on the sync queue could remain marked as reserved after completing. ([#19431](https://github.com/craftcms/cms/pull/19431))
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
