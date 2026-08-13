@@ -965,15 +965,24 @@ readonly class ElementWrites
         $elementModel->dateLastMerged = Query::prepareDateForDb($element->dateLastMerged);
         $elementModel->dateDeleted = Query::prepareDateForDb($element->dateDeleted);
 
+        $now = Query::prepareDateForDb(now());
+
+        // Element timestamps are stored in UTC (see Query::prepareDateForDb(), and the naked
+        // `dateTime` columns the install migration creates), but Eloquent formats and re-parses
+        // date attributes in PHP’s default timezone — which Cms::setDefaultTimezone() sets to the
+        // system timezone. Letting its automatic timestamps manage these columns would write local
+        // time into a UTC column, so set them ourselves.
+        $elementModel->timestamps = false;
+
         if ($isNewElement) {
-            if (isset($element->dateCreated)) {
-                $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
-            }
-            if (isset($element->dateUpdated)) {
-                $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
-            }
+            $elementModel->dateCreated = isset($element->dateCreated)
+                ? Query::prepareDateForDb($element->dateCreated)
+                : $now;
+            $elementModel->dateUpdated = isset($element->dateUpdated)
+                ? Query::prepareDateForDb($element->dateUpdated)
+                : $now;
         } elseif (! $element->resaving || $forceTouch) {
-            $elementModel->dateUpdated = now();
+            $elementModel->dateUpdated = $now;
         }
 
         if ($trackChanges) {
@@ -986,13 +995,18 @@ readonly class ElementWrites
 
         $elementModel->save();
 
-        $dateCreated = DateTimeHelper::toDateTime($elementModel->dateCreated);
+        // Read the timestamps back as they were stored, so DateTimeHelper::toDateTime() applies its
+        // UTC assumption to the raw string. Going through the model’s date attributes would instead
+        // hand it a Carbon that Eloquent already re-parsed in the system timezone, which is what
+        // made a freshly saved element report a different instant than the same element loaded back
+        // out of the database.
+        $dateCreated = DateTimeHelper::toDateTime($elementModel->getRawOriginal('dateCreated'));
 
         if ($dateCreated === false) {
             throw new Exception('There was a problem calculating dateCreated.');
         }
 
-        $dateUpdated = DateTimeHelper::toDateTime($elementModel->dateUpdated);
+        $dateUpdated = DateTimeHelper::toDateTime($elementModel->getRawOriginal('dateUpdated'));
 
         if ($dateUpdated === false) {
             throw new Exception('There was a problem calculating dateUpdated.');

@@ -154,26 +154,32 @@ export function useElementEditPage({saveData}: Options = {}) {
     onSaved: (timestamps) => activity.rebase(timestamps),
   });
 
-  const activity = useElementActivity({
-    url: props.activityUrl,
-    elementType: props.elementType,
-    elementId: props.canonicalId,
-    draftId: props.draftId,
-    siteId: props.siteId,
-    isProvisionalDraft: props.isProvisionalDraft,
-    updatedTimestamps: props.updatedTimestamps,
-  });
-
   /**
    * Whether the draft the screen is working against is provisional — either it
    * loaded that way, or autosave created one on a canonical element (autosave
    * only ever creates provisional drafts).
+   *
+   * Declared above the poller because its first poll runs during setup.
    */
   const draftIsProvisional = computed(
     () =>
       props.isProvisionalDraft ||
       (props.draftId === null && autosave.draftId.value !== null)
   );
+
+  const activity = useElementActivity({
+    url: props.activityUrl,
+    elementType: props.elementType,
+    elementId: props.canonicalId,
+    // Autosave can create a provisional draft mid-session, and from then on
+    // that's the element the screen is editing — so the poll has to ask about
+    // it, not the canonical, or its timestamps won't be the ones the autosave
+    // response re-baselined against.
+    draftId: () => autosave.draftId.value ?? props.draftId,
+    siteId: props.siteId,
+    isProvisionalDraft: () => draftIsProvisional.value,
+    updatedTimestamps: props.updatedTimestamps,
+  });
 
   // Applying a draft consumes it, and Inertia preserves this component across
   // the visit, so the server's view of the draft is authoritative afterwards.

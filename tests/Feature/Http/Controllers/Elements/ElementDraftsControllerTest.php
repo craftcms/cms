@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -387,6 +388,43 @@ describe('store', function () {
                 'updatedTimestamp',
                 'canonicalUpdatedTimestamp',
             ]);
+    });
+
+    it('reports the same updated timestamp that recent activity reads back', function () {
+        // The two only disagree when the system timezone isn’t UTC: the element carries the
+        // `dateUpdated` it was saved with, while recent activity re-reads it from the database.
+        Cms::config()->timezone('America/Chicago');
+        Cms::setDefaultTimezone();
+
+        expect(date_default_timezone_get())->toBe('America/Chicago');
+
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+        $response = postJson(
+            cp_url('actions/elements/save-draft'),
+            elementDraftsControllerPayload($entry, [
+                'title' => 'Timestamped Draft Title',
+                'slug' => 'timestamped-draft-title',
+            ]),
+        )->assertOk();
+
+        // Only one request per test — the controllers constructor-inject ElementRequest, so a
+        // second POST in this process would resolve against the first request’s params. This is
+        // the same read elements/recent-activity performs to report its `updatedTimestamp`.
+        /** @var Entry $draft */
+        $draft = Entry::find()
+            ->id($response->json('elementId'))
+            ->drafts()
+            ->status(null)
+            ->one();
+
+        expect($response->json('updatedTimestamp'))->toBe($draft->dateUpdated->getTimestamp())
+            // …and both describe the moment the draft was actually saved, rather than agreeing on
+            // an instant that’s a timezone offset away from it.
+            ->and(abs($response->json('updatedTimestamp') - now()->getTimestamp()))->toBeLessThan(30);
     });
 
     it('forbids saving a peer draft without save permission', function () {
