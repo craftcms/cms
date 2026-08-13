@@ -64,6 +64,8 @@ export default class CraftCallout extends LitElement {
           <slot></slot>
         </div>
       </div>
+      
+      <div class="callout__action"><slot name="action"></slot></div>
     `;
   }
 }

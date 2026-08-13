@@ -13,7 +13,7 @@ export default css`
     --c-color-on-quiet: var(--c-color-neutral-on-quiet);
     --_radius: var(--c-callout-radius, var(--c-radius-md));
     display: flex;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
     align-items: start;
     padding: var(--c-spacing-sm) var(--c-spacing-md);
     border: 1px solid transparent;
@@ -22,10 +22,15 @@ export default css`
   .callout__body {
     display: grid;
     gap: var(--c-spacing-sm);
+    flex: 1;
   }
 
   .callout__title {
     font-weight: bold;
+  }
+  
+  .callout__action {
+    margin-inline-start: auto;
   }
 
   .callout__icon {
