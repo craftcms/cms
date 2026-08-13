@@ -1,14 +1,14 @@
 import Combobox from '@github/combobox-nav';
-import {OverlayController} from '@lion/ui/overlays.js';
 import {InputRange} from 'dom-input-range';
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {actionClient} from '@src/utilities/api/actionClient';
 import {t} from '@src/utilities/translate';
-import {containingBlockCorrection} from '@src/utilities/containing-block-correction.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
+import type CraftPopover from '../popover/popover.js';
 import styles from './text-expander.styles.js';
 import '../option/option.js';
+import '../popover/popover.js';
 
 export interface TextExpanderOption<Data = unknown> {
   label: string;
@@ -73,6 +73,10 @@ const targetAttributes = [
   'aria-activedescendant',
   'aria-busy',
 ] as const;
+const popoverConfig = {
+  handlesAccessibility: false,
+  visibilityTriggerFunction: undefined,
+};
 
 let nextId = 0;
 
@@ -99,17 +103,13 @@ export default class CraftTextExpander extends LitElement {
   @state() private loading = false;
   @state() private announcement = '';
 
-  @query('.text-expander__popup')
-  private popup!: HTMLElement;
-
-  @query('#overlay-content-node-wrapper')
-  private popupWrapper!: HTMLElement;
+  @query('craft-popover')
+  private popoverElement!: CraftPopover;
 
   #listbox!: HTMLDivElement;
   #boundTarget: TextExpanderTarget | null = null;
   #combobox: Combobox | null = null;
   #originalAttributes = new Map<string, string | null>();
-  #overlay: OverlayController | null = null;
   #match: TextExpanderMatch | null = null;
   #visibleOptions: readonly TextExpanderOption[] = [];
   #request = 0;
@@ -168,8 +168,12 @@ export default class CraftTextExpander extends LitElement {
 
   protected override render() {
     return html`
-      <div id="overlay-content-node-wrapper">
-        <div class="text-expander__popup" part="popup">
+      <craft-popover
+        exportparts="popup"
+        .config=${popoverConfig}
+        @craft-hide=${this.#onPopoverHide}
+      >
+        <div class="text-expander__popup" slot="content">
           ${this.loading
             ? html`<div class="text-expander__loading" part="loading">
                 <slot name="loading">${t('Loading')}</slot>
@@ -177,7 +181,7 @@ export default class CraftTextExpander extends LitElement {
             : nothing}
           <slot name="listbox"></slot>
         </div>
-      </div>
+      </craft-popover>
       <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">
         ${this.announcement}
       </div>
@@ -229,40 +233,10 @@ export default class CraftTextExpander extends LitElement {
       'selectionchange',
       this.#onSelectionChange
     );
-    target.ownerDocument.addEventListener(
-      'pointerdown',
-      this.#onDocumentPointerDown,
-      true
-    );
-    const overlayConfig: NonNullable<
-      ConstructorParameters<typeof OverlayController>[0]
-    > = {
-      contentNode: this.popup,
-      contentWrapperNode: this.popupWrapper,
-      invokerNode: target,
-      referenceNode: {
-        contextElement: target,
-        getBoundingClientRect: () => this.#caretRect,
-      } as unknown as HTMLElement,
-      placementMode: 'local',
-      hidesOnOutsideClick: false,
-      hidesOnEsc: false,
-      handlesAccessibility: false,
-      popperConfig: {
-        strategy: 'fixed',
-        placement: 'bottom-start',
-        modifiers: [
-          {name: 'offset', options: {offset: [0, 4]}},
-          {name: 'computeStyles', options: {gpuAcceleration: false}},
-          containingBlockCorrection,
-        ],
-      },
+    this.popoverElement.anchor = {
+      contextElement: target,
+      getBoundingClientRect: () => this.#caretRect,
     };
-    if (this.#overlay) {
-      this.#overlay.updateConfig(overlayConfig);
-    } else {
-      this.#overlay = new OverlayController(overlayConfig);
-    }
     this.#observeTarget();
   }
 
@@ -293,14 +267,8 @@ export default class CraftTextExpander extends LitElement {
       'selectionchange',
       this.#onSelectionChange
     );
-    target.ownerDocument.removeEventListener(
-      'pointerdown',
-      this.#onDocumentPointerDown,
-      true
-    );
     this.#inputRange?.getStyleClone().disconnect();
     this.#inputRange = null;
-    this.#overlay?.teardown();
     this.#combobox?.destroy();
     this.#combobox = null;
     this.#restoreTargetAttributes(target);
@@ -400,33 +368,9 @@ export default class CraftTextExpander extends LitElement {
     this.#positionPopup();
   };
 
-  #onDocumentPointerDown = (event: Event): void => {
-    const path = event.composedPath();
-    if (
-      this.#match &&
-      !path.includes(this.#boundTarget as EventTarget) &&
-      !path.includes(this) &&
-      !path.includes(this.#listbox)
-    ) {
-      this.#close();
-    }
-  };
-
   #onKeyDown: EventListener = (rawEvent): void => {
     const event = rawEvent as KeyboardEvent;
     if (!this.#match) {
-      return;
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      this.#close();
-      return;
-    }
-
-    if (event.key === 'Tab') {
-      this.#close();
       return;
     }
 
@@ -453,6 +397,16 @@ export default class CraftTextExpander extends LitElement {
 
   #onComboboxCommit = (event: Event): void => {
     this.#select(Number((event.target as HTMLElement).dataset.index));
+  };
+
+  #onPopoverHide = (event: Event): void => {
+    if (event.target !== this.popoverElement) {
+      return;
+    }
+
+    this.#cancelPending();
+    this.#match = null;
+    this.#resetPopup();
   };
 
   #evaluate(): void {
@@ -650,7 +604,7 @@ export default class CraftTextExpander extends LitElement {
     if (target instanceof HTMLInputElement) {
       target.setAttribute('aria-expanded', 'true');
     }
-    await this.#overlay?.show(target);
+    await this.popoverElement.show();
     if (!this.#match || target !== this.#boundTarget) {
       return;
     }
@@ -693,7 +647,7 @@ export default class CraftTextExpander extends LitElement {
     this.#inputRange.setStartOffset(position);
     this.#inputRange.setEndOffset(position);
     this.#caretRect = this.#inputRange.getBoundingClientRect();
-    this.#overlay?._popper?.update();
+    this.popoverElement.repositionOverlay();
     return true;
   }
 
@@ -704,6 +658,11 @@ export default class CraftTextExpander extends LitElement {
   }
 
   #closePopup(): void {
+    this.#resetPopup();
+    void this.popoverElement.hide();
+  }
+
+  #resetPopup(): void {
     this.loading = false;
     this.#stopCombobox();
     this.#visibleOptions = [];
@@ -711,8 +670,6 @@ export default class CraftTextExpander extends LitElement {
     if (this.#listbox) {
       this.#listbox.hidden = false;
     }
-    void this.#overlay?.hide();
-
     const target = this.#boundTarget;
     if (target) {
       this.#restoreTargetAttribute(target, 'aria-activedescendant');

@@ -5,14 +5,12 @@ export default css`
     display: contents;
   }
 
-  .text-expander__popup {
+  craft-popover::part(popup) {
+    min-width: 0;
     max-width: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
-    max-height: 40vh;
-    overflow: auto;
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
+  }
+
+  .text-expander__popup {
     padding: var(--c-spacing-sm);
   }
 

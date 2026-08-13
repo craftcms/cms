@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftPopover from './popover.js';
 import './popover.js';
 
@@ -52,6 +52,46 @@ describe('craft-popover', () => {
     });
 
     expect(popover._overlayInvokerNode).toBe(anchor);
+  });
+
+  it('uses a virtual anchor context element as its invoker', async () => {
+    let reference!: {
+      contextElement: HTMLElement;
+      getBoundingClientRect(): DOMRect;
+    };
+    const {popover, button} = await createFixture(
+      (configuredPopover, configuredButton) => {
+        reference = {
+          contextElement: configuredButton,
+          getBoundingClientRect: () => new DOMRect(10, 20),
+        };
+        configuredPopover.anchor = reference;
+      }
+    );
+
+    expect(popover._overlayInvokerNode).toBe(button);
+    expect(popover._overlayReferenceNode).toBe(reference);
+  });
+
+  it('corrects viewport coordinates rebased by a containing block', async () => {
+    const {popover} = await createFixture();
+    const correction = popover
+      ._defineOverlayConfig()
+      .popperConfig.modifiers.find(
+        (modifier) => modifier.name === 'containingBlockCorrection'
+      ) as {fn: (options: {state: {elements: {popper: HTMLElement}}}) => void};
+    const pane = document.createElement('div');
+    pane.style.left = '100px';
+    pane.style.top = '200px';
+    vi.spyOn(pane, 'getBoundingClientRect').mockReturnValue({
+      x: 120,
+      y: 230,
+    } as DOMRect);
+
+    correction.fn({state: {elements: {popper: pane}}});
+
+    expect(pane.style.left).toBe('80px');
+    expect(pane.style.top).toBe('170px');
   });
 
   it('tracks opened state through show() and hide()', async () => {

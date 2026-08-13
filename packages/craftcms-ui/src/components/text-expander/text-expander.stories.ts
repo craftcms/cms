@@ -50,7 +50,10 @@ export const TextInput: Story = {
   play: async ({canvas, canvasElement, userEvent}) => {
     const input = canvas.getByRole('combobox');
     const expander = canvasElement.querySelector('craft-text-expander')!;
-    const dialog = expander.shadowRoot!.querySelector('dialog')!;
+    const popover = expander.shadowRoot!.querySelector('craft-popover')!;
+    const popup = popover.shadowRoot!.querySelector('[part="popup"]')!;
+
+    await expect(getComputedStyle(popup).minWidth).toBe('0px');
 
     await userEvent.type(input, '@a');
     await waitFor(() =>
@@ -60,7 +63,11 @@ export const TextInput: Story = {
     );
     await userEvent.clear(input);
     await userEvent.type(input, '@z');
-    await waitFor(() => expect(dialog.style.display).toBe('none'));
+    await waitFor(() =>
+      expect(popover.shadowRoot!.querySelector('dialog')?.style.display).toBe(
+        'none'
+      )
+    );
     await userEvent.clear(input);
     await userEvent.type(input, '@a');
     await waitFor(() =>

@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {InputRange} from 'dom-input-range';
 import type {AxiosResponse} from 'axios';
 import {actionClient} from '@src/utilities/api/actionClient';
+import type CraftPopover from '../popover/popover.js';
 import type CraftTextExpander from './text-expander.js';
 import type {
   TextExpanderOption,
@@ -40,6 +41,14 @@ function type(target: Target, value: string): void {
 
 function options(expander: CraftTextExpander): HTMLElement[] {
   return Array.from(expander.querySelectorAll('craft-option'));
+}
+
+function popover(expander: CraftTextExpander): CraftPopover {
+  return expander.shadowRoot!.querySelector('craft-popover')!;
+}
+
+function dialog(expander: CraftTextExpander): HTMLDialogElement | null {
+  return popover(expander).shadowRoot!.querySelector('dialog');
 }
 
 async function waitForFirstOption(expander: CraftTextExpander): Promise<void> {
@@ -158,7 +167,9 @@ describe('craft-text-expander', () => {
     await Promise.resolve();
     type(target, '@b');
 
-    expect(expander.shadowRoot?.querySelectorAll('dialog')).toHaveLength(1);
+    expect(
+      popover(expander).shadowRoot?.querySelectorAll('dialog')
+    ).toHaveLength(1);
   });
 
   it('preserves textarea semantics', async () => {
@@ -257,7 +268,11 @@ describe('craft-text-expander', () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(
       function (this: HTMLElement) {
         const expander = this.closest('craft-text-expander');
-        const dialog = expander?.shadowRoot?.querySelector('dialog');
+        const dialog = expander
+          ? popover(expander as CraftTextExpander).shadowRoot?.querySelector(
+              'dialog'
+            )
+          : null;
 
         return dialog?.style.display === 'none' ? 0 : 1;
       }
@@ -272,17 +287,11 @@ describe('craft-text-expander', () => {
     });
     type(target, '@z');
     await vi.waitFor(() => {
-      expect(
-        expander.shadowRoot?.querySelector<HTMLDialogElement>('dialog')?.style
-          .display
-      ).toBe('none');
+      expect(dialog(expander)?.style.display).toBe('none');
     });
     type(target, '@b');
     await vi.waitFor(() => {
-      expect(
-        expander.shadowRoot?.querySelector<HTMLDialogElement>('dialog')?.style
-          .display
-      ).toBe('');
+      expect(dialog(expander)?.style.display).toBe('');
     });
     const enter = new KeyboardEvent('keydown', {
       key: 'Enter',
@@ -293,6 +302,40 @@ describe('craft-text-expander', () => {
 
     expect(enter.defaultPrevented).toBe(true);
     expect(target.value).toBe('@brad');
+  });
+
+  it('closes the popup with Escape', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
+    );
+    target.dispatchEvent(
+      new KeyboardEvent('keyup', {key: 'Escape', bubbles: true})
+    );
+
+    await vi.waitFor(() => expect(options(expander)).toHaveLength(0));
+    expect(popover(expander).opened).toBe(false);
+  });
+
+  it('closes the popup when clicking outside', async () => {
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+    const outside = document.createElement('button');
+    document.body.append(outside);
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    outside.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
+    outside.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}));
+
+    await vi.waitFor(() => expect(options(expander)).toHaveLength(0));
+    expect(popover(expander).opened).toBe(false);
   });
 
   it('emits input for the final fallback replacement value', async () => {
@@ -389,6 +432,11 @@ describe('craft-text-expander', () => {
     target.dispatchEvent(tab);
     expect(tab.defaultPrevented).toBe(false);
     expect(target.value).toBe('@a');
+    expect(target.getAttribute('aria-expanded')).toBe('true');
+
+    target.blur();
+    await Promise.resolve();
+
     expect(target.getAttribute('aria-expanded')).toBe('false');
     expect(options(expander)).toHaveLength(0);
   });
