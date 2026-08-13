@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
@@ -1042,27 +1043,7 @@ JS,
         return array_merge([
             t('ID') => fn () => $this->id ?? false,
             t('Status') => function () {
-                if (! static::hasStatuses()) {
-                    return false;
-                }
-                if ($this->getIsDraft() && ! $this->isProvisionalDraft) {
-                    $icon = Html::tag('span', '', [
-                        'data' => ['icon' => 'draft'],
-                        'aria' => ['hidden' => 'true'],
-                    ]);
-                    $label = t('Draft');
-                } else {
-                    $status = $this->getStatus();
-                    $statusDef = static::statuses()[$status] ?? null;
-                    $color = $statusDef['color'] ?? $status;
-                    if ($color instanceof Color) {
-                        $color = $color->value;
-                    }
-                    $icon = Html::tag('span', '', ['class' => ['status', $color]]);
-                    $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
-                }
-
-                return $icon.Html::tag('span', $label);
+                return app(StatusHtml::class)->componentStatusLabelHtml($this);
             },
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
