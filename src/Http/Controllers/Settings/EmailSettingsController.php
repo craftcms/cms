@@ -7,11 +7,22 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Heading;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Requests\EmailSettingsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,20 +39,11 @@ readonly class EmailSettingsController
     public function __construct(
         private ProjectConfig $projectConfig,
         private Sites $sites,
+        private FormResolver $formResolver,
     ) {}
 
     public function index(GeneralConfig $generalConfig): CpScreenResponse
     {
-        $sites = [];
-        if ($this->sites->isMultiSite()) {
-            foreach ($this->sites->getAllSites() as $site) {
-                $sites[] = [
-                    'uid' => $site->uid,
-                    'name' => $site->getUiLabel(),
-                ];
-            }
-        }
-
         return new CpScreenResponse()
             ->title(t('Email Settings'))
             ->crumbs([
@@ -50,11 +52,11 @@ readonly class EmailSettingsController
             ])
             ->redirectUrl('settings')
             ->inertiaPage('settings/Email', [
-                'emailConfig' => $this->projectConfig->get('email') ?? [],
-                'mailerOptions' => $this->getMailerOptions(),
-                'envSuggestions' => SelectOptions::getEnvSuggestions(),
-                'templateSuggestions' => SelectOptions::getTemplateSuggestions(),
-                'sites' => $sites,
+                'form' => $this->emailSettingsForm($generalConfig),
+                'submit' => [
+                    'method' => 'post',
+                    'url' => action([self::class, 'store']),
+                ],
                 'defaultToEmail' => currentUser()?->asElement()->email,
             ]);
     }
@@ -105,9 +107,135 @@ readonly class EmailSettingsController
         return $this->asSuccess(t('Email sent successfully! Check your inbox.'));
     }
 
+    private function emailSettingsForm(GeneralConfig $generalConfig): FormPayload
+    {
+        $environmentOptions = SelectOptions::getEnvSuggestions();
+        $templateOptions = [
+            ...SelectOptions::getTemplateSuggestions(),
+            ...$environmentOptions,
+        ];
+        $environmentTip = sprintf(
+            '%s [%s](%s)',
+            t('This can begin with an environment variable.'),
+            t('Learn more'),
+            'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
+        );
+        $form = Form::make([
+            Field::make(t('System Email Address'), Combobox::make('fromEmail')
+                ->options($environmentOptions)
+                ->showAllOnEmpty())
+                ->instructions(t('The email address Craft CMS will use when sending email.'))
+                ->required()
+                ->tip($environmentTip),
+            Field::make(t('Sender Name'), Combobox::make('fromName')
+                ->options($environmentOptions)
+                ->showAllOnEmpty())
+                ->instructions(t('The “From” name Craft CMS will use when sending email.'))
+                ->required()
+                ->tip($environmentTip),
+            Field::make(t('Reply-To Address'), Combobox::make('replyToEmail')
+                ->options($environmentOptions)
+                ->showAllOnEmpty())
+                ->instructions(t('The Reply-To email address Craft CMS should use when sending email.'))
+                ->tip($environmentTip),
+            Field::make(t('HTML Email Template'), Combobox::make('template')
+                ->options($templateOptions)
+                ->showAllOnEmpty())
+                ->instructions(t('The template Craft CMS will use for HTML emails. Leave blank to use the default template.'))
+                ->tip($environmentTip),
+        ])->when(
+            $this->sites->isMultiSite(),
+            fn (Form $form): Form => $form->add(
+                Separator::make('site-overrides-separator'),
+                Heading::make('site-overrides-heading', t('Site Overrides'))
+                    ->description(t('Override the default email settings on a per-site basis. Blank values will use the defaults above.')),
+                $this->siteOverridesTable($environmentOptions, $templateOptions),
+            ),
+        )->add(
+            Separator::make('mailer-separator'),
+            Field::make(t('Mailer'), Combobox::make('mailer')
+                ->options([
+                    ...$this->getMailerOptions(),
+                    ...$environmentOptions,
+                ])
+                ->showAllOnEmpty())
+                ->instructions(t('How should Craft CMS send the emails?'))
+                ->tip($environmentTip),
+        );
+
+        return $this->formResolver->resolve($form, new FormContext(
+            values: $this->emailSettingsValues(),
+            mode: $generalConfig->allowAdminChanges ? ControlMode::Editable : ControlMode::ReadOnly,
+        ));
+    }
+
     /**
-     * @return array<int, array{value: string|null, label: string}>
+     * @param  list<array<string, mixed>>  $environmentOptions
+     * @param  list<array<string, mixed>>  $templateOptions
      */
+    private function siteOverridesTable(array $environmentOptions, array $templateOptions): Field
+    {
+        return Field::make(control: Table::make('siteOverrides')
+            ->keyed()
+            ->columns([
+                'site' => ['heading' => t('Site'), 'type' => 'heading'],
+                'fromEmail' => [
+                    'heading' => t('System Email Address'),
+                    'type' => 'autosuggest',
+                    'options' => $environmentOptions,
+                    'suggestEnvVars' => true,
+                ],
+                'fromName' => [
+                    'heading' => t('Sender Name'),
+                    'type' => 'autosuggest',
+                    'options' => $environmentOptions,
+                    'suggestEnvVars' => true,
+                ],
+                'replyToEmail' => [
+                    'heading' => t('Reply-To Address'),
+                    'type' => 'autosuggest',
+                    'options' => $environmentOptions,
+                    'suggestEnvVars' => true,
+                ],
+                'template' => [
+                    'heading' => t('HTML Email Template'),
+                    'type' => 'template',
+                    'options' => $templateOptions,
+                    'suggestEnvVars' => true,
+                ],
+            ]));
+    }
+
+    /** @return array<string, mixed> */
+    private function emailSettingsValues(): array
+    {
+        $config = $this->projectConfig->get('email') ?? [];
+        $siteOverrides = [];
+
+        if ($this->sites->isMultiSite()) {
+            foreach ($this->sites->getAllSites() as $site) {
+                $override = $config['siteOverrides'][$site->uid] ?? [];
+                $siteOverrides[$site->uid] = [
+                    'site' => Html::encode($site->getUiLabel()),
+                    'fromEmail' => $override['fromEmail'] ?? '',
+                    'fromName' => $override['fromName'] ?? '',
+                    'replyToEmail' => $override['replyToEmail'] ?? '',
+                    'template' => $override['template'] ?? '',
+                ];
+            }
+        }
+
+        return [
+            'fromEmail' => $config['fromEmail'] ?? '',
+            'fromName' => $config['fromName'] ?? '',
+            'replyToEmail' => $config['replyToEmail'] ?? '',
+            'template' => $config['template'] ?? '',
+            'siteOverrides' => $siteOverrides,
+            'mailer' => $config['mailer'] ?? '',
+        ];
+    }
+
+    /** @return list<array{value: string, label: string}> */
     private function getMailerOptions(): array
     {
         $mailers = config('mail.mailers', []);

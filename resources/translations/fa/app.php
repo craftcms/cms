@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'جستجو در زیر پوشه ها',
     'Search plugins' => 'جستجوی پلاگین ها',
     'Search' => 'جستجو',
+    'Secondary' => 'Secondary',
     'Seconds' => 'ثانیه',
     'Section - {section}' => 'بخش - {section}',
     'Section Type' => 'نوع بخش',

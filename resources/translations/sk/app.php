@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Hľadať v podpriečinkoch',
     'Search plugins' => 'Hľadať v doplnkoch',
     'Search' => 'Hľadať',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Sekundy',
     'Section - {section}' => 'Sekcia - {section}',
     'Section Type' => 'Typ Sekcie',

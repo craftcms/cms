@@ -25,6 +25,7 @@ it('resolves and renders selected, inherited, and nested permissions', function 
     ]))];
     $form = Form::make([
         Field::make('Permissions', PermissionTree::make('permissions')
+            ->ariaLabel('Permissions')
             ->groups($groups)
             ->lockedPermissions(['editEntries'])
             ->value(['viewEntries'])),
@@ -36,6 +37,7 @@ it('resolves and renders selected, inherited, and nested permissions', function 
 
     expect($control?->component)->toBe('craft:permission-tree')
         ->and($control?->props['groups'][0]['keys'])->toBe(['viewEntries', 'editEntries'])
+        ->and($crawler->filter('[role="group"][aria-label="Permissions"]'))->toHaveCount(1)
         ->and(json_decode((string) $permissionTree->attr('locked-permissions'), true))->toBe(['editEntries'])
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions]"][value=""]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="hidden"][name="settings[permissions][]"][value="viewEntries"]'))->toHaveCount(1);
