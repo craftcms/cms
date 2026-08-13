@@ -939,9 +939,14 @@ describe('FormRenderer', () => {
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
     expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
     expect(tab?.getAttribute('aria-label')).toBe('Content');
-    expect(tab?.getAttribute('aria-labelledby')).toBe(
+    // `craft-tabs` pairs the two in external-panel mode: the tab points at the
+    // panel id this component assigned, and the panel back at the tab's own id
+    // — which the strip generates, so it's matched rather than spelled out.
+    expect(tabButtons[0]?.getAttribute('aria-controls')).toBe(
       'form-tab-tab-content-tab'
     );
+    expect(tab?.getAttribute('aria-labelledby')).toBe(tabButtons[0]?.id);
+    expect(tabButtons[0]?.id).toBeTruthy();
     expect(tab?.classList).not.toContain('hidden');
     expect(seoTab?.classList).toContain('hidden');
 
@@ -952,8 +957,13 @@ describe('FormRenderer', () => {
     expect(seoTab?.classList).not.toContain('hidden');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('true');
 
+    // `craft-tabs` claims the navigation keys on keydown but moves the
+    // selection on keyup, so a realistic press is both.
     tabButtons[1]!.dispatchEvent(
       new KeyboardEvent('keydown', {key: 'Home', bubbles: true})
+    );
+    tabButtons[1]!.dispatchEvent(
+      new KeyboardEvent('keyup', {key: 'Home', bubbles: true})
     );
     await nextTick();
 

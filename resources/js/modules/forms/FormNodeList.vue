@@ -3,7 +3,7 @@ import "@craftcms/ui/components/button/button";
 import "@craftcms/ui/components/button-group/button-group";
 import "@craftcms/ui/components/icon/icon";
 import { t } from "@craftcms/ui/utilities/translate";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import FormNode from "./FormNode.vue";
 import { formTabPanelId, pathsMatch } from "./runtime";
 import type { FormChange, FormNodePayload, FormPayload } from "./types";
@@ -19,7 +19,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "change", change: FormChange): void;
 }>();
-const tablist = ref<HTMLElement>();
 const tabs = computed(() =>
   props.nodes.filter(
     (node): node is FormNodePayload<{ label: string }> & { uid: string } =>
@@ -61,42 +60,30 @@ function nodeHasErrors(node: FormNodePayload): boolean {
   );
 }
 
-function onTabKeydown(event: KeyboardEvent, index: number): void {
-  let nextIndex: number;
+/**
+ * `craft-tabs` owns the selection — clicks, keyboard navigation, and the
+ * overflow menu all resolve to a `selectedIndex` — so the panel visibility
+ * this component drives follows the strip rather than tracking the
+ * interactions itself.
+ */
+function onSelectionChanged(event: Event): void {
+  const index = (event.target as {selectedIndex?: number} | null)
+    ?.selectedIndex;
+  const tab = index === undefined ? undefined : tabs.value[index];
 
-  if (event.key === "Home") {
-    nextIndex = 0;
-  } else if (event.key === "End") {
-    nextIndex = tabs.value.length - 1;
-  } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-    const rtl =
-      getComputedStyle(event.currentTarget as Element).direction === "rtl";
-    const previous = event.key === (rtl ? "ArrowRight" : "ArrowLeft");
-    nextIndex =
-      (index + (previous ? -1 : 1) + tabs.value.length) % tabs.value.length;
-  } else {
-    return;
+  if (tab) {
+    activeTab.value = tab.uid;
   }
-
-  event.preventDefault();
-  activeTab.value = tabs.value[nextIndex]!.uid;
-  nextTick(() =>
-    tablist.value
-      ?.querySelectorAll<HTMLElement>('[role="tab"]')
-      [nextIndex]?.focus(),
-  );
 }
 </script>
 
 <template>
-  <craft-tabs v-if="tabs.length > 1">
+  <craft-tabs v-if="tabs.length > 1" @selected-changed="onSelectionChanged">
     <craft-tab
-      v-for="(tab, index) in tabs"
+      v-for="tab in tabs"
       slot="tab"
       :key="tab.uid"
       :controls="`${tabPanelId(tab)}-tab`"
-      @click="activeTab = tab.uid"
-      @keydown="onTabKeydown($event, index)"
     >
       {{ tab.props.label }}
       <craft-icon
