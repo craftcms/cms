@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\View\TemplateManager;
+use Twig\Error\RuntimeError;
 
 beforeEach(function () {
     $this->manager = app(TemplateManager::class);
@@ -84,5 +85,37 @@ describe('has every', function () {
         );
 
         expect(trim($result))->toBe('all active');
+    });
+});
+
+describe('sandbox', function () {
+    it('rejects a non-Closure callable passed to has some', function () {
+        $this->manager->renderSandboxedString(
+            '{% if {x: "y"} has some "str_contains" %}yes{% else %}no{% endif %}',
+        );
+    })->throws(RuntimeError::class, 'The callable passed to the "has some" operator must be a Closure in sandbox mode');
+
+    it('rejects a non-Closure callable passed to has every', function () {
+        $this->manager->renderSandboxedString(
+            '{% if {x: "y"} has every "str_contains" %}yes{% else %}no{% endif %}',
+        );
+    })->throws(RuntimeError::class, 'The callable passed to the "has every" operator must be a Closure in sandbox mode');
+
+    it('still allows arrow functions with has some when sandboxed', function () {
+        $result = $this->manager->renderSandboxedString(
+            '{% if items has some v => v > 3 %}yes{% else %}no{% endif %}',
+            ['items' => [1, 2, 3, 4, 5]],
+        );
+
+        expect(trim($result))->toBe('yes');
+    });
+
+    it('still allows arrow functions with has every when sandboxed', function () {
+        $result = $this->manager->renderSandboxedString(
+            '{% if items has every v => v > 0 %}yes{% else %}no{% endif %}',
+            ['items' => [1, 2, 3]],
+        );
+
+        expect(trim($result))->toBe('yes');
     });
 });
