@@ -65,14 +65,21 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateGlobals;
 use DirectoryIterator;
+use DOMDocument;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
+use Imagick;
 use InvalidArgumentException;
 use Money\Money;
+use mysqli;
 use Override;
+use PDO;
+use Reflector;
 use SimpleXMLElement;
+use SoapClient;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Twig\Environment as TwigEnvironment;
@@ -84,6 +91,8 @@ use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use XMLReader;
+use XSLTProcessor;
 use yii\behaviors\AttributeTypecastBehavior;
 
 use function CraftCms\Cms\craftAsset;
@@ -493,9 +502,18 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             /** @phpstan-ignore-next-line */
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
+            DOMDocument::class,
+            XMLReader::class,
+            XSLTProcessor::class,
+            SoapClient::class,
+            GuzzleClient::class,
+            PDO::class,
+            mysqli::class,
+            Imagick::class,
             Process::class,
             FnStream::class,
             SimpleXMLElement::class,
+            Reflector::class,
         ] as $blockedClass) {
             if (is_a($class, $blockedClass, true)) {
                 throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
