@@ -83,9 +83,11 @@ describe('craft-text-expander', () => {
     )!;
 
     expect(getComputedStyle(popup).minWidth).toBe('');
-    expect(
-      new InputRange(target).getStyleClone().element.parentElement?.slot
-    ).toBe(target.slot);
+    await vi.waitFor(() =>
+      expect(
+        new InputRange(target).getStyleClone().element.parentElement?.slot
+      ).toBe(target.slot)
+    );
     const positionCalls = getBoundingClientRect.mock.calls.length;
     new InputRange(target).getStyleClone().dispatchEvent(new Event('update'));
     expect(getBoundingClientRect.mock.calls.length).toBeGreaterThan(
@@ -439,6 +441,37 @@ describe('craft-text-expander', () => {
 
     expect(target.getAttribute('aria-expanded')).toBe('false');
     expect(options(expander)).toHaveLength(0);
+  });
+
+  it('announces the active option while focus remains on the input', async () => {
+    const input = document.createElement('input');
+    const {expander, target} = await createFixture(
+      {
+        '@': {
+          options: [
+            {label: 'Brad Bell', value: '@brad'},
+            {label: 'Brandon Kelly', value: '@brandon'},
+          ],
+        },
+      },
+      input
+    );
+    const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
+
+    type(target, '@b');
+    await vi.waitFor(() =>
+      expect(liveRegion.textContent?.trim()).toBe('Brad Bell, 1 of 2 options')
+    );
+
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
+    );
+    await vi.waitFor(() =>
+      expect(liveRegion.textContent?.trim()).toBe(
+        'Brandon Kelly, 2 of 2 options'
+      )
+    );
+    expect(document.activeElement).toBe(target);
   });
 
   it('selects rich options with a pointer without moving focus', async () => {

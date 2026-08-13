@@ -197,6 +197,7 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.setAttribute('aria-label', t('Suggestions'));
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
+    this.#listbox.addEventListener('combobox-select', this.#onComboboxSelect);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
     this.append(this.#listbox);
   }
@@ -399,6 +400,19 @@ export default class CraftTextExpander extends LitElement {
     this.#select(Number((event.target as HTMLElement).dataset.index));
   };
 
+  #onComboboxSelect = (event: Event): void => {
+    const index = Number((event.target as HTMLElement).dataset.index);
+    const option = this.#visibleOptions[index]!;
+
+    this.#announce(
+      t('{label}, {position, number} of {total, number} options', {
+        label: option.label,
+        position: index + 1,
+        total: this.#visibleOptions.length,
+      })
+    );
+  };
+
   #onPopoverHide = (event: Event): void => {
     if (event.target !== this.popoverElement) {
       return;
@@ -594,6 +608,7 @@ export default class CraftTextExpander extends LitElement {
   }
 
   async #openPopup(): Promise<void> {
+    await this.popoverElement.updateComplete;
     const target = this.#boundTarget;
     if (!target || !this.#positionPopup()) {
       this.#close();
