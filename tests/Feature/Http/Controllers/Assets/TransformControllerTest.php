@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
@@ -25,6 +29,60 @@ beforeEach(function () {
 });
 
 describe('generate', function () {
+    it('serves Craft driver renditions from filesystems without URLs', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => test()->volume->id,
+            'folderId' => test()->folder->id,
+            'filename' => 'private-transform.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+        $transformer = app(ImageTransformer::class);
+        $transform = new ImageTransform(['width' => 100]);
+        $index = $transformer->getTransformIndex($asset, $transform);
+        $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+        $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+        $index->fileExists = true;
+        $transformer->storeTransformIndexData($index);
+
+        get(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
+            ->assertForbidden();
+
+        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+        get($result->url)
+            ->assertOk()
+            ->assertStreamedContent('transform-bytes');
+    });
+
+    it('rejects invalid private transform tokens', function () {
+        get(action([TransformController::class, 'generate'], ['transformToken' => 'invalid']))
+            ->assertStatus(400);
+    });
+
+    it('generates Craft driver renditions from private sources', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => test()->volume->id,
+            'folderId' => test()->folder->id,
+            'filename' => 'private-source.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+        $asset->getVolume()->sourceDisk()->put(
+            $asset->getPath(),
+            file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
+        );
+        Cms::config()->generateTransformsBeforePageLoad(true);
+
+        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+        get($result->url)->assertOk();
+    });
+
     it('forbids anonymous access', function () {
         $asset = AssetModel::factory()->create([
             'volumeId' => test()->volume->id,

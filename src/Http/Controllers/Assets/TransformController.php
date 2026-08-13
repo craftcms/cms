@@ -29,10 +29,24 @@ readonly class TransformController
     use EnforcesPermissions;
     use RespondsWithFlash;
 
+    public function __construct(private ImageTransformer $imageTransformer) {}
+
     public function generate(Request $request): Response
     {
-        if ($transformId = $request->integer('transformId')) {
-            $transformer = new ImageTransformer;
+        $hasPrivateToken = false;
+        $transformId = $request->integer('transformId');
+
+        if (! $transformId && $request->filled('transformToken')) {
+            try {
+                $transformId = (int) Crypt::decryptString((string) $request->input('transformToken'));
+                $hasPrivateToken = true;
+            } catch (DecryptException) {
+                abort(400, 'Invalid transform token.');
+            }
+        }
+
+        if ($transformId) {
+            $transformer = $this->imageTransformer;
             $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
             abort_if(! $transformIndexModel, 400, "Invalid transform ID: $transformId");
             $assetId = $transformIndexModel->assetId;
@@ -59,6 +73,22 @@ readonly class TransformController
         $asset = Asset::findOne(['id' => $assetId]);
 
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
+
+        if (
+            isset($transformIndexModel) &&
+            $transformer instanceof ImageTransformer &&
+            ! $asset->getVolume()->transformHasUrls()
+        ) {
+            if (! $hasPrivateToken) {
+                $this->requirePermission('accessCp');
+            }
+
+            try {
+                return $transformer->getTransformResponse($asset, $transformIndexModel);
+            } catch (Throwable $e) {
+                return $this->asBrokenImage($e);
+            }
+        }
 
         try {
             $url = $transformer->getTransformUrl($asset, $transform, true);

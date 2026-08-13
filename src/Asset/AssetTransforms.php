@@ -15,6 +15,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
+use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
@@ -105,6 +106,11 @@ class AssetTransforms extends Manager
         }
 
         return $resolved;
+    }
+
+    protected function createCraftDriver(): AssetTransformDriver
+    {
+        return $this->container->make(ImageTransformer::class);
     }
 
     /** @return array<string, non-empty-list<string|Stringable>> */
