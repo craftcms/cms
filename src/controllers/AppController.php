@@ -520,27 +520,6 @@ class AppController extends Controller
     }
 
     /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Craft::$app->getHasWrongEdition()) {
-            $licensedEdition = Craft::$app->getLicensedEdition();
-            $success = Craft::$app->setEdition($licensedEdition);
-        } else {
-            // Just fake it
-            $success = true;
-        }
-
-        return $success ? $this->asSuccess() : $this->asFailure();
-    }
-
-    /**
      * Fetches plugin license statuses.
      *
      * @return Response
