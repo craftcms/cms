@@ -26,6 +26,16 @@ interface Options {
   enabled: boolean;
   /** How long to wait after the last edit before saving. */
   debounceMs?: number;
+  /**
+   * Called after each successful save with the element's new last-modified
+   * stamps. An autosave moves `dateUpdated`, so whoever is watching for
+   * upstream edits has to re-baseline against these or it will report this
+   * write as someone else's.
+   */
+  onSaved?: (timestamps: {
+    element: number | null;
+    canonical: number | null;
+  }) => void;
 }
 
 /**
@@ -89,6 +99,11 @@ export function useElementAutosave(
       draftId.value = data.draftId ?? draftId.value;
       savedAt.value = data.timestamp ?? null;
       status.value = 'saved';
+
+      options.onSaved?.({
+        element: data.updatedTimestamp ?? null,
+        canonical: data.canonicalUpdatedTimestamp ?? null,
+      });
     } catch (e: any) {
       status.value = 'failed';
       error.value = e?.response?.data?.message ?? null;

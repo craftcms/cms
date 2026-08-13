@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -48,6 +49,14 @@ use function CraftCms\Cms\t;
  */
 abstract class ElementEditViewModel extends ViewModel
 {
+    /**
+     * How many revisions {@see self::contextMenu()} lists — a most-recent
+     * window onto a longer list, which links out to the full revisions index
+     * when there are more. Drafts are listed in full: they're the ones still
+     * being worked on, and there's no drafts index to link out to.
+     */
+    private const MAX_CONTEXT_MENU_REVISIONS = 5;
+
     use EditsElement;
 
     // Aliased so the payload key below can keep the `crumbs` name without
@@ -518,7 +527,9 @@ abstract class ElementEditViewModel extends ViewModel
             ->siteId($element->siteId)
             ->status(null)
             ->offset(1)
-            ->limit($maxRevisions ? min($maxRevisions - 1, 10) : 10)
+            ->limit($maxRevisions
+                ? min($maxRevisions - 1, self::MAX_CONTEXT_MENU_REVISIONS)
+                : self::MAX_CONTEXT_MENU_REVISIONS)
             ->orderByDesc('dateCreated')
             ->with(['revisionCreator']);
     }
@@ -757,6 +768,11 @@ abstract class ElementEditViewModel extends ViewModel
                 refreshable: true,
             ),
         ));
+    }
+
+    public function statusLabelHtml(): string
+    {
+        return app(StatusHtml::class)->componentStatusLabelHtml($this->element);
     }
 
     /**

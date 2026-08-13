@@ -8,6 +8,44 @@ beforeEach(() => {
 });
 
 describe('craft-input-date-time', () => {
+  it('keeps its own inputs ahead of slotted content', async () => {
+    const element = document.createElement(
+      'craft-input-date-time'
+    ) as CraftInputDateTime;
+    element.name = 'startsAt';
+
+    // A clear button, as `DateTimeControl` slots in: it acts on the inputs, so
+    // it has to follow them in reading and tab order — but it's in the DOM
+    // before they're created.
+    const clear = document.createElement('button');
+    clear.className = 'clear-btn';
+    element.append(clear);
+
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(
+      [...element.children]
+        .slice(0, 3)
+        .map((child) => child.tagName.toLowerCase())
+    ).toEqual(['craft-input-date', 'craft-input-time', 'button']);
+
+    // Turning a part on later still lands it with the other inputs.
+    element.showTimezone = true;
+    await element.updateComplete;
+
+    expect(
+      [...element.children]
+        .slice(0, 4)
+        .map((child) => child.tagName.toLowerCase())
+    ).toEqual([
+      'craft-input-date',
+      'craft-input-time',
+      'craft-input',
+      'button',
+    ]);
+  });
+
   it('owns its locale and timezone form metadata', async () => {
     const element = document.createElement(
       'craft-input-date-time'

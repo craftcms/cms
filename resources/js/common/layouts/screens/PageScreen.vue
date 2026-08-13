@@ -259,8 +259,8 @@
         <main id="main" tabindex="-1">
           <form method="post" @submit.prevent="form && save()" class="cp-main">
             <slot name="header">
-              <div class="container">
-                <div class="flex gap-4 justify-between items-center pt-4 pb-2">
+              <div class="pt-4 pb-2 border-b" id="cp-header">
+                <div class="container">
                   <div class="flex gap-2 items-center">
                     <LayoutSlotOutlet name="title">
                       <slot name="title">
@@ -271,40 +271,44 @@
                       <slot name="title-badge"></slot>
                     </LayoutSlotOutlet>
                   </div>
+                </div>
+                <div class="container">
+                  <div class="flex gap-4 justify-between items-center">
+                    <div></div>
+                    <div
+                      v-show="hasToolbar"
+                      id="toolbar"
+                      class="flex items-center gap-2"
+                    >
+                      <LayoutSlotOutlet name="toolbar">
+                        <slot name="toolbar"></slot>
+                      </LayoutSlotOutlet>
+                    </div>
 
-                  <div
-                    v-show="hasToolbar"
-                    id="toolbar"
-                    class="flex items-center gap-2"
-                  >
-                    <LayoutSlotOutlet name="toolbar">
-                      <slot name="toolbar"></slot>
-                    </LayoutSlotOutlet>
-                  </div>
+                    <div class="flex gap-2 items-center">
+                      <LayoutSlotOutlet name="actions">
+                        <slot name="actions">
+                          <slot name="additional-buttons"></slot>
 
-                  <div class="flex gap-2 items-center">
-                    <LayoutSlotOutlet name="actions">
-                      <slot name="actions">
-                        <slot name="additional-buttons"></slot>
-
-                        <FormActions
-                          v-if="form"
-                          :form="form"
-                          :action-items="formActionItems"
-                          :additional-actions="formAdditionalActions"
-                          :additional-buttons="formAdditionalButtons"
-                          :submit-label="submitButtonLabel"
-                          :read-only="readOnly"
-                        >
-                          <template
-                            v-if="slots['submit-button']"
-                            #submit-button
+                          <FormActions
+                            v-if="form"
+                            :form="form"
+                            :action-items="formActionItems"
+                            :additional-actions="formAdditionalActions"
+                            :additional-buttons="formAdditionalButtons"
+                            :submit-label="submitButtonLabel"
+                            :read-only="readOnly"
                           >
-                            <slot name="submit-button"></slot>
-                          </template>
-                        </FormActions>
-                      </slot>
-                    </LayoutSlotOutlet>
+                            <template
+                              v-if="slots['submit-button']"
+                              #submit-button
+                            >
+                              <slot name="submit-button"></slot>
+                            </template>
+                          </FormActions>
+                        </slot>
+                      </LayoutSlotOutlet>
+                    </div>
                   </div>
                 </div>
               </div>

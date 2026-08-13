@@ -56,6 +56,8 @@ export interface ElementEditPayload {
   form: FormPayload | null;
   sidebarForm: FormPayload | null;
   metadataHtml: string | null;
+  /** The element's status badge. `null` for element types without statuses. */
+  statusLabelHtml: string | null;
   saveUrl: string;
   applyDraftUrl: string;
   formActions: Array<ElementFormAction>;
@@ -145,6 +147,11 @@ export function useElementEditPage({saveData}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
+    // Autosave moves the draft's `dateUpdated` without a visit, so the poller
+    // has to re-baseline against what the save just wrote — otherwise it reads
+    // our own keystrokes back as an edit from elsewhere. `activity` is
+    // initialized just below; this only ever runs after a save settles.
+    onSaved: (timestamps) => activity.rebase(timestamps),
   });
 
   const activity = useElementActivity({

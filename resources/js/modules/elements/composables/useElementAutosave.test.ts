@@ -175,4 +175,46 @@ describe('useElementAutosave', () => {
 
     expect(postSpy.mock.calls[0]![1]).toMatchObject({draftId: 99});
   });
+
+  // An autosave moves the element's `dateUpdated`. Without handing the new
+  // stamps back, the activity poller reads our own write as an edit from
+  // elsewhere and shows "This entry has been updated."
+  it('reports the new timestamps so the caller can re-baseline', async () => {
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        timestamp: 'at 9:00 AM',
+        updatedTimestamp: 1_700_000_100,
+        canonicalUpdatedTimestamp: 1_700_000_000,
+      },
+    });
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).toHaveBeenCalledWith({
+      element: 1_700_000_100,
+      canonical: 1_700_000_000,
+    });
+  });
+
+  it('reports nulls when the response omits timestamps', async () => {
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).toHaveBeenCalledWith({element: null, canonical: null});
+  });
+
+  it('does not report a save that failed', async () => {
+    postSpy.mockRejectedValue(new Error('nope'));
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).not.toHaveBeenCalled();
+  });
 });
