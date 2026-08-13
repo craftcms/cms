@@ -75,46 +75,6 @@ textarea {
   @include mixins.sans-serif-font;
 }
 
-.first,
-h1:first-child,
-h2:first-child,
-h3:first-child,
-h4:first-child,
-h5:first-child,
-h6:first-child,
-p:first-child,
-blockquote:first-child,
-hr:first-child,
-.pane:first-child,
-.grid:first-child,
-fieldset:first-child,
-.field:first-child,
-.toolbar:first-child,
-.buttons:first-child,
-.condition-container:first-child {
-  margin-block-start: 0 !important;
-}
-
-.last,
-h1:last-child,
-h2:last-child,
-h3:last-child,
-h4:last-child,
-h5:last-child,
-h6:last-child,
-p:last-child,
-blockquote:last-child,
-.pane:last-child,
-.grid:last-child,
-.meta:last-child,
-fieldset:last-child,
-.field:last-child,
-.toolbar:last-child,
-.buttons:last-child,
-.condition-container:last-child {
-  margin-block-end: 0 !important;
-}
-
 .center-absolute {
   position: absolute;
   inset-block-start: 50%;
