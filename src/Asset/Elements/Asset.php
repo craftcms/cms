@@ -17,8 +17,10 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
@@ -2057,6 +2059,12 @@ JS, [
         }
 
         return $this;
+    }
+
+    #[AllowedInSandbox]
+    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
+    {
+        return app(AssetTransforms::class)->transform($this, $definition);
     }
 
     /**

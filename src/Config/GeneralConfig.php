@@ -631,6 +631,22 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
+     * @var string The Asset Transform driver to use when no driver is selected explicitly.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultAssetTransformDriver('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_ASSET_TRANSFORM_DRIVER=craft
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public string $defaultAssetTransformDriver = 'craft';
+
+    /**
      * @var string The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -3705,6 +3721,24 @@ class GeneralConfig extends BaseConfig
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Asset Transform driver to use when no driver is selected explicitly.
+     *
+     * @group Assets
+     *
+     * @see $defaultAssetTransformDriver
+     */
+    public function defaultAssetTransformDriver(string $value): self
+    {
+        if ($value === '') {
+            throw new RuntimeException('`defaultAssetTransformDriver` cannot be empty.');
+        }
+
+        $this->defaultAssetTransformDriver = $value;
 
         return $this;
     }

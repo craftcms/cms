@@ -35,6 +35,14 @@ it('can set compiledTemplatesPath via fluent setter', function () {
     expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
 });
 
+it('requires a default Asset Transform driver', function () {
+    $config = GeneralConfig::create();
+
+    expect($config->defaultAssetTransformDriver)->toBe('craft')
+        ->and($config->defaultAssetTransformDriver('remote')->defaultAssetTransformDriver)->toBe('remote')
+        ->and(fn () => $config->defaultAssetTransformDriver(''))->toThrow(RuntimeException::class);
+});
+
 it('normalizes pageTrigger on the main config class', function () {
     $config = GeneralConfig::create();
 
