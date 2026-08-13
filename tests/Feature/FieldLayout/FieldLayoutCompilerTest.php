@@ -57,7 +57,7 @@ function persistedEntryLayout(): FieldLayoutModel
             ]),
             new Markdown([
                 'uid' => 'content-note',
-                'content' => '<script>alert(1)</script> **Editorial note**',
+                'content' => "<script>alert(1)</script>\n\n**Editorial note**",
                 'displayInPane' => false,
                 'width' => 50,
             ]),
@@ -123,8 +123,8 @@ it('compiles persisted entry layout intent into a form payload', function () {
             'width' => 50,
         ])
         ->and($content->filter('script'))->toHaveCount(0)
+        ->and($content->text())->not->toContain('alert(1)')
         ->and($content->filter('strong')->text())->toBe('Editorial note')
-        ->and($content->text())->toContain('<script>alert(1)</script>')
         ->and($payload->values)->toBe(['title' => 'Persisted title'])
         ->and($payload->errors)->toBe([[
             'path' => ['title'],

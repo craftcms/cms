@@ -60,7 +60,9 @@ test('index renders the Inertia addresses page', function () {
             ->where('showIndex', false)
             ->where('title', t('My Account'))
             ->has('crumbs', 2)
-            ->has('subnav')
+            // A list, not an object keyed by screen name: the shell hides the
+            // secondary nav when it can't count the items.
+            ->where('subnav.0.label', t('Profile'))
             ->has('details')
             ->where('data.mode', 'cards')
             ->where('contentFragment.html', fn (string $html): bool => $html !== ''));

@@ -1,0 +1,178 @@
+import {useForm} from '@inertiajs/vue3';
+import {createApp, defineComponent, nextTick} from 'vue';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {useElementAutosave} from './useElementAutosave';
+
+const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
+
+vi.mock('@craftcms/ui', () => ({
+  actionClient: {post: postSpy},
+}));
+
+describe('useElementAutosave', () => {
+  let app: ReturnType<typeof createApp>;
+  let container: HTMLElement;
+
+  beforeEach(() => {
+    postSpy.mockReset();
+    postSpy.mockResolvedValue({data: {draftId: 7, timestamp: 'at 9:00 AM'}});
+  });
+
+  afterEach(() => {
+    app?.unmount();
+    container?.remove();
+  });
+
+  function mount(overrides: Record<string, any> = {}) {
+    let autosave!: ReturnType<typeof useElementAutosave>;
+    let form!: ReturnType<typeof useForm<Record<string, any>>>;
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(
+      defineComponent({
+        setup() {
+          form = useForm<Record<string, any>>({title: 'Original'});
+          autosave = useElementAutosave(form, {
+            url: '/actions/elements/save-draft',
+            elementType: 'craft\\elements\\Entry',
+            elementId: 12,
+            siteId: 1,
+            draftId: null,
+            isProvisional: false,
+            enabled: true,
+            ...overrides,
+          });
+
+          return () => null;
+        },
+      })
+    );
+    app.mount(container);
+
+    return {autosave, form};
+  }
+
+  it('creates the draft on the first save and targets it afterwards', async () => {
+    const {autosave} = mount();
+
+    await autosave.save();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({
+      elementType: 'craft\\elements\\Entry',
+      elementId: 12,
+      siteId: 1,
+      provisional: 1,
+    });
+    expect(postSpy.mock.calls[0]![1].draftId).toBeUndefined();
+    expect(autosave.draftId.value).toBe(7);
+
+    await autosave.save();
+
+    // The second save targets the existing draft; `provisional` is dropped
+    // because sending it would narrow the server's lookup.
+    expect(postSpy.mock.calls[1]![1]).toMatchObject({draftId: 7});
+    expect(postSpy.mock.calls[1]![1].provisional).toBeUndefined();
+  });
+
+  it('reports status and the saved timestamp', async () => {
+    const {autosave} = mount();
+
+    expect(autosave.status.value).toBe('idle');
+
+    await autosave.save();
+
+    expect(autosave.status.value).toBe('saved');
+    expect(autosave.savedAt.value).toBe('at 9:00 AM');
+  });
+
+  it('records a failure without throwing', async () => {
+    postSpy.mockRejectedValue({response: {data: {message: 'Nope.'}}});
+
+    const {autosave} = mount();
+
+    await autosave.save();
+
+    expect(autosave.status.value).toBe('failed');
+    expect(autosave.error.value).toBe('Nope.');
+  });
+
+  it('does nothing when disabled', async () => {
+    const {autosave} = mount({enabled: false});
+
+    await autosave.save();
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('defers to a real submission in progress', async () => {
+    const {autosave, form} = mount();
+
+    form.processing = true;
+    await autosave.save();
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('coalesces saves requested while one is in flight', async () => {
+    const release: Array<() => void> = [];
+    postSpy.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          release.push(() =>
+            resolve({data: {draftId: 7, timestamp: 'at 9:00 AM'}})
+          );
+        })
+    );
+
+    const {autosave} = mount();
+
+    const first = autosave.save();
+    void autosave.save();
+    void autosave.save();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+
+    release[0]!();
+    await nextTick();
+    await nextTick();
+
+    // Both queued requests collapse into a single trailing save.
+    expect(postSpy).toHaveBeenCalledTimes(2);
+
+    release[1]!();
+    await first;
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips scheduling while suspended', async () => {
+    const {autosave} = mount();
+
+    autosave.suspend(() => autosave.schedule());
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  it('keeps sending provisional while editing a provisional draft', async () => {
+    const {autosave} = mount({draftId: 7, isProvisional: true});
+
+    await autosave.save();
+
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({
+      draftId: 7,
+      provisional: 1,
+    });
+  });
+
+  it('adopts a draft id supplied by the server', async () => {
+    const {autosave} = mount();
+
+    autosave.setDraftId(99);
+    await autosave.save();
+
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({draftId: 99});
+  });
+});

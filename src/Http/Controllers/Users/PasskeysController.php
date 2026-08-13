@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,7 +34,7 @@ readonly class PasskeysController
 
         $user = $currentUser->asElement();
 
-        return $this->asEditUserScreen($user, self::SCREEN_PASSKEYS)
+        return $this->asEditUserScreen($user, EditUserScreens::PASSKEYS)
             ->inertiaPage('users/Passkeys', new UserPasskeysViewModel($user, $this->passkeys));
     }
 

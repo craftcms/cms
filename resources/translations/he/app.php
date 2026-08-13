@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'חפש בתיקיות משנה',
     'Search plugins' => 'תוספי חיפוש',
     'Search' => 'חפש',
+    'Secondary' => 'Secondary',
     'Seconds' => 'שניות',
     'Section - {section}' => 'סקשן - {section}',
     'Section Type' => 'סוג הסקשן',

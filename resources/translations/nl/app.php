@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Zoeken in submappen',
     'Search plugins' => 'Invoegtoepassingen zoeken',
     'Search' => 'Zoeken',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Seconden',
     'Section - {section}' => 'Sectie - {section}',
     'Section Type' => 'Sectietype',

@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import Pane from '@/common/components/Pane.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
@@ -66,7 +65,7 @@
 </script>
 
 <template>
-  <Pane appearance="raised">
+  <craft-pane appearance="raised">
     <div class="grid gap-3">
       <CraftInput
         v-if="!schema.isPublic"
@@ -95,7 +94,7 @@
         />
       </section>
     </div>
-  </Pane>
+  </craft-pane>
 
   <LayoutSlot v-if="schema.isPublic" name="details">
     <CraftSwitch

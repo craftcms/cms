@@ -47,7 +47,13 @@ export {default as CraftMissingComponent} from './components/missing-component/m
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftOption} from './components/option/option.js';
-export {default as CraftPane} from './components/pane/pane.js';
+export {
+  default as CraftPane,
+  PaneAppearance,
+  PaneVariant,
+  type PaneAppearanceValue,
+  type PaneVariantValue,
+} from './components/pane/pane.js';
 export {
   default as CraftPermissionTree,
   type PermissionTreeGroup,

@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Søk i undermapper',
     'Search plugins' => 'Søk i utvidelser',
     'Search' => 'Søk',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Sekunder',
     'Section - {section}' => 'Seksjon - {section}',
     'Section Type' => 'Seksjonstype',
@@ -2248,9 +2249,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',

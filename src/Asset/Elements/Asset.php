@@ -55,6 +55,10 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -1311,6 +1315,113 @@ class Asset extends Element
     public function getPostEditUrl(): string
     {
         return Url::cpUrl('assets');
+    }
+
+    /**
+     * The asset's own action menu items for the Inertia editor — the Form-system
+     * counterpart to the items {@see safeActionMenuItems()} builds with inline
+     * jQuery. Everything that opens a legacy modal (the file preview, the image
+     * editor, the replace-file uploader) is described here and dispatched by the
+     * client, which reloads afterwards so the file's details come back from the
+     * server rather than being patched into the DOM.
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(): array
+    {
+        $user = currentUserElement();
+        $items = [];
+
+        if (AssetsService::getAssetPreviewHandler($this) !== null) {
+            $items[] = [
+                'label' => t('Preview file'),
+                'icon' => 'view',
+                'behavior' => [
+                    'type' => 'previewFile',
+                    'assetId' => $this->id,
+                    'settings' => [
+                        'startingWidth' => $this->width,
+                        'startingHeight' => $this->height,
+                    ],
+                ],
+            ];
+        }
+
+        $items[] = [
+            'label' => t('Download'),
+            'icon' => 'download',
+            'behavior' => [
+                'type' => 'download',
+                'actionUrl' => Url::actionUrl('assets/download-asset'),
+                'params' => ['assetId' => $this->id],
+            ],
+        ];
+
+        if ($user && $this->volumeId && $this->canView($user)) {
+            $items[] = [
+                'label' => t('Show in folder'),
+                'icon' => 'magnifying-glass',
+                'behavior' => [
+                    'type' => 'link',
+                    'href' => Url::actionUrl('assets/show-in-folder', ['assetId' => $this->id]),
+                ],
+            ];
+        }
+
+        if ($user?->can('replaceFile', $this)) {
+            $items[] = [
+                'label' => t('Replace file'),
+                'icon' => 'upload',
+                'behavior' => [
+                    'type' => 'replaceFile',
+                    'assetId' => $this->id,
+                    'fsType' => $this->getVolume()->sourceFilesystemType(),
+                ],
+            ];
+        }
+
+        if ($this->getSupportsImageEditor() && $user?->can('editImage', $this)) {
+            $items[] = [
+                'label' => t('Open in Image Editor'),
+                'icon' => 'edit',
+                'behavior' => [
+                    'type' => 'editImage',
+                    'assetId' => $this->id,
+                ],
+            ];
+        }
+
+        if ($user?->isAdmin() && Cms::config()->allowAdminChanges) {
+            $items[] = [
+                'label' => t('Volume settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'action' => 'volumes/edit-volume',
+                    'params' => ['volumeId' => $this->volumeId],
+                ],
+            ];
+
+            $fsHandle = $this->getVolume()->getFsHandle();
+
+            if (
+                is_string($fsHandle) &&
+                ! str_starts_with($fsHandle, Volume::STORAGE_DISK_PREFIX) &&
+                Filesystems::getFilesystemByHandle($fsHandle)
+            ) {
+                $items[] = [
+                    'label' => t('Filesystem settings'),
+                    'icon' => 'gear',
+                    'behavior' => [
+                        'type' => 'slideout',
+                        'url' => Url::cpUrl("settings/filesystems/$fsHandle/edit"),
+                    ],
+                ];
+            }
+        }
+
+        return $items;
     }
 
     /** @return list<array<string, bool|int|string|MenuItemType|list<array<string, bool|int|string|MenuItemType>>>> */
@@ -2735,6 +2846,47 @@ JS;
             ]),
             parent::metaFieldsHtml($static),
         ]);
+    }
+
+    /** @return list<Node> */
+    #[Override]
+    protected function metaFieldsNodes(bool $static): array
+    {
+        return [
+            Field::make(t('Filename'))
+                ->required()
+                ->control(
+                    Text::make('newFilename')
+                        ->value($this->_filename)
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                ),
+            ...parent::metaFieldsNodes($static),
+        ];
+    }
+
+    /**
+     * Renaming validates the folder path and the filename together as
+     * `newLocation`, but the field that produced the error posts `newFilename`,
+     * so its messages move to the name the Control answers to. They're moved
+     * rather than copied so the error summary doesn't list each one twice.
+     *
+     * @return array<string, list<string>>
+     */
+    #[Override]
+    public function formErrors(): array
+    {
+        $errors = parent::formErrors();
+
+        if (isset($errors['newLocation'])) {
+            $errors['newFilename'] = [
+                ...($errors['newFilename'] ?? []),
+                ...$errors['newLocation'],
+            ];
+
+            unset($errors['newLocation']);
+        }
+
+        return $errors;
     }
 
     /** @return array<string, Closure(): bool|string> */

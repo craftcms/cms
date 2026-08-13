@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import Pane from '@/common/components/Pane.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
@@ -150,7 +149,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <Pane appearance="raised" :padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable
       :table="table"
       :reorderable="true"
@@ -161,5 +160,5 @@
         <Empty :label="t('No volumes exist yet.')" icon="light/files" />
       </template>
     </AdminTable>
-  </Pane>
+  </craft-pane>
 </template>

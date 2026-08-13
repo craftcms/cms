@@ -1509,6 +1509,7 @@ return [
     'Search in subfolders' => 'Procurar em subpastas',
     'Search plugins' => 'Plugins de pesquisa',
     'Search' => 'Pesquisa',
+    'Secondary' => 'Secondary',
     'Seconds' => 'Segundos',
     'Section - {section}' => 'Seção - {section}',
     'Section Type' => 'Tipo de seção',

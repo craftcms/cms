@@ -6,6 +6,7 @@
   import type {FormControlPayload} from './types';
 
   type PermissionTreeProps = {
+    ariaLabel: string | null;
     groups: PermissionTreeGroup[];
     lockedPermissions: string[];
   };
@@ -29,7 +30,7 @@
 <template>
   <PermissionTree
     role="group"
-    :aria-label="label"
+    :aria-label="control.props.ariaLabel ?? label"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     :groups="control.props.groups"

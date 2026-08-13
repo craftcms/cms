@@ -109,7 +109,10 @@
   );
 
   const submitLabel = computed(
-    () => chrome.value.submitButtonLabel || t('Save')
+    () =>
+      props.value.submitButtonLabel ||
+      chrome.value.submitButtonLabel ||
+      t('Save')
   );
 
   /**

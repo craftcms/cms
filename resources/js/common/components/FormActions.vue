@@ -11,6 +11,8 @@
     actionItems?: Array<ActionItem>;
     additionalActions?: Array<ActionItem>;
     additionalButtons?: Array<ActionItemButton>;
+    /** Overrides the submit button's text (e.g. "Save draft"). */
+    submitLabel?: string;
     readOnly?: boolean;
   }>();
 
@@ -82,7 +84,7 @@
           :loading="isButtonProcessing(primaryButton)"
           :disabled="form.processing"
         >
-          {{ t('Save') }}
+          {{ submitLabel ?? t('Save') }}
         </craft-button>
       </slot>
       <ActionMenu icon="chevron-down" :actions="actionItems">
@@ -106,7 +108,7 @@
         :loading="isButtonProcessing(primaryButton)"
         :disabled="form.processing"
       >
-        {{ t('Save') }}
+        {{ submitLabel ?? t('Save') }}
       </craft-button>
     </slot>
 

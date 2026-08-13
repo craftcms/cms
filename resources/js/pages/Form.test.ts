@@ -21,7 +21,10 @@ const state = vi.hoisted(() => ({
   change: undefined as
     | ((change: FormChange, values: FormPayload['values']) => void)
     | undefined,
-  currentValues: {name: 'Changed', live: '1'} as Record<string, unknown>,
+  currentValues: {siteId: 42, name: 'Changed', live: '1'} as Record<
+    string,
+    unknown
+  >,
   confirmElevation: vi.fn(),
 }));
 
@@ -60,15 +63,6 @@ vi.mock('@/common/composables/useAppLayout', () => ({
 
 vi.mock('@/modules/auth/elevated-session', () => ({
   elevatedSessionManager: {require: state.confirmElevation},
-}));
-
-vi.mock('@/common/components/Pane.vue', () => ({
-  default: defineComponent({
-    setup:
-      (_, {slots}) =>
-      () =>
-        h('div', slots.default?.()),
-  }),
 }));
 
 vi.mock('@/modules/forms/FormRenderer.vue', () => ({
@@ -134,7 +128,21 @@ it('submits complete current values after a partial mutation', async () => {
 
   expect(state.submit).toHaveBeenCalledWith(
     {method: 'post', url: '/settings/general'},
-    expect.objectContaining({name: 'Changed', live: '1'})
+    expect.objectContaining({siteId: 42, name: 'Changed', live: '1'})
+  );
+});
+
+it('passes screen layout options through to the app layout', () => {
+  app = createApp(FormPage, {
+    form: payload,
+    submit: {method: 'post', url: '/settings/users'},
+    fullWidth: true,
+    defaultFormActions: [],
+  });
+  app.mount(container);
+
+  expect(state.layout).toHaveBeenCalledWith(
+    expect.objectContaining({fullWidth: true, defaultFormActions: []})
   );
 });
 

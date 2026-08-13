@@ -148,7 +148,12 @@ interface CraftStatic {
       message?: string | CpNotificationSettings,
       settings?: CpNotificationSettings
     ) => object;
+    displayNotice?: (
+      message?: string,
+      settings?: CpNotificationSettings
+    ) => object;
   };
+  broadcaster?: {postMessage(message: Record<string, unknown>): void};
   defaultIndexCriteria: Record<string, any>;
   systemUid?: string;
   canAccessQueueManager?: boolean;
@@ -190,6 +195,20 @@ interface CraftStatic {
       minSafeElevatedSessionTimeout?: number
     ): void | Promise<void>;
   };
+
+  ui: {
+    createCopyTextPrompt(settings: {label: string; value: string}): unknown;
+  };
+
+  // Asset editing, still served by the legacy bundle.
+  isImagick?: boolean;
+  PreviewFileModal: new (assetId: number, settings?: object) => unknown;
+  AssetImageEditor: new (assetId: number, settings?: object) => unknown;
+  createUploader(
+    fsType: string,
+    $element: unknown,
+    settings?: object
+  ): {setParams(params: Record<string, unknown>): void};
 }
 
 // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
