@@ -10,13 +10,15 @@ readonly class StoreFailed extends ProgressListener
 {
     public function handle(JobFailed $event): void
     {
-        if (! $this->shouldTrackQueue($event->job->getQueue())) {
+        $queue = $event->job->getQueue();
+
+        if (! $this->shouldTrackQueue($queue)) {
             return;
         }
 
         $uuid = $this->jobUuid($event->job->payload());
 
-        if ($uuid === null) {
+        if ($uuid === null || ($queue === 'sync' && ! $this->progress->exists($uuid))) {
             return;
         }
 
