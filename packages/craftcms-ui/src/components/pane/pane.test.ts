@@ -230,6 +230,17 @@ describe('craft-pane padding', () => {
     expect(spacing(element)).toBe('0');
   });
 
+  /**
+   * `none` is the same instruction spelled the way markup reaches for it, and
+   * a bare `none` isn't a valid length — passed through it would drop the
+   * declaration and leave the default padding standing.
+   */
+  it('zeroes out spacing for none', async () => {
+    const element = await createPane({padding: 'none'});
+
+    expect(spacing(element)).toBe('0');
+  });
+
   it('treats numeric values as pixels', async () => {
     const element = await createPane({padding: '24'});
 

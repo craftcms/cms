@@ -50,6 +50,16 @@ export default defineConfig({
           tsconfigPaths: true,
         },
         test: {
+          name: 'mixins',
+          root: './src/mixins',
+          environment: 'happy-dom',
+        },
+      },
+      {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
           name: 'factory',
           root: './src/factory',
           environment: 'happy-dom',
