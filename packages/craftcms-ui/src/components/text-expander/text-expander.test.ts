@@ -104,7 +104,7 @@ describe('craft-text-expander', () => {
       input
     );
 
-    expect(target.getAttribute('role')).toBe('combobox');
+    expect(target.getAttribute('role')).toBeNull();
     expect(target.getAttribute('aria-autocomplete')).toBe('list');
     expect(target.getAttribute('aria-controls')).toContain('existing');
     expect(target.getAttribute('aria-controls')).toContain(
