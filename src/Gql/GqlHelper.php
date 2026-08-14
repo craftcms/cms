@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Directives\Directive;
+use CraftCms\Cms\Gql\Events\TransformArgumentsPreparing;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
@@ -26,6 +28,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils\AST;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class GqlHelper
 {
@@ -247,9 +250,43 @@ class GqlHelper
      */
     public static function prepareTransformArguments(array $arguments): array|string
     {
+        if (($arguments['immediately'] ?? null) !== null) {
+            event($event = new TransformArgumentsPreparing($arguments));
+
+            if (! $event->handled) {
+                throw new InvalidArgumentException('The GraphQL `immediately` transform argument is not supported by the current application.');
+            }
+
+            $arguments = $event->arguments;
+        }
+
         unset($arguments['immediately']);
 
         return $arguments['handle'] ?? $arguments;
+    }
+
+    /**
+     * @param  array<string, mixed>|string  $definition
+     */
+    public static function resolveAssetTransform(
+        Asset $asset,
+        array|string $definition,
+        string $field,
+        ?bool $immediately = null,
+    ): mixed {
+        return match ($field) {
+            'format' => $asset->getFormat($definition),
+            'height' => $asset->getHeight($definition),
+            'mimeType' => $asset->getMimeType($definition),
+            'url' => $asset->getUrl($definition, $immediately),
+            'width' => $asset->getWidth($definition),
+            default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
+        };
+    }
+
+    public static function isAssetTransformField(string $field): bool
+    {
+        return in_array($field, ['format', 'height', 'mimeType', 'url', 'width'], true);
     }
 
     /**

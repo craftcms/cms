@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Arguments;
 
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use GraphQL\Type\Definition\Type;
 
 class Transform extends Arguments
@@ -11,7 +13,16 @@ class Transform extends Arguments
     #[\Override]
     public static function getArguments(): array
     {
-        return [
+        $descriptions = [
+            'format' => 'The format to use for the transform',
+            'height' => 'Height for the generated transform',
+            'interlace' => 'The interlace mode to use for the transform',
+            'mode' => 'The mode to use for the generated transform.',
+            'position' => 'The position to use when cropping, if no focal point specified.',
+            'quality' => 'The quality of the transform',
+            'width' => 'Width for the generated transform',
+        ];
+        $arguments = [
             'handle' => [
                 'name' => 'handle',
                 'type' => Type::string(),
@@ -22,41 +33,24 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.',
             ],
-            'width' => [
-                'name' => 'width',
-                'type' => Type::int(),
-                'description' => 'Width for the generated transform',
-            ],
-            'height' => [
-                'name' => 'height',
-                'type' => Type::int(),
-                'description' => 'Height for the generated transform',
-            ],
-            'mode' => [
-                'name' => 'mode',
-                'type' => Type::string(),
-                'description' => 'The mode to use for the generated transform.',
-            ],
-            'position' => [
-                'name' => 'position',
-                'type' => Type::string(),
-                'description' => 'The position to use when cropping, if no focal point specified.',
-            ],
-            'interlace' => [
-                'name' => 'interlace',
-                'type' => Type::string(),
-                'description' => 'The interlace mode to use for the transform',
-            ],
-            'quality' => [
-                'name' => 'quality',
-                'type' => Type::int(),
-                'description' => 'The quality of the transform',
-            ],
-            'format' => [
-                'name' => 'format',
-                'type' => Type::string(),
-                'description' => 'The format to use for the transform',
-            ],
+        ];
+
+        foreach (app(AssetTransforms::class)->getOperationRules() as $handle => $rules) {
+            $arguments[$handle] = [
+                'name' => $handle,
+                'type' => match ($rules[0]) {
+                    'boolean' => Type::boolean(),
+                    'integer' => Type::int(),
+                    'numeric' => Type::float(),
+                    'string' => Type::string(),
+                    default => throw new InvalidAssetTransformException('Invalid Asset Transform operation type.'),
+                },
+                'description' => $descriptions[$handle] ?? ucfirst($handle).' for the generated transform.',
+            ];
+        }
+
+        return [
+            ...$arguments,
             'immediately' => [
                 'name' => 'immediately',
                 'type' => Type::boolean(),

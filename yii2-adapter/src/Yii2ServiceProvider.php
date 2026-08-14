@@ -19,6 +19,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Gql\Events\TransformArgumentsPreparing;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
@@ -117,6 +118,9 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->singleton(GqlArguments::class, LegacyGqlArguments::class);
         $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
         $this->app->singleton(GqlTypes::class, LegacyGqlTypes::class);
+        Event::listen(TransformArgumentsPreparing::class, function(TransformArgumentsPreparing $event): void {
+            $event->handled = true;
+        });
         $this->app->scoped(Gql::class, LegacyGql::class);
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);

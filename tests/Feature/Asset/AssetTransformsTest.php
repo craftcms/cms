@@ -258,7 +258,7 @@ it('prevents drivers from redeclaring Craft operations', function () {
     ]))->toThrow(InvalidAssetTransformException::class);
 });
 
-it('keeps custom operation declarations local to each driver', function () {
+it('rejects incompatible shared operation declarations', function () {
     $integerDriver = new TestAssetTransformDriver(
         new AssetTransformDriverDefinition('Integer', [
             'blur' => ['integer'],
@@ -272,14 +272,9 @@ it('keeps custom operation declarations local to each driver', function () {
     $manager = app(AssetTransforms::class)
         ->extend('integer', fn () => $integerDriver)
         ->extend('string', fn () => $stringDriver);
-    $asset = Asset::factory()->createElement();
 
-    $manager->transform($asset, ['driver' => 'integer', 'blur' => 12]);
-
-    $manager->transform($asset, ['driver' => 'string', 'blur' => 12]);
-
-    expect($integerDriver->request->operations['blur'])->toBe(12)
-        ->and($stringDriver->request->operations['blur'])->toBe('12');
+    expect(fn () => $manager->getOperationRules())
+        ->toThrow(InvalidAssetTransformException::class);
 });
 
 it('rejects invalid operation values', function (array $operations) {

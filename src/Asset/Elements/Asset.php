@@ -2327,15 +2327,13 @@ JS, [
     #[AllowedInSandbox]
     public function getFormat(mixed $transform = null): string
     {
-        $ext = $this->getExtension();
-
-        if (! ImageHelper::canManipulateAsImage($ext)) {
-            return $ext;
-        }
-
         $transform ??= $this->_transform;
 
-        return ImageTransformHelper::normalizeTransform($transform)->format ?? $ext;
+        if ($transform !== null) {
+            return File::getExtensionByMimeType($this->transform($transform)->mimeType);
+        }
+
+        return $this->getExtension();
     }
 
     /**

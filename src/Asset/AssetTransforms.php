@@ -57,6 +57,28 @@ class AssetTransforms extends Manager
         return Cms::config()->defaultAssetTransformDriver;
     }
 
+    /** @return array<string, non-empty-list<string|Stringable>> */
+    public function getOperationRules(): array
+    {
+        $operations = $this->operations;
+
+        foreach (array_keys($this->customCreators) as $driverHandle) {
+            foreach ($this->driver($driverHandle)->definition()->operations as $handle => $rules) {
+                if (! is_string($handle) || $handle === '') {
+                    throw new InvalidAssetTransformException('Asset Transform operation handles must be non-empty strings.');
+                }
+
+                if (isset($operations[$handle]) && $operations[$handle] != $rules) {
+                    throw new InvalidAssetTransformException("Asset Transform operation [{$handle}] has incompatible declarations.");
+                }
+
+                $operations[$handle] = $rules;
+            }
+        }
+
+        return $operations;
+    }
+
     public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformResult
     {
         $request = $this->request($asset, $definition);
@@ -147,8 +169,8 @@ class AssetTransforms extends Manager
             throw new AssetTransformDriverNotFoundException('The selected Asset Transform driver is invalid.');
         }
 
-        $driver = $this->driver($driverHandle);
-        $operations = $this->operationsFor($driver);
+        $this->driver($driverHandle);
+        $operations = $this->getOperationRules();
         $normalized = [];
 
         foreach ($definition as $handle => $value) {
@@ -213,26 +235,6 @@ class AssetTransforms extends Manager
     protected function createCraftDriver(): AssetTransformDriver
     {
         return $this->container->make(ImageTransformer::class);
-    }
-
-    /** @return array<string, non-empty-list<string|Stringable>> */
-    private function operationsFor(AssetTransformDriver $driver): array
-    {
-        $operations = $this->operations;
-
-        foreach ($driver->definition()->operations as $handle => $rules) {
-            if (! is_string($handle) || $handle === '') {
-                throw new InvalidAssetTransformException('Asset Transform operation handles must be non-empty strings.');
-            }
-
-            if (isset($operations[$handle])) {
-                throw new InvalidAssetTransformException("Asset Transform operation [{$handle}] is reserved by Craft.");
-            }
-
-            $operations[$handle] = $rules;
-        }
-
-        return $operations;
     }
 
     /** @param non-empty-list<string|Stringable> $rules */

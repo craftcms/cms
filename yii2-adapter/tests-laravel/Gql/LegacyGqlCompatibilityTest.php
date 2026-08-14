@@ -23,6 +23,7 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -175,6 +176,13 @@ it('keeps the legacy gql helper working against the new service', function() {
 
     expect(LegacyGqlHelper::canSchema('sections.news'))->toBeTrue()
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
+});
+
+it('accepts the legacy immediately transform argument', function() {
+    expect(GqlHelper::prepareTransformArguments([
+        'width' => 320,
+        'immediately' => false,
+    ]))->toBe(['width' => 320]);
 });
 
 it('returns gql token aliases from the legacy gql service', function() {
