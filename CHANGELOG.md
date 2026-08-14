@@ -13,6 +13,7 @@
 - Fixed a bug where jobs run on the sync queue could remain marked as reserved after completing. ([#19431](https://github.com/craftcms/cms/pull/19431))
 - Fixed a bug where Addresses fields weren’t reading the value posted by the Control Panel form, so removing every address didn’t stick and blank addresses could be created. ([#19432](https://github.com/craftcms/cms/pull/19432))
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
+- Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
