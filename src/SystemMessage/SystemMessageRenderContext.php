@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage;
 
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -12,7 +11,6 @@ use CraftCms\Cms\View\TemplateMode;
 readonly class SystemMessageRenderContext
 {
     public function __construct(
-        private GeneralConfig $generalConfig,
         private Sites $sites,
         private Twig $twig,
     ) {}
@@ -21,8 +19,6 @@ readonly class SystemMessageRenderContext
     {
         $currentSite = $messageSite = $twig = null;
         $originalLanguage = app()->getLocale();
-        $generateTransformsBeforePageLoad = $this->generalConfig->generateTransformsBeforePageLoad;
-
         $originalTemplateMode = TemplateMode::get();
         TemplateMode::set(TemplateMode::Site);
 
@@ -44,13 +40,9 @@ readonly class SystemMessageRenderContext
 
             app()->setLocale($language);
 
-            // Temporarily disable lazy transform generation.
-            $this->generalConfig->generateTransformsBeforePageLoad = true;
-
             return $callback();
         } finally {
             app()->setLocale($originalLanguage);
-            $this->generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
             if ($currentSite && $messageSite) {
                 $this->sites->setCurrentSite($currentSite);

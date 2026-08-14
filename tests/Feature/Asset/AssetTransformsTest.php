@@ -73,7 +73,11 @@ it('routes explicit rendering and metadata through Image Renditions without muta
         'width' => 1000,
         'height' => 500,
     ]);
-    $asset->setTransform(['width' => 100]);
+    Event::listen(AssetUrlResolving::class, function (AssetUrlResolving $event) {
+        if ($event->transform === null) {
+            $event->url = '/source/source.pdf';
+        }
+    });
 
     $img = $asset->getImg(['width' => 640, 'height' => 360]);
     $document = new DOMDocument;
@@ -86,7 +90,9 @@ it('routes explicit rendering and metadata through Image Renditions without muta
         ->and($asset->getMimeType(['width' => 640]))->toBe('image/webp')
         ->and($asset->getWidth(['width' => 640]))->toBe(640)
         ->and($asset->getHeight(['height' => 360]))->toBe(360)
-        ->and($asset->getUrl())->toBe('/renditions/100x50.webp');
+        ->and($asset->getUrl())->toBe('/source/source.pdf')
+        ->and(method_exists($asset, 'setTransform'))->toBeFalse()
+        ->and(method_exists($asset, 'copyWithTransform'))->toBeFalse();
 });
 
 it('routes srcset sizes through Image Renditions', function () {

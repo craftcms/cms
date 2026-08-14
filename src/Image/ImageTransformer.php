@@ -70,7 +70,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             $url = $this->getTransformUrl(
                 $request->asset,
                 $transform,
-                Cms::config()->generateTransformsBeforePageLoad,
+                $request->settings['generateBeforePageLoad'] ?? false,
             );
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
@@ -78,7 +78,9 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
 
         $format = $transform->format ?? ImageTransformHelper::detectTransformFormat($request->asset);
         $source = clone $request->asset;
-        $source->setTransform(null);
+        if (method_exists($source, 'setTransform')) {
+            $source->setTransform(null);
+        }
         $sourceWidth = $source->getWidth();
         $sourceHeight = $source->getHeight();
         [$width, $height] = $sourceWidth && $sourceHeight

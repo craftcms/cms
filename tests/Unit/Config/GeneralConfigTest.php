@@ -43,6 +43,11 @@ it('requires a default Asset Transform driver', function () {
         ->and(fn () => $config->defaultAssetTransformDriver(''))->toThrow(RuntimeException::class);
 });
 
+it('does not expose the legacy transform generation policy', function () {
+    expect(property_exists(GeneralConfig::class, 'generateTransformsBeforePageLoad'))->toBeFalse()
+        ->and(method_exists(GeneralConfig::class, 'generateTransformsBeforePageLoad'))->toBeFalse();
+});
+
 it('normalizes pageTrigger on the main config class', function () {
     $config = GeneralConfig::create();
 

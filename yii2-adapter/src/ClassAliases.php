@@ -423,7 +423,6 @@ class ClassAliases
         class_alias(IndexingSession::class, AssetIndexingSession::class);
         class_alias(\CraftCms\Cms\Asset\Data\Volume::class, Volume::class);
         class_alias(\CraftCms\Cms\Asset\Data\VolumeFolder::class, VolumeFolder::class);
-        class_alias(\CraftCms\Cms\Asset\Elements\Asset::class, \craft\elements\Asset::class);
         class_alias(\CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException::class, AssetDisallowedExtensionException::class);
         class_alias(\CraftCms\Cms\Asset\Exceptions\AssetException::class, AssetException::class);
         class_alias(\CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException::class, AssetNotIndexableException::class);

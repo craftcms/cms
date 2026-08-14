@@ -41,12 +41,18 @@ it('maps renamed general config settings in the adapter', function(): void {
 });
 
 it('supports moved deprecated config settings', function(): void {
-    $config = GeneralConfig::create()
+    $config = GeneralConfig::create();
+
+    expect($config->generateTransformsBeforePageLoad)->toBeNull();
+
+    $config
         ->defaultCookieDomain('.example.test')
+        ->generateTransformsBeforePageLoad(true)
         ->rememberedUserSessionDuration(7200)
         ->verificationCodeDuration(1800);
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
+        ->and($config->generateTransformsBeforePageLoad)->toBeTrue()
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });

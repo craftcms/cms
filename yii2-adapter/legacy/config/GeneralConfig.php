@@ -32,6 +32,11 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
+    /**
+     * @deprecated 6.0.0 Configure the Asset Transform driver instead.
+     */
+    public ?bool $generateTransformsBeforePageLoad = null;
+
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
@@ -44,6 +49,16 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
         'validationKey' => 'securityKey',
     ];
+
+    /**
+     * @deprecated 6.0.0 Configure the Asset Transform driver instead.
+     */
+    public function generateTransformsBeforePageLoad(?bool $value = true): self
+    {
+        $this->generateTransformsBeforePageLoad = $value;
+
+        return $this;
+    }
 
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 

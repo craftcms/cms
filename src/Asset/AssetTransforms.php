@@ -79,9 +79,10 @@ class AssetTransforms extends Manager
         return $operations;
     }
 
-    public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformResult
+    /** @param array<string, mixed> $settings */
+    public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = []): AssetTransformResult
     {
-        $request = $this->request($asset, $definition);
+        $request = $this->request($asset, $definition, $settings);
 
         return $this->driver($request->driver)->transform($request);
     }
@@ -153,7 +154,8 @@ class AssetTransforms extends Manager
         return $requests;
     }
 
-    private function request(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformRequest
+    /** @param array<string, mixed> $settings */
+    private function request(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = []): AssetTransformRequest
     {
         try {
             $definition = $this->normalizeDefinition($definition);
@@ -183,7 +185,7 @@ class AssetTransforms extends Manager
 
         ksort($normalized);
 
-        return new AssetTransformRequest($asset, $driverHandle, $normalized, []);
+        return new AssetTransformRequest($asset, $driverHandle, $normalized, $settings);
     }
 
     /** @return array<string, mixed> */

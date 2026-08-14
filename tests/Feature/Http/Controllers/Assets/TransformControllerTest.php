@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -76,9 +76,12 @@ describe('generate', function () {
             $asset->getPath(),
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
-        Cms::config()->generateTransformsBeforePageLoad(true);
-
-        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+        $result = app(ImageTransformer::class)->transform(new AssetTransformRequest(
+            $asset,
+            'craft',
+            ['width' => 100],
+            ['generateBeforePageLoad' => true],
+        ));
 
         get($result->url)->assertOk();
     });

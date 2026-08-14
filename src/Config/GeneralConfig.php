@@ -1220,22 +1220,6 @@ class GeneralConfig extends BaseConfig
     public string|false $filenameWordSeparator = '-';
 
     /**
-     * @var bool Whether image transforms should be generated before page load.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $generateTransformsBeforePageLoad = false;
-
-    /**
      * @var string Prefix to use for all type names returned by GraphQL.
      *
      * ::: code
@@ -4398,24 +4382,6 @@ class GeneralConfig extends BaseConfig
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether image transforms should be generated before page load.
-     *
-     * ```php
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $generateTransformsBeforePageLoad
-     */
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }

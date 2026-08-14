@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -113,7 +114,6 @@ it('honors disabled source-format transformations', function (string $filename, 
 ]);
 
 it('recreates the transform index when the asset has been modified since indexing', function () {
-    Cms::config()->generateTransformsBeforePageLoad(false);
     $asset = ($this->createImageAsset)([
         'dateModified' => now()->subMinutes(2),
     ]);
@@ -297,11 +297,15 @@ it('uses the provided asset when immediately generating transforms', function ()
     $assets = Mockery::mock(Assets::class);
     $assets->shouldNotReceive('getAssetById');
     app()->instance(Assets::class, $assets);
-    Cms::config()->generateTransformsBeforePageLoad(true);
 
-    expect(fn () => app(AssetTransforms::class)->transform($asset, [
-        'width' => 100,
-        'height' => 100,
-        'mode' => 'crop',
-    ]))->toThrow(AssetTransformFailedException::class);
+    expect(fn () => $this->transformer->transform(new AssetTransformRequest(
+        $asset,
+        'craft',
+        [
+            'width' => 100,
+            'height' => 100,
+            'mode' => 'crop',
+        ],
+        ['generateBeforePageLoad' => true],
+    )))->toThrow(AssetTransformFailedException::class);
 });
