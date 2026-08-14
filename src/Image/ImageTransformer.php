@@ -76,10 +76,26 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         }
 
         $format = $transform->format ?? ImageTransformHelper::detectTransformFormat($request->asset);
+        $source = clone $request->asset;
+        $source->setTransform(null);
+        $sourceWidth = $source->getWidth();
+        $sourceHeight = $source->getHeight();
+        [$width, $height] = $sourceWidth && $sourceHeight
+            ? ImageHelper::targetDimensions(
+                $sourceWidth,
+                $sourceHeight,
+                $transform->width !== null ? (int) $transform->width : null,
+                $transform->height !== null ? (int) $transform->height : null,
+                $transform->mode,
+                $transform->upscale,
+            )
+            : [null, null];
 
         return new AssetTransformResult(
             url: $url,
             mimeType: File::getMimeTypeByExtension("transform.{$format}") ?? "image/{$format}",
+            width: $width,
+            height: $height,
         );
     }
 

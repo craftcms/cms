@@ -85,6 +85,8 @@ it('runs the configured Craft driver without changing rendition identity', funct
     expect($result->url)->toStartWith('https://example.test/image-transformer-test/')
         ->and($result->url)->toContain('?v=')
         ->and($result->mimeType)->toBe('image/jpeg')
+        ->and($result->width)->toBe(100)
+        ->and($result->height)->toBe(100)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->pluck('id')->all())
         ->toBe([$index->id]);
 });

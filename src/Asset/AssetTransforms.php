@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
@@ -56,8 +58,10 @@ class AssetTransforms extends Manager
 
     public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformResult
     {
-        if (! is_array($definition)) {
-            throw new InvalidAssetTransformException('An Asset Transform definition must be an array.');
+        try {
+            $definition = $this->normalizeDefinition($definition);
+        } catch (ImageTransformException|InvalidArgumentException $exception) {
+            throw new InvalidAssetTransformException($exception->getMessage(), previous: $exception);
         }
 
         $driverHandle = array_key_exists('driver', $definition)
@@ -83,6 +87,29 @@ class AssetTransforms extends Manager
         ksort($normalized);
 
         return $driver->transform(new AssetTransformRequest($asset, $driverHandle, $normalized, []));
+    }
+
+    /** @return array<string, mixed> */
+    private function normalizeDefinition(mixed $definition): array
+    {
+        if (is_array($definition)) {
+            if (! array_key_exists('transform', $definition)) {
+                return $definition;
+            }
+
+            return [
+                ...$this->normalizeDefinition(Arr::pull($definition, 'transform')),
+                ...$definition,
+            ];
+        }
+
+        $transform = ImageTransformHelper::normalizeTransform($definition);
+
+        if ($transform === null) {
+            throw new InvalidAssetTransformException('An Asset Transform definition must be an array, object, or named transform handle.');
+        }
+
+        return Arr::only($transform->getConfig(), array_keys($this->operations));
     }
 
     /** @param string|null $driver */

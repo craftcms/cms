@@ -24,12 +24,11 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
@@ -1771,32 +1770,41 @@ JS, [
     #[AllowedInSandbox]
     public function getImg(mixed $transform = null, ?array $sizes = null): ?Markup
     {
-        if ($this->kind !== FileKind::Image->value) {
+        $transform ??= $this->_transform;
+
+        if ($transform === null) {
+            if ($this->kind !== FileKind::Image->value) {
+                return null;
+            }
+
+            $url = $this->getUrl();
+            $width = $this->getWidth();
+            $height = $this->getHeight();
+        }
+
+        if ($transform !== null) {
+            $result = $this->_tryTransform($transform);
+
+            if ($result === null) {
+                return null;
+            }
+
+            $url = $result->url;
+            $width = $result->width;
+            $height = $result->height;
+        }
+
+        if ($url === null) {
             return null;
         }
 
-        if ($transform) {
-            $oldTransform = $this->_transform;
-            $this->setTransform($transform);
-        }
-
-        if ($url = $this->getUrl()) {
-            $img = Html::tag('img', '', [
-                'src' => $url,
-                'width' => $this->getWidth(),
-                'height' => $this->getHeight(),
-                'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-                'alt' => $this->thumbAlt(),
-            ]);
-        } else {
-            $img = null;
-        }
-
-        if ($transform) {
-            $this->setTransform($oldTransform);
-        }
-
-        return $img ? Template::raw($img) : null;
+        return Template::raw(Html::tag('img', '', [
+            'src' => $url,
+            'width' => $width,
+            'height' => $height,
+            'srcset' => $sizes ? $this->getSrcset($sizes, $transform) : false,
+            'alt' => $this->thumbAlt(),
+        ]));
     }
 
     /**
@@ -1874,52 +1882,45 @@ JS, [
     #[AllowedInSandbox]
     public function getUrlsBySize(array $sizes, mixed $transform = null): array
     {
-        if ($this->kind !== FileKind::Image->value) {
-            return [];
-        }
-
-        if (! $this->allowTransforms()) {
-            return [];
-        }
-
         $urls = [];
+        $transform ??= $this->_transform;
+        $result = $transform !== null ? $this->_tryTransform($transform) : null;
 
-        if (
-            ($transform !== null || $this->_transform) &&
-            ImageHelper::canManipulateAsImage($this->getExtension())
-        ) {
-            $transform = ImageTransformHelper::normalizeTransform($transform ?? $this->_transform);
-        } else {
-            $transform = null;
+        if ($transform !== null) {
+            if ($result === null) {
+                return [];
+            }
         }
 
-        [$currentWidth, $currentHeight] = $this->_dimensions($transform);
-
-        if (! $currentWidth || ! $currentHeight) {
-            return [];
-        }
+        [$currentWidth, $currentHeight] = $result
+            ? [$result->width, $result->height]
+            : $this->_dimensions();
 
         foreach ($sizes as $size) {
             if ($size === '1x') {
-                $urls[$size] = $this->getUrl($transform);
+                $urls[$size] = $result !== null ? $result->url : $this->getUrl();
 
                 continue;
             }
 
             [$value, $unit] = AssetsHelper::parseSrcsetSize($size);
 
-            $sizeTransform = $transform ? $transform->toArray() : [];
-
-            unset($sizeTransform['name'], $sizeTransform['handle']);
+            $sizeTransform = is_array($transform)
+                ? $transform
+                : ($transform !== null ? ['transform' => $transform] : []);
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int) $value;
             } else {
+                if (! $currentWidth) {
+                    continue;
+                }
+
                 $sizeTransform['width'] = (int) ceil($currentWidth * $value);
             }
 
             // Only set the height if the current transform has a height set on it
-            if ($transform && $transform->height) {
+            if ($this->_transformHasHeight($transform) && $currentWidth && $currentHeight) {
                 if ($unit === 'w') {
                     $sizeTransform['height'] = (int) ceil($currentHeight * $sizeTransform['width'] / $currentWidth);
                 } else {
@@ -2067,6 +2068,34 @@ JS, [
         return app(AssetTransforms::class)->transform($this, $definition);
     }
 
+    private function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
+    {
+        try {
+            return $this->transform($definition);
+        } catch (AssetTransformException|NotSupportedException $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
+    private function _transformHasHeight(mixed $transform): bool
+    {
+        if (is_array($transform)) {
+            if (array_key_exists('height', $transform)) {
+                return $transform['height'] !== null;
+            }
+
+            if (! array_key_exists('transform', $transform)) {
+                return false;
+            }
+
+            return $this->_transformHasHeight($transform['transform']);
+        }
+
+        return ImageTransformHelper::normalizeTransform($transform)?->height !== null;
+    }
+
     /**
      * Returns the element’s full URL.
      *
@@ -2092,7 +2121,7 @@ JS, [
 
         // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
-            $url = $this->_url($transform, $immediately);
+            $url = $this->_url($transform);
         }
 
         event($event = new AssetUrlDefined($this, $transform, $url));
@@ -2105,66 +2134,17 @@ JS, [
         return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
-    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
+    private function _url(mixed $transform = null): ?string
     {
+        if ($transform !== null) {
+            return $this->_tryTransform($transform)?->url;
+        }
+
         if (! $this->folderId) {
             return null;
         }
 
         $volume = $this->getVolume();
-
-        if (
-            $transform && (
-                // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
-                // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
-                // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
-                (request()->isSiteRequest() && ! $this->allowTransforms()) ||
-                ! ImageHelper::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
-            )
-        ) {
-            $transform = null;
-        }
-
-        if ($transform) {
-            if (is_array($transform)) {
-                if (isset($transform['width'])) {
-                    $transform['width'] = round((float) $transform['width']);
-                }
-                if (isset($transform['height'])) {
-                    $transform['height'] = round((float) $transform['height']);
-                }
-            }
-
-            $transform = ImageTransformHelper::normalizeTransform($transform);
-
-            if ($immediately === null) {
-                $immediately = Cms::config()->generateTransformsBeforePageLoad;
-            }
-
-            event($event = new TransformGenerating($this, $transform));
-
-            // If a plugin set the url, we'll just use that.
-            if ($event->url !== null) {
-                return Html::encodeSpaces($event->url);
-            }
-
-            $imageTransformer = $transform->getImageTransformer();
-
-            try {
-                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
-            } catch (NotSupportedException) {
-                return null;
-            } catch (ImageTransformException $e) {
-                Log::warning("Couldn’t get image transform URL: {$e->getMessage()}", [__METHOD__]);
-                report($e);
-
-                return null;
-            }
-
-            event(new AfterGenerateTransform($this, $transform, $url));
-
-            return $url;
-        }
 
         if (! $volume->sourceHasUrls() || $volume->isTemporary()) {
             return null;
@@ -2320,11 +2300,9 @@ JS, [
     public function getMimeType(mixed $transform = null): ?string
     {
         $transform ??= $this->_transform;
-        $transform = ImageTransformHelper::normalizeTransform($transform);
 
-        if ($transform?->format) {
-            // Prepend with '.' to let pathinfo() work
-            return File::getMimeTypeByExtension('.'.$transform->format);
+        if ($transform !== null) {
+            return $this->transform($transform)->mimeType;
         }
 
         return $this->_mimeType ?? File::getMimeTypeByExtension($this->_filename);
@@ -2368,6 +2346,12 @@ JS, [
     #[AllowedInSandbox]
     public function getHeight(mixed $transform = null): ?int
     {
+        $transform ??= $this->_transform;
+
+        if ($transform !== null) {
+            return $this->transform($transform)->height;
+        }
+
         return $this->_dimensions($transform)[1];
     }
 
@@ -2389,6 +2373,12 @@ JS, [
     #[AllowedInSandbox]
     public function getWidth(array|string|ImageTransform|null $transform = null): ?int
     {
+        $transform ??= $this->_transform;
+
+        if ($transform !== null) {
+            return $this->transform($transform)->width;
+        }
+
         return $this->_dimensions($transform)[0];
     }
 
