@@ -128,6 +128,8 @@ export const KitchenSink: Story = {
           <li><a href="#">Slug</a> is required.</li>
           <li><a href="#">Feature Image</a> must have at least one item.</li>
         </ul>
+        
+        <craft-button type="button" slot="action" variant="outline" inherit size="small">Action</craft-button>
       </craft-callout>
     `;
   },
