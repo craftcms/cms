@@ -806,6 +806,8 @@ describe('FormRenderer', () => {
                 required: true,
                 layoutUid: 'field-title',
                 width: 50,
+                status: 'modified',
+                statusLabel: 'This field has been modified.',
               },
               control: {
                 type: 'CraftCms\\Cms\\Form\\Controls\\Text',
@@ -976,6 +978,18 @@ describe('FormRenderer', () => {
     expect(tab?.querySelector('craft-field')?.dataset.layoutElement).toBe(
       'field-title'
     );
+    const statusField = tab?.querySelector('craft-field') as
+      | (HTMLElement & {status?: string; statusLabel?: string})
+      | null;
+    await (statusField as unknown as {updateComplete?: Promise<unknown>})
+      ?.updateComplete;
+    expect(statusField?.status).toBe('modified');
+    expect(statusField?.statusLabel).toBe('This field has been modified.');
+    expect(
+      statusField?.shadowRoot
+        ?.querySelector('.status-badge')
+        ?.classList.contains('modified')
+    ).toBe(true);
     expect(tab?.querySelector('[slot="tip"] em')?.textContent).toBe('sentence');
     expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
       'publicly'

@@ -27,6 +27,8 @@
     warningHtml?: string;
     layoutUid?: string;
     width?: number;
+    status?: string;
+    statusLabel?: string;
   };
 
   const props = defineProps<{
@@ -118,6 +120,8 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
+    :status="node.props.status"
+    :status-label="node.props.statusLabel"
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >
