@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
+
 ## 6.0.0-alpha.17 - 2026-08-18
 
 - Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.
