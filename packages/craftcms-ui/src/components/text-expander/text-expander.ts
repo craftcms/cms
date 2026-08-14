@@ -64,6 +64,13 @@ interface TextExpanderMatch {
 // Queries may contain Unicode letters or numbers, underscores, and hyphens;
 // any other character terminates the active query.
 const queryPattern = /^[\p{L}\p{N}_-]*$/u;
+const defaultListboxLabel = 'Suggestions';
+// Label announced for the suggestion listbox, keyed by trigger character.
+// Add an entry here whenever a new trigger character is introduced.
+const triggerLabels: Readonly<Record<string, string>> = {
+  ':': t('Environment'),
+  '@': t('Users'),
+};
 const targetAttributes = [
   'role',
   'aria-autocomplete',
@@ -194,7 +201,7 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.slot = 'listbox';
     this.#listbox.setAttribute('part', 'listbox');
     this.#listbox.role = 'listbox';
-    this.#listbox.setAttribute('aria-label', t('Suggestions'));
+    this.#listbox.setAttribute('aria-label', t(defaultListboxLabel));
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
     this.#listbox.addEventListener('combobox-select', this.#onComboboxSelect);
@@ -294,7 +301,10 @@ export default class CraftTextExpander extends LitElement {
     target.setAttribute('aria-autocomplete', 'list');
     target.setAttribute('aria-controls', controls);
     target.setAttribute('data-text-expander-input', '');
-    target.removeAttribute('role');
+
+    if (target.getAttribute('role') === 'combobox') {
+      target.removeAttribute('role');
+    }
 
     if (target instanceof HTMLInputElement) {
       target.setAttribute('aria-haspopup', 'listbox');
@@ -422,6 +432,8 @@ export default class CraftTextExpander extends LitElement {
     this.#cancelPending();
     this.#match = null;
     this.#resetPopup();
+
+    this.#announce(t(''))
   };
 
   #evaluate(): void {
@@ -539,11 +551,27 @@ export default class CraftTextExpander extends LitElement {
     return result;
   }
 
+  /** The character of the currently active trigger, if a match is open. */
+  get #activeTrigger(): string | null {
+    return this.#match?.character ?? null;
+  }
+
+  #updateListboxLabel(): void {
+    const label =
+      (this.#activeTrigger !== null
+        ? triggerLabels[this.#activeTrigger]
+        : undefined) ?? defaultListboxLabel;
+
+    this.#listbox.setAttribute('aria-label', t(label));
+  }
+
   #showOptions(options: readonly TextExpanderOption[]): void {
     this.#stopCombobox();
     this.#visibleOptions = options;
     this.#listbox.replaceChildren();
     this.#listbox.hidden = this.loading;
+
+    this.#updateListboxLabel();
 
     options.forEach((option, index) => {
       const element = document.createElement('craft-option');
