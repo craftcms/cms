@@ -712,4 +712,23 @@ describe('craft-text-expander', () => {
       expect(liveRegion.textContent?.trim()).toBe('Suggestions collapsed')
     );
   });
+
+  it('clears the live region after the announcement timeout elapses', async () => {
+    vi.useFakeTimers();
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+    const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
+
+    type(target, '@xyz');
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(liveRegion.textContent?.trim()).toBe('No suggestions');
+
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(liveRegion.textContent?.trim()).toBe('No suggestions');
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(liveRegion.textContent?.trim()).toBe('');
+  });
 });

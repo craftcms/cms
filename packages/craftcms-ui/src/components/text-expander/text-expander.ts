@@ -84,6 +84,8 @@ const popoverConfig = {
   handlesAccessibility: false,
   visibilityTriggerFunction: undefined,
 };
+// How long an announcement stays in the live region before it's cleared out
+const announcementTimeout = 5000;
 
 let nextId = 0;
 
@@ -122,6 +124,7 @@ export default class CraftTextExpander extends LitElement {
   #request = 0;
   #requestController: AbortController | null = null;
   #debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  #announceTimeout: ReturnType<typeof setTimeout> | null = null;
   #composing = false;
   #inputRange: InputRange | null = null;
   #caretRect = new DOMRect();
@@ -147,6 +150,10 @@ export default class CraftTextExpander extends LitElement {
   override disconnectedCallback(): void {
     this.#unbindTarget();
     this.#listbox?.remove();
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
     super.disconnectedCallback();
   }
 
@@ -722,12 +729,22 @@ export default class CraftTextExpander extends LitElement {
   }
 
   #announce(message: string): void {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+
     this.announcement = '';
     queueMicrotask(() => {
       if (this.isConnected) {
         this.announcement = message;
       }
     });
+
+    this.#announceTimeout = setTimeout(() => {
+      this.#announceTimeout = null;
+      this.announcement = '';
+    }, announcementTimeout);
   }
 }
 
