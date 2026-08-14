@@ -64,11 +64,11 @@ interface TextExpanderMatch {
 // Queries may contain Unicode letters or numbers, underscores, and hyphens;
 // any other character terminates the active query.
 const queryPattern = /^[\p{L}\p{N}_-]*$/u;
-const defaultListboxLabel = 'Suggestions';
+const defaultListboxLabel = t('Suggestions');
 // Label announced for the suggestion listbox, keyed by trigger character.
 // Add an entry here whenever a new trigger character is introduced.
 const triggerLabels: Readonly<Record<string, string>> = {
-  ':': t('Environment'),
+  '#': t('Environment'),
   '@': t('Users'),
 };
 const targetAttributes = [
@@ -201,10 +201,9 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.slot = 'listbox';
     this.#listbox.setAttribute('part', 'listbox');
     this.#listbox.role = 'listbox';
-    this.#listbox.setAttribute('aria-label', t(defaultListboxLabel));
+    this.#listbox.setAttribute('aria-label', defaultListboxLabel);
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
-    this.#listbox.addEventListener('combobox-select', this.#onComboboxSelect);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
     this.append(this.#listbox);
   }
@@ -411,40 +410,20 @@ export default class CraftTextExpander extends LitElement {
     this.#select(Number((event.target as HTMLElement).dataset.index));
   };
 
-  #onComboboxSelect = (event: Event): void => {
-    const index = Number((event.target as HTMLElement).dataset.index);
-    const option = this.#visibleOptions[index]!;
-
-    this.#announce(
-      t('{label}, {position, number} of {total, number} options', {
-        label: option.label,
-        position: index + 1,
-        total: this.#visibleOptions.length,
-      })
-    );
-  };
-
   #onPopoverHide = (event: Event): void => {
     if (event.target !== this.popoverElement) {
       return;
     }
 
-    // Capture whether the active trigger has a specific label, and the
-    // listbox's current label, before #resetPopup()/#match clearing make
-    // them stale.
-    const activeLabel =
-      this.#activeTrigger !== null
-        ? triggerLabels[this.#activeTrigger]
-        : undefined;
-    const label = this.#listbox.getAttribute('aria-label') ?? t(defaultListboxLabel);
+    const label = this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
 
     this.#cancelPending();
     this.#match = null;
     this.#resetPopup();
 
     this.#announce(
-      activeLabel !== undefined
-        ? t('{name} suggestions collapsed', {name})
+      label !== defaultListboxLabel
+        ? t('{name} suggestions collapsed', {name: label})
         : t('Suggestions collapsed')
     );
   };
@@ -575,7 +554,7 @@ export default class CraftTextExpander extends LitElement {
         ? triggerLabels[this.#activeTrigger]
         : undefined) ?? defaultListboxLabel;
 
-    this.#listbox.setAttribute('aria-label', t(label));
+    this.#listbox.setAttribute('aria-label', label);
   }
 
   #showOptions(options: readonly TextExpanderOption[]): void {
