@@ -14,6 +14,7 @@ use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -25,6 +26,7 @@ use CraftCms\Cms\Image\Events\TransformSaving;
 use CraftCms\Cms\Image\ImageTransformers;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Yii2Adapter\Asset\LegacyImageTransformerDriver;
 use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Component;
@@ -295,7 +297,13 @@ class ImageTransforms extends Component
     /** @internal */
     public static function finalizeRegistrationEvents(): void
     {
-        TypeRegistryCompatibility::reconcile(app(ImageTransformers::class), Craft::$app->getImageTransforms(), self::EVENT_REGISTER_IMAGE_TRANSFORMERS);
+        $transformers = app(ImageTransformers::class);
+        $existingTransformers = $transformers->types();
+        TypeRegistryCompatibility::reconcile($transformers, Craft::$app->getImageTransforms(), self::EVENT_REGISTER_IMAGE_TRANSFORMERS);
+
+        foreach ($transformers->types()->diff($existingTransformers) as $transformer) {
+            app(AssetTransforms::class)->extend($transformer, fn() => new LegacyImageTransformerDriver($transformer));
+        }
     }
 
     private function service(): ImageTransformsService

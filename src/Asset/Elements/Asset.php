@@ -1982,7 +1982,7 @@ JS, [
         return app(AssetTransforms::class)->transform($this, $definition);
     }
 
-    private function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
+    protected function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
     {
         try {
             return $this->transform($definition);

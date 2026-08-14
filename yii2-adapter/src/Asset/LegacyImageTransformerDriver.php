@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Yii2Adapter\Asset;
+
+use Craft;
+use craft\base\imagetransforms\ImageTransformerInterface;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
+use LogicException;
+
+/** @internal */
+class LegacyImageTransformerDriver implements AssetTransformDriver
+{
+    public function __construct(private readonly string $transformer)
+    {
+    }
+
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition($this->transformer);
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        if (!is_a($this->transformer, ImageTransformerInterface::class, true)) {
+            throw new LogicException("Legacy image transformer [{$this->transformer}] is invalid.");
+        }
+
+        $transform = new ImageTransform($request->operations);
+        $transform->setTransformer($this->transformer);
+
+        if (!($request->settings['legacyBeforeGenerate'] ?? false)) {
+            event($event = new TransformGenerating($request->asset, $transform));
+
+            if ($event->url !== null) {
+                return self::result($request->asset, $transform, Html::encodeSpaces($event->url));
+            }
+        }
+
+        $url = Craft::$app->getImageTransforms()
+            ->getImageTransformer($this->transformer)
+            ->getTransformUrl($request->asset, $transform, (bool) ($request->settings['generateBeforePageLoad'] ?? false));
+        $url = Html::encodeSpaces($url);
+
+        event(new AfterGenerateTransform($request->asset, $transform, $url));
+
+        return self::result($request->asset, $transform, $url);
+    }
+
+    public static function result(Asset $asset, ImageTransform $transform, string $url): AssetTransformResult
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+        $mimeType = is_string($path) ? File::getMimeTypeByExtension($path) : null;
+        $format = $transform->format ?? $asset->getExtension();
+        $mimeType ??= File::getMimeTypeByExtension("file.{$format}");
+
+        if (!str_starts_with($mimeType ?? '', 'image/')) {
+            $mimeType = 'image/jpeg';
+        }
+
+        return new AssetTransformResult($url, $mimeType);
+    }
+}

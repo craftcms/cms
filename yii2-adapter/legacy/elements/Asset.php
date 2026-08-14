@@ -14,13 +14,18 @@ namespace craft\elements;
 use Craft;
 use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Yii2Adapter\Asset\LegacyImageTransformerDriver;
 use Override;
 use Twig\Markup;
 
@@ -116,10 +121,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     #[AllowedInSandbox]
     public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
     {
-        $immediately = $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        $settings = $immediately === null ? [] : ['generateBeforePageLoad' => $immediately];
-
-        return app(AssetTransforms::class)->transform($this, $definition, $settings);
+        return app(AssetTransforms::class)->transform($this, $definition);
     }
 
     #[Override]
@@ -132,6 +134,38 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
             return parent::getUrl($transform ?? $this->_transform, $immediately);
         } finally {
             $this->_immediately = $previous;
+        }
+    }
+
+    #[Override]
+    protected function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
+    {
+        $immediately = $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        $settings = $immediately === null ? [] : ['generateBeforePageLoad' => $immediately];
+        $candidateDriver = null;
+
+        try {
+            if (!is_array($definition) || !array_key_exists('driver', $definition)) {
+                $transform = ImageTransformHelper::normalizeTransform($definition);
+
+                if ($transform?->getTransformer() !== ImageTransform::DEFAULT_TRANSFORMER) {
+                    $definition = $transform;
+                    $candidateDriver = $transform->getTransformer();
+                    event($event = new TransformGenerating($this, $transform));
+
+                    if ($event->url !== null) {
+                        return LegacyImageTransformerDriver::result($this, $transform, Html::encodeSpaces($event->url));
+                    }
+
+                    $settings['legacyBeforeGenerate'] = true;
+                }
+            }
+
+            return app(AssetTransforms::class)->transform($this, $definition, $settings, $candidateDriver);
+        } catch (AssetTransformException|NotSupportedException $exception) {
+            report($exception);
+
+            return null;
         }
     }
 

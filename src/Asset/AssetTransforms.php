@@ -80,9 +80,9 @@ class AssetTransforms extends Manager
     }
 
     /** @param array<string, mixed> $settings */
-    public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = []): AssetTransformResult
+    public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = [], ?string $candidateDriver = null): AssetTransformResult
     {
-        $request = $this->request($asset, $definition, $settings);
+        $request = $this->request($asset, $definition, $settings, $candidateDriver);
 
         return $this->driver($request->driver)->transform($request);
     }
@@ -155,7 +155,7 @@ class AssetTransforms extends Manager
     }
 
     /** @param array<string, mixed> $settings */
-    private function request(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = []): AssetTransformRequest
+    private function request(Asset $asset, #[\SensitiveParameter] mixed $definition, array $settings = [], ?string $candidateDriver = null): AssetTransformRequest
     {
         try {
             $definition = $this->normalizeDefinition($definition);
@@ -165,7 +165,7 @@ class AssetTransforms extends Manager
 
         $driverHandle = array_key_exists('driver', $definition)
             ? Arr::pull($definition, 'driver')
-            : $this->getDefaultDriver();
+            : $candidateDriver ?? $this->getDefaultDriver();
 
         if (! is_string($driverHandle) || $driverHandle === '') {
             throw new AssetTransformDriverNotFoundException('The selected Asset Transform driver is invalid.');
