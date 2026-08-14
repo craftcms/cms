@@ -298,11 +298,12 @@ export default class CraftTextExpander extends LitElement {
 
     if (target instanceof HTMLInputElement) {
       target.setAttribute('aria-haspopup', 'listbox');
-      target.setAttribute('aria-expanded', 'false');
     } else {
       this.#restoreTargetAttribute(target, 'aria-haspopup');
-      this.#restoreTargetAttribute(target, 'aria-expanded');
     }
+    // aria-expanded is only valid on a combobox role, and the target keeps
+    // its native textbox role, so it's never applied.
+    this.#restoreTargetAttribute(target, 'aria-expanded');
   }
 
   #restoreTargetAttributes(target: TextExpanderTarget): void {
@@ -616,30 +617,28 @@ export default class CraftTextExpander extends LitElement {
     }
 
     target.setAttribute('aria-busy', String(this.loading));
-    if (target instanceof HTMLInputElement) {
-      target.setAttribute('aria-expanded', 'true');
-    }
     await this.popoverElement.show();
     if (!this.#match || target !== this.#boundTarget) {
       return;
     }
     if (this.#visibleOptions.length) {
       this.#combobox?.start();
+      // The combobox library sets aria-expanded as part of start(), but that
+      // attribute is only valid on a combobox role, which the target doesn't have.
+      this.#restoreTargetAttribute(target, 'aria-expanded');
 
       // Let the combobox clear its previous selection before options are rebuilt.
       target.removeEventListener('input', this.#onInput);
       target.addEventListener('input', this.#onInput);
-
-      if (target instanceof HTMLTextAreaElement) {
-        this.#restoreTargetAttribute(target, 'aria-expanded');
-      }
     }
   }
 
   #stopCombobox(): void {
     this.#combobox?.stop();
 
-    if (this.#boundTarget instanceof HTMLTextAreaElement) {
+    // The combobox library sets aria-expanded as part of stop(), but that
+    // attribute is only valid on a combobox role, which the target doesn't have.
+    if (this.#boundTarget) {
       this.#restoreTargetAttribute(this.#boundTarget, 'aria-expanded');
     }
   }
@@ -689,9 +688,6 @@ export default class CraftTextExpander extends LitElement {
     if (target) {
       this.#restoreTargetAttribute(target, 'aria-activedescendant');
       this.#restoreTargetAttribute(target, 'aria-busy');
-      if (target instanceof HTMLInputElement) {
-        target.setAttribute('aria-expanded', 'false');
-      }
     }
   }
 

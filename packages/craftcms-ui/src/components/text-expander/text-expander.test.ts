@@ -434,12 +434,12 @@ describe('craft-text-expander', () => {
     target.dispatchEvent(tab);
     expect(tab.defaultPrevented).toBe(false);
     expect(target.value).toBe('@a');
-    expect(target.getAttribute('aria-expanded')).toBe('true');
+    expect(popover(expander).opened).toBe(true);
 
     target.blur();
     await Promise.resolve();
 
-    expect(target.getAttribute('aria-expanded')).toBe('false');
+    expect(popover(expander).opened).toBe(false);
     expect(options(expander)).toHaveLength(0);
   });
 
