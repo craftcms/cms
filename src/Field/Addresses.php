@@ -396,7 +396,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every address was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
@@ -417,6 +421,37 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
+        // Was the value posted in the new (delta) format?
+        $delta = isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder']);
+
+        if ($delta) {
+            $newAddressData = $value['entries'] ?? $value['blocks'] ?? [];
+            $newSortOrder = $value['sortOrder'] ?? null;
+
+            // Were the addresses posted by UUID or ID?
+            $firstKey = (string) array_key_first($newAddressData);
+            $firstSortOrder = $newSortOrder !== null ? (string) reset($newSortOrder) : '';
+            $uids = (
+                str_starts_with($firstKey, 'uid:') ||
+                str_starts_with($firstSortOrder, 'uid:') ||
+                Str::isUuid($firstKey) ||
+                Str::isUuid($firstSortOrder)
+            );
+
+            if ($uids) {
+                // Strip out the `uid:` key prefixes. New addresses are posted with them; addresses
+                // that were already on the element aren't, so both need to be normalized.
+                $newAddressData = array_combine(
+                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($newAddressData)),
+                    array_values($newAddressData),
+                );
+            }
+        } else {
+            $uids = false;
+            $newAddressData = $value;
+            $newSortOrder = array_keys($value);
+        }
+
         // Get the old addresses
         if ($element->id) {
             /** @var Address[] $oldAddressesById */
@@ -426,10 +461,38 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->drafts(null)
                 ->revisions(null)
                 ->status(null)
-                ->indexBy('id')
+                ->get()
+                ->keyBy($uids ? 'uid' : 'id')
                 ->all();
         } else {
             $oldAddressesById = [];
+        }
+
+        // Fall back to the addresses' current order if only their data was posted
+        $newSortOrder ??= array_keys($oldAddressesById);
+
+        // Map the canonical addresses' UUIDs to the derivatives', in case the data was posted
+        // with them (which is the case for the first save after a draft was created)
+        $canonicalUidMap = [];
+
+        if ($uids) {
+            $derivativeIds = [];
+
+            foreach ($oldAddressesById as $uid => $address) {
+                if ($address->getIsDerivative()) {
+                    $derivativeIds[$address->getCanonicalId()] = $uid;
+                }
+            }
+
+            if ($derivativeIds !== []) {
+                $canonicalUids = DB::table(DbTable::ELEMENTS)
+                    ->whereIn('id', array_keys($derivativeIds))
+                    ->pluck('uid', 'id');
+
+                foreach ($canonicalUids as $canonicalId => $canonicalUid) {
+                    $canonicalUidMap[$canonicalUid] = $derivativeIds[$canonicalId];
+                }
+            }
         }
 
         $addresses = [];
@@ -437,6 +500,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseAddressFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
+
+        if ($delta && $baseAddressFieldNamespace) {
+            $baseAddressFieldNamespace .= '.entries';
+        }
 
         $nativeFields = [
             'title',
@@ -458,7 +525,18 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             'longitude',
         ];
 
-        foreach ($value as $addressId => $addressData) {
+        foreach ($newSortOrder as $postedAddressId) {
+            // New addresses are posted with a `uid:` key prefix; addresses that were already
+            // on the element aren't
+            $addressId = $uids ? Str::chopStart((string) $postedAddressId, 'uid:') : $postedAddressId;
+            $addressData = $newAddressData[$addressId] ?? [];
+
+            // If this is a preexisting address but we don't have a record of it,
+            // check to see if it was recently duplicated for a draft.
+            if (! isset($oldAddressesById[$addressId]) && isset($canonicalUidMap[$addressId])) {
+                $addressId = $canonicalUidMap[$addressId];
+            }
+
             // Existing address?
             if (isset($oldAddressesById[$addressId])) {
                 /** @var Address $address */
@@ -484,10 +562,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->setPrimaryOwner($element);
                 $address->setOwner($element);
                 $address->siteId = $element->siteId;
+
+                // Use the provided UUID, so the address can persist across future autosaves
+                if ($uids) {
+                    $address->uid = $addressId;
+                }
             }
 
             if (isset($addressData['enabled'])) {
                 $address->enabled = (bool) $addressData['enabled'];
+            }
+
+            // The Address form control nests the address format fields under an `address` key
+            if (isset($addressData['address']) && is_array($addressData['address'])) {
+                $addressData += $addressData['address'];
             }
 
             foreach ($nativeFields as $field) {
@@ -500,7 +588,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
             // Set the content post location on the entry if we can
             if ($baseAddressFieldNamespace) {
-                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$addressId.fields");
+                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$postedAddressId.fields");
             }
 
             if (isset($addressData['fields'])) {
