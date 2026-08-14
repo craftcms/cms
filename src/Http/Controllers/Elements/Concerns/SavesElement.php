@@ -39,8 +39,6 @@ trait SavesElement
             return;
         }
 
-        $enabled = $this->request->boolean('setEnabled', true) ? true : null;
-
         if (! is_null($enabledForSite = $this->request->input('enabledForSite'))) {
             if (is_array($enabledForSite)) {
                 // Make sure they are allowed to edit all of the posted site IDs
@@ -55,9 +53,23 @@ trait SavesElement
             }
 
             $element->setEnabledForSite($enabledForSite);
-        } elseif (isset($enabled)) {
-            $element->enabled = $enabled;
+        } elseif ($this->request->has('enabled')) {
+            // The status control was posted, so it decides — `false` included.
+            // An indeterminate switch ('-') describes sites that disagree; it
+            // isn't an answer, so it leaves the global status alone.
+            if ($this->request->input('enabled') !== '-') {
+                $element->enabled = $this->request->boolean('enabled');
+            }
         }
+
+        // Deliberately unlike Craft 5, which resolved this as
+        // `_param('enabled', _param('setEnabled', true) ? true : null)` — a
+        // POST carrying no status at all force-enabled the element, and
+        // `setEnabled=0` (Live Preview, craftcms/cms#15670) existed to opt out
+        // of that. Nothing here force-enables, so a save that doesn't carry a
+        // status leaves it alone, and `setEnabled` has nothing to suppress. It
+        // stays in `ElementRequest`'s exclude list so a posted value can't
+        // reach `setAttributesFromRequest()`. See CHANGELOG-WIP.md.
 
         if ($this->request->boolean('fresh')) {
             $element->setIsFresh();

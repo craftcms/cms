@@ -26,6 +26,7 @@ import { useElementEditPage } from "@/modules/elements/composables/useElementEdi
 import { useElementActionMenu } from "@/modules/elements/composables/useElementActionMenu";
 import VarDump from "@/common/components/VarDump.vue";
 import RevisionsList from "@/modules/elements/components/RevisionsList.vue";
+import ActionMenu from "@/common/components/ActionMenu.vue";
 
 const props = defineProps<{
   /**
@@ -152,57 +153,56 @@ function reload(): void {
       </div>
 
       <form method="post" @submit.prevent="save()">
-        <header class="sticky top-0 z-1000 bg-white">
-          <div class="flex px-4 py-2 justify-between">
-            <div class="grid gap-1">
-              <div class="flex gap-2 items-center">
-                <h1 class="text-xl">{{ payload.title }}</h1>
+        <header
+          class="sticky top-0 z-1000 bg-white pt-2 border-b border-b-neutral-border-quiet grid gap-2"
+        >
+          <div class="px-4">
+            <h1 class="text-xl/7">
+              {{ payload.title }}
+            </h1>
+          </div>
+          <div class="flex px-4 justify-between">
+            <div class="flex gap-2 items-center">
+              <craft-badge
+                fill="info"
+                v-if="payload.isProvisionalDraft"
+                class="relative text-sm font-normal inline-flex"
+              >
+                <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+                {{ t("Edited") }}
+              </craft-badge>
+              <DynamicHtmlRenderer
+                v-else-if="payload.statusLabelHtml"
+                :html="payload.statusLabelHtml"
+              />
 
-                <craft-badge
-                  fill="info"
-                  v-if="payload.isProvisionalDraft"
-                  class="relative top-[1px]"
-                >
-                  <craft-icon name="pen-circle" slot="prefix"></craft-icon>
-                  {{ t("Edited") }}
-                </craft-badge>
-              </div>
+              <!--              <template v-if="viewButtons.length === 1">-->
+              <!--                <a-->
+              <!--                  v-for="viewButton in viewButtons"-->
+              <!--                  :key="viewButton.key"-->
+              <!--                  href="#"-->
+              <!--                  >{{ viewButton.label }}-->
+              <!--                  <craft-icon-->
+              <!--                    class="no-underline"-->
+              <!--                    name="up-right-from-square"-->
+              <!--                  ></craft-icon>-->
+              <!--                </a>-->
+              <!--              </template>-->
 
-              <div class="flex gap-4">
-                <DynamicHtmlRenderer
-                  v-if="payload.statusLabelHtml"
-                  :html="payload.statusLabelHtml"
-                />
-
-                <div class="flex gap-2 items-center">
-                  <template v-if="viewButtons.length === 1">
-                    <a
-                      v-for="viewButton in viewButtons"
-                      :key="viewButton.key"
-                      href="#"
-                      >{{ viewButton.label }}
-                      <craft-icon
-                        class="no-underline"
-                        name="up-right-from-square"
-                      ></craft-icon>
-                    </a>
-                  </template>
-                </div>
-
-                <!-- Autosave state sits next to the save button, where the legacy
-                editor puts its spinner and checkmark. -->
-                <span
-                  v-if="autosaveMessage"
-                  class="text-sm text-neutral-text-quiet"
-                  role="status"
-                  aria-live="polite"
-                  :class="{
-                    'text-danger-text': autosave.status.value === 'failed',
-                  }"
-                >
-                  {{ autosaveMessage }}
-                </span>
-              </div>
+              <VarDump :data="autosave.status.value" />
+              <craft-callout
+                v-if="autosaveMessage"
+                class="text-sm text-neutral-text-quiet"
+                role="status"
+                inline
+                appearance="plain"
+                padding="none"
+                :variant="autosave.status.value === 'saved' ? 'success' : 'danger'"
+                aria-live="polite"
+              >
+                <craft-spinner v-if="autosave.status.value === 'saving'" slot="prefix"></craft-spinner>
+                {{ autosaveMessage }}
+              </craft-callout>
             </div>
 
             <div class="element-editor__status">
@@ -233,21 +233,27 @@ function reload(): void {
               :read-only="payload.readOnly"
             />
           </div>
-          <div class="element-notices">
-            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+
+          <div class="element-notices px-4">
+            <div v-if="form.hasErrors" class="px-4">
+              <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+            </div>
             <craft-callout
               v-if="activity.isStale.value"
               variant="warning"
               icon="triangle-exclamation"
+              appearance="fill"
+              rounded="none"
             >
               {{ staleMessage }}
 
               <craft-button
                 slot="action"
                 type="button"
-                appearance="outline"
+                variant="outline"
                 size="small"
                 @click="reload"
+                inherit
               >
                 {{ t("Reload") }}
               </craft-button>
@@ -259,27 +265,6 @@ function reload(): void {
               icon="lock"
             >
               {{ t("This is a read-only view.") }}
-            </craft-callout>
-
-            <craft-callout
-              v-if="payload.notice"
-              variant="info"
-              icon="edit"
-              rounded="none"
-              appearance="fill"
-            >
-              {{ payload.notice }}
-              <craft-button
-                v-if="payload.canDiscardDraft"
-                slot="action"
-                type="button"
-                variant="outline"
-                size="small"
-                @click="discardDraft"
-                inherit
-              >
-                {{ t("Discard changes") }}
-              </craft-button>
             </craft-callout>
 
             <craft-callout
@@ -318,29 +303,31 @@ function reload(): void {
             <craft-tabs>
               <craft-tab slot="tab">Info</craft-tab>
               <div slot="panel">
-                <slot name="details-header" :payload="payload" />
+                <div class="grid gap-4">
+                  <slot name="details-header" :payload="payload" />
 
-                <!--
+                  <!--
                   The meta fields render as their own Form, bridged into the same
                   Inertia form as the field layout, so they submit as ordinary
                   inputs.
                 -->
-                <craft-field-group>
-                  <FormRenderer
-                    v-if="sidebarPayload"
-                    ref="sidebarRenderer"
-                    :payload="sidebarPayload"
-                    :errors="sidebarErrors"
-                    @update:mutation="onSidebarMutation"
-                  />
-                </craft-field-group>
+                  <craft-field-group>
+                    <FormRenderer
+                      v-if="sidebarPayload"
+                      ref="sidebarRenderer"
+                      :payload="sidebarPayload"
+                      :errors="sidebarErrors"
+                      @update:mutation="onSidebarMutation"
+                    />
+                  </craft-field-group>
 
-                <hr />
-                <div>
-                  <DynamicHtmlRenderer
-                    v-if="payload.metadataHtml"
-                    :html="payload.metadataHtml"
-                  />
+                  <hr />
+                  <div>
+                    <DynamicHtmlRenderer
+                      v-if="payload.metadataHtml"
+                      :html="payload.metadataHtml"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -355,13 +342,33 @@ function reload(): void {
           </div>
         </div>
       </form>
+      <div class="sticky bottom-0 z-1000">
+        <div
+          class="p-4 flex justify-between bg-info-fill-quiet border-t border-b border-t-info-border-quiet border-b-info-border-quiet"
+        >
+          <div class="flex gap-2 items-center">
+            <craft-icon name="pencil"></craft-icon>
+            {{ payload.notice }}
+          </div>
+
+          <craft-button
+            v-if="payload.canDiscardDraft"
+            slot="action"
+            type="button"
+            variant="outline"
+            @click="discardDraft"
+            inherit
+          >
+            {{ t("Discard changes") }}
+          </craft-button>
+        </div>
+      </div>
     </main>
   </AppLayout>
 </template>
 
 <style scoped lang="css">
 .element-editor {
-  padding-block-end: var(--c-spacing-xl);
   background-color: white;
   border-radius: var(--c-radius-md);
   border: 1px solid red;

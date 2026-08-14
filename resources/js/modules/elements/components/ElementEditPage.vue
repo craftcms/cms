@@ -173,15 +173,18 @@ useAppLayout(() => ({
     variant="warning"
     icon="triangle-exclamation"
     class="mb-4"
+    appearance="fill"
+    rounded="none"
   >
     {{ staleMessage }}
 
     <craft-button
       slot="action"
       type="button"
-      appearance="outline"
+      variant="outline"
       size="small"
       @click="reload"
+      inherit
     >
       {{ t("Reload") }}
     </craft-button>
