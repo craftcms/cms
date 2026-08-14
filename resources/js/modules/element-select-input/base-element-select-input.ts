@@ -55,6 +55,11 @@ const DEFAULTS = {
   onRemoveElements: noop,
   sortable: true,
   selectable: true,
+  // Whether chips get an action menu at all: it's forwarded to
+  // `app/render-elements` for the chips fetched after a selection, and gates
+  // the client-side `Craft.addActionsToChip()` injection in `addElements()`.
+  // Set it to `false` when the host renders the chips' menus itself (e.g.
+  // `ElementSelectControl.vue`).
   showActionMenu: true,
   editable: true,
   prevalidate: false,
@@ -473,7 +478,9 @@ export class BaseElementSelectInput extends Base {
   addElements($elements: any): void {
     for (let i = 0; i < $elements.length; i++) {
       const $element = $elements.eq(i);
-      const actions = this.defineElementActions($element);
+      const actions = this.settings.showActionMenu
+        ? this.defineElementActions($element)
+        : [];
 
       if (actions.length) {
         Craft.addActionsToChip($element, actions);
@@ -677,8 +684,7 @@ export class BaseElementSelectInput extends Base {
           icon: async () => await Craft.ui.icon('arrows-rotate'),
           label: Craft.t('app', 'Replace'),
           callback: () => {
-            this._$replaceElement = $element;
-            this.showModal();
+            this.showReplaceModal($element);
           },
         });
       }
@@ -687,16 +693,41 @@ export class BaseElementSelectInput extends Base {
         icon: async () => await Craft.ui.icon('remove'),
         label: Craft.t('app', 'Remove'),
         callback: () => {
-          if (this.elementSelect?.isSelected($element)) {
-            this.removeElement(this.elementSelect.getSelectedItems());
-          } else {
-            this.removeElement($element);
-          }
+          this.removeElementOrSelection($element);
         },
       });
     }
 
     return actions;
+  }
+
+  /**
+   * Opens the element selector modal with `$element` staged as the chip the
+   * next selection should replace.
+   *
+   * The Replace behavior lives here rather than inline in
+   * {@link defineElementActions} so consumers that render the chip's action
+   * menu themselves — `ElementSelectControl.vue` via
+   * `<craft-element-select-input>.replaceElement()` — trigger the same flow as the
+   * client-injected menu the Twig stack still gets.
+   */
+  showReplaceModal($element: any): void {
+    this._$replaceElement = $element;
+    this.showModal();
+  }
+
+  /**
+   * Removes `$element`, or — when it's part of the current multi-selection —
+   * the whole selection, matching the Remove action's long-standing behavior.
+   * Shared with consumers that render the menu themselves; see
+   * {@link showReplaceModal}.
+   */
+  removeElementOrSelection($element: any): void {
+    if (this.elementSelect?.isSelected($element)) {
+      this.removeElement(this.elementSelect.getSelectedItems());
+    } else {
+      this.removeElement($element);
+    }
   }
 
   createElementEditor($element: any, settings?: any): any {
