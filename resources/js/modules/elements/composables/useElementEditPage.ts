@@ -1,7 +1,7 @@
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {computed, nextTick, onBeforeUnmount, ref, watch} from 'vue';
+import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {FormPayload} from '@/modules/forms/types';
@@ -115,7 +115,12 @@ export function useElementEditPage({saveData}: Options = {}) {
     computed(() => pageProps() as unknown as ElementEditPayload)
   );
 
-  const formPayload = computed(() => props.form);
+  // Autosave answers with the field layout as the server now sees it, and
+  // applying it is the only way a nested element the save just created — a new
+  // Matrix entry or address — receives its own Form payload. Until it does, the
+  // block has nothing to render but a spinner.
+  const savedForm = shallowRef<FormPayload | null>(null);
+  const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
   const form = useForm<Record<string, any>>({});
 
@@ -188,11 +193,48 @@ export function useElementEditPage({saveData}: Options = {}) {
     (draftId) => autosave.setDraftId(draftId)
   );
 
+  /**
+   * Whether the layout autosave just returned is being handed to the renderer.
+   * Reconciling it emits a mutation of its own, but that's the server echoing
+   * what it already saved rather than a fresh edit, so it must not re-arm
+   * autosave — which would save again, and never settle.
+   */
+  let applyingSavedForm = false;
+
+  watch(
+    () => autosave.form.value,
+    (payload) => {
+      if (!payload) {
+        return;
+      }
+
+      applyingSavedForm = true;
+      savedForm.value = payload;
+      // Released after the flush, so the renderer's pre-flush reconcile — and
+      // the mutation it emits — is covered.
+      void nextTick(() => (applyingSavedForm = false));
+    },
+    {flush: 'sync'}
+  );
+
+  // A payload arriving by Inertia visit is the newer of the two; drop what
+  // autosave stashed so it stops shadowing it.
+  watch(
+    () => props.form,
+    () => {
+      savedForm.value = null;
+      autosave.clearForm();
+    }
+  );
+
   // The renderers' change callbacks are the authoritative "content changed"
   // signal, so autosave hangs off them rather than watching the form.
   function onMutation(mutation: FormPayload['values']): void {
     onLayoutMutation(mutation);
-    autosave.schedule();
+
+    if (!applyingSavedForm) {
+      autosave.schedule();
+    }
   }
 
   function onSidebarMutation(mutation: FormPayload['values']): void {

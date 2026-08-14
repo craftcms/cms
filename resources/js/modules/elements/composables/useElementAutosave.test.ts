@@ -217,4 +217,28 @@ describe('useElementAutosave', () => {
 
     expect(onSaved).not.toHaveBeenCalled();
   });
+
+  it('keeps the layout the server saved', async () => {
+    const layout = {scope: [], nodes: [], values: {}, errors: []};
+    postSpy.mockResolvedValue({data: {draftId: 7, form: layout}});
+
+    const {autosave} = mount();
+
+    expect(autosave.form.value).toBeNull();
+
+    await autosave.save();
+
+    expect(autosave.form.value).toEqual(layout);
+
+    // A response without one leaves the last known layout in place, rather
+    // than blanking the form the renderer is showing.
+    postSpy.mockResolvedValue({data: {draftId: 7}});
+    await autosave.save();
+
+    expect(autosave.form.value).toEqual(layout);
+
+    autosave.clearForm();
+
+    expect(autosave.form.value).toBeNull();
+  });
 });

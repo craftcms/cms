@@ -2,6 +2,7 @@ import {actionClient} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {readonly, ref, type Ref} from 'vue';
+import type {FormPayload} from '@/modules/forms/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -59,15 +60,18 @@ export function useElementAutosave(
   draftId: Readonly<Ref<number | null>>;
   savedAt: Readonly<Ref<string | null>>;
   error: Readonly<Ref<string | null>>;
+  form: Readonly<Ref<FormPayload | null>>;
   save: () => Promise<void>;
   schedule: () => void;
   suspend: (during: () => void) => void;
   setDraftId: (value: number | null) => void;
+  clearForm: () => void;
 } {
   const status = ref<AutosaveStatus>('idle');
   const draftId = ref<number | null>(options.draftId);
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const formPayload = ref<FormPayload | null>(null);
 
   let inFlight: Promise<void> | null = null;
   let pending = false;
@@ -98,6 +102,10 @@ export function useElementAutosave(
 
       draftId.value = data.draftId ?? draftId.value;
       savedAt.value = data.timestamp ?? null;
+      // The response carries the field layout as the server now sees it, which
+      // is the only place a nested element created by this save (a new Matrix
+      // entry or address) can get its own Form payload from.
+      formPayload.value = data.form ?? formPayload.value;
       status.value = 'saved';
 
       options.onSaved?.({
@@ -175,14 +183,24 @@ export function useElementAutosave(
     draftId.value = value;
   }
 
+  /**
+   * Drops the saved layout, so a payload arriving from the server by another
+   * route — an Inertia visit — takes over again.
+   */
+  function clearForm(): void {
+    formPayload.value = null;
+  }
+
   return {
     status: readonly(status),
     draftId: readonly(draftId),
     savedAt: readonly(savedAt),
     error: readonly(error),
+    form: readonly(formPayload) as Readonly<Ref<FormPayload | null>>,
     save,
     schedule,
     suspend,
     setDraftId,
+    clearForm,
   };
 }

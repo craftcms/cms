@@ -2393,6 +2393,77 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('renders a just-added entry against the Form the server scoped to its UUID', async () => {
+    const uid = '369f71c3-873f-4842-8fe9-90641773b62b';
+    app.unmount();
+    await mount({
+      scope: ['settings'],
+      refreshable: false,
+      // The block is still keyed the way it was added — with the `uid:` prefix
+      // the server strips before saving — so its Form comes back scoped to the
+      // bare UUID. Failing to match the two leaves the block on its spinner.
+      values: {
+        settings: {
+          matrix: {
+            entries: {[`uid:${uid}`]: {type: 'text'}},
+            sortOrder: [`uid:${uid}`],
+          },
+        },
+      },
+      errors: [],
+      globalErrors: [],
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Content'},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+            component: 'craft:matrix',
+            props: {
+              entryTypes: [{value: 'text', label: 'Text'}],
+              addLabel: 'Add an entry',
+              minEntries: null,
+              maxEntries: null,
+            },
+            path: ['settings', 'matrix'],
+            mode: 'editable',
+            deltaGroup: ['settings', 'matrix'],
+            forms: [
+              {
+                scope: ['settings', 'matrix', 'entries', uid],
+                refreshable: false,
+                nodes: [
+                  {
+                    type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                    component: 'craft:field',
+                    props: {label: 'Heading'},
+                    control: {
+                      type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                      component: 'craft:text',
+                      props: {inputType: 'text'},
+                      path: ['settings', 'matrix', 'entries', uid, 'heading'],
+                      mode: 'editable',
+                      deltaGroup: ['settings', 'matrix'],
+                      forms: [],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    } as unknown as FormPayload);
+
+    expect(container.querySelector('.matrixblock craft-spinner')).toBeNull();
+    expect(
+      container.querySelector(
+        `input[name="settings[matrix][entries][${uid}][heading]"]`
+      )
+    ).not.toBeNull();
+  });
+
   it('renders and updates permission trees', async () => {
     let mutation: FormPayload['values'] = {};
     app.unmount();

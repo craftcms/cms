@@ -40,12 +40,20 @@
   }>();
   const matrixHost = ref<HTMLElement>();
   const matrixId = useId();
-  const forms = computed(
-    () =>
-      new Map(
-        (props.control.forms ?? []).map((form) => [form.scope.at(-1)!, form])
-      )
-  );
+  const forms = computed(() => {
+    const map = new Map<string, NestedFormPayload>();
+
+    for (const form of props.control.forms ?? []) {
+      // Entries added client-side are keyed with a `uid:` prefix, which the
+      // server strips before saving — so their forms come back scoped to the
+      // bare UUID while the block is still keyed with the prefix.
+      const uid = form.scope.at(-1)!;
+      map.set(uid, form);
+      map.set(`uid:${uid}`, form);
+    }
+
+    return map;
+  });
   const canAdd = computed(
     () =>
       props.editable &&
