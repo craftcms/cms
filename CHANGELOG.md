@@ -13,6 +13,8 @@
 - Fixed a bug where jobs run on the sync queue could remain marked as reserved after completing. ([#19431](https://github.com/craftcms/cms/pull/19431))
 - Fixed a bug where Addresses fields weren’t reading the value posted by the Control Panel form, so removing every address didn’t stick and blank addresses could be created. ([#19432](https://github.com/craftcms/cms/pull/19432))
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
+- Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
+- Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
