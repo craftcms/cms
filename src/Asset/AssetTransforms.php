@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -58,6 +59,80 @@ class AssetTransforms extends Manager
 
     public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformResult
     {
+        $request = $this->request($asset, $definition);
+
+        return $this->driver($request->driver)->transform($request);
+    }
+
+    /**
+     * @param  list<Asset>  $assets
+     * @param  list<mixed>  $definitions
+     */
+    public function preload(array $assets, #[\SensitiveParameter] array $definitions): void
+    {
+        $requestsByDriver = [];
+
+        foreach ($assets as $asset) {
+            foreach ($this->preloadRequests($asset, $definitions) as $request) {
+                $requestsByDriver[$request->driver][] = $request;
+            }
+        }
+
+        foreach ($requestsByDriver as $driverHandle => $requests) {
+            $driver = $this->driver($driverHandle);
+
+            if ($driver instanceof PreloadsAssetTransforms) {
+                $driver->preloadAssetTransforms($requests);
+            }
+        }
+    }
+
+    /**
+     * @param  list<mixed>  $definitions
+     * @return list<AssetTransformRequest>
+     */
+    private function preloadRequests(Asset $asset, array $definitions): array
+    {
+        $requests = [];
+        $referenceRequest = null;
+
+        foreach ($definitions as $definition) {
+            try {
+                [$size, $unit] = AssetsHelper::parseSrcsetSize($definition);
+            } catch (InvalidArgumentException) {
+                $requests[] = $referenceRequest = $this->request($asset, $definition);
+
+                continue;
+            }
+
+            $referenceWidth = $referenceRequest?->operations['width'] ?? null;
+
+            if (! is_int($referenceWidth)) {
+                throw new InvalidArgumentException("Can’t preload transform “{$definition}” without a prior transform that specifies the base width");
+            }
+
+            $operations = $referenceRequest->operations;
+            $operations['width'] = $unit === 'w'
+                ? (int) $size
+                : (int) ceil($referenceWidth * $size);
+
+            if (isset($referenceRequest->operations['height'])) {
+                $operations['height'] = $unit === 'w'
+                    ? (int) ceil($referenceRequest->operations['height'] * $operations['width'] / $referenceWidth)
+                    : (int) ceil($referenceRequest->operations['height'] * $size);
+            }
+
+            $requests[] = $this->request($asset, [
+                'driver' => $referenceRequest->driver,
+                ...$operations,
+            ]);
+        }
+
+        return $requests;
+    }
+
+    private function request(Asset $asset, #[\SensitiveParameter] mixed $definition): AssetTransformRequest
+    {
         try {
             $definition = $this->normalizeDefinition($definition);
         } catch (ImageTransformException|InvalidArgumentException $exception) {
@@ -86,7 +161,7 @@ class AssetTransforms extends Manager
 
         ksort($normalized);
 
-        return $driver->transform(new AssetTransformRequest($asset, $driverHandle, $normalized, []));
+        return new AssetTransformRequest($asset, $driverHandle, $normalized, []);
     }
 
     /** @return array<string, mixed> */

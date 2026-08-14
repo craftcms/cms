@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
@@ -14,6 +16,7 @@ use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Support\Facades\Event;
@@ -301,6 +304,122 @@ it('does not fall through from an invalid explicit selection', function (mixed $
     'unregistered' => 'missing',
 ]);
 
+it('preloads immutable requests grouped by capable driver', function () {
+    $first = new PreloadingAssetTransformDriver;
+    $second = new PreloadingAssetTransformDriver;
+    $incapable = new TestAssetTransformDriver;
+    $manager = app(AssetTransforms::class)
+        ->extend('first', fn () => $first)
+        ->extend('second', fn () => $second)
+        ->extend('incapable', fn () => $incapable);
+    $assets = [
+        Asset::factory()->createElement(),
+        Asset::factory()->createElement(),
+    ];
+
+    $manager->preload($assets, [
+        ['driver' => 'first', 'width' => '320'],
+        ['driver' => 'second', 'width' => 480],
+        ['driver' => 'incapable', 'width' => 640],
+    ]);
+
+    expect($first->requests)->toHaveCount(2)
+        ->each->toBeInstanceOf(AssetTransformRequest::class)
+        ->and(array_column($first->requests, 'asset'))->toBe($assets)
+        ->and(array_column($first->requests, 'driver'))->toBe(['first', 'first'])
+        ->and(array_column($first->requests, 'operations'))->toBe([
+            ['width' => 320],
+            ['width' => 320],
+        ])
+        ->and(array_column($second->requests, 'asset'))->toBe($assets)
+        ->and(array_column($second->requests, 'driver'))->toBe(['second', 'second'])
+        ->and(array_column($second->requests, 'operations'))->toBe([
+            ['width' => 480],
+            ['width' => 480],
+        ])
+        ->and($incapable->request)->toBeNull();
+});
+
+it('groups built-in preload requests by operations and deduplicates Assets', function () {
+    $driver = new TestCraftPreloadingDriver;
+    $assets = [
+        Asset::factory()->createElement(),
+        Asset::factory()->createElement(),
+    ];
+
+    $driver->preloadAssetTransforms([
+        new AssetTransformRequest($assets[0], 'craft', ['width' => 320], []),
+        new AssetTransformRequest($assets[1], 'craft', ['width' => 320], []),
+        new AssetTransformRequest($assets[0], 'craft', ['width' => 320], []),
+        new AssetTransformRequest($assets[1], 'craft', ['width' => 640], []),
+    ]);
+
+    expect($driver->preloads)->toHaveCount(2)
+        ->and($driver->preloads[0]['transforms'][0]->width)->toBe(320)
+        ->and($driver->preloads[0]['assets'])->toBe($assets)
+        ->and($driver->preloads[1]['transforms'][0]->width)->toBe(640)
+        ->and($driver->preloads[1]['assets'])->toBe([$assets[1]]);
+});
+
+it('normalizes srcset sizes from a named reference transform for preloading', function () {
+    $driver = new PreloadingAssetTransformDriver;
+    $manager = app(AssetTransforms::class)->extend('test', fn () => $driver);
+    Cms::config()->defaultAssetTransformDriver('test');
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Card',
+        'handle' => 'card',
+        'width' => 400,
+        'height' => 200,
+    ]));
+
+    $manager->preload([Asset::factory()->createElement()], ['card', '320w', '2x']);
+
+    expect(array_map(fn (AssetTransformRequest $request) => [
+        'height' => $request->operations['height'],
+        'width' => $request->operations['width'],
+    ], $driver->requests))->toBe([
+        ['height' => 200, 'width' => 400],
+        ['height' => 160, 'width' => 320],
+        ['height' => 400, 'width' => 800],
+    ]);
+});
+
+it('preloads transforms requested by an Asset query', function () {
+    $driver = new PreloadingAssetTransformDriver;
+    $incapable = new TestAssetTransformDriver;
+    app(AssetTransforms::class)
+        ->extend('test', fn () => $driver)
+        ->extend('incapable', fn () => $incapable);
+    Cms::config()->defaultAssetTransformDriver('test');
+    $assets = [
+        Asset::factory()->createElement(),
+        Asset::factory()->createElement(),
+    ];
+
+    AssetElement::find()
+        ->id(array_column($assets, 'id'))
+        ->withTransforms([
+            ['width' => 320],
+            ['driver' => 'incapable', 'width' => 640],
+        ])
+        ->all();
+
+    expect($driver->requests)->toHaveCount(2)
+        ->and(array_column($driver->requests, 'driver'))->toBe(['test', 'test'])
+        ->and($incapable->request)->toBeNull();
+});
+
+it('fails preloading when a selected driver is invalid', function () {
+    $driver = new PreloadingAssetTransformDriver;
+    $manager = assetTransformsWith($driver);
+
+    expect(fn () => $manager->preload(
+        [Asset::factory()->createElement()],
+        [['driver' => 'missing', 'width' => 320]],
+    ))->toThrow(AssetTransformDriverNotFoundException::class)
+        ->and($driver->requests)->toBeEmpty();
+});
+
 it('propagates driver failures unchanged', function () {
     $failure = new AssetTransformFailedException('failed');
     $manager = assetTransformsWith(new FailingAssetTransformDriver($failure));
@@ -365,6 +484,27 @@ class FailingAssetTransformDriver extends TestAssetTransformDriver
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
         throw $this->failure;
+    }
+}
+
+class PreloadingAssetTransformDriver extends TestAssetTransformDriver implements PreloadsAssetTransforms
+{
+    public array $requests = [];
+
+    public function preloadAssetTransforms(array $requests): void
+    {
+        $this->requests = $requests;
+    }
+}
+
+class TestCraftPreloadingDriver extends ImageTransformer
+{
+    public array $preloads = [];
+
+    #[Override]
+    public function eagerLoadTransforms(array $transforms, array $assets): void
+    {
+        $this->preloads[] = compact('transforms', 'assets');
     }
 }
 
