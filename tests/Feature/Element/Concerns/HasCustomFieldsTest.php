@@ -35,11 +35,11 @@ beforeEach(function () {
         creatorId: User::findOne()->id,
     );
 
-    $this->insertChangedField = function (ElementInterface $draft, ?Carbon $dateUpdated = null): void {
+    $this->insertChangedField = function (ElementInterface $draft, ?Carbon $dateUpdated = null, ?int $elementId = null): void {
         $layoutElementUid = $draft->getFieldLayout()->getCustomFieldElements()[0]->uid;
 
         DB::table(Table::CHANGEDFIELDS)->insert([
-            'elementId' => $draft->id,
+            'elementId' => $elementId ?? $draft->id,
             'siteId' => $draft->siteId,
             'fieldId' => $this->field->id,
             'layoutElementUid' => $layoutElementUid,
@@ -220,7 +220,7 @@ describe('outdated fields (_outdatedFields)', function () {
 
     test('queries CHANGEDFIELDS table for drafts', function () {
         $draft = ($this->createDraft)();
-        ($this->insertChangedField)($draft);
+        ($this->insertChangedField)($draft, elementId: $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);
 
         expect($draft->getOutdatedFields())->toContain('testField');
@@ -233,7 +233,7 @@ describe('outdated fields (_outdatedFields)', function () {
             ->where('id', $draft->draftId)
             ->update(['dateLastMerged' => now()->addDay()]);
 
-        ($this->insertChangedField)($draft, now()->subDay());
+        ($this->insertChangedField)($draft, now()->subDay(), $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);
 
         expect($draft->getOutdatedFields())->toBeEmpty();
@@ -241,7 +241,7 @@ describe('outdated fields (_outdatedFields)', function () {
 
     test('filters by dateCreated when dateLastMerged is null', function () {
         $draft = ($this->createDraft)();
-        ($this->insertChangedField)($draft, now()->subDays(100));
+        ($this->insertChangedField)($draft, now()->subDays(100), $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);
 
         expect($draft->getOutdatedFields())->toBeEmpty();
@@ -249,7 +249,7 @@ describe('outdated fields (_outdatedFields)', function () {
 
     test('isFieldOutdated returns true for outdated field', function () {
         $draft = ($this->createDraft)();
-        ($this->insertChangedField)($draft);
+        ($this->insertChangedField)($draft, elementId: $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);
 
         expect($draft->isFieldOutdated('testField'))->toBeTrue();
@@ -257,17 +257,25 @@ describe('outdated fields (_outdatedFields)', function () {
 
     test('caches results', function () {
         $draft = ($this->createDraft)();
-        ($this->insertChangedField)($draft);
+        ($this->insertChangedField)($draft, elementId: $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);
 
         $outdatedFields1 = $draft->getOutdatedFields();
 
-        DB::table(Table::CHANGEDFIELDS)->where('elementId', $draft->id)->delete();
+        DB::table(Table::CHANGEDFIELDS)->where('elementId', $draft->getCanonicalId())->delete();
 
         $outdatedFields2 = $draft->getOutdatedFields();
 
         expect($outdatedFields1)->toBe($outdatedFields2)
             ->and($outdatedFields2)->toContain('testField');
+    });
+    test('ignores the draft’s own changes, which are modified rather than outdated', function () {
+        $draft = ($this->createDraft)();
+        ($this->insertChangedField)($draft);
+        $draft = ($this->reloadDraft)($draft);
+
+        expect($draft->getOutdatedFields())->toBeEmpty()
+            ->and($draft->getModifiedFields())->toContain('testField');
     });
 });
 

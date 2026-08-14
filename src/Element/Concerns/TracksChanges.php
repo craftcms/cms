@@ -128,8 +128,10 @@ trait TracksChanges
             return [];
         }
 
+        // Outdated attributes are the ones that changed on the *canonical* element
+        // since this derivative was created (or last merged).
         return $this->_outdatedAttributes ??= DB::table(Table::CHANGEDATTRIBUTES)
-            ->where('elementId', $this->id)
+            ->where('elementId', $this->getCanonicalId())
             ->where('siteId', $this->siteId)
             ->when(
                 value: $this->dateLastMerged,
