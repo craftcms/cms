@@ -429,11 +429,24 @@ export default class CraftTextExpander extends LitElement {
       return;
     }
 
+    // Capture whether the active trigger has a specific label, and the
+    // listbox's current label, before #resetPopup()/#match clearing make
+    // them stale.
+    const activeLabel =
+      this.#activeTrigger !== null
+        ? triggerLabels[this.#activeTrigger]
+        : undefined;
+    const label = this.#listbox.getAttribute('aria-label') ?? t(defaultListboxLabel);
+
     this.#cancelPending();
     this.#match = null;
     this.#resetPopup();
 
-    this.#announce(t(''))
+    this.#announce(
+      activeLabel !== undefined
+        ? t('{name} suggestions collapsed', {name})
+        : t('Suggestions collapsed')
+    );
   };
 
   #evaluate(): void {
