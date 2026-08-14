@@ -293,13 +293,13 @@ export default class CraftTextExpander extends LitElement {
 
     target.setAttribute('aria-autocomplete', 'list');
     target.setAttribute('aria-controls', controls);
+    target.setAttribute('data-text-expander-input', '');
+    target.removeAttribute('role');
 
     if (target instanceof HTMLInputElement) {
-      target.setAttribute('role', 'combobox');
       target.setAttribute('aria-haspopup', 'listbox');
       target.setAttribute('aria-expanded', 'false');
     } else {
-      this.#restoreTargetAttribute(target, 'role');
       this.#restoreTargetAttribute(target, 'aria-haspopup');
       this.#restoreTargetAttribute(target, 'aria-expanded');
     }
