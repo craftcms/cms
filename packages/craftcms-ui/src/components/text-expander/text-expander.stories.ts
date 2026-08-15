@@ -48,7 +48,7 @@ export const TextInput: Story = {
     ></craft-text-expander>
   `,
   play: async ({canvas, canvasElement, userEvent}) => {
-    const input = canvas.getByRole('combobox');
+    const input = canvas.getByRole('textbox');
     const expander = canvasElement.querySelector('craft-text-expander')!;
     const popover = expander.shadowRoot!.querySelector('craft-popover')!;
     const popup = popover.shadowRoot!.querySelector('[part="popup"]')!;

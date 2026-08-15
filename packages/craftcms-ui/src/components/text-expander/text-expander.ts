@@ -64,6 +64,13 @@ interface TextExpanderMatch {
 // Queries may contain Unicode letters or numbers, underscores, and hyphens;
 // any other character terminates the active query.
 const queryPattern = /^[\p{L}\p{N}_-]*$/u;
+const defaultListboxLabel = t('Suggestions');
+// Label announced for the suggestion listbox, keyed by trigger character.
+// Add an entry here whenever a new trigger character is introduced.
+const triggerLabels: Readonly<Record<string, string>> = {
+  '#': t('Environment'),
+  '@': t('Users'),
+};
 const targetAttributes = [
   'role',
   'aria-autocomplete',
@@ -77,6 +84,8 @@ const popoverConfig = {
   handlesAccessibility: false,
   visibilityTriggerFunction: undefined,
 };
+// How long an announcement stays in the live region before it's cleared out
+const announcementTimeout = 5000;
 
 let nextId = 0;
 
@@ -115,6 +124,7 @@ export default class CraftTextExpander extends LitElement {
   #request = 0;
   #requestController: AbortController | null = null;
   #debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  #announceTimeout: ReturnType<typeof setTimeout> | null = null;
   #composing = false;
   #inputRange: InputRange | null = null;
   #caretRect = new DOMRect();
@@ -140,6 +150,10 @@ export default class CraftTextExpander extends LitElement {
   override disconnectedCallback(): void {
     this.#unbindTarget();
     this.#listbox?.remove();
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
     super.disconnectedCallback();
   }
 
@@ -194,10 +208,9 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.slot = 'listbox';
     this.#listbox.setAttribute('part', 'listbox');
     this.#listbox.role = 'listbox';
-    this.#listbox.setAttribute('aria-label', t('Suggestions'));
+    this.#listbox.setAttribute('aria-label', defaultListboxLabel);
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
-    this.#listbox.addEventListener('combobox-select', this.#onComboboxSelect);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
     this.append(this.#listbox);
   }
@@ -293,16 +306,20 @@ export default class CraftTextExpander extends LitElement {
 
     target.setAttribute('aria-autocomplete', 'list');
     target.setAttribute('aria-controls', controls);
+    target.setAttribute('data-text-expander-input', '');
+
+    if (target.getAttribute('role') === 'combobox') {
+      target.removeAttribute('role');
+    }
 
     if (target instanceof HTMLInputElement) {
-      target.setAttribute('role', 'combobox');
       target.setAttribute('aria-haspopup', 'listbox');
-      target.setAttribute('aria-expanded', 'false');
     } else {
-      this.#restoreTargetAttribute(target, 'role');
       this.#restoreTargetAttribute(target, 'aria-haspopup');
-      this.#restoreTargetAttribute(target, 'aria-expanded');
     }
+    // aria-expanded is only valid on a combobox role, and the target keeps
+    // its native textbox role, so it's never applied.
+    this.#restoreTargetAttribute(target, 'aria-expanded');
   }
 
   #restoreTargetAttributes(target: TextExpanderTarget): void {
@@ -400,27 +417,22 @@ export default class CraftTextExpander extends LitElement {
     this.#select(Number((event.target as HTMLElement).dataset.index));
   };
 
-  #onComboboxSelect = (event: Event): void => {
-    const index = Number((event.target as HTMLElement).dataset.index);
-    const option = this.#visibleOptions[index]!;
-
-    this.#announce(
-      t('{label}, {position, number} of {total, number} options', {
-        label: option.label,
-        position: index + 1,
-        total: this.#visibleOptions.length,
-      })
-    );
-  };
-
   #onPopoverHide = (event: Event): void => {
     if (event.target !== this.popoverElement) {
       return;
     }
 
+    const label = this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
+
     this.#cancelPending();
     this.#match = null;
     this.#resetPopup();
+
+    this.#announce(
+      label !== defaultListboxLabel
+        ? t('{name} suggestions collapsed', {name: label})
+        : t('Suggestions collapsed')
+    );
   };
 
   #evaluate(): void {
@@ -538,11 +550,27 @@ export default class CraftTextExpander extends LitElement {
     return result;
   }
 
+  /** The character of the currently active trigger, if a match is open. */
+  get #activeTrigger(): string | null {
+    return this.#match?.character ?? null;
+  }
+
+  #updateListboxLabel(): void {
+    const label =
+      (this.#activeTrigger !== null
+        ? triggerLabels[this.#activeTrigger]
+        : undefined) ?? defaultListboxLabel;
+
+    this.#listbox.setAttribute('aria-label', label);
+  }
+
   #showOptions(options: readonly TextExpanderOption[]): void {
     this.#stopCombobox();
     this.#visibleOptions = options;
     this.#listbox.replaceChildren();
     this.#listbox.hidden = this.loading;
+
+    this.#updateListboxLabel();
 
     options.forEach((option, index) => {
       const element = document.createElement('craft-option');
@@ -616,30 +644,28 @@ export default class CraftTextExpander extends LitElement {
     }
 
     target.setAttribute('aria-busy', String(this.loading));
-    if (target instanceof HTMLInputElement) {
-      target.setAttribute('aria-expanded', 'true');
-    }
     await this.popoverElement.show();
     if (!this.#match || target !== this.#boundTarget) {
       return;
     }
     if (this.#visibleOptions.length) {
       this.#combobox?.start();
+      // The combobox library sets aria-expanded as part of start(), but that
+      // attribute is only valid on a combobox role, which the target doesn't have.
+      this.#restoreTargetAttribute(target, 'aria-expanded');
 
       // Let the combobox clear its previous selection before options are rebuilt.
       target.removeEventListener('input', this.#onInput);
       target.addEventListener('input', this.#onInput);
-
-      if (target instanceof HTMLTextAreaElement) {
-        this.#restoreTargetAttribute(target, 'aria-expanded');
-      }
     }
   }
 
   #stopCombobox(): void {
     this.#combobox?.stop();
 
-    if (this.#boundTarget instanceof HTMLTextAreaElement) {
+    // The combobox library sets aria-expanded as part of stop(), but that
+    // attribute is only valid on a combobox role, which the target doesn't have.
+    if (this.#boundTarget) {
       this.#restoreTargetAttribute(this.#boundTarget, 'aria-expanded');
     }
   }
@@ -689,9 +715,6 @@ export default class CraftTextExpander extends LitElement {
     if (target) {
       this.#restoreTargetAttribute(target, 'aria-activedescendant');
       this.#restoreTargetAttribute(target, 'aria-busy');
-      if (target instanceof HTMLInputElement) {
-        target.setAttribute('aria-expanded', 'false');
-      }
     }
   }
 
@@ -706,12 +729,22 @@ export default class CraftTextExpander extends LitElement {
   }
 
   #announce(message: string): void {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+
     this.announcement = '';
     queueMicrotask(() => {
       if (this.isConnected) {
         this.announcement = message;
       }
     });
+
+    this.#announceTimeout = setTimeout(() => {
+      this.#announceTimeout = null;
+      this.announcement = '';
+    }, announcementTimeout);
   }
 }
 

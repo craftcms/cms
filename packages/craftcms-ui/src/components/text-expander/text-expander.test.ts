@@ -104,7 +104,7 @@ describe('craft-text-expander', () => {
       input
     );
 
-    expect(target.getAttribute('role')).toBe('combobox');
+    expect(target.getAttribute('role')).toBeNull();
     expect(target.getAttribute('aria-autocomplete')).toBe('list');
     expect(target.getAttribute('aria-controls')).toContain('existing');
     expect(target.getAttribute('aria-controls')).toContain(
@@ -434,44 +434,13 @@ describe('craft-text-expander', () => {
     target.dispatchEvent(tab);
     expect(tab.defaultPrevented).toBe(false);
     expect(target.value).toBe('@a');
-    expect(target.getAttribute('aria-expanded')).toBe('true');
+    expect(popover(expander).opened).toBe(true);
 
     target.blur();
     await Promise.resolve();
 
-    expect(target.getAttribute('aria-expanded')).toBe('false');
+    expect(popover(expander).opened).toBe(false);
     expect(options(expander)).toHaveLength(0);
-  });
-
-  it('announces the active option while focus remains on the input', async () => {
-    const input = document.createElement('input');
-    const {expander, target} = await createFixture(
-      {
-        '@': {
-          options: [
-            {label: 'Brad Bell', value: '@brad'},
-            {label: 'Brandon Kelly', value: '@brandon'},
-          ],
-        },
-      },
-      input
-    );
-    const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
-
-    type(target, '@b');
-    await vi.waitFor(() =>
-      expect(liveRegion.textContent?.trim()).toBe('Brad Bell, 1 of 2 options')
-    );
-
-    target.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
-    );
-    await vi.waitFor(() =>
-      expect(liveRegion.textContent?.trim()).toBe(
-        'Brandon Kelly, 2 of 2 options'
-      )
-    );
-    expect(document.activeElement).toBe(target);
   });
 
   it('selects rich options with a pointer without moving focus', async () => {
@@ -693,5 +662,73 @@ describe('craft-text-expander', () => {
     type(target, '@b');
 
     expect(options(expander)).toHaveLength(1);
+  });
+
+  it('labels the listbox for the active trigger, falling back to a default label', async () => {
+    const {expander, target} = await createFixture({
+      '#': {options: [{label: 'General', value: '#general'}]},
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+      ':': {options: [{label: 'Smile', value: ':smile'}]},
+    });
+    const listbox = expander.querySelector('[role="listbox"]')!;
+
+    expect(listbox.getAttribute('aria-label')).toBe('Suggestions');
+
+    type(target, '#g');
+    await waitForFirstOption(expander);
+    expect(listbox.getAttribute('aria-label')).toBe('Environment');
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    expect(listbox.getAttribute('aria-label')).toBe('Users');
+
+    type(target, ':sm');
+    await waitForFirstOption(expander);
+    expect(listbox.getAttribute('aria-label')).toBe('Suggestions');
+  });
+
+  it('announces the active trigger label when the popover closes', async () => {
+    const {expander, target} = await createFixture({
+      '#': {options: [{label: 'General', value: '#general'}]},
+      ':': {options: [{label: 'Smile', value: ':smile'}]},
+    });
+    const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
+
+    type(target, '#g');
+    await waitForFirstOption(expander);
+    target.blur();
+
+    await vi.waitFor(() =>
+      expect(liveRegion.textContent?.trim()).toBe(
+        'Environment suggestions collapsed'
+      )
+    );
+
+    type(target, ':sm');
+    await waitForFirstOption(expander);
+    target.blur();
+
+    await vi.waitFor(() =>
+      expect(liveRegion.textContent?.trim()).toBe('Suggestions collapsed')
+    );
+  });
+
+  it('clears the live region after the announcement timeout elapses', async () => {
+    vi.useFakeTimers();
+    const {expander, target} = await createFixture({
+      '@': {options: [{label: 'Brad', value: '@brad'}]},
+    });
+    const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
+
+    type(target, '@xyz');
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(liveRegion.textContent?.trim()).toBe('No suggestions');
+
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(liveRegion.textContent?.trim()).toBe('No suggestions');
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(liveRegion.textContent?.trim()).toBe('');
   });
 });
