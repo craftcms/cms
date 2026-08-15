@@ -19,6 +19,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
@@ -75,6 +76,8 @@ class DatabaseSeeder extends Seeder
         Edition::set(Edition::Pro);
 
         app(LaravelMigrations::class)->ensureSessionsTable();
+
+        $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
 
         $site = Sites::getCurrentSite();
 
