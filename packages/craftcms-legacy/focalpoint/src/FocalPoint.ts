@@ -149,7 +149,7 @@ export class FocalPoint {
     this.saving = true;
 
     this.renderButton();
-    Craft.cp.announce(Craft.t('app', 'Saving...'));
+    Craft.cp.announce(Craft.t('app', 'Saving…'));
 
     let data = {
       assetUid: this.assetUid,
