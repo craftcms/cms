@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Database\Commands\Concerns;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 use function Laravel\Prompts\confirm;
@@ -34,47 +33,9 @@ trait ManagesDatabaseTables
     {
         $this->components->info('Dropping all database tables ...');
 
-        $schema = Schema::connection($connection->getName());
-
-        foreach ($this->tableNames($connection) as $tableName) {
-            $this->components->task(
-                "Dropping $tableName",
-                function () use ($connection, $schema, $tableName) {
-                    $this->dropAllForeignKeysToTable($tableName, $connection);
-                    $schema->drop($tableName);
-                }
-            );
-        }
+        $connection->getSchemaBuilder()->dropAllTables();
 
         $this->components->success('Finished dropping all database tables.');
-    }
-
-    private function dropAllForeignKeysToTable(string $table, Connection $connection): void
-    {
-        $schema = Schema::connection($connection->getName());
-        $rawTableName = $this->rawTableName($table);
-
-        foreach ($this->tableNames($connection) as $otherTableName) {
-            foreach ($schema->getForeignKeys($otherTableName) as $foreignKey) {
-                if (! isset($foreignKey['foreign_table'], $foreignKey['name'])) {
-                    continue;
-                }
-                if ($this->rawTableName($foreignKey['foreign_table']) !== $rawTableName) {
-                    continue;
-                }
-                $schema->table($otherTableName, function (Blueprint $blueprint) use ($foreignKey) {
-                    $blueprint->dropForeign($foreignKey['name']);
-                });
-            }
-        }
-    }
-
-    private function rawTableName(string $tableName): string
-    {
-        return str($tableName)
-            ->replace('"', '')
-            ->afterLast('.')
-            ->value();
     }
 
     /**
