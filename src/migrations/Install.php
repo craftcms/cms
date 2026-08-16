@@ -940,6 +940,7 @@ class Install extends Migration
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
+        $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'priority', 'id', 'timePushed', 'delay']);
         $this->createIndex(null, Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);
         $this->createIndex(null, Table::RELATIONS, ['sourceId'], false);
         $this->createIndex(null, Table::RELATIONS, ['targetId'], false);
