@@ -5,13 +5,24 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
     $this->generalConfig = Cms::config();
+    $this->responseHeaders = app(ResponseHeaderAccumulator::class);
     $this->middleware = app(SetHeaders::class);
+
+    Route::get('/test-response-headers', function () {
+        if (($value = request()->query('value')) !== null) {
+            ResponseHeaders::add('X-Test', $value);
+        }
+
+        return response('');
+    })->middleware(SetHeaders::class);
 });
 
 it('passes through non-Response values', function () {
@@ -150,11 +161,53 @@ it('appends the powered-by header to existing values', function () {
     expect($response->headers->get('X-Powered-By'))->toBe('Foo,Craft CMS');
 });
 
-it('resets header state after Symfony responses', function () {
-    SetHeaders::add('X-Test', 'value');
+it('applies request-scoped headers', function () {
+    $this->responseHeaders->add('X-Test', 'value');
 
-    $this->middleware->handle(Request::create('/'), fn () => new JsonResponse);
     $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
 
-    expect($response->headers->has('X-Test'))->toBeFalse();
+    expect($response->headers->get('X-Test'))->toBe('value');
+});
+
+it('preserves request-scoped header order and duplicate values', function () {
+    $this->responseHeaders->add('X-Test', 'first', false);
+    $this->responseHeaders->add('X-Test', 'second', false);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->all('X-Test'))->toBe(['first', 'second']);
+});
+
+it('replaces request-scoped header values by default', function () {
+    $this->responseHeaders->add('X-Test', 'first');
+    $this->responseHeaders->add('X-Test', 'second');
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->all('X-Test'))->toBe(['second']);
+});
+
+it('applies request-scoped cache settings', function () {
+    $this->responseHeaders->setCache(60);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->getMaxAge())->toBe(60)
+        ->and($response->headers->get('Pragma'))->toBe('cache');
+});
+
+it('applies request-scoped no-cache settings', function () {
+    $this->responseHeaders->noCache();
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->hasCacheControlDirective('no-cache'))->toBeTrue();
+});
+
+it('isolates facade state across long-lived request scopes', function () {
+    $this->get('/test-response-headers?value=first')->assertHeader('X-Test', 'first');
+
+    app()->forgetScopedInstances();
+
+    $this->get('/test-response-headers?value=second')->assertHeader('X-Test', 'second');
 });

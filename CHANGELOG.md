@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.
 - Fixed inconsistent handling of forced-disabled plugin configuration values.
 - Improved job progress persistence by using an atomic upsert.
 - Changed `CraftCms\Cms\Support\Json::decode()` to use exception-based JSON decoding.

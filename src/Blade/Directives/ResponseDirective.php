@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Blade\Directives;
 
-use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
@@ -39,7 +39,7 @@ class ResponseDirective
     {
         $parts = array_map(trim(...), explode(':', $header, 2));
 
-        SetHeaders::add($parts[0], $parts[1] ?? '');
+        ResponseHeaders::add($parts[0], $parts[1] ?? '');
     }
 
     public static function expires(DateTimeInterface|string|int|null $expiration = null, ?string $unit = null): void
@@ -54,7 +54,7 @@ class ResponseDirective
             $duration = 0;
         }
 
-        SetHeaders::setCache($duration);
+        ResponseHeaders::setCache($duration);
     }
 
     public static function templateExit(?int $status = null, ?string $message = null): void
