@@ -17,8 +17,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use GraphQL\Error\Error;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\VariableNode;
+use GraphQL\Executor\Values;
 use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ObjectType;
@@ -234,13 +233,7 @@ class GqlHelper
                 continue;
             }
 
-            $arguments = [];
-
-            if (isset($directive->arguments[0])) {
-                foreach ($directive->arguments as $argument) {
-                    $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
-                }
-            }
+            $arguments = Values::getArgumentValues($directiveEntity, $directive, $resolveInfo->variableValues, $resolveInfo->schema);
 
             $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
         }
@@ -301,20 +294,6 @@ class GqlHelper
             ->filter(fn (Site $site) => in_array($site->uid, $allowedSiteUids, true))
             ->values()
             ->all();
-    }
-
-    /** @param array<string, mixed> $variableValues */
-    private static function _convertArgumentValue(mixed $value, array $variableValues = []): mixed
-    {
-        if ($value instanceof VariableNode) {
-            return $variableValues[$value->name->value];
-        }
-
-        if ($value instanceof ListValueNode) {
-            return array_map(fn ($node) => self::_convertArgumentValue($node), iterator_to_array($value->values));
-        }
-
-        return $value->value;
     }
 
     /** @param array{conditionBuilder?: ElementQueryConditionBuilder}|null $context */

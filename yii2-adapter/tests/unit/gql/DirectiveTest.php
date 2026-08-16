@@ -29,7 +29,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
+use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Schema;
 
 class DirectiveTest extends TestCase
 {
@@ -59,11 +61,12 @@ class DirectiveTest extends TestCase
         $element = new ExampleElement();
         $element->someField = $in;
 
-        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Parser::field('someField ' . implode(' ', $directives))]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
             'fieldNodes' => $fieldNodes,
+            'schema' => new Schema([]),
         ]);
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
@@ -83,11 +86,12 @@ class DirectiveTest extends TestCase
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
 
-        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . self::_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Parser::field('filename ' . self::_buildDirective(Transform::class, ['width' => 200]))]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',
             'fieldNodes' => $fieldNodes,
+            'schema' => new Schema([]),
         ]);
 
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
@@ -173,7 +177,7 @@ class DirectiveTest extends TestCase
     }
 
     /**
-     * Build the JSON string to be used as a directive object
+     * Build the GraphQL string to be used as a directive
      *
      * @param string $className
      * @phpstan-param class-string<Directive> $className
@@ -182,15 +186,16 @@ class DirectiveTest extends TestCase
      */
     private static function _buildDirective(string $className, array $arguments = []): string
     {
-        $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
-        $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": %s}}';
+        $argumentTemplate = '%s: %s';
 
         $argumentList = [];
         foreach ($arguments as $key => $value) {
             $argumentList[] = sprintf($argumentTemplate, $key, Json::encode($value));
         }
 
-        return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
+        $arguments = $argumentList === [] ? '' : sprintf('(%s)', implode(', ', $argumentList));
+
+        return sprintf('@%s%s', $className::name(), $arguments);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Changed GraphQL AST value decoding to use `webonyx/graphql-php` while preserving Craft-specific query condition validation.
 - Fixed a bug where cached user permission trees could become stale after permission changes or be modified by assignability filtering.
 - Improved element queries to retain only explicitly supplied custom-field criteria.
 - Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
