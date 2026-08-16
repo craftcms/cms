@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved job progress persistence by using an atomic upsert.
 - Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
 - Fixed a bug where throwing validation could run the validation lifecycle twice.
 - Fixed a bug where `CraftCms\Cms\Element\ElementCollection::with()` could pass incompatible element classes into eager loading.
