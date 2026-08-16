@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\ElementsEagerLoading;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $entry = EntryModel::factory()->create();
@@ -54,6 +56,38 @@ test('ids', function () {
 
     $ids = $collection->map(fn (Entry $entry) => $entry->id)->all();
     expect($collection->ids()->all())->toBe($ids);
+});
+
+test('with preserves an empty collection', function () {
+    Event::fake([ElementsEagerLoading::class]);
+
+    $collection = ElementCollection::empty();
+
+    expect($collection->with([]))->toBe($collection);
+    Event::assertNotDispatched(ElementsEagerLoading::class);
+});
+
+test('with eager-loads a homogeneous collection in order', function () {
+    Event::fake([ElementsEagerLoading::class]);
+
+    $collection = Entry::find()->limit(2)->collect();
+
+    expect($collection->with([]))->toBe($collection);
+    Event::assertDispatched(fn (ElementsEagerLoading $event) => $event->elementType === Entry::class && $event->elements === $collection->all());
+    Event::assertDispatchedTimes(ElementsEagerLoading::class, 1);
+});
+
+test('with eager-loads only compatible elements from a mixed collection', function () {
+    Event::fake([ElementsEagerLoading::class]);
+
+    $entries = Entry::find()->limit(2)->get();
+    $user = User::find()->one();
+    $collection = new ElementCollection([$entries[1], $user, $entries[0]]);
+
+    expect($collection->with([]))->toBe($collection);
+    Event::assertDispatched(fn (ElementsEagerLoading $event) => $event->elementType === Entry::class && $event->elements === [$entries[1], $entries[0]]);
+    Event::assertDispatched(fn (ElementsEagerLoading $event) => $event->elementType === User::class && $event->elements === [$user]);
+    Event::assertDispatchedTimes(ElementsEagerLoading::class, 2);
 });
 
 test('merge', function () {
