@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where cached user permission trees could become stale after permission changes or be modified by assignability filtering.
 - Improved element queries to retain only explicitly supplied custom-field criteria.
 - Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
 - Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.

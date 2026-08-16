@@ -4,6 +4,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -27,23 +28,39 @@ test('getAllPermissions', function () {
 });
 
 test('permission groups can be registered and removed', function () {
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeFalse()
+        ->and($this->userPermissions->validatePermission('manageModernPlugin'))->toBeFalse();
+
     $this->userPermissions->registerPermissionGroup('plugin:modern', fn () => new PermissionGroup(
         handle: 'plugin:modern',
         heading: 'Modern plugin',
         permissions: collect([new Permission('manageModernPlugin', 'Manage modern plugin')]),
     ));
 
-    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue();
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue()
+        ->and($this->userPermissions->validatePermission('manageModernPlugin'))->toBeTrue();
 
     app()->forgetScopedInstances();
     $this->userPermissions = app(UserPermissions::class);
 
-    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue();
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeTrue()
+        ->and($this->userPermissions->validatePermission('manageModernPlugin'))->toBeTrue();
 
     $this->userPermissions->removePermissionGroups('plugin:modern');
-    $this->userPermissions->reset();
 
-    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeFalse();
+    expect($this->userPermissions->getAllPermissions()->contains('heading', 'Modern plugin'))->toBeFalse()
+        ->and($this->userPermissions->validatePermission('manageModernPlugin'))->toBeFalse();
+});
+
+test('getAllPermissions reflects sections created between calls', function () {
+    $section = Section::factory()->make(['name' => 'Dynamic']);
+
+    expect($this->userPermissions->getAllPermissions()->contains('handle', "section:$section->uid"))->toBeFalse();
+
+    $section->save();
+    app(Sections::class)->refreshSections();
+
+    expect($this->userPermissions->getAllPermissions()->contains('handle', "section:$section->uid"))->toBeTrue();
 });
 
 test('getAllPermissions contains headings', function (string $heading) {
