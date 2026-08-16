@@ -88,11 +88,26 @@ it('rejects identities that cannot reconcile stably', function () {
     $missingUid = Form::make([
         Group::make('', [Field::make()->control(Text::make('child'))]),
     ]);
+    $duplicateUids = Form::make([
+        Group::make('same'),
+        Group::make('same'),
+    ]);
 
     expect(fn () => app(FormResolver::class)->resolve($duplicatePaths, new FormContext))
         ->toThrow(InvalidArgumentException::class, 'Duplicate Control path')
         ->and(fn () => app(FormResolver::class)->resolve($missingUid, new FormContext))
-        ->toThrow(InvalidArgumentException::class, 'stable UID');
+        ->toThrow(InvalidArgumentException::class, 'stable UID')
+        ->and(fn () => app(FormResolver::class)->resolve($duplicateUids, new FormContext))
+        ->toThrow(InvalidArgumentException::class, 'Duplicate Node UID');
+});
+
+it('resolves empty Forms', function () {
+    $payload = app(FormResolver::class)->resolve(Form::make(), new FormContext(namespace: 'settings'));
+
+    expect($payload->scope)->toBe(['settings'])
+        ->and($payload->nodes)->toBe([])
+        ->and($payload->values)->toBe([])
+        ->and($payload->errors)->toBe([]);
 });
 
 it('keeps stable identities for pathless presentational leaves', function () {

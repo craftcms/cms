@@ -13,11 +13,11 @@ use JsonException;
 
 class FormResolver
 {
-    /** @var list<list<string>> */
-    private array $controlPaths = [];
+    /** @var array<string, true> */
+    private array $controlPathIndex = [];
 
-    /** @var list<string> */
-    private array $nodeUids = [];
+    /** @var array<string, true> */
+    private array $nodeUidIndex = [];
 
     /** @var array<string, mixed> */
     private array $values = [];
@@ -30,8 +30,8 @@ class FormResolver
     /** @throws JsonException */
     public function resolve(Form $form, FormContext $context): FormPayload
     {
-        $this->controlPaths = [];
-        $this->nodeUids = [];
+        $this->controlPathIndex = [];
+        $this->nodeUidIndex = [];
         $this->values = [];
         $namespace = $this->normalizePath($context->namespace, 'Form context');
         $nodes = array_map(
@@ -89,11 +89,11 @@ class FormResolver
 
             $scopedUid = Json::encode([...$namespace, $uid], JSON_THROW_ON_ERROR);
 
-            if (in_array($scopedUid, $this->nodeUids, true)) {
+            if (isset($this->nodeUidIndex[$scopedUid])) {
                 throw new InvalidArgumentException("Duplicate Node UID [{$uid}] for Form Node [{$type}] with component [{$component}].");
             }
 
-            $this->nodeUids[] = $scopedUid;
+            $this->nodeUidIndex[$scopedUid] = true;
         }
 
         return new NodePayload(
@@ -156,7 +156,9 @@ class FormResolver
             throw new InvalidArgumentException("Control [{$type}] requires a path; component [{$component}], identity [unknown].");
         }
 
-        if (in_array($path, $this->controlPaths, true)) {
+        $pathKey = Json::encode($path, JSON_THROW_ON_ERROR);
+
+        if (isset($this->controlPathIndex[$pathKey])) {
             throw new InvalidArgumentException("Duplicate Control path [{$identity}] for type [{$type}] with component [{$component}].");
         }
 
@@ -174,7 +176,7 @@ class FormResolver
         }
 
         $this->set($this->values, $path, $value);
-        $this->controlPaths[] = $path;
+        $this->controlPathIndex[$pathKey] = true;
 
         $forms = array_map(function (array $definition) use ($context, $path, $deltaGroup, $mode, $type, $component, $identity): NestedFormPayload {
             if (! isset($definition['scope'], $definition['form'], $definition['refreshable']) || ! $definition['form'] instanceof Form || ! is_bool($definition['refreshable'])) {
@@ -246,18 +248,15 @@ class FormResolver
      */
     private function owningControlPath(array $path): ?array
     {
-        $matches = array_filter(
-            $this->controlPaths,
-            fn (array $controlPath): bool => array_slice($path, 0, count($controlPath)) === $controlPath,
-        );
+        while ($path !== []) {
+            if (isset($this->controlPathIndex[Json::encode($path, JSON_THROW_ON_ERROR)])) {
+                return $path;
+            }
 
-        if ($matches === []) {
-            return null;
+            array_pop($path);
         }
 
-        usort($matches, fn (array $a, array $b): int => count($b) <=> count($a));
-
-        return $matches[0];
+        return null;
     }
 
     /**
