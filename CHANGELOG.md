@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed inconsistent handling of forced-disabled plugin configuration values.
 - Improved job progress persistence by using an atomic upsert.
 - Changed `CraftCms\Cms\Support\Json::decode()` to use exception-based JSON decoding.
 - Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
