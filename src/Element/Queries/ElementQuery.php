@@ -1003,8 +1003,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public function __get($key): mixed
     {
-        if (array_key_exists($key, $this->customFieldValues)) {
-            return $this->customFieldValues[$key];
+        if ($this->isCustomFieldHandle($key)) {
+            return $this->customFieldValues[$key] ?? null;
         }
 
         if (in_array($key, $this->propertyPassthru)) {
@@ -1017,7 +1017,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public function __set(string $name, mixed $value): void
     {
-        if (array_key_exists($name, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($name)) {
             $this->customFieldValues[$name] = $value;
 
             return;
@@ -1053,7 +1053,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return null;
         }
 
-        if (array_key_exists($method, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($method)) {
             $this->customFieldValues[$method] = $parameters[0];
 
             return $this;

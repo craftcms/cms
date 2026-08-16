@@ -87,6 +87,51 @@ it('can query custom fields', function () {
     expect(entryQuery()->textField('bar')->count())->toBe(0);
 });
 
+it('only stores explicitly supplied custom field criteria', function () {
+    $queriedField = Field::factory()->create([
+        'handle' => 'queriedField',
+        'type' => PlainText::class,
+    ]);
+    Field::factory()->create([
+        'handle' => 'unusedField',
+        'type' => PlainText::class,
+    ]);
+
+    EntryModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($queriedField))
+        ->create();
+
+    $query = entryQuery()->queriedField('Foo');
+    $queryWithExplicitNull = entryQuery()
+        ->queriedField('Foo')
+        ->unusedField(null);
+    $querySql = $query->toSql();
+    $queryBindings = $query->getBindings();
+    $clone = clone $query;
+    $roundTrippedCriteria = $query->getCriteria()
+        |> (fn (array $criteria) => array_intersect_key($criteria, array_flip(['queriedField', 'unusedField'])))
+        |> serialize(...)
+        |> unserialize(...);
+
+    expect($query->getCriteria())
+        ->toHaveKey('queriedField', 'Foo')
+        ->not->toHaveKey('unusedField')
+        ->and($queryWithExplicitNull->getCriteria())
+        ->toHaveKey('unusedField', null)
+        ->and($clone->getCriteria())
+        ->toHaveKey('queriedField', 'Foo')
+        ->not->toHaveKey('unusedField')
+        ->and($roundTrippedCriteria)
+        ->toHaveKey('queriedField', 'Foo')
+        ->not->toHaveKey('unusedField')
+        ->and(entryQuery()->unusedField('Foo')->count())
+        ->toBe(0)
+        ->and($querySql)
+        ->toBe($queryWithExplicitNull->toSql())
+        ->and($queryBindings)
+        ->toEqual($queryWithExplicitNull->getBindings());
+});
+
 it('includes entries whose multi-option field is still empty in not one of queries', function () {
     actingAs(User::findOne());
 

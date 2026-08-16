@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved element queries to retain only explicitly supplied custom-field criteria.
 - Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
 - Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.
 - Fixed inconsistent handling of forced-disabled plugin configuration values.
