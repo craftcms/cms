@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
+- Fixed a bug where throwing validation could run the validation lifecycle twice.
 - Fixed a bug where `CraftCms\Cms\Element\ElementCollection::with()` could pass incompatible element classes into eager loading.
 - Changed `craft:db:drop-all-tables` to use Laravel’s schema API.
 - Added `CraftCms\Cms\Plugin\Plugin::settingsForm()` for defining standard plugin settings pages with the Control Panel Form system. ([#19439](https://github.com/craftcms/cms/pull/19439))
