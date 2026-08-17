@@ -135,11 +135,12 @@ const Cp = {
  */
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
-  let previousComponent: string | null = null;
+  let previousPathname: string | null = null;
   router.on('navigate', (event) => {
-    const {component, props} = event.detail.page;
-    if (component === previousComponent) return;
-    previousComponent = component;
+    const {props, url} = event.detail.page;
+    const pathname = new URL(url, window.location.origin).pathname;
+    if (pathname === previousPathname) return;
+    previousPathname = pathname;
 
     const routeFocusAnchor: HTMLElement | null =
       document.getElementById('route-focus-anchor');
