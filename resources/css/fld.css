@@ -370,9 +370,19 @@ body:not(.dragging) .fld-element {
 }
 
 /* Element settings (slideout) */
+
+/* Never taller than the viewport, so the body scrolls rather than the slideout
+   growing past the window. */
+.fld-element-settings {
+  max-height: 100dvh;
+}
+
 .fld-element-settings-body {
   flex: 1;
-  margin-block: -24px 0;
+
+  /* Flex items default to min-height: auto, which refuses to shrink below the
+     content and stops `overflow` below from ever engaging. */
+  min-height: 0;
 
   /* TODO: no token yet for --neg-padding */
   margin-inline: var(--neg-padding);
@@ -393,7 +403,6 @@ body:not(.dragging) .fld-element {
   display: flex;
   gap: var(--c-spacing-sm);
   flex-direction: row;
-  margin-block: 0 -24px;
 
   /* TODO: no token yet for --neg-padding */
   margin-inline: var(--neg-padding);
