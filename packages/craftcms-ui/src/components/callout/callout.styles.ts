@@ -23,7 +23,7 @@ export default css`
     );
     display: grid;
     grid-template-areas: 'icon title action' 'icon description action';
-    grid-template-columns: minmax(0, 1rem) 1fr minmax(0, max-content);
+    grid-template-columns: auto 1fr minmax(0, max-content);
     gap: 0 var(--c-spacing-sm);
     align-items: start;
     padding: var(--_callout-padding-block) var(--_callout-padding-inline);
@@ -39,6 +39,11 @@ export default css`
     }
   }
 
+  .callout--small {
+    font-size: var(--c-text-sm);
+    gap: 0 var(--c-spacing-xs);
+  }
+
   .callout__title {
     display: flex;
     font-weight: bold;
@@ -46,6 +51,11 @@ export default css`
   }
 
   .callout__description {
+    grid-area: title;
+    align-self: center;
+  }
+
+  .callout__title + .callout__description {
     grid-area: description;
   }
 

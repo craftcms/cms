@@ -13,6 +13,12 @@ import {styleMap} from 'lit/directives/style-map.js';
  * @summary A boxed message: an optional icon, an optional title, body content,
  * and an optional trailing action.
  *
+ * @attr size - `small` steps the box down to `--c-text-sm` and tightens the gap
+ *   between the icon and the text. Defaults to `auto`, which leaves the callout
+ *   at the surrounding text size. Note this is type only — the padding below is
+ *   `--c-spacing-*`, i.e. rem-based, so it does not scale with the size; set
+ *   `padding` alongside it if a small callout wants a tighter box too.
+ *
  * @attr padding - Spacing applied to the callout box. Accepts
  *   `sm`/`md`/`lg`/`xl` (mapped to `--c-spacing-*`), `0` or `none`, a unitless
  *   number (treated as pixels), or any CSS length.
@@ -65,6 +71,9 @@ export default class CraftCallout extends Paddable(LitElement, {
   @property({reflect: true, type: Boolean})
   inline: boolean = false;
 
+  @property()
+  size: 'small' | 'auto' = 'auto';
+
   /**
    * The icon actually rendered: the one that was set, or the variant's
    * default. Held in state so the icon and the layout around it are decided
@@ -108,6 +117,7 @@ export default class CraftCallout extends Paddable(LitElement, {
           callout: true,
           'callout--hide-icon': !hasIcon,
           'callout--title': hasTitle,
+          'callout--small': this.size === 'small',
         })}"
       >
         ${hasIcon
