@@ -77,7 +77,7 @@
     </div>
   </LayoutSlot>
 
-  <craft-pane size="none">
+  <craft-pane padding="none">
     <BaseElementIndex
       :table="elementTable"
       :selectable="true"
