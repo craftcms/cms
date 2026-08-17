@@ -37,6 +37,32 @@ while rendering.
 
 ## Replacement interfaces
 
+### Plugin settings
+
+Plugins override `Plugin::settingsForm()` for their standard settings page:
+
+```php
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+
+public function settingsForm(FormContext $context = new FormContext): ?Form
+{
+    return Form::make([
+        Field::make(
+            t('API key', category: 'my-plugin'),
+            Text::make('apiKey'),
+        ),
+    ]);
+}
+```
+
+Control paths are relative to the settings model. Craft supplies its current values and errors under the `settings`
+namespace and renders editable or read-only mode as required. The standard editable page requires a settings model and
+a Form. Plugins may still override `getSettingsResponse()` or `getReadOnlySettingsResponse()` to own the complete
+response and bypass the standard Form page.
+
 ### Component settings
 
 Implement `ConfigurableComponentInterface::settingsForm()` instead of `getSettingsHtml()`:
@@ -188,6 +214,9 @@ error and invalidates the Form.
 ## Yii2 adapter behavior
 
 Legacy HTML compatibility belongs exclusively to `craftcms/yii2-adapter`.
+
+Yii-era plugin classes keep their protected `settingsHtml()` hook; the adapter captures it into the plugin's
+`settingsForm()`.
 
 Plugins that extend the adapter's Yii-era component, field, or FieldLayout element classes keep their existing
 `getSettingsHtml()`, `getInputHtml()`, `getStaticHtml()`, and `formHtml()` overrides. The adapter implements the modern

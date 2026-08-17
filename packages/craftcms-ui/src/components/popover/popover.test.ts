@@ -54,6 +54,25 @@ describe('craft-popover', () => {
     expect(popover._overlayInvokerNode).toBe(anchor);
   });
 
+  it('uses a virtual anchor context element as its invoker', async () => {
+    let reference!: {
+      contextElement: HTMLElement;
+      getBoundingClientRect(): DOMRect;
+    };
+    const {popover, button} = await createFixture(
+      (configuredPopover, configuredButton) => {
+        reference = {
+          contextElement: configuredButton,
+          getBoundingClientRect: () => new DOMRect(10, 20),
+        };
+        configuredPopover.anchor = reference;
+      }
+    );
+
+    expect(popover._overlayInvokerNode).toBe(button);
+    expect(popover._overlayReferenceNode).toBe(reference);
+  });
+
   it('tracks opened state through show() and hide()', async () => {
     const {popover} = await createFixture();
     await popover.show();

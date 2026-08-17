@@ -17,6 +17,7 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Plugin\Plugin;
 
 it('declares the replacement Form operations on their public contracts', function () {
     $settingsForm = new ReflectionMethod(ConfigurableComponentInterface::class, 'settingsForm');
@@ -33,6 +34,7 @@ it('declares the replacement Form operations on their public contracts', functio
 
 it('does not expose the replaced HTML rendering contracts', function () {
     expect(method_exists(ConfigurableComponentInterface::class, 'getSettingsHtml'))->toBeFalse()
+        ->and(method_exists(Plugin::class, 'settingsHtml'))->toBeFalse()
         ->and(method_exists(FieldInterface::class, 'getInputHtml'))->toBeFalse()
         ->and(method_exists(FieldLayoutElement::class, 'formHtml'))->toBeFalse()
         ->and(method_exists(FieldLayout::class, 'createForm'))->toBeFalse()

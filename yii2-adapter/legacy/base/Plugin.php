@@ -10,25 +10,28 @@ namespace craft\base;
 use Craft;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Plugin\Concerns\HasEditions;
+use CraftCms\Cms\Plugin\Concerns\HasSettings;
 use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
+use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
+use CraftCms\Yii2Adapter\Form\LegacyHtml;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Log;
 use ReflectionClass;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
-use yii\web\Response;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
@@ -44,6 +47,9 @@ class Plugin extends Module implements PluginInterface
 {
     use PluginTrait;
     use HasEditions;
+    use HasSettings {
+        getSettingsResponse as private getFormSettingsResponse;
+    }
     use Installable;
 
     /**
@@ -202,7 +208,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse(): mixed
     {
-        $response = $this->settingsResponse(false);
+        $response = $this->getFormSettingsResponse();
 
         if ($response instanceof \craft\web\Response) {
             $response->send();
@@ -212,33 +218,28 @@ class Plugin extends Module implements PluginInterface
         return $response;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getReadOnlySettingsResponse(): mixed
+    public function settingsForm(FormContext $context = new FormContext()): ?Form
     {
-        return $this->settingsResponse(true);
-    }
+        $mode = match ($context->mode) {
+            ControlMode::Editable => LegacyHtmlMode::Editable,
+            ControlMode::ReadOnly => LegacyHtmlMode::ReadOnly,
+            ControlMode::Disabled => LegacyHtmlMode::Disabled,
+        };
+        $hook = $context->mode === ControlMode::Editable
+            ? $this->settingsHtml(...)
+            : fn(): ?string => Html::disableInputs($this->settingsHtml(...));
+        $node = app(LegacyHtml::class)->capture(
+            path: '__legacySettings',
+            hook: $hook,
+            namespace: LegacyHtml::namespace($context->namespace),
+            mode: $mode,
+        );
 
-    private function settingsResponse(bool $readOnly): Response
-    {
-        $settingsHtml = InputNamespace::namespaceInputs(function() use ($readOnly) {
-            if ($readOnly) {
-                // Just return the settings HTML with disabled inputs by default
-                return (string)Html::disableInputs(fn() => $this->settingsHtml());
-            }
+        $node?->getControl()
+            ->deltaGroupAtNamespace()
+            ->expandValues();
 
-            return (string)$this->settingsHtml();
-        }, 'settings');
-
-        /** @var Controller $controller */
-        $controller = Craft::$app->controller;
-
-        return $controller->rendertemplate('settings/plugins/_settings', [
-            'plugin' => $this,
-            'settingsHtml' => $settingsHtml,
-            'readOnly' => $readOnly,
-        ]);
+        return $node === null ? null : Form::make([$node]);
     }
 
     /**
