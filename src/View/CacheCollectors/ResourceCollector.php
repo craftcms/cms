@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\CacheCollectors;
 
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
+use CraftCms\Cms\View\Data\ResourceEntry;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
@@ -55,12 +54,12 @@ readonly class ResourceCollector implements CacheCollectorInterface
 
         return array_filter([
             'js' => $buffer['js'],
-            'scripts' => array_map($this->parseInlineResourceTags(...), $buffer['scripts']),
-            'css' => $this->parseInlineResourceTags($buffer['css']),
-            'jsFiles' => array_map(fn (array $tags) => $this->parseExternalResourceTags($tags, 'src'), $buffer['jsFiles']),
-            'cssFiles' => $this->parseExternalResourceTags($buffer['cssFiles'], 'href'),
+            'scripts' => array_map($this->resourceArguments(...), $buffer['scripts']),
+            'css' => $this->resourceArguments($buffer['css']),
+            'jsFiles' => array_map($this->resourceArguments(...), $buffer['jsFiles']),
+            'cssFiles' => $this->resourceArguments($buffer['cssFiles']),
             'html' => $buffer['html'],
-            'metaTags' => $this->parseSelfClosingTags($buffer['metaTags']),
+            'metaTags' => $this->resourceArguments($buffer['metaTags']),
             'jsImports' => $buffer['jsImports'],
         ], fn (mixed $payload) => $payload !== [] && $payload !== null);
     }
@@ -132,49 +131,11 @@ readonly class ResourceCollector implements CacheCollectorInterface
     }
 
     /**
-     * @param  array<string, \Stringable|string>  $tags
-     * @return array<string, array{string, array<string, mixed>}>
+     * @param  array<string, ResourceEntry>  $entries
+     * @return array<string, array<array-key, mixed>>
      */
-    private function parseInlineResourceTags(array $tags): array
+    private function resourceArguments(array $entries): array
     {
-        return array_map(function ($tag) {
-            $tag = Html::parseTag((string) $tag);
-
-            return [$tag['children'][0]['value'] ?? '', $tag['attributes']];
-        }, $tags);
-    }
-
-    /**
-     * @param  array<string, \Stringable|string>  $tags
-     * @return array<string, array{mixed, array<string, mixed>}>
-     */
-    private function parseExternalResourceTags(array $tags, string $urlAttribute): array
-    {
-        return array_map(function ($tag) use ($urlAttribute) {
-            [$tag, $condition] = Html::unwrapCondition((string) $tag);
-            [$tag, $noscript] = Html::unwrapNoscript($tag);
-            $tag = Html::parseTag($tag);
-            $url = Arr::pull($tag['attributes'], $urlAttribute);
-            $options = $tag['attributes'];
-
-            if ($condition) {
-                $options['condition'] = $condition;
-            }
-
-            if ($noscript) {
-                $options['noscript'] = true;
-            }
-
-            return [$url, $options];
-        }, $tags);
-    }
-
-    /**
-     * @param  array<string, \Stringable|string>  $tags
-     * @return array<string, array<string, mixed>>
-     */
-    private function parseSelfClosingTags(array $tags): array
-    {
-        return array_map(fn ($tag) => Html::parseTagAttributes((string) $tag), $tags);
+        return array_map(fn (ResourceEntry $entry) => $entry->arguments, $entries);
     }
 }
