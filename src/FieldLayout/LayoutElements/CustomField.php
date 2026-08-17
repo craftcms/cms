@@ -7,7 +7,6 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
@@ -20,12 +19,16 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\FieldSelect;
 use CraftCms\Cms\Form\Controls\Missing as MissingControl;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -37,7 +40,6 @@ use Throwable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -595,18 +597,29 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    protected function settingsHtml(): ?string
+    protected function settingsNodes(FormContext $context): array
     {
         // Make sure setField() has had a chance to set the default values
-        $this->getField();
+        $field = $this->getField();
+        $originalField = Fields::getFieldByUid($field->uid);
 
-        return template('_includes/forms/fld/custom-field-settings', [
-            'field' => $this,
-            'defaultLabel' => $this->defaultLabel(),
-            'defaultHandle' => $this->_originalHandle,
-            'defaultInstructions' => $this->defaultInstructions(),
-            'labelHidden' => ! $this->showLabel(),
-        ]);
+        return [
+            Group::make('custom-field-settings', array_values(array_filter([
+                $originalField === null ? null : Field::make(t('Field'), FieldSelect::make('fieldId')
+                    ->limit(1)
+                    ->value($originalField->id))
+                    ->warning(t('Changing this may result in data loss.')),
+                $this->labelSettingsNode($context),
+                Field::make(t('Handle'), Text::make('handle')
+                    ->monospace()
+                    ->maxLength(64)
+                    ->value($this->handle)
+                    ->placeholder($this->_originalHandle))
+                    ->required(),
+                ...$this->instructionsSettingsNodes($context),
+                ...$this->noticeSettingsNodes($context),
+            ]))),
+        ];
     }
 
     /** @return array{class?: list<string>, id?: string, data: array{base-input-name: string, error-key: string, type?: class-string<FieldInterface>}} */
@@ -749,50 +762,27 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    protected function conditionalSettingsHtml(): string
+    protected function conditionalSettingsNodes(FormContext $context): array
     {
-        $html = (string) parent::conditionalSettingsHtml();
+        $elementType = $this->elementType ?? $this->getLayout()?->type;
 
-        $editCondition = $this->getEditCondition() ?? self::defaultEditCondition();
-        $editCondition->mainTag = 'div';
-        $editCondition->id = 'edit-condition';
-        $editCondition->name = 'editCondition';
-        $editCondition->forProjectConfig = true;
-
-        $editConditionsHtml = FormFields::fieldHtml($editCondition->getBuilderHtml(), [
-            'label' => t('Current User Condition'),
-            'instructions' => t('Only make editable for users who match the following rules:'),
-        ]);
-
-        // Do we know the element type?
-        /** @var class-string<ElementInterface>|string|null $elementType */
-        $elementType = $this->elementType ?? $this->getLayout()->type;
-
-        if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-            $elementEditCondition = $this->getElementEditCondition();
-            if (! $elementEditCondition) {
-                $elementEditCondition = clone self::defaultElementEditCondition($elementType);
-                $elementEditCondition->setFieldLayouts([$this->getLayout()]);
-            }
-            $elementEditCondition->mainTag = 'div';
-            $elementEditCondition->id = 'element-edit-condition';
-            $elementEditCondition->name = 'elementEditCondition';
-            $elementEditCondition->forProjectConfig = true;
-
-            $editConditionsHtml .= FormFields::fieldHtml($elementEditCondition->getBuilderHtml(), [
-                'label' => t('{type} Condition', [
-                    'type' => $elementType::displayName(),
-                ]),
-                'instructions' => t('Only make editable when editing {type} that match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ]),
-            ]);
-        }
-
-        return $html.Html::beginTag('fieldset', ['class' => 'pane']).
-            Html::tag('legend', t('Editability Conditions')).
-            Html::tag('div', $editConditionsHtml).
-            Html::endTag('fieldset');
+        return [
+            ...parent::conditionalSettingsNodes($context),
+            $this->conditionGroupNode(
+                'editability-conditions',
+                t('Editability Conditions'),
+                'editCondition',
+                t('Only make editable for users who match the following rules:'),
+                $this->getEditCondition(),
+                'elementEditCondition',
+                'Only make editable when editing {type} that match the following rules:',
+                $this->getElementEditCondition(),
+                self::defaultEditCondition(),
+                $elementType && is_subclass_of($elementType, ElementInterface::class)
+                    ? self::defaultElementEditCondition($elementType)::class
+                    : null,
+            ),
+        ];
     }
 
     /**

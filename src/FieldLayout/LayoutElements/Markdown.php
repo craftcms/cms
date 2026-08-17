@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\MarkdownContent;
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
@@ -80,22 +83,16 @@ class Markdown extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return
-            FormFields::textareaFieldHtml([
-                'label' => t('Content'),
-                'class' => ['code', 'nicetext'],
-                'id' => 'content',
-                'name' => 'content',
-                'value' => $this->content,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Display content in a pane'),
-                'id' => 'display-in-pane',
-                'name' => 'displayInPane',
-                'on' => $this->displayInPane,
-            ]);
+        return [
+            Field::make(t('Content'), Textarea::make('content')
+                ->monospace()
+                ->value($this->content)),
+            Field::make(t('Display content in a pane'), Lightswitch::make('displayInPane')
+                ->value($this->displayInPane)),
+        ];
     }
 
     #[Override]

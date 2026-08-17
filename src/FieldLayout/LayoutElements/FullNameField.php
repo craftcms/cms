@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
@@ -72,14 +73,14 @@ class FullNameField extends TextField
     }
 
     #[Override]
-    protected function settingsHtml(): ?string
+    protected function settingsNodes(FormContext $context): array
     {
         if (Cms::config()->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?
-            return null;
+            return [];
         }
 
-        return parent::settingsHtml();
+        return parent::settingsNodes($context);
     }
 
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string

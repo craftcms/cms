@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Conditions\ElementCondition;
-use CraftCms\Cms\Elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Form\Form;

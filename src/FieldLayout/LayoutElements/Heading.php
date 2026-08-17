@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Heading as HeadingNode;
 use InvalidArgumentException;
 use Override;
@@ -51,14 +53,12 @@ class Heading extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return FormFields::textFieldHtml([
-            'label' => t('Heading'),
-            'id' => 'heading',
-            'name' => 'heading',
-            'value' => $this->heading,
-        ]);
+        return [
+            Field::make(t('Heading'), Text::make('heading')->value($this->heading)),
+        ];
     }
 
     #[Override]

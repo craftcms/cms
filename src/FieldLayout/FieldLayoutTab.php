@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -20,6 +19,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Missing;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -172,14 +174,12 @@ class FieldLayoutTab extends FieldLayoutComponent
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return FormFields::textFieldHtml([
-            'label' => t('Name'),
-            'name' => 'name',
-            'value' => $this->name,
-            'required' => true,
-        ]);
+        return [
+            Field::make(t('Name'), Text::make('name')->value($this->name))->required(),
+        ];
     }
 
     /**
