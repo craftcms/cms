@@ -147,6 +147,24 @@ describe('useElementAutosave', () => {
     expect(postSpy).toHaveBeenCalledTimes(2);
   });
 
+  /**
+   * A submission re-seeds the renderers with what it saved, and reconciling
+   * emits mutations like any other write — but they land while the visit is
+   * still in flight, and arming for them would rebuild the draft an applied
+   * save just consumed.
+   */
+  it('skips scheduling while a real submission is in flight', async () => {
+    const {autosave, form} = mount({debounceMs: 5});
+
+    form.processing = true;
+    autosave.schedule();
+    form.processing = false;
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
   it('skips scheduling while suspended', async () => {
     const {autosave} = mount();
 
@@ -237,8 +255,39 @@ describe('useElementAutosave', () => {
 
     expect(autosave.form.value).toEqual(layout);
 
-    autosave.clearForm();
+    autosave.clearSaved();
 
     expect(autosave.form.value).toBeNull();
+  });
+
+  // The screen payload is what tells the client the save turned a canonical
+  // element into a provisional draft.
+  it('keeps the edit screen payload the server returned', async () => {
+    const screen = {
+      notice: 'Showing your unsaved changes.',
+      canDiscardDraft: true,
+      isProvisionalDraft: true,
+      draftId: 7,
+    };
+    postSpy.mockResolvedValue({data: {draftId: 7, screen}});
+
+    const {autosave} = mount();
+
+    expect(autosave.screen.value).toBeNull();
+
+    await autosave.save();
+
+    expect(autosave.screen.value).toEqual(screen);
+
+    // A response without one leaves the last known screen in place, rather
+    // than reverting the chrome to the page that loaded.
+    postSpy.mockResolvedValue({data: {draftId: 7}});
+    await autosave.save();
+
+    expect(autosave.screen.value).toEqual(screen);
+
+    autosave.clearSaved();
+
+    expect(autosave.screen.value).toBeNull();
   });
 });
