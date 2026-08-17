@@ -1,4 +1,6 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
+import ActionNode from './ActionNode.vue';
+import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ConditionBuilderControl from './ConditionBuilderControl.vue';
@@ -39,6 +41,7 @@ export function registerFormComponents(
 ): void {
   components.register('craft:form', FormRenderer);
   components.register('craft:field', FieldNode);
+  components.register('craft:action', ActionNode);
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:template-content', TemplateContentNode);
@@ -55,6 +58,7 @@ export function registerFormComponents(
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);
   components.register('craft:lightswitch', LightswitchControl);
+  components.register('craft:checkbox', CheckboxControl);
   components.register('craft:choice', ChoiceControl);
   components.register('craft:condition-builder', ConditionBuilderControl);
   components.register('craft:number', TextControl);
