@@ -18,8 +18,11 @@ import styles from './tab.styles.js';
  * @slot - The tab's label. Any inline content; keep it short enough to sit in
  *   a strip.
  *
- * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `1em`.
- * @cssproperty --c-tab-spacing-block - Block padding. Defaults to `0.5em`.
+ * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `1em`, so
+ *   the tab scales with whatever font size it inherits — which is how
+ *   `<craft-tabs size>` resizes its tabs without touching them.
+ * @cssproperty --c-tab-spacing-block - Block padding. Defaults to `0.5em`; see
+ *   above.
  * @cssproperty --c-tab-border-active - Color of the selected indicator.
  *   Defaults to `--c-color-accent-border-loud`.
  * @cssproperty --c-tab-text-disabled - Label color while disabled. Defaults to

@@ -14,13 +14,29 @@ export default css`
   /*
    * The rule lives on the strip rather than the tablist so it runs under the
    * overflow menu too, which sits beside the tablist rather than inside it.
+   *
+   * The font size here is the whole of the size variant. Inheritance follows
+   * the flattened tree, so the slotted <craft-tab>s take it from the slot's
+   * ancestors rather than from where they're written — and since their padding
+   * is em-based, and the overflow invoker's icon scales with its own text, one
+   * declaration sizes everything in the strip. The panels sit outside it and
+   * keep the document's text size.
    */
   .tabs__strip {
     display: flex;
     align-items: center;
     min-width: 0;
+    font-size: var(--c-tabs-font-size, var(--c-text-base));
     border-block-end: 1px solid
       var(--c-tabs-border, var(--c-color-neutral-border-quiet));
+  }
+
+  :host([size='small']) {
+    --c-tabs-font-size: var(--c-text-sm);
+  }
+
+  :host([size='large']) {
+    --c-tabs-font-size: var(--c-text-lg);
   }
 
   .tabs__tab-group {

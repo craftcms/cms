@@ -140,6 +140,40 @@ describe('layout', () => {
   });
 });
 
+describe('size', () => {
+  it('defaults to medium and reflects the attribute', async () => {
+    const element = await createTabs();
+
+    expect(element.size).toBe('medium');
+    expect(element.getAttribute('size')).toBe('medium');
+
+    element.size = 'small';
+    await element.updateComplete;
+    expect(element.getAttribute('size')).toBe('small');
+  });
+
+  it('scales the strip by font size alone', async () => {
+    // The tabs are slotted, so they inherit the strip's font size through the
+    // flattened tree; their padding is em-based and follows. Asserted against
+    // the stylesheet because there's no cascade in this environment.
+    const map = rules();
+
+    expect(map.get('.tabs__strip')).toContain(
+      'font-size: var(--c-tabs-font-size, var(--c-text-base))'
+    );
+    expect(map.get(":host([size='small'])")).toContain(
+      '--c-tabs-font-size: var(--c-text-sm)'
+    );
+    expect(map.get(":host([size='large'])")).toContain(
+      '--c-tabs-font-size: var(--c-text-lg)'
+    );
+
+    // Medium is the bare fallback above, so there is no per-tab padding rule
+    // to keep in sync with it.
+    expect(map.has(":host([size='medium'])")).toBe(false);
+  });
+});
+
 describe('craft-tab', () => {
   it('reflects disabled', async () => {
     const element = await createTabs();

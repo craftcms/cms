@@ -3,6 +3,8 @@ import {expect} from 'storybook/test';
 
 import {html} from 'lit';
 
+import {sizes} from '@src/constants/size';
+
 import '../tab/tab.js';
 import './tabs.js';
 import {tabsLayouts} from './tabs.js';
@@ -16,6 +18,11 @@ const meta = {
       options: tabsLayouts,
       description: 'Which axis the tab strip runs along.',
     },
+    size: {
+      control: {type: 'inline-radio'},
+      options: sizes,
+      description: 'How large the strip is.',
+    },
     selectedIndex: {
       name: 'selected-index',
       control: {type: 'number'},
@@ -24,10 +31,15 @@ const meta = {
   },
   args: {
     layout: 'horizontal',
+    size: 'medium',
     selectedIndex: 0,
   },
   render: (args) => html`
-    <craft-tabs layout="${args.layout}" selected-index="${args.selectedIndex}">
+    <craft-tabs
+      layout="${args.layout}"
+      size="${args.size}"
+      selected-index="${args.selectedIndex}"
+    >
       <craft-tab slot="tab">Tab One</craft-tab>
       <div slot="panel">
         <p>Some content for the first tab</p>
@@ -95,6 +107,58 @@ export const Vertical: Story = {
       .shadowRoot!.querySelector('[part="tab-group"]')!;
 
     await expect(tabList).toHaveAttribute('aria-orientation', 'vertical');
+  },
+};
+
+/**
+ * The three sizes, along both axes. `size` sets a font size on the strip and
+ * nothing else — the tabs are slotted, so they inherit it, and their padding is
+ * `em`-based and follows. The panels keep the document's text size either way.
+ */
+export const Sizes: Story = {
+  render: () => html`
+    ${(['horizontal', 'vertical'] as const).map(
+      (layout) => html`
+        <div
+          style="display: flex; align-items: start; gap: 2rem; margin-block-end: 2rem;"
+        >
+          ${sizes.map(
+            (size) => html`
+              <craft-tabs layout="${layout}" size="${size}">
+                <craft-tab slot="tab">${size}</craft-tab>
+                <div slot="panel"><p>A ${size} ${layout} strip.</p></div>
+                <craft-tab slot="tab">Second</craft-tab>
+                <div slot="panel"><p>Its second panel.</p></div>
+              </craft-tabs>
+            `
+          )}
+        </div>
+      `
+    )}
+  `,
+  play: async ({canvasElement}) => {
+    const px = (tab: Element, property: string) =>
+      parseFloat(getComputedStyle(tab).getPropertyValue(property));
+
+    for (const layout of ['horizontal', 'vertical']) {
+      const firstTabs = [
+        ...canvasElement.querySelectorAll(`craft-tabs[layout="${layout}"]`),
+      ].map((strip) => strip.querySelector('craft-tab')!);
+
+      const fonts = firstTabs.map((tab) => px(tab, 'font-size'));
+      const paddings = firstTabs.map((tab) => px(tab, 'padding-inline-start'));
+
+      // Ordered small < medium < large...
+      await expect(fonts[0]).toBeLessThan(fonts[1]!);
+      await expect(fonts[1]).toBeLessThan(fonts[2]!);
+
+      // ...and the padding tracks it, with no per-size padding rule involved.
+      await expect(paddings[0]).toBeLessThan(paddings[1]!);
+      await expect(paddings[1]).toBeLessThan(paddings[2]!);
+      firstTabs.forEach((_, index) =>
+        expect(paddings[index]).toBeCloseTo(fonts[index]!, 1)
+      );
+    }
   },
 };
 

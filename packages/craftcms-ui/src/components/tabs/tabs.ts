@@ -6,6 +6,7 @@ import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import type CraftActionMenu from '../action-menu/action-menu.js';
 import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
+import type {SizeValue} from '@src/constants/size';
 import type CraftTab from '../tab/tab.js';
 import styles from './tabs.styles.js';
 
@@ -119,12 +120,19 @@ const FIT_TOLERANCE = 1;
  *   tabs. Present but `hidden` while everything fits.
  * @csspart panels - The container holding the panels.
  *
+ * @attr size - The scale of the strip: `small`, `medium` (the default), or
+ *   `large`. Sets the strip's font size, which the tabs and the overflow
+ *   invoker size themselves from.
+ *
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
  *   Defaults to `--c-spacing-lg`.
  * @cssproperty --c-tabs-tab-gap - Space between adjacent tabs. Defaults to
  *   `--c-spacing-md`.
  * @cssproperty --c-tabs-border - Color of the rule along the tab strip.
  *   Defaults to `--c-color-neutral-border-quiet`.
+ * @cssproperty --c-tabs-font-size - Font size of the tab strip, and so the
+ *   scale of everything in it. Set by `size`; override for a scale between the
+ *   named ones.
  */
 export default class CraftTabs extends LionTabs {
   static override get styles() {
@@ -138,6 +146,14 @@ export default class CraftTabs extends LionTabs {
    * either way.
    */
   @property({reflect: true}) layout: TabsLayoutValue = TabsLayout.Horizontal;
+
+  /**
+   * How large the strip is. Expressed as a font size on the strip and nothing
+   * else: `<craft-tab>`'s padding is `em`-based and the overflow invoker's
+   * icon scales with its own text, so both follow from ordinary inheritance
+   * rather than a second set of per-size rules. See tabs.styles.ts.
+   */
+  @property({reflect: true}) size: SizeValue = 'medium';
 
   /** Cleanup for the listeners bound to each tab in external-panel mode. */
   #externalCleanup: Array<() => void> = [];
@@ -220,10 +236,12 @@ export default class CraftTabs extends LionTabs {
 
     if (
       changedProperties.has('selectedIndex') ||
-      changedProperties.has('layout')
+      changedProperties.has('layout') ||
+      changedProperties.has('size')
     ) {
       // The selected tab is never left in the menu, so a selection landing on
-      // a collapsed tab has to redraw the strip.
+      // a collapsed tab has to redraw the strip. A size change resizes the tabs
+      // without resizing the host, so the ResizeObserver never sees it.
       this.#measureOverflow();
     }
   }
