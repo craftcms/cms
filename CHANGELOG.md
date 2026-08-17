@@ -17,6 +17,7 @@
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
 - Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
 - Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Improved Project Config change event handler registration by keeping callbacks and ordering metadata together.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
