@@ -33,10 +33,7 @@ import { useFlash } from "@/common/composables/useFlash";
 import { useGlobalSidebar } from "@/common/composables/useGlobalSidebar";
 import { useResizable } from "@/common/composables/useResizable";
 import { provideLayoutSlotRegistry } from "@/common/composables/layoutSlots";
-import {
-  provideScreenContext,
-  ScreenShellKey,
-} from "@/common/composables/screen";
+import { provideScreenContext, ScreenShellKey } from "@/common/composables/screen";
 import type { ActionItem, FormSaveOptions } from "@/common/types";
 import { ButtonVariant } from "@craftcms/ui";
 import type { DefaultFormAction, ScreenProps, ScreenSlots } from "./types";
@@ -87,18 +84,14 @@ const readOnly = computed(() => Boolean(page.props.readOnly));
 const hasContextMenu = computed(
   () => Boolean(slots["context-menu"]) || registry.has("context-menu"),
 );
-const hasToolbar = computed(
-  () => Boolean(slots.toolbar) || registry.has("toolbar"),
-);
+const hasToolbar = computed(() => Boolean(slots.toolbar) || registry.has("toolbar"));
 const hasContentNotice = computed(
   () => Boolean(slots["content-notice"]) || registry.has("content-notice"),
 );
 const hasContentFooter = computed(
   () => Boolean(slots["content-footer"]) || registry.has("content-footer"),
 );
-const hasDetails = computed(
-  () => Boolean(slots.details) || registry.has("details"),
-);
+const hasDetails = computed(() => Boolean(slots.details) || registry.has("details"));
 const hasSidebar = computed(
   () =>
     Boolean(slots.sidebar) ||
@@ -145,10 +138,7 @@ const detailsMaxWidth = computed(() => {
 
   const share = contentLayoutWidth.value * (hasSidebar.value ? 0.4 : 0.5);
 
-  return Math.max(
-    DETAILS_MIN_WIDTH,
-    Math.min(DETAILS_MAX_WIDTH, Math.round(share)),
-  );
+  return Math.max(DETAILS_MIN_WIDTH, Math.min(DETAILS_MAX_WIDTH, Math.round(share)));
 });
 
 const detailsResizer = useResizable({
@@ -219,10 +209,7 @@ useActionRedirect();
           v-if="!isLargeScreen"
           ref="sidebarToggle"
         >
-          <craft-icon
-            :name="sidebarIcon"
-            :label="t('Toggle menu')"
-          ></craft-icon>
+          <craft-icon :name="sidebarIcon" :label="t('Toggle menu')"></craft-icon>
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
@@ -259,9 +246,9 @@ useActionRedirect();
         <main id="main" tabindex="-1">
           <form method="post" @submit.prevent="form && save()" class="cp-main">
             <slot name="header">
-              <div class="pt-4 pb-2 border-b" id="cp-header">
+              <div id="cp-header">
                 <div class="container">
-                  <div class="flex gap-2 items-center">
+                  <div class="flex gap-2 items-center justify-between py-4">
                     <LayoutSlotOutlet name="title">
                       <slot name="title">
                         <h1 class="text-xl">{{ pageTitle }}</h1>
@@ -270,16 +257,7 @@ useActionRedirect();
                     <LayoutSlotOutlet name="title-badge">
                       <slot name="title-badge"></slot>
                     </LayoutSlotOutlet>
-                  </div>
-                </div>
-                <div class="container">
-                  <div class="flex gap-4 justify-between items-center">
-                    <div></div>
-                    <div
-                      v-show="hasToolbar"
-                      id="toolbar"
-                      class="flex items-center gap-2"
-                    >
+                    <div v-show="hasToolbar" id="toolbar" class="flex items-center gap-2">
                       <LayoutSlotOutlet name="toolbar">
                         <slot name="toolbar"></slot>
                       </LayoutSlotOutlet>
@@ -299,10 +277,7 @@ useActionRedirect();
                             :submit-label="submitButtonLabel"
                             :read-only="readOnly"
                           >
-                            <template
-                              v-if="slots['submit-button']"
-                              #submit-button
-                            >
+                            <template v-if="slots['submit-button']" #submit-button>
                               <slot name="submit-button"></slot>
                             </template>
                           </FormActions>
@@ -316,10 +291,7 @@ useActionRedirect();
             <div class="container">
               <LayoutSlotOutlet name="error-summary">
                 <slot name="error-summary">
-                  <ErrorSummary
-                    v-if="form && form.hasErrors"
-                    :errors="form.errors"
-                  />
+                  <ErrorSummary v-if="form && form.hasErrors" :errors="form.errors" />
                 </slot>
               </LayoutSlotOutlet>
               <template v-if="readOnly">
@@ -356,11 +328,7 @@ useActionRedirect();
                   </LayoutSlotOutlet>
                 </div>
                 <div class="content-layout__main">
-                  <div
-                    v-show="hasContentNotice"
-                    id="content-notice"
-                    role="status"
-                  >
+                  <div v-show="hasContentNotice" id="content-notice" role="status">
                     <LayoutSlotOutlet name="content-notice">
                       <slot name="content-notice"></slot>
                     </LayoutSlotOutlet>
@@ -453,11 +421,7 @@ useActionRedirect();
        clearing it restores this. Not named --details-width: legacy _cp.scss
        publishes a global custom property under that name. */
   --content-layout-details-width: clamp(12rem, 20%, 16rem);
-  --content-layout-sidebar-width: clamp(
-    calc(120rem / 16),
-    20%,
-    calc(220rem / 16)
-  );
+  --content-layout-sidebar-width: clamp(calc(120rem / 16), 20%, calc(220rem / 16));
 
   /* Hard ceiling on the details track, so a width restored from storage at a
        wider viewport can't run the layout off the page. `useResizable` clamps
