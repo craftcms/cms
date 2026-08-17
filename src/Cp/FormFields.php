@@ -116,10 +116,14 @@ readonly class FormFields
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&
-            ($label || $showAttribute || isset($config['labelExtra']))
+            ($label || $showAttribute || isset($config['actions']) || isset($config['labelExtra']))
         );
 
-        $labelExtra = implode('', array_filter([
+        self::deprecateConfig('field', $config, [
+            'labelExtra' => 'has been deprecated. `actions` should be used instead.',
+        ]);
+
+        $actions = implode('', array_filter([
             $showActionMenu
                 ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
                     'hiddenLabel' => t('Actions'),
@@ -135,7 +139,7 @@ readonly class FormFields
                     'value' => $config['attribute'],
                 ])
                 : null,
-            isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
+            isset($config['actions']) ? (string) $config['actions'] : null,
         ]));
 
         $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
@@ -157,7 +161,8 @@ readonly class FormFields
             ->errors($errors !== null ? collect($errors)->map(fn ($error): string => (string) $error)->all() : [])
             ->headingPrefix($config['headingPrefix'] ?? null)
             ->headingSuffix($config['headingSuffix'] ?? null)
-            ->labelExtra($labelExtra !== '' ? $labelExtra : null)
+            ->labelExtra(isset($config['labelExtra']) ? (string) $config['labelExtra'] : null)
+            ->actions($actions !== '' ? $actions : null)
             ->input($input)
             ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
