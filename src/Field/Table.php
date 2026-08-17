@@ -49,7 +49,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-type TableColumnType 'checkbox'|'color'|'date'|'select'|'email'|'heading'|'lightswitch'|'multiline'|'number'|'singleline'|'time'|'url'
  * @phpstan-type TableOption array{label: string, value: string, default?: bool}
- * @phpstan-type TableColumn array{heading: string, handle: string|array{value: string, hasErrors: true}, type: TableColumnType, width?: int|string, options?: list<TableOption>}
+ * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>}
  * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|null
  * @phpstan-type TableRowData array<string, TableCellValue>
  */
@@ -57,6 +57,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 {
     /** @var array<string, string> */
     private static array $typeOptions;
+
+    /** @var array<string, array<string, true>> */
+    private array $columnErrors = [];
 
     #[Override]
     public static function displayName(): string
@@ -158,6 +161,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     ->allowAdd()
                     ->allowDelete()
                     ->allowReorder()
+                    ->errors($this->columnErrors)
                     ->value($columnRows)),
             FormField::make(t('Default Values'))
                 ->instructions(t('Define the default values for the field.'))
@@ -292,9 +296,10 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
     public function afterValidate(?Validator $validator = null): void
     {
+        $this->columnErrors = [];
         $typeOptions = self::typeOptions();
 
-        foreach ($this->columns as &$col) {
+        foreach ($this->columns as $colId => &$col) {
             if (! isset($typeOptions[$col['type']])) {
                 $col['type'] = 'singleline';
             }
@@ -316,11 +321,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             }
 
             if ($error) {
-                $col['handle'] = [
-                    'value' => $col['handle'],
-                    'hasErrors' => true,
-                ];
-
+                $this->columnErrors[$colId]['handle'] = true;
                 $validator?->errors()->add('columns', $error);
             }
         }
