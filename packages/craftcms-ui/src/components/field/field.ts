@@ -38,8 +38,10 @@ type FormControlTarget = HTMLElement & {
  * @slot feedback - Validation errors (e.g. an error list).
  * @slot tip - Tip notice content, rendered inside an info callout.
  * @slot warning - Warning notice content, rendered inside a warning callout.
- * @slot label-extra - Extra heading content (handle-copy buttons, action
- *   menus), rendered after a flex-grow spacer.
+ * @slot label-extra - Extra heading content, rendered after a flex-grow spacer.
+ *   @deprecated Use `actions` instead.
+ * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
+ *   field settings menus), rendered as a group at the end of the heading.
  */
 export default class CraftField extends FormControlMixin(LitElement) {
   static override get styles() {
@@ -291,10 +293,12 @@ export default class CraftField extends FormControlMixin(LitElement) {
   }
 
   /**
-   * The field heading: label, read-only badge, flex-grow spacer and label
-   * extras, mirroring `.field > .heading` in the Blade wrapper.
+   * The field heading: label, read-only badge, flex-grow spacer, label extras
+   * and actions, mirroring `.field > .heading` in the Blade wrapper.
    */
   protected override _labelTemplate() {
+    const hasActions = this.__hasLightChild('actions');
+
     return html`
       <div class="heading form-field__label">
         <slot name="heading-prefix"></slot>
@@ -302,10 +306,22 @@ export default class CraftField extends FormControlMixin(LitElement) {
         ${this.readOnly
           ? html`<span class="read-only-badge">${t('Read Only')}</span>`
           : nothing}
-        ${this.__hasLightChild('label-extra')
+        ${this.__hasLightChild('label-extra') || hasActions
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
+        ${hasActions
+          ? html`
+              <div
+                class="field-actions"
+                part="actions"
+                role="group"
+                aria-label=${t('Field actions')}
+              >
+                <slot name="actions"></slot>
+              </div>
+            `
+          : html`<slot name="actions"></slot>`}
         <slot name="heading-suffix"></slot>
       </div>
     `;
@@ -394,8 +410,8 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (tip/warning callouts, label-extra spacer) depend
-    // on light DOM children.
+    // Conditional templates (tip/warning callouts, heading spacer, action
+    // group) depend on light DOM children.
     this.requestUpdate();
   }
 
