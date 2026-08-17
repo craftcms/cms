@@ -144,7 +144,7 @@ readonly class FormFields
 
         $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
 
-        return Field::make()
+        $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
             ->required((bool) ($config['required'] ?? false))
@@ -161,7 +161,6 @@ readonly class FormFields
             ->errors($errors !== null ? collect($errors)->map(fn ($error): string => (string) $error)->all() : [])
             ->headingPrefix($config['headingPrefix'] ?? null)
             ->headingSuffix($config['headingSuffix'] ?? null)
-            ->labelExtra(isset($config['labelExtra']) ? (string) $config['labelExtra'] : null)
             ->actions($actions !== '' ? $actions : null)
             ->input($input)
             ->width($config['width'] ?? null)
@@ -183,6 +182,12 @@ readonly class FormFields
                     $config['fieldAttributes'] ?? [],
                 ),
             ));
+
+        if (isset($config['labelExtra'])) {
+            $field->labelExtra((string) $config['labelExtra']);
+        }
+
+        return $field;
     }
 
     /**
