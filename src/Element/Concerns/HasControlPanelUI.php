@@ -31,6 +31,7 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -74,6 +75,22 @@ trait HasControlPanelUI
      * @see setUiLabelPath()
      */
     private array $_uiLabelPath = [];
+
+    /**
+     * The view model that builds this element type's edit screen payload, or
+     * `null` for a type whose editor hasn't been ported off the legacy screen.
+     *
+     * The edit controllers construct it directly — they know their own element
+     * type. This is for the shared `elements/*` actions, which don't: autosave
+     * rebuilds the screen payload so the client can adopt the state the save
+     * left the element in, and has only the element to go on.
+     *
+     * @return class-string<ElementEditViewModel>|null
+     */
+    public static function editViewModelClass(): ?string
+    {
+        return null;
+    }
 
     /**
      * Performs any action after the element's editor is fully ready.

@@ -390,6 +390,112 @@ describe('store', function () {
             ]);
     });
 
+    // Autosave turns a canonical element into a provisional draft midway through
+    // editing. Without the screen payload the client only learns about the draft
+    // id, so the “Showing your unsaved changes” notice, the Discard changes
+    // button and the rest of the draft chrome don’t appear until a page load.
+    it('returns the edit screen payload a fresh page load would render', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+        $response = postJson(
+            cp_url('actions/elements/save-draft'),
+            elementDraftsControllerPayload($entry, [
+                'provisional' => true,
+                'title' => 'Provisional Title',
+                'slug' => 'provisional-title',
+            ]),
+        )->assertOk();
+
+        expect($response->json('screen.notice'))->toBe(t('Showing your unsaved changes.'))
+            ->and($response->json('screen.canDiscardDraft'))->toBeTrue()
+            ->and($response->json('screen.isProvisionalDraft'))->toBeTrue()
+            ->and($response->json('screen.draftId'))->toBe($response->json('draftId'))
+            ->and($response->json('screen.elementId'))->toBe($response->json('elementId'))
+            ->and($response->json('screen.canonicalId'))->toBe($entry->id)
+            // Saving now means applying the draft, not saving the element under it.
+            ->and($response->json('screen.applyDraftUrl'))->toContain('elements/apply-draft')
+            ->and($response->json('screen.submitButtonLabel'))->toBe(t('Save'));
+
+        // The rest of the chrome the initial load carries, which the screen has
+        // no other way to refresh mid-edit.
+        $response->assertJsonStructure([
+            'screen' => [
+                'sidebarForm',
+                'metadataHtml',
+                'statusLabelHtml',
+                'crumbs',
+                'formActions',
+                'headerActions',
+                'actionMenu',
+                'previewTargets',
+                'updatedTimestamps',
+                'mergeNotice',
+                'canAutosave',
+                'readOnly',
+                'title',
+                'docTitle',
+            ],
+        ]);
+
+        // The compiled layout is already on the response, scoped to whatever the
+        // request asked for — sending it a second time would double the size of
+        // every keystroke’s autosave.
+        expect($response->json('screen'))->not->toHaveKey('form')
+            ->and($response->json('form'))->toBeArray();
+    });
+
+    // The legacy `Craft.ElementEditor` reads this response too, and several of
+    // its keys mean something different there — `form` is scoped to the editor’s
+    // namespace, `previewTargets` is the raw target list. The screen payload is
+    // nested for that reason; this guards the keys it must not have disturbed.
+    it('keeps every key the legacy element editor reads', function () {
+        $entry = EntryModel::factory()->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+        $response = postJson(
+            cp_url('actions/elements/save-draft'),
+            elementDraftsControllerPayload($entry, [
+                'title' => 'Legacy Draft Title',
+                'slug' => 'legacy-draft-title',
+            ]),
+        )->assertOk();
+
+        $response->assertJsonStructure([
+            'elementId',
+            'draftId',
+            'draftName',
+            'creator',
+            'timestamp',
+            'modifiedAttributes',
+            'draftElementIds',
+            'draftElementUids',
+            'deltaNames',
+            'initialDeltaValues',
+            'form',
+            'tabs',
+            'headHtml',
+            'bodyHtml',
+            'docTitle',
+            'title',
+            'previewTargets',
+            'previewParamValue',
+            'updatedTimestamp',
+            'canonicalUpdatedTimestamp',
+        ]);
+
+        // `_afterUpdateFieldLayout()` throws on a falsy `form`, and
+        // `modifiedAttributes` is mapped over unguarded.
+        expect($response->json('form'))->toBeArray()
+            ->and($response->json('modifiedAttributes'))->toBeArray()
+            // The raw target list, not the screen payload’s resolved links.
+            ->and($response->json('previewTargets'))->toBeArray();
+    });
+
     it('reports the same updated timestamp that recent activity reads back', function () {
         // The two only disagree when the system timezone isn’t UTC: the element carries the
         // `dateUpdated` it was saved with, while recent activity re-reads it from the database.

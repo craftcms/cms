@@ -63,6 +63,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -297,6 +298,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public static function hasDrafts(): bool
     {
         return true;
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return EntryEditViewModel::class;
     }
 
     #[Override]

@@ -89,6 +89,22 @@ abstract class ElementEditViewModel extends ViewModel
      */
     abstract protected function elementSaveUrl(): string;
 
+    /**
+     * Adopts an already-compiled field layout instead of compiling one.
+     *
+     * Autosave compiles the layout for its own response before it rebuilds this
+     * payload; handing that compilation over is what keeps a keystroke from
+     * paying for the same work twice. Takes an argument, so {@see ViewModel}
+     * leaves it out of the payload.
+     */
+    public function withForm(?FormPayload $form): static
+    {
+        $this->form = $form;
+        $this->formResolved = true;
+
+        return $this;
+    }
+
     /** Where the edit form posts when there are no provisional changes to apply. */
     public function saveUrl(): string
     {

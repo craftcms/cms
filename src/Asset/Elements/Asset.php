@@ -61,6 +61,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
@@ -382,6 +383,12 @@ class Asset extends Element
     public static function refHandle(): string
     {
         return 'asset';
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return AssetEditViewModel::class;
     }
 
     #[Override]
