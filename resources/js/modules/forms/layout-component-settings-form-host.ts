@@ -119,8 +119,9 @@ export function defineLayoutComponentSettingsFormHost(
           'fields/refresh-layout-component-settings',
           {
             data: {
+              // `values` is already relative to `scope`, unlike currentValues().
               ...this.#requestData(),
-              settings: values.settings ?? {},
+              settings: values,
               scope,
             },
           }

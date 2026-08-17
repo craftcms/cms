@@ -74,6 +74,24 @@ it('separates settings from conditions, and omits the separator when there are n
         ->and($conditionsOnlyNodes[0]->uid)->toBe('visibility-conditions');
 });
 
+it('treats a classless condition config as no condition', function () {
+    // ConditionBuilder Controls post `[]` for an empty condition, and
+    // getElementCondition() merges `fieldLayouts` into it before normalizing.
+    $component = attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid']));
+    $component->setUserCondition([]);
+    $component->setElementCondition([]);
+
+    expect($component->getUserCondition())->toBeNull()
+        ->and($component->getElementCondition())->toBeNull();
+
+    $payload = app(FormResolver::class)->resolve(
+        $component->settingsForm(settingsContext()),
+        settingsContext(),
+    );
+
+    expect($payload->nodes)->not->toBeEmpty();
+});
+
 it('builds visibility condition controls at the expected paths', function () {
     $component = attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid']));
     $payload = app(FormResolver::class)->resolve(

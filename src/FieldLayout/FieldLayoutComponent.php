@@ -184,7 +184,11 @@ abstract class FieldLayoutComponent extends Component
      */
     protected function normalizeCondition(mixed $condition): ?ConditionInterface
     {
-        if ($condition === null) {
+        // An empty array is how a ConditionBuilder Control represents “no
+        // condition”, and is what it posts back when nothing has been set.
+        // getElementCondition() may have merged `fieldLayouts` in by then, so
+        // treat any classless config as “no condition” rather than failing.
+        if ($condition === null || (is_array($condition) && ! isset($condition['class']))) {
             return null;
         }
 
