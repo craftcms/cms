@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use craft\models\AssetIndexData;
 use craft\services\AssetIndexer;
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
 use CraftCms\Cms\Asset\Models\AssetIndexData as AssetIndexDataModel;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -27,7 +27,7 @@ beforeEach(function() {
         $table->char('uid', 36);
     });
 
-    $this->session = new IndexingSession(['id' => 1]);
+    $this->session = new AssetIndexingSession(['id' => 1]);
     $this->entry = AssetIndexDataModel::create([
         'sessionId' => 1,
         'volumeId' => 1,

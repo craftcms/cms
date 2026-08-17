@@ -12,6 +12,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn(Table::ASSETINDEXDATA, 'status')) {
+            return;
+        }
+
         Schema::table(Table::ASSETINDEXDATA, function (Blueprint $table) {
             $table->string('status')->default('pending');
         });

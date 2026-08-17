@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetIndexer;
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
@@ -45,7 +44,7 @@ it('can create an indexing session', function () {
         listEmptyFolders: false,
     );
 
-    expect($session)->toBeInstanceOf(IndexingSession::class);
+    expect($session)->toBeInstanceOf(AssetIndexingSession::class);
     expect($session->id)->not()->toBeNull();
     expect($session->totalEntries)->toBe(0);
     expect($session->processedEntries)->toBe(0);
@@ -53,6 +52,11 @@ it('can create an indexing session', function () {
     expect($session->isCli)->toBeTrue();
     expect($session->listEmptyFolders)->toBeFalse();
     expect($session->actionRequired)->toBeFalse();
+    expect($session->toArray())->toMatchArray([
+        'skippedEntries' => [],
+        'missingEntries' => [],
+        'forceStop' => false,
+    ]);
 
     expect(AssetIndexingSession::find($session->id))->not()->toBeNull();
 });
@@ -65,7 +69,7 @@ it('can get an indexing session by id', function () {
 
     $found = $this->indexer->getIndexingSessionById($session->id);
 
-    expect($found)->toBeInstanceOf(IndexingSession::class);
+    expect($found)->toBeInstanceOf(AssetIndexingSession::class);
     expect($found->id)->toBe($session->id);
 });
 
@@ -420,7 +424,7 @@ it('can start an indexing session with files on disk', function () {
         listEmptyFolders: false,
     );
 
-    expect($session)->toBeInstanceOf(IndexingSession::class);
+    expect($session)->toBeInstanceOf(AssetIndexingSession::class);
     expect($session->totalEntries)->toBeGreaterThanOrEqual(2);
 
     $indexEntries = AssetIndexData::where('sessionId', $session->id)->count();

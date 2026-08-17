@@ -354,7 +354,7 @@ use craft\widgets\NewUsers;
 use craft\widgets\QuickPost;
 use craft\widgets\RecentEntries;
 use craft\widgets\Updates;
-use CraftCms\Cms\Asset\Data\IndexingSession;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession as IndexingSession;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Entry\Conditions\FieldConditionRule;

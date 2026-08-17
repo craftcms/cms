@@ -10,8 +10,8 @@
 namespace craft\services;
 
 use craft\models\AssetIndexData;
+use craft\models\AssetIndexingSession;
 use CraftCms\Cms\Asset\AssetIndexer as AssetIndexerService;
-use CraftCms\Cms\Asset\Data\IndexingSession as AssetIndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
