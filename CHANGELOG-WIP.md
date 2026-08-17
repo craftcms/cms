@@ -12,6 +12,23 @@
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 
 ### Extensibility
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsForm()`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsNodes()`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.
+- Added `CraftCms\Cms\Form\Nodes\Action`.
+- Added `CraftCms\Cms\Form\Nodes\Field::actions()`.
+- Added `CraftCms\Cms\Form\Controls\Checkbox`.
+- Added `CraftCms\Cms\Form\Controls\FieldSelect`.
+- Added `CraftCms\Cms\Form\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Cp\Components\Field::actions()`.
+- Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
+- Added the `actions` slot to `<craft-field>`.
+- Deprecated `CraftCms\Cms\Cp\Components\Field::labelExtra()`. `actions()` should be used instead.
+- Deprecated the `labelExtra` field config option. `actions` should be used instead.
+- Deprecated `<craft-field>`’s `label-extra` slot. The `actions` slot should be used instead.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsHtml()`.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::renderSettingsHtml()`.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsHtml()`.
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\DateTimeHelper`.
 - Added `CraftCms\Cms\Support\File`.
