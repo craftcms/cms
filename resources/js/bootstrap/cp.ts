@@ -130,7 +130,7 @@ const Cp = {
 };
 
 /**
- * When navigating to a new page, set keyboard focus on the skip link and
+ * When navigating to a new page, set keyboard focus on the route focus anchor and
  * announce route change.
  */
 function handleAccessibleRouting() {
