@@ -141,11 +141,9 @@ function handleAccessibleRouting() {
     if (component === previousComponent) return;
     previousComponent = component;
 
-    const skipLink: HTMLElement | null = document.querySelector('.skip-link');
-
-    if (skipLink) {
-      skipLink.focus();
-    }
+    const routeFocusAnchor: HTMLElement | null =
+      document.getElementById('route-focus-anchor');
+    routeFocusAnchor?.focus();
 
     if (!props.title) return;
 

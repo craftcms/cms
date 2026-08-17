@@ -32,7 +32,7 @@
   padding-inline: var(--c-spacing-lg);
   outline: none;
   border: 1px dashed var(--c-form-control-border);
-  color: var(--c-fg-text);
+  color: var(--c-text-default);
   font-weight: var(--font-weight-medium);
   border-radius: var(--c-radius-md);
 
