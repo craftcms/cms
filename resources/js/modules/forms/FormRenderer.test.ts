@@ -986,11 +986,11 @@ describe('FormRenderer', () => {
       ?.updateComplete;
     expect(statusField?.status).toBe('modified');
     expect(statusField?.statusLabel).toBe('This field has been modified.');
+    // The status name rides on the host (reflected, and on the wrapper's
+    // `form-field--*` class); the indicator itself just marks the spot.
     expect(
-      statusField?.shadowRoot
-        ?.querySelector('.status-badge')
-        ?.classList.contains('modified')
-    ).toBe(true);
+      statusField?.shadowRoot?.querySelector('.form-field__status-indicator')
+    ).not.toBeNull();
     expect(tab?.querySelector('[slot="tip"] em')?.textContent).toBe('sentence');
     expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
       'publicly'
