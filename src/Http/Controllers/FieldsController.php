@@ -23,6 +23,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Controls\ConditionBuilder as ConditionBuilderControl;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
+use CraftCms\Cms\Form\Controls\FieldSelect as FieldSelectControl;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -266,6 +267,31 @@ class FieldsController
                 $data['name'],
                 $data['disabled'],
             ),
+        ]);
+    }
+
+    public function renderFieldSelect(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['nullable', 'integer'],
+            'limit' => ['nullable', 'integer'],
+            'create' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        $html = FieldSelectControl::selectHtml(
+            $data['value'] ?? null,
+            $data['limit'] ?? null,
+            $data['create'],
+            $data['name'],
+            $data['disabled'],
+        );
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 

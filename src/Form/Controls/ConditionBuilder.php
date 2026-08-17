@@ -138,11 +138,4 @@ class ConditionBuilder extends Control
             'fieldLayouts' => $this->fieldLayouts,
         ];
     }
-
-    private static function leafName(string $name): string
-    {
-        preg_match('/(?:^|\[)([^\[\]]+)]?$/', $name, $matches);
-
-        return $matches[1] ?? $name;
-    }
 }

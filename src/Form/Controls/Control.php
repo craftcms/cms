@@ -142,4 +142,12 @@ abstract class Control implements ControlContract
 
         return $position === false ? null : substr($name, 0, $position);
     }
+
+    /** Returns the trailing segment of a bracketed input name. */
+    protected static function leafName(string $name): string
+    {
+        preg_match('/(?:^|\[)([^\[\]]+)]?$/', $name, $matches);
+
+        return $matches[1] ?? $name;
+    }
 }

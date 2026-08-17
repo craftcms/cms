@@ -1329,6 +1329,12 @@ readonly class FormFields
     }
 
     /** @param array<string, mixed> $config */
+    public static function fieldSelectHtml(array $config): string
+    {
+        return self::renderTemplate('_includes/forms/fieldSelect', $config);
+    }
+
+    /** @param array<string, mixed> $config */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect'.mt_rand();
