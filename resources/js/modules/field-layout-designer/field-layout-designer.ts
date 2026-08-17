@@ -298,7 +298,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     if (skipLinkAnchor) {
       const $skipLink = document.createElement('a');
-      $skipLink.className = 'skip-link btn';
+      $skipLink.className = 'skip-link';
       $skipLink.textContent = Craft.t('app', 'Skip to card view designer');
       $skipLink.href = `#${skipLinkAnchor}`;
 
