@@ -1,6 +1,10 @@
 import {Base, hasAttr} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
 import {
+  canUseVueSlideout,
+  openLayoutComponentSettings,
+} from './settings-slideout';
+import {
   firstFocusableInSiblings,
   fldElementData,
   htmlToElement,
@@ -279,12 +283,28 @@ export class Element extends Base {
       throw e;
     }
 
+    const requestData = () => ({
+      ...this.settingsRequestData(),
+      config: this.config,
+    });
+
+    if (canUseVueSlideout()) {
+      await openLayoutComponentSettings(data, {
+        title: this.settingsTitle(),
+        triggerElement: this.$actionBtn,
+        requestData,
+        // The panel owns Save/Cancel and reports errors from the rejection.
+        apply: (settings) => this.applyConfig(() => this.config, settings),
+      });
+
+      this.trigger('createSettings');
+
+      return;
+    }
+
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
-      requestData: () => ({
-        ...this.settingsRequestData(),
-        config: this.config,
-      }),
+      requestData,
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -315,10 +335,20 @@ export class Element extends Base {
     $submitBtn?.classList.add('loading');
 
     try {
-      await this.applyConfig(() => this.config, true);
+      await this.applyConfig(
+        () => this.config,
+        this.slideout.settingsForm?.currentValues() ?? {}
+      );
+    } catch {
+      // Errors are already shown in the slideout.
     } finally {
       $submitBtn?.classList.remove('loading');
     }
+  }
+
+  /** The label shown in the settings panel's title bar. */
+  private settingsTitle(): string {
+    return this.getLabel() || Craft.t('app', 'Settings');
   }
 
   async showFieldEditor(): Promise<void> {
@@ -385,7 +415,7 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    withSettings = false,
+    settings: Record<string, unknown> | null = null,
     closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
@@ -395,7 +425,7 @@ export class Element extends Base {
 
     const settingsForm = this.slideout?.settingsForm;
 
-    if (withSettings && settingsForm) {
+    if (settings && settingsForm) {
       settingsForm.errors = {};
     }
 
@@ -409,10 +439,7 @@ export class Element extends Base {
           data: {
             ...this.settingsRequestData(),
             config,
-            settings:
-              withSettings && settingsForm
-                ? settingsForm.currentValues()
-                : null,
+            settings,
           },
         }
       );
@@ -420,7 +447,8 @@ export class Element extends Base {
     } catch (e: any) {
       const errors = e?.response?.data?.errors;
 
-      if (withSettings && settingsForm && errors) {
+      // The Vue panel renders its own errors from the rejection.
+      if (settings && settingsForm && errors) {
         settingsForm.errors = errors;
       }
 
@@ -484,7 +512,7 @@ export class Element extends Base {
   }
 
   async refresh(): Promise<void> {
-    await this.applyConfig((config: any) => config, false, false);
+    await this.applyConfig((config: any) => config, null, false);
   }
 
   get index(): number {

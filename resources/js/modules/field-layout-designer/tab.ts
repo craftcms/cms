@@ -1,5 +1,9 @@
 import {Base, HUD} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
+import {
+  canUseVueSlideout,
+  openLayoutComponentSettings,
+} from './settings-slideout';
 import {Element as FldElement} from './element';
 import {
   firstFocusableInSiblings,
@@ -196,6 +200,17 @@ export class Tab extends Base {
       throw e;
     }
 
+    if (canUseVueSlideout()) {
+      await openLayoutComponentSettings(data, {
+        title: this.config?.name || Craft.t('app', 'Settings'),
+        triggerElement: this.$actionBtn,
+        requestData: () => this.settingsRequestData(),
+        apply: (settings) => this.applyTabSettings(settings),
+      });
+
+      return;
+    }
+
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
       requestData: () => this.settingsRequestData(),
@@ -217,47 +232,65 @@ export class Tab extends Base {
     const settingsForm = this.slideout.settingsForm;
     const settings = settingsForm?.currentValues() ?? {};
 
-    if (!settings.name) {
-      Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
-      return;
-    }
-
     // update the UI
     const $submitBtn = $container.querySelector('button[type=submit]');
     $submitBtn?.classList.add('loading');
 
-    const config = Object.assign({}, this.config);
-    delete config.elements;
-
-    Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
-      data: {
-        ...this.settingsRequestData(),
-        config,
-        settings,
-      },
-    })
-      .then((response: any) => {
-        this.updateConfig((config) =>
-          Object.assign(response.data.config, {elements: config.elements})
-        );
-        // Preserve the action menu across the label re-render.
-        const $label = this.$container.querySelector('.tabs .tab');
-        const $menu = $label.querySelector(':scope > craft-action-menu');
-        $menu?.remove();
-        $label.innerHTML = response.data.labelHtml;
-        if ($menu) {
-          $label.appendChild($menu);
-        }
-        this.slideout.close();
-      })
+    this.applyTabSettings(settings)
       .catch((e: any) => {
-        Craft.cp.displayError();
-        console.error(e);
+        Craft.cp.displayError(
+          e?.name === 'TabNameRequired' ? e.message : undefined
+        );
       })
       .finally(() => {
         $submitBtn?.classList.remove('loading');
-        this.slideout.close();
+        this.slideout?.close();
       });
+  }
+
+  /**
+   * Persists the tab's settings and re-renders its label.
+   *
+   * Rejects on failure so the Vue settings panel can surface the errors
+   * against the fields they belong to.
+   */
+  async applyTabSettings(settings: Record<string, unknown>): Promise<void> {
+    if (!settings.name) {
+      const message = Craft.t('app', 'You must specify a tab name.');
+
+      throw Object.assign(new Error(message), {
+        name: 'TabNameRequired',
+        response: {data: {errors: {name: message}}},
+      });
+    }
+
+    const config = Object.assign({}, this.config);
+    delete config.elements;
+
+    const response = await Craft.sendActionRequest(
+      'POST',
+      'fields/apply-layout-tab-settings',
+      {
+        data: {
+          ...this.settingsRequestData(),
+          config,
+          settings,
+        },
+      }
+    );
+
+    this.updateConfig((config) =>
+      Object.assign(response.data.config, {elements: config.elements})
+    );
+
+    // Preserve the action menu across the label re-render.
+    const $label = this.$container.querySelector('.tabs .tab');
+    const $menu = $label.querySelector(':scope > craft-action-menu');
+    $menu?.remove();
+    $label.innerHTML = response.data.labelHtml;
+    if ($menu) {
+      $label.appendChild($menu);
+    }
   }
 
   moveLeft(): void {
