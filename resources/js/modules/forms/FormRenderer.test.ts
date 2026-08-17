@@ -267,6 +267,7 @@ describe('FormRenderer', () => {
   let renderer: {
     advanceBaseline: () => void;
     currentValues: () => FormPayload['values'];
+    resetValues: (payload?: FormPayload) => void;
     setValue: (
       path: string[],
       value: unknown,
@@ -1396,6 +1397,129 @@ describe('FormRenderer', () => {
     ).toBe('true');
 
     renderer.advanceBaseline();
+    expect(mutation).toEqual({});
+  });
+
+  /**
+   * A refresh keeps unsaved values because the client owns them. Discarding is
+   * the one case where it doesn't — the user has thrown them away — so the host
+   * says so explicitly rather than a payload arriving meaning it implicitly.
+   */
+  it('drops unsaved values when the host resets the Form', async () => {
+    let mutation: FormPayload['values'] = {};
+    app.unmount();
+    await mount(structuredClone(payload) as FormPayload, {
+      onMutation: (value) => (mutation = value),
+    });
+
+    const placeholder = () =>
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      )!;
+    placeholder().value = 'Unsaved';
+    placeholder().dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).toHaveProperty('settings.placeholder', 'Unsaved');
+
+    // The canonical payload arriving on its own leaves the edit alone.
+    currentPayload.value = structuredClone(payload) as FormPayload;
+    await nextTick();
+
+    expect(placeholder().value).toBe('Unsaved');
+
+    renderer.resetValues();
+    await nextTick();
+
+    expect(placeholder().value).toBe('Submitted placeholder');
+    expect(renderer.currentValues()).toHaveProperty(
+      'settings.placeholder',
+      'Submitted placeholder'
+    );
+    // Nothing left to submit, and nothing left touched.
+    expect(mutation).toEqual({});
+    expect(
+      placeholder()
+        .closest('[data-form-touched]')
+        ?.getAttribute('data-form-touched')
+    ).not.toBe('true');
+  });
+
+  it('drops unsaved values inside nested Forms when the host resets', async () => {
+    let mutation: FormPayload['values'] = {};
+    const nested = structuredClone(payload) as Mutable<FormPayload>;
+    const blockScope = ['settings', 'matrix', 'entries', 'block-a'];
+    nested.refreshable = false;
+    nested.values = {
+      settings: {
+        matrix: {
+          entries: {'block-a': {type: 'text', heading: 'Canonical heading'}},
+          sortOrder: ['block-a'],
+        },
+      },
+    };
+    nested.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Matrix',
+          component: 'craft:matrix',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: ['settings', 'matrix'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'matrix'],
+          forms: [
+            {
+              scope: blockScope,
+              refreshable: false,
+              nodes: [
+                {
+                  type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+                  component: 'craft:field',
+                  props: {label: 'Heading', instructions: null, required: false},
+                  control: {
+                    type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+                    component: 'craft:text',
+                    props: {inputType: 'text'},
+                    path: [...blockScope, 'heading'],
+                    mode: 'editable',
+                    deltaGroup: ['settings', 'matrix'],
+                    forms: [],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as Mutable<FormPayload>['nodes'];
+    nested.errors = [];
+    app.unmount();
+    await mount(nested as FormPayload, {
+      onMutation: (value) => (mutation = value),
+    });
+
+    const heading = () =>
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[matrix][entries][block-a][heading]"]'
+      )!;
+    heading().value = 'Unsaved heading';
+    heading().dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).not.toEqual({});
+
+    renderer.resetValues();
+    await nextTick();
+
+    expect(heading().value).toBe('Canonical heading');
     expect(mutation).toEqual({});
   });
 

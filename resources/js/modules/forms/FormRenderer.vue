@@ -208,6 +208,47 @@
     }
   }
 
+  /**
+   * Throws away the unsaved values and seeds the Form again from `source` —
+   * the payload the props already carry, unless one is passed.
+   *
+   * The mirror image of {@link reconcile}, which merges a refreshed payload
+   * *under* what the client is holding because the client owns unsaved values.
+   * That contract describes a refresh; it stops applying the moment the user
+   * asks for those values to be thrown away — discarding a provisional draft,
+   * say — and only the host knows that has happened, so it has to say so.
+   *
+   * Leaves the Form exactly as mounting it would have: nothing touched,
+   * nothing dirty, no refresh in flight.
+   */
+  function resetValues(source: FormPayload = props.payload): void {
+    renderError.value = undefined;
+    refreshTimers.forEach(clearTimeout);
+    refreshTimers.clear();
+    // Dropping the versions abandons any refresh still in flight: it was asked
+    // for with the values being discarded, so its answer describes them too.
+    refreshVersions.clear();
+    lastRefreshValues.clear();
+    lastRefreshValues.set(
+      JSON.stringify(source.scope),
+      canonical(valueAt(source.values, source.scope))
+    );
+    touchedPaths.clear();
+    knownControlPaths.clear();
+
+    // Replaced in place rather than reassigned: the reactive object is handed
+    // to every Control below, nested Forms included.
+    for (const key of Object.keys(values)) {
+      delete values[key];
+    }
+
+    Object.assign(values, cloneRaw(source.values));
+    baseline = cloneRaw(source.values);
+    payload.value = source;
+    rememberControlPaths(source.nodes);
+    emitMutation();
+  }
+
   function mutation(): FormPayload['values'] {
     const groups = new Map<string, string[]>();
     const editablePaths = new Set<string>();
@@ -275,7 +316,7 @@
     recordChange({kind, path});
   }
 
-  defineExpose({advanceBaseline, currentValues, setValue});
+  defineExpose({advanceBaseline, currentValues, resetValues, setValue});
 
   function visitControls(
     nodes: FormNodePayload[],
