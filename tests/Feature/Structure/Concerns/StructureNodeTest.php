@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Structure\Data\Operation;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->structure = Structure::factory()->create();
@@ -99,6 +101,81 @@ it('can check siblings', function () {
     expect($child2->prev()->first()?->is($child1))->toBeTrue();
 });
 
+it('clears a failed operation before the next save', function () {
+    $root = new StructureElement(['structureId' => $this->structure->id]);
+    $root->makeRoot();
+
+    $child = new StructureElement(['structureId' => $this->structure->id]);
+    $child->appendTo($root);
+
+    expect(fn () => $child->insertBefore($root))
+        ->toThrow(RuntimeException::class, 'Can not move a node when the target node is root.');
+
+    expect($child->save())->toBeTrue();
+});
+
+it('rolls back changes when an operation is cancelled', function () {
+    $root = new StructureElement(['structureId' => $this->structure->id]);
+    $root->makeRoot();
+
+    $child = new StructureElement(['structureId' => $this->structure->id]);
+
+    StructureElement::creating(fn (StructureElement $model) => $model === $child ? false : null);
+
+    expect($child->appendTo($root))->toBeFalse();
+    expect($root->refresh()->rgt)->toBe(2);
+});
+
+it('rejects overlapping operations on the same node', function () {
+    $root = new StructureElement(['structureId' => $this->structure->id]);
+    $root->makeRoot();
+
+    $firstChild = new StructureElement(['structureId' => $this->structure->id]);
+    $firstChild->appendTo($root);
+
+    $secondChild = new StructureElement(['structureId' => $this->structure->id]);
+    $secondChild->appendTo($root);
+
+    $attempted = false;
+
+    StructureElement::saved(function (StructureElement $model) use ($firstChild, $secondChild, &$attempted) {
+        if ($attempted || ! $model->is($firstChild)) {
+            return;
+        }
+
+        $attempted = true;
+        $model->insertAfter($secondChild);
+    });
+
+    expect(fn () => $firstChild->insertBefore($secondChild))
+        ->toThrow(RuntimeException::class, 'A nested set operation is already in progress.');
+
+    expect($firstChild->save())->toBeTrue();
+});
+
+it('can repeat an operation after it is rolled back', function () {
+    $root = new StructureElement(['structureId' => $this->structure->id]);
+    $root->makeRoot();
+
+    $firstChild = new StructureElement(['structureId' => $this->structure->id]);
+    $firstChild->appendTo($root);
+
+    $secondChild = new StructureElement(['structureId' => $this->structure->id]);
+    $secondChild->appendTo($root);
+
+    expect(fn () => DB::transaction(function () use ($firstChild, $secondChild) {
+        $firstChild->insertAfter($secondChild);
+
+        throw new RuntimeException('Roll back the move.');
+    }))->toThrow(RuntimeException::class, 'Roll back the move.');
+
+    expect($firstChild->refresh()->lft)->toBe(2);
+    expect($secondChild->refresh()->lft)->toBe(4);
+    expect($firstChild->insertAfter($secondChild))->toBeTrue();
+    expect($firstChild->lft)->toBe(4);
+    expect($secondChild->lft)->toBe(2);
+});
+
 it('can delete with children', function () {
     $root = new StructureElement(['structureId' => $this->structure->id]);
     $root->makeRoot();
@@ -111,4 +188,23 @@ it('can delete with children', function () {
     $root->deleteWithChildren();
 
     expect(StructureElement::count())->toBe(0);
+});
+
+it('represents direct deletion as a remove operation', function () {
+    $root = new StructureElement(['structureId' => $this->structure->id]);
+    $root->makeRoot();
+
+    $child = new StructureElement(['structureId' => $this->structure->id]);
+    $child->appendTo($root);
+
+    $operation = null;
+
+    StructureElement::deleting(function (StructureElement $model) use ($child, &$operation) {
+        if ($model->is($child)) {
+            $operation = $model->nestedSetOperation?->type;
+        }
+    });
+
+    expect($child->delete())->toBeTrue();
+    expect($operation)->toBe(Operation::Remove);
 });
