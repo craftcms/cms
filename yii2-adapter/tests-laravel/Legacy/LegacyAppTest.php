@@ -10,6 +10,17 @@ use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\LegacyApp;
 use Illuminate\Support\Facades\Event;
 
+it('only merges configuration for the current application type', function() {
+    config()->set('craft.app.web.id', 'web-app');
+    config()->set('craft.app.console.id', 'console-app');
+
+    app()->forgetInstance('Craft');
+
+    new LegacyApp()->register($this->app);
+
+    expect(app('Craft')->id)->toBe('web-app');
+});
+
 it('does not resolve a second legacy app while loading legacy plugins', function() {
     LegacyAppTestPlugin::$resolvedCraftApp = null;
 
