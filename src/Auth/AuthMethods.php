@@ -330,16 +330,14 @@ class AuthMethods
 
         // Validate the security key
         try {
-            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
+            $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
         } catch (InvalidUserHandleException) {
-            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
+            $updatedCredentialRecord = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
         } catch (InvalidArgumentException) {
-            $keyValid = false;
+            $updatedCredentialRecord = false;
         }
 
-        $updatedCredentialRecord = Session::remove($this->passkeys->passkeyCredSourceParam);
-
-        if (! $keyValid) {
+        if ($updatedCredentialRecord === false) {
             $this->authError = AuthError::InvalidCredentials;
 
             return false;
