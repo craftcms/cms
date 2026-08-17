@@ -283,6 +283,7 @@ class FieldsController
             'forProjectConfig' => ['required', 'boolean'],
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
+            'fieldLayouts' => ['nullable', 'array'],
         ]);
 
         $html = ConditionBuilderControl::builderHtml(
@@ -292,6 +293,7 @@ class FieldsController
             $data['forProjectConfig'],
             $data['name'],
             $data['disabled'],
+            $data['fieldLayouts'] ?? [],
         );
 
         return new JsonResponse([
