@@ -6,7 +6,7 @@ import {
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 
@@ -30,11 +30,9 @@ export class Element extends Base {
   thumbable = false;
   hasCustomWidth = false;
   hasSettings = false;
-  settingsNamespace: any = null;
   slideout: any = null;
   defaultHandle: any = null;
   fieldId: any = null;
-  fieldsWithErrors: any[] = [];
 
   constructor(tab: Tab, $container: any) {
     super();
@@ -42,8 +40,6 @@ export class Element extends Base {
     this.$container = $container;
     this.uid = $container.dataset.uid;
     this.fieldId = $container.dataset.id;
-
-    this.fieldsWithErrors = [];
 
     // New element?
     const isNew = !this.uid;
@@ -256,6 +252,14 @@ export class Element extends Base {
     return label !== '' ? label : this.$container.dataset.attribute;
   }
 
+  private settingsRequestData(): Record<string, unknown> {
+    return {
+      uid: this.uid,
+      layoutConfig: this.tab.designer.config,
+      elementType: this.tab.designer.settings!.elementType,
+    };
+  }
+
   async createSettings(): Promise<void> {
     let data;
     try {
@@ -264,9 +268,8 @@ export class Element extends Base {
         'fields/render-layout-component-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
+            config: this.config,
           },
         }
       );
@@ -276,9 +279,12 @@ export class Element extends Base {
       throw e;
     }
 
-    this.settingsNamespace = data.namespace;
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
+      requestData: () => ({
+        ...this.settingsRequestData(),
+        config: this.config,
+      }),
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -297,15 +303,6 @@ export class Element extends Base {
     this.addListener($fieldsContainer, 'field-saved', (event) => {
       this.refreshField((event as unknown as CustomEvent).detail.selectorHtml);
     });
-
-    if (this.isField) {
-      const $handleInput = $fieldsContainer?.querySelector(
-        'input[name$="[handle]"]'
-      );
-      if ($handleInput) {
-        $handleInput.value = this.config.handle || '';
-      }
-    }
 
     this.trigger('createSettings');
   }
@@ -396,10 +393,11 @@ export class Element extends Base {
       return;
     }
 
-    // Craft.ui error helpers require jQuery fields — keep them at the seam.
-    this.fieldsWithErrors.forEach(($field: any) => {
-      Craft.ui.clearErrorsFromField($field);
-    });
+    const settingsForm = this.slideout?.settingsForm;
+
+    if (withSettings && settingsForm) {
+      settingsForm.errors = {};
+    }
 
     let data;
 
@@ -409,33 +407,21 @@ export class Element extends Base {
         'fields/apply-layout-element-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
             config,
-            settingsNamespace: this.settingsNamespace,
-            settings: withSettings
-              ? serializeFormInputs(this.slideout.$container[0])
-              : null,
+            settings:
+              withSettings && settingsForm
+                ? settingsForm.currentValues()
+                : null,
           },
         }
       );
       data = response.data;
     } catch (e: any) {
-      if (withSettings) {
-        const errors = e?.response?.data?.errors;
-        if (errors) {
-          Object.entries(errors).forEach(([name, fieldErrors]) => {
-            // Craft.ui.addErrorsToField needs a jQuery field — seam.
-            const $field = this.slideout.$container.find(
-              `[data-error-key="${name}"]`
-            );
-            if ($field.length) {
-              Craft.ui.addErrorsToField($field, fieldErrors);
-              this.fieldsWithErrors.push($field);
-            }
-          });
-        }
+      const errors = e?.response?.data?.errors;
+
+      if (withSettings && settingsForm && errors) {
+        settingsForm.errors = errors;
       }
 
       Craft.cp.displayError(e?.response?.data?.message);

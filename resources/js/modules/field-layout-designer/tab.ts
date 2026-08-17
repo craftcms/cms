@@ -7,7 +7,7 @@ import {
   fldTabData,
   hudData,
 } from './support';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 declare const $: any;
@@ -25,7 +25,6 @@ export class Tab extends Base {
   $addBtn: any = null;
   $actionBtn: any = null;
   slideout: any = null;
-  settingsNamespace: any = null;
   hud: any = null;
   destroyed = false;
 
@@ -171,6 +170,14 @@ export class Tab extends Base {
     $tab.appendChild(menu);
   }
 
+  private settingsRequestData(): Record<string, unknown> {
+    return {
+      uid: this.uid,
+      layoutConfig: this.designer.config,
+      elementType: this.designer.settings!.elementType,
+    };
+  }
+
   async createSettings(): Promise<void> {
     let data;
     try {
@@ -179,9 +186,7 @@ export class Tab extends Base {
         'fields/render-layout-component-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.designer.config,
-            elementType: this.designer.settings!.elementType,
+            ...this.settingsRequestData(),
           },
         }
       );
@@ -191,9 +196,9 @@ export class Tab extends Base {
       throw e;
     }
 
-    this.settingsNamespace = data.namespace;
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
+      requestData: () => this.settingsRequestData(),
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -209,8 +214,10 @@ export class Tab extends Base {
 
   applySettings(): void {
     const $container = this.slideout.$container[0];
-    const $nameInput = $container.querySelector('[name$="[name]"]');
-    if (!$nameInput?.value) {
+    const settingsForm = this.slideout.settingsForm;
+    const settings = settingsForm?.currentValues() ?? {};
+
+    if (!settings.name) {
       Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
       return;
     }
@@ -224,12 +231,9 @@ export class Tab extends Base {
 
     Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
       data: {
-        uid: this.uid,
-        layoutConfig: this.designer.config,
-        elementType: this.designer.settings!.elementType,
+        ...this.settingsRequestData(),
         config,
-        settingsNamespace: this.settingsNamespace,
-        settings: serializeFormInputs(this.slideout.$container[0]),
+        settings,
       },
     })
       .then((response: any) => {
