@@ -253,9 +253,7 @@ class Install extends Migration
             $table->dateTime('timestamp')->nullable();
             $table->boolean('isDir')->default(false)->nullable();
             $table->integer('recordId')->nullable();
-            $table->boolean('isSkipped')->default(false)->nullable();
-            $table->boolean('inProgress')->default(false)->nullable();
-            $table->boolean('completed')->default(false)->nullable();
+            $table->string('status')->default('pending');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
@@ -1035,6 +1033,7 @@ class Install extends Migration
         Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
         Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
+        Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
         Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
         Schema::createIndex(Table::ASSETS, ['folderId']);

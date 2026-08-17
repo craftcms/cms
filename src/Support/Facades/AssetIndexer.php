@@ -19,13 +19,13 @@ use Override;
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession processIndexSession(\CraftCms\Cms\Asset\Data\IndexingSession $indexingSession)
  * @method static string[] getSkippedItemsForSession(\CraftCms\Cms\Asset\Data\IndexingSession $session)
  * @method static array getMissingEntriesForSession(\CraftCms\Cms\Asset\Data\IndexingSession $session, string $path = '')
- * @method static \CraftCms\Cms\Asset\Data\AssetIndexEntry|null getNextIndexEntry(\CraftCms\Cms\Asset\Data\IndexingSession $session)
- * @method static void updateIndexEntry(int $entryId, array $data)
+ * @method static \CraftCms\Cms\Asset\Models\AssetIndexData|null getNextIndexEntry(\CraftCms\Cms\Asset\Data\IndexingSession $session)
+ * @method static void transitionIndexEntry(int $entryId, \CraftCms\Cms\Asset\Enums\AssetIndexStatus $status, ?int $recordId = null)
  * @method static \CraftCms\Cms\Asset\Elements\Asset indexFile(\CraftCms\Cms\Asset\Data\Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true)
  * @method static \CraftCms\Cms\Asset\Elements\Asset indexFileByListing(\CraftCms\Cms\Asset\Data\Volume $volume, \CraftCms\Cms\Filesystem\Data\FsListing $listing, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder indexFolderByListing(\CraftCms\Cms\Asset\Data\Volume $volume, \CraftCms\Cms\Filesystem\Data\FsListing $listing, int $sessionId, bool $createIfMissing = true)
- * @method static \CraftCms\Cms\Asset\Elements\Asset indexFileByEntry(\CraftCms\Cms\Asset\Data\AssetIndexEntry $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
- * @method static \CraftCms\Cms\Asset\Data\VolumeFolder indexFolderByEntry(\CraftCms\Cms\Asset\Data\AssetIndexEntry $indexEntry, bool $createIfMissing = true)
+ * @method static \CraftCms\Cms\Asset\Elements\Asset indexFileByEntry(\CraftCms\Cms\Asset\Models\AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
+ * @method static \CraftCms\Cms\Asset\Data\VolumeFolder indexFolderByEntry(\CraftCms\Cms\Asset\Models\AssetIndexData $indexEntry, bool $createIfMissing = true)
  *
  * @see \CraftCms\Cms\Asset\AssetIndexer
  */
