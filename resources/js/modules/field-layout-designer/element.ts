@@ -10,7 +10,7 @@ import {
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import {type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem, t} from '@craftcms/ui';
 
 declare const Craft: any;
 
@@ -348,7 +348,11 @@ export class Element extends Base {
 
   /** The label shown in the settings panel's title bar. */
   private settingsTitle(): string {
-    return this.getLabel() || Craft.t('app', 'Settings');
+    return this.getLabel()
+      ? t('{label} Settings', {
+          label: this.getLabel(),
+        })
+      : t('Settings');
   }
 
   async showFieldEditor(): Promise<void> {
