@@ -29,13 +29,14 @@
 <style scoped lang="css">
   .system-info {
     display: grid;
-    grid-template-columns: calc(32rem / 16) auto;
+    grid-template-columns: calc(24rem / 16) auto;
     gap: var(--c-spacing-md);
     align-items: center;
     color: currentColor;
   }
 
   .system-info__icon {
+    display: flex;
     aspect-ratio: 1;
   }
 

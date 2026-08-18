@@ -28,7 +28,7 @@ import styles from './tab.styles.js';
  * @cssproperty --c-tab-text-disabled - Label color while disabled. Defaults to
  *   `--c-status-disabled-text`.
  * @cssproperty --c-tab-indicator-inset-block-start - Indicator geometry. Set
- *   by `<craft-tabs>` per `layout`; override to reposition the indicator.
+ *   by `<craft-tabs>` per `placement`; override to reposition the indicator.
  * @cssproperty --c-tab-indicator-inset-block-end - See above.
  * @cssproperty --c-tab-indicator-inset-inline-start - See above.
  * @cssproperty --c-tab-indicator-inset-inline-end - See above.

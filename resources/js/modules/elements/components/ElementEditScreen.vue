@@ -1,11 +1,15 @@
 <script setup lang="ts">
 /**
- * The element editor on the new `EditorScreen` shell.
+ * The element editor, filling the shell's `main` slot.
  *
  * Same pipeline as `ElementEditPage` — `useElementEditPage()` owns the form,
  * autosave, activity polling and saving — but none of the page chrome is the
- * layout's: the breadcrumb bar, header, form element, content column and
+ * layout's: by taking the `main` slot it replaces `PageScreen`'s whole inner
+ * region, so the breadcrumb bar, header, form element, content column and
  * details column are all rendered here, and free to be rearranged.
+ *
+ * Contract, inherited from that slot: this renders the `#main` landmark the
+ * skip link targets, and owns its own `<form>`.
  *
  * Full-page only. In a slideout the panel's shell renders its own header,
  * form and footer, so pages dispatch to `ElementEditPage` there.
@@ -14,7 +18,6 @@ import { t } from "@craftcms/ui";
 import { computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import AppLayout from "@/common/layouts/AppLayout.vue";
-import EditorScreen from "@/common/layouts/screens/EditorScreen.vue";
 import Breadcrumbs, { type BreadcrumbItem } from "@/common/components/Breadcrumbs.vue";
 import DynamicHtmlRenderer from "@/common/components/DynamicHtmlRenderer.vue";
 import FormActions from "@/common/components/FormActions.vue";
@@ -96,9 +99,7 @@ const viewButtons = computed(() =>
   })),
 );
 
-console.log({ viewButtons: viewButtons.value });
-
-const additionalButtons = computed(() => [...headerButtons.value]);
+const additionalButtons = computed(() => [...viewButtons.value, ...headerButtons.value]);
 
 const hasDetails = computed(() => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml));
 
@@ -121,89 +122,80 @@ function reload(): void {
 </script>
 
 <template>
-  <!-- The form-related props aren't `EditorScreen`'s business — they're passed
-    through so the same markup keeps working if this ever renders under a shell
-    that owns the save UI. -->
-  <AppLayout :shell="EditorScreen" :title="payload.title">
-    <main id="main" tabindex="-1" class="element-editor">
-      <!-- No drafts-and-revisions switcher beside the crumbs: the Revisions
+  <!-- The form-related props aren't the shell's business here — the `main`
+    slot replaces the region that would have used them. They're left off so the
+    same markup keeps working if this ever renders under a shell that owns the
+    save UI. -->
+  <AppLayout :title="payload.title">
+    <template #main>
+      <main id="main" tabindex="-1" class="element-editor">
+        <!-- No drafts-and-revisions switcher beside the crumbs: the Revisions
         tab in the details column is that list now. -->
-      <div v-if="crumbs.length" class="element-editor__crumbs">
-        <Breadcrumbs :items="crumbs" />
-      </div>
 
-      <div>
         <form method="post" @submit.prevent="save()">
-          <header class="pt-3 pb-1">
-            <div>
-              <h1 class="text-xl/7">
-                {{ payload.title }}
-              </h1>
-            </div>
-            <div class="flex justify-between">
-              <div class="flex gap-1 items-center">
-                <craft-badge
-                  fill="info"
-                  v-if="payload.isProvisionalDraft"
-                  class="relative text-sm font-normal inline-flex"
-                >
-                  <craft-icon name="pen-circle" slot="prefix"></craft-icon>
-                  {{ t("Edited") }}
-                </craft-badge>
-                <DynamicHtmlRenderer
-                  v-else-if="payload.statusLabelHtml"
-                  :html="payload.statusLabelHtml"
-                />
-
-                <!--              <template v-if="viewButtons.length === 1">-->
-                <!--                <a-->
-                <!--                  v-for="viewButton in viewButtons"-->
-                <!--                  :key="viewButton.key"-->
-                <!--                  href="#"-->
-                <!--                  >{{ viewButton.label }}-->
-                <!--                  <craft-icon-->
-                <!--                    class="no-underline"-->
-                <!--                    name="up-right-from-square"-->
-                <!--                  ></craft-icon>-->
-                <!--                </a>-->
-                <!--              </template>-->
-
-                <AutosaveMessage :autosave="autosave" />
+          <div class="sticky top-0 z-1000 pb-2">
+            <header class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)">
+              <div>
+                <h1 class="text-xl/7">
+                  {{ payload.title }}
+                </h1>
               </div>
-
-              <div class="element-editor__status">
-                <!-- Who else is working on this element. -->
-                <div
-                  v-if="activity.activity.value.length"
-                  role="region"
-                  :aria-label="t('Recent Activity')"
-                  class="flex items-center gap-1"
-                >
-                  <span
-                    v-for="entry in activity.activity.value"
-                    :key="entry.userId"
-                    :title="entry.message"
-                    :aria-label="entry.message"
-                    class="inline-flex"
-                    v-html="entry.userThumb"
+              <div class="flex justify-between">
+                <div class="flex gap-1 items-center">
+                  <craft-badge
+                    fill="info"
+                    v-if="payload.isProvisionalDraft"
+                    class="relative text-sm font-normal inline-flex"
+                  >
+                    <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+                    {{ t("Edited") }}
+                  </craft-badge>
+                  <DynamicHtmlRenderer
+                    v-else-if="payload.statusLabelHtml"
+                    :html="payload.statusLabelHtml"
                   />
-                </div>
-              </div>
 
-              <FormActions
-                :form="form"
-                :action-items="formActionItems"
-                :additional-actions="actionMenuItems"
-                :additional-buttons="additionalButtons"
-                :submit-label="payload.submitButtonLabel"
-                :read-only="payload.readOnly"
-              />
-            </div>
-            <div class="element-notices my-1">
-              <div v-if="form.hasErrors" class="px-4">
-                <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+                  <AutosaveMessage :autosave="autosave" />
+                </div>
+
+                <div class="element-editor__status">
+                  <!-- Who else is working on this element. -->
+                  <div
+                    v-if="activity.activity.value.length"
+                    role="region"
+                    :aria-label="t('Recent Activity')"
+                    class="flex items-center gap-1"
+                  >
+                    <span
+                      v-for="entry in activity.activity.value"
+                      :key="entry.userId"
+                      :title="entry.message"
+                      :aria-label="entry.message"
+                      class="inline-flex"
+                      v-html="entry.userThumb"
+                    />
+                  </div>
+                </div>
+
+                <FormActions
+                  :form="form"
+                  :action-items="formActionItems"
+                  :additional-actions="actionMenuItems"
+                  :additional-buttons="additionalButtons"
+                  :submit-label="payload.submitButtonLabel"
+                  :read-only="payload.readOnly"
+                />
               </div>
-              <craft-callout v-if="payload.notice" variant="info" icon="edit" class="mb-4">
+            </header>
+            <div class="element-notices">
+              <craft-callout
+                v-if="payload.notice"
+                variant="info"
+                icon="edit"
+                class="mb-4"
+                rounded="none"
+                appearance="fill"
+              >
                 {{ payload.notice }}
 
                 <craft-button
@@ -250,7 +242,11 @@ function reload(): void {
                 {{ payload.mergeNotice }}
               </craft-callout>
             </div>
-          </header>
+          </div>
+
+          <div v-if="form.hasErrors" class="px-4">
+            <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
+          </div>
 
           <div
             class="element-editor__body"
@@ -276,83 +272,86 @@ function reload(): void {
             </div>
 
             <div v-if="hasDetails || $slots['details-header']" class="element-editor__details">
-              <craft-pane padding="none" appearance="plain">
-                <craft-tabs size="small">
-                  <craft-tab slot="tab">Info</craft-tab>
-                  <div slot="panel" class="pb-4">
-                    <div class="grid gap-4">
-                      <slot name="details-header" :payload="payload" />
+              <craft-tabs size="small" placement="inline-end" collapsible>
+                <craft-tab slot="tab">
+                  <craft-icon name="circle-info" :label="t('Info')"></craft-icon>
+                </craft-tab>
+                <div slot="panel">
+                  <craft-pane appearance="plain" padding="none">
+                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
+                      <h3 slot="title" class="text-xs/4">{{ t("Info") }}</h3>
+                    </div>
+                    <div class="py-4">
+                      <div class="grid gap-4">
+                        <slot name="details-header" :payload="payload" />
 
-                      <!--
-                  The meta fields render as their own Form, bridged into the same
-                  Inertia form as the field layout, so they submit as ordinary
-                  inputs.
-                -->
-                      <craft-field-group>
-                        <FormRenderer
-                          v-if="sidebarPayload"
-                          ref="sidebarRenderer"
-                          :payload="sidebarPayload"
-                          :errors="sidebarErrors"
-                          @update:mutation="onSidebarMutation"
-                        />
-                      </craft-field-group>
+                        <craft-field-group>
+                          <FormRenderer
+                            v-if="sidebarPayload"
+                            ref="sidebarRenderer"
+                            :payload="sidebarPayload"
+                            :errors="sidebarErrors"
+                            @update:mutation="onSidebarMutation"
+                          />
+                        </craft-field-group>
 
-                      <hr />
-                      <div class="px-4">
-                        <DynamicHtmlRenderer
-                          v-if="payload.metadataHtml"
-                          :html="payload.metadataHtml"
-                        />
+                        <hr />
+                        <div class="px-4">
+                          <DynamicHtmlRenderer
+                            v-if="payload.metadataHtml"
+                            :html="payload.metadataHtml"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </craft-pane>
+                </div>
 
-                  <craft-tab slot="tab">{{ t("Activity") }}</craft-tab>
-                  <div slot="panel" class="px-4 pb-4">@TODO</div>
+                <craft-tab slot="tab" id="tab-1">
+                  <craft-tooltip for="tab-1">{{ t("Activity") }}</craft-tooltip>
+                  <craft-icon name="wave-pulse" :label="t('Activity')"></craft-icon>
+                </craft-tab>
+                <div slot="panel">
+                  <craft-pane appearance="plain">
+                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
+                      <h3 slot="title" class="text-xs/4">{{ t('Activity') }}</h3>
+                    </div>
+                    @TODO
+                  </craft-pane>
+                </div>
 
-                  <craft-tab slot="tab">{{ t("Revisions") }}</craft-tab>
-                  <div slot="panel" class="px-4 pb-4">
+                <craft-tab slot="tab">
+                  <craft-icon name="clock-rotate-left" :label="t('Revisions')"></craft-icon>
+                </craft-tab>
+                <div slot="panel">
+                  <craft-pane appearance="plain">
+                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
+                      <h3 slot="title" class="text-xs/4">{{ t('Revisions') }}</h3>
+                    </div>
                     <RevisionsList :items="payload.contextMenu?.items ?? []" />
-                  </div>
-                </craft-tabs>
-              </craft-pane>
+                  </craft-pane>
+                </div>
+              </craft-tabs>
             </div>
           </div>
         </form>
-      </div>
-      <!--      <div class="sticky bottom-0 z-1000" v-if="payload.canDiscardDraft">-->
-      <!--        <div-->
-      <!--          class="p-4 flex justify-between bg-info-fill-quiet border-t border-b border-t-info-border-quiet border-b-info-border-quiet"-->
-      <!--        >-->
-      <!--          <div class="flex gap-2 items-center">-->
-      <!--            <craft-icon name="pencil"></craft-icon>-->
-      <!--            {{ payload.notice }}-->
-      <!--          </div>-->
-
-      <!--          <craft-button slot="action" type="button" variant="outline" @click="discardDraft" inherit>-->
-      <!--            {{ t("Discard changes") }}-->
-      <!--          </craft-button>-->
-      <!--        </div>-->
-      <!--      </div>-->
-    </main>
+      </main>
+    </template>
   </AppLayout>
 </template>
 
 <style scoped lang="css">
-.element-editor {
-  border-radius: var(--c-radius-lg);
-  margin-block: var(--c-spacing-sm);
-  margin-inline-end: var(--c-spacing-sm);
-  overflow: clip;
-}
-
 .element-editor__crumbs {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--c-spacing-sm);
   padding-block: var(--c-spacing-xs);
+  padding-inline: var(--c-spacing-md);
+}
+
+.element-editor__body {
+  padding-inline: var(--c-spacing-lg);
 }
 
 .element-editor__header {
@@ -379,15 +378,6 @@ function reload(): void {
 .element-editor__body {
   display: grid;
   gap: var(--c-spacing-md);
-
-  /* `EditorScreen` sets `container-type: size` on the main region. */
-  @container (width >= 768px) {
-    align-items: start;
-
-    &.element-editor__body--details {
-      grid-template-columns: minmax(0, 1fr) clamp(14rem, 25%, 20rem);
-    }
-  }
 }
 
 .element-editor__content {
@@ -395,18 +385,6 @@ function reload(): void {
   grid-template-columns: minmax(0, 1fr);
   gap: var(--c-spacing-md);
   align-content: start;
-  border-radius: var(--c-radius-lg);
-  overflow: clip;
-}
-
-@container (width >= 768px) {
-  .element-editor__body {
-    align-items: start;
-  }
-
-  .element-editor__body.element-editor__body--details {
-    grid-template-columns: minmax(0, 1fr) clamp(14rem, 25%, 20rem);
-  }
 }
 
 /* Wide content — a many-columned table, a long code block — otherwise sets a
@@ -425,7 +403,62 @@ function reload(): void {
   height: 100%;
 }
 
-.element-form {
-  background-color: var(--c-surface-overlay);
+@container (width >= 768px) {
+  .element-editor__body {
+    align-items: start;
+  }
+
+  .element-editor__body.element-editor__body--details {
+    grid-template-columns: minmax(0, 1fr) clamp(14rem, 25%, 20rem);
+  }
+
+  /* Closing the details tabs shrinks the element to just its rail, but the
+     track it sits in is sized independently — without this the content would
+     keep its width and leave a hole. `auto` hands the space back, and the
+     `collapsed` attribute is reflected by `craft-tabs`, so this needs no
+     listener and can't fall out of step with the strip. */
+  .element-editor__body.element-editor__body--details:has(
+      craft-tabs[collapsed]
+    ) {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    /* `container-type: inline-size` below is `contain: inline-size`, so the
+       column's contents can't size it — an `auto` track would collapse to
+       zero and let the rail overhang the page. Containment only exists for
+       queries inside the panel, and a collapsed strip has no panel showing,
+       so it costs nothing to drop it while closed. */
+    .element-editor__details {
+      container-type: normal;
+    }
+  }
+}
+
+craft-tabs::part(base) {
+  gap: var(--c-spacing-sm);
+}
+
+craft-tabs::part(strip) {
+  border: 0;
+}
+
+craft-tab {
+  padding: var(--c-spacing-md);
+  background-color: white;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: var(--c-radius-md);
+  border: 1px solid transparent;
+}
+
+craft-tab[selected="true"] {
+  background-color: var(--c-color-neutral-fill-normal);
+  border-color: var(--c-color-neutral-border-normal);
+  color: var(--c-color-neutral-on-normal);
+
+  &:after {
+    display: none;
+  }
 }
 </style>

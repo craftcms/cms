@@ -43,6 +43,11 @@ export default css`
   }
 
   /* Appearances ------------------------------------------------------------ */
+  
+  :host([appearance='plain']) {
+    --_pane-border-color: transparent;
+    --_pane-shadow: none;
+  }
 
   :host([appearance='raised']) {
     --_pane-border-color: var(--c-color-neutral-border-quiet);

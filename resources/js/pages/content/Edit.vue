@@ -3,8 +3,8 @@
   import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
   import {useIsSlideout} from '@/common/composables/screen';
 
-  // Full pages render on the new `EditorScreen` shell, which hands the whole
-  // main region to `ElementEditScreen`. A slideout panel brings its own header,
+  // Full pages render `ElementEditScreen`, which fills the shell's `main` slot
+  // and so owns the whole main region. A slideout panel brings its own header,
   // form and footer, so this stays on the layout-slot editor there.
   //
   // Inline `<AppLayout>` (inside `ElementEditScreen`), so no ambient layout.
