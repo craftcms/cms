@@ -137,9 +137,7 @@ class ElementRequest extends FormRequest
             return redirect($element->getCpEditUrl());
         }
 
-        if ($element instanceof ElementInterface) {
-            $this->element = $element;
-        }
+        $this->element = $element;
 
         return $element;
     }
