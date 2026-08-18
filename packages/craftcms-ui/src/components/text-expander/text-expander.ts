@@ -18,6 +18,7 @@ export interface TextExpanderOption<Data = unknown> {
 }
 
 interface TextExpanderTriggerBase<Data = unknown> {
+  label?: string;
   limit?: number;
   renderOption?: (option: Readonly<TextExpanderOption<Data>>) => Node;
 }
@@ -65,12 +66,6 @@ interface TextExpanderMatch {
 // any other character terminates the active query.
 const queryPattern = /^[\p{L}\p{N}_-]*$/u;
 const defaultListboxLabel = t('Suggestions');
-// Label announced for the suggestion listbox, keyed by trigger character.
-// Add an entry here whenever a new trigger character is introduced.
-const triggerLabels: Readonly<Record<string, string>> = {
-  '#': t('Environment'),
-  '@': t('Users'),
-};
 const targetAttributes = [
   'role',
   'aria-autocomplete',
@@ -422,7 +417,8 @@ export default class CraftTextExpander extends LitElement {
       return;
     }
 
-    const label = this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
+    const label =
+      this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
 
     this.#cancelPending();
     this.#match = null;
@@ -550,27 +546,16 @@ export default class CraftTextExpander extends LitElement {
     return result;
   }
 
-  /** The character of the currently active trigger, if a match is open. */
-  get #activeTrigger(): string | null {
-    return this.#match?.character ?? null;
-  }
-
-  #updateListboxLabel(): void {
-    const label =
-      (this.#activeTrigger !== null
-        ? triggerLabels[this.#activeTrigger]
-        : undefined) ?? defaultListboxLabel;
-
-    this.#listbox.setAttribute('aria-label', label);
-  }
-
   #showOptions(options: readonly TextExpanderOption[]): void {
     this.#stopCombobox();
     this.#visibleOptions = options;
     this.#listbox.replaceChildren();
     this.#listbox.hidden = this.loading;
 
-    this.#updateListboxLabel();
+    this.#listbox.setAttribute(
+      'aria-label',
+      this.#match?.trigger.label ?? defaultListboxLabel
+    );
 
     options.forEach((option, index) => {
       const element = document.createElement('craft-option');
