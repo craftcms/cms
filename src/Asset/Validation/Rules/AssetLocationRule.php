@@ -55,7 +55,7 @@ readonly class AssetLocationRule implements ValidationRule
             return;
         }
 
-        $extension = strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         $allowedExtensions = $this->allowedExtensions ?? Cms::config()->allowedFileExtensions;
 
         if (is_array($allowedExtensions) && ! in_array($extension, $allowedExtensions, true)) {

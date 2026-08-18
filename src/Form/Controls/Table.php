@@ -31,6 +31,9 @@ class Table extends Control
 
     private bool $keyed = false;
 
+    /** @var array<string, array<string, true>> */
+    private array $errors = [];
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         $rows = is_array($value)
@@ -48,6 +51,7 @@ class Table extends Control
             'minRows' => $control->props['minRows'] ?? null,
             'maxRows' => $control->props['maxRows'] ?? null,
             'static' => $attributes['name'] === null,
+            'errors' => $control->props['errors'] ?? [],
         ]);
     }
 
@@ -106,6 +110,14 @@ class Table extends Control
         return $this;
     }
 
+    /** @param array<string, array<string, true>> $errors */
+    public function errors(array $errors): static
+    {
+        $this->errors = $errors;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -117,6 +129,7 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'errors' => $this->errors ?: null,
         ]);
     }
 }

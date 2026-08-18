@@ -117,6 +117,10 @@ class ElementRequest extends FormRequest
             return null;
         }
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
         // When site resolution is non-strict, the element may have been resolved
@@ -133,9 +137,7 @@ class ElementRequest extends FormRequest
             return redirect($element->getCpEditUrl());
         }
 
-        if ($element instanceof ElementInterface) {
-            $this->element = $element;
-        }
+        $this->element = $element;
 
         return $element;
     }

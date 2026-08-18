@@ -656,7 +656,7 @@ class Url extends \Illuminate\Support\Facades\URL
 
         // Put it all together
         if ($path) {
-            $url = rtrim($baseUrl, '/').'/'.trim((string) $path, '/');
+            $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
             if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
                 $url .= '/';

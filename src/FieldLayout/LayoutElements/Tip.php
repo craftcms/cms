@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Callout;
+use CraftCms\Cms\Form\Nodes\Field;
 use InvalidArgumentException;
 use Override;
 
@@ -79,24 +82,17 @@ class Tip extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return
-            FormFields::textareaFieldHtml([
-                'label' => $this->_isTip() ? t('Tip') : t('Warning'),
-                'instructions' => t('Can contain Markdown formatting.'),
-                'class' => ['nicetext'],
-                'id' => 'tip',
-                'name' => 'tip',
-                'value' => $this->tip,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Can be dismissed?'),
-                'instructions' => t('Whether this can be dismissed by a user and not shown again.'),
-                'id' => 'dismissible',
-                'name' => 'dismissible',
-                'on' => $this->dismissible,
-            ]);
+        return [
+            Field::make($this->_isTip() ? t('Tip') : t('Warning'), Textarea::make('tip')
+                ->value($this->tip))
+                ->instructions(t('Can contain Markdown formatting.')),
+            Field::make(t('Can be dismissed?'), Lightswitch::make('dismissible')
+                ->value($this->dismissible))
+                ->instructions(t('Whether this can be dismissed by a user and not shown again.')),
+        ];
     }
 
     #[Override]

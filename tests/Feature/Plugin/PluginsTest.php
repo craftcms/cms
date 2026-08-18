@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoading;
 use CraftCms\Cms\Plugin\Events\PluginsRegistered;
@@ -133,6 +134,27 @@ it('can get plugin handle by class', function () {
 it('can get all plugins', function () {
     expect($this->plugins->getAllPlugins())->toHaveKey('test-plugin');
 });
+
+it('normalizes forced-disabled plugin configuration', function (string|array|null $disabledPlugins, bool $isForceDisabled) {
+    Cms::config()->disabledPlugins = $disabledPlugins;
+    app()->forgetInstance(Plugins::class);
+    loadTestPlugin();
+
+    $plugins = app(Plugins::class);
+
+    expect($plugins->getPluginInfo('test-plugin')['isForceDisabled'])->toBe($isForceDisabled);
+})->with([
+    'matching string' => ['test-plugin', true],
+    'non-matching string' => ['test', false],
+    'matching comma-separated string' => ['other,test-plugin', true],
+    'non-matching comma-separated string' => ['other,another', false],
+    'matching list' => [['test-plugin'], true],
+    'non-matching list' => [['test'], false],
+    'empty string' => ['', false],
+    'empty list' => [[], false],
+    'null' => [null, false],
+    'wildcard' => ['*', true],
+]);
 
 it('can enable and disable a plugin', function () {
     expect($this->plugins->isPluginEnabled('test-plugin'))->toBeFalse();

@@ -418,7 +418,9 @@
 
         <CalloutReadOnly v-if="readOnly" />
 
-        <slot></slot>
+        <craft-field-group>
+          <slot></slot>
+        </craft-field-group>
 
         <LayoutSlotOutlet name="content-footer">
           <slot name="content-footer"></slot>

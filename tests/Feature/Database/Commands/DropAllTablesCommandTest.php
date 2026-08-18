@@ -24,14 +24,16 @@ it('drops all tables from an isolated database', function () {
     withIsolatedSqliteConnectionForDropAllTables(function (string $connectionName) {
         $schema = Schema::connection($connectionName);
 
-        foreach (['drop_me_one', 'drop_me_two'] as $tableName) {
-            $schema->create($tableName, function (Blueprint $table) {
-                $table->string('name')->nullable();
-            });
-        }
+        $schema->create('drop_me_parent', function (Blueprint $table) {
+            $table->id();
+        });
 
-        expect($schema->hasTable('drop_me_one'))->toBeTrue();
-        expect($schema->hasTable('drop_me_two'))->toBeTrue();
+        $schema->create('drop_me_child', function (Blueprint $table) {
+            $table->foreignId('drop_me_parent_id')->constrained('drop_me_parent');
+        });
+
+        expect($schema->hasTable('drop_me_parent'))->toBeTrue();
+        expect($schema->hasTable('drop_me_child'))->toBeTrue();
 
         $exitCode = artisan('craft:db:drop-all-tables')
             ->expectsConfirmation('Are you sure you want to drop all tables from the database?', 'yes')
@@ -40,8 +42,8 @@ it('drops all tables from an isolated database', function () {
             ->run();
 
         expect($exitCode)->toBe(0);
-        expect($schema->hasTable('drop_me_one'))->toBeFalse();
-        expect($schema->hasTable('drop_me_two'))->toBeFalse();
+        expect($schema->hasTable('drop_me_parent'))->toBeFalse();
+        expect($schema->hasTable('drop_me_child'))->toBeFalse();
     });
 });
 

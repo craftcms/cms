@@ -157,6 +157,7 @@
   <LiveRegion />
   <div class="cp">
     <header class="cp__header">
+      <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
       <a
         v-for="link in skipLinks"
         :key="link.url"

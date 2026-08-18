@@ -1,5 +1,6 @@
 import {reactive, readonly, type DeepReadonly} from 'vue';
 import {t} from '@craftcms/ui/utilities/translate';
+import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {fetchSlideoutPage} from './request';
 import type {
   OpenSlideoutOptions,
@@ -119,6 +120,53 @@ export async function openSlideout(
   return panel;
 }
 
+/**
+ * Open a locally-built component in a slideout, without fetching a screen.
+ *
+ * `openSlideout()` covers the normal case — a CP screen that lives at a URL.
+ * Some panels have no URL to fetch: the field layout designer builds its
+ * settings form by POSTing the layout being edited, which is unsaved client
+ * state. Those supply the component and props themselves.
+ *
+ * The panel is otherwise identical, so stacking, the shade, focus handling,
+ * Escape and dirty-checking all behave the same. `reload()` is a no-op: there
+ * is nothing to re-fetch.
+ */
+export function openSlideoutWith(
+  component: InertiaPageComponent,
+  props: Record<string, unknown> = {},
+  options: OpenSlideoutOptions = {}
+): SlideoutInstance | null {
+  const opener =
+    options.opener ??
+    (document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null);
+
+  if (!closeAbove(originPanel(opener))) {
+    return null;
+  }
+
+  const id = `slideout-${++nextId}`;
+
+  const panel = reactive<SlideoutInstance>({
+    id,
+    containerId: id,
+    href: '',
+    component,
+    props,
+    loading: false,
+    error: null,
+    opener,
+    onSaved: options.onSaved ?? null,
+    width: options.width ?? null,
+  });
+
+  panels.push(panel);
+
+  return panel;
+}
+
 /** The panel an element lives in, or `null` if it's on the base page. */
 function originPanel(opener: HTMLElement | null): string | null {
   return (
@@ -180,7 +228,8 @@ export function notifySlideoutSaved(
 export async function reloadSlideout(id: string): Promise<void> {
   const panel = findSlideout(id);
 
-  if (panel) {
+  // Local panels (see openSlideoutWith) have nothing to re-fetch.
+  if (panel && panel.href) {
     await loadInto(panel);
   }
 }

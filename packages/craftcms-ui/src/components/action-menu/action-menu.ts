@@ -522,8 +522,8 @@ export default class CraftActionMenu extends CraftPopover {
         invoker.setAttribute('type', 'button');
         invoker.setAttribute('icon', '');
         invoker.setAttribute('size', 'small');
-        invoker.setAttribute('variant', 'inherit');
-        invoker.setAttribute('appearance', 'plain');
+        invoker.setAttribute('inherit', 'true');
+        invoker.setAttribute('variant', 'plain');
         this._generatedInvoker = invoker;
         this.appendChild(invoker);
       }
@@ -577,6 +577,7 @@ export default class CraftActionMenu extends CraftPopover {
     if (this._cachedOverlayContentNode) {
       return this._cachedOverlayContentNode;
     }
+
     return (
       (Array.from(this.children).find((child) => child.slot === 'content') as
         | HTMLElement

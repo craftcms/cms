@@ -156,7 +156,7 @@ it('passes fields and default value options to queued resave jobs', function () 
 
     Queue::assertPushed(ResaveElements::class, fn (ResaveElements $job) => $job->withFields === ['featured']
         && $job->set === 'featured'
-        && $job->toDefault === true);
+        && $job->toDefault);
 });
 
 it('rejects non-positive queue batch sizes', function (int $batchSize) {

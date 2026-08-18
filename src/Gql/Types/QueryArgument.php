@@ -7,10 +7,8 @@ namespace CraftCms\Cms\Gql\Types;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
-use GraphQL\Language\AST\BooleanValueNode;
-use GraphQL\Language\AST\IntValueNode;
-use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Utils\AST;
 use Override;
 
 class QueryArgument extends ScalarType implements SingularTypeInterface
@@ -52,11 +50,6 @@ class QueryArgument extends ScalarType implements SingularTypeInterface
 
     public function parseLiteral($valueNode, ?array $variables = null)
     {
-        return match (true) {
-            $valueNode instanceof StringValueNode => $valueNode->value,
-            $valueNode instanceof IntValueNode => (int) $valueNode->value,
-            $valueNode instanceof BooleanValueNode => $valueNode->value,
-            default => throw new GqlException('QueryArgument must be either a string, an integer, or a boolean value.'),
-        };
+        return $this->parseValue(AST::valueFromASTUntyped($valueNode, $variables));
     }
 }
