@@ -270,7 +270,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {
-        message = Craft.t('app', 'Upload failed for "{filename}".', {filename});
+        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
       } else {
         message = Craft.t('app', 'Upload failed.');
       }

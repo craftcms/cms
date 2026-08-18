@@ -61,7 +61,7 @@ readonly class AssetLocationRule implements ValidationRule
         if (is_array($allowedExtensions) && ! in_array($extension, $allowedExtensions, true)) {
             $this->addLocationError(
                 Asset::ERROR_DISALLOWED_EXTENSION,
-                $this->disallowedExtension ?? t('"{extension}" is not an allowed file extension.'),
+                $this->disallowedExtension ?? t('“{extension}” is not an allowed file extension.'),
                 ['extension' => $extension],
                 $fail,
             );
@@ -79,7 +79,7 @@ readonly class AssetLocationRule implements ValidationRule
             if (! $this->asset->avoidFilenameConflicts) {
                 $this->addLocationError(
                     Asset::ERROR_FILENAME_CONFLICT,
-                    $this->filenameConflict ?? t('A file with the name "{filename}" already exists.'),
+                    $this->filenameConflict ?? t('A file with the name “{filename}” already exists.'),
                     ['filename' => $filename],
                     $fail,
                 );

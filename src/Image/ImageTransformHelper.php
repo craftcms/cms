@@ -185,7 +185,7 @@ class ImageTransformHelper
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
-                        throw new FilesystemException(t('Tried to download the source file for image "{file}", but it was 0 bytes long.', [
+                        throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
                         ]));
                     }
