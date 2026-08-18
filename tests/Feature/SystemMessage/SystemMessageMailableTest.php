@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
@@ -38,7 +37,7 @@ it('uses the affiliated site when building mail outside site requests', function
 });
 
 it('renders system messages through the configured site template and preserves the plain-text body', function () {
-    Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
+    config(['view.paths' => [dirname(__DIR__, 2).'/Support/templates']]);
     ProjectConfig::set('email', array_merge(
         ProjectConfig::get('email') ?? [],
         ['template' => 'mail/custom-system-message.twig'],
@@ -68,7 +67,7 @@ it('renders system messages through the configured site template and preserves t
 it('renders system messages through a site-specific template override', function () {
     $site = Sites::getPrimarySite();
 
-    Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
+    config(['view.paths' => [dirname(__DIR__, 2).'/Support/templates']]);
     ProjectConfig::set('email', array_merge(
         ProjectConfig::get('email') ?? [],
         [
@@ -100,7 +99,7 @@ it('renders system messages through a site-specific template override', function
 it('falls back to the global template when no site-specific override is set', function () {
     $site = Sites::getPrimarySite();
 
-    Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
+    config(['view.paths' => [dirname(__DIR__, 2).'/Support/templates']]);
     ProjectConfig::set('email', array_merge(
         ProjectConfig::get('email') ?? [],
         [

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Commands;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -17,6 +16,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
@@ -251,7 +251,7 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
                 $uidMap,
             ) {
                 ob_start();
-                File::getRequire(Aliases::get('@craftcms/stubs/entry-type-merge.php.stub'), [
+                File::getRequire(Path::package('stubs/entry-type-merge.php.stub'), [
                     'persistingEntryTypeUid' => $persistingEntryType->uid,
                     'outgoingEntryTypeUid' => $outgoingEntryType->uid,
                     'layoutElementUidMap' => $uidMap,

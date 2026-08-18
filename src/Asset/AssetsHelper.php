@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -493,7 +492,7 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
+        $svg = file_get_contents(Path::resources('public/images/thumbs/file.svg'));
 
         $extLength = strlen($extension);
 

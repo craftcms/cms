@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
@@ -108,10 +107,6 @@ class ConfigServiceProvider extends ServiceProvider
 
         foreach ($envConfig as $setting => $value) {
             $this->applyGeneralConfigSetting($config, $setting, $value);
-        }
-
-        foreach ($config->aliases as $name => $value) {
-            Aliases::set($name, $value);
         }
 
         $repository->set('craft.general', $config);

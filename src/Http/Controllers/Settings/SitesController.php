@@ -357,11 +357,11 @@ readonly class SitesController
 
         if ($values['hasUrls'] ?? false) {
             $nodes[] = Field::make(t('Base URL'), Combobox::make('baseUrl')
-                ->options(SelectOptions::getEnvSuggestions(true, Str::isUrl(...))))
+                ->options(SelectOptions::getEnvSuggestions(Str::isUrl(...))))
                 ->instructions(t('The base URL for the site.'))
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable or alias.'),
+                    t('This can begin with an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 ));

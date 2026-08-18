@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use RuntimeException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -42,7 +42,7 @@ class Composer
             return CRAFT_COMPOSER_PATH;
         }
 
-        $jsonPath = File::normalizePath(Aliases::get('@root/composer.json'));
+        $jsonPath = File::normalizePath(base_path('composer.json'));
 
         if (! File::exists($jsonPath)) {
             throw new FileNotFoundException("No Composer config found at $jsonPath.");
@@ -164,23 +164,11 @@ class Composer
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        $composerPath = new ExecutableFinder()->find('composer');
-        $pharPath = '';
-
-        if (! $composerPath) {
-            $runtimePath = Path::runtime();
-
-            // Copy composer.phar into the runtime folder
-            $pharPath = join_paths($runtimePath, 'composer.phar');
-            copy(Aliases::get('@lib/composer.phar'), $pharPath);
-
-            $homePath = join_paths($runtimePath, 'composer');
-            File::ensureDirectoryExists($homePath);
-        }
+        [$composerPath, $homePath, $temporaryPath] = $this->composerCommand();
 
         $command = array_merge([
             PHP::executable() ?? 'php',
-            $composerPath ?? $pharPath,
+            $composerPath,
         ], $command, [
             '--working-dir',
             dirname($jsonPath),
@@ -196,8 +184,8 @@ class Composer
                 ->setTimeout(null)
                 ->mustRun($callback);
         } finally {
-            if ($pharPath && File::exists($pharPath)) {
-                File::delete($pharPath);
+            if ($temporaryPath !== null && File::exists($temporaryPath)) {
+                File::delete($temporaryPath);
             }
         }
 
@@ -205,6 +193,18 @@ class Composer
         if (function_exists('opcache_reset')) {
             @opcache_reset();
         }
+    }
+
+    /** @return array{string, string|null, string|null} */
+    protected function composerCommand(): array
+    {
+        $composerPath = new ExecutableFinder()->find('composer');
+
+        if ($composerPath === null) {
+            throw new RuntimeException('Composer could not be found.');
+        }
+
+        return [$composerPath, null, null];
     }
 
     /**

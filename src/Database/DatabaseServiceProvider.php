@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Commands\BackupCommand;
 use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
@@ -109,8 +108,6 @@ class DatabaseServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $db->useWriteConnectionWhenReading();
         }
-
-        Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([
             BackupCommand::class,

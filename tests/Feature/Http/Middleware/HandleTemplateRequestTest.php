@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
@@ -16,7 +15,7 @@ beforeEach(function () {
     File::ensureDirectoryExists($this->tempDir);
     File::put($this->tempDir.'/index.twig', 'homepage-template');
 
-    Aliases::set('@templates', $this->tempDir);
+    config(['view.paths' => [$this->tempDir]]);
     TemplateMode::set(TemplateMode::Site);
 });
 

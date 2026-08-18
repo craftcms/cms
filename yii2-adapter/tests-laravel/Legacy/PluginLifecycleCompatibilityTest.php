@@ -25,7 +25,7 @@ afterEach(function() {
 it('creates and runs adapter plugins through the shared plugin interface', function() {
     $plugins = app(Plugins::class);
 
-    new ReflectionProperty($plugins, 'composerPluginInfo')->setValue($plugins, [
+    new ReflectionProperty(Plugins::class, 'composerPluginInfo')->setValue($plugins, [
         'legacy' => [
             'class' => AdapterLifecycleTestPlugin::class,
             'handle' => 'legacy',
@@ -53,7 +53,7 @@ it('reconciles legacy registrations after legacy and modern plugins register typ
     $plugins = app(Plugins::class);
     AdapterRegistrationTestPlugin::$modernTypeWasVisible = false;
 
-    new ReflectionProperty($plugins, 'composerPluginInfo')->setValue($plugins, [
+    new ReflectionProperty(Plugins::class, 'composerPluginInfo')->setValue($plugins, [
         'legacy-registration' => [
             'class' => AdapterRegistrationTestPlugin::class,
             'handle' => 'legacy-registration',

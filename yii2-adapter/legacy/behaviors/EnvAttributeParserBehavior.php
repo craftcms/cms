@@ -7,9 +7,9 @@
 
 namespace craft\behaviors;
 
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Support\Env;
 use yii\base\Behavior;
 use yii\base\Model;
 use yii\validators\UrlValidator;

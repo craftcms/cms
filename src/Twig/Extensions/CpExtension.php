@@ -83,9 +83,9 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     }
 
     /** @return list<array<string, mixed>> */
-    public function envSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    public function envSuggestions(?callable $filter = null): array
     {
-        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
+        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($filter));
     }
 
     /** @return list<array<string, mixed>> */

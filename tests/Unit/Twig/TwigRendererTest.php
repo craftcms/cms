@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
@@ -18,7 +17,7 @@ beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-renderer-test-'.uniqid();
     File::ensureDirectoryExists($this->tempDir);
 
-    Aliases::set('@templates', $this->tempDir);
+    config(['view.paths' => [$this->tempDir]]);
     TemplateMode::set(TemplateMode::Site);
 
     file_put_contents($this->tempDir.'/test-template.twig', 'Hello from test template');

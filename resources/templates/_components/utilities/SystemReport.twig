@@ -34,27 +34,6 @@
     {% endif %}
   </div>
 
-  <div id="aliases">
-
-    <h2 class="mb-3">{{ 'Aliases'|t('app') }}</h2>
-    <p class="mb-2">
-      {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
-        url: 'https://craftcms.com/docs/5.x/configure.html#aliases',
-      })|raw }}
-    </p>
-
-    <table class="cp-table" dir="ltr">
-      <tbody>
-        {% for alias, value in aliases %}
-          <tr>
-            <th class="light">{{ alias }}</th>
-            <td>{{ value }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
   <div id="requirements">
 
     <h2 class="mb-3">{{ "Requirements"|t('app') }}</h2>

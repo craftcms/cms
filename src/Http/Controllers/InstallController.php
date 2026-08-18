@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
@@ -86,7 +86,7 @@ readonly class InstallController
             'showDbScreen' => $showDbScreen,
             'postCpLoginRedirect' => $postCpLoginRedirect,
             'licenseHtml' => Inertia::defer(function () {
-                $licensePath = Aliases::get('@craftcms/LICENSE.md');
+                $licensePath = Path::package('LICENSE.md');
                 $license = file_get_contents($licensePath);
 
                 return Str::markdown($license);
@@ -102,7 +102,7 @@ readonly class InstallController
 
                 return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
             }),
-            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
+            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
@@ -220,11 +220,6 @@ readonly class InstallController
         $email = $request->input('account.email');
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
-
-        // Don't save @web even if they chose it
-        if ($siteUrl === '@web') {
-            $siteUrl = Aliases::get($siteUrl);
-        }
 
         if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {

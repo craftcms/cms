@@ -64,7 +64,7 @@
         class="p-0"
         icon="lightbulb"
       >
-        {{ t('This can begin with an environment variable or alias.') }}
+        {{ t('This can begin with an environment variable.') }}
         <a
           href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
           >{{ t('Learn more') }}</a

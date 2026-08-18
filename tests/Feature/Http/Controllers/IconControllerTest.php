@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Http\Controllers\IconController;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -16,10 +16,10 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/solid'));
-    File::ensureDirectoryExists(Aliases::get('@cmsAssets/resources/icons/custom-icons'));
+    File::ensureDirectoryExists(CmsAssets::resourcesPath('icons/solid'));
+    File::ensureDirectoryExists(CmsAssets::resourcesPath('icons/custom-icons'));
 
-    $indexPath = Aliases::get('@cmsAssets/resources/icons/index.php');
+    $indexPath = CmsAssets::resourcesPath('icons/index.php');
 
     if (! File::exists($indexPath)) {
         File::put($indexPath, <<<'php_WRAP'
@@ -42,18 +42,18 @@ beforeEach(function () {
     }
 
     // Free
-    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/solid/gear.svg'))) {
-        File::put(Aliases::get('@cmsAssets/resources/icons/solid/gear.svg'), '<svg></svg>');
+    if (! File::exists(CmsAssets::resourcesPath('icons/solid/gear.svg'))) {
+        File::put(CmsAssets::resourcesPath('icons/solid/gear.svg'), '<svg></svg>');
     }
 
     // Pro
-    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/solid/00.svg'))) {
-        File::put(Aliases::get('@cmsAssets/resources/icons/solid/00.svg'), '<svg></svg>');
+    if (! File::exists(CmsAssets::resourcesPath('icons/solid/00.svg'))) {
+        File::put(CmsAssets::resourcesPath('icons/solid/00.svg'), '<svg></svg>');
     }
 
     // Custom
-    if (! File::exists(Aliases::get('@cmsAssets/resources/icons/custom-icons/element-card.svg'))) {
-        File::put(Aliases::get('@cmsAssets/resources/icons/custom-icons/element-card.svg'), '<svg></svg>');
+    if (! File::exists(CmsAssets::resourcesPath('icons/custom-icons/element-card.svg'))) {
+        File::put(CmsAssets::resourcesPath('icons/custom-icons/element-card.svg'), '<svg></svg>');
     }
 });
 

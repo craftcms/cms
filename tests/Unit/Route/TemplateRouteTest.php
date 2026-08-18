@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Route\TemplateRoute;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
@@ -15,7 +14,7 @@ beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-route-test-'.uniqid();
     File::ensureDirectoryExists($this->tempDir);
 
-    Aliases::set('@templates', $this->tempDir);
+    config(['view.paths' => [$this->tempDir]]);
     TemplateMode::set(TemplateMode::Site);
     Cms::config()->headlessMode(false);
     config()->set('app.debug', false);

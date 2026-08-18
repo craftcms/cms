@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\Form\Form;
@@ -14,10 +13,10 @@ use CraftCms\Cms\View\TemplateMode;
 use Symfony\Component\DomCrawler\Crawler;
 
 it('renders sanitized non-interactive template content', function () {
-    $templatesPath = Aliases::getAll()['@templates'] ?? null;
+    $templatePaths = config('view.paths');
 
     try {
-        Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
+        config(['view.paths' => [dirname(__DIR__, 3).'/Support/templates']]);
 
         $element = new Template([
             'uid' => 'template-test',
@@ -28,9 +27,7 @@ it('renders sanitized non-interactive template content', function () {
         $context = new FormContext;
         $node = $element->formNode(new FieldLayoutElementContext(null, $context));
     } finally {
-        $templatesPath === null
-            ? Aliases::remove('@templates')
-            : Aliases::set('@templates', $templatesPath);
+        config(['view.paths' => $templatePaths]);
     }
 
     $payload = app(FormResolver::class)->resolve(Form::make([$node]), $context);

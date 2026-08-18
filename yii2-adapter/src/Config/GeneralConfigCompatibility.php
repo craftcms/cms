@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Config;
 
 use craft\config\GeneralConfig as LegacyGeneralConfig;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
@@ -49,10 +50,37 @@ readonly class GeneralConfigCompatibility
             $config = $config($default);
         }
 
-        if ($config instanceof GeneralConfig || is_array($config)) {
+        if ($config instanceof LegacyGeneralConfig) {
+            $this->registerAliases($config->aliases);
+
+            return $config;
+        }
+
+        if (is_array($config)) {
+            $aliases = array_merge(
+                $config['environmentVariables'] ?? [],
+                $config['aliases'] ?? [],
+            );
+            unset($config['environmentVariables'], $config['aliases']);
+            $this->registerAliases($aliases);
+
+            return $config;
+        }
+
+        if ($config instanceof GeneralConfig) {
             return $config;
         }
 
         return [];
+    }
+
+    /** @param array<string, string|null> $aliases */
+    private function registerAliases(array $aliases): void
+    {
+        foreach ($aliases as $name => $path) {
+            $path === null
+                ? Aliases::remove($name)
+                : Aliases::set($name, $path);
+        }
     }
 }

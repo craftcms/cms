@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Elements;
 
 use Closure;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
@@ -2154,7 +2153,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
+            return file_get_contents(Path::resources('public/images/thumbs/folder.svg'));
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -3502,8 +3501,8 @@ JS;
             [Path::temp(), true],
             [Path::tempAssetUploads(), true],
             [sys_get_temp_dir(), true],
-            [Aliases::get('@root', false), false],
-            [Aliases::get('@storage', false), false],
+            [base_path(), false],
+            [storage_path(), false],
         ];
 
         $inAllowedRoot = false;

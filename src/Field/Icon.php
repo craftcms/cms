@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use GraphQL\Type\Definition\Type;
@@ -75,8 +75,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     private static function iconStyles(string $name): array
     {
         if (! isset(self::$_icons)) {
-            $indexPath = '@cmsAssets/resources/icons/index.php';
-            self::$_icons = require Aliases::get($indexPath);
+            self::$_icons = require CmsAssets::resourcesPath('icons/index.php');
         }
 
         return self::$_icons[$name]['styles'] ?? [];

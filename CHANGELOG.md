@@ -4,6 +4,7 @@
 
 - Added `CraftCms\Cms\Plugin\Plugin::settingsForm()` for defining standard plugin settings pages with the Control Panel Form system. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Removed `CraftCms\Cms\Plugin\Plugin::settingsHtml()`. `settingsForm()` should be used instead; Yii-era plugin settings HTML remains supported by `craftcms/yii2-adapter`. ([#19439](https://github.com/craftcms/cms/pull/19439))
+- Removed path alias support from core in favor of Laravel application paths. Legacy path aliases remain supported by `craftcms/yii2-adapter`.
 - Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
 - Added a slideout system for the Inertia/Vue Control Panel, which renders any `CpScreenResponse`-based screen as an in-page panel from a normal Inertia response, alongside the existing legacy `Craft.CpScreenSlideout`. ([#19354](https://github.com/craftcms/cms/pull/19354))
 - Added `CraftCms\Cms\Http\Responses\CpScreenResponse::screenData()`. ([#19354](https://github.com/craftcms/cms/pull/19354))

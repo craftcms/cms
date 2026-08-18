@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Url;
 
 beforeEach(function () {
-    Aliases::set('@web', 'https://localhost');
+    config(['app.url' => 'https://localhost']);
 
     swapUrlRequest('https://localhost/news');
 });

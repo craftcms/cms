@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter;
 
+use Composer\InstalledVersions;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings;
@@ -25,8 +27,12 @@ use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Composer as CoreComposer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
+use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\UtilityTypes;
@@ -64,7 +70,10 @@ use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
+use CraftCms\Yii2Adapter\Plugin\Plugins as LegacyPlugins;
+use CraftCms\Yii2Adapter\Support\Composer;
 use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
+use CraftCms\Yii2Adapter\Twig\AliasesExtension;
 use CraftCms\Yii2Adapter\User\LegacyUserPermissions;
 use CraftCms\Yii2Adapter\Utility\LegacyUtilityTypes;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -92,6 +101,8 @@ class Yii2ServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        $this->registerAliases();
+
         $this->app->bind(CoreMigrator::class, Migrator::class);
         $this->app
             ->when(Migrator::class)
@@ -121,6 +132,8 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->app->singleton(Plugins::class, LegacyPlugins::class);
+        $this->app->singleton(CoreComposer::class, Composer::class);
         $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
@@ -138,6 +151,68 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->registerLegacySiteTemplateRoot();
         $this->app->make(TemplateRoots::class)->register(TemplateMode::Cp, 'yii2-adapter', __DIR__ . '/../resources/templates');
         $this->registerExceptionHandling();
+    }
+
+    private function registerAliases(): void
+    {
+        $cmsPath = InstalledVersions::getInstallPath('craftcms/cms') ?? dirname(__DIR__, 2);
+        $iconsPath = CmsAssets::resourcesPath('icons');
+
+        Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
+        Aliases::set('@craftcms', $cmsPath);
+        Aliases::set('@cmsAssets', CmsAssets::packagePath());
+        Aliases::set('@package', "$cmsPath/src");
+        Aliases::set('@resources', "$cmsPath/resources");
+        Aliases::set('@vendor', $this->app->basePath('vendor'));
+        Aliases::set('@storage', $this->app->storagePath());
+        Aliases::set('@runtime', $this->app->storagePath('runtime'));
+        Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
+            ? $this->app->resourcePath('views')
+            : $this->app->basePath('templates'));
+        Aliases::set('@web', Env::get('CRAFT_WEB_URL', config('app.url')));
+        Aliases::set('@icons', $iconsPath);
+
+        $iconAliases = ['@appicons' => "$iconsPath/solid"];
+
+        foreach (['brands', 'regular', 'custom-icons'] as $family) {
+            foreach (glob("$iconsPath/$family/*.svg") ?: [] as $path) {
+                $iconAliases['@appicons/' . basename($path)] = $path;
+            }
+        }
+
+        foreach ([
+            'alert.svg' => 'solid/triangle-exclamation.svg',
+            'broken-image' => 'solid/image-slash.svg',
+            'buoey.svg' => 'solid/life-ring.svg',
+            'draft.svg' => 'solid/scribble.svg',
+            'entry-types' => 'solid/files.svg',
+            'excite.svg' => 'solid/certificate.svg',
+            'feed.svg' => 'solid/rss.svg',
+            'field.svg' => 'solid/pen-to-square.svg',
+            'hash.svg' => 'solid/hashtag.svg',
+            'info-circle' => 'solid/circle-info.svg',
+            'info-circle.svg' => 'solid/circle-info.svg',
+            'info.svg' => 'solid/circle-info.svg',
+            'location.svg' => 'solid/location-dot.svg',
+            'photo.svg' => 'solid/image.svg',
+            'plugin.svg' => 'solid/plug.svg',
+            'routes.svg' => 'solid/signs-post.svg',
+            'search.svg' => 'solid/magnifying-glass.svg',
+            'shopping-cart' => 'solid/cart-shopping.svg',
+            'template.svg' => 'solid/file-code.svg',
+            'tip.svg' => 'solid/lightbulb.svg',
+            'tools.svg' => 'solid/screwdriver-wrench.svg',
+            'tree.svg' => 'solid/sitemap.svg',
+            'upgrade.svg' => 'solid/square-arrow-up.svg',
+            'wand.svg' => 'solid/wand-magic-sparkles.svg',
+            'world.svg' => 'solid/earth-americas.svg',
+        ] as $name => $path) {
+            $iconAliases["@appicons/$name"] = "$iconsPath/$path";
+        }
+
+        foreach ($iconAliases as $alias => $path) {
+            Aliases::set($alias, $path);
+        }
     }
 
     protected function registerConstants(): void
@@ -244,6 +319,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app->make(Twig::class)->registerExtension(new AliasesExtension());
+
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),

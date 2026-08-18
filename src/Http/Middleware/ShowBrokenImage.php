@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use Illuminate\Http\Request;
@@ -45,7 +44,11 @@ class ShowBrokenImage
         }
 
         $generalConfig = Cms::config();
-        $imagePath = Aliases::get($generalConfig->brokenImagePath);
+        $imagePath = $generalConfig->brokenImagePath;
+
+        if (str_starts_with($imagePath, '@')) {
+            throw new RuntimeException('Path aliases require craftcms/yii2-adapter. Use an absolute path instead.');
+        }
 
         if (! is_file($imagePath)) {
             throw new RuntimeException("Invalid broken image path: $generalConfig->brokenImagePath");

@@ -20,7 +20,6 @@ test('scalar properties', function (string $class, string $property, mixed $expe
         $property => $expected,
     ]);
 })->with([
-    [GeneralConfig::class, 'aliases', ['foo', 'bar'], 'foo,bar'],
     [GeneralConfig::class, 'allowAdminChanges', true, 'yes'],
     [GeneralConfig::class, 'allowAdminChanges', false, 'no'],
     [GeneralConfig::class, 'allowAdminChanges', true, 'on'],

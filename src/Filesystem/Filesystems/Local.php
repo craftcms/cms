@@ -127,20 +127,20 @@ class Local extends Filesystem
 
         if ($this->hasUrls && $this->getShowUrlSetting()) {
             $form->add(Field::make(t('Base URL'))
-                ->instructions(t('The base URL to the files in this filesystem. This can begin with an environment variable or alias.'))
+                ->instructions(t('The base URL to the files in this filesystem. This can begin with an environment variable.'))
                 ->required()
                 ->control(Combobox::make('url')
                     ->value($this->url)
-                    ->options(SelectOptions::getEnvSuggestions(true, fn ($value): bool => Str::isUrl($value)))
+                    ->options(SelectOptions::getEnvSuggestions(fn ($value): bool => Str::isUrl($value)))
                     ->placeholder('//example.com/path/to/folder')));
         }
 
         return $form->add(Field::make(t('Base Path'))
-            ->instructions(t('The base folder path that should be used as the root of the filesystem. This can begin with an environment variable or alias.'))
+            ->instructions(t('The base folder path that should be used as the root of the filesystem. This can begin with an environment variable.'))
             ->required()
             ->control(Combobox::make('path')
                 ->value($this->path)
-                ->options(SelectOptions::getEnvSuggestions(true))
+                ->options(SelectOptions::getEnvSuggestions())
                 ->placeholder('/path/to/folder')));
     }
 

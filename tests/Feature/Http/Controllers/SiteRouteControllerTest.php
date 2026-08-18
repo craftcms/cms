@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -30,7 +29,7 @@ use function Pest\Laravel\actingAs;
 beforeEach(function () {
     Cms::config()->isSystemLive = true;
     TemplateMode::set(TemplateMode::Site);
-    Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
+    config(['view.paths' => [dirname(__DIR__, 3).'/Support/templates']]);
 
     app(TemplateRoots::class)->register(TemplateMode::Site, '', dirname(__DIR__, 3).'/Support/templates');
 

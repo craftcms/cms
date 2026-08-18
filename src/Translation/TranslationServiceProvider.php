@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Translation;
 
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\ServiceProvider;
 use Yiisoft\Translator\CategorySource;
@@ -29,7 +30,7 @@ class TranslationServiceProvider extends ServiceProvider
         $this->callAfterResolving(I18N::class, function (I18N $i18n): void {
             $appCategory = new CategorySource(
                 name: 'app',
-                reader: new MessageSource(dirname(__DIR__, 2).'/resources/translations'),
+                reader: new MessageSource(Path::resources('translations')),
                 formatter: new IntlMessageFormatter,
             );
 

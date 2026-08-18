@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
@@ -60,7 +59,6 @@ afterEach(function () {
     putenv('ENV_VALUE_RULE_MISSING');
     putenv('ENV_VALUE_RULE_BOOL');
     putenv('PASSWORD');
-    Aliases::remove('@env-value-rule-email');
 });
 
 it('passes validation for resolved values', function (mixed $value, array $rules, ?Closure $setup = null) {
@@ -70,7 +68,6 @@ it('passes validation for resolved values', function (mixed $value, array $rules
 })->with([
     'literal email' => ['test@example.com', ['required', 'email']],
     'environment variable email' => ['$ENV_VALUE_RULE_EMAIL', ['required', 'email'], fn () => putenv('ENV_VALUE_RULE_EMAIL=test@example.com')],
-    'alias email' => ['@env-value-rule-email', ['required', 'email'], fn () => Aliases::set('@env-value-rule-email', 'test@example.com')],
     'nullable missing environment variable' => ['$ENV_VALUE_RULE_MISSING', ['nullable', 'email']],
 ]);
 

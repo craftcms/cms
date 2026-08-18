@@ -12,6 +12,7 @@ use CraftCms\Cms\Blade\Directives\PageLifecycleDirective;
 use CraftCms\Cms\Blade\Directives\PaginationDirective;
 use CraftCms\Cms\Blade\Directives\ResourceDirective;
 use CraftCms\Cms\Blade\Directives\ResponseDirective;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\View\Factory as ViewFactory;
@@ -25,14 +26,9 @@ use Override;
 
 class ViewServiceProvider extends ServiceProvider
 {
-    private string $root = __DIR__.'/../..';
-
     #[Override]
     public function register(): void
     {
-        $this->loadViewsFrom("{$this->root}/resources/templates", 'craftcms');
-        $this->loadViewsFrom("{$this->root}/resources/views", 'c');
-
         $this->app->make(ViewFactory::class)->addExtension(
             'twig',
             'twig',
@@ -42,6 +38,9 @@ class ViewServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadViewsFrom(Path::resources('templates'), 'craftcms');
+        $this->loadViewsFrom(Path::resources('views'), 'c');
+
         Event::listen(function (ViewAssetsRendering $event) {
             app(InternalAssetRegistry::class)->flush();
         });

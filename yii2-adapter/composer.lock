@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4cbc75dfba221e3fc791d08652e2b08b",
+    "content-hash": "fbc3981ef4a6f24eb7966a3ac8a04623",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -476,14 +476,13 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "473a60eed015b88151d6a5c5c489796fdb3b5b7c"
+                "reference": "2e1c64589e3c7e3adb45f5886643d340ec71aced"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
                 "commerceguys/addressing": "^2.1.1",
                 "composer/semver": "^3.3.2",
                 "craftcms/cms-assets": "self.version",
-                "craftcms/laravel-aliases": "^2.0",
                 "craftcms/laravel-dependency-aware-cache": "^1.2.3",
                 "craftcms/laravel-ruleset-validation": "^1.1",
                 "craftcms/plugin-installer": "~1.6.0",
@@ -533,6 +532,7 @@
             },
             "require-dev": {
                 "barryvdh/laravel-debugbar": "^4.2",
+                "craftcms/test-plugin": "1.0.1",
                 "dg/bypass-finals": "^1.9",
                 "driftingly/rector-laravel": "^2.1",
                 "fakerphp/faker": "^1.19.0",
@@ -542,9 +542,9 @@
                 "laravel/pint": "^1.22",
                 "laravel/socialite": "^5.23",
                 "orchestra/testbench": "^11.0",
-                "pestphp/pest": "^4.0",
-                "pestphp/pest-plugin-arch": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0",
+                "pestphp/pest": "^5.0",
+                "pestphp/pest-plugin-arch": "^5.0",
+                "pestphp/pest-plugin-laravel": "^5.0",
                 "phpstan/phpstan": "^2.1",
                 "rector/rector": "^2.3",
                 "spatie/laravel-typescript-transformer": "^3.2"
@@ -651,7 +651,7 @@
                     "./vendor/bin/pest --compact"
                 ],
                 "tests-adapter": [
-                    "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
+                    "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel"
                 ],
                 "post-autoload-dump": [
                     "@clear",

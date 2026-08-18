@@ -38,8 +38,8 @@ enum TemplateMode: string
              * work without a 'craftcms::' prefix.
              */
             if (TemplateMode::is(TemplateMode::Cp)) {
-                $templates = dirname(__DIR__, 2).'/resources/templates';
-                $views = dirname(__DIR__, 2).'/resources/views';
+                $templates = Path::resources('templates');
+                $views = Path::resources('views');
 
                 /** @var FileViewFinder $finder */
                 $finder = view()->getFinder();

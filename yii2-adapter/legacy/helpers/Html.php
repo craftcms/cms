@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use InvalidArgumentException;
@@ -482,7 +483,7 @@ class Html extends \yii\helpers\Html
     public static function dataUrl(string $file, ?string $mimeType = null): string
     {
         try {
-            return \CraftCms\Cms\Support\Html::dataUrl($file, $mimeType);
+            return \CraftCms\Cms\Support\Html::dataUrl(Aliases::get($file), $mimeType);
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
@@ -576,6 +577,10 @@ class Html extends \yii\helpers\Html
         ?bool $namespace = null,
         bool $throwException = false,
     ): string {
+        if (is_string($svg) && str_starts_with($svg, '@')) {
+            $svg = Aliases::get($svg);
+        }
+
         return \CraftCms\Cms\Support\Html::svg($svg, $sanitize, $namespace, $throwException);
     }
 }

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -118,7 +117,7 @@ test('parse', function () {
     expect(Env::parse('$CRAFT_TESTS_PATH'))->toBe(CRAFT_TESTS_PATH);
     expect(Env::parse('$CRAFT_TESTS_PATH/foo/bar'))->toBe(CRAFT_TESTS_PATH.'/foo/bar');
     expect(Env::parse('CRAFT_TESTS_PATH'))->toBe('CRAFT_TESTS_PATH');
-    expect(Env::parse('@vendor/foo/bar'))->toBe(Aliases::get('@vendor/foo/bar'));
+    expect(Env::parse('@vendor/foo/bar'))->toBe('@vendor/foo/bar');
     expect(Env::parse('$TEST_MISSING'))->toBeNull();
     expect(Env::parse(null))->toBeNull();
 

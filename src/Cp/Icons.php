@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
@@ -82,34 +81,6 @@ readonly class Icons
 
     private const array EARTH_ALIASES = ['world', 'earth'];
 
-    private const array CUSTOM_ICONS = [
-        'asterisk-slash',
-        'c-debug',
-        'c-outline',
-        'clone-dashed',
-        'diamond-slash',
-        'duplicate',
-        'element-card',
-        'element-card-slash',
-        'element-cards',
-        'gear-slash',
-        'graphql',
-        'grip-dots',
-        'image-slash',
-        'language',
-        'list-flip',
-        'list-tree-flip',
-        'notification-bottom-left',
-        'notification-bottom-right',
-        'notification-top-left',
-        'notification-top-right',
-        'share-flip',
-        'slideout-left',
-        'slideout-right',
-        'thumb-left',
-        'thumb-right',
-    ];
-
     public static function resolveIconName(string $icon): string
     {
         if (isset(self::LEGACY_ICON_MAP[$icon])) {
@@ -131,23 +102,19 @@ readonly class Icons
 
     public static function resolveIconFamily(string $icon): string
     {
-        if (in_array($icon, self::CUSTOM_ICONS)) {
-            return 'custom-icons';
+        foreach (['custom-icons', 'solid', 'brands', 'regular'] as $family) {
+            if (is_file(CmsAssets::resourcesPath("icons/$family/$icon.svg"))) {
+                return $family;
+            }
         }
 
-        return Str::of(self::resolveIconPath($icon))
-            ->replace(Aliases::get('@icons'), '')
-            ->ltrim('/', '')
-            ->before('/')
-            ->toString();
+        return 'solid';
     }
 
     /** @return array{name: string, family: string} */
     public static function resolveIconData(string $icon): array
     {
-        // Resolve the family from the resolved name, not the raw one — an
-        // alias can point at a custom icon (e.g. `move` → `grip-dots`), whose
-        // family would otherwise resolve as if it were a system icon.
+        // Resolve the family from the resolved name, not the raw one.
         $name = self::resolveIconName($icon);
 
         return [
@@ -158,9 +125,7 @@ readonly class Icons
 
     public static function resolveIconPath(string $icon): string
     {
-        return in_array($icon, self::CUSTOM_ICONS)
-            ? Aliases::get("@cmsAssets/resources/icons/custom-icons/$icon.svg")
-            : Aliases::get("@appicons/$icon.svg");
+        return CmsAssets::resourcesPath(sprintf('icons/%s/%s.svg', self::resolveIconFamily($icon), $icon));
     }
 
     public static function svg(?string $icon, ?string $fallbackLabel = null, ?string $altText = null): ?string

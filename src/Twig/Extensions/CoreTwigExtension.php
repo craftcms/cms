@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Extensions;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Component;
@@ -263,7 +262,6 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('actionUrl', Url::actionUrl(...)),
-            new TwigFunction('alias', Aliases::get(...)),
             new TwigFunction('asset', asset(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Edition;
@@ -49,24 +48,9 @@ class SystemReport extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $aliases = [];
-        foreach (Aliases::getAll() as $alias => $value) {
-            if (is_array($value)) {
-                foreach ($value as $a => $v) {
-                    if (! str_starts_with((string) $a, '@appicons/')) {
-                        $aliases[$a] = $v;
-                    }
-                }
-            } elseif (! str_starts_with((string) $alias, '@appicons/')) {
-                $aliases[$alias] = $value;
-            }
-        }
-        ksort($aliases);
-
         return template('_components/utilities/SystemReport', [
             'appInfo' => self::appInfo(),
             'plugins' => app(Plugins::class)->getAllPlugins(),
-            'aliases' => $aliases,
             'requirements' => self::requirementResults(),
         ]);
     }

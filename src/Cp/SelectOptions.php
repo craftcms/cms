@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -34,18 +33,16 @@ use function CraftCms\Cms\t;
 class SelectOptions
 {
     /**
-     * Returns the available environment variable and alias suggestions for
+     * Returns the available environment variable suggestions for
      * inputs that support them.
      *
-     * @param  bool  $includeAliases  Whether aliases should be included in the list
-     *                                (only enable this if the setting defines a URL or file path)
      * @param  callable|null  $filter  A function that returns whether a given value should be included
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}, 1?: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}}
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}}
      */
-    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
+    public static function getEnvSuggestions(?callable $filter = null): array
     {
         $suggestions = [];
 
@@ -61,7 +58,7 @@ class SelectOptions
                     'label' => '$'.$var,
                     'value' => '$'.$var,
                     'data' => [
-                        'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
+                        'hint' => Security::redactIfSensitive($var, $env),
                     ],
                 ];
             }
@@ -72,33 +69,6 @@ class SelectOptions
             'label' => t('Environment Variables'),
             'options' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
-
-        if ($includeAliases) {
-            $aliasSuggestions = [];
-            foreach (Aliases::getAll() as $alias => $path) {
-                // Don't ever suggest @web
-                if ($alias === '@web') {
-                    continue;
-                }
-                if (str_starts_with($alias, '@web/')) {
-                    continue;
-                }
-                if (! $filter || $filter($path)) {
-                    $aliasSuggestions[] = [
-                        'label' => $alias,
-                        'value' => $alias,
-                        'data' => [
-                            'hint' => $path,
-                        ],
-                    ];
-                }
-            }
-            $suggestions[] = [
-                'type' => 'optgroup',
-                'label' => t('Aliases'),
-                'options' => array_values(Arr::sort($aliasSuggestions, 'name')),
-            ];
-        }
 
         return $suggestions;
     }
@@ -131,7 +101,7 @@ class SelectOptions
             ) {
                 $data = [];
                 if ($value !== '') {
-                    $data['hint'] = Security::redactIfSensitive($var, Aliases::get($value, false));
+                    $data['hint'] = Security::redactIfSensitive($var, $value);
                 }
 
                 $options[] = array_filter([

@@ -1331,24 +1331,15 @@ readonly class FormFields
     {
         $config['id'] ??= 'autosuggest'.mt_rand();
 
-        // Suggest an environment variable / alias?
+        // Suggest an environment variable?
         if ($config['suggestEnvVars'] ?? false) {
             $value = $config['value'] ?? '';
-            if (! isset($config['tip']) && (! isset($value[0]) || ! in_array($value[0], ['$', '@']))) {
-                if ($config['suggestAliases'] ?? false) {
-                    $config['tip'] = t('This can begin with an environment variable or alias.');
-                } else {
-                    $config['tip'] = t('This can begin with an environment variable.');
-                }
+            if (! isset($config['tip']) && (! isset($value[0]) || $value[0] !== '$')) {
+                $config['tip'] = t('This can begin with an environment variable.');
                 $config['tip'] .= ' '.
                     Html::a(t('Learn more'), 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings', [
                         'class' => 'go',
                     ]);
-            } elseif (
-                ! isset($config['warning']) &&
-                ($value === '@web' || str_starts_with((string) $value, '@web/'))
-            ) {
-                $config['warning'] = t('The `@web` alias is not recommended.');
             }
         }
 

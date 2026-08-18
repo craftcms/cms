@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateMode;
@@ -89,7 +88,7 @@ describe('template helpers', function () {
     beforeEach(function () {
         $this->tempDir = sys_get_temp_dir().'/craft-template-helper-test-'.uniqid();
         File::ensureDirectoryExists($this->tempDir);
-        Aliases::set('@templates', $this->tempDir);
+        config(['view.paths' => [$this->tempDir]]);
         TemplateMode::set(TemplateMode::Site);
         app()->forgetScopedInstances();
     });

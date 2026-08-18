@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Field\Data\MarkdownData;
@@ -219,7 +218,7 @@ class HtmlTwigExtension extends AbstractExtension
                 return $file->getDataUrl();
             }
 
-            return Html::dataUrl(Aliases::get($file), $mimeType);
+            return Html::dataUrl($file, $mimeType);
         } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
 

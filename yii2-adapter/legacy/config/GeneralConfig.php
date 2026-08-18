@@ -32,6 +32,9 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
+    /** @var array<string, string|null> */
+    public array $aliases = [];
+
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
@@ -46,6 +49,25 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     ];
 
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /** @param array<string, string|null> $value */
+    public function aliases(array $value): self
+    {
+        $this->aliases = [];
+
+        foreach ($value as $name => $path) {
+            $this->addAlias($name, $path);
+        }
+
+        return $this;
+    }
+
+    public function addAlias(string $name, ?string $path): self
+    {
+        $this->aliases[str_starts_with($name, '@') ? $name : "@$name"] = $path;
+
+        return $this;
+    }
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses

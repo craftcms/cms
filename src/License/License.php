@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\License;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -323,7 +322,7 @@ readonly class License
             $keyPath = File::normalizePath($this->keyPath(), '/');
 
             // If the license key path starts with the root project path, trim the project path off
-            $rootPath = File::normalizePath(Aliases::get('@root'), '/');
+            $rootPath = File::normalizePath(base_path(), '/');
             if (str_starts_with($keyPath, $rootPath.'/')) {
                 $keyPath = substr($keyPath, strlen($rootPath) + 1);
             }

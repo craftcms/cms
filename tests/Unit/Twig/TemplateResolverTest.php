@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\View\TemplateMode;
@@ -17,7 +16,7 @@ beforeEach(function () {
 
     $this->resolver = new TemplateResolver;
 
-    Aliases::set('@templates', $this->tempDir);
+    config(['view.paths' => [$this->tempDir]]);
     TemplateMode::set(TemplateMode::Site);
     Cms::setIsInstalled(false);
 });

@@ -2,7 +2,6 @@ providers:
   - Inertia\ServiceProvider
   - Laravel\Tinker\TinkerServiceProvider
   - Laravel\Socialite\SocialiteServiceProvider
-  - CraftCms\Aliases\AliasesServiceProvider
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider

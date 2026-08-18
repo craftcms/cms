@@ -4,10 +4,7 @@
 
 {% set suggestions = (suggestions ?? [])
     |merge((suggestTemplates ?? false) ? cpTemplateSuggestions() : [])
-    |merge((suggestEnvVars ?? false) ? cpEnvSuggestions(
-        suggestAliases ?? false,
-        suggestionFilter ?? null
-    ) : []) %}
+    |merge((suggestEnvVars ?? false) ? cpEnvSuggestions(suggestionFilter ?? null) : []) %}
 
 {%- set id = id ?? "autosuggest#{random()}" %}
 {%- set previewInputId = "#{id}-preview" %}

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Foundation\Application;
+use InvalidArgumentException;
 
 use function Illuminate\Filesystem\join_paths;
 
@@ -56,14 +56,14 @@ class Path
 
     public function storage(string $path = '', bool $create = true): string
     {
-        $this->storagePath ??= $this->aliasOrDefault('@storage', $this->app->storagePath());
+        $this->storagePath ??= File::normalizePath($this->app->storagePath());
 
         return $this->directory($this->storagePath, $path, $create);
     }
 
     public function tests(string $path = ''): string
     {
-        $this->testsPath ??= $this->aliasOrDefault('@tests', $this->app->basePath('tests'));
+        $this->testsPath ??= File::normalizePath($this->app->basePath('tests'));
 
         return $this->path($this->testsPath, $path);
     }
@@ -85,7 +85,7 @@ class Path
 
     public function vendor(string $path = ''): string
     {
-        $this->vendorPath ??= $this->aliasOrDefault('@vendor', $this->app->basePath('vendor'));
+        $this->vendorPath ??= File::normalizePath($this->app->basePath('vendor'));
 
         return $this->path($this->vendorPath, $path);
     }
@@ -145,26 +145,42 @@ class Path
         return $this->subdirectory($this->storage(create: $create), 'logs', $path, $create);
     }
 
+    public function package(string $path = ''): string
+    {
+        return $this->path(File::normalizePath(__DIR__.'/../..'), $path);
+    }
+
+    public function resources(string $path = ''): string
+    {
+        return $this->path($this->package('resources'), $path);
+    }
+
     public function cpTranslations(string $path = ''): string
     {
-        return $this->path(File::normalizePath(Aliases::get('@craftcms/resources/translations')), $path);
+        return $this->path($this->resources('translations'), $path);
     }
 
     public function siteTranslations(string $path = ''): string
     {
-        $this->siteTranslationsPath ??= $this->aliasOrDefault('@translations', $this->app->langPath());
+        $this->siteTranslationsPath ??= File::normalizePath($this->app->langPath());
 
         return $this->path($this->siteTranslationsPath, $path);
     }
 
     public function cpTemplates(string $path = ''): string
     {
-        return $this->path(File::normalizePath(Aliases::get('@craftcms/resources/templates')), $path);
+        return $this->path($this->resources('templates'), $path);
     }
 
     public function siteTemplates(string $path = ''): string
     {
-        return $this->path($this->aliasOrDefault('@templates', $this->app->basePath('templates')), $path);
+        $templatesPath = config('view.paths.0');
+
+        if (! is_string($templatesPath) || ! is_dir($templatesPath)) {
+            $templatesPath = $this->app->basePath('templates');
+        }
+
+        return $this->path(File::normalizePath($templatesPath), $path);
     }
 
     public function compiledClasses(string $path = '', bool $create = true): string
@@ -178,6 +194,10 @@ class Path
             $compiledTemplatesPath = Env::parse($this->generalConfig->compiledTemplatesPath);
 
             if ($compiledTemplatesPath !== null && $compiledTemplatesPath !== '') {
+                if (str_starts_with($compiledTemplatesPath, '@')) {
+                    throw new InvalidArgumentException('Path aliases require craftcms/yii2-adapter. Use an absolute path instead.');
+                }
+
                 return $this->directory(
                     File::normalizePath($compiledTemplatesPath),
                     $path,
@@ -208,8 +228,7 @@ class Path
     public function system(): array
     {
         return [
-            $this->aliasOrDefault('@contentMigrations', $this->app->basePath('migrations')),
-            $this->aliasOrDefault('@lib', $this->app->basePath('yii2-adapter/lib')),
+            $this->app->basePath('migrations'),
             $this->composerBackups(create: false),
             $this->configBackup(create: false),
             $this->configDelta(create: false),
@@ -248,11 +267,6 @@ class Path
         }
 
         return true;
-    }
-
-    private function aliasOrDefault(string $alias, string $path): string
-    {
-        return File::normalizePath(Aliases::get($alias, false) ?: $path);
     }
 
     private function path(string $basePath, string $path = ''): string

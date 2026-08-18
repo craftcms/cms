@@ -18,16 +18,6 @@ describe('getEnvSuggestions', function () {
             ->and($suggestions[0]['options'])->toBeArray();
     });
 
-    it('returns suggestions with aliases when includeAliases is true', function () {
-        $suggestions = SelectOptions::getEnvSuggestions(includeAliases: true);
-
-        expect($suggestions)->toHaveCount(2)
-            ->and($suggestions[0])->toHaveKey('label')
-            ->and($suggestions[1])->toHaveKey('label')
-            ->and($suggestions[0]['options'])->toBeArray()
-            ->and($suggestions[1]['options'])->toBeArray();
-    });
-
     it('filters suggestions based on filter callback', function () {
         $_SERVER['TEST_SHORT_ENV'] = 'no';
         $_SERVER['TEST_LONG_ENV'] = 'longer';
@@ -58,17 +48,6 @@ describe('getEnvSuggestions', function () {
             ->not->toContain('$HTTP_TEST_VAR');
 
         unset($_SERVER['TEST_NON_HTTP_VAR'], $_SERVER['HTTP_TEST_VAR']);
-    });
-
-    it('excludes @web aliases when includeAliases is true', function () {
-        $suggestions = SelectOptions::getEnvSuggestions(includeAliases: true);
-
-        if (isset($suggestions[1]['options'])) {
-            foreach ($suggestions[1]['options'] as $suggestion) {
-                expect($suggestion['label'])->not->toBe('@web')
-                    ->and($suggestion['label'])->not->toStartWith('@web/');
-            }
-        }
     });
 
     it('formats env var names with $ prefix', function () {

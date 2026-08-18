@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\File;
 
@@ -38,11 +37,13 @@ test('decodeIfJson', function (mixed $expected, string $str) {
 });
 
 test('decodeFromFile', function () {
-    File::put(Aliases::get('@runtime/test.json'), '{"test":"test"}');
+    $path = storage_path('runtime/test.json');
+    File::ensureDirectoryExists(dirname($path));
+    File::put($path, '{"test":"test"}');
 
-    expect(Json::decodeFromFile('@runtime/test.json'))->toEqualCanonicalizing(['test' => 'test']);
+    expect(Json::decodeFromFile($path))->toEqualCanonicalizing(['test' => 'test']);
 
-    File::delete(Aliases::get('@runtime/test.json'));
+    File::delete($path);
 });
 
 test('detectIndent', function (string $expected, string $json) {

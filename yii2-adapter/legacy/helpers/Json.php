@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 
@@ -65,7 +66,7 @@ class Json extends \yii\helpers\Json
      */
     public static function decodeFromFile(string $file, bool $asArray = true): mixed
     {
-        return \CraftCms\Cms\Support\Json::decodeFromFile($file, $asArray);
+        return \CraftCms\Cms\Support\Json::decodeFromFile(Aliases::get($file), $asArray);
     }
 
     /**

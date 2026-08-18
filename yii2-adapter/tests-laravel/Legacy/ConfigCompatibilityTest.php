@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Support\Facades\Config;
@@ -59,4 +60,32 @@ it('converts callable general config and application type overlays', function():
 
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('console');
+});
+
+it('registers aliases from fluent general config', function(): void {
+    $config = GeneralConfig::create()->aliases([
+        'uploads' => '/path/to/uploads',
+    ]);
+
+    try {
+        new GeneralConfigCompatibility()->convert($config);
+
+        expect(Aliases::get('@uploads'))->toBe('/path/to/uploads');
+    } finally {
+        Aliases::remove('@uploads');
+    }
+});
+
+it('registers and removes aliases from array general config', function(): void {
+    try {
+        $config = new GeneralConfigCompatibility()->convert([
+            'aliases' => ['@uploads' => '/path/to/uploads'],
+            'cpTrigger' => 'control',
+        ]);
+
+        expect($config)->toBe(['cpTrigger' => 'control'])
+            ->and(Aliases::get('@uploads'))->toBe('/path/to/uploads');
+    } finally {
+        Aliases::remove('@uploads');
+    }
 });

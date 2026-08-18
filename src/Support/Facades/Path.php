@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static string imageTransforms(string $path = '', bool $create = true)
  * @method static string pluginIcons(string $path = '', bool $create = true)
  * @method static string logs(string $path = '', bool $create = true)
+ * @method static string package(string $path = '')
+ * @method static string resources(string $path = '')
  * @method static string cpTranslations(string $path = '')
  * @method static string siteTranslations(string $path = '')
  * @method static string cpTemplates(string $path = '')

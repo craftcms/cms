@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -16,7 +15,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
-use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
@@ -59,8 +57,6 @@ class AppServiceProvider extends ServiceProvider
 
     public static int $maxPasswordLength = UserPasswordRule::MAX_PASSWORD_LENGTH;
 
-    private string $root = __DIR__.'/../..';
-
     #[Override]
     public function register(): void
     {
@@ -97,7 +93,6 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         $this->setNamespace();
-        $this->bootAliases();
         Cms::setDefaultTimezone();
 
         $this->app->booted(function () {
@@ -122,6 +117,12 @@ class AppServiceProvider extends ServiceProvider
             CmsAssets::resourcesPath('build') => public_path('vendor/craft/build'),
             CmsAssets::resourcesPath('legacy') => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
+
+        foreach (glob(CmsAssets::resourcesPath('icons/*'), GLOB_ONLYDIR) ?: [] as $path) {
+            $this->publishes([
+                $path => public_path('vendor/craft/icons/'.basename($path)),
+            ], ['craftcms', 'craftcms-assets', 'craftcms-icons']);
+        }
     }
 
     private function registerMacros(): void
@@ -240,30 +241,6 @@ class AppServiceProvider extends ServiceProvider
             $reflectionClass = new ReflectionClass($this->app);
             $reflectionProperty = $reflectionClass->getProperty('namespace');
             $reflectionProperty->setValue($this->app, 'App');
-        }
-    }
-
-    private function bootAliases(): void
-    {
-        Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
-        Aliases::set('@craftcms', File::normalizePath($this->root));
-        Aliases::set('@cmsAssets', CmsAssets::packagePath());
-        Aliases::set('@package', '@craftcms/src');
-        Aliases::set('@resources', "{$this->root}/resources");
-        Aliases::set('@vendor', '@root/vendor');
-        Aliases::set('@storage', $this->app->storagePath());
-        Aliases::set('@runtime', '@storage/runtime');
-
-        if (Aliases::get('@templates', false) === false) {
-            Aliases::set('@templates', is_dir($this->app->resourcePath('views'))
-                ? $this->app->resourcePath('views')
-                : $this->app->basePath('templates'));
-        }
-
-        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
-            Aliases::set('@web', $webUrl);
-        } else {
-            Aliases::set('@web', config('app.url'));
         }
     }
 

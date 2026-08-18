@@ -7,7 +7,7 @@
 } %}
     <div id="site-icon">
         {% if config('craft.general.cpIconUrl') %}
-            <img src="{{ alias(config('craft.general.cpIconUrl')) }}" alt="">
+            <img src="{{ config('craft.general.cpIconUrl') }}" alt="">
         {% else %}
             {{ iconSvg('c-outline') }}
         {% endif %}

@@ -34,6 +34,7 @@ use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -85,7 +86,7 @@ class RouteServiceProvider extends ServiceProvider
         $router->patterns($routes->tokens);
 
         $this->bootMiddleware($router);
-        $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
+        $this->loadRoutesFrom(Path::package('routes/routes.php'));
 
         if (! $this->app->routesAreCached()) {
             $this->bootMaintenanceModeExceptions();

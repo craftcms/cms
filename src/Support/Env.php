@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
@@ -77,7 +76,7 @@ class Env extends \Illuminate\Support\Env
 
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
-     * and/or an alias (`@aliasName`), and returns the referenced value.
+     * and returns the referenced value.
      *
      * If the string references an environment variable with a value of `true`
      * or `false`, a boolean value will be returned.
@@ -89,11 +88,10 @@ class Env extends \Illuminate\Support\Env
      *
      * ```php
      * $value1 = Env::parse('$SMTP_PASSWORD');
-     * $value2 = Env::parse('@webroot');
      * ```
      *
      * @return string|null The parsed value, or the original value if it didn’t
-     *                     reference an environment variable and/or alias.
+     *                     reference an environment variable.
      */
     public static function parse(?string $value): ?string
     {
@@ -121,10 +119,6 @@ class Env extends \Illuminate\Support\Env
 
         if ($value === '') {
             return null;
-        }
-
-        if (str_starts_with((string) $value, '@') && $alias = Aliases::get($value)) {
-            return $alias;
         }
 
         return $value;

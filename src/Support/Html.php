@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
@@ -1184,10 +1183,10 @@ class Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
-        $file = File::absolutePath(Aliases::get($file), '/');
+        $file = File::absolutePath($file, '/');
 
         // make sure it's contained within the project root
-        $rootPath = File::absolutePath(Aliases::get('@root'), '/');
+        $rootPath = File::absolutePath(base_path(), '/');
         if (! str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
@@ -1328,17 +1327,6 @@ class Html
             }
         } elseif (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
-            try {
-                $svg = Aliases::get($svg);
-            } catch (InvalidArgumentException $e) {
-                if ($throwException) {
-                    throw $e;
-                }
-                Log::error("Could not get the contents of $svg: {$e->getMessage()}", [__METHOD__]);
-                report($e);
-
-                return '';
-            }
             if (! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");

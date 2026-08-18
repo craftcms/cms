@@ -287,9 +287,7 @@
     {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
-            tip: (config.allowedEnvValues is not defined)
-            ? 'This can begin with an environment variable or alias.'|t('app')
-            : 'This can begin with an environment variable.'|t('app'),
+            tip: 'This can begin with an environment variable.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/selectize') }}
@@ -411,22 +409,16 @@
         id: config.id ?? "autosuggest#{random()}",
     }) %}
 
-    {# Suggest an environment variable / alias? #}
+    {# Suggest an environment variable? #}
     {% if (config.suggestEnvVars ?? false) %}
         {% set value = config.value ?? '' %}
-        {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
+        {% if config.tip is not defined and value[0:1] != '$' %}
             {% set config = config|merge({
-                tip: ((config.suggestAliases ?? false)
-                ? 'This can begin with an environment variable or alias.'|t('app')
-                : 'This can begin with an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                tip: 'This can begin with an environment variable.'|t('app') ~ ' ' ~ tag('a', {
                     href: 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                     class: 'go',
                     text: 'Learn more'|t('app'),
                 }),
-            }) %}
-        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
-            {% set config = config|merge({
-                warning: 'The `@web` alias is not recommended.'|t('app'),
             }) %}
         {% endif %}
     {% endif %}

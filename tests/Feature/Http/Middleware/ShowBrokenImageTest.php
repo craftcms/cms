@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use Illuminate\Http\Request;
@@ -16,8 +15,7 @@ beforeEach(function () {
     File::ensureDirectoryExists(dirname($this->imagePath));
     File::put($this->imagePath, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
-    Cms::config()->brokenImagePath = '@tests/broken-image-test.svg';
-    Aliases::set('@tests', dirname($this->imagePath));
+    Cms::config()->brokenImagePath = $this->imagePath;
 });
 
 afterEach(function () {
@@ -74,10 +72,19 @@ it('returns the configured broken image for image 404 requests', function () {
 });
 
 it('throws when the configured broken image path is invalid', function () {
-    Cms::config()->brokenImagePath = '@tests/does-not-exist.svg';
+    Cms::config()->brokenImagePath = storage_path('framework/testing/does-not-exist.svg');
 
     $request = Request::create('/missing');
     $request->headers->set('Accept', 'image/svg+xml');
 
     $this->middleware->handle($request, fn () => new Response('missing', 404));
-})->throws(RuntimeException::class, 'Invalid broken image path: @tests/does-not-exist.svg');
+})->throws(RuntimeException::class, 'Invalid broken image path:');
+
+it('rejects an alias as the configured broken image path', function () {
+    Cms::config()->brokenImagePath = '@storage/broken-image.svg';
+
+    $request = Request::create('/missing');
+    $request->headers->set('Accept', 'image/svg+xml');
+
+    $this->middleware->handle($request, fn () => new Response('missing', 404));
+})->throws(RuntimeException::class, 'Path aliases require craftcms/yii2-adapter.');

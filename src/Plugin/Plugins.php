@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -893,14 +893,6 @@ class Plugins
 
         $config = $this->composerPluginInfo[$handle];
 
-        if (isset($config['aliases'])) {
-            foreach ($config['aliases'] as $alias => $path) {
-                Aliases::set($alias, $path);
-            }
-
-            unset($config['aliases']);
-        }
-
         /** @var class-string<PluginInterface>|class-string<object> $class */
         $class = $config['class'];
 
@@ -1125,7 +1117,6 @@ class Plugins
         }
 
         if (($basePath = $this->composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
-            $basePath = Aliases::get($basePath);
             $basePaths[] = $basePath;
             $basePaths[] = dirname($basePath).'/resources';
         }
@@ -1136,7 +1127,7 @@ class Plugins
         );
 
         if ($iconPath === null) {
-            $iconPath = Aliases::get('@appicons/default-plugin.svg');
+            $iconPath = Icons::resolveIconPath('default-plugin');
         } else {
             $iconPath .= '/icon.svg';
         }

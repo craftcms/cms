@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database;
 
-use CraftCms\Aliases\Aliases;
 use Override;
 
 /**
@@ -25,7 +24,7 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
         $this->repository->track($track);
 
         if ($track === 'craft') {
-            $this->setPaths(['@migrations']);
+            $this->setPaths([__DIR__.'/Migrations']);
         }
 
         if (is_null($track)) {
@@ -54,8 +53,6 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
         if (empty($paths)) {
             $paths = $this->paths;
         }
-
-        $paths = array_map(Aliases::get(...), $paths);
 
         if (! $this->repository->repositoryExists()) {
             $this->repository->createRepository();
@@ -95,8 +92,6 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
         if (empty($paths)) {
             $paths = $this->paths;
         }
-
-        $paths = array_map(Aliases::get(...), $paths);
 
         $files = $this->getMigrationFiles($paths);
 

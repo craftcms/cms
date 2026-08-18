@@ -5,7 +5,7 @@ namespace craft\log;
 use craft\helpers\App;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Env;
+use CraftCms\Yii2Adapter\Support\Env;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;

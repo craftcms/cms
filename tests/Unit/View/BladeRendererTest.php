@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\File as Path;
 use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateEngine;
@@ -35,7 +34,7 @@ BLADE);
     File::ensureDirectoryExists($this->tempDir.'/nested');
     File::put($this->tempDir.'/nested/partial.blade.php', 'Nested {{ $name }}');
     File::put($this->tempDir.'/twig-partial.twig', 'Twig {{ name }}');
-    Aliases::set('@templates', $this->tempDir);
+    config(['view.paths' => [$this->tempDir]]);
     view()->addNamespace('blade-test', $this->tempDir);
     view()->addLocation($this->tempDir);
 

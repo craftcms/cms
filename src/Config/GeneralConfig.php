@@ -124,19 +124,6 @@ class GeneralConfig extends BaseConfig
     public bool $addTrailingSlashesToUrls = false;
 
     /**
-     * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
-     *
-     * ```php Static Config
-     * ->aliases([
-     *     '@webroot' => '/var/www/',
-     * ])
-     * ```
-     *
-     * @group Environment
-     */
-    public array $aliases = [];
-
-    /**
      * @var string|null The server path to the directory where Craft should store compiled Twig templates.
      *
      * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
@@ -3212,37 +3199,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
-     *
-     * ```php
-     * ->aliases([
-     *     '@webroot' => '/var/www/',
-     * ])
-     * ```
-     *
-     * @group Environment
-     *
-     * @param  array<string,string|null>  $value
-     *
-     * @see $aliases
-     */
-    public function aliases(array $value): self
-    {
-        $this->aliases = [];
-        foreach ($value as $name => $path) {
-            $this->addAlias($name, $path);
-        }
-
-        return $this;
-    }
-
-    /**
      * The server path to the directory where Craft should store compiled Twig templates.
      *
      * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
      *
      * ```php
-     * ->compiledTemplatesPath('@storage/runtime/templates')
+     * ->compiledTemplatesPath(storage_path('runtime/templates'))
      * ```
      *
      * @group Environment
@@ -3253,27 +3215,6 @@ class GeneralConfig extends BaseConfig
     public function compiledTemplatesPath(?string $value): self
     {
         $this->compiledTemplatesPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * Adds a custom Yii [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
-     *
-     * ```php
-     * ->addAlias('@webroot', '/var/www/')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $aliases
-     */
-    public function addAlias(string $name, ?string $path): self
-    {
-        if (! str_starts_with($name, '@')) {
-            $name = "@$name";
-        }
-        $this->aliases[$name] = $path;
 
         return $this;
     }

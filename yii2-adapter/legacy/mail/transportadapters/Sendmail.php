@@ -10,8 +10,8 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use function CraftCms\Cms\t;
 

@@ -18,8 +18,4 @@ return GeneralConfig::create()
     // Preload Single entries as Twig variables
     ->preloadSingles()
     // Prevent user enumeration attacks
-    ->preventUserEnumeration()
-    // Set the @webroot alias so the clear-caches command knows where to find CP resources
-    ->aliases([
-        '@webroot' => public_path(),
-    ]);
+    ->preventUserEnumeration();

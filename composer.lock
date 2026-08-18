@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a70fee4a1b126c8967a01d48132ddb4f",
+    "content-hash": "103e1d5b597b341a98610b51a8c90931",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -422,78 +422,6 @@
             "transport-options": {
                 "relative": true
             }
-        },
-        {
-            "name": "craftcms/laravel-aliases",
-            "version": "2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/craftcms/laravel-aliases.git",
-                "reference": "734ea28e7fc7acfc3988f64475b416ecbc46419e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-aliases/zipball/734ea28e7fc7acfc3988f64475b416ecbc46419e",
-                "reference": "734ea28e7fc7acfc3988f64475b416ecbc46419e",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/contracts": "^12.0||^13.0",
-                "php": "^8.2",
-                "yiisoft/aliases": "^3.0"
-            },
-            "require-dev": {
-                "larastan/larastan": "^2.9||^3.0",
-                "laravel/pint": "^1.14",
-                "nunomaduro/collision": "^8.1.1||^7.10.0",
-                "orchestra/testbench": "^10.0.0||^11.0",
-                "pestphp/pest": "^4.0",
-                "pestphp/pest-plugin-arch": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0",
-                "phpstan/extension-installer": "^1.3||^2.0",
-                "phpstan/phpstan-deprecation-rules": "^1.1||^2.0",
-                "phpstan/phpstan-phpunit": "^1.3||^2.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Aliases": "CraftCms\\Aliases\\Facades\\Aliases"
-                    },
-                    "providers": [
-                        "CraftCms\\Aliases\\AliasesServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "CraftCms\\Aliases\\": "src/",
-                    "CraftCms\\Aliases\\Database\\Factories\\": "database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Pixel & Tonic",
-                    "homepage": "https://pixelandtonic.com/"
-                }
-            ],
-            "description": "A Laravel wrapper around yiisoft/aliases",
-            "homepage": "https://github.com/craftcms/laravel-aliases",
-            "keywords": [
-                "craftcms",
-                "laravel",
-                "laravel-aliases",
-                "yii"
-            ],
-            "support": {
-                "issues": "https://github.com/craftcms/laravel-aliases/issues",
-                "source": "https://github.com/craftcms/laravel-aliases/tree/2.1.0"
-            },
-            "time": "2026-03-17T14:59:00+00:00"
         },
         {
             "name": "craftcms/laravel-dependency-aware-cache",
@@ -9218,83 +9146,6 @@
                 }
             ],
             "time": "2026-06-17T06:05:59+00:00"
-        },
-        {
-            "name": "yiisoft/aliases",
-            "version": "3.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/yiisoft/aliases.git",
-                "reference": "6f876dbf899f604fd3aefa3b3fd37e2ff2549ead"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/aliases/zipball/6f876dbf899f604fd3aefa3b3fd37e2ff2549ead",
-                "reference": "6f876dbf899f604fd3aefa3b3fd37e2ff2549ead",
-                "shasum": ""
-            },
-            "require": {
-                "php": "8.1 - 8.5"
-            },
-            "require-dev": {
-                "bamarni/composer-bin-plugin": "^1.8.3",
-                "maglnet/composer-require-checker": "^4.7.1",
-                "phpunit/phpunit": "^10.5.48",
-                "psr/container": "^2.0.2",
-                "rector/rector": "^2.1.2",
-                "spatie/phpunit-watcher": "^1.24.0",
-                "yiisoft/definitions": "^3.4",
-                "yiisoft/di": "^1.4",
-                "yiisoft/test-support": "^3.0.2"
-            },
-            "type": "library",
-            "extra": {
-                "bamarni-bin": {
-                    "bin-links": true,
-                    "forward-command": true,
-                    "target-directory": "tools"
-                },
-                "config-plugin": {
-                    "di": "di.php",
-                    "params": "params.php"
-                },
-                "config-plugin-options": {
-                    "source-directory": "config"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Yiisoft\\Aliases\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Named paths and URLs storage",
-            "homepage": "https://www.yiiframework.com/",
-            "keywords": [
-                "alias"
-            ],
-            "support": {
-                "chat": "https://t.me/yii3en",
-                "forum": "https://www.yiiframework.com/forum/",
-                "irc": "ircs://irc.libera.chat:6697/yii",
-                "issues": "https://github.com/yiisoft/aliases/issues?state=open",
-                "source": "https://github.com/yiisoft/aliases",
-                "wiki": "https://www.yiiframework.com/wiki/"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/yiisoft",
-                    "type": "github"
-                },
-                {
-                    "url": "https://opencollective.com/yiisoft",
-                    "type": "opencollective"
-                }
-            ],
-            "time": "2025-12-04T12:53:43+00:00"
         },
         {
             "name": "yiisoft/arrays",

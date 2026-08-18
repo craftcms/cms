@@ -173,8 +173,6 @@ class Cp extends Component
      * Returns the available environment variable and alias suggestions for
      * inputs that support them.
      *
-     * @param  bool  $includeAliases  Whether aliases should be included in the list
-     *                                (only enable this if the setting defines a URL or file path)
      * @param  callable|null  $filter  A function that returns whether a given value should be included
      *
      * @phpstan-param callable(scalar):bool|null $filter
@@ -182,9 +180,9 @@ class Cp extends Component
      * @return list<array<string, mixed>>
      */
     #[Deprecated(message: 'in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.')]
-    public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    public function getEnvSuggestions(?callable $filter = null): array
     {
-        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($includeAliases, $filter));
+        return $this->formatLegacySuggestions(SelectOptions::getEnvSuggestions($filter));
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -41,6 +40,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -852,7 +852,7 @@ class Fields
         $migrationPath = database_path("migrations/{$migrationName}.php");
 
         ob_start();
-        File::getRequire(Aliases::get('@craftcms/stubs/field-merge.php.stub'), [
+        File::getRequire(Path::package('stubs/field-merge.php.stub'), [
             'persistingFieldUid' => $persistingField->uid,
             'outgoingFieldUid' => $outgoingField->uid,
         ]);

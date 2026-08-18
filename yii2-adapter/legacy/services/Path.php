@@ -7,9 +7,9 @@
 
 namespace craft\services;
 
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Path as LaravelPath;
+use CraftCms\Yii2Adapter\Support\Env;
 use yii\base\Component;
 
 /**

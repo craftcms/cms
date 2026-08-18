@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use InvalidArgumentException;
 use Throwable;
 
@@ -84,8 +83,6 @@ class Json
      */
     public static function decodeFromFile(string $file, bool $asArray = true): mixed
     {
-        $file = Aliases::get($file);
-
         if (! File::exists($file)) {
             throw new InvalidArgumentException("`$file` doesn’t exist.");
         }

@@ -353,6 +353,7 @@ class Plugin extends Module implements PluginInterface
     {
         // Merge in the plugin’s dynamic config
         $config = Arr::merge($config, static::config());
+        unset($config['aliases']);
 
         $config['class'] = static::class;
 
