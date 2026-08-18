@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -82,38 +81,7 @@ class NestedElementsController extends Controller
         $ids = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
         $offset = $this->request->getRequiredBodyParam('offset');
 
-        if ($this->nestedElements instanceof ElementQueryInterface) {
-            $oldSortOrders = (clone $this->nestedElements)
-                ->status(null)
-                ->asArray()
-                ->select(['id', 'sortOrder'])
-                ->pairs();
-        } else {
-            $oldSortOrders = $this->nestedElements
-                ->keyBy(fn(ElementInterface $element) => $element->id)
-                /** @phpstan-ignore-next-line */
-                ->map(fn(NestedElementInterface $element) => $element->getSortOrder())
-                ->all();
-        }
-
-        // Build the full list of IDs in the new sort order
-        $allIds = array_diff(array_keys($oldSortOrders), $ids);
-        array_splice($allIds, $offset, 0, $ids);
-
-        // Update all the incorrect sort orders
-        foreach ($allIds as $i => $id) {
-            $sortOrder = $i + 1;
-            if (!isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
-                Db::update(Table::ELEMENTS_OWNERS, [
-                    'sortOrder' => $sortOrder,
-                ], [
-                    'ownerId' => $this->owner->id,
-                    'elementId' => $id,
-                ]);
-            }
-        }
-
-        Craft::$app->getElements()->invalidateCachesForElement($this->owner);
+        Craft::$app->getElements()->reorderNestedElements($this->owner, $this->nestedElements, $ids, $offset);
 
         return $this->asSuccess(Craft::t('app', 'New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($ids),
