@@ -42,6 +42,7 @@ const {
   closeSlideout,
   notifySlideoutSaved,
   openSlideout,
+  openSlideoutWith,
   setSlideoutDirtyCheck,
   slideoutPanels,
 } = await import('./store');
@@ -197,6 +198,74 @@ describe('slideout store', () => {
 
     expect(panel.loading).toBe(false);
     expect(panel.error).toBe('boom');
+  });
+});
+
+describe('locally-built panels', () => {
+  const Local = defineComponent({render: () => h('div', 'local')});
+
+  it('opens without fetching a screen', () => {
+    const panel = openSlideoutWith(Local as any, {foo: 'bar'});
+
+    expect(fetchSlideoutPage).not.toHaveBeenCalled();
+    expect(panel).not.toBeNull();
+    expect(panel!.component).toStrictEqual(Local);
+    expect(panel!.props).toEqual({foo: 'bar'});
+    expect(panel!.loading).toBe(false);
+    expect(panel!.href).toBe('');
+  });
+
+  it('stacks against fetched panels like any other', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: {render: () => null},
+      props: {},
+      url: '/one',
+    });
+    const first = await openSlideout('/one');
+    openSlideoutWith(
+      Local as any,
+      {},
+      {
+        opener: openerInPanel(first!.id),
+      }
+    );
+
+    expect(slideoutPanels()).toHaveLength(2);
+  });
+
+  it('replaces an existing panel when opened from the base page', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: {render: () => null},
+      props: {},
+      url: '/one',
+    });
+    await openSlideout('/one');
+    openSlideoutWith(Local as any);
+
+    expect(slideoutPanels()).toHaveLength(1);
+  });
+
+  it('honours the unsaved-changes prompt of the panel it replaces', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: {render: () => null},
+      props: {},
+      url: '/one',
+    });
+    const first = await openSlideout('/one');
+    setSlideoutDirtyCheck(first!.id, () => true);
+    // happy-dom doesn't implement confirm(), so install one to spy on.
+    const confirmSpy = vi.fn(() => false);
+    Object.defineProperty(window, 'confirm', {
+      configurable: true,
+      writable: true,
+      value: confirmSpy,
+    });
+
+    const panel = openSlideoutWith(Local as any);
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(panel).toBeNull();
+    expect(slideoutPanels()).toHaveLength(1);
   });
 });
 

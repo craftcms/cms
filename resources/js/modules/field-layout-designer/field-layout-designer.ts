@@ -298,7 +298,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     if (skipLinkAnchor) {
       const $skipLink = document.createElement('a');
-      $skipLink.className = 'skip-link btn';
+      $skipLink.className = 'skip-link';
       $skipLink.textContent = Craft.t('app', 'Skip to card view designer');
       $skipLink.href = `#${skipLinkAnchor}`;
 
@@ -554,7 +554,17 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
     $fields.className = 'fields';
-    $fields.innerHTML = data.settingsHtml;
+    const $form = document.createElement(
+      'craft-layout-component-settings-form'
+    ) as HTMLElement & {
+      payload: unknown;
+      requestData: () => unknown;
+    };
+    $form.payload = data.form;
+    if (settings.requestData) {
+      $form.requestData = settings.requestData;
+    }
+    $fields.appendChild($form);
     $body.appendChild($fields);
 
     const $footer = document.createElement('div');
@@ -593,11 +603,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     );
 
     slideout.on('open', () => {
-      // Hold off a sec until it's positioned...
+      // Hold off until it's positioned and the form has mounted...
       requestAnimationFrame(() => {
-        // Focus on the first text input
+        // Focus on the first editable control
         (
-          slideout.$container[0].querySelector('.text') as HTMLElement | null
+          slideout.$container[0].querySelector(
+            'input:not([type=hidden]):not([disabled]), textarea:not([disabled]), craft-input, craft-combobox, .text'
+          ) as HTMLElement | null
         )?.focus();
       });
     });
@@ -614,6 +626,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     }
 
     Craft.initUiElements(slideout.$container);
+
+    (slideout as any).settingsForm = $form;
 
     return slideout;
   }

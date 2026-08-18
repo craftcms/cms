@@ -1,4 +1,6 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
+import ActionNode from './ActionNode.vue';
+import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
 import ConditionBuilderControl from './ConditionBuilderControl.vue';
@@ -18,6 +20,7 @@ import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
+import FieldSelectControl from './FieldSelectControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
@@ -39,6 +42,7 @@ export function registerFormComponents(
 ): void {
   components.register('craft:form', FormRenderer);
   components.register('craft:field', FieldNode);
+  components.register('craft:action', ActionNode);
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:template-content', TemplateContentNode);
@@ -55,6 +59,7 @@ export function registerFormComponents(
   components.register('craft:combobox', ComboboxControl);
   components.register('craft:textarea', TextareaControl);
   components.register('craft:lightswitch', LightswitchControl);
+  components.register('craft:checkbox', CheckboxControl);
   components.register('craft:choice', ChoiceControl);
   components.register('craft:condition-builder', ConditionBuilderControl);
   components.register('craft:number', TextControl);
@@ -71,6 +76,7 @@ export function registerFormComponents(
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
+  components.register('craft:field-select', FieldSelectControl);
   components.register(
     'craft:grouped-entry-type-manager',
     GroupedEntryTypeManagerControl

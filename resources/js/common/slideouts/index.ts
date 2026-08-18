@@ -2,7 +2,12 @@ import {closeAllSlideouts, closeSlideout, openSlideout} from './store';
 
 export {default as SlideoutHost} from './SlideoutHost.vue';
 export {useSlideout, useSlideoutOpener} from './useSlideout';
-export {closeAllSlideouts, closeSlideout, openSlideout} from './store';
+export {
+  closeAllSlideouts,
+  closeSlideout,
+  openSlideout,
+  openSlideoutWith,
+} from './store';
 export type {
   OpenSlideoutOptions,
   SlideoutController,
