@@ -286,30 +286,19 @@ class ProjectConfig
     private ?ProjectConfigData $_currentWorkingConfig = null;
 
     /**
-     * @var array<class-string<ConfigEvent>, array<array{string, callable(ConfigEvent): void, array<string, mixed>|null}>> Config change handlers
+     * @var array<class-string<ConfigEvent>, list<array{
+     *     pattern: string,
+     *     handler: callable(ConfigEvent): void,
+     *     data: mixed,
+     *     specificity: int,
+     *     registrationOrder: int,
+     * }>> Config change handlers
      *
      * @see registerChangeEventHandler()
      * @see handleChangeEvent()
+     * @see _sortChangeEventHandlers()
      */
     private array $_changeEventHandlers = [];
-
-    /**
-     * @var array<class-string<ConfigEvent>, int[]> The specificity of change event handlers.
-     *
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     */
-    private array $_changeEventHandlerSpecificity = [];
-
-    /**
-     * @var array<class-string<ConfigEvent>, int[]> The registration order of change event handlers.
-     *
-     * @see registerChangeEventHandler()
-     * @see handleChangeEvent()
-     * @see _sortChangeEventHandlers()
-     */
-    private array $_changeEventHandlerRegistrationOrder = [];
 
     /**
      * @var bool[] Whether the change event handlers have been sorted.
@@ -1009,13 +998,17 @@ class ProjectConfig
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>'.preg_quote($path, '/').')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '('.self::UID_PATTERN.')', $pattern);
 
-        $this->_changeEventHandlers[$event][] = [$pattern, $handler, $data];
-        $this->_changeEventHandlerSpecificity[$event][] = $specificity;
-        $this->_changeEventHandlerRegistrationOrder[$event][] = count($this->_changeEventHandlers[$event]);
+        $this->_changeEventHandlers[$event] ??= [];
+        $this->_changeEventHandlers[$event][] = [
+            'pattern' => $pattern,
+            'handler' => $handler,
+            'data' => $data,
+            'specificity' => ProjectConfigHelper::pathDepth($path),
+            'registrationOrder' => count($this->_changeEventHandlers[$event]),
+        ];
         unset($this->_sortedChangeEventHandlers[$event]);
     }
 
@@ -1031,7 +1024,11 @@ class ProjectConfig
         // Make sure the event handlers are sorted from least-to-most specific
         $this->_sortChangeEventHandlers($event::class);
 
-        foreach ($this->_changeEventHandlers[$event::class] as [$pattern, $handler, $data]) {
+        foreach ($this->_changeEventHandlers[$event::class] as [
+            'pattern' => $pattern,
+            'handler' => $handler,
+            'data' => $data,
+        ]) {
             if (! preg_match($pattern, $event->path, $matches)) {
                 continue;
             }
@@ -1081,10 +1078,9 @@ class ProjectConfig
             return;
         }
 
-        array_multisort(
-            $this->_changeEventHandlerSpecificity[$event], SORT_ASC, SORT_NUMERIC,
-            $this->_changeEventHandlerRegistrationOrder[$event], SORT_ASC, SORT_NUMERIC,
+        usort(
             $this->_changeEventHandlers[$event],
+            fn (array $a, array $b): int => [$a['specificity'], $a['registrationOrder']] <=> [$b['specificity'], $b['registrationOrder']],
         );
 
         $this->_sortedChangeEventHandlers[$event] = true;
