@@ -417,7 +417,8 @@ export default class CraftTextExpander extends LitElement {
       return;
     }
 
-    const label = this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
+    const label =
+      this.#listbox.getAttribute('aria-label') ?? defaultListboxLabel;
 
     this.#cancelPending();
     this.#match = null;
