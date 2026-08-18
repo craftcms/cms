@@ -265,21 +265,23 @@ export function useElementEditPage({saveData}: Options = {}) {
   );
 
   // The renderers' change callbacks are the authoritative "content changed"
-  // signal, so autosave hangs off them rather than watching the form.
+  // signal, so autosave hangs off them rather than watching the form — and off
+  // whether the values actually differ from the server's, not off having been
+  // told a control changed.
   function onMutation(mutation: FormPayload['values']): void {
-    onLayoutMutation(mutation);
+    const changed = onLayoutMutation(mutation);
 
-    if (!applyingSavedPayload && !reverting) {
+    if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule();
     }
   }
 
   function onSidebarMutation(mutation: FormPayload['values']): void {
-    onSidebarFormMutation(mutation);
+    const changed = onSidebarFormMutation(mutation);
 
     // The screen payload carries the sidebar form too, so reconciling it emits
     // mutations here for the same reason the field layout does.
-    if (!applyingSavedPayload && !reverting) {
+    if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule();
     }
   }

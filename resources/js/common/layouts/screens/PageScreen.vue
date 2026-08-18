@@ -216,6 +216,9 @@ useActionRedirect();
     <div class="cp__main">
       <div class="cp__header">
         <header>
+          <!-- Focus lands here on Inertia navigation; see
+            `handleAccessibleRouting` in bootstrap/cp.ts. -->
+          <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
           <a
             v-for="link in skipLinks"
             :key="link.url"

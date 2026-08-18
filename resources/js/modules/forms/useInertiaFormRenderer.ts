@@ -61,9 +61,21 @@ export function useInertiaFormRenderer<
     })
   );
 
-  function onMutation(mutation: FormPayload['values']): void {
+  /**
+   * Applies the renderer's mutation to the Inertia form, and reports whether it
+   * carried anything.
+   *
+   * The mutation *is* the difference against the values the server sent, so an
+   * empty one means the screen matches the server — a control announcing itself
+   * as it's populated, say, rather than an edit. Callers that act on changes
+   * (autosave) read that from here rather than deciding for themselves, and
+   * `form.isDirty` says the same thing a tick later for callers that can wait.
+   */
+  function onMutation(mutation: FormPayload['values']): boolean {
     replaceMutation(mutation);
     values.value = renderer.value?.currentValues() ?? values.value;
+
+    return Object.keys(mutation).length > 0;
   }
 
   function replaceMutation(mutation: FormPayload['values']): void {

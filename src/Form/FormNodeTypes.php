@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Form;
 
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
@@ -30,6 +31,7 @@ class FormNodeTypes extends TypeRegistry
     protected const string CONTRACT = Node::class;
 
     protected const array DEFAULT_TYPES = [
+        Action::class,
         Callout::class,
         Field::class,
         Group::class,

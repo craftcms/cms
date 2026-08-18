@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
+  import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
+  import '@craftcms/ui/components/text-expander/text-expander';
+  import {useId} from 'vue';
   import type {FormChangeKind, FormControlPayload} from './types';
   import {
     ignoreModelValueInitialization,
@@ -22,6 +25,7 @@
     size?: number;
     dir?: string;
     monospace?: boolean;
+    textExpanderTriggers?: TextExpanderTriggers;
   };
 
   defineProps<{
@@ -32,6 +36,7 @@
     invalid: boolean;
     required: boolean;
   }>();
+  const inputId = useId();
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind?: FormChangeKind): void;
   }>();
@@ -59,6 +64,7 @@
 
 <template>
   <craft-input
+    v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
     .modelValue="String(value ?? '')"
@@ -83,5 +89,13 @@
     "
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
-  ></craft-input>
+  >
+    <input :id="inputId" slot="input" />
+  </craft-input>
+  <craft-text-expander
+    v-if="editable && control.props.textExpanderTriggers"
+    slot="input"
+    :for="inputId"
+    .triggers="control.props.textExpanderTriggers"
+  />
 </template>

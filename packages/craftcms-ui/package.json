@@ -123,10 +123,13 @@
   "dependencies": {
     "@chromatic-com/storybook": "^5.1.2",
     "@formatjs/intl-durationformat": "^0.10.8",
+    "@github/combobox-nav": "^3.0.2",
     "@github/relative-time-element": "^5.0.0",
+    "@popperjs/core": "^2.11.8",
     "@simplewebauthn/browser": "^13.3.0",
     "@vitest/browser-playwright": "4.1.10",
     "axios": "^1.17.0",
+    "dom-input-range": "^2.0.1",
     "inputmask": "^5.0.10"
   },
   "customElements": "dist/custom-elements.json"

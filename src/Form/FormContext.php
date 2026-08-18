@@ -8,7 +8,7 @@ use CraftCms\Cms\Form\Enums\ControlMode;
 
 readonly class FormContext
 {
-    public readonly ControlMode $mode;
+    public ControlMode $mode;
 
     /**
      * @param  string|list<string>  $namespace
@@ -17,12 +17,12 @@ readonly class FormContext
      * @param  list<string>  $globalErrors
      */
     public function __construct(
-        public readonly string|array $namespace = [],
-        public readonly array $values = [],
-        public readonly array $errors = [],
-        public readonly array $globalErrors = [],
+        public string|array $namespace = [],
+        public array $values = [],
+        public array $errors = [],
+        public array $globalErrors = [],
         ControlMode|string $mode = ControlMode::Editable,
-        public readonly bool $refreshable = false,
+        public bool $refreshable = false,
     ) {
         $this->mode = is_string($mode) ? ControlMode::from($mode) : $mode;
     }

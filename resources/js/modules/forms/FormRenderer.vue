@@ -428,6 +428,14 @@
   }
 
   function canonicalValue(value: unknown): unknown {
+    // Nothing and empty mean the same thing to a form, so a control reporting
+    // one where the server sent the other has not edited anything. Without
+    // this, populating a field on load can read as a change purely because the
+    // control's idea of empty differs from the server's.
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
     if (Array.isArray(value)) {
       return value.map(canonicalValue);
     }

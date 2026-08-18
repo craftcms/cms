@@ -434,6 +434,70 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders table cell errors beside scalar values', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: {
+                handle: {type: 'singleline'},
+              },
+              keyed: true,
+              errors: {
+                first: {handle: true},
+                third: {handle: true},
+              },
+            },
+            path: ['columns'],
+            mode: 'editable',
+            deltaGroup: ['columns'],
+          },
+        },
+      ],
+      values: {
+        columns: {
+          first: {handle: 'invalid-handle'},
+          second: {handle: 'validHandle'},
+          third: {handle: 'col3'},
+        },
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    const inputs = [
+      ...container.querySelectorAll<HTMLTextAreaElement>('tbody textarea'),
+    ];
+
+    expect(inputs.map((input) => input.value)).toEqual([
+      'invalid-handle',
+      'validHandle',
+      'col3',
+    ]);
+    expect(
+      inputs.map((input) => input.closest('td')?.classList.contains('error'))
+    ).toEqual([true, false, true]);
+    expect(renderer.currentValues()).toEqual(table.values);
+
+    const successful = structuredClone(table);
+    successful.nodes[0]!.control!.props.errors = {};
+    currentPayload.value = successful;
+    await nextTick();
+
+    expect(container.querySelector('td.error')).toBeNull();
+    expect(renderer.currentValues()).toEqual(table.values);
+  });
+
   it('reports control changes and applies external value updates', async () => {
     const derived: FormPayload = {
       scope: [],
@@ -2600,6 +2664,103 @@ describe('FormRenderer', () => {
         `input[name="settings[matrix][entries][${uid}][heading]"]`
       )
     ).not.toBeNull();
+  });
+
+  it('reports no change when a Money field is populated with the server’s empty value', async () => {
+    let mutation: FormPayload['values'] | undefined;
+    const emptyMoney = structuredClone(payload) as Mutable<FormPayload>;
+    emptyMoney.values = {settings: {price: {value: null, locale: 'en-US'}}};
+    emptyMoney.errors = [];
+    emptyMoney.globalErrors = [];
+    emptyMoney.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Price', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Money',
+          component: 'craft:money',
+          props: {currency: 'USD', locale: 'en-US', showCurrency: true},
+          path: ['settings', 'price'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'price'],
+        },
+      },
+    ] as Mutable<FormPayload>['nodes'];
+    app.unmount();
+    await mount(emptyMoney, {onMutation: (value) => (mutation = value)});
+    await nextTick();
+
+    // The control announces itself once as it's populated. happy-dom won't
+    // bootstrap the underlying form control far enough to fire that on its own,
+    // so raise it exactly as the browser does — the field is still empty, and
+    // the announcement is not marked as coming from a person.
+    const control = container.querySelector('craft-input-money')!;
+    control.dispatchEvent(
+      new CustomEvent('model-value-changed', {
+        bubbles: true,
+        detail: {isTriggeredByUser: false},
+      })
+    );
+    await nextTick();
+
+    // Binding the server's own value back onto the control is not an edit. If
+    // the control reshapes empty into `''`, this is `{settings: {price: …}}` —
+    // a difference the editor would autosave before anyone touched the page.
+    expect(mutation ?? {}).toEqual({});
+
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="settings[price][value]"]'
+    )!;
+    input.value = '12.50';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    // A real edit still comes through.
+    expect(mutation).toEqual({
+      settings: {price: {value: '12.50', locale: 'en-US'}},
+    });
+  });
+
+  it('treats an absent value and an empty one as the same, for any control', async () => {
+    let mutation: FormPayload['values'] | undefined;
+    const emptyText = structuredClone(payload) as Mutable<FormPayload>;
+    emptyText.values = {settings: {summary: null}};
+    emptyText.errors = [];
+    emptyText.globalErrors = [];
+    emptyText.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Summary', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Form\\Controls\\Text',
+          component: 'craft:text',
+          props: {inputType: 'text'},
+          path: ['settings', 'summary'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'summary'],
+        },
+      },
+    ] as Mutable<FormPayload>['nodes'];
+    app.unmount();
+    await mount(emptyText, {onMutation: (value) => (mutation = value)});
+
+    // Report an empty string where the server sent nothing. Driving the value
+    // directly rather than through the DOM is deliberate: a text input already
+    // showing "" won't re-announce itself, but controls layered on a form
+    // library do exactly this as they're populated on load.
+    renderer.setValue(['settings', 'summary'], '');
+    await nextTick();
+
+    // The same value said two ways, not an edit — so no control has to know how
+    // the server happens to spell "empty".
+    expect(mutation ?? {}).toEqual({});
+
+    renderer.setValue(['settings', 'summary'], 'real');
+    await nextTick();
+
+    expect(mutation).toEqual({settings: {summary: 'real'}});
   });
 
   it('renders and updates permission trees', async () => {

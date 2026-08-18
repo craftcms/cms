@@ -77,6 +77,7 @@
   },
   "require-dev": {
     "barryvdh/laravel-debugbar": "^4.2",
+    "craftcms/test-plugin": "1.0.1",
     "dg/bypass-finals": "^1.9",
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
@@ -101,6 +102,10 @@
     {
       "type": "path",
       "url": "./cms-assets"
+    },
+    {
+      "type": "path",
+      "url": "./tests/TestClasses/TestPlugin"
     }
   ],
   "suggest": {
@@ -212,6 +217,7 @@
         "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
         "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
         "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
+        "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
         "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
         "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",

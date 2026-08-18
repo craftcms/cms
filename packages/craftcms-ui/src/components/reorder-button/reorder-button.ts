@@ -50,7 +50,7 @@ export default class CraftReorderButton extends LitElement {
   @property({reflect: true}) orientation: ReorderOrientation = 'vertical';
 
   /** Theme variant forwarded to the underlying invoker button. */
-  @property({reflect: true}) variant: string = 'neutral';
+  @property({reflect: true}) variant: string = 'plain';
 
   /**
    * Disables the button: blocks pointer interaction (so it can't open the menu or
@@ -125,7 +125,7 @@ export default class CraftReorderButton extends LitElement {
           type="button"
           icon
           size="small"
-          variant="plain"
+          variant="${this.variant}"
           ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">

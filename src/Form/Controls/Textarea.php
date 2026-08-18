@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Textarea as TextareaComponent;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
 class Textarea extends Control
 {
+    use HasTextExpander;
+
     private int $rows = 2;
 
     private ?int $maxLength = null;
@@ -21,7 +24,7 @@ class Textarea extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        return TextareaComponent::make()
+        $textarea = TextareaComponent::make()
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
@@ -37,6 +40,8 @@ class Textarea extends Control
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
             ])
             ->toHtml();
+
+        return $textarea.self::textExpanderHtml($control, $attributes);
     }
 
     public function component(): string
@@ -80,6 +85,7 @@ class Textarea extends Control
             'maxLength' => $this->maxLength,
             'placeholder' => $this->placeholder,
             'monospace' => $this->monospace ?: null,
+            ...$this->textExpanderProps(),
         ]);
     }
 }

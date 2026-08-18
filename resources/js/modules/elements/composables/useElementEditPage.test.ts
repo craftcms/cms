@@ -764,4 +764,25 @@ describe('useElementEditPage', () => {
 
     on.mockRestore();
   });
+
+  it('autosaves on a difference from the server, not on being told of a change', () => {
+    const {editor} = mount(payload({canAutosave: true}));
+    const schedule = vi.spyOn(editor.autosave, 'schedule');
+
+    // The renderers hand over the difference against the server's values, so an
+    // empty one means a control announced itself without changing anything —
+    // populating a field on load, say. That must not create a draft.
+    editor.onMutation({});
+    editor.onSidebarMutation({});
+
+    expect(schedule).not.toHaveBeenCalled();
+
+    editor.onMutation({fields: {money: {value: '12', locale: 'en-US'}}});
+
+    expect(schedule).toHaveBeenCalledTimes(1);
+
+    editor.onSidebarMutation({slug: 'changed'});
+
+    expect(schedule).toHaveBeenCalledTimes(2);
+  });
 });

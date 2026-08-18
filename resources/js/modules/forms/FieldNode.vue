@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
+  import FormNodeList from './FormNodeList.vue';
   import {
     FormControlOverrides,
     FormFailure,
@@ -29,6 +30,7 @@
     width?: number;
     status?: string;
     statusLabel?: string;
+    hasActions?: boolean;
   };
 
   const props = defineProps<{
@@ -58,6 +60,7 @@
     return component;
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
+  const actions = computed(() => props.node.children ?? []);
 
   onErrorCaptured((error) => {
     invalidate(
@@ -125,6 +128,17 @@
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >
+    <div v-if="actions.length" slot="actions">
+      <FormNodeList
+        :nodes="actions"
+        :values="values"
+        :errors="errors"
+        :touched-paths="touchedPaths"
+        :scope="scope"
+        :refreshable="refreshable"
+        @change="onChange"
+      />
+    </div>
     <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
     <span
       v-if="node.props.warningHtml"

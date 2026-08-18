@@ -93,9 +93,10 @@ trait Validates
 
         if ($throw) {
             $ruleset->validate();
+            $result = true;
+        } else {
+            $result = $ruleset->passes();
         }
-
-        $result = $ruleset->passes();
 
         $this->errors()->merge($ruleset->getValidator()->errors());
 

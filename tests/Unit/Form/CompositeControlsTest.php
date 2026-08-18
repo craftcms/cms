@@ -7,6 +7,8 @@ use CraftCms\Cms\Form\Controls\IconPicker;
 use CraftCms\Cms\Form\Controls\Link;
 use CraftCms\Cms\Form\Controls\Markdown;
 use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -22,7 +24,12 @@ function compositeControlsForm(): Form
             Markdown::make('body')
                 ->rows(6)
                 ->placeholder('Write <Markdown>')
-                ->toolbarButtons(['bold', 'link']),
+                ->toolbarButtons(['bold', 'link'])
+                ->textExpanderTriggers([
+                    '@' => ['label' => 'People', 'options' => [
+                        ['label' => 'Ada Lovelace', 'value' => '@ada'],
+                    ]],
+                ]),
         ),
         Field::make('Rows',
             Table::make('rows')
@@ -92,6 +99,11 @@ it('resolves documented composite Control shapes and properties', function () {
         'rows' => 6,
         'placeholder' => 'Write <Markdown>',
         'toolbarButtons' => ['bold', 'link'],
+        'textExpanderTriggers' => [
+            '@' => ['label' => 'People', 'options' => [
+                ['label' => 'Ada Lovelace', 'value' => '@ada'],
+            ]],
+        ],
     ])->and($controls['craft:table']->props['columns']['name'])->toBe([
         'heading' => 'Name',
         'type' => 'singleline',
@@ -108,8 +120,13 @@ it('resolves documented composite Control shapes and properties', function () {
 
 it('renders composite Controls with nested submission names and escaped values', function () {
     $crawler = compositeControlsCrawler();
+    $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html]');
+    $textExpander = $crawler->filter('craft-text-expander');
 
-    expect($crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html]'))->toHaveCount(1)
+    expect($markdown)->toHaveCount(1)
+        ->and($textExpander)->toHaveCount(1)
+        ->and($textExpander->attr('for'))->toBe($markdown->attr('id'))
+        ->and($textExpander->attr('slot'))->toBe('input')
         ->and($crawler->filter('textarea[name="settings[rows][0][name]"]')->text())->toBe('<Row>')
         ->and($crawler->filter('input[type="checkbox"][name="settings[rows][0][enabled]"][checked]'))->toHaveCount(1)
         ->and($crawler->filter('craft-link-field[name="settings[link]"][model-value]'))->toHaveCount(1)
@@ -146,4 +163,28 @@ it('preserves keyed Table rows in payloads and PHP submission names', function (
 
     expect($payload->values['settings']['rows'])->toBe(['site-one' => ['name' => 'Primary']])
         ->and($crawler->filter('textarea[name="settings[rows][site-one][name]"]')->text())->toBe('Primary');
+});
+
+it('renders text expanders for text and textarea Controls', function () {
+    $triggers = [
+        '@' => ['label' => 'People', 'source' => 'users/text-expander-options'],
+    ];
+    $form = Form::make([
+        Field::make('Name', Text::make('name')->textExpanderTriggers($triggers)),
+        Field::make('Notes', Textarea::make('notes')->textExpanderTriggers($triggers)),
+    ]);
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $input = $crawler->filter('input[name="settings[name]"]');
+    $textarea = $crawler->filter('textarea[name="settings[notes]"]');
+    $expanders = $crawler->filter('craft-text-expander');
+
+    expect($payload->nodes[0]->control->props['textExpanderTriggers'])->toBe($triggers)
+        ->and($payload->nodes[1]->control->props['textExpanderTriggers'])->toBe($triggers)
+        ->and($expanders)->toHaveCount(2)
+        ->and($expanders->each(fn (Crawler $node) => $node->attr('for')))->toBe([
+            $input->attr('id'),
+            $textarea->attr('id'),
+        ])
+        ->and($expanders->each(fn (Crawler $node) => $node->attr('slot')))->toBe(['input', 'input']);
 });

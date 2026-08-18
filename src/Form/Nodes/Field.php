@@ -15,6 +15,7 @@ use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Arr;
+use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 
 class Field implements Node
@@ -41,6 +42,9 @@ class Field implements Node
 
     private ?Control $control = null;
 
+    /** @var list<Node> */
+    private array $actions = [];
+
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
         $control = $node->control;
@@ -61,7 +65,10 @@ class Field implements Node
             (bool) ($node->props['required'] ?? false),
         );
 
+        $actions = $node->children ?? [];
+
         return FieldComponent::make()
+            ->actions($actions === [] ? null : new HtmlString($renderer->renderNodes($actions, $payload)))
             ->label($label)
             ->instructions($instructions)
             ->instructionsPosition((string) ($node->props['instructionsPosition'] ?? 'before'))
@@ -170,6 +177,17 @@ class Field implements Node
         return $this;
     }
 
+    /**
+     * Nodes rendered into the field heading's `actions` slot — hide-label
+     * toggles, copy-value buttons, field settings menus.
+     */
+    public function actions(Node ...$actions): static
+    {
+        $this->actions = array_values($actions);
+
+        return $this;
+    }
+
     public function getControl(): ?Control
     {
         return $this->control;
@@ -201,13 +219,14 @@ class Field implements Node
                 'width' => $this->width,
                 'status' => $this->status,
                 'statusLabel' => $this->status !== null ? $this->statusLabel : null,
+                'hasActions' => $this->actions === [] ? null : true,
             ]),
         ];
     }
 
     public function children(): array
     {
-        return [];
+        return $this->actions;
     }
 
     private function noticeHtml(?string $notice): ?string

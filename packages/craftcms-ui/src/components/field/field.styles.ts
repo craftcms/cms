@@ -66,6 +66,13 @@ export default css`
     flex: 1 0 0;
   }
 
+  .field-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--c-spacing-2xs, 0.125rem);
+    align-items: center;
+  }
+
   ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;

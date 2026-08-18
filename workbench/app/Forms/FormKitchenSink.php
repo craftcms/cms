@@ -55,6 +55,17 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 
 class FormKitchenSink
 {
+    private const array TextExpanderTriggers = [
+        ':' => ['label' => 'Emoji', 'options' => [
+            ['label' => '😀', 'value' => '😀', 'keywords' => ['grinning', 'face', 'smile', 'happy']],
+            ['label' => '🎉', 'value' => '🎉', 'keywords' => ['party', 'popper', 'celebration', 'confetti']],
+            ['label' => '👍', 'value' => '👍', 'keywords' => ['thumbs', 'up', 'approve', 'yes']],
+            ['label' => '❤️', 'value' => '❤️', 'keywords' => ['red', 'heart', 'love']],
+            ['label' => '🚀', 'value' => '🚀', 'keywords' => ['rocket', 'launch', 'ship']],
+        ]],
+        '@' => ['label' => 'Users', 'source' => 'workbench/text-expander-options'],
+    ];
+
     /** @var array<string, array<string, class-string>> */
     public const array COMPONENTS = [
         'controls' => [
@@ -381,6 +392,9 @@ class FormKitchenSink
                 'No toolbar' => $this->control('Markdown', Markdown::make('markdown')
                     ->showToolbar(false)
                     ->value('**Markdown** value')),
+                'Emoji and user mentions' => $this->control('Markdown', Markdown::make('markdown')
+                    ->placeholder('Type : for emoji or @ to mention a user')
+                    ->textExpanderTriggers(self::TextExpanderTriggers)),
             ];
         }
 
@@ -509,6 +523,9 @@ class FormKitchenSink
                 'Monospace' => $this->control('Text', Text::make('text')
                     ->monospace()
                     ->value('font-family: monospace;')),
+                'Emoji and user mentions' => $this->control('Text', Text::make('text')
+                    ->placeholder('Type : for emoji or @ to mention a user')
+                    ->textExpanderTriggers(self::TextExpanderTriggers)),
                 'Browser behavior' => $this->control('Text', Text::make('text')
                     ->inputMode('numeric')
                     ->autocomplete('one-time-code')
@@ -536,6 +553,10 @@ class FormKitchenSink
                     ->rows(4)
                     ->monospace()
                     ->value("first_key: value\nsecond_key: value")),
+                'Emoji and user mentions' => $this->control('Textarea', Textarea::make('textarea')
+                    ->rows(4)
+                    ->placeholder('Type : for emoji or @ to mention a user')
+                    ->textExpanderTriggers(self::TextExpanderTriggers)),
             ];
         }
 

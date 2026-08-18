@@ -6,11 +6,14 @@ namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\Arr;
 
 class Text extends Control
 {
+    use HasTextExpander;
+
     protected string $inputType = 'text';
 
     private string|int|float|null $min = null;
@@ -41,7 +44,7 @@ class Text extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        return Input::make()
+        $input = Input::make()
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
@@ -68,6 +71,8 @@ class Text extends Control
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
             ])
             ->toHtml();
+
+        return $input.self::textExpanderHtml($control, $attributes);
     }
 
     public function component(): string
@@ -191,6 +196,7 @@ class Text extends Control
             'size' => $this->size,
             'dir' => $this->dir,
             'monospace' => $this->monospace ?: null,
+            ...$this->textExpanderProps(),
         ]);
     }
 }

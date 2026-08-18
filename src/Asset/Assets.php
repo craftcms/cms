@@ -272,7 +272,7 @@ class Assets
             }
 
             if ($increment === 50) {
-                throw new AssetOperationException(t('Could not find a suitable replacement filename for "{filename}".', [
+                throw new AssetOperationException(t('Could not find a suitable replacement filename for “{filename}”.', [
                     'filename' => $originalFilename,
                 ]));
             }
