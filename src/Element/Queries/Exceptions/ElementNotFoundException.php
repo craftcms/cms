@@ -31,8 +31,7 @@ class ElementNotFoundException extends RecordsNotFoundException
      *
      * @param  class-string<TElement>  $element
      * @param  array<int, int|string>|int|string  $ids
-     *
-     * @phpstan-return $this
+     * @return self<TElement>
      */
     public function setElement(string $element, array|int|string $ids = []): self
     {
