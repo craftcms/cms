@@ -35,6 +35,7 @@
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
 - Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
 - Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Improved structure mutation reliability by representing each pending change as a single immutable operation.
 - Improved Project Config change event handler registration by keeping callbacks and ordering metadata together.
 - Fixed a bug where the `jobprogress` table was missing `dateCompleted` and `dateFailed` columns for installs that were upgraded from Craft 5.
 - Fixed a bug where failed queue jobs were losing their descriptions. ([#19444](https://github.com/craftcms/cms/issues/19444))

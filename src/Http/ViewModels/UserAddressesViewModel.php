@@ -109,7 +109,7 @@ class UserAddressesViewModel extends ViewModel
      * cards data (with per-element card parts) up to the card limit, or
      * embedded element index data beyond it.
      *
-     * @return array<string, mixed>
+     * @return NestedElementCardsData|NestedElementIndexData The nested element manager payload.
      */
     public function data(): array
     {
