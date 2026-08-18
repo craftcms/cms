@@ -44,16 +44,6 @@ class Search
      */
     public ?int $minFullTextWordLength = null;
 
-    /**
-     * @var SearchQueryTerm[]
-     */
-    private array $terms;
-
-    /**
-     * @var SearchQueryTerm[][]
-     */
-    private array $groups;
-
     private readonly bool $isMysql;
 
     private readonly bool $isPgsql;
@@ -344,7 +334,7 @@ class Search
         event($event = new SearchResultsResolving($elementQuery, $searchQuery, $results));
 
         $results = $event->results;
-        $scores = $this->scoreResults($results);
+        $scores = $this->scoreResults($results, $searchQuery);
 
         event($event = new SearchScoresResolving($elementQuery, $searchQuery, $results, $scores));
 
@@ -363,16 +353,7 @@ class Search
     {
         $searchQuery = $this->normalizeSearchQuery($searchQuery);
 
-        $this->terms = [];
-        $this->groups = [];
-
-        foreach ($searchQuery->getTokens() as $obj) {
-            if ($obj instanceof SearchQueryTermGroup) {
-                $this->groups[] = $obj->terms;
-            } else {
-                $this->terms[] = $obj;
-            }
-        }
+        [$terms, $groups] = $this->splitQueryTokens($searchQuery);
 
         if ($elementQuery->customFields !== null) {
             $customFields = new MemoizableArray($elementQuery->customFields);
@@ -380,7 +361,7 @@ class Search
             $customFields = null;
         }
 
-        $where = $this->getWhereClause($elementQuery->siteId, $customFields);
+        $where = $this->getWhereClause($terms, $groups, $elementQuery->siteId, $customFields);
 
         if ($where === false) {
             return false;
@@ -397,10 +378,12 @@ class Search
 
     /**
      * @param  list<array{elementId: int|string, siteId: int|string, keywords: string, attribute: string}>  $results
+     * @param  SearchQuery  $searchQuery  The operation-local query whose terms should score the results
      * @return array<string, int>
      */
-    private function scoreResults(array $results): array
+    private function scoreResults(array $results, SearchQuery $searchQuery): array
     {
+        [$terms, $groups] = $this->splitQueryTokens($searchQuery);
         $scores = [];
 
         foreach ($results as $row) {
@@ -410,10 +393,27 @@ class Search
                 $scores[$key] = 0;
             }
 
-            $scores[$key] += $this->scoreRow($row);
+            $scores[$key] += $this->scoreRow($row, $terms, $groups);
         }
 
         return $scores;
+    }
+
+    /** @return array{list<SearchQueryTerm>, list<list<SearchQueryTerm>>} */
+    private function splitQueryTokens(SearchQuery $searchQuery): array
+    {
+        $terms = [];
+        $groups = [];
+
+        foreach ($searchQuery->getTokens() as $token) {
+            if ($token instanceof SearchQueryTermGroup) {
+                $groups[] = $token->terms;
+            } else {
+                $terms[] = $token;
+            }
+        }
+
+        return [$terms, $groups];
     }
 
     /** @param string|array{query: string, subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool}|SearchQuery $searchQuery */
@@ -506,19 +506,23 @@ class Search
         }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
     }
 
-    /** @param array{elementId: int|string, siteId: int|string, keywords: string, attribute: string} $row */
-    private function scoreRow(array $row): int
+    /**
+     * @param  array{elementId: int|string, siteId: int|string, keywords: string, attribute: string}  $row
+     * @param  list<SearchQueryTerm>  $terms
+     * @param  list<list<SearchQueryTerm>>  $groups
+     */
+    private function scoreRow(array $row, array $terms, array $groups): int
     {
         $score = 0;
 
-        foreach ($this->terms as $term) {
+        foreach ($terms as $term) {
             $score += $this->scoreTerm($term, $row, 1);
         }
 
-        foreach ($this->groups as $terms) {
-            $weight = 1 / count($terms);
+        foreach ($groups as $group) {
+            $weight = 1 / count($group);
 
-            foreach ($terms as $term) {
+            foreach ($group as $term) {
                 $score += $this->scoreTerm($term, $row, $weight);
             }
         }
@@ -566,16 +570,18 @@ class Search
     }
 
     /**
+     * @param  list<SearchQueryTerm>  $terms
+     * @param  list<list<SearchQueryTerm>>  $groups
      * @param  int|int[]|null  $siteId
      * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
      */
-    private function getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): array|false
+    private function getWhereClause(array $terms, array $groups, array|int|null $siteId, ?MemoizableArray $customFields): array|false
     {
         $where = [];
 
-        if (! empty($this->terms)) {
-            $condition = $this->processTokens($this->terms, true, $siteId, $customFields);
+        if (! empty($terms)) {
+            $condition = $this->processTokens($terms, true, $siteId, $customFields);
 
             if ($condition === false) {
                 return false;
@@ -584,7 +590,7 @@ class Search
             $where[] = $condition;
         }
 
-        foreach ($this->groups as $group) {
+        foreach ($groups as $group) {
             $condition = $this->processTokens($group, false, $siteId, $customFields);
 
             if ($condition === false) {
