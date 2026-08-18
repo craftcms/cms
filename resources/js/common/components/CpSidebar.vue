@@ -69,16 +69,18 @@
 
 <style scoped lang="scss">
   .cp-sidebar {
-    height: 100%;
+    height: 100dvh;
     width: var(--global-sidebar-width);
-    background-color: var(--c-surface-overlay);
-    display: grid;
-    grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
+    display: flex;
+    flex-direction: column;
+    inset-block-start: 0;
+    flex: 0 0 auto;
   }
 
   .cp-sidebar[data-mode='docked'] {
-    position: relative;
-    transform: 0;
+    transform: none;
+    position: sticky;
+    inset-block-start: 0;
   }
 
   .cp-sidebar[data-mode='floating'] {
@@ -99,9 +101,22 @@
     transform: translateX(-100%);
   }
 
+  .cp-sidebar__header {
+    flex: 0 0 auto;
+  }
+
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
     padding-inline: var(--c-spacing-md);
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .cp-sidebar__footer {
+    flex: 0 0 auto;
+    position: sticky;
+    inset-block-end: 0;
+    background-color: inherit;
   }
 
   .sidebar-header {
@@ -113,24 +128,7 @@
   }
 
   .cp-sidebar__body {
-    overflow-y: scroll;
-    background:
-      /* Shadow Cover TOP */
-      linear-gradient(white 30%, rgba(255, 255, 255, 0)) center top,
-      /* Shadow Cover BOTTOM */
-      linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
-      /* Shadow TOP */
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
-        top,
-      /* Shadow BOTTOM */
-      linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
-        bottom;
-    background-repeat: no-repeat;
-    background-size:
-      100% 2.5rem,
-      100% 2.5rem,
-      100% 0.5rem,
-      100% 0.5rem;
-    background-attachment: local, local, scroll, scroll;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 </style>
