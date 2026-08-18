@@ -20,7 +20,7 @@ use Override;
  * @method static string[] getSkippedItemsForSession(\CraftCms\Cms\Asset\Models\AssetIndexingSession $session)
  * @method static array getMissingEntriesForSession(\CraftCms\Cms\Asset\Models\AssetIndexingSession $session, string $path = '')
  * @method static \CraftCms\Cms\Asset\Models\AssetIndexData|null getNextIndexEntry(\CraftCms\Cms\Asset\Models\AssetIndexingSession $session)
- * @method static void transitionIndexEntry(int $entryId, \CraftCms\Cms\Asset\Enums\AssetIndexStatus $status, ?int $recordId = null)
+ * @method static void transitionIndexEntry(int $entryId, \CraftCms\Cms\Asset\Enums\AssetIndexStatus $status, int|null $recordId = null)
  * @method static \CraftCms\Cms\Asset\Elements\Asset indexFile(\CraftCms\Cms\Asset\Data\Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true)
  * @method static \CraftCms\Cms\Asset\Elements\Asset indexFileByListing(\CraftCms\Cms\Asset\Data\Volume $volume, \CraftCms\Cms\Filesystem\Data\FsListing $listing, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder indexFolderByListing(\CraftCms\Cms\Asset\Data\Volume $volume, \CraftCms\Cms\Filesystem\Data\FsListing $listing, int $sessionId, bool $createIfMissing = true)
