@@ -189,11 +189,12 @@ class AppController extends Controller
      */
     public function actionCacheUpdates(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
+        $updates = $updatesService->cacheUpdates(Component::cleanseConfig($updateData));
         $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
@@ -516,27 +517,6 @@ class AppController extends Controller
         }
 
         return $this->asSuccess();
-    }
-
-    /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Craft::$app->getHasWrongEdition()) {
-            $licensedEdition = Craft::$app->getLicensedEdition();
-            $success = Craft::$app->setEdition($licensedEdition);
-        } else {
-            // Just fake it
-            $success = true;
-        }
-
-        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**

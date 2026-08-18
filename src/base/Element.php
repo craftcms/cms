@@ -7294,7 +7294,7 @@ JS,
         if ($providerHandle !== null) {
             $templates[] = [
                 'template' => sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle),
-                'priority' => 1,
+                'priority' => 2,
             ];
         }
 

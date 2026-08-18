@@ -3402,17 +3402,14 @@ JS;
 
         $entryType = $this->getType();
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
-            return [
-                [
-                    'template' => sprintf(
-                        '%s/%s/%s',
-                        Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
-                        static::refHandle(),
-                        $entryType->handle,
-                    ),
-                    'priority' => 5,
-                ],
-                ...$templates,
+            $templates[] = [
+                'template' => sprintf(
+                    '%s/%s/%s',
+                    Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
+                    static::refHandle(),
+                    $entryType->handle,
+                ),
+                'priority' => 1,
             ];
         }
 

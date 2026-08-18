@@ -18,14 +18,17 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\models\FieldLayout;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use DirectoryIterator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use SimpleXMLElement;
 use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -818,6 +821,64 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     * The `has some`/`has every` operators must reject callables that aren't real Closures
+     * (e.g. a bare string naming a PHP function) when rendered within the Twig sandbox,
+     * rather than silently invoking arbitrary PHP functions.
+     *
+     * `str_contains()` is used here (rather than something like `strtoupper()`) because it
+     * happily accepts the two arguments (`$value`, `$key`) that `has some`/`has every` pass
+     * to the callable, so if the sandbox bypass were still present, the function would just
+     * execute and return a boolean rather than incidentally erroring out for unrelated
+     * (arg-count) reasons, which would mask the real vulnerability.
+     */
+    public function testHasSomeSandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some "str_contains" }}'
+        );
+    }
+
+    /**
+     * @see testHasSomeSandboxRejectsNonClosureCallable()
+     */
+    public function testHasEverySandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every "str_contains" }}'
+        );
+    }
+
+    /**
+     * Legitimate arrow-function usages of `has some`/`has every` should still work fine
+     * when rendered within the Twig sandbox.
+     */
+    public function testHasSomeAndHasEveryWorkWithinSandbox(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("z")) ? "yes" : "no" }}'
+        );
+        self::assertSame('no', $result);
+    }
+
+    /**
      *
      */
     public function testHashFilter(): void
@@ -1130,6 +1191,63 @@ class ExtensionTest extends TestCase
                 'q' => Entry::find()->sectionId(10),
             ]
         );
+    }
+
+    /**
+     * @dataProvider createFunctionDataProvider
+     */
+    public function testCreateFunction(bool $allowed, string $class): void
+    {
+        if (!class_exists($class) && !interface_exists($class)) {
+            self::markTestSkipped(sprintf('%s isn\'t available in this environment.', $class));
+        }
+
+        if (!$allowed) {
+            $this->expectException(RuntimeError::class);
+            $this->expectExceptionMessage(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        $result = $this->view->renderString('{{ create(class) ? "created" : "not created" }}', compact('class'));
+
+        if ($allowed) {
+            self::assertSame('created', $result);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function createFunctionDataProvider(): array
+    {
+        return [
+            // Ordinary classes remain creatable.
+            'Craft model' => [true, FieldLayout::class],
+            'craft\helpers class' => [true, 'craft\\helpers\\StringHelper'],
+            // The read gadget from the report: not on the denylist by class or by the
+            // Spl*/*Iterator name patterns, so it was reachable despite GHSA-957r-qf9p-67xw.
+            'DOMDocument (reported bypass)' => [false, 'DOMDocument'],
+            // Pre-existing denylist entries.
+            'SplFileObject' => [false, 'SplFileObject'],
+            'SimpleXMLElement' => [false, SimpleXMLElement::class],
+            'DirectoryIterator' => [false, DirectoryIterator::class],
+            'AttributeTypecastBehavior' => [false, \yii\behaviors\AttributeTypecastBehavior::class],
+            // Newly added denylist entries.
+            'XMLReader' => [false, \XMLReader::class],
+            'XSLTProcessor' => [false, \XSLTProcessor::class],
+            'SoapClient' => [false, \SoapClient::class],
+            \GuzzleHttp\Client::class => [false, \GuzzleHttp\Client::class],
+            'PDO' => [false, \PDO::class],
+            'mysqli' => [false, \mysqli::class],
+            'ReflectionClass (via the Reflector interface)' => [false, \ReflectionClass::class],
+            'ReflectionMethod (via the Reflector interface)' => [false, \ReflectionMethod::class],
+            // Only present when the optional imagick extension is installed; skipped
+            // otherwise (see the class_exists() guard above).
+            'Imagick' => [false, \Imagick::class],
+            // Phar/PharData aren't listed explicitly: they extend RecursiveDirectoryIterator,
+            // which extends FilesystemIterator, which extends DirectoryIterator, so is_a()'s
+            // ancestry walk already denies them via the DirectoryIterator entry above.
+            'PharData (via DirectoryIterator ancestry)' => [false, \PharData::class],
+        ];
     }
 
     /**

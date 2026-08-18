@@ -2560,6 +2560,14 @@ JS);
         }
 
         $returnUrl = $this->request->getQueryParam('returnUrl');
+
+        if ($returnUrl) {
+            $returnUrl = preg_replace('/[\t\r\n]/', '', trim($returnUrl));
+            if (StringHelper::startsWith($returnUrl, 'javascript:', false)) {
+                $returnUrl = null;
+            }
+        }
+
         if (!$returnUrl) {
             if ($this->request->getIsCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false
