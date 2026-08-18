@@ -174,7 +174,7 @@ trait QueriesSections
 
         // Should we set the structureId param?
         if (
-            $entryQuery->withStructure !== false &&
+            $entryQuery->withStructure &&
             ! isset($entryQuery->structureId) &&
             count($entryQuery->sectionId) === 1
         ) {

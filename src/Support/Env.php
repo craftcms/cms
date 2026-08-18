@@ -32,7 +32,7 @@ class Env extends \Illuminate\Support\Env
         $envContent = $filesystem->get($pathToFile);
 
         $lines = explode(PHP_EOL, $envContent);
-        $lines = array_filter($lines, fn ($line) => ! str_starts_with((string) $line, $key.'='));
+        $lines = array_filter($lines, fn ($line) => ! str_starts_with($line, $key.'='));
 
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }

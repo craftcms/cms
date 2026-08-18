@@ -148,7 +148,7 @@ it('hard deletes an element and removes its search indexes without tracking it',
                 ->where('elementId', $entry->id)
                 ->count())->toBe(0);
 
-        Event::assertDispatched(fn (ElementDeleting $event): bool => $event->element->id === $entry->id && $event->hardDelete === true);
+        Event::assertDispatched(fn (ElementDeleting $event): bool => $event->element->id === $entry->id && $event->hardDelete);
         Event::assertDispatched(fn (ElementDeleted $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (ElementLifecycleDeleting $event): bool => $event->element->id === $entry->id);
         Event::assertDispatched(fn (ElementLifecycleDeleted $event): bool => $event->element->id === $entry->id);
