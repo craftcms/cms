@@ -931,7 +931,7 @@ export class Page extends Base {
           confirm(
             Craft.t(
               'app',
-              'Are you sure you want to remove the page "{name}"?',
+              'Are you sure you want to remove the page “{name}”?',
               {
                 name: this.name,
               }

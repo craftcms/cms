@@ -49,12 +49,12 @@ readonly class JobProgress
 
     public function failed(string $uid, ?string $description = null, ?string $error = null): void
     {
-        $this->upsertJob($uid, JobStatus::Failed, [
+        $this->upsertJob($uid, JobStatus::Failed, array_filter([
             'progress' => 0,
             'description' => $description,
             'error' => $error,
             'dateFailed' => now('utc'),
-        ]);
+        ]));
     }
 
     public function setProgress(string $uid, string $description, int $progress, ?string $label = null): void

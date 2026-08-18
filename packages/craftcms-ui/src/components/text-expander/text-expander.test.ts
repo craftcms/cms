@@ -653,7 +653,10 @@ describe('craft-text-expander', () => {
     expander.setAttribute(
       'triggers',
       JSON.stringify({
-        '@': {options: [{label: 'Brad', value: '@brad'}]},
+        '@': {
+          label: 'People',
+          options: [{label: 'Brad', value: '@brad'}],
+        },
       })
     );
     document.body.append(expander);
@@ -662,12 +665,21 @@ describe('craft-text-expander', () => {
     type(target, '@b');
 
     expect(options(expander)).toHaveLength(1);
+    expect(
+      expander.querySelector('[role="listbox"]')?.getAttribute('aria-label')
+    ).toBe('People');
   });
 
   it('labels the listbox for the active trigger, falling back to a default label', async () => {
     const {expander, target} = await createFixture({
-      '#': {options: [{label: 'General', value: '#general'}]},
-      '@': {options: [{label: 'Brad', value: '@brad'}]},
+      '#': {
+        label: 'Channels',
+        options: [{label: 'General', value: '#general'}],
+      },
+      '@': {
+        label: 'People',
+        options: [{label: 'Brad', value: '@brad'}],
+      },
       ':': {options: [{label: 'Smile', value: ':smile'}]},
     });
     const listbox = expander.querySelector('[role="listbox"]')!;
@@ -676,11 +688,11 @@ describe('craft-text-expander', () => {
 
     type(target, '#g');
     await waitForFirstOption(expander);
-    expect(listbox.getAttribute('aria-label')).toBe('Environment');
+    expect(listbox.getAttribute('aria-label')).toBe('Channels');
 
     type(target, '@b');
     await waitForFirstOption(expander);
-    expect(listbox.getAttribute('aria-label')).toBe('Users');
+    expect(listbox.getAttribute('aria-label')).toBe('People');
 
     type(target, ':sm');
     await waitForFirstOption(expander);
@@ -689,7 +701,10 @@ describe('craft-text-expander', () => {
 
   it('announces the active trigger label when the popover closes', async () => {
     const {expander, target} = await createFixture({
-      '#': {options: [{label: 'General', value: '#general'}]},
+      '#': {
+        label: 'Channels',
+        options: [{label: 'General', value: '#general'}],
+      },
       ':': {options: [{label: 'Smile', value: ':smile'}]},
     });
     const liveRegion = expander.shadowRoot!.querySelector('[aria-live]')!;
@@ -700,7 +715,7 @@ describe('craft-text-expander', () => {
 
     await vi.waitFor(() =>
       expect(liveRegion.textContent?.trim()).toBe(
-        'Environment suggestions collapsed'
+        'Channels suggestions collapsed'
       )
     );
 
