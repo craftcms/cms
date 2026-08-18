@@ -20,6 +20,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   const props = defineProps<{
+    title: string;
     group: SiteGroup | null;
     groups: Array<SiteGroup>;
     sites: Array<Site>;
@@ -202,22 +203,14 @@
     }
   }
 
-  const pageTitle = computed(() => {
-    if (props.group?.name) {
-      return props.group.name;
-    }
-
-    return t('Sites');
-  });
-
-  useAppLayout(() => ({fullWidth: true, title: pageTitle.value}));
+  useAppLayout(() => ({fullWidth: true, title: props.title}));
 </script>
 
 <template>
   <LayoutSlot name="title">
     <div class="flex gap-2 items-center">
       <h1 class="title text-xl">
-        {{ pageTitle }}
+        {{ title }}
       </h1>
 
       <craft-action-menu v-if="group?.id && !readOnly">

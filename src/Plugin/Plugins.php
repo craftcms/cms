@@ -155,7 +155,7 @@ class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true) {
+        if ($this->pluginsLoaded || $this->loadingPlugins) {
             return;
         }
 

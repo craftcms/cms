@@ -360,6 +360,56 @@ describe('craft-field label extras', () => {
   });
 });
 
+describe('craft-field actions', () => {
+  it('renders a flex-grow spacer before slotted actions', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.heading')!;
+    const spacer = heading.querySelector('.flex-grow');
+    const slot = heading.querySelector('slot[name="actions"]');
+    expect(spacer).not.toBeNull();
+    expect(slot).not.toBeNull();
+    expect(
+      spacer!.compareDocumentPosition(slot!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('groups slotted actions', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const group = element.shadowRoot!.querySelector('.field-actions')!;
+    expect(group).not.toBeNull();
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.querySelector('slot[name="actions"]')).not.toBeNull();
+  });
+
+  it('renders actions after label extras', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><code slot="label-extra">handle</code><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.heading')!;
+    const labelExtra = heading.querySelector('slot[name="label-extra"]')!;
+    const actions = heading.querySelector('slot[name="actions"]')!;
+    expect(
+      labelExtra.compareDocumentPosition(actions) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('renders no action group without actions', async () => {
+    const element = await createField({label: 'My field'});
+    expect(element.shadowRoot!.querySelector('.field-actions')).toBeNull();
+  });
+});
+
 describe('craft-field disabled state', () => {
   it('adds the disabled class to the input container only', async () => {
     const element = await createField({label: 'My field', disabled: ''});

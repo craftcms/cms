@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Cms\Asset\Data\AssetIndexEntry;
-use CraftCms\Cms\Asset\Data\IndexingSession;
+use Closure;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
@@ -16,7 +16,8 @@ use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
 use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
-use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Models\AssetIndexData;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -40,6 +41,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Concat;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -48,7 +50,7 @@ use Tpetry\QueryExpressions\Value\Value;
 #[Singleton]
 class AssetIndexer
 {
-    /** @var Collection<int, IndexingSession> */
+    /** @var Collection<int, AssetIndexingSession> */
     public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();
     }
@@ -111,31 +113,24 @@ class AssetIndexer
         }
     }
 
-    /** @return Collection<int, IndexingSession> */
+    /** @return Collection<int, AssetIndexingSession> */
     public function getExistingIndexingSessions(): Collection
     {
-        return AssetIndexingSessionModel::query()
+        return AssetIndexingSession::query()
             ->where('isCli', false)
-            ->get()
-            ->map(fn (AssetIndexingSessionModel $model) => new IndexingSession($model->toArray()));
+            ->get();
     }
 
     public function removeCliIndexingSessions(): int
     {
-        return DB::table(Table::ASSETINDEXINGSESSIONS)
+        return AssetIndexingSession::query()
             ->where('isCli', true)
             ->delete();
     }
 
-    public function getIndexingSessionById(int $sessionId): ?IndexingSession
+    public function getIndexingSessionById(int $sessionId): ?AssetIndexingSession
     {
-        $row = AssetIndexingSessionModel::find($sessionId);
-
-        if (! $row) {
-            return null;
-        }
-
-        return new IndexingSession($row->toArray());
+        return AssetIndexingSession::find($sessionId);
     }
 
     /** @param array<int|string> $volumes */
@@ -143,7 +138,7 @@ class AssetIndexer
         array $volumes,
         bool $cacheRemoteImages = true,
         bool $listEmptyFolders = false,
-    ): IndexingSession {
+    ): AssetIndexingSession {
         $volumeList = [];
 
         foreach ($volumes as $volumeId) {
@@ -166,14 +161,14 @@ class AssetIndexer
         }
 
         $session->totalEntries = $total;
-        $this->storeIndexingSession($session);
+        $session->save();
 
         return $session;
     }
 
-    public function stopIndexingSession(IndexingSession $session): void
+    public function stopIndexingSession(AssetIndexingSession $session): void
     {
-        AssetIndexingSessionModel::find($session->id)?->delete();
+        $session->delete();
     }
 
     /** @param Volume[] $volumeList */
@@ -182,14 +177,14 @@ class AssetIndexer
         bool $cacheRemoteImages = true,
         bool $isCli = false,
         bool $listEmptyFolders = false,
-    ): IndexingSession {
+    ): AssetIndexingSession {
         $indexedVolumes = [];
 
         foreach ($volumeList as $volume) {
             $indexedVolumes[$volume->id] = $volume->name;
         }
 
-        $session = new IndexingSession([
+        $session = new AssetIndexingSession([
             'totalEntries' => 0,
             'indexedVolumes' => Json::encode($indexedVolumes),
             'processedEntries' => 0,
@@ -197,11 +192,10 @@ class AssetIndexer
             'listEmptyFolders' => $listEmptyFolders,
             'actionRequired' => false,
             'isCli' => $isCli,
-            'dateUpdated' => null,
             'processIfRootEmpty' => false,
         ]);
 
-        $this->storeIndexingSession($session);
+        $session->save();
 
         return $session;
     }
@@ -231,8 +225,7 @@ class AssetIndexer
                 'size' => $volumeListing->getFileSize(),
                 'timestamp' => $timestamp,
                 'isDir' => $volumeListing->getIsDir(),
-                'inProgress' => false,
-                'completed' => false,
+                'status' => AssetIndexStatus::Pending,
                 'dateCreated' => $now,
                 'dateUpdated' => $now,
                 'uid' => Str::uuid(),
@@ -246,7 +239,7 @@ class AssetIndexer
      * @throws VolumeException if unable to index file because of volume issue
      * @throws LockTimeoutException if unable to acquire a lock
      */
-    public function processIndexSession(IndexingSession $indexingSession): IndexingSession
+    public function processIndexSession(AssetIndexingSession $indexingSession): AssetIndexingSession
     {
         $lockName = "idx--{$indexingSession->id}--";
         $indexEntry = null;
@@ -256,11 +249,9 @@ class AssetIndexer
 
             if (! $indexEntry && ! $indexingSession->processIfRootEmpty) {
                 if ($indexingSession->processedEntries < $indexingSession->totalEntries) {
-                    $count = DB::table(Table::ASSETINDEXDATA)
-                        ->where([
-                            'sessionId' => $indexingSession->id,
-                            'completed' => false,
-                        ])
+                    $count = AssetIndexData::query()
+                        ->where('sessionId', $indexingSession->id)
+                        ->whereIn('status', [AssetIndexStatus::Pending, AssetIndexStatus::Processing])
                         ->count();
 
                     if ($count === 0) {
@@ -273,7 +264,7 @@ class AssetIndexer
             }
 
             if ($indexEntry) {
-                $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
+                $indexEntry->transitionTo(AssetIndexStatus::Processing);
             }
         });
 
@@ -285,39 +276,41 @@ class AssetIndexer
                     $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
                 }
 
-                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
+                $indexEntry->transitionTo(AssetIndexStatus::Indexed, $recordId);
             } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
-                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+                $indexEntry->transitionTo(AssetIndexStatus::Skipped);
             } catch (Throwable $exception) {
                 report($exception);
-                $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
+                $indexEntry->transitionTo(AssetIndexStatus::Failed);
             }
 
-            $session = $this->incrementProcessedEntryCount($indexingSession);
-        } else {
-            $session = $indexingSession;
+            $this->incrementProcessedEntryCount($indexingSession);
         }
 
-        if ($session->processedEntries == $session->totalEntries) {
-            $session->actionRequired = true;
+        if ($indexingSession->processedEntries == $indexingSession->totalEntries) {
+            $indexingSession->actionRequired = true;
 
-            if ($session->processIfRootEmpty) {
-                $session->processIfRootEmpty = false;
+            if ($indexingSession->processIfRootEmpty) {
+                $indexingSession->processIfRootEmpty = false;
             }
 
-            $this->storeIndexingSession($session);
+            $indexingSession->save();
         }
 
         return $indexingSession;
     }
 
     /** @return string[] */
-    public function getSkippedItemsForSession(IndexingSession $session): array
+    public function getSkippedItemsForSession(AssetIndexingSession $session): array
     {
         $skippedItems = DB::table(Table::ASSETINDEXDATA)
             ->select(['volumeId', 'uri'])
             ->where('sessionId', $session->id)
-            ->where('isSkipped', true)
+            ->whereIn('status', [
+                AssetIndexStatus::Skipped,
+                AssetIndexStatus::Missing,
+                AssetIndexStatus::Failed,
+            ])
             ->get();
 
         $skipped = [];
@@ -337,7 +330,7 @@ class AssetIndexer
      *
      * @throws AssetException
      */
-    public function getMissingEntriesForSession(IndexingSession $session, string $path = ''): array
+    public function getMissingEntriesForSession(AssetIndexingSession $session, string $path = ''): array
     {
         if (! $session->actionRequired) {
             throw new AssetException('A session must be finished before missing entries can be fetched');
@@ -428,7 +421,7 @@ class AssetIndexer
         return $missing;
     }
 
-    private function folderAssetCountQuery(IndexingSession $session, bool $missing = false): Builder
+    private function folderAssetCountQuery(AssetIndexingSession $session, bool $missing = false): Builder
     {
         $query = DB::table(Table::ASSETS, 'countedAssets')
             ->selectRaw('count(*)')
@@ -452,36 +445,27 @@ class AssetIndexer
             ->whereNull('countedIndexData.id');
     }
 
-    public function getNextIndexEntry(IndexingSession $session): ?AssetIndexEntry
+    public function getNextIndexEntry(AssetIndexingSession $session): ?AssetIndexData
     {
-        $result = DB::table(Table::ASSETINDEXDATA)
-            ->select([
-                'id', 'volumeId', 'sessionId', 'uri', 'size',
-                'timestamp', 'isDir', 'recordId', 'isSkipped',
-                'completed', 'inProgress',
-            ])
+        return AssetIndexData::query()
             ->where('sessionId', $session->id)
-            ->where('completed', false)
-            ->where('inProgress', false)
+            ->where('status', AssetIndexStatus::Pending)
             ->orderBy('id')
             ->first();
-
-        return $result ? new AssetIndexEntry((array) $result) : null;
     }
 
-    /** @param array{inProgress?:bool, completed?:bool, recordId?:int, isSkipped?:bool, processedEntries?:int} $data */
-    public function updateIndexEntry(int $entryId, array $data): void
-    {
-        $data = array_intersect_key(
-            $data,
-            array_flip(['inProgress', 'completed', 'recordId', 'isSkipped', 'processedEntries']),
-        );
+    public function transitionIndexEntry(
+        int $entryId,
+        AssetIndexStatus $status,
+        ?int $recordId = null,
+    ): void {
+        $entry = AssetIndexData::find($entryId);
 
-        DB::table(Table::ASSETINDEXDATA)
-            ->where('id', $entryId)
-            ->update(array_merge([
-                'dateUpdated' => now(),
-            ], $data));
+        if (! $entry) {
+            throw new RuntimeException("Asset index entry $entryId does not exist.");
+        }
+
+        $entry->transitionTo($status, $recordId);
     }
 
     /**
@@ -525,21 +509,19 @@ class AssetIndexer
         bool $cacheImages = false,
         bool $createIfMissing = true,
     ): Asset {
-        $indexEntry = new AssetIndexEntry([
+        $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'inProgress' => true,
         ]);
 
-        $asset = $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
-        $indexEntry->recordId = $asset->id;
-        $this->storeIndexEntry($indexEntry);
-
-        return $asset;
+        return $this->indexByListing(
+            $indexEntry,
+            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing),
+        );
     }
 
     /**
@@ -553,21 +535,51 @@ class AssetIndexer
         int $sessionId,
         bool $createIfMissing = true,
     ): VolumeFolder {
-        $indexEntry = new AssetIndexEntry([
+        $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'isDir' => $listing->getIsDir(),
-            'inProgress' => true,
         ]);
 
-        $folder = $this->indexFolderByEntry($indexEntry, $createIfMissing);
-        $indexEntry->recordId = $folder->id;
-        $this->storeIndexEntry($indexEntry);
+        return $this->indexByListing(
+            $indexEntry,
+            fn () => $this->indexFolderByEntry($indexEntry, $createIfMissing),
+        );
+    }
 
-        return $folder;
+    /**
+     * @template T of Asset|VolumeFolder
+     *
+     * @param  Closure():T  $index
+     * @return T
+     */
+    private function indexByListing(AssetIndexData $indexEntry, Closure $index): Asset|VolumeFolder
+    {
+        $indexEntry->save();
+        $indexEntry->transitionTo(AssetIndexStatus::Processing);
+
+        try {
+            $record = $index();
+        } catch (Throwable $exception) {
+            $status = match (true) {
+                $exception instanceof MissingAssetException,
+                $exception instanceof MissingVolumeFolderException => AssetIndexStatus::Missing,
+                $exception instanceof AssetDisallowedExtensionException,
+                $exception instanceof AssetNotIndexableException => AssetIndexStatus::Skipped,
+                default => AssetIndexStatus::Failed,
+            };
+
+            $indexEntry->transitionTo($status);
+
+            throw $exception;
+        }
+
+        $indexEntry->transitionTo(AssetIndexStatus::Indexed, $record->id);
+
+        return $record;
     }
 
     /**
@@ -577,7 +589,7 @@ class AssetIndexer
      * @throws VolumeException
      */
     public function indexFileByEntry(
-        AssetIndexEntry $indexEntry,
+        AssetIndexData $indexEntry,
         bool $cacheImages = false,
         bool $createIfMissing = true,
     ): Asset {
@@ -714,7 +726,7 @@ class AssetIndexer
      * @throws AssetNotIndexableException
      * @throws MissingVolumeFolderException
      */
-    public function indexFolderByEntry(AssetIndexEntry $indexEntry, bool $createIfMissing = true): VolumeFolder
+    public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
     {
         if ($indexEntry->uri !== null) {
             foreach (preg_split('/\\\\|\//', $indexEntry->uri) as $part) {
@@ -739,67 +751,13 @@ class AssetIndexer
         return $this->folders->ensureFolderByFullPathAndVolume($indexEntry->uri ?? '', $volume);
     }
 
-    private function storeIndexingSession(IndexingSession $session): void
-    {
-        if ($session->id !== null) {
-            $model = AssetIndexingSessionModel::find($session->id);
-        }
-
-        $model ??= new AssetIndexingSessionModel;
-
-        $model->indexedVolumes = $session->indexedVolumes;
-        $model->totalEntries = $session->totalEntries;
-        $model->processedEntries = $session->processedEntries;
-        $model->cacheRemoteImages = $session->cacheRemoteImages;
-        $model->listEmptyFolders = $session->listEmptyFolders;
-        $model->actionRequired = $session->actionRequired;
-        $model->isCli = $session->isCli;
-        $model->processIfRootEmpty = $session->processIfRootEmpty;
-        $model->save();
-
-        $session->id = $model->id;
-        $session->dateUpdated = $model->dateUpdated;
-        $session->dateCreated = $model->dateCreated;
-    }
-
-    private function storeIndexEntry(AssetIndexEntry $indexEntry): void
-    {
-        $now = now();
-
-        $data = [
-            'sessionId' => $indexEntry->sessionId,
-            'volumeId' => $indexEntry->volumeId,
-            'uri' => $indexEntry->uri,
-            'size' => $indexEntry->size,
-            'timestamp' => $indexEntry->timestamp,
-            'isDir' => $indexEntry->isDir,
-            'recordId' => $indexEntry->recordId,
-            'isSkipped' => $indexEntry->isSkipped,
-            'inProgress' => $indexEntry->inProgress,
-            'completed' => $indexEntry->completed,
-            'dateCreated' => $now,
-            'dateUpdated' => $now,
-            'uid' => Str::uuid(),
-        ];
-
-        if ($indexEntry->id) {
-            $data['id'] = $indexEntry->id;
-        }
-
-        DB::table(Table::ASSETINDEXDATA)->insert($data);
-    }
-
-    private function incrementProcessedEntryCount(IndexingSession $session): IndexingSession
+    private function incrementProcessedEntryCount(AssetIndexingSession $session): void
     {
         $lockName = "idx--update-{$session->id}--";
 
         Cache::lock($lockName, 5)->block(5, function () use ($session) {
-            $model = AssetIndexingSessionModel::findOrFail($session->id);
-            $model->increment('processedEntries');
-
-            $session->processedEntries = (int) $model->processedEntries;
+            $session->refresh();
+            $session->increment('processedEntries');
         });
-
-        return $session;
     }
 }

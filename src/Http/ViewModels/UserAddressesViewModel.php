@@ -108,8 +108,6 @@ class UserAddressesViewModel extends ViewModel
      * The nested element manager payload for a Vue-rendered addresses UI:
      * cards data (with per-element card parts) up to the card limit, or
      * embedded element index data beyond it.
-     *
-     * @return NestedElementCardsData|NestedElementIndexData
      */
     public function data(): array
     {

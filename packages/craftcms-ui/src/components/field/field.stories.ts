@@ -142,6 +142,18 @@ export const LabelExtra: Story = {
   `,
 };
 
+export const Actions: Story = {
+  render: () => html`
+    <craft-field label="Field label">
+      <input slot="input" type="text" />
+      <craft-checkbox slot="actions" label="Hide"></craft-checkbox>
+      <craft-button slot="actions" icon="clipboard" variant="subtle">
+        Copy value
+      </craft-button>
+    </craft-field>
+  `,
+};
+
 export const WithCraftInput: Story = {
   render: () => html`
     <craft-field
