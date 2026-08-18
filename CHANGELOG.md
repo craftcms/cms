@@ -5,6 +5,10 @@
 - Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
 - Fixed an error that could occur when upgrading to Craft 5. ([craftcms/commerce#4309](https://github.com/craftcms/commerce/pull/4309))
 - Fixed a bug where overridden entry type handles weren’t being prioritized when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5m2g-hhqr-84pc, GHSA-vfcw-xv8p-8rj2)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4wfw-q5w3-jh42)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-w5rh-mhxj-wr8r)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j5wg-m2pr-35qc)
 
 ## 5.10.13.2 - 2026-08-05
 
