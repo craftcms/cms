@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
@@ -897,15 +898,18 @@ class Sections
      * Ensures that the given Single section has its one and only entry, and returns it.
      *
      *
-     * @return Entry The
-     *
      * @throws Exception if reasons
      *
      * @see saveSection()
      */
     /** @param array<string, array<string, bool|string|null>>|null $siteSettings */
-    private function ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    private function ensureSingleEntry(Section $section, ?array $siteSettings = null): void
     {
+        // Don't resave the entry if we are mid-migrations
+        if (app(Updates::class)->isCraftUpdatePending()) {
+            return;
+        }
+
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
@@ -1030,8 +1034,6 @@ class Sections
                 $this->elements->deleteElement($entryToDelete, true);
             }
         });
-
-        return $entry;
     }
 
     /**
