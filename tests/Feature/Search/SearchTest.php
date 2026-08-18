@@ -249,6 +249,78 @@ describe('searchElements', function () {
             ->and(array_unique(array_column($performed->results, 'elementId')))->toBe([$entry2->id])
             ->and($performed->scores)->toBe($scores);
     });
+
+    test('nested searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedOuterScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $expectedNestedScores = Search::searchElements(entryQuery()->search('Beta'));
+        $nestedScores = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$nestedScores) {
+            if ($event->query->getQuery() === 'Alpha') {
+                $nestedScores = Search::searchElements(entryQuery()->search('Beta'));
+            }
+        });
+
+        $outerScores = Search::searchElements(entryQuery()->search('Alpha'));
+
+        expect($outerScores)->toBe($expectedOuterScores)
+            ->and($nestedScores)->toBe($expectedNestedScores);
+    });
+
+    test('sequential searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $alphaScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $betaScores = Search::searchElements(entryQuery()->search('Beta'));
+
+        expect(Search::searchElements(entryQuery()->search('Alpha')))->toBe($alphaScores)
+            ->and(Search::searchElements(entryQuery()->search('Beta')))->toBe($betaScores);
+    });
+
+    test('failed nested searches do not clear outer scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $failedQuery = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$failedQuery) {
+            if ($event->query->getQuery() === 'Alpha') {
+                $failedQuery = Search::createDbQuery('', entryQuery());
+            }
+        });
+
+        $scores = Search::searchElements(entryQuery()->search('Alpha'));
+
+        expect($failedQuery)->toBeFalse()
+            ->and($scores)->toBe($expectedScores);
+    });
+
+    test('concurrent searches retain their own scoring terms', function () {
+        createIndexedEntry('Alpha');
+        createIndexedEntry('Alpha Beta');
+
+        $expectedScores = Search::searchElements(entryQuery()->search('Alpha'));
+        $searchFiber = null;
+
+        Event::listen(function (SearchResultsResolving $event) use (&$searchFiber) {
+            if ($event->query->getQuery() === 'Alpha' && Fiber::getCurrent() === $searchFiber) {
+                Fiber::suspend();
+            }
+        });
+
+        $searchFiber = new Fiber(fn () => Search::searchElements(entryQuery()->search('Alpha')));
+        $searchFiber->start();
+
+        Search::searchElements(entryQuery()->search('Beta'));
+        $searchFiber->resume();
+
+        expect($searchFiber->getReturn())->toBe($expectedScores);
+    });
 });
 
 describe('normalizeSearchQuery', function () {

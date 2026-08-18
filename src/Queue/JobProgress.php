@@ -271,8 +271,7 @@ readonly class JobProgress
 
     /**
      * Upserts a job entry.
-     */
-    /**
+     *
      * @param  array<string, mixed>  $attributes
      */
     private function upsertJob(
@@ -280,31 +279,14 @@ readonly class JobProgress
         JobStatus $status,
         array $attributes = [],
     ): void {
-        DB::beginTransaction();
-
-        $now = now();
-        $exists = JobProgressModel::query()->where('uid', $uid)->exists();
-
-        if (! $exists) {
-            JobProgressModel::create(array_merge($attributes, [
+        JobProgressModel::query()->upsert(
+            [
+                ...$attributes,
                 'uid' => $uid,
                 'status' => $status->value,
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-            ]));
-
-            DB::commit();
-
-            return;
-        }
-
-        $data = array_merge($attributes, [
-            'status' => $status->value,
-            'dateUpdated' => $now,
-        ]);
-
-        JobProgressModel::query()->where('uid', $uid)->update($data);
-
-        DB::commit();
+            ],
+            uniqueBy: 'uid',
+            update: [...array_keys($attributes), 'status'],
+        );
     }
 }
