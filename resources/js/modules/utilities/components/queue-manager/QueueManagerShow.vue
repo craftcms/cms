@@ -10,7 +10,12 @@
   }>();
 
   // Cast to Record for generic iteration in template (job may have extra server-side fields)
-  const jobRecord = computed(() => props.job as Record<string, any>);
+  const jobRecord = computed(() => {
+    const record = props.job as Record<string, any>;
+    return Object.fromEntries(
+      Object.entries(record).filter(([, value]) => value !== null)
+    ) as Record<string, any>;
+  });
 
   const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
 
@@ -56,8 +61,14 @@
         return t('Description');
       case 'label':
         return t('Label');
+      case 'dateCompleted':
+        return t('Completed');
+      case 'dateFailed':
+        return t('Failed');
       case 'dateCreated':
         return t('Created');
+      case 'dateUpdated':
+        return t('Updated');
       case 'ttr':
         return t('Time to reserve');
       case 'error':
@@ -108,7 +119,7 @@
               <template v-else-if="name == 'class'">
                 <code>{{ value }}</code>
               </template>
-              <template v-else-if="name === 'dateCreated'">
+              <template v-else-if="name.startsWith('date')">
                 {{
                   new Date(value).toLocaleString('en-US', {
                     month: 'short',

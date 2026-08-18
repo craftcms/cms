@@ -20,6 +20,7 @@
 - Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
 - Fixed a bug where the `jobprogress` table was missing `dateCompleted` and `dateFailed` columns for installs that were upgraded from Craft 5.
 - Fixed a bug where failed queue jobs were losing their descriptions. ([#19444](https://github.com/craftcms/cms/issues/19444))
+- Fixed a bug where queue job details in the Queue Manager utility included “Error” and timestamp values even if they were null.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
