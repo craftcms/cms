@@ -71,6 +71,7 @@ readonly class SitesController
         ]);
 
         return Inertia::render('settings/sites/Index', [
+            'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
