@@ -23,8 +23,8 @@ const variables = [
 ];
 
 const triggers: TextExpanderTriggers = {
-  '@': {options: people},
-  '#': {options: variables},
+  '@': {label: 'People', options: people},
+  '#': {label: 'Environment', options: variables},
 };
 
 const meta = {
@@ -44,7 +44,7 @@ export const TextInput: Story = {
     </label>
     <craft-text-expander
       for="mention-input"
-      .triggers=${{'@': {options: people}}}
+      .triggers=${{'@': {label: 'People', options: people}}}
     ></craft-text-expander>
   `,
   play: async ({canvas, canvasElement, userEvent}) => {

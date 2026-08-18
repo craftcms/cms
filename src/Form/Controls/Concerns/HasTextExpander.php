@@ -16,8 +16,8 @@ use CraftCms\Cms\Support\Json;
  *     data?: mixed,
  * }
  * @phpstan-type TextExpanderTrigger (
- *     array{options: list<TextExpanderOption>, source?: never, limit?: int}
- *     | array{source: string, options?: never, limit?: int}
+ *     array{label?: string, options: list<TextExpanderOption>, source?: never, limit?: int}
+ *     | array{label?: string, source: string, options?: never, limit?: int}
  * )
  * @phpstan-type TextExpanderTriggers array<string, TextExpanderTrigger>
  */

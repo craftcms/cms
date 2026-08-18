@@ -26,7 +26,7 @@ function compositeControlsForm(): Form
                 ->placeholder('Write <Markdown>')
                 ->toolbarButtons(['bold', 'link'])
                 ->textExpanderTriggers([
-                    '@' => ['options' => [
+                    '@' => ['label' => 'People', 'options' => [
                         ['label' => 'Ada Lovelace', 'value' => '@ada'],
                     ]],
                 ]),
@@ -100,7 +100,7 @@ it('resolves documented composite Control shapes and properties', function () {
         'placeholder' => 'Write <Markdown>',
         'toolbarButtons' => ['bold', 'link'],
         'textExpanderTriggers' => [
-            '@' => ['options' => [
+            '@' => ['label' => 'People', 'options' => [
                 ['label' => 'Ada Lovelace', 'value' => '@ada'],
             ]],
         ],
@@ -167,7 +167,7 @@ it('preserves keyed Table rows in payloads and PHP submission names', function (
 
 it('renders text expanders for text and textarea Controls', function () {
     $triggers = [
-        '@' => ['source' => 'users/text-expander-options'],
+        '@' => ['label' => 'People', 'source' => 'users/text-expander-options'],
     ];
     $form = Form::make([
         Field::make('Name', Text::make('name')->textExpanderTriggers($triggers)),
