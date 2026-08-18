@@ -4,6 +4,7 @@
 
 - Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
 - Fixed an error that could occur when upgrading to Craft 5. ([craftcms/commerce#4309](https://github.com/craftcms/commerce/pull/4309))
+- Fixed a bug where overridden entry type handles weren’t being prioritized when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
 
 ## 5.10.13.2 - 2026-08-05
 
