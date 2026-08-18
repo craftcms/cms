@@ -1,13 +1,9 @@
 <script setup lang="ts">
   import CraftInputMoney from '@craftcms/ui/components/input-money/input-money';
   import type {FormControlPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName, serverErrorValidators} from './runtime';
 
-  type MoneyValue = {value: string; locale: string};
+  type MoneyValue = {value: string | null; locale: string};
   type MoneyControlProps = {
     currency: string;
     locale: string;
@@ -33,19 +29,28 @@
   function moneyValue(): MoneyValue {
     return typeof props.value === 'object' && props.value !== null
       ? (props.value as MoneyValue)
-      : {value: String(props.value ?? ''), locale: props.control.props.locale};
+      : {
+          value: props.value == null ? null : String(props.value),
+          locale: props.control.props.locale,
+        };
   }
 
-  const onInput = ignoreModelValueInitialization((event) => {
+  const onInput = (event: Event) => {
+    const modelValue = (event.target as CraftInputMoney).modelValue;
+
     emit(
       'update:value',
       {
-        value: String((event.target as CraftInputMoney).modelValue ?? ''),
+        // Report an empty amount the same way the server sends one. Reshaping
+        // it into `''` reads as a real edit the moment the field is populated
+        // on load, marking the form dirty before anyone has touched it.
+        value:
+          modelValue == null || modelValue === '' ? null : String(modelValue),
         locale: moneyValue().locale,
       },
       'typing'
     );
-  });
+  };
 </script>
 
 <template>

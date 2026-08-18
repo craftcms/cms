@@ -27,6 +27,8 @@ beforeEach(function () {
     // Load test plugin
     loadTestPlugin();
 
+    TestPlugin::$useSettings = true;
+    TestPlugin::$useSettingsForm = true;
     TestPlugin::$settingsRequestClass = Request::class;
 });
 
@@ -141,27 +143,40 @@ test('editSettings returns 403 when allowAdminChanges is false and plugin lacks 
 });
 
 test('editSettings loads for existing plugin', function () {
+    app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo = 'saved value';
+
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
-        ->assertSee('Test Plugin')
-        ->assertSee('settings-foo');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Form')
+            ->where('title', 'Test Plugin')
+            ->where('form.scope', ['settings'])
+            ->where('form.values.settings.foo', 'saved value')
+            ->where('form.nodes.0.control.path', ['settings', 'foo'])
+            ->where('form.nodes.0.control.mode', 'editable')
+        );
+});
+
+test('editSettings renders settings validation errors', function () {
+    app(Plugins::class)->getPlugin('test-plugin')->getSettings()->errors()->add('foo', 'Foo is invalid.');
+
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.errors.0.path', ['settings', 'foo'])
+            ->where('form.errors.0.messages', ['Foo is invalid.'])
+        );
 });
 
 test('plugin settings form targets the plugin CP route', function () {
-    $html = get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
-        ->getContent();
-
-    expect($html)
-        ->toContainTag('form', [
-            'id' => 'main-form',
-            'action' => cp_url('settings/plugins/test-plugin'),
-            'method' => 'post',
-        ])
-        ->not->toContainTag('input', [
-            'name' => 'action',
-            'value' => 'plugins/save-plugin-settings',
-        ]);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('submit', [
+                'method' => 'post',
+                'url' => cp_url('settings/plugins/test-plugin'),
+            ])
+        );
 });
 
 test('editSettings returns read-only settings response when supported', function () {
@@ -169,8 +184,50 @@ test('editSettings returns read-only settings response when supported', function
 
     get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
         ->assertOk()
-        ->assertSee('settings-foo')
-        ->assertSee('disabled');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('readOnly', true)
+            ->where('form.nodes.0.control.mode', 'readOnly')
+        );
+});
+
+test('standard editable settings responses require a settings model', function () {
+    TestPlugin::$useSettings = false;
+    $plugin = new class(app()) extends TestPlugin {};
+    $plugin->handle = 'test-plugin';
+
+    expect(fn () => $plugin->getSettingsResponse())
+        ->toThrow(LogicException::class, 'must provide a settings model');
+});
+
+test('standard settings responses require a Form', function () {
+    TestPlugin::$useSettingsForm = false;
+    $plugin = new class(app()) extends TestPlugin {};
+    $plugin->handle = 'test-plugin';
+
+    expect(fn () => $plugin->getSettingsResponse())
+        ->toThrow(LogicException::class, 'must return a Form from settingsForm()');
+});
+
+test('plugins can override editable and read-only settings responses', function () {
+    $plugin = new class(app()) extends TestPlugin
+    {
+        public function getSettingsResponse(): mixed
+        {
+            return response('custom editable response');
+        }
+
+        public function getReadOnlySettingsResponse(): mixed
+        {
+            return response('custom read-only response');
+        }
+    };
+    $controller = app(PluginsController::class);
+
+    expect($controller->editSettings('custom', $plugin)->getContent())->toBe('custom editable response');
+
+    Cms::config()->allowAdminChanges = false;
+
+    expect($controller->editSettings('custom', $plugin)->getContent())->toBe('custom read-only response');
 });
 
 test('saveSettings validates settings', function () {

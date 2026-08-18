@@ -1,6 +1,6 @@
 import {describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from './components';
-import type {Component} from 'vue';
+import {createApp, defineComponent, h, useId, type Component} from 'vue';
 
 const testComponent = {name: 'TestComponent'} as Component;
 const alternateComponent = {name: 'AlternateComponent'} as Component;
@@ -9,6 +9,7 @@ describe('CP component registry', () => {
   it('installs registered components', () => {
     const registry = createCpComponentRegistry();
     const app = {
+      config: {idPrefix: ''},
       component: vi.fn(),
     };
 
@@ -21,6 +22,7 @@ describe('CP component registry', () => {
   it('registers components added after install', () => {
     const registry = createCpComponentRegistry();
     const app = {
+      config: {idPrefix: ''},
       component: vi.fn(),
     };
 
@@ -32,8 +34,8 @@ describe('CP component registry', () => {
 
   it('registers components with every mounted form host', () => {
     const registry = createCpComponentRegistry();
-    const firstApp = {component: vi.fn()};
-    const secondApp = {component: vi.fn()};
+    const firstApp = {config: {idPrefix: ''}, component: vi.fn()};
+    const secondApp = {config: {idPrefix: ''}, component: vi.fn()};
 
     registry.install(firstApp as any);
     registry.install(secondApp as any);
@@ -49,9 +51,32 @@ describe('CP component registry', () => {
     );
   });
 
+  it('gives each mounted app a unique Vue id prefix', () => {
+    const registry = createCpComponentRegistry();
+    const component = defineComponent({
+      setup: () => () => h('input', {id: useId()}),
+    });
+    const firstRoot = document.createElement('div');
+    const secondRoot = document.createElement('div');
+    const firstApp = createApp(component);
+    const secondApp = createApp(component);
+
+    registry.install(firstApp);
+    registry.install(secondApp);
+    firstApp.mount(firstRoot);
+    secondApp.mount(secondRoot);
+
+    expect(firstRoot.querySelector('input')?.id).not.toBe(
+      secondRoot.querySelector('input')?.id
+    );
+
+    firstApp.unmount();
+    secondApp.unmount();
+  });
+
   it('stops registering components with unmounted form hosts', () => {
     const registry = createCpComponentRegistry();
-    const app = {component: vi.fn()};
+    const app = {config: {idPrefix: ''}, component: vi.fn()};
 
     registry.install(app as any);
     registry.uninstall(app as any);

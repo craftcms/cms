@@ -1669,6 +1669,7 @@ return [
     'Successfully activated the user.' => 'A felhasználót sikeesen aktiválta.',
     'Successfully deactivated the user.' => 'A felhasználó deaktiválása sikeres volt.',
     'Suffix Text' => 'Utótag szövege',
+    'Suggestions collapsed' => 'Suggestions collapsed',
     'Suspend' => 'Felfüggeszt',
     'Suspended' => 'Felfüggesztett',
     'Switch' => 'Kapcsoló',
@@ -2167,11 +2168,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => "Hello {{user.friendlyName|e}},
+    'account_activation_body' => 'Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>",
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',
@@ -2320,6 +2321,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{name} requires purchase.' => '{name} vásárláshoz kötött.',
     '{name} should be at least {value}.' => '{name} legalább {value} legyen.',
     '{name} sorted by {attribute}, {direction}' => '{name} rendezve {attribute} szerint, {direction}',
+    '{name} suggestions collapsed' => '{name} suggestions collapsed',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} csak a(z) {ownerType} elmentése után hozható létre.',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{elérhető frissítés} other{elérhető frissítés}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{oszlop} other{oszlop}}',

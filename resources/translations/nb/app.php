@@ -1669,6 +1669,7 @@ return [
     'Successfully activated the user.' => 'Aktiveringen av brukeren var vellykket.',
     'Successfully deactivated the user.' => 'Brukeren ble deaktivert.',
     'Suffix Text' => 'Suffiks-tekst',
+    'Suggestions collapsed' => 'Suggestions collapsed',
     'Suspend' => 'Suspender',
     'Suspended' => 'Suspendert',
     'Switch' => 'Bytt',
@@ -2249,9 +2250,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => "Hei, {{user.friendlyName|e}}
+    'test_email_body' => 'Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',
@@ -2318,6 +2319,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{name} requires purchase.' => '{name} krever kjøp.',
     '{name} should be at least {value}.' => '{name} må være minst {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} sortert etter {attribute}, {direction}',
+    '{name} suggestions collapsed' => '{name} suggestions collapsed',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} kan bare opprettes etter at {ownerType} er lagret.',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, one {} =1{tilgjengelig oppdatering} other{tilgjengelige oppdateringer}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{kolonne} other{kolonner}}',

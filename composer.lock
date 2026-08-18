@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "84796e77430ac384e8ac609e35d63e9d",
+    "content-hash": "acf5cd2e5dfd9c185f4afc382a0f3857",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -10037,6 +10037,31 @@
                 }
             ],
             "time": "2026-06-05T10:56:52+00:00"
+        },
+        {
+            "name": "craftcms/test-plugin",
+            "version": "1.0.1",
+            "dist": {
+                "type": "path",
+                "url": "./tests/TestClasses/TestPlugin",
+                "reference": "4aeb41ab38b42319d6988f83a39948d84d395640"
+            },
+            "type": "craft-plugin",
+            "extra": {
+                "class": "CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\src\\TestPlugin",
+                "handle": "test-plugin",
+                "name": "Test Plugin",
+                "schemaVersion": "1.0.0"
+            },
+            "autoload": {
+                "psr-4": {
+                    "CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\": ""
+                }
+            },
+            "description": "Test plugin for Craft CMS",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "dg/bypass-finals",

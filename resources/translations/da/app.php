@@ -1669,6 +1669,7 @@ return [
     'Successfully activated the user.' => 'Vellykket aktivering af brugeren.',
     'Successfully deactivated the user.' => 'Vellykket deaktivering af brugeren.',
     'Suffix Text' => 'Suffikstekst',
+    'Suggestions collapsed' => 'Suggestions collapsed',
     'Suspend' => 'Suspenderet',
     'Suspended' => 'Suspenderet',
     'Switch' => 'Skift',
@@ -2167,11 +2168,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2262,11 +2263,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'unknown' => 'ukendt',
     'user' => 'bruger',
     'users' => 'brugere',
-    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',
@@ -2324,6 +2325,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     '{name} requires purchase.' => '{name} skal købes.',
     '{name} should be at least {value}.' => '{name} skal mindst være {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} sorteret efter {attribute}, {direction}',
+    '{name} suggestions collapsed' => '{name} suggestions collapsed',
     '{nestedType} can only be created after the {ownerType} has been saved.' => '{nestedType} kan kun oprettes, når {ownerType} er blevet gemt.',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Tilgængelig opdatering} other{Tilgængelige opdateringer}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, one {} =1{kolone} other{kolonner}}',
