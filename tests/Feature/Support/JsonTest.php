@@ -16,10 +16,23 @@ test('encode', function (string $expected, mixed $data) {
 test('decode', function (mixed $expected, mixed $str, bool $asArray) {
     expect(Json::decode($str, $asArray))->toEqualCanonicalizing($expected);
 })->with([
-    [['test' => 'test'], '{"test":"test"}', true],
-    [(object) ['test' => 'test'], '{"test":"test"}', false],
-    [null, '', true],
-    [null, null, true],
+    'object as array' => [['test' => 'test'], '{"test":"test"}', true],
+    'object as object' => [(object) ['test' => 'test'], '{"test":"test"}', false],
+    'array' => [['test'], '["test"]', true],
+    'string' => ['test', '"test"', true],
+    'integer' => [42, '42', true],
+    'boolean' => [true, 'true', true],
+    'JSON null' => [null, 'null', true],
+    'empty string' => [null, '', true],
+    'null' => [null, null, true],
+]);
+
+test('decode rejects invalid values', function (mixed $value) {
+    expect(fn () => Json::decode($value))
+        ->toThrow(InvalidArgumentException::class, 'Invalid JSON data.');
+})->with([
+    'malformed JSON' => ['{"test":"test"'],
+    'non-string value' => [[]],
 ]);
 
 test('decodeIfJson', function (mixed $expected, string $str) {

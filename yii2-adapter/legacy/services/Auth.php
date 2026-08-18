@@ -297,7 +297,16 @@ class Auth extends Component
                 ->serialize($requestOptions, 'json');
         }
 
-        return app(Passkeys::class)->verifyPasskey($user, $requestOptions, $response);
+        $passkeys = app(Passkeys::class);
+        $credentialRecord = $passkeys->verifyPasskey($user, $requestOptions, $response);
+
+        if ($credentialRecord === false) {
+            return false;
+        }
+
+        $passkeys->webauthnServer()->getCredentialRepository()->saveCredentialSource($credentialRecord);
+
+        return true;
     }
 
     /**

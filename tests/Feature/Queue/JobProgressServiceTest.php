@@ -34,11 +34,20 @@ it('can set and retrieve job progress', function () {
         ->label->toBe('Processing item 5 of 10');
 });
 
-it('can update existing job progress', function () {
+it('atomically creates and updates existing job progress', function () {
     $uid = 'test-job-456';
 
+    DB::enableQueryLog();
+
     $this->service->setProgress($uid, 'Test Job', 25, 'Starting');
+    $creationQueries = DB::getQueryLog();
+
+    DB::flushQueryLog();
+
     $this->service->setProgress($uid, 'Test Job Updated', 75, 'Almost done');
+    $updateQueries = DB::getQueryLog();
+
+    DB::disableQueryLog();
 
     $progress = $this->service->getProgress($uid);
 
@@ -47,9 +56,32 @@ it('can update existing job progress', function () {
         ->progress->toBe(75)
         ->label->toBe('Almost done');
 
-    // Verify only one row exists
     $count = DB::table(Table::JOBPROGRESS)->where('uid', $uid)->count();
-    expect($count)->toBe(1);
+
+    expect($creationQueries)->toHaveCount(1)
+        ->and($updateQueries)->toHaveCount(1)
+        ->and($count)->toBe(1);
+});
+
+it('does not leak a transaction when persistence fails', function () {
+    $transactionLevel = DB::transactionLevel();
+    $fail = true;
+
+    DB::beforeExecuting(function () use (&$fail) {
+        if (! $fail) {
+            return;
+        }
+
+        $fail = false;
+
+        throw new RuntimeException('Job progress persistence failed.');
+    });
+
+    expect(fn () => $this->service->setProgress('failed-write', 'Failed write', 50))
+        ->toThrow(RuntimeException::class);
+
+    expect(DB::transactionLevel())->toBe($transactionLevel)
+        ->and($this->service->getProgress('failed-write'))->toBeNull();
 });
 
 it('returns null for non-existent job', function () {

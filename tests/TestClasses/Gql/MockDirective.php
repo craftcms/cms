@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\TestClasses\Gql;
 
 use CraftCms\Cms\Gql\Directives\Directive;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -19,12 +20,18 @@ class MockDirective extends Directive
      */
     public static function create(): GqlDirective
     {
-        return new self([
+        return GqlEntityRegistry::getOrCreate(static::name(), fn () => new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
-        ]);
+            'args' => [
+                [
+                    'name' => 'prefix',
+                    'type' => MockType::getType(),
+                ],
+            ],
+        ]));
     }
 
     /**
