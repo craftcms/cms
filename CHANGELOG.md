@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-alpha.17 - 2026-08-18
 
 - Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.
 - Changed `CraftCms\Cms\Auth\Passkeys\Passkeys::verifyPasskey()` to return the updated credential record on success.
