@@ -3,6 +3,7 @@ import {property} from 'lit/decorators.js';
 import {LionTooltip} from '@lion/ui/tooltip.js';
 import {withTooltipConfig} from '@lion/ui/overlays.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
 
 /**
  * craft-tooltip shows contextual text for an external trigger element
@@ -41,6 +42,10 @@ export default class CraftTooltip extends LionTooltip {
     return [
       ...super.styles,
       css`
+        :host {
+          display: contents;
+        }
+
         ::slotted([slot='content']) {
           background-color: var(--c-color-black-fill-loud);
           border: 1px solid var(--c-color-black-border-loud);
@@ -130,7 +135,12 @@ export default class CraftTooltip extends LionTooltip {
       ...config,
       popperConfig: {
         ...config.popperConfig,
+        strategy: 'fixed',
         placement: this.placement,
+        modifiers: [
+          ...(config.popperConfig?.modifiers ?? []),
+          ...viewportEscapingModifiers(),
+        ],
       },
     };
   }

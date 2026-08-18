@@ -1,12 +1,12 @@
-import { property, state } from "lit/decorators.js";
-import type { CSSResultGroup, PropertyValues } from "lit";
-import { html, LitElement, nothing } from "lit";
-import styles from "./chip.styles.js";
-import { classMap } from "lit/directives/class-map.js";
-import { Appearance, type AppearanceValue } from "@src/constants/appearances";
-import { Variant, type VariantValue } from "@src/constants/variants";
-import type { SizeValue } from "@src/constants/size";
-import { ThumbnailLoader } from "@src/utilities/thumbnail-loader";
+import {property, state} from 'lit/decorators.js';
+import type {CSSResultGroup, PropertyValues} from 'lit';
+import {html, LitElement, nothing} from 'lit';
+import styles from './chip.styles.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {Appearance, type AppearanceValue} from '@src/constants/appearances';
+import {Variant, type VariantValue} from '@src/constants/variants';
+import type {SizeValue} from '@src/constants/size';
+import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 
 /**
  * @summary A compact, inline element that pairs a label with an optional
@@ -40,25 +40,25 @@ export default class CraftChip extends LitElement {
   static override styles: CSSResultGroup = [styles];
 
   /** Size of the chip. */
-  @property() size: SizeValue | "" = "";
+  @property() size: SizeValue | '' = '';
 
   /** Variant of the chip. `plain` will render with no border or padding */
-  @property({ reflect: true }) variant: VariantValue = Variant.Neutral;
+  @property({reflect: true}) variant: VariantValue = Variant.Neutral;
 
   /** Appearance of the chip. Defaults to `outline-fill`. */
-  @property({ reflect: true }) appearance: AppearanceValue =
+  @property({reflect: true}) appearance: AppearanceValue =
     Appearance.OutlineFill;
 
   /** Shortcut for adding an icon as the prefix */
   @property() icon: string | null = null;
 
-  @property({ attribute: "show-indicators", type: Boolean })
+  @property({attribute: 'show-indicators', type: Boolean})
   showIndicators: boolean = false;
-  @property({ attribute: "show-status", type: Boolean })
+  @property({attribute: 'show-status', type: Boolean})
   showStatus: boolean = false;
-  @property({ attribute: "show-thumb", type: Boolean }) showThumb: boolean =
+  @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean =
     false;
-  @property({ type: Boolean }) selectable: boolean = false;
+  @property({type: Boolean}) selectable: boolean = false;
 
   #thumbLoader = new ThumbnailLoader();
 
@@ -84,7 +84,7 @@ export default class CraftChip extends LitElement {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["slot"],
+      attributeFilter: ['slot'],
     });
   }
 
@@ -133,15 +133,15 @@ export default class CraftChip extends LitElement {
       <div
         part="chip"
         class="${classMap({
-          "cp-chip": true,
-          "cp-chip--small": this.size === "small",
-          "cp-chip--medium": this.size === "medium",
-          "cp-chip--large": this.size === "large",
-          "cp-chip--plain": this.appearance === Appearance.Plain,
-          "cp-chip--selectable": this.selectable,
-          "cp-chip--show-thumb": this.showThumb,
-          "cp-chip--show-indicators": this.showIndicators,
-          "cp-chip--show-status": this.showStatus,
+          'cp-chip': true,
+          'cp-chip--small': this.size === 'small',
+          'cp-chip--medium': this.size === 'medium',
+          'cp-chip--large': this.size === 'large',
+          'cp-chip--plain': this.appearance === Appearance.Plain,
+          'cp-chip--selectable': this.selectable,
+          'cp-chip--show-thumb': this.showThumb,
+          'cp-chip--show-indicators': this.showIndicators,
+          'cp-chip--show-status': this.showStatus,
         })}"
       >
         ${this.selectable ? html` <input type="checkbox" />` : nothing}
@@ -159,12 +159,12 @@ export default class CraftChip extends LitElement {
   }
 }
 
-if (!customElements.get("craft-chip")) {
-  customElements.define("craft-chip", CraftChip);
+if (!customElements.get('craft-chip')) {
+  customElements.define('craft-chip', CraftChip);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "craft-chip": CraftChip;
+    'craft-chip': CraftChip;
   }
 }

@@ -81,7 +81,10 @@ export interface ActionMenuItemGroup {
   type: 'group';
   heading?: string;
   items: Array<
-    ActionMenuItemHr | ActionMenuItemDisplay | ActionMenuItemButton | ActionMenuItemLink
+    | ActionMenuItemHr
+    | ActionMenuItemDisplay
+    | ActionMenuItemButton
+    | ActionMenuItemLink
   >;
 }
 

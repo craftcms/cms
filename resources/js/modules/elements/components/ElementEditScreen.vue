@@ -308,7 +308,6 @@ function reload(): void {
                 </div>
 
                 <craft-tab slot="tab" id="tab-1">
-                  <craft-tooltip for="tab-1">{{ t("Activity") }}</craft-tooltip>
                   <craft-icon name="wave-pulse" :label="t('Activity')"></craft-icon>
                 </craft-tab>
                 <div slot="panel">
@@ -350,10 +349,6 @@ function reload(): void {
   padding-inline: var(--c-spacing-md);
 }
 
-.element-editor__body {
-  padding-inline: var(--c-spacing-lg);
-}
-
 .element-editor__header {
   display: flex;
   align-items: center;
@@ -378,6 +373,7 @@ function reload(): void {
 .element-editor__body {
   display: grid;
   gap: var(--c-spacing-md);
+  padding-inline: var(--c-spacing-lg);
 }
 
 .element-editor__content {
@@ -403,34 +399,35 @@ function reload(): void {
   height: 100%;
 }
 
+.element-editor__body.element-editor__body--details {
+  grid-template-columns: minmax(0, 1fr) clamp(21rem, 25%, 25rem);
+}
+
+/* Closing the details tabs shrinks the element to just its rail, but the
+   track it sits in is sized independently — without this the content would
+   keep its width and leave a hole. `auto` hands the space back, and the
+   `collapsed` attribute is reflected by `craft-tabs`, so this needs no
+   listener and can't fall out of step with the strip. */
+.element-editor__body.element-editor__body--details:has(
+      craft-tabs[collapsed]
+    ) {
+  grid-template-columns: minmax(0, 1fr) auto;
+
+  /* `container-type: inline-size` below is `contain: inline-size`, so the
+     column's contents can't size it — an `auto` track would collapse to
+     zero and let the rail overhang the page. Containment only exists for
+     queries inside the panel, and a collapsed strip has no panel showing,
+     so it costs nothing to drop it while closed. */
+  .element-editor__details {
+    container-type: normal;
+  }
+}
+
 @container (width >= 768px) {
   .element-editor__body {
     align-items: start;
   }
 
-  .element-editor__body.element-editor__body--details {
-    grid-template-columns: minmax(0, 1fr) clamp(14rem, 25%, 20rem);
-  }
-
-  /* Closing the details tabs shrinks the element to just its rail, but the
-     track it sits in is sized independently — without this the content would
-     keep its width and leave a hole. `auto` hands the space back, and the
-     `collapsed` attribute is reflected by `craft-tabs`, so this needs no
-     listener and can't fall out of step with the strip. */
-  .element-editor__body.element-editor__body--details:has(
-      craft-tabs[collapsed]
-    ) {
-    grid-template-columns: minmax(0, 1fr) auto;
-
-    /* `container-type: inline-size` below is `contain: inline-size`, so the
-       column's contents can't size it — an `auto` track would collapse to
-       zero and let the rail overhang the page. Containment only exists for
-       queries inside the panel, and a collapsed strip has no panel showing,
-       so it costs nothing to drop it while closed. */
-    .element-editor__details {
-      container-type: normal;
-    }
-  }
 }
 
 craft-tabs::part(base) {
@@ -442,12 +439,12 @@ craft-tabs::part(strip) {
 }
 
 craft-tab {
-  padding: var(--c-spacing-md);
+  padding: 0;
+  width: var(--c-size-touch-target);
   background-color: white;
   aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   border-radius: var(--c-radius-md);
   border: 1px solid transparent;
 }

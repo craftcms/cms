@@ -34,12 +34,13 @@ describe('variant styles', () => {
    * Both selectors, for every variant: the host wears it, and so does any
    * element inside the shadow root that asks for it by attribute.
    */
-  it.each(Object.keys(semanticColors))('scopes %s to host and region', (
-    variant
-  ) => {
-    expect(css).toContain(`:host([variant~='${variant}'])`);
-    expect(css).toContain(`[data-variant~='${variant}']`);
-  });
+  it.each(Object.keys(semanticColors))(
+    'scopes %s to host and region',
+    (variant) => {
+      expect(css).toContain(`:host([variant~='${variant}'])`);
+      expect(css).toContain(`[data-variant~='${variant}']`);
+    }
+  );
 
   /**
    * `~=` throughout, so a multi-valued attribute (`variant="neutral outline"`)

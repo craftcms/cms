@@ -20,10 +20,9 @@ export default css`
   }
 
   craft-badge-indicator {
-      position: absolute;
-      inset-inline-end: 0;
-      inset-block-end: 0;
-    }
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-end: 0;
   }
 
   .nav-item--prefixed {
@@ -70,7 +69,7 @@ export default css`
     aspect-ratio: 1;
     width: 100%;
   }
-  
+
   .nav-item__suffix {
     justify-self: end;
   }
@@ -96,11 +95,12 @@ export default css`
     border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);
   }
 
-  :host([icon-only]) {
-    .nav-item {
-      gap: 0;
-      grid-template-columns: calc(24rem / 16);
-    }
+  .nav-item--icon {
+    width: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
+    display: block;
+    border: 1px solid transparent;
+    aspect-ratio: 1;
+    padding: 0;
 
     .nav-item__suffix {
       display: grid;

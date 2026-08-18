@@ -14,6 +14,7 @@ CP Styles
 
 :root {
   --global-sidebar-width: calc(226rem / 16);
+  --global-sidebar-collapsed-width: calc(var(--c-size-touch-target) + var(--c-spacing-md));
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
 

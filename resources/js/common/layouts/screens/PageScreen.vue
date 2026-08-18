@@ -119,8 +119,9 @@ const skipLinks = computed(() => [
   ...(props.additionalSkipLinks ?? []),
 ]);
 
-// The sidebar owns the control that closes it, but that control goes away
-// with it — so the shell renders the one that brings it back.
+// A floating sidebar takes its own toggle off-canvas with it, leaving no way
+// back in — so the shell renders one. A docked sidebar collapses to a rail
+// and keeps its toggle, so it doesn't need this.
 const {
   sidebar: globalSidebar,
   toggle: toggleSidebar,
@@ -224,16 +225,12 @@ useActionRedirect();
           >
           <div class="container">
             <div class="flex gap-4 py-1 items-center justify-between">
-              <!-- The sidebar's own toggle is inside it, so it unmounts when the
-                sidebar hides. This is the way back in — for a collapsed docked
-                sidebar and for a floating one on small screens alike, which is
-                why it keys off visibility rather than the mode. -->
               <craft-button
-                v-if="globalSidebar.visibility === 'hidden'"
+                v-if="globalSidebar.mode === 'floating' && globalSidebar.visibility === 'hidden'"
                 icon
                 type="button"
                 size="small"
-                :variant="ButtonVariant.Plain"
+                :variant="ButtonVariant.Outline"
                 :ref="registerToggle"
                 :aria-label="t('Show sidebar')"
                 @click="toggleSidebar"

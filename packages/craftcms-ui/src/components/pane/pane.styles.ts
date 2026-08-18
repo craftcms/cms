@@ -43,7 +43,7 @@ export default css`
   }
 
   /* Appearances ------------------------------------------------------------ */
-  
+
   :host([appearance='plain']) {
     --_pane-border-color: transparent;
     --_pane-shadow: none;

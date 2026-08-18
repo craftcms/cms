@@ -437,8 +437,11 @@ describe('groups', () => {
 
   /** The generated content container, as Lion leaves it. */
   function contentNode(element: CraftActionMenu): HTMLElement {
-    return element.querySelector<HTMLElement>('.action-menu__search')
-      ?.parentElement as HTMLElement ?? element.querySelector<HTMLElement>('[slot="content"]')!;
+    return (
+      (element.querySelector<HTMLElement>('.action-menu__search')
+        ?.parentElement as HTMLElement) ??
+      element.querySelector<HTMLElement>('[slot="content"]')!
+    );
   }
 
   it('renders a heading followed by its members as siblings', async () => {
@@ -505,9 +508,7 @@ describe('groups', () => {
       {type: 'group', items: [{label: 'Solo'}]},
     ]);
 
-    expect(
-      element.querySelector('.action-menu__heading')
-    ).toBeNull();
+    expect(element.querySelector('.action-menu__heading')).toBeNull();
     expect(element.querySelectorAll('craft-action-item').length).toBe(1);
   });
 
@@ -525,9 +526,7 @@ describe('groups', () => {
     typeIntoSearch(element, 'zzz');
 
     // The heading is presentational, so filtering never hides or matches it.
-    expect(
-      element.querySelector('.action-menu__heading')
-    ).not.toBeNull();
+    expect(element.querySelector('.action-menu__heading')).not.toBeNull();
     expect(visibleLabels(element)).toEqual([]);
   });
 });

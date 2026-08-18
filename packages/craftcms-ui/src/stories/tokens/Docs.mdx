@@ -190,7 +190,7 @@ which is the case above, and `[data-variant~='…']`, which any element inside
 your shadow root can ask for by attribute:
 
 ```ts
-html`<div class="callout__action" data-variant=${this.variant}>`
+html`<div class="callout__action" data-variant=${this.variant}></div>`;
 ```
 
 That's the shadow-DOM twin of the `[data-color]` rules in
