@@ -58,8 +58,8 @@
 - Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-6qw4-cjqw-fj72](https://github.com/craftcms/cms/security/advisories/GHSA-6qw4-cjqw-fj72), [GHSA-3wcr-p33w-528f](https://github.com/craftcms/cms/security/advisories/GHSA-3wcr-p33w-528f))
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-329j-cx85-8r56](https://github.com/craftcms/cms/security/advisories/GHSA-329j-cx85-8r56), [GHSA-4w9w-3x96-7ghp](https://github.com/craftcms/cms/security/advisories/GHSA-4w9w-3x96-7ghp), [GHSA-2f55-h4xr-92p2](https://github.com/craftcms/cms/security/advisories/GHSA-2f55-h4xr-92p2), [GHSA-242m-9wq7-vhwq](https://github.com/craftcms/cms/security/advisories/GHSA-242m-9wq7-vhwq), [GHSA-9xvf-7w97-83mv](https://github.com/craftcms/cms/security/advisories/GHSA-9xvf-7w97-83mv), [GHSA-ccpq-mw3m-wwg2](https://github.com/craftcms/cms/security/advisories/GHSA-ccpq-mw3m-wwg2))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-5fh8-74j8-mvcp](https://github.com/craftcms/cms/security/advisories/GHSA-5fh8-74j8-mvcp))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-5fjj-496j-2qqf])
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-5mjc-jqcw-6vrp)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-5fjj-496j-2qqf](https://github.com/craftcms/cms/security/advisories/GHSA-5fjj-496j-2qqf))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-5mjc-jqcw-6vrp](https://github.com/craftcms/cms/security/advisories/GHSA-5mjc-jqcw-6vrp))
 
 ## 5.10.10 - 2026-07-08
 
