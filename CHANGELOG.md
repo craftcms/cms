@@ -3,6 +3,22 @@
 ## Unreleased
 
 - Replaced the asset index lifecycle flags with `CraftCms\Cms\Asset\Enums\AssetIndexStatus` and explicit status transitions.
+- Fixed a bug where Table field column handles became arrays after failed validation.
+- Fixed a bug where nested or concurrent searches could overwrite another search’s parser state.
+- Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.
+- Changed `CraftCms\Cms\Auth\Passkeys\Passkeys::verifyPasskey()` to return the updated credential record on success.
+- Changed GraphQL AST value decoding to use `webonyx/graphql-php` while preserving Craft-specific query condition validation.
+- Fixed a bug where cached user permission trees could become stale after permission changes or be modified by assignability filtering.
+- Improved element queries to retain only explicitly supplied custom-field criteria.
+- Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
+- Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.
+- Fixed inconsistent handling of forced-disabled plugin configuration values.
+- Improved job progress persistence by using an atomic upsert.
+- Changed `CraftCms\Cms\Support\Json::decode()` to use exception-based JSON decoding.
+- Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
+- Fixed a bug where throwing validation could run the validation lifecycle twice.
+- Fixed a bug where `CraftCms\Cms\Element\ElementCollection::with()` could pass incompatible element classes into eager loading.
+- Changed `craft:db:drop-all-tables` to use Laravel’s schema API.
 - Added `CraftCms\Cms\Plugin\Plugin::settingsForm()` for defining standard plugin settings pages with the Control Panel Form system. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Removed `CraftCms\Cms\Plugin\Plugin::settingsHtml()`. `settingsForm()` should be used instead; Yii-era plugin settings HTML remains supported by `craftcms/yii2-adapter`. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
@@ -19,6 +35,10 @@
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
 - Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
 - Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Improved Project Config change event handler registration by keeping callbacks and ordering metadata together.
+- Fixed a bug where the `jobprogress` table was missing `dateCompleted` and `dateFailed` columns for installs that were upgraded from Craft 5.
+- Fixed a bug where failed queue jobs were losing their descriptions. ([#19444](https://github.com/craftcms/cms/issues/19444))
+- Fixed a bug where queue job details in the Queue Manager utility included “Error” and timestamp values even if they were null.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 

@@ -11,7 +11,6 @@ use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -103,7 +103,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
 
                 // Prevent the page from being cached
                 if (! app()->runningInConsole()) {
-                    SetHeaders::noCache();
+                    ResponseHeaders::noCache();
                 }
 
                 // Return the temporary transform URL

@@ -97,7 +97,7 @@ readonly class FolderController
         // If there's a conflict and `force`/`merge` flags weren't passed in, then stop
         if ($existingFolder && ! $force && ! $request->shouldMergeFolders()) {
             return $this->asJsonSuccess(data: [
-                'conflict' => t('Folder "{folder}" already exists at target location', ['folder' => $folderToMove->name]),
+                'conflict' => t('Folder “{folder}” already exists at target location', ['folder' => $folderToMove->name]),
                 'folderId' => $request->folderBeingMovedId(),
                 'parentId' => $request->newParentFolderId(),
             ]);

@@ -56,7 +56,7 @@ test('login counts an invalid passkey once', function () {
             string $requestOptions,
             string $response,
             bool $checkOldUserHandle = false,
-        ): bool {
+        ): false {
             return false;
         }
     };

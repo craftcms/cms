@@ -433,6 +433,70 @@ describe('FormRenderer', () => {
     );
   });
 
+  it('renders table cell errors beside scalar values', async () => {
+    const table: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Form\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Form\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: {
+                handle: {type: 'singleline'},
+              },
+              keyed: true,
+              errors: {
+                first: {handle: true},
+                third: {handle: true},
+              },
+            },
+            path: ['columns'],
+            mode: 'editable',
+            deltaGroup: ['columns'],
+          },
+        },
+      ],
+      values: {
+        columns: {
+          first: {handle: 'invalid-handle'},
+          second: {handle: 'validHandle'},
+          third: {handle: 'col3'},
+        },
+      },
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(table);
+
+    const inputs = [
+      ...container.querySelectorAll<HTMLTextAreaElement>('tbody textarea'),
+    ];
+
+    expect(inputs.map((input) => input.value)).toEqual([
+      'invalid-handle',
+      'validHandle',
+      'col3',
+    ]);
+    expect(
+      inputs.map((input) => input.closest('td')?.classList.contains('error'))
+    ).toEqual([true, false, true]);
+    expect(renderer.currentValues()).toEqual(table.values);
+
+    const successful = structuredClone(table);
+    successful.nodes[0]!.control!.props.errors = {};
+    currentPayload.value = successful;
+    await nextTick();
+
+    expect(container.querySelector('td.error')).toBeNull();
+    expect(renderer.currentValues()).toEqual(table.values);
+  });
+
   it('reports control changes and applies external value updates', async () => {
     const derived: FormPayload = {
       scope: [],
