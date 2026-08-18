@@ -936,12 +936,16 @@ class Entries extends Component
      *
      * @param Section $section
      * @param array|null $siteSettings
-     * @return Entry The
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): void
     {
+        // Don't resave the entry if we are mid-migrations
+        if (Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            return;
+        }
+
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
@@ -1064,8 +1068,6 @@ class Entries extends Component
                 $elementsService->deleteElement($entryToDelete, true);
             }
         }
-
-        return $entry;
     }
 
     /**
