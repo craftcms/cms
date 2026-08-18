@@ -26,6 +26,10 @@ class ElementNotFoundException extends RecordsNotFoundException
      */
     private array $ids;
 
+    // CONFLICT-REVIEW: both sides added an equivalent generic return annotation for PHPStan
+    // (ours `@phpstan-return $this`, 6.x's `@return self<TElement>`). Kept ours because `$this`
+    // is at least as precise and the `@phpstan-` tag + blank line is the form this branch's
+    // code-style pass settled on (08fd175f84); 6.x's duplicate tag was dropped.
     /**
      * Set the affected Eloquent model and instance ids.
      *
