@@ -15,6 +15,13 @@ interface PasswordConfirmationOptions<T> {
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
   onSuccess?: () => void;
+  /**
+   * Runs before a submission starts, however it was triggered — including the
+   * cmd/ctrl + s shortcut below, which callers can't intercept from outside.
+   * Screens that write in the background (element autosave) use this to stand
+   * down so their request can't race or land on top of the submission.
+   */
+  onBeforeSave?: () => void;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -62,6 +69,8 @@ export function useSettingsSave<T extends Record<string, any>>(
     // navigates to a different record and needs the form to re-initialize.
     preserveState = true,
   }: FormSaveOptions = {}) {
+    options.onBeforeSave?.();
+
     const submitOptions = redirect
       ? {
           preserveScroll: true,

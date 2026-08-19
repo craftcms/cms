@@ -4,7 +4,7 @@ import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-import type {FormPayload} from '@/modules/forms/types';
+import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
@@ -218,17 +218,23 @@ export function useElementEditPage({saveData}: Options = {}) {
   // signal, so autosave hangs off them rather than watching the form — and off
   // whether the values actually differ from the server's, not off having been
   // told a control changed.
-  function onMutation(mutation: FormPayload['values']): void {
+  function onMutation(
+    mutation: FormPayload['values'],
+    kind: FormChangeKind = 'discrete'
+  ): void {
     const changed = onLayoutMutation(mutation);
 
     if (!applyingSavedForm && changed) {
-      autosave.schedule();
+      autosave.schedule(kind);
     }
   }
 
-  function onSidebarMutation(mutation: FormPayload['values']): void {
+  function onSidebarMutation(
+    mutation: FormPayload['values'],
+    kind: FormChangeKind = 'discrete'
+  ): void {
     if (onSidebarFormMutation(mutation)) {
-      autosave.schedule();
+      autosave.schedule(kind);
     }
   }
 
@@ -274,6 +280,10 @@ export function useElementEditPage({saveData}: Options = {}) {
           ? {redirect: pendingAction.value.redirect}
           : {}),
       }),
+      // A submission supersedes any draft write: drop the in-flight request and
+      // anything queued behind it, so a late draft save can't land on top of
+      // the submission or resurrect values it just consumed.
+      onBeforeSave: () => autosave.cancel(),
       onSuccess: () => {
         autosave.suspend(() => {
           advanceBaseline();

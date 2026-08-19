@@ -25,6 +25,7 @@
   } from './runtime';
   import type {
     FormChange,
+    FormChangeKind,
     FormControlPayload,
     FormNodePayload,
     FormPayload,
@@ -39,7 +40,11 @@
     errors?: FormPayload['errors'];
   }>();
   const emit = defineEmits<{
-    (event: 'update:mutation', mutation: FormPayload['values']): void;
+    (
+      event: 'update:mutation',
+      mutation: FormPayload['values'],
+      kind: FormChangeKind
+    ): void;
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const slots = useSlots();
@@ -89,7 +94,7 @@
 
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
-    emitMutation();
+    emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
     const refreshable = change.refreshable ?? payload.value.refreshable;
@@ -239,8 +244,8 @@
     return result;
   }
 
-  function emitMutation(): void {
-    emit('update:mutation', mutation());
+  function emitMutation(kind: FormChangeKind = 'discrete'): void {
+    emit('update:mutation', mutation(), kind);
   }
 
   function invalidate(message: string): void {

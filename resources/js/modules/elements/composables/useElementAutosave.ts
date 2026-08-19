@@ -2,7 +2,7 @@ import {actionClient} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {readonly, ref, type Ref} from 'vue';
-import type {FormPayload} from '@/modules/forms/types';
+import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
@@ -25,8 +25,16 @@ interface Options {
   isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
   enabled: boolean;
-  /** How long to wait after the last edit before saving. */
-  debounceMs?: number;
+  /**
+   * How long to wait after the last edit before saving, per change kind.
+   *
+   * Matches the legacy editor's cadence: a keystroke restarts a long timer so
+   * continuous typing collapses into one save, while a discrete change (a
+   * lightswitch, a relation being picked) saves almost immediately. The legacy
+   * editor infers this from keypress events; the Form system already tells us
+   * directly, so we take it from the change itself.
+   */
+  debounceMs?: Partial<Record<FormChangeKind, number>>;
 }
 
 /**
@@ -50,9 +58,11 @@ export function useElementAutosave(
   draftId: Readonly<Ref<number | null>>;
   savedAt: Readonly<Ref<string | null>>;
   error: Readonly<Ref<string | null>>;
+  httpStatus: Readonly<Ref<number | null>>;
   form: Readonly<Ref<FormPayload | null>>;
   save: () => Promise<void>;
-  schedule: () => void;
+  schedule: (kind?: FormChangeKind) => void;
+  cancel: () => void;
   suspend: (during: () => void) => void;
   setDraftId: (value: number | null) => void;
   clearForm: () => void;
@@ -61,14 +71,20 @@ export function useElementAutosave(
   const draftId = ref<number | null>(options.draftId);
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
+  const httpStatus = ref<number | null>(null);
   const formPayload = ref<FormPayload | null>(null);
 
   let inFlight: Promise<void> | null = null;
   let pending = false;
+  let controller: AbortController | null = null;
+  let cancelled = false;
 
   async function send(): Promise<void> {
     status.value = 'saving';
     error.value = null;
+    httpStatus.value = null;
+    cancelled = false;
+    controller = new AbortController();
 
     const payload: Record<string, any> = {
       ...form.data(),
@@ -88,7 +104,9 @@ export function useElementAutosave(
     }
 
     try {
-      const {data} = await actionClient.post(options.url, payload);
+      const {data} = await actionClient.post(options.url, payload, {
+        signal: controller.signal,
+      });
 
       draftId.value = data.draftId ?? draftId.value;
       savedAt.value = data.timestamp ?? null;
@@ -98,8 +116,18 @@ export function useElementAutosave(
       formPayload.value = data.form ?? formPayload.value;
       status.value = 'saved';
     } catch (e: any) {
+      // A save we aborted ourselves isn't a failure — a real submit took over
+      // and is now authoritative for this data, so surfacing an error here
+      // would be noise. Matches the legacy editor's `ignoreFailedRequest`.
+      if (cancelled) {
+        return;
+      }
+
       status.value = 'failed';
       error.value = e?.response?.data?.message ?? null;
+      httpStatus.value = e?.response?.status ?? null;
+    } finally {
+      controller = null;
     }
   }
 
@@ -133,18 +161,26 @@ export function useElementAutosave(
   // Driven by the Form renderers' change callbacks rather than a deep watch on
   // the form: the form is created empty and its keys are added dynamically, so
   // watching `form.data()` doesn't reliably track them.
-  const debounced = useDebounceFn(
-    () => void save(),
-    options.debounceMs ?? 1500
-  );
+  const delays: Record<FormChangeKind, number> = {
+    typing: options.debounceMs?.typing ?? 1000,
+    discrete: options.debounceMs?.discrete ?? 100,
+  };
+
+  // The delay varies per call, so the timer is held here rather than baked into
+  // a fixed-interval debounce. A pending save is always rescheduled at the
+  // newest change's cadence — typing after a discrete change re-arms the long
+  // timer rather than firing on the short one already in flight.
+  const delay = ref(delays.discrete);
+  const debounced = useDebounceFn(() => void save(), delay);
 
   let suspended = false;
 
-  function schedule(): void {
+  function schedule(kind: FormChangeKind = 'discrete'): void {
     if (suspended) {
       return;
     }
 
+    delay.value = delays[kind];
     void debounced();
   }
 
@@ -176,14 +212,33 @@ export function useElementAutosave(
     formPayload.value = null;
   }
 
+  /**
+   * Abandons the in-flight save and any queued follow-up.
+   *
+   * There is deliberately no retry: the baseline only advances on a save that
+   * lands, so whatever this request was carrying is still part of the next
+   * mutation and goes out with it. Losing the request doesn't lose the edit.
+   */
+  function cancel(): void {
+    cancelled = true;
+    pending = false;
+    controller?.abort();
+
+    if (status.value === 'saving') {
+      status.value = 'idle';
+    }
+  }
+
   return {
     status: readonly(status),
     draftId: readonly(draftId),
     savedAt: readonly(savedAt),
     error: readonly(error),
+    httpStatus: readonly(httpStatus),
     form: readonly(formPayload) as Readonly<Ref<FormPayload | null>>,
     save,
     schedule,
+    cancel,
     suspend,
     setDraftId,
     clearForm,
