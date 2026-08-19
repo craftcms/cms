@@ -59,6 +59,7 @@ export function useElementAutosave(
   savedAt: Readonly<Ref<string | null>>;
   error: Readonly<Ref<string | null>>;
   httpStatus: Readonly<Ref<number | null>>;
+  modified: Readonly<Ref<string[]>>;
   form: Readonly<Ref<FormPayload | null>>;
   save: () => Promise<void>;
   schedule: (kind?: FormChangeKind) => void;
@@ -72,6 +73,7 @@ export function useElementAutosave(
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
   const httpStatus = ref<number | null>(null);
+  const modified = ref<string[]>([]);
   const formPayload = ref<FormPayload | null>(null);
 
   let inFlight: Promise<void> | null = null;
@@ -114,6 +116,10 @@ export function useElementAutosave(
       // is the only place a nested element created by this save (a new Matrix
       // entry or address) can get its own Form payload from.
       formPayload.value = data.form ?? formPayload.value;
+      // What the element now differs from its canonical by — not what this
+      // request changed. The server reports the whole set every time, so it
+      // replaces rather than accumulates.
+      modified.value = data.modifiedAttributes ?? [];
       status.value = 'saved';
     } catch (e: any) {
       // A save we aborted ourselves isn't a failure — a real submit took over
@@ -235,6 +241,7 @@ export function useElementAutosave(
     savedAt: readonly(savedAt),
     error: readonly(error),
     httpStatus: readonly(httpStatus),
+    modified: readonly(modified) as Readonly<Ref<string[]>>,
     form: readonly(formPayload) as Readonly<Ref<FormPayload | null>>,
     save,
     schedule,

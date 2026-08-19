@@ -253,6 +253,7 @@
       ref="renderer"
       :payload="formPayload"
       :errors="errors"
+      :modified="autosave.modified.value"
       @update:mutation="onMutation"
     />
 
@@ -276,6 +277,7 @@
       ref="sidebarRenderer"
       :payload="sidebarPayload"
       :errors="sidebarErrors"
+      :modified="autosave.modified.value"
       @update:mutation="onSidebarMutation"
     />
 

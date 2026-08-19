@@ -17,6 +17,7 @@
   import {
     FormFailure,
     FormControlOverrides,
+    FormModifiedGroups,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -38,6 +39,12 @@
       scope?: string[]
     ) => Promise<FormPayload>;
     errors?: FormPayload['errors'];
+    /**
+     * Delta groups the server reports as modified, as dotted paths — the
+     * granularity change detection already works in, so an element's
+     * `modifiedAttributes` map straight onto it.
+     */
+    modified?: string[];
   }>();
   const emit = defineEmits<{
     (
@@ -68,6 +75,10 @@
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
   provide(FormControlOverrides, slots);
+  provide(
+    FormModifiedGroups,
+    computed(() => new Set(props.modified ?? []))
+  );
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {

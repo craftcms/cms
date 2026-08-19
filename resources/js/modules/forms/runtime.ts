@@ -1,5 +1,5 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey, Slots} from 'vue';
+import type {InjectionKey, Ref, Slots} from 'vue';
 import type {FormChange} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
@@ -8,6 +8,17 @@ export const FormFailure: InjectionKey<(message: string) => void> =
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
   'FormControlOverrides'
 );
+
+/**
+ * Delta groups the server has reported as modified, as dotted paths.
+ *
+ * Provided by the renderer and read by every field beneath it, rather than
+ * threaded through the node components, so a nested form several levels down
+ * marks its fields without every intermediate node forwarding a prop it has no
+ * other use for.
+ */
+export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormModifiedGroups');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';

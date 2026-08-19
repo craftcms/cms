@@ -302,6 +302,25 @@ describe('FormRenderer', () => {
     }
   });
 
+  it('badges the fields the server reports as modified', async () => {
+    app.unmount();
+    await mount(structuredClone(payload) as FormPayload, {
+      modified: ['settings.placeholder'],
+    });
+
+    const field = (name: string) =>
+      container
+        .querySelector<HTMLInputElement>(`[name="settings[${name}]"]`)!
+        .closest('craft-field')!;
+
+    expect(field('placeholder').getAttribute('status')).toBe('modified');
+    expect(field('placeholder').getAttribute('status-label')).toBe(
+      'This field has been modified.'
+    );
+    // Matched on the delta group, so a field the server didn't report stays clean.
+    expect(field('uiMode').getAttribute('status')).toBeNull();
+  });
+
   it('renders the shared payload with equivalent names, values, and errors', () => {
     const placeholder = container.querySelector<HTMLInputElement>(
       'input[name="settings[placeholder]"]'
@@ -2746,6 +2765,7 @@ describe('FormRenderer', () => {
       ) => Promise<FormPayload>;
       onMutation?: (mutation: FormPayload['values']) => void;
       onChange?: (change: FormChange, values: FormPayload['values']) => void;
+      modified?: string[];
       components?: Record<string, CpComponentRegistration>;
       registerComponents?: (
         components: Pick<
@@ -2768,6 +2788,7 @@ describe('FormRenderer', () => {
           {
             ref: rendererRef,
             payload: currentPayload.value,
+            modified: options.modified,
             refresh: options.refresh,
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,
