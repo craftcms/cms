@@ -13,8 +13,8 @@
   }>();
   const {nav} = useCraftData();
 
-  // Renders the nav as a rail: labels drop to tooltips and subnavs go away,
-  // since there's no room to indent them.
+  // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
+  // a flyout on hover or focus, since there's no room to indent them.
   const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
   const queue = computed(() => page.props.queue);
 </script>
@@ -32,7 +32,7 @@
     >
       {{ item.label }}
 
-      <template v-if="item.subnav && !iconOnly">
+      <template v-if="item.subnav">
         <craft-nav-list slot="subnav">
           <craft-nav-item
             v-for="subnavItem in item.subnav"

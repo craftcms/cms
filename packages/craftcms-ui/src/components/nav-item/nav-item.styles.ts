@@ -95,6 +95,24 @@ export default css`
     border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);
   }
 
+  /*
+   * Collapsed to a rail there's nowhere to indent a subnav, so it moves into a
+   * popover. The label leads it as the group's heading, standing in for the
+   * tooltip a childless item would get.
+   */
+  .flyout {
+    display: grid;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-sm);
+  }
+
+  .flyout__label {
+    padding-inline: var(--c-spacing-sm);
+    font-size: var(--c-text-sm);
+    font-weight: 600;
+    color: var(--c-text-quiet);
+  }
+
   .nav-item--icon {
     width: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
     display: block;
