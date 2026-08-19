@@ -55,7 +55,7 @@ abstract class ElementEditViewModel extends ViewModel
      * when there are more. Drafts are listed in full: they're the ones still
      * being worked on, and there's no drafts index to link out to.
      */
-    private const MAX_CONTEXT_MENU_REVISIONS = 5;
+    private const int MAX_CONTEXT_MENU_REVISIONS = 5;
 
     use EditsElement;
 
