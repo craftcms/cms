@@ -160,7 +160,7 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
-     * Test eager loading of authors and that the varying ways accessing that data return the same results
+     * Test eager loading of authors and that the varying ways of accessing that data return the same results
      *
      * @return void
      */
