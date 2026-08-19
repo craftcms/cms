@@ -174,7 +174,11 @@ readonly class Cp
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
-            'autosaveDrafts' => true, // @TODO: This should always be true in the frontend
+            // Constant by design: Craft 5's `autosaveDrafts` config setting was
+            // deprecated in 4.0 and isn't carried into Craft 6, so the Control
+            // Panel always autosaves. Kept as a key because the legacy editor
+            // still reads `Craft.autosaveDrafts`.
+            'autosaveDrafts' => true,
             'apiParams' => app(Api::class)->apiParams,
             'appId' => config('app.name'),
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
