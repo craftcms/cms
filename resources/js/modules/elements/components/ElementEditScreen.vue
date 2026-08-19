@@ -1,18 +1,9 @@
 <script setup lang="ts">
   /**
-   * The element editor, filling the shell's `main` slot.
-   *
-   * Same pipeline as `ElementEditPage` — `useElementEditPage()` owns the form,
-   * autosave, activity polling and saving — but none of the page chrome is the
-   * layout's: by taking the `main` slot it replaces `PageScreen`'s whole inner
-   * region, so the breadcrumb bar, header, form element, content column and
-   * details column are all rendered here, and free to be rearranged.
-   *
-   * Contract, inherited from that slot: this renders the `#main` landmark the
-   * skip link targets, and owns its own `<form>`.
-   *
-   * Full-page only. In a slideout the panel's shell renders its own header,
-   * form and footer, so pages dispatch to `ElementEditPage` there.
+   * Full-page element editor. Takes the shell's `main` slot, so it renders the
+   * `#main` landmark and owns its own `<form>`, and is free to arrange the
+   * breadcrumbs, header and columns itself. `ElementEditor` is the counterpart
+   * for hosts that supply their own chrome, e.g. a slideout panel.
    */
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
@@ -23,7 +14,7 @@
   import FormActions from '@/common/components/FormActions.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -59,7 +50,7 @@
     sidebarPayload,
     sidebarRenderer,
     submitAction,
-  } = useElementEditPage({saveData: props.saveData});
+  } = useElementEditor({saveData: props.saveData});
 
   const crumbs = computed(
     () => (payload.crumbs ?? []) as Array<BreadcrumbItem>

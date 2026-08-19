@@ -1,4 +1,10 @@
 <script setup lang="ts">
+  /**
+   * The element editor without page chrome: it configures the surrounding
+   * layout through `useAppLayout()` and `LayoutSlot` rather than rendering one,
+   * so a host owns the header, form and footer. `ElementEditScreen` is the
+   * full-page counterpart.
+   */
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
@@ -7,7 +13,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
 
   const props = defineProps<{
@@ -34,7 +40,7 @@
     sidebarPayload,
     sidebarRenderer,
     submitAction,
-  } = useElementEditPage({saveData: props.saveData});
+  } = useElementEditor({saveData: props.saveData});
 
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>

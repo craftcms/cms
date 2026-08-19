@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import ElementEditPage from '@/modules/elements/components/ElementEditPage.vue';
+  import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
   import ElementEditScreen from '@/modules/elements/components/ElementEditScreen.vue';
   import {useIsSlideout} from '@/common/composables/screen';
 
@@ -10,7 +10,7 @@
   // Inline `<AppLayout>` (inside `ElementEditScreen`), so no ambient layout.
   defineOptions({layout: []});
 
-  // The shared edit payload comes from the ElementEditPage pipeline; only the
+  // The shared edit payload comes from the ElementEditor pipeline; only the
   // Entry-specific keys (EntryEditViewModel) remain props.
   const props = defineProps<{
     saveId: number | null;
@@ -19,7 +19,7 @@
     sectionHandle: string | null;
   }>();
 
-  const editor = useIsSlideout() ? ElementEditPage : ElementEditScreen;
+  const editor = useIsSlideout() ? ElementEditor : ElementEditScreen;
 
   // What `entries/save-entry` needs to resolve the entry it's saving. The
   // field layout and meta fields are collected by the pipeline itself.

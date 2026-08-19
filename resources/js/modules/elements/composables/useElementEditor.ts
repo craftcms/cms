@@ -100,7 +100,7 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditPage({saveData}: Options = {}) {
+export function useElementEditor({saveData}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -304,8 +304,11 @@ export function useElementEditPage({saveData}: Options = {}) {
     }),
     {
       transform: (data) => ({
-        ...data,
+        // Identity first, so the form wins where they overlap: the entry type
+        // can be changed in the sidebar, and `saveData()` only knows the one
+        // the page was rendered with.
         ...saveData?.(),
+        ...data,
         // Once autosave has created a provisional draft, the submission has to
         // target it — otherwise applying would save the canonical element and
         // strand the draft holding the newer values.

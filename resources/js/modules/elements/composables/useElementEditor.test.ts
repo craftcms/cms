@@ -14,7 +14,7 @@ import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormRenderer from '@/modules/forms/FormRenderer.vue';
 import {registerFormComponents} from '@/modules/forms/register';
 import type {FormPayload} from '@/modules/forms/types';
-import {useElementEditPage} from './useElementEditPage';
+import {useElementEditor} from './useElementEditor';
 
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
@@ -71,7 +71,7 @@ function slideoutController() {
   };
 }
 
-describe('useElementEditPage', () => {
+describe('useElementEditor', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
   const attachInternals = Object.getOwnPropertyDescriptor(
@@ -118,14 +118,14 @@ describe('useElementEditPage', () => {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
     // `props` as a computed, and the slideout store's panels are `reactive()`.
     const page = shallowReactive({props: screenProps});
-    let editor!: ReturnType<typeof useElementEditPage>;
+    let editor!: ReturnType<typeof useElementEditor>;
 
-    // The real field layout, wired the way `ElementEditPage` wires it — the
+    // The real field layout, wired the way `ElementEditor` wires it — the
     // renderer is what holds the unsaved values, so a screen with a `form`
     // payload can only be reasoned about with one mounted.
     const Editor = defineComponent({
       setup() {
-        editor = useElementEditPage();
+        editor = useElementEditor();
 
         return () =>
           editor.formPayload.value
