@@ -8,8 +8,10 @@ use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
+use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
@@ -482,6 +484,16 @@ describe('getAllImageTransformers', function () {
         $registry->remove(RegisteredImageTransformer::class);
 
         expect($this->service->getAllImageTransformers())->not()->toContain(RegisteredImageTransformer::class);
+    });
+
+    it('does not instantiate registered transformers during invalidation', function () {
+        app(ImageTransformers::class)->register(RegisteredImageTransformer::class);
+        $asset = Asset::factory()->createElement();
+        Event::fake([AssetTransformsInvalidating::class]);
+
+        $this->service->deleteCreatedTransformsForAsset($asset);
+
+        Event::assertDispatchedOnce(AssetTransformsInvalidating::class);
     });
 });
 

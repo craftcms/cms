@@ -358,13 +358,6 @@ class ImageTransforms
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
         event(new AssetTransformsInvalidating(asset: $asset));
-
-        $transformers = $this->getAllImageTransformers();
-
-        foreach ($transformers as $type) {
-            $transformer = $this->getImageTransformer($type);
-            $transformer->invalidateAssetTransforms($asset);
-        }
     }
 
     /**

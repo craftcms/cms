@@ -20,8 +20,10 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Url;
@@ -270,6 +272,50 @@ it('dispatches AssetReplacing event with filename', function () {
 
     @unlink($tempFile);
 });
+
+it('invalidates Asset Transforms once for each source lifecycle operation', function (Closure $operation) {
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $rootFolder->id,
+        'path' => 'source/',
+    ]);
+    $destination = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $rootFolder->id,
+        'path' => 'destination/',
+    ]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => fake()->uuid().'.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), 'source');
+    Event::fake([AssetTransformsInvalidating::class]);
+
+    $operation($this->assets, $asset, $destination->id);
+
+    Event::assertDispatchedTimes(AssetTransformsInvalidating::class, 1);
+})->with([
+    'replacement' => [function (Assets $assets, Asset $asset): void {
+        $replacement = tempnam(sys_get_temp_dir(), 'craft-asset-replacement-');
+        file_put_contents($replacement, 'replacement');
+        $assets->replaceAssetFile($asset, $replacement, $asset->getFilename());
+    }],
+    'movement' => [function (Assets $assets, Asset $asset, int $destinationId): void {
+        $result = $assets->moveAsset($asset, app(Folders::class)->getFolderById($destinationId));
+
+        expect($result)->toBeTrue();
+    }],
+    'renaming' => [function (Assets $assets, Asset $asset): void {
+        $assets->moveAsset($asset, $asset->getFolder(), 'renamed-'.$asset->getFilename());
+    }],
+    'deletion' => [function (Assets $assets, Asset $asset): void {
+        app(Elements::class)->deleteElement($asset, true);
+    }],
+]);
 
 it('resets caches', function () {
     $this->assets->reset();

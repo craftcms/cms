@@ -14,12 +14,15 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,6 +32,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/image-transformer-test/test-disk'),
         'url' => 'https://example.test/image-transformer-test',
     ]);
+    Storage::disk('test-disk')->deleteDirectory('');
 
     $this->volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
@@ -395,6 +399,66 @@ it('uses transform-disk-relative paths while preserving the deletion event path'
 
     expect($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
     Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms'.DIRECTORY_SEPARATOR.$path);
+});
+
+it('cleans the Craft transform index when an Asset is invalidated', function () {
+    $asset = ($this->createImageAsset)();
+    $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
+    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+
+    event(new AssetTransformsInvalidating($asset));
+
+    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse()
+        ->and($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
+});
+
+it('reports Craft cleanup failures with redacted context', function () {
+    $asset = ($this->createImageAsset)();
+    $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
+    $asset->getVolume()->getFs();
+    Exceptions::fake();
+    Filesystems::shouldReceive('disk')->andThrow(new RuntimeException('/secret/source/path.jpg'));
+
+    $this->transformer->deleteImageTransformFile($asset, $index);
+
+    Exceptions::assertReported(fn (RuntimeException $exception): bool => str_contains($exception->getMessage(), 'craft')
+        && str_contains($exception->getMessage(), (string) $asset->id)
+        && ! str_contains($exception->getMessage(), '/secret/source/path.jpg'));
+});
+
+it('does not reuse a rendition older than the source Asset', function () {
+    $asset = ($this->createImageAsset)();
+    $transform = new ImageTransform(['width' => 100]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+    $asset->dateModified = now();
+    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $disk = $asset->getVolume()->transformDisk();
+    $disk->put($path, 'stale-transform');
+    touch($disk->path($path), now()->subMinute()->getTimestamp());
+    Queue::fake();
+
+    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+    expect($result->url)->toContain('transformId=')
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->value('fileExists'))->toBeFalsy();
+    Queue::assertPushed(GenerateImageTransform::class);
+});
+
+it('includes the source revision in rendition URL identity', function () {
+    $asset = ($this->createImageAsset)();
+    $asset->dateUpdated = now();
+    $transform = new ImageTransform(['width' => 100]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $asset->getVolume()->transformDisk()->put($path, 'transform');
+    $index->fileExists = true;
+    $this->transformer->storeTransformIndexData($index);
+    Cms::config()->revAssetUrls(false);
+
+    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+    expect($result->url)->toContain('?v='.$asset->dateUpdated->getTimestamp());
 });
 
 it('rejects unsupported source kinds before generating transforms', function () {

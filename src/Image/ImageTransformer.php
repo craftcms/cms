@@ -26,6 +26,7 @@ use CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
@@ -166,13 +167,23 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         // If it's a local filesystem, make sure `fileExists` is accurate
         if ($disk instanceof LocalFilesystemAdapter) {
             $fileExists = $disk->exists($uri);
+            $staleAfter = $imageTransform->parameterChangeTime?->getTimestamp();
+            $dateModified = Arr::get($asset, 'dateModified');
+
+            if (is_string($dateModified) || is_numeric($dateModified)) {
+                $dateModified = DateTimeHelper::toDateTime($dateModified);
+            }
+
+            if ($dateModified instanceof DateTimeInterface) {
+                $staleAfter = max($staleAfter ?? 0, $dateModified->getTimestamp());
+            }
 
             // if the file exists on disk, make sure it's not stale
             if (
                 $fileExists &&
                 ! $index->fileExists &&
-                $imageTransform->parameterChangeTime &&
-                $disk->lastModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
+                $staleAfter !== null &&
+                $disk->lastModified($uri) <= $staleAfter
             ) {
                 $fileExists = false;
             }
@@ -254,11 +265,16 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             ? $disk->url($uri)
             : $this->privateTransformUrl($index);
 
-        if (Cms::config()->revAssetUrls) {
-            return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
+        $dateUpdated = Arr::get($asset, 'dateUpdated');
+        if (is_string($dateUpdated) || is_numeric($dateUpdated)) {
+            $dateUpdated = DateTimeHelper::toDateTime($dateUpdated);
         }
 
-        return $url;
+        if (! $dateUpdated instanceof DateTimeInterface || ($index->dateUpdated && $index->dateUpdated > $dateUpdated)) {
+            $dateUpdated = $index->dateUpdated;
+        }
+
+        return AssetsHelper::revUrl($url, $asset, $dateUpdated);
     }
 
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
@@ -297,29 +313,37 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
     public function invalidateAssetTransforms(Asset $asset): void
     {
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
+        $this->deleteTransformIndexDataByAssetId($asset->id);
 
         foreach ($transformIndexes as $transformIndex) {
             $this->deleteImageTransformFile($asset, $transformIndex);
         }
+    }
 
-        $this->deleteTransformIndexDataByAssetId($asset->id);
+    public function handleAssetTransformsInvalidating(AssetTransformsInvalidating $event): void
+    {
+        try {
+            $this->invalidateAssetTransforms($event->asset);
+        } catch (Throwable) {
+            $this->reportCleanupFailure($event->asset);
+        }
     }
 
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
-        $settings = $this->filesystemTransformSettings($asset);
-        $subPath = $settings === null
-            ? Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/')
-            : $this->outputSettings($settings)[1];
-        $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
-
-        event(new DeletingTransformedImage(asset: $asset, path: $path));
 
         try {
+            $settings = $this->filesystemTransformSettings($asset);
+            $subPath = $settings === null
+                ? Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/')
+                : $this->outputSettings($settings)[1];
+            $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
+
+            event(new DeletingTransformedImage(asset: $asset, path: $path));
             $this->transformDisk($asset)->delete($diskPath);
-        } catch (RuntimeException|NotSupportedException) {
-            // NBD
+        } catch (Throwable) {
+            $this->reportCleanupFailure($asset);
         }
     }
 
@@ -873,6 +897,11 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         DB::table(Table::IMAGETRANSFORMINDEX)
             ->where('assetId', $assetId)
             ->delete();
+    }
+
+    private function reportCleanupFailure(Asset $asset): void
+    {
+        report(new RuntimeException("Unable to clean Asset Transform renditions for Asset [{$asset->id}] with driver [craft]."));
     }
 
     /**
