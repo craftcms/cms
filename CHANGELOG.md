@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where field layout changes weren’t saved on entry type settings screens.
+
 ## 6.0.0-alpha.17 - 2026-08-18
 
 - Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.

@@ -412,6 +412,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   set config(config: FieldLayoutConfig) {
     this._config = config;
     this.$configInput.value = JSON.stringify(config);
+
+    // Assigning `.value` fires nothing, and the designer's own edits are drags
+    // and menu actions rather than input events, so without this the config
+    // changes silently. Anything wrapping the designer — the Vue control that
+    // backs entry types, most importantly — then keeps posting the layout it
+    // first rendered with, and the save succeeds having changed nothing.
+    this.$configInput.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   updateConfig(
