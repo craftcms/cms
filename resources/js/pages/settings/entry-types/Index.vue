@@ -145,10 +145,9 @@
 <template>
   <LayoutSlot name="actions">
     <CpLink
-      appearance="button"
+      as="craft-button"
       :href="create().url"
-      variant="accent"
-      :inertia="false"
+      variant="primary"
       icon="plus"
     >
       {{ t('New entry type') }}
