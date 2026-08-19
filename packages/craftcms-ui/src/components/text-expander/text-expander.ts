@@ -64,9 +64,9 @@ interface TextExpanderMatch {
   trigger: TextExpanderTrigger;
 }
 
-// Queries may contain Unicode letters or numbers, underscores, and hyphens;
+// Queries may contain Unicode letters or numbers, underscores, hyphens, and dots;
 // any other character terminates the active query.
-const queryPattern = /^[\p{L}\p{N}_-]*$/u;
+const queryPattern = /^[\p{L}\p{N}_.-]*$/u;
 const defaultListboxLabel = t('Suggestions');
 const targetAttributes = [
   'role',

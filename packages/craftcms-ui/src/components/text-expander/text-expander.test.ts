@@ -231,6 +231,25 @@ describe('craft-text-expander', () => {
     ).toEqual(['Alpha', 'Bravo']);
   });
 
+  it('keeps dotted queries active', async () => {
+    const {expander, target} = await createFixture({
+      '{': {
+        boundary: 'anywhere',
+        options: [
+          {
+            label: 'Author Username',
+            value: '{author.username}',
+            keywords: ['author.username'],
+          },
+        ],
+      },
+    });
+
+    type(target, '{author.user');
+
+    expect(options(expander)[0]?.textContent?.trim()).toBe('Author Username');
+  });
+
   it('does not rebuild options when selectionchange keeps the same caret', async () => {
     const {expander, target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
