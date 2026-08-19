@@ -328,10 +328,17 @@ it('carries per-field change-tracking status into the payload when compiling a d
         'type' => PlainText::class,
     ]);
 
+    // Full-width uids on purpose: change tracking stores `layoutElementUid` in
+    // a `char(36)` column, and Postgres blank-pads a shorter value back out to
+    // 36 characters on read, so it stops matching the layout element it names.
+    // Real uids are UUIDs, so fixtures have to be the same width to be honest.
     $entryModel = Entry::factory()
         ->withFieldLayout(FieldLayoutModel::factory()->withContentTab([
-            new EntryTitleField(['uid' => 'field-title']),
-            new CustomField(config: ['uid' => 'layout-body', 'fieldUid' => $field->uid]),
+            new EntryTitleField(['uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a01']),
+            new CustomField(config: [
+                'uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a02',
+                'fieldUid' => $field->uid,
+            ]),
         ]))
         ->create();
 
@@ -385,10 +392,17 @@ it('reports outdated status for fields changed on the canonical element since th
         'type' => PlainText::class,
     ]);
 
+    // Full-width uids on purpose: change tracking stores `layoutElementUid` in
+    // a `char(36)` column, and Postgres blank-pads a shorter value back out to
+    // 36 characters on read, so it stops matching the layout element it names.
+    // Real uids are UUIDs, so fixtures have to be the same width to be honest.
     $entryModel = Entry::factory()
         ->withFieldLayout(FieldLayoutModel::factory()->withContentTab([
-            new EntryTitleField(['uid' => 'field-title']),
-            new CustomField(config: ['uid' => 'layout-body', 'fieldUid' => $field->uid]),
+            new EntryTitleField(['uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a01']),
+            new CustomField(config: [
+                'uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a02',
+                'fieldUid' => $field->uid,
+            ]),
         ]))
         ->create();
 
