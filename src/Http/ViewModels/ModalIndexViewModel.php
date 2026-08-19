@@ -33,6 +33,30 @@ class ModalIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * The element metadata a relation field needs back from a selection.
+     *
+     * Index rows are otherwise column HTML keyed by attribute — enough to render
+     * a table, but not to describe the element. These are the same keys the
+     * legacy modal read off each row's chip via `Craft.getElementInfo()`, which
+     * `onModalSelect()` and `app/render-elements` both still consume.
+     *
+     * @return array<string, mixed>
+     */
+    #[\Override]
+    protected function extraRowData(ElementInterface $element): array
+    {
+        return [
+            'siteId' => $element->siteId,
+            'label' => $element->getUiLabel(),
+            'status' => $element->getStatus(),
+            'url' => $element->getUrl(),
+            // Per element, not per type: an asset with no preview renders no thumb
+            // even though its element type has them.
+            'hasThumb' => $element->getThumbHtml(30) !== null,
+        ];
+    }
+
+    /**
      * Unlike the index screens', these resolve in the `modal` context and honor
      * the opener's source restriction.
      *
