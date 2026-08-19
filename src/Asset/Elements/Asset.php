@@ -65,7 +65,6 @@ use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
-use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -3141,7 +3140,7 @@ JS;
             }
         }
 
-        app(ImageTransforms::class)->deleteAllTransformData($this);
+        $this->deleteTransformData();
         parent::afterDelete();
     }
 
@@ -3362,7 +3361,7 @@ JS;
 
         if ($this->folderId) {
             // Nuke the transforms
-            app(ImageTransforms::class)->deleteAllTransformData($this);
+            $this->deleteTransformData();
         }
 
         // Update file properties
@@ -3452,6 +3451,29 @@ JS;
         }
 
         return File::normalizePath($path).DIRECTORY_SEPARATOR;
+    }
+
+    private function deleteTransformData(): void
+    {
+        app(AssetTransforms::class)->invalidate($this);
+
+        $dir = Path::imageEditorSources((string) $this->id);
+
+        if (file_exists($dir)) {
+            $files = glob($dir.'/[0-9]*/'.$this->id.'.[a-z]*');
+
+            if (! is_array($files)) {
+                Log::info("Could not list files in {$dir} when deleting resized asset versions.");
+            } else {
+                foreach ($files as $path) {
+                    if (! File::delete($path)) {
+                        Log::warning("Unable to delete the asset thumbnail \"{$path}\".", [__METHOD__]);
+                    }
+                }
+            }
+        }
+
+        File::delete(Path::assetSources($this->id.'.'.pathinfo($this->getFilename(), PATHINFO_EXTENSION)));
     }
 
     /**

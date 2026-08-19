@@ -6,12 +6,10 @@ namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
-use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
@@ -20,8 +18,6 @@ use Override;
 
 class ImageTransform extends Component
 {
-    public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
-
     public const array CORE_OPERATIONS = [
         'fill',
         'format',
@@ -67,9 +63,6 @@ class ImageTransform extends Component
     /** @var array<string, mixed> */
     private array $operations = [];
 
-    /** @var class-string<ImageTransformerInterface> */
-    protected string $transformer = self::DEFAULT_TRANSFORMER;
-
     /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
     {
@@ -86,32 +79,7 @@ class ImageTransform extends Component
 
     public function getIsNamedTransform(): bool
     {
-        return $this->id && $this->getTransformer() === self::DEFAULT_TRANSFORMER;
-    }
-
-    /**
-     * Returns the transformer class.
-     *
-     * @return class-string<ImageTransformerInterface>
-     */
-    public function getTransformer(): string
-    {
-        return $this->transformer;
-    }
-
-    /**
-     * Sets the transformer class.
-     *
-     * @param  class-string<ImageTransformerInterface>|null  $transformer
-     */
-    public function setTransformer(?string $transformer): void
-    {
-        $this->transformer = $transformer ?? self::DEFAULT_TRANSFORMER;
-    }
-
-    public function getImageTransformer(): ImageTransformerInterface
-    {
-        return app()->make($this->getTransformer());
+        return (bool) $this->id;
     }
 
     /** @return array<string, mixed> */

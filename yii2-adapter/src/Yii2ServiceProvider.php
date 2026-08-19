@@ -123,9 +123,7 @@ class Yii2ServiceProvider extends ServiceProvider
         new LegacyApp()->register($this->app);
         new CompatibilityMixins()->register();
         Event::listen(VolumeConfigPreparing::class, function(VolumeConfigPreparing $event): void {
-            /** @phpstan-ignore-next-line Method supplied by VolumeMixin. */
             $event->config['transformFs'] = $event->volume->getTransformFsHandle(false);
-            /** @phpstan-ignore-next-line Method supplied by VolumeMixin. */
             $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
         });
         Event::listen(VolumeSaved::class, function(VolumeSaved $event): void {

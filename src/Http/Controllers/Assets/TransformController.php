@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
-use CraftCms\Cms\Image\ImageTransformHelper;
-use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -22,18 +18,22 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
-use function Illuminate\Filesystem\join_paths;
-
 readonly class TransformController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
 
-    public function __construct(private ImageTransformer $imageTransformer) {}
+    public function __construct(
+        private ImageTransformer $imageTransformer,
+        private AssetTransforms $assetTransforms,
+    ) {}
 
     public function generate(Request $request): Response
     {
         $hasPrivateToken = false;
+        $handle = '';
+        $transformer = $this->imageTransformer;
+        $transformIndexModel = null;
         $transformId = $request->integer('transformId');
 
         if (! $transformId && $request->filled('transformToken')) {
@@ -46,7 +46,6 @@ readonly class TransformController
         }
 
         if ($transformId) {
-            $transformer = $this->imageTransformer;
             $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
             abort_if(! $transformIndexModel, 400, "Invalid transform ID: $transformId");
             $assetId = $transformIndexModel->assetId;
@@ -61,13 +60,6 @@ readonly class TransformController
             $handle = $request->input('handle');
             abort_if(! $assetId, 400, 'Missing assetId');
             abort_if(! is_string($handle), 400, 'Invalid transform handle.');
-            try {
-                $transform = ImageTransformHelper::normalizeTransform($handle);
-            } catch (Throwable $e) {
-                abort(500, 'Image transform cannot be created.', ['exception' => $e]);
-            }
-            abort_if(! $transform, 400, "Invalid transform handle: $handle");
-            $transformer = $transform->getImageTransformer();
         }
 
         $asset = Asset::findOne(['id' => $assetId]);
@@ -76,7 +68,6 @@ readonly class TransformController
 
         if (
             isset($transformIndexModel) &&
-            $transformer instanceof ImageTransformer &&
             ! $transformer->transformHasUrlsForIndex($asset, $transformIndexModel)
         ) {
             if (! $hasPrivateToken) {
@@ -91,9 +82,9 @@ readonly class TransformController
         }
 
         try {
-            $url = isset($transformIndexModel) && $transformer instanceof ImageTransformer
+            $url = isset($transformIndexModel)
                 ? $transformer->getTransformUrlForIndex($asset, $transformIndexModel, true)
-                : $transformer->getTransformUrl($asset, $transform, true);
+                : $this->assetTransforms->transform($asset, $handle, ['generateBeforePageLoad' => true])->url;
         } catch (Throwable $e) {
             return $this->asBrokenImage($e);
         }
@@ -103,65 +94,6 @@ readonly class TransformController
         }
 
         return redirect($url);
-    }
-
-    public function generateFallback(Request $request): Response
-    {
-        try {
-            $transform = Crypt::decrypt($request->input('transform'));
-        } catch (DecryptException) {
-            abort(400, 'Request contained an invalid transform param.');
-        }
-
-        [$assetId, $transformString] = explode(',', (string) $transform, 2);
-
-        /** @var Asset|null $asset */
-        $asset = Asset::find()->id($assetId)->one();
-        abort_if(! $asset, 400, "Invalid asset ID: $assetId");
-
-        // If we're returning the original asset, and it's in a local FS, just read the file out directly
-        $useOriginal = $transformString === 'original';
-        if ($useOriginal) {
-            $volume = $asset->getVolume();
-            $sourceDisk = $volume->sourceDisk();
-            if ($sourceDisk instanceof LocalFilesystemAdapter) {
-                $path = $sourceDisk->path($asset->getPath());
-
-                return response()->file($path, [
-                    'Content-Disposition' => 'inline; filename="'.$asset->getFilename().'"',
-                    'Cache-Control' => 'public, max-age=31536000',
-                ]);
-            }
-        }
-
-        if ($useOriginal) {
-            $ext = $asset->getExtension();
-        } else {
-            $transform = new ImageTransform(ImageTransformHelper::parseTransformString($transformString));
-            $ext = $transform->format ?: ImageTransformHelper::detectTransformFormat($asset);
-        }
-
-        $filename = sprintf('%s.%s', $asset->id, $ext);
-        $path = Path::imageTransforms(join_paths($transformString, $filename));
-
-        if (! file_exists($path) || filemtime($path) < ($asset->dateModified?->getTimestamp() ?? 0)) {
-            if ($useOriginal) {
-                $tempPath = $asset->getCopyOfFile();
-            } else {
-                $tempPath = ImageTransformHelper::generateTransform($asset, $transform);
-            }
-
-            File::ensureDirectoryExists(dirname($path));
-
-            rename($tempPath, $path);
-        }
-
-        $responseFilename = sprintf('%s.%s', $asset->getFilename(false), $ext);
-
-        return response()->file($path, [
-            'Content-Disposition' => 'inline; filename="'.$responseFilename.'"',
-            'Cache-Control' => 'public, max-age=31536000',
-        ]);
     }
 
     /**

@@ -4,11 +4,16 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
+use CraftCms\Yii2Adapter\Http\FallbackTransformController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\SavePluginSettingsController;
 use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
+
+Route::middleware(['craft', 'craft.web'])
+    ->prefix($routes->actionTriggerRoutePrefix())
+    ->get('assets/generate-fallback-transform', FallbackTransformController::class);
 
 Route::middleware([
     'web',

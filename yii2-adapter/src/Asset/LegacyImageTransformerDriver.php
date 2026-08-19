@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Asset;
 
 use Craft;
+use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
+use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
-use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use LogicException;
 
 /** @internal */
-class LegacyImageTransformerDriver implements AssetTransformDriver
+class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public function __construct(private readonly string $transformer)
     {
@@ -37,7 +39,6 @@ class LegacyImageTransformerDriver implements AssetTransformDriver
         }
 
         $transform = new ImageTransform($request->operations);
-        $transform->setTransformer($this->transformer);
 
         if (!($request->settings['legacyBeforeGenerate'] ?? false)) {
             event($event = new TransformGenerating($request->asset, $transform));
@@ -55,6 +56,26 @@ class LegacyImageTransformerDriver implements AssetTransformDriver
         event(new AfterGenerateTransform($request->asset, $transform, $url));
 
         return self::result($request->asset, $transform, $url);
+    }
+
+    /** @param non-empty-list<AssetTransformRequest> $requests */
+    public function preloadAssetTransforms(array $requests): void
+    {
+        $transformer = Craft::$app->getImageTransforms()->getImageTransformer($this->transformer);
+
+        if (!$transformer instanceof EagerImageTransformerInterface) {
+            return;
+        }
+
+        $assets = [];
+        $transforms = [];
+
+        foreach ($requests as $request) {
+            $assets[$request->asset->id ?? spl_object_id($request->asset)] = $request->asset;
+            $transforms[serialize($request->operations)] ??= new ImageTransform($request->operations);
+        }
+
+        $transformer->eagerLoadTransforms(array_values($transforms), array_values($assets));
     }
 
     public static function result(Asset $asset, ImageTransform $transform, string $url): AssetTransformResult

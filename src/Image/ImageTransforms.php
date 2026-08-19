@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
@@ -22,15 +17,12 @@ use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 
 #[Singleton]
 class ImageTransforms
@@ -38,13 +30,9 @@ class ImageTransforms
     /** @var Collection<int, ImageTransform>|null */
     private ?Collection $transforms = null;
 
-    /** @var array<class-string<ImageTransformerInterface>, ImageTransformerInterface> */
-    private array $imageTransformers = [];
-
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
-        private readonly ImageTransformers $imageTransformerTypes,
     ) {}
 
     /**
@@ -202,162 +190,6 @@ class ImageTransforms
         event(new TransformDeleted(transform: $transform));
 
         $this->elementCaches->invalidateForElementType(Asset::class);
-    }
-
-    /**
-     * Eager-loads transform indexes for the given list of assets.
-     *
-     * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
-     *
-     * ```php
-     * [['width' => 1000, 'height' => 600], '1.5x', '2x', '3x']
-     * ```
-     *
-     * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
-     * reference when determining the resulting transform dimensions.
-     *
-     * @param  array<int,mixed>  $transforms  The transform definitions to eager-load
-     * @param  Asset[]  $assets  The assets to eager-load transforms for
-     */
-    public function eagerLoadTransforms(array $assets, array $transforms): void
-    {
-        if (empty($assets) || empty($transforms)) {
-            return;
-        }
-
-        $transformsByTransformer = [];
-
-        /** @var ImageTransform|null $refTransform */
-        $refTransform = null;
-
-        foreach ($transforms as $transform) {
-            // Is this a srcset-style size (2x, 100w, etc.)?
-            try {
-                [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
-            } catch (InvalidArgumentException) {
-                $sizeValue = $sizeUnit = null;
-            }
-
-            if (isset($sizeValue, $sizeUnit)) {
-                if ($refTransform === null || ! $refTransform->width) {
-                    throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
-                }
-
-                $transform = new ImageTransform(
-                    $refTransform->toArray(),
-                );
-
-                unset($transform->name, $transform->handle);
-
-                if ($sizeUnit === 'w') {
-                    $transform->width = (int) $sizeValue;
-                } else {
-                    $transform->width = (int) ceil($refTransform->width * $sizeValue);
-                }
-
-                // Only set the height if the reference transform has a height set on it
-                if ($refTransform->height) {
-                    if ($sizeUnit === 'w') {
-                        $transform->height = (int) ceil($refTransform->height * $transform->width / $refTransform->width);
-                    } else {
-                        $transform->height = (int) ceil($refTransform->height * $sizeValue);
-                    }
-                }
-            }
-
-            $transform = ImageTransformHelper::normalizeTransform($transform);
-            $transformsByTransformer[$transform->getTransformer()][] = $transform;
-
-            if (! isset($sizeValue)) {
-                // Use this as the reference transform in case any srcset-style transforms follow it
-                $refTransform = $transform;
-            }
-        }
-
-        foreach ($transformsByTransformer as $type => $typeTransforms) {
-            $transformer = $this->getImageTransformer($type);
-
-            if ($transformer instanceof EagerImageTransformerInterface) {
-                $transformer->eagerLoadTransforms($typeTransforms, $assets);
-            }
-        }
-    }
-
-    /**
-     * Returns an image transformer instance for the given class.
-     *
-     * @template T of ImageTransformerInterface
-     *
-     * @param  class-string<T>  $class
-     * @param  array<string,mixed>  $config
-     * @return T
-     *
-     * @throws ImageTransformException
-     */
-    public function getImageTransformer(string $class, array $config = []): ImageTransformerInterface
-    {
-        if (array_key_exists($class, $this->imageTransformers)) {
-            return $this->imageTransformers[$class];
-        }
-
-        if (! is_subclass_of($class, ImageTransformerInterface::class)) {
-            throw new ImageTransformException("Invalid image transformer: $class");
-        }
-
-        return $this->imageTransformers[$class] = new $class($config);
-    }
-
-    /**
-     * Returns all available image transformer class names.
-     *
-     * @return class-string<ImageTransformerInterface>[]
-     */
-    public function getAllImageTransformers(): array
-    {
-        return $this->imageTransformerTypes->types()->all();
-    }
-
-    /**
-     * Deletes ALL transform data (including thumbs and sources) associated with the asset.
-     */
-    public function deleteAllTransformData(Asset $asset): void
-    {
-        $this->deleteResizedAssetVersion($asset);
-        $this->deleteCreatedTransformsForAsset($asset);
-
-        $file = Path::assetSources($asset->id.'.'.pathinfo($asset->getFilename(), PATHINFO_EXTENSION));
-
-        File::delete($file);
-    }
-
-    public function deleteResizedAssetVersion(Asset $asset): void
-    {
-        $dirs = [
-            Path::imageEditorSources((string) $asset->id),
-        ];
-
-        foreach ($dirs as $dir) {
-            if (file_exists($dir)) {
-                $files = glob($dir.'/[0-9]*/'.$asset->id.'.[a-z]*');
-
-                if (! is_array($files)) {
-                    Log::info('Could not list files in '.$dir.' when deleting resized asset versions.');
-
-                    continue;
-                }
-
-                foreach ($files as $path) {
-                    if (! File::delete($path)) {
-                        Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
-                    }
-                }
-            }
-        }
-    }
-
-    public function deleteCreatedTransformsForAsset(Asset $asset): void
-    {
-        event(new AssetTransformsInvalidating(asset: $asset));
     }
 
     /**

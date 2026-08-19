@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\ImageTransformer;
 
 describe('defaults', function () {
     test('has sensible defaults', function () {
@@ -42,7 +41,7 @@ describe('defaults', function () {
 });
 
 describe('getIsNamedTransform', function () {
-    test('returns true when id is set and transformer is default', function () {
+    test('returns true when id is set', function () {
         $transform = new ImageTransform(['id' => 1]);
 
         expect($transform->getIsNamedTransform())->toBeTrue();
@@ -52,36 +51,6 @@ describe('getIsNamedTransform', function () {
         $transform = new ImageTransform;
 
         expect($transform->getIsNamedTransform())->toBeFalse();
-    });
-
-    test('returns false when transformer is not default', function () {
-        $transform = new ImageTransform(['id' => 1]);
-        $transform->setTransformer('SomeOther\Transformer');
-
-        expect($transform->getIsNamedTransform())->toBeFalse();
-    });
-});
-
-describe('transformer', function () {
-    test('defaults to ImageTransformer', function () {
-        $transform = new ImageTransform;
-
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
-    });
-
-    test('can set a custom transformer', function () {
-        $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
-
-        expect($transform->getTransformer())->toBe('Custom\Transformer');
-    });
-
-    test('falls back to default when set to null', function () {
-        $transform = new ImageTransform;
-        $transform->setTransformer('Custom\Transformer');
-        $transform->setTransformer(null);
-
-        expect($transform->getTransformer())->toBe(ImageTransformer::class);
     });
 });
 
@@ -144,11 +113,5 @@ describe('getConfig', function () {
         expect($config)->not->toHaveKey('id')
             ->and($config)->not->toHaveKey('uid')
             ->and($config)->not->toHaveKey('parameterChangeTime');
-    });
-});
-
-describe('DEFAULT_TRANSFORMER constant', function () {
-    test('points to ImageTransformer class', function () {
-        expect(ImageTransform::DEFAULT_TRANSFORMER)->toBe(ImageTransformer::class);
     });
 });

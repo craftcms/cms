@@ -19,6 +19,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use Illuminate\Container\Attributes\Singleton;
@@ -141,6 +142,11 @@ class AssetTransforms extends Manager
         $request = $this->request($asset, $definition, $settings, $candidateDriver);
 
         return $this->driver($request->driver)->transform($request);
+    }
+
+    public function invalidate(Asset $asset): void
+    {
+        event(new AssetTransformsInvalidating($asset));
     }
 
     /**

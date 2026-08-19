@@ -3,16 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
-use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -44,7 +46,7 @@ describe('generate', function () {
         $transform = new ImageTransform(['width' => 100]);
         $index = $transformer->getTransformIndex($asset, $transform);
         $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-        $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+        $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
         $index->fileExists = true;
         $transformer->storeTransformIndexData($index);
 
@@ -140,6 +142,46 @@ describe('generate', function () {
         ])->assertForbidden();
     });
 
+    it('generates named transforms with their selected driver', function () {
+        $driver = new class implements AssetTransformDriver
+        {
+            public ?AssetTransformRequest $request = null;
+
+            public function definition(): AssetTransformDriverDefinition
+            {
+                return new AssetTransformDriverDefinition('Controller test');
+            }
+
+            public function transform(AssetTransformRequest $request): AssetTransformResult
+            {
+                $this->request = $request;
+
+                return new AssetTransformResult('/plugin/card.jpg', 'image/jpeg');
+            }
+        };
+        app(AssetTransforms::class)->extend('controller-test', fn () => $driver);
+        app(ImageTransforms::class)->saveTransform(new ImageTransform([
+            'name' => 'Card',
+            'handle' => 'controllerCard',
+            'driver' => 'controller-test',
+            'width' => 320,
+        ]));
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => 'named-transform.jpg',
+            'kind' => 'image',
+        ]);
+        actingAs(User::findOne());
+
+        postJson(action([TransformController::class, 'generate']), [
+            'assetId' => $asset->id,
+            'handle' => 'controllerCard',
+        ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
+
+        expect($driver->request?->driver)->toBe('controller-test');
+    });
+
     it('returns error for missing asset id', function () {
         actingAs(User::findOne());
 
@@ -159,74 +201,5 @@ describe('generate', function () {
         postJson(action([TransformController::class, 'generate']), [
             'assetId' => $asset->id,
         ])->assertStatus(400);
-    });
-});
-
-describe('generateFallback', function () {
-    it('allows anonymous access', function () {
-        $asset = AssetModel::factory()->create([
-            'volumeId' => test()->volume->id,
-            'folderId' => test()->folder->id,
-            'filename' => 'fallback-test.jpg',
-            'kind' => 'image',
-        ]);
-
-        $transform = Crypt::encrypt($asset->id.',_100x100_crop_center-center_none');
-
-        $response = get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]));
-
-        expect($response->getStatusCode())->not->toBe(401)
-            ->and($response->getStatusCode())->not->toBe(403);
-    });
-
-    it('returns 400 for invalid encrypted param', function () {
-        get(action([TransformController::class, 'generateFallback'], ['transform' => 'invalid-data']))
-            ->assertStatus(400);
-    });
-
-    it('serves originals from within the volume subpath', function () {
-        $volume = Volume::factory()->create([
-            'fs' => 'disk:test-disk',
-            'subpath' => 'assets',
-        ]);
-        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
-        $asset = AssetModel::factory()->createElement([
-            'volumeId' => $volume->id,
-            'folderId' => $folder->id,
-            'filename' => 'subpath-original.jpg',
-            'kind' => 'image',
-        ]);
-        $sourceDisk = $asset->getVolume()->sourceDisk();
-        $sourceDisk->put($asset->getPath(), 'original-bytes');
-        $transform = Crypt::encrypt($asset->id.',original');
-
-        $response = get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]))
-            ->assertOk();
-
-        expect($response->baseResponse->getFile()->getRealPath())
-            ->toBe(realpath($sourceDisk->path($asset->getPath())));
-    });
-
-    it('serves fallback transform files for valid encrypted transforms', function () {
-        $asset = AssetModel::factory()->create([
-            'volumeId' => test()->volume->id,
-            'folderId' => test()->folder->id,
-            'filename' => 'fallback-test.jpg',
-            'kind' => 'image',
-        ]);
-
-        $transformString = '_101x99_crop_center-center_none';
-        $transform = Crypt::encrypt($asset->id.','.$transformString);
-        $path = implode(DIRECTORY_SEPARATOR, [
-            Path::imageTransforms(),
-            $transformString,
-            sprintf('%s.jpg', $asset->id),
-        ]);
-
-        @mkdir(dirname($path), 0777, true);
-        file_put_contents($path, 'transform-bytes');
-
-        get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]))
-            ->assertOk();
     });
 });

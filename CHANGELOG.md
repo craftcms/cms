@@ -8,6 +8,8 @@
 - Element edit screens now indicate which fields a draft has unapplied changes to.
 - Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
+- Added `CraftCms\Cms\Asset\AssetTransforms::invalidate()`.
+- Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 
 ## 6.0.0-alpha.17 - 2026-08-18
 

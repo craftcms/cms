@@ -3,12 +3,15 @@
 declare(strict_types=1);
 
 use craft\base\Event;
+use craft\base\imagetransforms\EagerImageTransformerInterface as LegacyEagerImageTransformerInterface;
+use craft\base\imagetransforms\ImageTransformerInterface as LegacyImageTransformerInterface;
 use craft\elements\Asset as LegacyAsset;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\events\ImageTransformerOperationEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
+use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransforms;
@@ -27,7 +30,6 @@ use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface as LegacyImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
@@ -92,6 +94,43 @@ it('provides named transform magic properties', function(): void {
         ->and($asset->card)->toBeInstanceOf($asset::class)
         ->and($asset->card->getUrl())->toBe('/renditions/400x200.webp')
         ->and($asset->{'transform:card'}->getUrl())->toBe('/renditions/400x200.webp');
+});
+
+it('returns legacy models from named transform getters', function(): void {
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Legacy Card',
+        'handle' => 'legacyCard',
+        'width' => 400,
+    ]));
+    $service = Craft::$app->getImageTransforms();
+    $transform = $service->getTransformByHandle('legacyCard');
+
+    expect($transform)->toBeInstanceOf(LegacyImageTransform::class)
+        ->and($service->getTransformById($transform->id))->toBeInstanceOf(LegacyImageTransform::class)
+        ->and($service->getTransformByUid($transform->uid))->toBeInstanceOf(LegacyImageTransform::class)
+        ->and($service->getAllTransforms())->each->toBeInstanceOf(LegacyImageTransform::class);
+});
+
+it('preloads registered legacy eager transformers through adapter drivers', function(): void {
+    Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
+        $event->types[] = RegisteredLegacyEagerImageTransformer::class;
+    });
+    LegacyImageTransforms::finalizeRegistrationEvents();
+    $asset = ($this->asset)();
+    $transform = new LegacyImageTransform(['width' => 320]);
+    $transform->setTransformer(RegisteredLegacyEagerImageTransformer::class);
+
+    try {
+        Craft::$app->getImageTransforms()->eagerLoadTransforms([$asset], [$transform]);
+        $transformer = Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyEagerImageTransformer::class);
+
+        expect($transformer->assets)->toBe([$asset])
+            ->and($transformer->transforms)->toHaveCount(1)
+            ->and($transformer->transforms[0])->toBeInstanceOf(LegacyImageTransform::class)
+            ->and($transformer->transforms[0]->width)->toBe(320);
+    } finally {
+        Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
+    }
 });
 
 it('preserves legacy URL event order and handled null semantics', function(): void {
@@ -210,7 +249,7 @@ it('selects the source filesystem before the legacy transformer candidate', func
         'volumeId' => $volume->id,
         'folderId' => $folder->id,
     ]);
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
     $before = function(GenerateTransformEvent $event): void {
         $event->url = '/legacy/event.jpg';
@@ -233,7 +272,7 @@ it('does not use the legacy selector for typed transform calls', function(): voi
     });
     LegacyImageTransforms::finalizeRegistrationEvents();
     $asset = ($this->asset)();
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
 
     try {
@@ -252,7 +291,7 @@ it('does not use the legacy selector for typed calls from URL listeners', functi
     });
     LegacyImageTransforms::finalizeRegistrationEvents();
     $asset = ($this->asset)();
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
     $typedUrl = null;
     EventFacade::listen(AssetUrlResolving::class, function(AssetUrlResolving $event) use ($transform, &$typedUrl): void {
@@ -273,7 +312,7 @@ it('does not use the legacy selector for typed calls from URL listeners', functi
 it('does not fall through when a selected legacy transformer is not registered', function(): void {
     Exceptions::fake();
     $asset = ($this->asset)();
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(UnregisteredLegacyImageTransformer::class);
 
     expect($asset->getUrl($transform))->toBeNull()
@@ -283,7 +322,7 @@ it('does not fall through when a selected legacy transformer is not registered',
 
 it('honors before-generate URLs before invoking a legacy transformer', function(): void {
     $asset = ($this->asset)();
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(UnregisteredLegacyImageTransformer::class);
     $before = function(GenerateTransformEvent $event): void {
         $event->url = '/legacy/event.jpg';
@@ -304,7 +343,7 @@ it('keeps unexpected legacy transformer exceptions observable', function(): void
     });
     LegacyImageTransforms::finalizeRegistrationEvents();
     $asset = ($this->asset)();
-    $transform = new ImageTransform(['width' => 320]);
+    $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(ThrowingLegacyImageTransformer::class);
 
     try {
@@ -536,6 +575,21 @@ class RegisteredLegacyImageTransformer implements LegacyImageTransformerInterfac
 
 class UnregisteredLegacyImageTransformer extends RegisteredLegacyImageTransformer
 {
+}
+
+class RegisteredLegacyEagerImageTransformer extends RegisteredLegacyImageTransformer implements LegacyEagerImageTransformerInterface
+{
+    /** @var LegacyImageTransform[] */
+    public array $transforms = [];
+
+    /** @var Asset[] */
+    public array $assets = [];
+
+    public function eagerLoadTransforms(array $transforms, array $assets): void
+    {
+        $this->transforms = $transforms;
+        $this->assets = $assets;
+    }
 }
 
 class ThrowingLegacyImageTransformer extends RegisteredLegacyImageTransformer

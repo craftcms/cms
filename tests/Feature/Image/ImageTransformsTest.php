@@ -7,18 +7,12 @@ use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Asset\Models\Asset;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Events\TransformSaving;
-use CraftCms\Cms\Image\ImageTransformer;
-use CraftCms\Cms\Image\ImageTransformers;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Facades\ImageTransforms as ImageTransformsFacade;
@@ -473,49 +467,6 @@ describe('deleteTransform', function () {
     });
 });
 
-describe('getAllImageTransformers', function () {
-    it('uses the current registry types', function () {
-        $registry = app(ImageTransformers::class);
-        $registry->register(RegisteredImageTransformer::class);
-
-        expect($this->service->getAllImageTransformers())
-            ->toContain(ImageTransformer::class, RegisteredImageTransformer::class);
-
-        $registry->remove(RegisteredImageTransformer::class);
-
-        expect($this->service->getAllImageTransformers())->not()->toContain(RegisteredImageTransformer::class);
-    });
-
-    it('does not instantiate registered transformers during invalidation', function () {
-        app(ImageTransformers::class)->register(RegisteredImageTransformer::class);
-        $asset = Asset::factory()->createElement();
-        Event::fake([AssetTransformsInvalidating::class]);
-
-        $this->service->deleteCreatedTransformsForAsset($asset);
-
-        Event::assertDispatchedOnce(AssetTransformsInvalidating::class);
-    });
-});
-
-describe('getImageTransformer', function () {
-    it('returns an instance of the transformer', function () {
-        $transformer = $this->service->getImageTransformer(ImageTransformer::class);
-
-        expect($transformer)->toBeInstanceOf(ImageTransformerInterface::class);
-    });
-
-    it('memoizes transformer instances', function () {
-        $first = $this->service->getImageTransformer(ImageTransformer::class);
-        $second = $this->service->getImageTransformer(ImageTransformer::class);
-
-        expect($first)->toBe($second);
-    });
-
-    it('throws for invalid transformer class', function () {
-        $this->service->getImageTransformer(stdClass::class);
-    })->throws(ImageTransformException::class, 'Invalid image transformer');
-});
-
 describe('reset', function () {
     it('clears the memoized transforms', function () {
         $this->service->saveTransform(new ImageTransform([
@@ -532,5 +483,3 @@ describe('reset', function () {
         expect($this->service->getAllTransforms())->toBeEmpty();
     });
 });
-
-abstract class RegisteredImageTransformer implements ImageTransformerInterface {}

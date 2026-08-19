@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace craft\elements;
 
 use Craft;
+use craft\models\ImageTransform as LegacyImageTransform;
 use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
@@ -20,6 +21,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -146,11 +148,21 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 
         try {
             if (!is_array($definition) || !array_key_exists('driver', $definition)) {
+                if (is_array($definition) && array_key_exists('transformer', $definition)) {
+                    $candidateDriver = $definition['transformer'];
+                    unset($definition['transformer']);
+                } elseif ($definition instanceof LegacyImageTransform) {
+                    $candidateDriver = $definition->getTransformer();
+                }
+
                 $transform = ImageTransformHelper::normalizeTransform($definition);
 
-                if ($transform?->getTransformer() !== ImageTransform::DEFAULT_TRANSFORMER) {
+                if ($candidateDriver !== null && !in_array($candidateDriver, [ImageTransformer::class, LegacyImageTransform::DEFAULT_TRANSFORMER], true)) {
+                    if (!$transform instanceof LegacyImageTransform) {
+                        $transform = new LegacyImageTransform(['operations' => $transform->getOperations()]);
+                    }
+
                     $definition = $transform;
-                    $candidateDriver = $transform->getTransformer();
                     $filesystemTransform = $this->getVolume()->getFs()->getAssetTransform();
                     $legacySelected = $transform->driver === null
                         && (!is_array($filesystemTransform) || !array_key_exists('driver', $filesystemTransform));

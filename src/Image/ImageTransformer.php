@@ -21,9 +21,6 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
-use CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -56,7 +53,7 @@ use Throwable;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface, PreloadsAssetTransforms
+class ImageTransformer implements AssetTransformDriver, PreloadsAssetTransforms
 {
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
@@ -348,6 +345,10 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         }
     }
 
+    /**
+     * @param  ImageTransform[]  $transforms
+     * @param  Asset[]  $assets
+     */
     public function eagerLoadTransforms(array $transforms, array $assets): void
     {
         // Index the assets by ID
@@ -613,7 +614,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         $index = new ImageTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
-            'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
+            'transformer' => self::class,
             'dateIndexed' => now(),
             'transformString' => $transformString,
             'fileExists' => false,
@@ -671,7 +672,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
                 'dateIndexed',
             ], [], false)
         );
-        $values['transformer'] = ImageTransform::DEFAULT_TRANSFORMER;
+        $values['transformer'] = self::class;
 
         $now = now();
 
@@ -972,7 +973,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             ->where(function (Builder $query): void {
                 $query
                     ->whereNull('transformer')
-                    ->orWhere('transformer', ImageTransform::DEFAULT_TRANSFORMER);
+                    ->orWhere('transformer', self::class);
             });
     }
 }
