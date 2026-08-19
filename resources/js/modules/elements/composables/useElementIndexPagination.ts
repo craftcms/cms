@@ -1,6 +1,7 @@
 import {watch} from 'vue';
 import {
   createIndexVisitor,
+  type IndexVisitor,
   type ElementIndexRoute,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
@@ -17,9 +18,11 @@ interface ElementIndexPaginationContext {
  */
 export function useElementIndexPagination(
   props: ElementIndexPaginationContext,
-  route: ElementIndexRoute
+  route: ElementIndexRoute,
+  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
+  indexVisitor?: IndexVisitor
 ) {
-  const visitor = createIndexVisitor(route);
+  const visitor = indexVisitor ?? createIndexVisitor(route);
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
