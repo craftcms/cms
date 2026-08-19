@@ -106,35 +106,42 @@ class ImageTransforms
     public function handleChangedTransform(ConfigEvent $event): void
     {
         $transformUid = $event->tokenMatches[0];
-        $data = $event->newValue;
+        $data = ImageTransform::fromConfig($event->newValue)->getConfig();
 
         [$transformModel, $isNewTransform] = DB::transaction(function () use ($transformUid, $data) {
             $transformModel = $this->getImageTransformModel($transformUid);
             $isNewTransform = ! $transformModel->exists;
+            $operations = $data['operations'];
+            $customOperations = Arr::except($operations, ImageTransform::CORE_OPERATIONS);
 
             $transformModel->name = $data['name'];
             $transformModel->handle = $data['handle'];
+            $driverChanged = $transformModel->driver !== $data['driver'];
+            $storedCustomOperations = $transformModel->getAttribute('operations');
+            $customOperationsChanged = (is_array($storedCustomOperations) ? $storedCustomOperations : []) !== $customOperations;
 
-            $dimensionsChanged = $transformModel->width !== ($data['width'] ?? null) || $transformModel->height !== ($data['height'] ?? null);
-            $modeChanged = $transformModel->mode !== $data['mode'] || $transformModel->position !== $data['position'];
-            $qualityChanged = $transformModel->quality !== ($data['quality'] ?? null);
-            $interlaceChanged = $transformModel->interlace !== $data['interlace'];
-            $fillChanged = $transformModel->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== ($data['upscale'] ?? null);
+            $dimensionsChanged = $transformModel->width !== $operations['width'] || $transformModel->height !== $operations['height'];
+            $modeChanged = $transformModel->mode !== $operations['mode'] || $transformModel->position !== $operations['position'];
+            $qualityChanged = $transformModel->quality !== $operations['quality'];
+            $interlaceChanged = $transformModel->interlace !== $operations['interlace'];
+            $fillChanged = $transformModel->fill !== $operations['fill'];
+            $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== $operations['upscale'];
 
-            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
+            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged || $driverChanged || $customOperationsChanged) {
                 $transformModel->parameterChangeTime = Query::prepareDateForDb(now());
             }
 
-            $transformModel->mode = $data['mode'];
-            $transformModel->position = $data['position'];
-            $transformModel->width = $data['width'] ?? null;
-            $transformModel->height = $data['height'] ?? null;
-            $transformModel->quality = $data['quality'] ?? null;
-            $transformModel->interlace = $data['interlace'];
-            $transformModel->format = $data['format'] ?? null;
-            $transformModel->fill = $data['fill'] ?? null;
-            $transformModel->upscale = $data['upscale'] ?? true;
+            $transformModel->driver = $data['driver'];
+            $transformModel->mode = $operations['mode'];
+            $transformModel->position = $operations['position'];
+            $transformModel->width = $operations['width'];
+            $transformModel->height = $operations['height'];
+            $transformModel->quality = $operations['quality'];
+            $transformModel->interlace = $operations['interlace'];
+            $transformModel->format = $operations['format'];
+            $transformModel->fill = $operations['fill'];
+            $transformModel->upscale = $operations['upscale'];
+            $transformModel->setAttribute('operations', $customOperations ?: null);
             $transformModel->uid = $transformUid;
 
             $transformModel->save();
@@ -367,11 +374,12 @@ class ImageTransforms
      */
     private function transforms(): Collection
     {
-        return $this->transforms ?? $this->transforms = DB::table(Table::IMAGETRANSFORMS)
+        return $this->transforms ?? $this->transforms = ImageTransformModel::query()
             ->select([
                 'id',
                 'name',
                 'handle',
+                'driver',
                 'mode',
                 'position',
                 'height',
@@ -381,13 +389,14 @@ class ImageTransforms
                 'interlace',
                 'fill',
                 'upscale',
+                'operations',
                 'parameterChangeTime',
                 'uid',
             ])
             ->orderBy('name')
             ->get()
-            ->map(fn ($result) => new ImageTransform(
-                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted'])
+            ->map(fn (ImageTransformModel $model) => new ImageTransform(
+                Arr::except($model->toArray(), ['dateCreated', 'dateUpdated', 'dateDeleted'])
             ))
             ->values();
     }

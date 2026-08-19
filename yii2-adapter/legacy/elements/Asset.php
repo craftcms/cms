@@ -151,13 +151,19 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
                 if ($transform?->getTransformer() !== ImageTransform::DEFAULT_TRANSFORMER) {
                     $definition = $transform;
                     $candidateDriver = $transform->getTransformer();
-                    event($event = new TransformGenerating($this, $transform));
+                    $filesystemTransform = $this->getVolume()->getFs()->getAssetTransform();
+                    $legacySelected = $transform->driver === null
+                        && (!is_array($filesystemTransform) || !array_key_exists('driver', $filesystemTransform));
 
-                    if ($event->url !== null) {
-                        return LegacyImageTransformerDriver::result($this, $transform, Html::encodeSpaces($event->url));
+                    if ($legacySelected) {
+                        event($event = new TransformGenerating($this, $transform));
+
+                        if ($event->url !== null) {
+                            return LegacyImageTransformerDriver::result($this, $transform, Html::encodeSpaces($event->url));
+                        }
+
+                        $settings['legacyBeforeGenerate'] = true;
                     }
-
-                    $settings['legacyBeforeGenerate'] = true;
                 }
             }
 

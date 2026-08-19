@@ -326,6 +326,7 @@ class Install extends Migration
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
+            $table->string('driver')->nullable();
             $table->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->default('crop');
             $table->enum('position', ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'])->default('center-center');
             $table->unsignedInteger('width')->nullable();
@@ -335,6 +336,7 @@ class Install extends Migration
             $table->enum('interlace', ['none', 'line', 'plane', 'partition'])->default('none');
             $table->string('fill', 11)->nullable()->default(null);
             $table->boolean('upscale')->default(true);
+            $table->json('operations')->nullable();
             $table->dateTime('parameterChangeTime')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');

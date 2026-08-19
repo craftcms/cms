@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Form\Controls\Choice;
@@ -29,6 +30,7 @@ class FilesystemsEditViewModel extends ViewModel
         ?FsInterface $filesystem,
         private readonly Filesystems $filesystems,
         private readonly FormResolver $formResolver,
+        private readonly AssetTransforms $assetTransforms,
         private readonly ?string $oldHandle = null,
         private readonly bool $readOnly = false,
     ) {
@@ -42,6 +44,7 @@ class FilesystemsEditViewModel extends ViewModel
             'handle' => $this->filesystem->handle,
             'oldHandle' => $this->oldHandle,
             'type' => $this->filesystem::class,
+            'assetTransform' => $this->filesystem->getAssetTransform(),
             'settings' => [
                 ...$this->filesystem->getSettings(),
                 'hasUrls' => $this->filesystem->hasUrls,
@@ -62,6 +65,8 @@ class FilesystemsEditViewModel extends ViewModel
             Field::make(t('Handle'), $handle)->required(),
             Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions()))
                 ->instructions(t('What type of filesystem is this?')),
+            Field::make(t('Asset Transform Driver'), Choice::make('assetTransform.driver')->options($this->assetTransformDriverOptions()))
+                ->instructions(t('Select a driver to override the default Asset Transform driver for this filesystem.')),
         ]), new FormContext(
             values: $values,
             errors: Arr::only($errors, ['name', 'handle', 'type']),
@@ -79,14 +84,24 @@ class FilesystemsEditViewModel extends ViewModel
             $this->filesystem->settingsForm($settingsContext) ?? Form::make(),
             $settingsContext,
         );
+        $assetTransformSettings = $this->assetTransformSettings($values, $errors, $mode);
+        $driver = $values['assetTransform']['driver'] ?? null;
+
+        if (is_string($driver) && isset($this->assetTransforms->getDriverDefinitions()[$driver])) {
+            $values['assetTransform']['settings'] = Arr::get(
+                $assetTransformSettings->values,
+                'assetTransform.settings',
+                [],
+            );
+        }
 
         return new FormPayload(
             scope: [],
             refreshable: true,
-            nodes: [...$form->nodes, ...$settings->nodes],
+            nodes: [...$form->nodes, ...$settings->nodes, ...$assetTransformSettings->nodes],
             values: $values,
-            errors: [...$form->errors, ...$settings->errors],
-            globalErrors: [...$form->globalErrors, ...$settings->globalErrors],
+            errors: [...$form->errors, ...$settings->errors, ...$assetTransformSettings->errors],
+            globalErrors: [...$form->globalErrors, ...$settings->globalErrors, ...$assetTransformSettings->globalErrors],
         );
     }
 
@@ -117,5 +132,53 @@ class FilesystemsEditViewModel extends ViewModel
             ->sortBy('label')
             ->values()
             ->all();
+    }
+
+    /** @return list<array{value:string,label:string,disabled?:bool}> */
+    private function assetTransformDriverOptions(): array
+    {
+        $options = collect($this->assetTransforms->getDriverDefinitions())
+            ->map(fn ($definition, string $handle): array => [
+                'value' => $handle,
+                'label' => $definition->name,
+            ]);
+        $selected = $this->filesystem->getAssetTransform()['driver'] ?? null;
+
+        if (is_string($selected) && $selected !== '' && ! $options->has($selected)) {
+            $options->put($selected, [
+                'value' => $selected,
+                'label' => t('{driver} (Unavailable)', ['driver' => $selected]),
+                'disabled' => true,
+            ]);
+        }
+
+        return $options
+            ->sortBy('label')
+            ->prepend(['value' => '', 'label' => t('Use the default driver')])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<string,mixed>  $values
+     * @param  array<string,string|list<string>>  $errors
+     */
+    private function assetTransformSettings(array $values, array $errors, ControlMode $mode): FormPayload
+    {
+        $driver = $values['assetTransform']['driver'] ?? null;
+        $definition = is_string($driver)
+            ? ($this->assetTransforms->getDriverDefinitions()[$driver] ?? null)
+            : null;
+
+        return $this->formResolver->resolve(
+            Form::make($definition->filesystemSettings ?? []),
+            new FormContext(
+                namespace: 'assetTransform.settings',
+                values: $values,
+                errors: $errors,
+                mode: $mode,
+                refreshable: true,
+            ),
+        );
     }
 }

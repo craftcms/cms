@@ -2,7 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -112,6 +119,20 @@ it('renders a functional create form', function () {
             ->where('form.nodes', fn ($nodes): bool => collect($nodes)
                 ->pluck('control.path')
                 ->contains(['mode'])));
+});
+
+it('renders registered drivers and their declared operation controls', function () {
+    app(AssetTransforms::class)->extend('custom', fn () => new ControllerAssetTransformDriver);
+
+    get(action([ImageTransformsController::class, 'create']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', function ($nodes): bool {
+                $fields = collect($nodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+
+                return $fields->has('driver')
+                    && collect($fields['driver']['control']['props']['options'])->contains('value', 'custom')
+                    && $fields->has('blur');
+            }));
 });
 
 it('renders edit for an existing transform', function () {
@@ -241,6 +262,51 @@ it('rejects save when both width and height are missing', function () {
         ->assertSessionHasErrors('width');
 });
 
+it('rejects an unavailable driver on interactive save', function () {
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
+        'driver' => 'missing',
+    ]))->assertUnprocessable()
+        ->assertJsonValidationErrors('driver');
+});
+
+it('saves catalogue-backed custom operations', function () {
+    app(AssetTransforms::class)->extend('custom', fn () => new ControllerAssetTransformDriver);
+    $payload = validTransformData([
+        'driver' => 'custom',
+        'blur' => '5',
+    ]);
+
+    postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
+
+    app(ImageTransforms::class)->reset();
+    $transform = app(ImageTransforms::class)->getTransformByHandle($payload['handle']);
+
+    expect($transform->driver)->toBe('custom')
+        ->and($transform->getCustomOperations())->toBe(['blur' => '5']);
+});
+
+it('presents a deployed unavailable driver without replacing it', function () {
+    $transform = new ImageTransformData([
+        'name' => 'Unavailable',
+        'handle' => 'unavailable',
+        'driver' => 'missing',
+        'width' => 100,
+    ]);
+    app(ImageTransforms::class)->saveTransform($transform, runValidation: false);
+
+    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => 'unavailable']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.values.driver', 'missing')
+            ->where('form.nodes', function ($nodes): bool {
+                $driver = collect($nodes)->first(fn (array $node): bool => ($node['control']['path'] ?? null) === ['driver']);
+
+                return collect($driver['control']['props']['options'])->contains([
+                    'label' => 'missing (Unavailable)',
+                    'value' => 'missing',
+                ]);
+            }));
+});
+
 it('normalizes letterbox fill color on save', function () {
     $payload = validTransformData([
         'handle' => 'letterboxTransform',
@@ -271,3 +337,22 @@ it('deletes a transform', function () {
     $service->reset();
     expect($service->getTransformByHandle($transform->handle))->toBeNull();
 });
+
+class ControllerAssetTransformDriver implements AssetTransformDriver
+{
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition(
+            'Custom',
+            operations: ['blur' => ['integer', 'min:1']],
+            operationFields: [
+                'blur' => Field::make(t('Blur'), Number::make('blur')->min(1)),
+            ],
+        );
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        return new AssetTransformResult('/custom.webp', 'image/webp');
+    }
+}

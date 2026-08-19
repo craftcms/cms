@@ -24,6 +24,7 @@ class ImageTransform extends BaseModel
             'height' => 'int',
             'quality' => 'int',
             'upscale' => 'bool',
+            'operations' => 'array',
             'parameterChangeTime' => 'datetime',
         ];
     }

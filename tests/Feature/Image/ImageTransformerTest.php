@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
@@ -88,6 +89,53 @@ it('runs the configured Craft driver without changing rendition identity', funct
         ->and($result->mimeType)->toBe('image/jpeg')
         ->and($result->width)->toBe(100)
         ->and($result->height)->toBe(100)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->pluck('id')->all())
+        ->toBe([$index->id]);
+});
+
+it('uses current filesystem settings without changing transform index identity', function () {
+    config()->set('filesystems.disks.explicit-default-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/explicit-default-source'),
+        'url' => 'https://source.example.test',
+        'asset_transform' => [
+            'driver' => 'craft',
+            'settings' => [
+                'filesystem' => null,
+                'subpath' => '',
+                'generateBeforePageLoad' => true,
+            ],
+        ],
+    ]);
+    config()->set('filesystems.disks.legacy-transform-target', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/legacy-transform-target'),
+        'url' => 'https://legacy.example.test',
+    ]);
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:explicit-default-source',
+        'transformFs' => 'disk:legacy-transform-target',
+    ]);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'explicit-default.jpg',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 800,
+        'dateModified' => now()->subMinute(),
+    ]);
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    $transform = new ImageTransform(['width' => 100]);
+    $index = $this->transformer->getTransformIndex($asset, $transform);
+
+    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+    expect($result->url)->toStartWith('https://source.example.test/')
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->pluck('id')->all())
         ->toBe([$index->id]);
 });
@@ -262,6 +310,65 @@ it('uses the transform filesystem URL policy', function () {
         ->toStartWith('https://transforms.example.test/');
 });
 
+it('uses Craft driver output settings from the source filesystem', function () {
+    Queue::fake();
+    config()->set('filesystems.disks.configured-transform-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/configured-source'),
+        'asset_transform' => [
+            'driver' => 'craft',
+            'settings' => [
+                'filesystem' => 'disk:configured-transform-target',
+                'subpath' => 'renditions',
+                'generateBeforePageLoad' => false,
+            ],
+        ],
+    ]);
+    config()->set('filesystems.disks.configured-transform-target', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/configured-target'),
+        'url' => 'https://renditions.example.test',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'disk:configured-transform-source']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'configured-transform.jpg',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 800,
+    ]);
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+
+    app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
+    new GenerateImageTransform($index->id)->handle($this->transformer);
+    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $path = 'renditions/'.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+
+    expect($result->url)->toStartWith('https://renditions.example.test/renditions/')
+        ->and(Storage::disk('configured-transform-target')->exists($path))->toBeTrue();
+});
+
+it('fails when the configured Craft driver output filesystem is missing', function () {
+    config()->set('filesystems.disks.missing-transform-target-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/image-transformer-test/missing-target-source'),
+        'asset_transform' => [
+            'driver' => 'craft',
+            'settings' => ['filesystem' => 'disk:missing-transform-target'],
+        ],
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'disk:missing-transform-target-source']);
+    $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
+
+    app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+})->throws(FilesystemException::class);
+
 it('uses transform-disk-relative paths while preserving the deletion event path', function () {
     $volume = Volume::factory()->create([
         'fs' => 'disk:test-disk',
@@ -290,9 +397,10 @@ it('uses transform-disk-relative paths while preserving the deletion event path'
     Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms'.DIRECTORY_SEPARATOR.$path);
 });
 
-it('uses the provided asset when immediately generating transforms', function () {
+it('rejects unsupported source kinds before generating transforms', function () {
     $asset = ($this->createImageAsset)([
         'filename' => 'transform-test.txt',
+        'kind' => 'text',
     ]);
     $assets = Mockery::mock(Assets::class);
     $assets->shouldNotReceive('getAssetById');
@@ -307,5 +415,16 @@ it('uses the provided asset when immediately generating transforms', function ()
             'mode' => 'crop',
         ],
         ['generateBeforePageLoad' => true],
+    )))->toThrow(NotSupportedException::class);
+});
+
+it('rejects untyped Craft driver settings', function () {
+    $asset = ($this->createImageAsset)();
+
+    expect(fn () => $this->transformer->transform(new AssetTransformRequest(
+        $asset,
+        'craft',
+        ['width' => 100],
+        ['generateBeforePageLoad' => 'yes'],
     )))->toThrow(AssetTransformFailedException::class);
 });

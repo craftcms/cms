@@ -15,8 +15,12 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageEditorTransformerInterface;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
@@ -28,6 +32,8 @@ use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
@@ -37,6 +43,7 @@ use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -59,19 +66,40 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition(t('Craft'));
+        return new AssetTransformDriverDefinition(t('Craft'), filesystemSettings: [
+            Field::make(t('Output Filesystem'), Combobox::make('filesystem')
+                ->value(null)
+                ->options([
+                    ['label' => t('Same as source'), 'value' => ''],
+                    ...SelectOptions::getFsOptions(),
+                    ...SelectOptions::getEnvSuggestions(),
+                ])),
+            Field::make(t('Output Subpath'), Combobox::make('subpath')
+                ->value('')
+                ->options(SelectOptions::getEnvSuggestions(true))),
+            Field::make(t('Generate transforms before page load'), Lightswitch::make('generateBeforePageLoad')->value(false)),
+        ]);
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
+        if (! ImageHelper::canManipulateAsImage($request->asset->getExtension())) {
+            throw new NotSupportedException('The Asset cannot be manipulated as an image.');
+        }
+
         $transform = new ImageTransform($request->operations);
+        $generateBeforePageLoad = $request->settings['generateBeforePageLoad'] ?? false;
+
+        if (is_string($generateBeforePageLoad) && str_starts_with($generateBeforePageLoad, '$')) {
+            $generateBeforePageLoad = Env::parseBoolean($generateBeforePageLoad);
+        }
+
+        if (! is_bool($generateBeforePageLoad)) {
+            throw new AssetTransformFailedException('The generate-before-page-load setting is invalid.');
+        }
 
         try {
-            $url = $this->getTransformUrl(
-                $request->asset,
-                $transform,
-                $request->settings['generateBeforePageLoad'] ?? false,
-            );
+            $url = $this->getTransformUrl($request->asset, $transform, $generateBeforePageLoad);
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
         }
@@ -107,7 +135,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = serialize([$request->operations, $request->settings]);
+            $key = serialize($request->operations);
             $groups[$key]['transform'] ??= new ImageTransform($request->operations);
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
@@ -119,10 +147,8 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
 
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $disk = $asset->getVolume()->transformDisk();
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
-        $transformHasUrls = $asset->getVolume()->transformHasUrls();
 
         if ($mimeType === 'image/gif' && ! $generalConfig->transformGifs) {
             throw new NotSupportedException('GIF files shouldn’t be transformed.');
@@ -133,6 +159,8 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         }
 
         $index = $this->getTransformIndex($asset, $imageTransform);
+        $disk = $this->transformDisk($asset);
+        $transformHasUrls = $this->transformHasUrls($asset);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
@@ -233,13 +261,21 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         return $url;
     }
 
+    public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
+    {
+        return $this->getTransformUrl($asset, $index->getTransform(), $immediately);
+    }
+
+    public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
+    {
+        return $this->transformHasUrls($asset);
+    }
+
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
     {
-        $transform = $index->getTransform();
-        $this->getTransformUrl($asset, $transform, true);
-        $index = $this->getTransformIndex($asset, $transform);
+        $this->getTransformUrlForIndex($asset, $index, true);
         $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
-        $stream = $asset->getVolume()->transformDisk()->readStream($path);
+        $stream = $this->transformDisk($asset)->readStream($path);
 
         if (! is_resource($stream)) {
             throw new ImageTransformException('Unable to read generated transform.');
@@ -272,13 +308,16 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
-        $subPath = Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/');
+        $settings = $this->filesystemTransformSettings($asset);
+        $subPath = $settings === null
+            ? Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/')
+            : $this->outputSettings($settings)[1];
         $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
 
         event(new DeletingTransformedImage(asset: $asset, path: $path));
 
         try {
-            $asset->getVolume()->transformDisk()->delete($diskPath);
+            $this->transformDisk($asset)->delete($diskPath);
         } catch (RuntimeException|NotSupportedException) {
             // NBD
         }
@@ -296,9 +335,9 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             ->where(function (Builder $query) use ($transforms, &$transformsByFingerprint) {
                 foreach ($transforms as $transform) {
                     $transformString = ImageTransformHelper::getTransformString($transform);
-                    $fingerprint = $transform->format !== null
+                    $fingerprint = ($transform->format !== null
                         ? $transformString.':'.$transform->format
-                        : $transformString;
+                        : $transformString);
 
                     $transformsByFingerprint[$fingerprint] = $transform;
 
@@ -386,8 +425,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             return;
         }
 
-        $volume = $asset->getVolume();
-        $transformDisk = $volume->transformDisk();
+        $transformDisk = $this->transformDisk($asset);
         $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
@@ -454,14 +492,12 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $volume = $asset->getVolume();
-
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $disk = $volume->transformDisk();
+        $disk = $this->transformDisk($asset);
 
         $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
@@ -736,6 +772,100 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
     private function getTransformBasePath(Asset $asset): string
     {
         return $asset->folderPath ?? '';
+    }
+
+    private function transformDisk(Asset $asset): FilesystemAdapter
+    {
+        $settings = $this->filesystemTransformSettings($asset);
+
+        if ($settings === null) {
+            return $asset->getVolume()->transformDisk();
+        }
+
+        [$filesystem, $subpath] = $this->outputSettings($settings);
+
+        return Filesystems::disk(
+            $filesystem ?? $asset->getVolume()->getFsHandle(false),
+            $subpath,
+        );
+    }
+
+    private function transformHasUrls(Asset $asset): bool
+    {
+        $settings = $this->filesystemTransformSettings($asset);
+
+        if ($settings === null) {
+            return $asset->getVolume()->transformHasUrls();
+        }
+
+        [$filesystem] = $this->outputSettings($settings);
+
+        $filesystem = Filesystems::resolve(
+            $filesystem ?? $asset->getVolume()->getFsHandle(false),
+        );
+
+        if ($filesystem === null) {
+            throw new FilesystemException('The configured Asset Transform output filesystem does not exist.');
+        }
+
+        return $filesystem->hasUrls;
+    }
+
+    /** @return array<string,mixed>|null */
+    private function filesystemTransformSettings(Asset $asset): ?array
+    {
+        $config = $asset->getVolume()->getFs()->getAssetTransform();
+
+        if (! is_array($config) || ($config['driver'] ?? null) !== 'craft') {
+            return null;
+        }
+
+        if (! is_array($config['settings'] ?? null)) {
+            throw new FilesystemException('The configured Asset Transform filesystem settings are invalid.');
+        }
+
+        return $config['settings'];
+    }
+
+    /**
+     * @param  array<string,mixed>|null  $settings
+     * @return array{string|null,string|null}
+     */
+    private function outputSettings(?array $settings): array
+    {
+        if ($settings === null) {
+            return [null, null];
+        }
+
+        $filesystem = $settings['filesystem'] ?? null;
+        $subpath = $settings['subpath'] ?? '';
+
+        if ($filesystem !== null && ! is_string($filesystem)) {
+            throw new FilesystemException('The configured Asset Transform output filesystem is invalid.');
+        }
+
+        if (! is_string($subpath)) {
+            throw new FilesystemException('The configured Asset Transform output subpath is invalid.');
+        }
+
+        $rawFilesystem = $filesystem;
+        $rawSubpath = $subpath;
+        $filesystem = Env::parse($filesystem);
+        $subpath = Env::parse($subpath);
+
+        if ($rawFilesystem !== null && $rawFilesystem !== '' && $filesystem === null) {
+            throw new FilesystemException('The configured Asset Transform output filesystem could not be resolved.');
+        }
+
+        if ($rawSubpath !== '' && $subpath === null) {
+            throw new FilesystemException('The configured Asset Transform output subpath could not be resolved.');
+        }
+
+        $filesystem = $filesystem === '' ? null : $filesystem;
+        $subpath = trim(str_replace('\\', '/', $subpath ?? ''), '/');
+        $subpath = $subpath === '' ? null : $subpath;
+
+        return [$filesystem, $subpath];
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void

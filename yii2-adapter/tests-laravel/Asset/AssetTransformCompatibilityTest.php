@@ -8,6 +8,7 @@ use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\ImageTransforms as LegacyImageTransforms;
+use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
@@ -18,6 +19,8 @@ use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface as LegacyImageTransformerInterface;
@@ -124,6 +127,15 @@ it('applies the nullable legacy generation policy and immediate overrides', func
     expect($this->driver->request->settings)->toBe(['generateBeforePageLoad' => false]);
 });
 
+it('applies the legacy generation policy to control panel thumbnails', function(): void {
+    Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+    $asset = ($this->asset)();
+
+    app(Assets::class)->getThumbUrl($asset, 320, 160);
+
+    expect($this->driver->request->settings)->toBe(['generateBeforePageLoad' => true]);
+});
+
 it('reports legacy URL failures and returns null', function(): void {
     Exceptions::fake();
     app(AssetTransforms::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetTransformDriver());
@@ -165,6 +177,42 @@ it('routes registered legacy image transformers through adapter drivers', functi
             ->and($generatedUrl)->toBe('/legacy/320%20image.jpg');
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+        Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
+    }
+});
+
+it('selects the source filesystem before the legacy transformer candidate', function(): void {
+    Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
+        $event->types[] = RegisteredLegacyImageTransformer::class;
+    });
+    LegacyImageTransforms::finalizeRegistrationEvents();
+    config()->set('filesystems.disks.legacy-precedence-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/legacy-precedence-source'),
+        'asset_transform' => [
+            'driver' => 'compatibility-test',
+            'settings' => [],
+        ],
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'disk:legacy-precedence-source']);
+    $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
+    $asset = ($this->asset)([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+    ]);
+    $transform = new ImageTransform(['width' => 320]);
+    $transform->setTransformer(RegisteredLegacyImageTransformer::class);
+    $before = function(GenerateTransformEvent $event): void {
+        $event->url = '/legacy/event.jpg';
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        expect($asset->getUrl($transform))->toBe('/renditions/320x160.webp')
+            ->and($this->driver->request)->not->toBeNull()
+            ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
 });

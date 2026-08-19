@@ -3,19 +3,28 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -98,6 +107,70 @@ it('uses ThumbUrlResolving event url when set', function () {
     $url = $this->assets->getThumbUrl($asset, 100);
 
     expect($url)->toBe('https://example.com/custom-thumb.jpg');
+});
+
+it('renders non-image thumbnails and previews through the selected driver', function () {
+    $driver = new ControlPanelAssetTransformDriver;
+    app(AssetTransforms::class)->extend('test', fn () => $driver);
+    Cms::config()->defaultAssetTransformDriver('test');
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'test.pdf',
+        'kind' => FileKind::Pdf->value,
+        'width' => 600,
+        'height' => 800,
+    ]);
+
+    expect($this->assets->getThumbUrl($asset, 120, 80))->toBe('/renditions/120x80.webp')
+        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe('/renditions/1000x1000.webp')
+        ->and(array_column($driver->requests, 'operations'))->toBe([
+            ['height' => 80, 'mode' => 'crop', 'width' => 120],
+            ['height' => 1000, 'mode' => 'crop', 'width' => 1000],
+        ])
+        ->and(array_column($driver->requests, 'settings'))->toBe([
+            [],
+            ['generateBeforePageLoad' => true],
+        ]);
+});
+
+it('uses file-kind images only when the selected driver does not support the source', function () {
+    app(AssetTransforms::class)->extend('test', fn () => new ControlPanelAssetTransformDriver(
+        new NotSupportedException('unsupported'),
+    ));
+    Cms::config()->defaultAssetTransformDriver('test');
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'test.pdf',
+        'kind' => FileKind::Pdf->value,
+    ]);
+    $iconUrl = Url::actionUrl('assets/icon', ['extension' => 'pdf']);
+
+    expect($this->assets->getThumbUrl($asset, 100))->toBe($iconUrl)
+        ->and($this->assets->getThumbUrl($asset, 100, iconFallback: false))->toBeNull()
+        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe($iconUrl);
+});
+
+it('does not disguise control-panel transform configuration failures as file-kind images', function () {
+    Cms::config()->defaultAssetTransformDriver('missing');
+    $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
+    $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'test.pdf',
+        'kind' => FileKind::Pdf->value,
+    ]);
+
+    expect(fn () => $this->assets->getThumbUrl($asset, 100))
+        ->toThrow(AssetTransformDriverNotFoundException::class)
+        ->and(fn () => $this->assets->getImagePreviewUrl($asset, 1000, 1000))
+        ->toThrow(AssetTransformDriverNotFoundException::class);
 });
 
 it('dispatches PreviewHandlerResolving event', function () {
@@ -204,3 +277,31 @@ it('resets caches', function () {
     // No error means the reset worked
     expect(true)->toBeTrue();
 });
+
+class ControlPanelAssetTransformDriver implements AssetTransformDriver
+{
+    public array $requests = [];
+
+    public function __construct(
+        private readonly ?Throwable $failure = null,
+    ) {}
+
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition('Control panel test');
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        if ($this->failure !== null) {
+            throw $this->failure;
+        }
+
+        $this->requests[] = $request;
+
+        return new AssetTransformResult(
+            url: sprintf('/renditions/%sx%s.webp', $request->operations['width'], $request->operations['height']),
+            mimeType: 'image/webp',
+        );
+    }
+}

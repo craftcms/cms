@@ -77,7 +77,7 @@ readonly class TransformController
         if (
             isset($transformIndexModel) &&
             $transformer instanceof ImageTransformer &&
-            ! $asset->getVolume()->transformHasUrls()
+            ! $transformer->transformHasUrlsForIndex($asset, $transformIndexModel)
         ) {
             if (! $hasPrivateToken) {
                 $this->requirePermission('accessCp');
@@ -91,7 +91,9 @@ readonly class TransformController
         }
 
         try {
-            $url = $transformer->getTransformUrl($asset, $transform, true);
+            $url = isset($transformIndexModel) && $transformer instanceof ImageTransformer
+                ? $transformer->getTransformUrlForIndex($asset, $transformIndexModel, true)
+                : $transformer->getTransformUrl($asset, $transform, true);
         } catch (Throwable $e) {
             return $this->asBrokenImage($e);
         }

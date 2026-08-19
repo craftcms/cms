@@ -12,6 +12,7 @@ describe('defaults', function () {
         expect($transform->id)->toBeNull()
             ->and($transform->name)->toBeNull()
             ->and($transform->handle)->toBeNull()
+            ->and($transform->driver)->toBeNull()
             ->and($transform->width)->toBeNull()
             ->and($transform->height)->toBeNull()
             ->and($transform->format)->toBeNull()
@@ -101,17 +102,20 @@ describe('getConfig', function () {
         ]);
 
         expect($transform->getConfig())->toBe([
-            'fill' => '#ff0000',
-            'format' => 'webp',
-            'handle' => 'thumb',
-            'height' => 200,
-            'interlace' => 'none',
-            'mode' => 'crop',
             'name' => 'Thumbnail',
-            'position' => 'center-center',
-            'quality' => 80,
-            'upscale' => true,
-            'width' => 200,
+            'handle' => 'thumb',
+            'driver' => null,
+            'operations' => [
+                'fill' => '#ff0000',
+                'format' => 'webp',
+                'height' => 200,
+                'interlace' => 'none',
+                'mode' => 'crop',
+                'position' => 'center-center',
+                'quality' => 80,
+                'upscale' => true,
+                'width' => 200,
+            ],
         ]);
     });
 
@@ -125,8 +129,8 @@ describe('getConfig', function () {
 
         $config = $transform->getConfig();
 
-        expect($config['width'])->toBeNull()
-            ->and($config['height'])->toBeNull();
+        expect($config['operations']['width'])->toBeNull()
+            ->and($config['operations']['height'])->toBeNull();
     });
 
     test('excludes non-config fields', function () {

@@ -52,6 +52,9 @@ abstract class Filesystem extends Component implements FsInterface
 
     public ?string $uid = null;
 
+    /** @var array{driver:mixed,settings?:mixed}|null */
+    public ?array $assetTransform = null;
+
     public ?string $rootUrl {
         get => $this->getRootUrl();
         set {
@@ -77,6 +80,12 @@ abstract class Filesystem extends Component implements FsInterface
     }
 
     abstract public function getDiskConfig(): array;
+
+    /** @return array{driver:mixed,settings?:mixed}|null */
+    public function getAssetTransform(): ?array
+    {
+        return $this->assetTransform;
+    }
 
     #[Override]
     public function attributeLabels(): array

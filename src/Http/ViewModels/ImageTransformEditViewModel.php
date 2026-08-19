@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -37,6 +38,7 @@ class ImageTransformEditViewModel extends ViewModel
         private readonly ImageTransform $transform,
         private readonly Images $images,
         private readonly FormResolver $formResolver,
+        private readonly AssetTransforms $assetTransforms,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -55,6 +57,7 @@ class ImageTransformEditViewModel extends ViewModel
             HiddenField::make('transformId'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
+            Field::make(t('Asset Transform Driver'), Choice::make('driver')->options($this->driverOptions())),
             Field::make(
                 t('Mode'),
                 Choice::make('mode')
@@ -100,6 +103,8 @@ class ImageTransformEditViewModel extends ViewModel
             )->instructions(t('The image format that transformed images should use.')),
         );
 
+        $form->add(...array_values($this->assetTransforms->getOperationFields()));
+
         return $this->formResolver->resolve($form, new FormContext(
             values: $values,
             errors: $this->transform->errors()->getMessages(),
@@ -131,6 +136,7 @@ class ImageTransformEditViewModel extends ViewModel
             'transformId' => $this->transform->id,
             'name' => $this->transform->name ?? '',
             'handle' => $this->transform->handle ?? '',
+            'driver' => $this->transform->driver ?? '',
             'width' => $this->transform->width ?? '',
             'height' => $this->transform->height ?? '',
             'mode' => $this->transform->mode,
@@ -142,7 +148,30 @@ class ImageTransformEditViewModel extends ViewModel
                 ? ltrim($this->transform->fill, '#')
                 : '',
             'upscale' => $this->transform->upscale,
+            ...$this->transform->getCustomOperations(),
         ];
+    }
+
+    /** @return list<array{label: string, value: string}> */
+    private function driverOptions(): array
+    {
+        $options = collect($this->assetTransforms->getDriverDefinitions())
+            ->map(fn ($definition, string $handle): array => [
+                'label' => $definition->name,
+                'value' => $handle,
+            ]);
+
+        if ($this->transform->driver !== null && $options->doesntContain('value', $this->transform->driver)) {
+            $options->put($this->transform->driver, [
+                'label' => t('{handle} (Unavailable)', ['handle' => $this->transform->driver]),
+                'value' => $this->transform->driver,
+            ]);
+        }
+
+        return $options
+            ->prepend(['label' => t('Default'), 'value' => ''])
+            ->values()
+            ->all();
     }
 
     /** @return list<array{label: string, value: string}> */

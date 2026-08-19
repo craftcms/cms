@@ -10,6 +10,7 @@ use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -248,6 +249,14 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Event::listen(ThumbUrlResolving::class, function(ThumbUrlResolving $event): void {
+            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+
+            if ($immediately !== null) {
+                $event->transformSettings['generateBeforePageLoad'] = $immediately;
+            }
+        });
+
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),

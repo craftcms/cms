@@ -14,15 +14,20 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
 
-it('executes a registered driver with normalized operations', function () {
+it('executes a registered driver with validated operations', function () {
     $driver = new TestAssetTransformDriver;
     $manager = assetTransformsWith($driver);
     $asset = Asset::factory()->createElement();
@@ -38,7 +43,7 @@ it('executes a registered driver with normalized operations', function () {
         ->and($driver->request->driver)->toBe('test')
         ->and($driver->request->operations)->toBe([
             'format' => 'webp',
-            'width' => 1200,
+            'width' => '1200',
         ]);
 });
 
@@ -148,6 +153,74 @@ it('accepts named Image transforms through the public interfaces', function () {
         ->and($asset->getUrl('hero'))->toBe('/renditions/1200x600.webp');
 });
 
+it('selects a named Image transform driver before the global driver', function () {
+    $namedDriver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Named', [
+        'blur' => ['integer'],
+    ]));
+    $explicitDriver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Explicit', [
+        'blur' => ['integer'],
+    ]));
+    $filesystemDriver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Filesystem', [
+        'blur' => ['integer'],
+    ]));
+    $globalDriver = new TestAssetTransformDriver;
+    $manager = app(AssetTransforms::class)
+        ->extend('named', fn () => $namedDriver)
+        ->extend('explicit', fn () => $explicitDriver)
+        ->extend('filesystem', fn () => $filesystemDriver)
+        ->extend('global', fn () => $globalDriver);
+    Cms::config()->defaultAssetTransformDriver('global');
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Hero',
+        'handle' => 'hero',
+        'driver' => 'named',
+        'width' => 1200,
+        'operations' => ['blur' => 8],
+    ]));
+    $asset = Asset::factory()->createElement();
+    $asset->getVolume()->getFs()->assetTransform = [
+        'driver' => 'filesystem',
+        'settings' => [],
+    ];
+
+    $manager->transform($asset, 'hero');
+    $manager->transform($asset, ['transform' => 'hero', 'driver' => 'explicit']);
+
+    expect($namedDriver->request->driver)->toBe('named')
+        ->and($namedDriver->request->operations['blur'])->toBe(8)
+        ->and($explicitDriver->request->driver)->toBe('explicit')
+        ->and($filesystemDriver->request)->toBeNull()
+        ->and($globalDriver->request)->toBeNull();
+});
+
+it('preserves an unavailable named driver until it can execute', function () {
+    $transform = new ImageTransform([
+        'name' => 'Recoverable',
+        'handle' => 'recoverable',
+        'driver' => 'later',
+        'width' => 800,
+        'operations' => ['blur' => '6'],
+    ]);
+    app(ImageTransforms::class)->saveTransform($transform, runValidation: false);
+    $asset = Asset::factory()->createElement();
+    $config = ProjectConfig::get("imageTransforms.{$transform->uid}");
+
+    expect(fn () => $asset->transform('recoverable'))
+        ->toThrow(AssetTransformDriverNotFoundException::class);
+
+    $driver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Later', [
+        'blur' => ['integer'],
+    ]));
+    app(AssetTransforms::class)->extend('later', fn () => $driver);
+
+    $asset->transform('recoverable');
+
+    expect($driver->request->driver)->toBe('later')
+        ->and($driver->request->operations['blur'])->toBe('6')
+        ->and(app(ImageTransforms::class)->getTransformByHandle('recoverable')->driver)->toBe('later')
+        ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toBe($config);
+});
+
 it('exposes typed failures for invalid named Image transforms', function () {
     $asset = Asset::factory()->createElement();
 
@@ -222,7 +295,67 @@ it('uses the configured default driver', function () {
     expect($driver->request->driver)->toBe('test');
 });
 
-it('normalizes nullable scalar operations contributed by a driver', function () {
+it('does not add filesystem settings when the source has no override', function () {
+    $driver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Test', filesystemSettings: [
+        Field::make('Enabled', Lightswitch::make('enabled')->value(false)),
+    ]));
+    $manager = assetTransformsWith($driver);
+    Cms::config()->defaultAssetTransformDriver('test');
+
+    $manager->transform(Asset::factory()->createElement(), ['width' => 1200]);
+
+    expect($driver->request->settings)->toBe([]);
+});
+
+it('does not add filesystem settings when another driver wins', function () {
+    $explicit = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Explicit', filesystemSettings: [
+        Field::make('Enabled', Lightswitch::make('enabled')->value(false)),
+    ]));
+    $filesystem = new TestAssetTransformDriver;
+    $manager = app(AssetTransforms::class)
+        ->extend('explicit', fn () => $explicit)
+        ->extend('filesystem', fn () => $filesystem);
+    config()->set('filesystems.disks.other-driver-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/other-driver-source'),
+        'asset_transform' => [
+            'driver' => 'filesystem',
+            'settings' => [],
+        ],
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'disk:other-driver-source']);
+    $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+
+    $manager->transform($asset, ['driver' => 'explicit', 'width' => 1200]);
+
+    expect($explicit->request->settings)->toBe([])
+        ->and($filesystem->request)->toBeNull();
+});
+
+it('passes raw Laravel disk settings to the selected driver unchanged', function () {
+    $driver = new TestAssetTransformDriver(new AssetTransformDriverDefinition('Test', filesystemSettings: [
+        Field::make('Endpoint', Text::make('endpoint')->value('https://example.test')),
+        Field::make('Enabled', Lightswitch::make('enabled')->value(false)),
+    ]));
+    assetTransformsWith($driver);
+    config()->set('filesystems.disks.asset-transform-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transform-source'),
+        'asset_transform' => [
+            'driver' => 'test',
+            'settings' => ['enabled' => 'yes'],
+        ],
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'disk:asset-transform-source']);
+    $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+
+    app(AssetTransforms::class)->transform($asset, ['width' => 1200]);
+
+    expect($driver->request->driver)->toBe('test')
+        ->and($driver->request->settings)->toBe(['enabled' => 'yes']);
+});
+
+it('validates known operations and passes values to the driver unchanged', function () {
     $definition = new AssetTransformDriverDefinition('Test', [
         'blur' => ['integer', 'min:1'],
         'enabled' => ['boolean'],
@@ -236,17 +369,19 @@ it('normalizes nullable scalar operations contributed by a driver', function () 
     $manager->transform(Asset::factory()->createElement(), [
         'driver' => 'test',
         'blur' => '12',
-        'enabled' => 'yes',
+        'enabled' => '1',
         'optional' => null,
+        'providerOption' => ['raw'],
         'ratio' => '1.5',
-        'watermark' => 42,
+        'watermark' => '42',
     ]);
 
     expect($driver->request->operations)->toBe([
-        'blur' => 12,
-        'enabled' => true,
+        'blur' => '12',
+        'enabled' => '1',
         'optional' => null,
-        'ratio' => 1.5,
+        'providerOption' => ['raw'],
+        'ratio' => '1.5',
         'watermark' => '42',
     ]);
 });
@@ -280,6 +415,19 @@ it('rejects incompatible shared operation declarations', function () {
         ->extend('string', fn () => $stringDriver);
 
     expect(fn () => $manager->getOperationRules())
+        ->toThrow(InvalidAssetTransformException::class);
+});
+
+it('rejects operation controls without a matching catalogue declaration', function () {
+    $driver = new TestAssetTransformDriver(new AssetTransformDriverDefinition(
+        'Invalid',
+        operationFields: [
+            'blur' => Field::make('Blur', Text::make('blur')),
+        ],
+    ));
+    $manager = assetTransformsWith($driver);
+
+    expect(fn () => $manager->getOperationFields())
         ->toThrow(InvalidAssetTransformException::class);
 });
 
@@ -329,8 +477,8 @@ it('preloads immutable requests grouped by capable driver', function () {
         ->and(array_column($first->requests, 'asset'))->toBe($assets)
         ->and(array_column($first->requests, 'driver'))->toBe(['first', 'first'])
         ->and(array_column($first->requests, 'operations'))->toBe([
-            ['width' => 320],
-            ['width' => 320],
+            ['width' => '320'],
+            ['width' => '320'],
         ])
         ->and(array_column($second->requests, 'asset'))->toBe($assets)
         ->and(array_column($second->requests, 'driver'))->toBe(['second', 'second'])
@@ -503,7 +651,7 @@ class TestCraftPreloadingDriver extends ImageTransformer
     public array $preloads = [];
 
     #[Override]
-    public function eagerLoadTransforms(array $transforms, array $assets): void
+    public function eagerLoadTransforms(array $transforms, array $assets, ?array $settings = null): void
     {
         $this->preloads[] = compact('transforms', 'assets');
     }

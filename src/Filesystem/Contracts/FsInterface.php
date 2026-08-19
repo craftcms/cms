@@ -18,11 +18,15 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  * @property bool $hasUrls
  * @property string|null $url
  * @property string|null $uid
+ * @property array<string,mixed>|null $assetTransform
  *
  * @phpstan-require-extends Filesystem
  */
 interface FsInterface extends ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {
+    /** @return array{driver:mixed,settings?:mixed}|null */
+    public function getAssetTransform(): ?array;
+
     /**
      * Returns the Laravel disk configuration for this filesystem.
      *

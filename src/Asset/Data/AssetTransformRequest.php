@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 readonly class AssetTransformRequest
 {
     /**
-     * @param  array<string, bool|float|int|string|null>  $operations
+     * @param  array<string, mixed>  $operations
      * @param  array<string, mixed>  $settings
      */
     public function __construct(

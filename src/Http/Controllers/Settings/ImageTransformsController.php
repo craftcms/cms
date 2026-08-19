@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Form\FormResolver;
@@ -35,6 +37,7 @@ class ImageTransformsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly FormResolver $formResolver,
+        private readonly AssetTransforms $assetTransforms,
     ) {}
 
     public function index(ImageTransforms $imageTransforms): \Inertia\Response
@@ -77,6 +80,7 @@ class ImageTransformsController
         $transform->id = $request->integer('transformId') ?: null;
         $transform->name = $request->input('name');
         $transform->handle = $request->input('handle');
+        $transform->driver = $request->input('driver') ?: null;
         $transform->width = (int) $request->input('width') ?: null;
         $transform->height = (int) $request->input('height') ?: null;
         $transform->mode = (string) $request->input('mode', $transform->mode);
@@ -90,6 +94,23 @@ class ImageTransformsController
             ? (string) $fill
             : null;
         $transform->upscale = $request->boolean('upscale', $transform->upscale);
+
+        $request->validate([
+            'driver' => ['nullable', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
+        ]);
+
+        $customOperationHandles = array_diff(
+            array_keys($this->assetTransforms->getOperationRules()),
+            ImageTransform::CORE_OPERATIONS,
+        );
+
+        try {
+            $transform->setOperations($this->assetTransforms->validateOperations(
+                $request->only($customOperationHandles),
+            ));
+        } catch (InvalidAssetTransformException $exception) {
+            throw ValidationException::withMessages(['operations' => $exception->getMessage()]);
+        }
 
         if ($transform->format === '') {
             $transform->format = null;
@@ -126,6 +147,7 @@ class ImageTransformsController
             'values.transformId' => ['nullable', 'integer'],
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
+            'values.driver' => ['nullable', 'string'],
             'values.width' => ['nullable', 'integer', 'min:1'],
             'values.height' => ['nullable', 'integer', 'min:1'],
             'values.mode' => ['required', Rule::enum(ImageTransformMode::class)],
@@ -136,6 +158,10 @@ class ImageTransformsController
             'values.fill' => ['nullable', 'string'],
             'values.upscale' => ['required', 'boolean'],
             'scope' => ['present', 'array', 'size:0'],
+            ...collect($this->assetTransforms->getOperationRules())
+                ->except(ImageTransform::CORE_OPERATIONS)
+                ->mapWithKeys(fn (array $rules, string $handle): array => ["values.{$handle}" => ['nullable', ...$rules]])
+                ->all(),
         ]);
         $values = $data['values'];
         $transform = empty($values['transformId'])
@@ -179,6 +205,7 @@ class ImageTransformsController
             $transform,
             $images,
             $this->formResolver,
+            $this->assetTransforms,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,
         );

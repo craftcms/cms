@@ -68,6 +68,10 @@ class Filesystems
             $config['url'] = $fs->url;
         }
 
+        if ($fs->getAssetTransform() !== null) {
+            $config['assetTransform'] = $fs->getAssetTransform();
+        }
+
         return $config;
     }
 
@@ -277,6 +281,8 @@ class Filesystems
                         Volumes::saveVolume($volume);
                     }
                 }
+
+                $this->updateAssetTransformFilesystemReferences($fs->oldHandle, $fs->handle);
 
                 event(new FilesystemRenamed($fs));
             }
@@ -587,5 +593,36 @@ class Filesystems
         }
 
         return $config;
+    }
+
+    private function updateAssetTransformFilesystemReferences(string $oldHandle, string $newHandle): void
+    {
+        $configs = $this->projectConfig->get(ProjectConfig::PATH_FS);
+
+        if (! is_array($configs)) {
+            return;
+        }
+
+        foreach ($configs as $handle => $config) {
+            if (! is_string($handle)) {
+                continue;
+            }
+            if (! is_array($config)) {
+                continue;
+            }
+            if (($config['assetTransform']['driver'] ?? null) !== 'craft') {
+                continue;
+            }
+
+            if (($config['assetTransform']['settings']['filesystem'] ?? null) !== $oldHandle) {
+                continue;
+            }
+
+            $this->projectConfig->set(
+                sprintf('%s.%s.assetTransform.settings.filesystem', ProjectConfig::PATH_FS, $handle),
+                $newHandle,
+                "Update the “{$handle}” filesystem's Asset Transform output filesystem",
+            );
+        }
     }
 }

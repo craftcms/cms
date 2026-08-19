@@ -13,6 +13,7 @@ use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -55,6 +56,45 @@ describe('generate', function () {
         get($result->url)
             ->assertOk()
             ->assertStreamedContent('transform-bytes');
+    });
+
+    it('serves Craft driver renditions from a configured private output filesystem', function () {
+        config()->set('filesystems.disks.configured-private-source', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/transform-controller-test/configured-private-source'),
+            'asset_transform' => [
+                'driver' => 'craft',
+                'settings' => [
+                    'filesystem' => 'disk:configured-private-target',
+                    'subpath' => 'renditions',
+                ],
+            ],
+        ]);
+        config()->set('filesystems.disks.configured-private-target', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
+        ]);
+        $volume = Volume::factory()->create(['fs' => 'disk:configured-private-source']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'configured-private.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+        ]);
+        $asset->getVolume()->sourceDisk()->put(
+            $asset->getPath(),
+            file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
+        );
+        Queue::fake();
+
+        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+
+        get($result->url)
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/jpeg');
     });
 
     it('rejects invalid private transform tokens', function () {

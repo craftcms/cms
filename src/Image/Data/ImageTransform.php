@@ -12,6 +12,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use Illuminate\Validation\Rule;
@@ -21,11 +22,25 @@ class ImageTransform extends Component
 {
     public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
 
+    public const array CORE_OPERATIONS = [
+        'fill',
+        'format',
+        'height',
+        'interlace',
+        'mode',
+        'position',
+        'quality',
+        'upscale',
+        'width',
+    ];
+
     public ?int $id = null;
 
     public ?string $name = null;
 
     public ?string $handle = null;
+
+    public ?string $driver = null;
 
     public int|float|null $width = null;
 
@@ -49,8 +64,25 @@ class ImageTransform extends Component
 
     public ?DateTimeInterface $parameterChangeTime = null;
 
+    /** @var array<string, mixed> */
+    private array $operations = [];
+
     /** @var class-string<ImageTransformerInterface> */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
+
+    /** @param array<string, mixed> $config */
+    public static function fromConfig(array $config): self
+    {
+        return new self([
+            'name' => $config['name'],
+            'handle' => $config['handle'],
+            'driver' => $config['driver'] ?? null,
+            'operations' => [
+                ...Arr::except($config, ['name', 'handle', 'driver', 'operations']),
+                ...(is_array($config['operations'] ?? null) ? $config['operations'] : []),
+            ],
+        ]);
+    }
 
     public function getIsNamedTransform(): bool
     {
@@ -82,21 +114,50 @@ class ImageTransform extends Component
         return app()->make($this->getTransformer());
     }
 
+    /** @return array<string, mixed> */
+    public function getOperations(): array
+    {
+        $operations = [];
+
+        foreach (self::CORE_OPERATIONS as $property) {
+            $operations[$property] = in_array($property, ['height', 'width'], true)
+                ? ($this->$property ?: null)
+                : $this->$property;
+        }
+
+        return [...$operations, ...$this->operations];
+    }
+
+    /** @param array<string, mixed> $operations */
+    public function setOperations(array $operations): void
+    {
+        $this->operations = [];
+
+        foreach ($operations as $handle => $value) {
+            if (in_array($handle, self::CORE_OPERATIONS, true)) {
+                $this->$handle = $value;
+
+                continue;
+            }
+
+            $this->operations[$handle] = $value;
+        }
+    }
+
+    /** @return array<string, mixed> */
+    public function getCustomOperations(): array
+    {
+        return $this->operations;
+    }
+
     /** @return array<string,mixed> */
     public function getConfig(): array
     {
         return [
-            'fill' => $this->fill,
-            'format' => $this->format,
-            'handle' => $this->handle,
-            'height' => $this->height ?: null,
-            'interlace' => $this->interlace,
-            'mode' => $this->mode,
             'name' => $this->name,
-            'position' => $this->position,
-            'quality' => $this->quality,
-            'upscale' => $this->upscale,
-            'width' => $this->width ?: null,
+            'handle' => $this->handle,
+            'driver' => $this->driver,
+            'operations' => $this->getOperations(),
         ];
     }
 
@@ -109,6 +170,8 @@ class ImageTransform extends Component
         return [
             'name' => ['required', 'string'],
             'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
+            'driver' => ['nullable', 'string'],
+            'operations' => ['array'],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::enum(ImageTransformMode::class)],

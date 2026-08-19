@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -13,6 +14,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -57,6 +59,18 @@ class AssetTransforms extends Manager
         return Cms::config()->defaultAssetTransformDriver;
     }
 
+    /** @return array<string, AssetTransformDriverDefinition> */
+    public function getDriverDefinitions(): array
+    {
+        $definitions = ['craft' => $this->driver('craft')->definition()];
+
+        foreach (array_keys($this->customCreators) as $handle) {
+            $definitions[$handle] = $this->driver($handle)->definition();
+        }
+
+        return $definitions;
+    }
+
     /** @return array<string, non-empty-list<string|Stringable>> */
     public function getOperationRules(): array
     {
@@ -77,6 +91,48 @@ class AssetTransforms extends Manager
         }
 
         return $operations;
+    }
+
+    /**
+     * @param  array<string, mixed>  $operations
+     * @return array<string, mixed>
+     */
+    public function validateOperations(array $operations): array
+    {
+        $rules = Arr::only($this->getOperationRules(), array_keys($operations));
+        $rules = array_map(fn (array $rules): array => ['nullable', ...$rules], $rules);
+
+        if (Validator::make($operations, $rules)->fails()) {
+            throw new InvalidAssetTransformException('Invalid Asset Transform operation value.');
+        }
+
+        ksort($operations);
+
+        return $operations;
+    }
+
+    /** @return array<string, Field> */
+    public function getOperationFields(): array
+    {
+        $rules = $this->getOperationRules();
+        $definitions = $this->getDriverDefinitions();
+
+        $fields = [];
+
+        foreach ($definitions as $definition) {
+            foreach ($definition->operationFields as $handle => $field) {
+                $path = $field->getControl()?->path();
+                $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
+
+                if (! is_string($handle) || ! isset($rules[$handle]) || $path !== $handle) {
+                    throw new InvalidAssetTransformException('Asset Transform operation fields must match a declared operation handle.');
+                }
+
+                $fields[$handle] ??= $field;
+            }
+        }
+
+        return $fields;
     }
 
     /** @param array<string, mixed> $settings */
@@ -130,10 +186,11 @@ class AssetTransforms extends Manager
 
             $referenceWidth = $referenceRequest?->operations['width'] ?? null;
 
-            if (! is_int($referenceWidth)) {
+            if ($referenceWidth === null) {
                 throw new InvalidArgumentException("Can’t preload transform “{$definition}” without a prior transform that specifies the base width");
             }
 
+            $referenceWidth = (int) $referenceWidth;
             $operations = $referenceRequest->operations;
             $operations['width'] = $unit === 'w'
                 ? (int) $size
@@ -163,29 +220,40 @@ class AssetTransforms extends Manager
             throw new InvalidAssetTransformException($exception->getMessage(), previous: $exception);
         }
 
-        $driverHandle = array_key_exists('driver', $definition)
-            ? Arr::pull($definition, 'driver')
-            : $candidateDriver ?? $this->getDefaultDriver();
+        $filesystemTransform = $asset->getVolume()->getFs()->getAssetTransform();
+        $driverHandle = match (true) {
+            array_key_exists('driver', $definition) => Arr::pull($definition, 'driver'),
+            is_array($filesystemTransform) && array_key_exists('driver', $filesystemTransform) => $filesystemTransform['driver'],
+            $candidateDriver !== null => $candidateDriver,
+            default => $this->getDefaultDriver(),
+        };
 
         if (! is_string($driverHandle) || $driverHandle === '') {
             throw new AssetTransformDriverNotFoundException('The selected Asset Transform driver is invalid.');
         }
 
         $this->driver($driverHandle);
-        $operations = $this->getOperationRules();
-        $normalized = [];
+        $operations = $this->validateOperations($definition);
 
-        foreach ($definition as $handle => $value) {
-            if (! is_string($handle) || ! isset($operations[$handle])) {
-                throw new InvalidAssetTransformException("Unknown Asset Transform operation [{$handle}].");
-            }
-
-            $normalized[$handle] = $this->normalizeOperation($value, $operations[$handle]);
+        if (
+            is_array($filesystemTransform)
+            && ($filesystemTransform['driver'] ?? null) === $driverHandle
+            && ! is_array($filesystemTransform['settings'] ?? null)
+        ) {
+            throw new InvalidAssetTransformException('The selected Asset Transform filesystem settings are invalid.');
         }
 
-        ksort($normalized);
+        $filesystemSettings = match (true) {
+            ! is_array($filesystemTransform) => [],
+            ($filesystemTransform['driver'] ?? null) === $driverHandle
+                && is_array($filesystemTransform['settings'] ?? null) => $filesystemTransform['settings'],
+            default => [],
+        };
 
-        return new AssetTransformRequest($asset, $driverHandle, $normalized, $settings);
+        return new AssetTransformRequest($asset, $driverHandle, $operations, [
+            ...$filesystemSettings,
+            ...$settings,
+        ]);
     }
 
     /** @return array<string, mixed> */
@@ -208,7 +276,10 @@ class AssetTransforms extends Manager
             throw new InvalidAssetTransformException('An Asset Transform definition must be an array, object, or named transform handle.');
         }
 
-        return Arr::only($transform->getConfig(), array_keys($this->operations));
+        return [
+            ...($transform->driver !== null ? ['driver' => $transform->driver] : []),
+            ...$transform->getOperations(),
+        ];
     }
 
     /** @param string|null $driver */
@@ -237,27 +308,5 @@ class AssetTransforms extends Manager
     protected function createCraftDriver(): AssetTransformDriver
     {
         return $this->container->make(ImageTransformer::class);
-    }
-
-    /** @param non-empty-list<string|Stringable> $rules */
-    private function normalizeOperation(mixed $value, array $rules): bool|float|int|string|null
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $normalized = match ($rules[0]) {
-            'boolean' => filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE),
-            'integer' => filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE),
-            'numeric' => filter_var($value, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE),
-            'string' => is_scalar($value) ? (string) $value : null,
-            default => throw new InvalidAssetTransformException('Invalid Asset Transform operation type.'),
-        };
-
-        if ($normalized === null || Validator::make(['value' => $normalized], ['value' => $rules])->fails()) {
-            throw new InvalidAssetTransformException('Invalid Asset Transform operation value.');
-        }
-
-        return $normalized;
     }
 }
