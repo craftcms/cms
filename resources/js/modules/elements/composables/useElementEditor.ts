@@ -304,8 +304,11 @@ export function useElementEditor({saveData}: Options = {}) {
     }),
     {
       transform: (data) => ({
-        ...data,
+        // Identity first, so the form wins where they overlap: the entry type
+        // can be changed in the sidebar, and `saveData()` only knows the one
+        // the page was rendered with.
         ...saveData?.(),
+        ...data,
         // Once autosave has created a provisional draft, the submission has to
         // target it — otherwise applying would save the canonical element and
         // strand the draft holding the newer values.
