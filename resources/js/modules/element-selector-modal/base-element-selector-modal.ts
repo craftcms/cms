@@ -6,9 +6,7 @@ import {
   type ModalSettings,
 } from '@craftcms/garnish';
 import {html, render, type TemplateResult} from 'lit';
-import {createApp, type App} from 'vue';
-import {createCpComponentRegistry} from '@/bootstrap/components';
-import ModalElementIndex from './ModalElementIndex.vue';
+import type {App} from 'vue';
 import type {SelectedElement} from './useModalElementIndex';
 import {ref} from 'lit/directives/ref.js';
 import {uiLayerManager} from '@/modules/slideout/slideout';
@@ -22,8 +20,6 @@ const noop = () => {};
 type ModalElementIndexInstance = {
   clearSelection(): void;
 };
-
-const components = createCpComponentRegistry();
 
 // Non-runtime-dependent defaults, separated so the static getter can augment them.
 const BASE_DEFAULTS = {
@@ -549,7 +545,20 @@ export class BaseElementSelectorModal extends Modal {
   _createElementIndex(): void {
     Craft.sendActionRequest('POST', this.settings.bodyAction, {
       data: this.getElementIndexParams(),
-    }).then((response: any) => {
+    }).then(async (response: any) => {
+      // Loaded on open, not at module scope: this pulls Vue and the whole
+      // element index component tree, which every page carrying a relation
+      // field would otherwise pay for whether or not a modal is ever opened.
+      const [
+        {createApp},
+        {default: ModalElementIndex},
+        {createCpComponentRegistry},
+      ] = await Promise.all([
+        import('vue'),
+        import('./ModalElementIndex.vue'),
+        import('@/bootstrap/components'),
+      ]);
+
       this.$body.empty();
       this.$content = this.$body;
 
@@ -569,7 +578,7 @@ export class BaseElementSelectorModal extends Modal {
         onChoose: () => this.selectElements(),
       });
 
-      components.install(this.indexApp);
+      createCpComponentRegistry().install(this.indexApp);
       this.indexApp.config.compilerOptions.isCustomElement = (tag: string) =>
         tag.includes('-');
       this.index = this.indexApp.mount(

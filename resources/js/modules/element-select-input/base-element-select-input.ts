@@ -12,7 +12,6 @@ import {
   Select,
   UP_KEY,
 } from '@craftcms/garnish';
-import {createElementSelectorModal} from '@/modules/element-selector-modal/registry';
 import {elementSelectInputData} from './support';
 
 declare const Craft: any;
@@ -91,6 +90,7 @@ export class BaseElementSelectInput extends Base {
   modal: any = null;
   elementEditor: any = null;
   modalFirstOpen = true;
+  openingModal = false;
 
   $container: any = null;
   $form: any = null;
@@ -187,8 +187,9 @@ export class BaseElementSelectInput extends Base {
 
     if (this.$addElementBtn.length) {
       // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-      $(this.$addElementBtn).on('activate.elementSelectInput', () =>
-        this.showModal()
+      $(this.$addElementBtn).on(
+        'activate.elementSelectInput',
+        () => void this.showModal()
       );
     }
 
@@ -679,7 +680,7 @@ export class BaseElementSelectInput extends Base {
           label: Craft.t('app', 'Replace'),
           callback: () => {
             this._$replaceElement = $element;
-            this.showModal();
+            void this.showModal();
           },
         });
       }
@@ -894,20 +895,41 @@ export class BaseElementSelectInput extends Base {
     callback?.();
   }
 
-  showModal(): void {
+  async showModal(): Promise<void> {
     if (!this._$replaceElement && !this.canAddMoreElements()) {
       return;
     }
 
-    if (!this.modal) {
-      this.modal = this.createModal();
-      this.modalFirstOpen = false;
-    } else {
+    if (this.modal) {
       this.modal.show();
+
+      return;
+    }
+
+    // Guards the await below: without it a double click opens two modals.
+    if (this.openingModal) {
+      return;
+    }
+
+    this.openingModal = true;
+
+    try {
+      this.modal = await this.createModal();
+      this.modalFirstOpen = false;
+    } finally {
+      this.openingModal = false;
     }
   }
 
-  createModal(): any {
+  /**
+   * The modal stack — Lit, Vue and the element index — is imported here rather
+   * than at module scope, so a page carrying a relation field doesn't load it
+   * unless a modal is actually opened.
+   */
+  async createModal(): Promise<any> {
+    const {createElementSelectorModal} =
+      await import('@/modules/element-selector-modal/registry');
+
     return createElementSelectorModal(
       this.settings.elementType,
       this.getModalSettings()
