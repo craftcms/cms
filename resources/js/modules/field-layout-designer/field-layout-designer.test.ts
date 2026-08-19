@@ -73,8 +73,7 @@ it('announces config changes so wrappers can read the new layout', () => {
   designer.config = {tabs: [{name: 'Content', elements: []}]} as never;
 
   expect(input.value).toBe('{"tabs":[{"name":"Content","elements":[]}]}');
-  // Assigning `.value` fires nothing on its own, so the designer has to say so
-  // itself — and it has to bubble, since wrappers listen on an ancestor.
+  // Must bubble: wrappers listen on an ancestor.
   expect(changes).toHaveLength(1);
   expect(changes[0]!.bubbles).toBe(true);
 });
