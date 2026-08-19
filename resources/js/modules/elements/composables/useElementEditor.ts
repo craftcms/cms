@@ -100,7 +100,7 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditPage({saveData}: Options = {}) {
+export function useElementEditor({saveData}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.

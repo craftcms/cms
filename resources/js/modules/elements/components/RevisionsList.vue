@@ -11,7 +11,7 @@
   import {computed} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import {t} from '@craftcms/ui';
-  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditPage';
+  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     /** `payload.contextMenu.items`, or an empty list when the element has none. */

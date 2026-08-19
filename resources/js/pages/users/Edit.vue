@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import ElementEditPage from '@/modules/elements/components/ElementEditPage.vue';
+  import ElementEditor from '@/modules/elements/components/ElementEditor.vue';
 
-  // The shared edit payload comes from the ElementEditPage pipeline; only the
+  // The shared edit payload comes from the ElementEditor pipeline; only the
   // User-specific keys (UserEditViewModel) remain props.
   const props = defineProps<{
     userId: number | null;
@@ -17,5 +17,5 @@
 </script>
 
 <template>
-  <ElementEditPage :save-data="saveData" />
+  <ElementEditor :save-data="saveData" />
 </template>
