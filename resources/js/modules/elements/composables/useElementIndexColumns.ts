@@ -1,6 +1,7 @@
 import {computed, type Ref} from 'vue';
 import {
   createIndexVisitor,
+  type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
@@ -49,9 +50,11 @@ export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
   pinned: PinnedColumn,
-  route: ElementIndexRoute
+  route: ElementIndexRoute,
+  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
+  indexVisitor?: IndexVisitor
 ) {
-  const visitor = createIndexVisitor(route);
+  const visitor = indexVisitor ?? createIndexVisitor(route);
 
   // Column state is stored per source; fall back to a shared bucket when there
   // is no resolved source (e.g. the implicit "all elements" view).
