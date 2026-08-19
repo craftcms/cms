@@ -212,7 +212,22 @@ describe('craft-text-expander', () => {
     expect(target.getAttribute('aria-autocomplete')).toBe('list');
   });
 
-  it('matches static options anywhere in labels and keywords while preserving order and limit', async () => {
+  it('shows all static options when no limit is configured', async () => {
+    const {expander, target} = await createFixture({
+      '@': {
+        options: Array.from({length: 9}, (_, index) => ({
+          label: `Option ${index + 1}`,
+          value: `@option-${index + 1}`,
+        })),
+      },
+    });
+
+    type(target, '@');
+
+    expect(options(expander)).toHaveLength(9);
+  });
+
+  it('matches static options anywhere in labels and keywords while preserving order and an explicit limit', async () => {
     const {expander, target} = await createFixture({
       '@': {
         limit: 2,
@@ -649,7 +664,7 @@ describe('craft-text-expander', () => {
     expect(request).toHaveBeenCalledWith(
       'https://craft.test/actions/text-expander/options',
       {
-        params: {query: '#a', limit: 8},
+        params: {query: '#a'},
         signal: expect.any(AbortSignal),
       }
     );

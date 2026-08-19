@@ -450,19 +450,20 @@ export default class CraftTextExpander extends LitElement {
     }
 
     this.#match = match;
-    const limit = match.trigger.limit ?? 8;
+    const limit = match.trigger.limit;
 
     if (match.trigger.options) {
       this.loading = false;
       const query = match.query.toLowerCase();
-      const matches = match.trigger.options
-        .filter((option) =>
-          [option.label, ...(option.keywords ?? [])].some((term) =>
-            term.toLowerCase().includes(query)
-          )
+      const matches = match.trigger.options.filter((option) =>
+        [option.label, ...(option.keywords ?? [])].some((term) =>
+          term.toLowerCase().includes(query)
         )
-        .slice(0, limit);
-      this.#showOptions(matches, selectedOption);
+      );
+      this.#showOptions(
+        limit === undefined ? matches : matches.slice(0, limit),
+        selectedOption
+      );
       return;
     }
 
@@ -477,7 +478,7 @@ export default class CraftTextExpander extends LitElement {
 
   async #loadOptions(
     match: TextExpanderMatch,
-    limit: number,
+    limit: number | undefined,
     request: number,
     selectedOption?: Readonly<TextExpanderOption>
   ): Promise<void> {
@@ -488,7 +489,10 @@ export default class CraftTextExpander extends LitElement {
       const response = await actionClient.get<readonly TextExpanderOption[]>(
         match.trigger.source!,
         {
-          params: {query: `${match.character}${match.query}`, limit},
+          params: {
+            query: `${match.character}${match.query}`,
+            ...(limit === undefined ? {} : {limit}),
+          },
           signal: this.#requestController.signal,
         }
       );
@@ -517,7 +521,10 @@ export default class CraftTextExpander extends LitElement {
     }
 
     this.loading = false;
-    this.#showOptions(options.slice(0, limit), selectedOption);
+    this.#showOptions(
+      limit === undefined ? options : options.slice(0, limit),
+      selectedOption
+    );
   }
 
   #findMatch(): TextExpanderMatch | null {
