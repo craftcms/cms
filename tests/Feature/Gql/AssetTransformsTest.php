@@ -114,6 +114,19 @@ it('preloads GraphQL list transforms through the selected driver', function () {
 });
 
 it('rejects unsupported non-null immediately arguments', function () {
+    $asset = Asset::factory()->createElement();
+    gqlActivateFullAccessSchema();
+    graphQL(<<<GQL
+        {
+            asset(id: {$asset->id}) {
+                url(width: 320, immediately: false)
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonPath('data.asset.url', null)
+        ->assertJsonStructure(['errors' => [['message']]]);
+
     expect(fn () => GqlHelper::prepareTransformArguments(['immediately' => false]))
         ->toThrow(InvalidArgumentException::class, 'is not supported');
 });

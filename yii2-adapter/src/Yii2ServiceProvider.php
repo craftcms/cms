@@ -10,9 +10,12 @@ use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -22,6 +25,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Events\TransformArgumentsPreparing;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -30,6 +34,7 @@ use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
@@ -140,6 +145,31 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
         $this->app->singleton(GqlTypes::class, LegacyGqlTypes::class);
         Event::listen(TransformArgumentsPreparing::class, function(TransformArgumentsPreparing $event): void {
+            $event->handled = true;
+        });
+        Event::listen(AssetUrlResolving::class, function(AssetUrlResolving $event): void {
+            $state = $this->app->make(AssetTransformContext::class)->get($event->asset);
+
+            if ($state === null || $event->transform === null || $event->url !== null || $event->handled) {
+                return;
+            }
+
+            $immediately = $state->immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+
+            if ($immediately === null) {
+                return;
+            }
+
+            try {
+                $event->url = $this->app->make(AssetTransforms::class)->transform(
+                    $event->asset,
+                    $event->transform,
+                    ['generateBeforePageLoad' => $immediately],
+                )->url;
+            } catch (AssetTransformException|NotSupportedException $exception) {
+                report($exception);
+            }
+
             $event->handled = true;
         });
         $this->app->scoped(Gql::class, LegacyGql::class);

@@ -14,6 +14,12 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
@@ -185,6 +191,53 @@ it('accepts the legacy immediately transform argument', function() {
     ]))->toBe(['width' => 320]);
 });
 
+it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
+    $driver = new GqlImmediateAssetTransformDriver();
+    app(AssetTransforms::class)->extend('gql-immediately', fn() => $driver);
+    Cms::config()->defaultAssetTransformDriver('gql-immediately');
+    Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+    $asset = Asset::factory()->createElement([
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $schema = GqlHelper::createFullAccessSchema();
+    app(Gql::class)->setActiveSchema($schema);
+    Cms::config()->lazyGqlTypes = false;
+    $result = app(Gql::class)->executeQuery($schema, <<<GQL
+        {
+            source: asset(id: {$asset->id}) {
+                sourceBefore: width
+                deferred: url(width: 320, immediately: false)
+                nullDefault: url(width: 640, immediately: null)
+                sourceAfter: width
+            }
+            omittedDefault: asset(id: {$asset->id}) @transform(width: 960) {
+                url
+            }
+        }
+        GQL);
+
+    expect($result)->toMatchArray([
+        'data' => [
+            'source' => [
+                'sourceBefore' => 800,
+                'deferred' => '/renditions/320.webp',
+                'nullDefault' => '/renditions/640.webp',
+                'sourceAfter' => 800,
+            ],
+            'omittedDefault' => ['url' => '/renditions/960.webp'],
+        ],
+    ]);
+
+    expect($driver->requests)->toHaveCount(3)
+        ->and($driver->requests[0]->operations)->toBe(['width' => 320])
+        ->and($driver->requests[0]->settings)->toBe(['generateBeforePageLoad' => false])
+        ->and($driver->requests[1]->operations)->toBe(['width' => 640])
+        ->and($driver->requests[1]->settings)->toBe(['generateBeforePageLoad' => true])
+        ->and($driver->requests[2]->operations)->toBe(['width' => '960'])
+        ->and($driver->requests[2]->settings)->toBe(['generateBeforePageLoad' => true]);
+});
+
 it('returns gql token aliases from the legacy gql service', function() {
     $modernToken = app(Gql::class)->getPublicToken();
     $legacyToken = Craft::$app->getGql()->getPublicToken();
@@ -250,5 +303,25 @@ class LegacyReplacementArgumentHandler extends AdapterArgumentHandler
     public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->argumentManager = $argumentManager;
+    }
+}
+
+class GqlImmediateAssetTransformDriver implements AssetTransformDriver
+{
+    public array $requests = [];
+
+    public function definition(): AssetTransformDriverDefinition
+    {
+        return new AssetTransformDriverDefinition('GraphQL immediately');
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        $this->requests[] = $request;
+
+        return new AssetTransformResult(
+            url: "/renditions/{$request->operations['width']}.webp",
+            mimeType: 'image/webp',
+        );
     }
 }

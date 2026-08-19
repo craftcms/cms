@@ -278,7 +278,7 @@ class GqlHelper
             'format' => $asset->getFormat($definition),
             'height' => $asset->getHeight($definition),
             'mimeType' => $asset->getMimeType($definition),
-            'url' => $asset->getUrl($definition, $immediately),
+            'url' => app(AssetTransformContext::class)->set(clone $asset, $definition, $immediately)->getUrl($definition, $immediately),
             'width' => $asset->getWidth($definition),
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
