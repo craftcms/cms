@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Cp\Enums\TabsLayout;
+use CraftCms\Cms\Cp\Enums\TabsPlacement;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;
 use InvalidArgumentException;
@@ -36,12 +38,18 @@ use Stringable;
  */
 class Tabs extends ViewComponent
 {
+    use HasSize;
+
     /** @var list<Tab> */
     protected array $items = [];
 
     protected ?int $selectedIndex = null;
 
     protected TabsLayout|string|null $layout = null;
+
+    protected TabsPlacement|string|null $placement = null;
+
+    protected bool $collapsible = false;
 
     protected function tagName(): string
     {
@@ -104,9 +112,46 @@ class Tabs extends ViewComponent
     }
 
     /**
+     * Where the strip sits relative to its panels; the web component defaults
+     * to `block-start`. Strings (e.g. from Twig `ui()` config) are validated
+     * against {@see TabsPlacement}.
+     */
+    public function placement(TabsPlacement|string|null $placement): static
+    {
+        $this->placement = $placement;
+
+        return $this;
+    }
+
+    public function getPlacement(): ?string
+    {
+        if ($this->placement === null) {
+            return null;
+        }
+
+        return $this->placement instanceof TabsPlacement
+            ? $this->placement->value
+            : TabsPlacement::from($this->placement)->value;
+    }
+
+    /**
+     * Lets the selected tab be deselected, closing the panel region entirely —
+     * what an icon toolbar wants, where "nothing open" is a normal state.
+     */
+    public function collapsible(bool $collapsible = true): static
+    {
+        $this->collapsible = $collapsible;
+
+        return $this;
+    }
+
+    /**
      * Which axis the strip runs along; the web component defaults to
      * `horizontal`. Strings (e.g. from Twig `ui()` config) are validated
      * against {@see TabsLayout}.
+     *
+     * @deprecated Use {@see placement()}, which says which edge the strip sits
+     *   on rather than only which way it runs.
      */
     public function layout(TabsLayout|string|null $layout): static
     {
@@ -155,6 +200,9 @@ class Tabs extends ViewComponent
     {
         return [
             'selected-index' => $this->selectedIndex,
+            'size' => $this->getSize(),
+            'placement' => $this->getPlacement(),
+            'collapsible' => $this->collapsible,
             'layout' => $this->getLayout(),
         ];
     }
