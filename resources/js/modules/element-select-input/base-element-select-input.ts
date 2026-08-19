@@ -12,6 +12,7 @@ import {
   Select,
   UP_KEY,
 } from '@craftcms/garnish';
+import {createElementSelectorModal} from '@/modules/element-selector-modal/registry';
 import {elementSelectInputData} from './support';
 
 declare const Craft: any;
@@ -914,7 +915,7 @@ export class BaseElementSelectInput extends Base {
   }
 
   createModal(): any {
-    return Craft.createElementSelectorModal(
+    return createElementSelectorModal(
       this.settings.elementType,
       this.getModalSettings()
     );

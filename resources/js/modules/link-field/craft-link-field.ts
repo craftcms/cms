@@ -1,4 +1,5 @@
 import {t} from '@craftcms/ui';
+import {createElementSelectorModal} from '@/modules/element-selector-modal/registry';
 import '@craftcms/ui/components/disclosure/disclosure';
 import '@craftcms/ui/components/field-group/field-group';
 import {
@@ -175,7 +176,7 @@ class CraftLinkField extends LitElement {
       event.currentTarget instanceof HTMLElement ? event.currentTarget : null
     );
 
-    const modal = Craft.createElementSelectorModal(type.elementType, {
+    const modal = createElementSelectorModal(type.elementType, {
       ...config,
       closeOtherModals: false,
       hideOnSelect: true,
