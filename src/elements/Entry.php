@@ -2411,6 +2411,23 @@ JS, [
     /**
      * @inheritdoc
      */
+    public function getEagerLoadedElements(string $handle): ?ElementCollection
+    {
+        if ($handle === 'author' || $handle === 'authors') {
+            $authors = $this->_authors;
+            if (is_array($authors)) {
+                $authors = ElementCollection::make($authors);
+            }
+
+            return $authors;
+        }
+
+        return parent::getEagerLoadedElements($handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
         switch ($plan->handle) {

@@ -12,6 +12,7 @@ use Craft;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
+use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
 
@@ -28,6 +29,9 @@ class EagerLoadingTest extends TestCase
         return [
             'entry-with-matrix' => [
                 'class' => EntryWithMatrixFixture::class,
+            ],
+            'entry' => [
+                'class' => EntryFixture::class,
             ],
         ];
     }
@@ -153,6 +157,27 @@ class EagerLoadingTest extends TestCase
 
         self::assertNotNull($entry);
         self::assertEmpty($entry->getEagerLoadedElements('relatedEntry'));
+    }
+
+    /**
+     * Test eager loading of authors and that the varying ways accessing that data return the same results
+     *
+     * @return void
+     */
+    public function testEagerLoadingAuthors(): void
+    {
+        $entry = Entry::find()
+            ->title('Theories of life multi-author')
+            ->with([
+                'authors',
+            ])
+            ->one();
+
+        self::assertNotEmpty($entry->authors, 'Access via magic getter');
+        self::assertNotEmpty($entry->getAuthors(), 'Access via getter method');
+        self::assertNotEmpty($entry->getEagerLoadedElements('authors')->all(), 'Access via eager loaded elements');
+        self::assertSame($entry->authors, $entry->getAuthors(), 'Access via magic getter and getter method');
+        self::assertSame($entry->getAuthors(), $entry->getEagerLoadedElements('authors')->all(), 'Access via getter method and eager loaded elements');
     }
 
     /**
