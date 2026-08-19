@@ -120,13 +120,15 @@ export default class CraftTooltip extends LionTooltip {
       // Disable Lion's hover/focus interaction.
       delete config.visibilityTriggerFunction;
     } else {
-      // Lion defaults both delayIn and delayOut to 300ms. delayOut is fine
-      // (prevents flicker when briefly overshooting), but delayIn makes
-      // tooltips feel sluggish. Show immediately.
+      // Lion defaults both delays to 300ms, which makes tooltips feel
+      // sluggish at both ends: slow to appear, and slow enough to leave that
+      // moving along a row of icons leaves the previous tooltip on screen
+      // beside the new one. Show immediately, and keep just enough of a delay
+      // out to not blink when the pointer clips an edge.
       const {visibilityTriggerFunction} = withTooltipConfig({
         invokerRelation: this.invokerRelation,
-        delayIn: 0,
-        delayOut: 300,
+        delayIn: 200,
+        delayOut: 0,
       });
       config.visibilityTriggerFunction = visibilityTriggerFunction;
     }
