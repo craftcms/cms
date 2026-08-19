@@ -1325,6 +1325,70 @@ describe('FormRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('keeps the active text expander suggestion across a form refresh', async () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(1);
+    vi.useFakeTimers();
+    const refreshable = structuredClone(payload) as Mutable<FormPayload>;
+    refreshable.refreshable = true;
+    refreshable.nodes[1]!.control!.props.textExpanderTriggers = [
+      {
+        trigger: '@',
+        boundary: 'anywhere',
+        options: [
+          {label: 'Brad', value: '@brad'},
+          {label: 'Brandon', value: '@brandon'},
+        ],
+      },
+    ];
+    const refresh = vi.fn(async (values: FormPayload['values']) => ({
+      ...structuredClone(refreshable),
+      values: {settings: values},
+    })) as unknown as (values: FormPayload['values']) => Promise<FormPayload>;
+    app.unmount();
+    await mount(refreshable, {refresh});
+
+    const target = container.querySelector<HTMLInputElement>(
+      'input[name="settings[placeholder]"]'
+    )!;
+    const expander = container.querySelector<
+      HTMLElement & {
+        updateComplete: Promise<unknown>;
+      }
+    >('craft-text-expander')!;
+    await expander.updateComplete;
+    target.focus();
+    target.value = '@b';
+    target.setSelectionRange(2, 2);
+    target.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    const initialOptions = expander.querySelectorAll('craft-option');
+    expect(initialOptions).toHaveLength(2);
+    await vi.waitFor(() =>
+      expect(initialOptions[0]!.getAttribute('aria-selected')).toBe('true')
+    );
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
+    );
+    expect(initialOptions[1]!.getAttribute('aria-selected')).toBe('true');
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await nextTick();
+    await expander.updateComplete;
+
+    expect(refresh).toHaveBeenCalledOnce();
+    const refreshedOptions = expander.querySelectorAll('craft-option');
+    await vi.waitFor(() =>
+      expect(
+        Array.from(refreshedOptions).some(
+          (option) => option.getAttribute('aria-selected') === 'true'
+        )
+      ).toBe(true)
+    );
+    expect(refreshedOptions[1]!.getAttribute('aria-selected')).toBe('true');
+    vi.useRealTimers();
+  });
+
   it('waits 100 milliseconds for discrete refreshes', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn(async (values: FormPayload['values']) => ({

@@ -173,7 +173,13 @@ export default class CraftTextExpander extends LitElement {
       changedProperties.has('triggers') &&
       changedProperties.get('triggers')
     ) {
-      this.#close();
+      const selected = this.#listbox.querySelector<HTMLElement>(
+        '[aria-selected="true"]'
+      );
+      const selectedOption = selected
+        ? this.#visibleOptions[Number(selected.dataset.index)]
+        : undefined;
+      this.#evaluate(selectedOption);
     }
   }
 
@@ -433,7 +439,7 @@ export default class CraftTextExpander extends LitElement {
     );
   };
 
-  #evaluate(): void {
+  #evaluate(selectedOption?: Readonly<TextExpanderOption>): void {
     this.#cancelPending();
     const match = this.#findMatch();
 
@@ -456,7 +462,7 @@ export default class CraftTextExpander extends LitElement {
           )
         )
         .slice(0, limit);
-      this.#showOptions(matches);
+      this.#showOptions(matches, selectedOption);
       return;
     }
 
@@ -465,14 +471,15 @@ export default class CraftTextExpander extends LitElement {
     this.#announce(t('Loading'));
     const request = this.#request;
     this.#debounceTimer = setTimeout(() => {
-      void this.#loadOptions(match, limit, request);
+      void this.#loadOptions(match, limit, request, selectedOption);
     }, 150);
   }
 
   async #loadOptions(
     match: TextExpanderMatch,
     limit: number,
-    request: number
+    request: number,
+    selectedOption?: Readonly<TextExpanderOption>
   ): Promise<void> {
     this.#requestController = new AbortController();
     let options: readonly TextExpanderOption[];
@@ -510,7 +517,7 @@ export default class CraftTextExpander extends LitElement {
     }
 
     this.loading = false;
-    this.#showOptions(options.slice(0, limit));
+    this.#showOptions(options.slice(0, limit), selectedOption);
   }
 
   #findMatch(): TextExpanderMatch | null {
@@ -555,7 +562,10 @@ export default class CraftTextExpander extends LitElement {
     return result;
   }
 
-  #showOptions(options: readonly TextExpanderOption[]): void {
+  #showOptions(
+    options: readonly TextExpanderOption[],
+    selectedOption?: Readonly<TextExpanderOption>
+  ): void {
     this.#stopCombobox();
     this.#visibleOptions = options;
     this.#listbox.replaceChildren();
@@ -593,7 +603,7 @@ export default class CraftTextExpander extends LitElement {
 
     void this.updateComplete.then(() => {
       if (this.#match) {
-        void this.#openPopup();
+        void this.#openPopup(selectedOption);
       }
     });
   }
@@ -634,7 +644,9 @@ export default class CraftTextExpander extends LitElement {
     );
   }
 
-  async #openPopup(): Promise<void> {
+  async #openPopup(
+    selectedOption?: Readonly<TextExpanderOption>
+  ): Promise<void> {
     await this.popoverElement.updateComplete;
     const target = this.#boundTarget;
     if (!target || !this.#positionPopup()) {
@@ -656,6 +668,17 @@ export default class CraftTextExpander extends LitElement {
       // Let the combobox clear its previous selection before options are rebuilt.
       target.removeEventListener('input', this.#onInput);
       target.addEventListener('input', this.#onInput);
+
+      if (selectedOption) {
+        const selectedIndex = this.#visibleOptions.findIndex(
+          (option) =>
+            option.label === selectedOption.label &&
+            option.value === selectedOption.value
+        );
+        for (let index = 0; index < selectedIndex; index++) {
+          this.#combobox?.navigate(1);
+        }
+      }
     }
   }
 
