@@ -11,6 +11,8 @@ use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
+use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
+use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -27,6 +29,7 @@ use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlTypes;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
@@ -76,6 +79,7 @@ use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -113,6 +117,22 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new LegacyApp()->register($this->app);
         new CompatibilityMixins()->register();
+        Event::listen(VolumeConfigPreparing::class, function(VolumeConfigPreparing $event): void {
+            /** @phpstan-ignore-next-line Method supplied by VolumeMixin. */
+            $event->config['transformFs'] = $event->volume->getTransformFsHandle(false);
+            /** @phpstan-ignore-next-line Method supplied by VolumeMixin. */
+            $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
+        });
+        Event::listen(VolumeSaved::class, function(VolumeSaved $event): void {
+            $config = $this->app->make(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES . '.' . $event->volume->uid);
+
+            DB::table(Table::VOLUMES)
+                ->where('id', $event->volume->id)
+                ->update([
+                    'transformFs' => $config['transformFs'] ?? null,
+                    'transformSubpath' => $config['transformSubpath'] ?? null,
+                ]);
+        });
         new FilesystemCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
         $this->app->singleton(Settings::class, LegacySettings::class);

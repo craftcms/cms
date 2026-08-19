@@ -334,13 +334,14 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
-            $settings = $this->filesystemTransformSettings($asset);
-            $subPath = $settings === null
-                ? Str::chopEnd($asset->getVolume()->getTransformSubpath(), '/')
-                : $this->outputSettings($settings)[1];
+            $subPath = $this->outputSettings($this->filesystemTransformSettings($asset))[1];
             $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
 
-            event(new DeletingTransformedImage(asset: $asset, path: $path));
+            event(new DeletingTransformedImage(
+                asset: $asset,
+                imageTransformIndex: $transformIndex,
+                path: $path,
+            ));
             $this->transformDisk($asset)->delete($diskPath);
         } catch (Throwable) {
             $this->reportCleanupFailure($asset);
@@ -476,6 +477,9 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
             asset: $asset,
             imageTransformIndex: $index,
             transform: $index->getTransform(),
+            path: $transformPath,
+            image: $image,
+            tempPath: $tempPath,
         ));
 
         if ($event->tempPath !== null) {
@@ -609,7 +613,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
         $index = new ImageTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
-            'transformer' => $transform->getTransformer(),
+            'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
             'dateIndexed' => now(),
             'transformString' => $transformString,
             'fileExists' => false,
@@ -667,11 +671,12 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
                 'dateIndexed',
             ], [], false)
         );
+        $values['transformer'] = ImageTransform::DEFAULT_TRANSFORMER;
 
         $now = now();
 
         if ($index->id !== null) {
-            DB::table(Table::IMAGETRANSFORMINDEX)
+            $this->craftTransformIndexQuery()
                 ->where('id', $index->id)
                 ->update([
                     'dateUpdated' => $now,
@@ -801,11 +806,6 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
     private function transformDisk(Asset $asset): FilesystemAdapter
     {
         $settings = $this->filesystemTransformSettings($asset);
-
-        if ($settings === null) {
-            return $asset->getVolume()->transformDisk();
-        }
-
         [$filesystem, $subpath] = $this->outputSettings($settings);
 
         return Filesystems::disk(
@@ -817,11 +817,6 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
     private function transformHasUrls(Asset $asset): bool
     {
         $settings = $this->filesystemTransformSettings($asset);
-
-        if ($settings === null) {
-            return $asset->getVolume()->transformHasUrls();
-        }
-
         [$filesystem] = $this->outputSettings($settings);
 
         $filesystem = Filesystems::resolve(
@@ -894,7 +889,7 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void
     {
-        DB::table(Table::IMAGETRANSFORMINDEX)
+        $this->craftTransformIndexQuery()
             ->where('assetId', $assetId)
             ->delete();
     }
@@ -954,10 +949,11 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
 
     private function createTransformIndexQuery(): Builder
     {
-        return DB::table(Table::IMAGETRANSFORMINDEX)
+        return $this->craftTransformIndexQuery()
             ->select([
                 'id',
                 'assetId',
+                'transformer',
                 'filename',
                 'format',
                 'transformString',
@@ -968,5 +964,15 @@ class ImageTransformer implements AssetTransformDriver, EagerImageTransformerInt
                 'dateUpdated',
                 'dateCreated',
             ]);
+    }
+
+    private function craftTransformIndexQuery(): Builder
+    {
+        return DB::table(Table::IMAGETRANSFORMINDEX)
+            ->where(function (Builder $query): void {
+                $query
+                    ->whereNull('transformer')
+                    ->orWhere('transformer', ImageTransform::DEFAULT_TRANSFORMER);
+            });
     }
 }

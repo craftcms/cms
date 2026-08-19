@@ -48,7 +48,6 @@ class VolumeRules extends Ruleset
             ],
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
             'subpath' => [
                 Rule::requiredIf(fn () => $this->subpathRequired()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
@@ -59,7 +58,6 @@ class VolumeRules extends Ruleset
 
         if ($tempAssetUploadTarget !== null) {
             $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
-            $rules['transformFsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
         }
 
         return $rules;
@@ -172,7 +170,6 @@ class VolumeRules extends Ruleset
     {
         return match ($attribute) {
             'fsHandle' => $this->subject->getFsHandle(false),
-            'transformFsHandle' => $this->subject->getTransformFsHandle(false),
             default => null,
         };
     }

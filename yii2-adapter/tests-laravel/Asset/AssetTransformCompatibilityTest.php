@@ -6,7 +6,9 @@ use craft\base\Event;
 use craft\elements\Asset as LegacyAsset;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
+use craft\events\ImageTransformerOperationEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\services\ImageTransforms as LegacyImageTransforms;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransforms;
@@ -14,6 +16,7 @@ use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
@@ -22,13 +25,20 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface as LegacyImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\DeletingTransformedImage;
+use CraftCms\Cms\Image\Events\ImageTransforming;
+use CraftCms\Cms\Image\ImageTransformer as CraftImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Storage;
 
 uses(DatabaseTestCase::class);
 
@@ -302,6 +312,171 @@ it('keeps unexpected legacy transformer exceptions observable', function(): void
     } finally {
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
+});
+
+it('keeps the built-in Craft transform index facade scoped to Craft rows', function(): void {
+    $asset = ($this->asset)(['filename' => 'indexed.jpg']);
+    $transformer = new LegacyCraftImageTransformer();
+    $index = $transformer->getTransformIndex($asset, ['width' => 320]);
+    $foreignId = DB::table(Table::IMAGETRANSFORMINDEX)->insertGetId([
+        'assetId' => $asset->id,
+        'transformer' => 'plugin\\ForeignTransformer',
+        'filename' => 'foreign.jpg',
+        'transformString' => '_320x_auto',
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => (string) str()->uuid(),
+    ]);
+    $index->fileExists = true;
+    $transformer->storeTransformIndexData($index);
+    $foreignIndex = new ImageTransformIndex([
+        'id' => $foreignId,
+        'assetId' => $asset->id,
+        'transformer' => 'plugin\\ForeignTransformer',
+        'filename' => 'foreign.jpg',
+        'transformString' => '_320x_auto',
+        'fileExists' => true,
+    ]);
+    $foreignIndex->setTransform(new ImageTransform(['width' => 320]));
+    $transformer->storeTransformIndexData($foreignIndex);
+
+    expect($transformer->getTransformIndexModelById($index->id)->fileExists)->toBeTrue()
+        ->and($index->transformer)->toBe(CraftImageTransformer::class)
+        ->and($transformer->getTransformIndexModelById($foreignId))->toBeNull()
+        ->and($transformer->getPendingTransformIndexIds())->not->toContain($foreignId)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->value('fileExists'))->toBe(0);
+
+    $transformer->invalidateAssetTransforms($asset);
+
+    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->exists())->toBeTrue();
+});
+
+it('bridges mutable built-in transform event payloads', function(): void {
+    $asset = ($this->asset)(['filename' => 'event.jpg']);
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'filename' => 'event.jpg',
+        'transformString' => '_320x_auto',
+    ]);
+    $transform = new ImageTransform(['width' => 320]);
+    $legacyTransformer = Craft::$app->getImageTransforms()->getImageTransformer(LegacyCraftImageTransformer::class);
+    $payload = null;
+    $listener = function(ImageTransformerOperationEvent $event) use (&$payload): void {
+        $payload = $event;
+        $event->tempPath = '/tmp/replaced.jpg';
+    };
+    Event::on(LegacyCraftImageTransformer::class, LegacyCraftImageTransformer::EVENT_TRANSFORM_IMAGE, $listener);
+
+    try {
+        $event = new ImageTransforming(
+            asset: $asset,
+            imageTransformIndex: $index,
+            transform: $transform,
+            path: 'transforms/event.jpg',
+            tempPath: '/tmp/original.jpg',
+        );
+
+        event($event);
+
+        expect($payload->asset)->toBe($asset)
+            ->and($payload->imageTransformIndex)->toBe($index)
+            ->and($payload->path)->toBe('transforms/event.jpg')
+            ->and($payload->tempPath)->toBe('/tmp/replaced.jpg')
+            ->and($event->tempPath)->toBe('/tmp/replaced.jpg');
+    } finally {
+        Event::off(LegacyCraftImageTransformer::class, LegacyCraftImageTransformer::EVENT_TRANSFORM_IMAGE, $listener);
+    }
+});
+
+it('bridges built-in transformed-image deletion events', function(): void {
+    $asset = ($this->asset)(['filename' => 'deleted-transform.jpg']);
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'filename' => 'deleted-transform.jpg',
+        'transformString' => '_320x_auto',
+    ]);
+    Craft::$app->getImageTransforms()->getImageTransformer(LegacyCraftImageTransformer::class);
+    $payload = null;
+    $listener = function(ImageTransformerOperationEvent $event) use (&$payload): void {
+        $payload = $event;
+    };
+    Event::on(LegacyCraftImageTransformer::class, LegacyCraftImageTransformer::EVENT_DELETE_TRANSFORMED_IMAGE, $listener);
+
+    try {
+        event(new DeletingTransformedImage(
+            asset: $asset,
+            imageTransformIndex: $index,
+            path: 'transforms/deleted-transform.jpg',
+        ));
+
+        expect($payload->asset)->toBe($asset)
+            ->and($payload->imageTransformIndex)->toBe($index)
+            ->and($payload->path)->toBe('transforms/deleted-transform.jpg');
+    } finally {
+        Event::off(LegacyCraftImageTransformer::class, LegacyCraftImageTransformer::EVENT_DELETE_TRANSFORMED_IMAGE, $listener);
+    }
+});
+
+it('keeps deprecated transform destinations distinct per Volume', function(): void {
+    $first = Volume::factory()->create([
+        'transformFs' => 'legacy-first',
+        'transformSubpath' => 'first-renditions',
+    ]);
+    $second = Volume::factory()->create([
+        'fs' => $first->fs,
+        'transformFs' => 'legacy-second',
+        'transformSubpath' => 'second-renditions',
+    ]);
+    $volumes = app(\CraftCms\Cms\Asset\Volumes::class);
+    $volumes->reset();
+
+    $firstVolume = $volumes->getVolumeById($first->id);
+    $secondVolume = $volumes->getVolumeById($second->id);
+
+    expect($firstVolume->getTransformFsHandle(false))->toBe('legacy-first')
+        ->and($firstVolume->getTransformSubpath(false, false))->toBe('first-renditions')
+        ->and($secondVolume->getTransformFsHandle(false))->toBe('legacy-second')
+        ->and($secondVolume->getTransformSubpath(false, false))->toBe('second-renditions')
+        ->and($firstVolume->getConfig())->toMatchArray([
+            'transformFs' => 'legacy-first',
+            'transformSubpath' => 'first-renditions',
+        ]);
+
+    $firstVolume->name = 'Updated Volume';
+    $volumes->saveVolume($firstVolume);
+
+    expect(DB::table(Table::VOLUMES)->where('id', $first->id)->first(['transformFs', 'transformSubpath']))
+        ->toMatchObject([
+            'transformFs' => 'legacy-first',
+            'transformSubpath' => 'first-renditions',
+        ]);
+});
+
+it('provides deprecated Volume transform filesystem methods through the adapter', function(): void {
+    config()->set('filesystems.disks.legacy-volume-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/legacy-volume-source'),
+    ]);
+    config()->set('filesystems.disks.legacy-volume-target', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/legacy-volume-target'),
+        'url' => 'https://legacy-volume.example.test',
+    ]);
+    Storage::disk('legacy-volume-target')->deleteDirectory('');
+
+    $volume = new VolumeData([
+        'name' => 'Legacy Volume',
+        'handle' => 'legacyVolume',
+        'fs' => 'legacy-volume-source',
+        'transformFs' => 'legacy-volume-target',
+        'transformSubpath' => 'renditions',
+    ]);
+
+    expect($volume->getTransformFsHandle(false))->toBe('disk:legacy-volume-target')
+        ->and($volume->getTransformSubpath())->toBe('renditions/')
+        ->and($volume->transformHasUrls())->toBeTrue()
+        ->and($volume->transformDisk()->put('image.jpg', 'image'))->toBeTrue()
+        ->and(Storage::disk('legacy-volume-target')->exists('renditions/image.jpg'))->toBeTrue();
 });
 
 class CompatibilityAssetTransformDriver implements AssetTransformDriver

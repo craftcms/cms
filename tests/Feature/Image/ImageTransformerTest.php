@@ -77,7 +77,7 @@ it('runs the configured Craft driver without changing rendition identity', funct
     ]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
     Cms::config()->revAssetUrls(true);
@@ -269,7 +269,7 @@ it('stores dateIndexed as a DB-compatible UTC datetime string', function () {
         ->and($storedDateIndexed)->not->toContain('+');
 });
 
-it('uses the transform filesystem URL policy', function () {
+it('ignores deprecated Volume transform destinations', function () {
     config()->set('filesystems.disks.transform-policy-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/transform-policy-source'),
@@ -302,7 +302,7 @@ it('uses the transform filesystem URL policy', function () {
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
 
-    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
 
@@ -311,7 +311,7 @@ it('uses the transform filesystem URL policy', function () {
         'height' => 100,
         'mode' => 'crop',
     ])->url)
-        ->toStartWith('https://transforms.example.test/');
+        ->not->toStartWith('https://transforms.example.test/');
 });
 
 it('uses Craft driver output settings from the source filesystem', function () {
@@ -373,7 +373,7 @@ it('fails when the configured Craft driver output filesystem is missing', functi
     app(AssetTransforms::class)->transform($asset, ['width' => 100]);
 })->throws(FilesystemException::class);
 
-it('uses transform-disk-relative paths while preserving the deletion event path', function () {
+it('ignores deprecated Volume transform subpaths when deleting', function () {
     $volume = Volume::factory()->create([
         'fs' => 'disk:test-disk',
         'transformSubpath' => 'transforms',
@@ -392,25 +392,26 @@ it('uses transform-disk-relative paths while preserving the deletion event path'
     ]);
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     Storage::disk('test-disk')->deleteDirectory('transforms');
-    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     Event::fake([DeletingTransformedImage::class]);
 
     $this->transformer->deleteImageTransformFile($asset, $index);
 
-    expect($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
-    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === 'transforms'.DIRECTORY_SEPARATOR.$path);
+    expect($asset->getVolume()->sourceDisk()->exists($path))->toBeFalse();
+    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => $event->path === $path
+        && $event->imageTransformIndex === $index);
 });
 
 it('cleans the Craft transform index when an Asset is invalidated', function () {
     $asset = ($this->createImageAsset)();
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-    $asset->getVolume()->transformDisk()->put($path, 'transform-bytes');
+    $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
 
     event(new AssetTransformsInvalidating($asset));
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse()
-        ->and($asset->getVolume()->transformDisk()->exists($path))->toBeFalse();
+        ->and($asset->getVolume()->sourceDisk()->exists($path))->toBeFalse();
 });
 
 it('reports Craft cleanup failures with redacted context', function () {
@@ -433,7 +434,7 @@ it('does not reuse a rendition older than the source Asset', function () {
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $asset->dateModified = now();
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-    $disk = $asset->getVolume()->transformDisk();
+    $disk = $asset->getVolume()->sourceDisk();
     $disk->put($path, 'stale-transform');
     touch($disk->path($path), now()->subMinute()->getTimestamp());
     Queue::fake();
@@ -451,7 +452,7 @@ it('includes the source revision in rendition URL identity', function () {
     $transform = new ImageTransform(['width' => 100]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-    $asset->getVolume()->transformDisk()->put($path, 'transform');
+    $asset->getVolume()->sourceDisk()->put($path, 'transform');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
     Cms::config()->revAssetUrls(false);

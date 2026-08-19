@@ -169,8 +169,6 @@ class Volumes
             $volumeModel->handle = $data['handle'];
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->transformFs = $data['transformFs'] ?? null;
-            $volumeModel->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -339,7 +337,7 @@ class Volumes
             ->orderBy('sortOrder')
             ->get()
             ->map(fn ($result) => new Volume(
-                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted'])
+                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted', 'transformFs', 'transformSubpath'])
             ))
             ->values();
     }

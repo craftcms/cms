@@ -97,8 +97,6 @@ class VolumesController
             'values.handle' => ['nullable', 'string'],
             'values.fsHandle' => ['nullable', 'string'],
             'values.subpath' => ['nullable', 'string'],
-            'values.transformFsHandle' => ['nullable', 'string'],
-            'values.transformSubpath' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -138,8 +136,6 @@ class VolumesController
         $volume->handle = $request->input('handle');
         $volume->fsHandle = $request->input('fsHandle');
         $volume->subpath = $subpath;
-        $volume->transformFsHandle = $request->input('transformFsHandle');
-        $volume->transformSubpath = $request->input('transformSubpath', '');
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);

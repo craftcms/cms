@@ -148,42 +148,11 @@ it('validates fsHandle for required invalid references and internal disks', func
         ->and($internal->errors()->has('fsHandle'))->toBeTrue();
 });
 
-it('allows empty transformFsHandle and validates it when present', function () {
-    $empty = new Volume;
-
-    expect($empty->validate(['transformFsHandle']))->toBeTrue()
-        ->and($empty->errors()->has('transformFsHandle'))->toBeFalse();
-
-    $invalid = new Volume([
-        'transformFsHandle' => 'missing-transform-filesystem',
-    ]);
-
-    expect($invalid->validate(['transformFsHandle']))->toBeFalse()
-        ->and($invalid->errors()->has('transformFsHandle'))->toBeTrue();
-
-    config()->set('filesystems.disks.valid-transform-disk', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/volume-validation/valid-transform-disk'),
-    ]);
-
-    $valid = new Volume([
-        'transformFsHandle' => 'valid-transform-disk',
-    ]);
-
-    expect($valid->validate(['transformFsHandle']))->toBeTrue()
-        ->and($valid->errors()->has('transformFsHandle'))->toBeFalse();
-});
-
-it('rejects temp upload filesystem targets for fsHandle and transformFsHandle', function () {
+it('rejects the temp upload filesystem target for fsHandle', function () {
     config()->set('filesystems.disks.temp-reserved', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-validation/temp-reserved'),
     ]);
-    config()->set('filesystems.disks.temp-allowed', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/volume-validation/temp-allowed'),
-    ]);
-
     Cms::config()->tempAssetUploadFs = 'disk:temp-reserved';
 
     $volumeFs = new Volume([
@@ -192,14 +161,6 @@ it('rejects temp upload filesystem targets for fsHandle and transformFsHandle', 
 
     expect($volumeFs->validate(['fsHandle']))->toBeFalse()
         ->and($volumeFs->errors()->has('fsHandle'))->toBeTrue();
-
-    $volumeTransformFs = new Volume([
-        'fsHandle' => 'temp-allowed',
-        'transformFsHandle' => 'temp-reserved',
-    ]);
-
-    expect($volumeTransformFs->validate(['transformFsHandle']))->toBeFalse()
-        ->and($volumeTransformFs->errors()->has('transformFsHandle'))->toBeTrue();
 });
 
 it('requires subpath for shared filesystems and rejects overlapping roots', function () {
