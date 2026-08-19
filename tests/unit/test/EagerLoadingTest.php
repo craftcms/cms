@@ -173,11 +173,16 @@ class EagerLoadingTest extends TestCase
             ])
             ->one();
 
+        self::assertNotNull($entry);
+
+        $eagerLoadedAuthors = $entry->getEagerLoadedElements('authors');
+        self::assertNotNull($eagerLoadedAuthors, 'Access via eager loaded elements');
+
         self::assertNotEmpty($entry->authors, 'Access via magic getter');
         self::assertNotEmpty($entry->getAuthors(), 'Access via getter method');
-        self::assertNotEmpty($entry->getEagerLoadedElements('authors')->all(), 'Access via eager loaded elements');
+        self::assertNotEmpty($eagerLoadedAuthors->all(), 'Access via eager loaded elements');
         self::assertSame($entry->authors, $entry->getAuthors(), 'Access via magic getter and getter method');
-        self::assertSame($entry->getAuthors(), $entry->getEagerLoadedElements('authors')->all(), 'Access via getter method and eager loaded elements');
+        self::assertSame($entry->getAuthors(), $eagerLoadedAuthors->all(), 'Access via getter method and eager loaded elements');
     }
 
     /**
