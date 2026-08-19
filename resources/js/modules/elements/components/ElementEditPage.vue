@@ -1,125 +1,125 @@
 <script setup lang="ts">
-import { t } from "@craftcms/ui";
-import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
-import DynamicHtmlRenderer from "@/common/components/DynamicHtmlRenderer.vue";
-import ElementContextMenu from "@/modules/elements/components/ElementContextMenu.vue";
-import LayoutSlot from "@/common/components/LayoutSlot.vue";
-import { useAppLayout } from "@/common/composables/useAppLayout";
-import FormRenderer from "@/modules/forms/FormRenderer.vue";
-import { useElementEditPage } from "@/modules/elements/composables/useElementEditPage";
-import { useElementActionMenu } from "@/modules/elements/composables/useElementActionMenu";
+  import {t} from '@craftcms/ui';
+  import {computed} from 'vue';
+  import {router} from '@inertiajs/vue3';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import ElementContextMenu from '@/modules/elements/components/ElementContextMenu.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
 
-const props = defineProps<{
-  /**
-   * Identity attributes merged into every submission — the one per-type
-   * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
-   */
-  saveData?: () => Record<string, unknown>;
-}>();
+  const props = defineProps<{
+    /**
+     * Identity attributes merged into every submission — the one per-type
+     * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
+     */
+    saveData?: () => Record<string, unknown>;
+  }>();
 
-const {
-  activity,
-  autosave,
-  discardDraft,
-  errors,
-  form,
-  formPayload,
-  onMutation,
-  onSidebarMutation,
-  props: payload,
-  renderer,
-  save,
-  sidebarErrors,
-  sidebarPayload,
-  sidebarRenderer,
-  submitAction,
-} = useElementEditPage({ saveData: props.saveData });
+  const {
+    activity,
+    autosave,
+    discardDraft,
+    errors,
+    form,
+    formPayload,
+    onMutation,
+    onSidebarMutation,
+    props: payload,
+    renderer,
+    save,
+    sidebarErrors,
+    sidebarPayload,
+    sidebarRenderer,
+    submitAction,
+  } = useElementEditPage({saveData: props.saveData});
 
-// Alternate saves in the Save button's menu, and the buttons beside it.
-const formActionItems = computed(() =>
-  payload.formActions.map((action) => ({
-    label: action.label,
-    onClick: () => submitAction(action),
-  })),
-);
+  // Alternate saves in the Save button's menu, and the buttons beside it.
+  const formActionItems = computed(() =>
+    payload.formActions.map((action) => ({
+      label: action.label,
+      onClick: () => submitAction(action),
+    }))
+  );
 
-const headerButtons = computed(() =>
-  payload.headerActions.map((action) => ({
-    label: action.label,
-    variant: action.variant,
-    onClick: () => submitAction(action),
-  })),
-);
+  const headerButtons = computed(() =>
+    payload.headerActions.map((action) => ({
+      label: action.label,
+      variant: action.variant,
+      onClick: () => submitAction(action),
+    }))
+  );
 
-// The element's own actions (Validate, Copy, Delete, …). Behaviors are
-// dispatched client-side rather than via registered jQuery handlers.
-const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
-  // The entry type can be switched in the sidebar without saving, so the
-  // settings slideout should follow the field rather than the stored value.
-  currentEntryTypeId: () => form.typeId,
-});
+  // The element's own actions (Validate, Copy, Delete, …). Behaviors are
+  // dispatched client-side rather than via registered jQuery handlers.
+  const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
+    // The entry type can be switched in the sidebar without saving, so the
+    // settings slideout should follow the field rather than the stored value.
+    currentEntryTypeId: () => form.typeId,
+  });
 
-// "View" opens the element on the front end. The hrefs arrive ready to
-// follow — a live element points at its own URL, anything else at a
-// token-minting redirect that lands on the tokenized preview.
-//
-// These ride in `formAdditionalButtons` because the layout's
-// `additional-buttons` slot is a component slot, not a layout-slot outlet,
-// so it can't be filled from a page using the ambient layout.
-const viewButtons = computed(() =>
-  payload.previewTargets.map((target, index) => ({
-    label: payload.previewTargets.length === 1 ? t("View") : target.label,
-    variant: "outline",
-    key: `view-${index}`,
-    onClick: () => window.open(target.url, "_blank", "noopener"),
-  })),
-);
+  // "View" opens the element on the front end. The hrefs arrive ready to
+  // follow — a live element points at its own URL, anything else at a
+  // token-minting redirect that lands on the tokenized preview.
+  //
+  // These ride in `formAdditionalButtons` because the layout's
+  // `additional-buttons` slot is a component slot, not a layout-slot outlet,
+  // so it can't be filled from a page using the ambient layout.
+  const viewButtons = computed(() =>
+    payload.previewTargets.map((target, index) => ({
+      label: payload.previewTargets.length === 1 ? t('View') : target.label,
+      variant: 'outline',
+      key: `view-${index}`,
+      onClick: () => window.open(target.url, '_blank', 'noopener'),
+    }))
+  );
 
-// Mirrors the legacy wording: a changed draft names the draft, anything else
-// names the element type.
-const staleMessage = computed(() =>
-  t("This {type} has been updated.", {
-    type:
-      activity.staleType.value === "element" &&
-      payload.draftId !== null &&
-      !payload.isProvisionalDraft
-        ? t("draft")
-        : payload.elementDisplayName,
-  }),
-);
+  // Mirrors the legacy wording: a changed draft names the draft, anything else
+  // names the element type.
+  const staleMessage = computed(() =>
+    t('This {type} has been updated.', {
+      type:
+        activity.staleType.value === 'element' &&
+        payload.draftId !== null &&
+        !payload.isProvisionalDraft
+          ? t('draft')
+          : payload.elementDisplayName,
+    })
+  );
 
-function reload(): void {
-  router.reload();
-}
-
-const autosaveMessage = computed(() => {
-  switch (autosave.status.value) {
-    case "saving":
-      return t("Saving…");
-    case "saved":
-      return autosave.savedAt.value
-        ? t("Saved {timestamp}", { timestamp: autosave.savedAt.value })
-        : t("Saved");
-    case "failed":
-      return autosave.error.value ?? t("Couldn’t save draft.");
-    default:
-      return null;
+  function reload(): void {
+    router.reload();
   }
-});
 
-useAppLayout(() => ({
-  title: payload.title,
-  form,
-  onSave: save,
-  submitButtonLabel: payload.submitButtonLabel,
-  // The element supplies its own full set of alternate saves — including its
-  // own "Save and continue editing" — so the layout's default would duplicate.
-  defaultFormActions: [],
-  formActions: formActionItems.value,
-  formAdditionalButtons: [...viewButtons.value, ...headerButtons.value],
-  formAdditionalActions: actionMenuItems.value,
-}));
+  const autosaveMessage = computed(() => {
+    switch (autosave.status.value) {
+      case 'saving':
+        return t('Saving…');
+      case 'saved':
+        return autosave.savedAt.value
+          ? t('Saved {timestamp}', {timestamp: autosave.savedAt.value})
+          : t('Saved');
+      case 'failed':
+        return autosave.error.value ?? t('Couldn’t save draft.');
+      default:
+        return null;
+    }
+  });
+
+  useAppLayout(() => ({
+    title: payload.title,
+    form,
+    onSave: save,
+    submitButtonLabel: payload.submitButtonLabel,
+    // The element supplies its own full set of alternate saves — including its
+    // own "Save and continue editing" — so the layout's default would duplicate.
+    defaultFormActions: [],
+    formActions: formActionItems.value,
+    formAdditionalButtons: [...viewButtons.value, ...headerButtons.value],
+    formAdditionalActions: actionMenuItems.value,
+  }));
 </script>
 
 <template>
@@ -144,7 +144,7 @@ useAppLayout(() => ({
       class="text-sm text-neutral-text-quiet"
       role="status"
       aria-live="polite"
-      :class="{ 'text-danger-text': autosave.status.value === 'failed' }"
+      :class="{'text-danger-text': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
     </span>
@@ -186,12 +186,12 @@ useAppLayout(() => ({
       @click="reload"
       inherit
     >
-      {{ t("Reload") }}
+      {{ t('Reload') }}
     </craft-button>
   </craft-callout>
 
   <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-    {{ t("This is a read-only view.") }}
+    {{ t('This is a read-only view.') }}
   </craft-callout>
 
   <craft-callout
@@ -210,7 +210,7 @@ useAppLayout(() => ({
       size="small"
       @click="discardDraft"
     >
-      {{ t("Discard changes") }}
+      {{ t('Discard changes') }}
     </craft-button>
   </craft-callout>
 

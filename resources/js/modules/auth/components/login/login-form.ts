@@ -356,7 +356,7 @@ export default class CraftLoginForm extends LitElement {
                 ? html`
                     <craft-button
                       type="button"
-                      variant="primary"
+                      variant="fill"
                       ?loading="${this._passkeyBusy}"
                       @click="${this.#loginWithPasskey}"
                       style="width: 100%"

@@ -2,19 +2,21 @@
 CP Styles
  */
 @layer theme, base, components, cp, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
-@import "@craftcms/ui/styles/cp.css" layer(cp);
-@import "@craftcms/ui/tailwind.css" layer(theme);
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import '@craftcms/ui/styles/cp.css' layer(cp);
+@import '@craftcms/ui/tailwind.css' layer(theme);
 
-@import "./fld.css";
-@import "./cvd.css";
-@import "./global-sidebar.css";
-@import "./slideout.css";
+@import './fld.css';
+@import './cvd.css';
+@import './global-sidebar.css';
+@import './slideout.css';
 
 :root {
   --global-sidebar-width: calc(226rem / 16);
-  --global-sidebar-collapsed-width: calc(var(--c-size-touch-target) + var(--c-spacing-md));
+  --global-sidebar-collapsed-width: calc(
+    var(--c-size-touch-target) + var(--c-spacing-md)
+  );
   --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
 

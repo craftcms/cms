@@ -107,14 +107,17 @@ describe('useElementActivity', () => {
     draftId.value = 99;
     activity.rebase({element: draftStamp, canonical: canonicalStamp});
 
-    postSpy.mockImplementation((_url: string, payload: Record<string, any>) => ({
-      data: {
-        activity: [],
-        // The server answers for whichever element the poll identified.
-        updatedTimestamp: payload.draftId === 99 ? draftStamp : canonicalStamp,
-        canonicalUpdatedTimestamp: canonicalStamp,
-      },
-    }));
+    postSpy.mockImplementation(
+      (_url: string, payload: Record<string, any>) => ({
+        data: {
+          activity: [],
+          // The server answers for whichever element the poll identified.
+          updatedTimestamp:
+            payload.draftId === 99 ? draftStamp : canonicalStamp,
+          canonicalUpdatedTimestamp: canonicalStamp,
+        },
+      })
+    );
 
     await activity.poll();
 

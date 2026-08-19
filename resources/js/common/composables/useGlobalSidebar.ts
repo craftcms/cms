@@ -1,6 +1,14 @@
-import { computed, effectScope, nextTick, reactive, ref, watch, type Ref } from "vue";
-import { useMediaQuery } from "@vueuse/core";
-import { useLocalStorage } from "@/common/composables/useStorage";
+import {
+  computed,
+  effectScope,
+  nextTick,
+  reactive,
+  ref,
+  watch,
+  type Ref,
+} from 'vue';
+import {useMediaQuery} from '@vueuse/core';
+import {useLocalStorage} from '@/common/composables/useStorage';
 
 /**
  * State for the CP's global sidebar: docked and always visible on large
@@ -13,11 +21,11 @@ import { useLocalStorage } from "@/common/composables/useStorage";
  * the other kept rendering the old state.
  */
 const sidebar = reactive<{
-  mode: "docked" | "floating";
-  visibility: "hidden" | "visible";
+  mode: 'docked' | 'floating';
+  visibility: 'hidden' | 'visible';
 }>({
-  mode: "floating",
-  visibility: "hidden",
+  mode: 'floating',
+  visibility: 'hidden',
 });
 
 /**
@@ -27,7 +35,7 @@ const sidebar = reactive<{
  */
 const toggleButton = ref<HTMLElement | null>(null);
 
-const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+const isLargeScreen = useMediaQuery('(min-width: 1024px)');
 
 /**
  * Wires up the breakpoint and the stored collapse preference, once, however
@@ -53,20 +61,20 @@ function initialize(): void {
     // because PHP rendered the sidebar and had to render it already collapsed;
     // this one is rendered by Vue, and with Inertia SSR off the preference is
     // read before the first paint either way.
-    const collapsedPreference = useLocalStorage("sidebar.collapsed", false);
+    const collapsedPreference = useLocalStorage('sidebar.collapsed', false);
 
     watch(
       isLargeScreen,
       (value) => {
         if (value) {
-          sidebar.mode = "docked";
-          sidebar.visibility = collapsedPreference.value ? "hidden" : "visible";
+          sidebar.mode = 'docked';
+          sidebar.visibility = collapsedPreference.value ? 'hidden' : 'visible';
         } else {
-          sidebar.mode = "floating";
-          sidebar.visibility = "hidden";
+          sidebar.mode = 'floating';
+          sidebar.visibility = 'hidden';
         }
       },
-      { immediate: true },
+      {immediate: true}
     );
 
     // Only remember what the user chose for the docked sidebar. A floating one
@@ -75,22 +83,22 @@ function initialize(): void {
     watch(
       () => sidebar.visibility,
       (visibility) => {
-        if (sidebar.mode !== "docked") {
+        if (sidebar.mode !== 'docked') {
           return;
         }
 
-        collapsedPreference.value = visibility === "hidden";
-      },
+        collapsedPreference.value = visibility === 'hidden';
+      }
     );
   });
 }
 
 function toggle() {
-  sidebar.visibility = sidebar.visibility === "visible" ? "hidden" : "visible";
+  sidebar.visibility = sidebar.visibility === 'visible' ? 'hidden' : 'visible';
 }
 
 function close() {
-  sidebar.visibility = "hidden";
+  sidebar.visibility = 'hidden';
 }
 
 /**
@@ -108,12 +116,12 @@ function close() {
 watch(
   () => sidebar.visibility,
   async (visibility) => {
-    if (visibility !== "hidden") {
+    if (visibility !== 'hidden') {
       return;
     }
 
     const active = document.activeElement;
-    const inSidebar = active?.closest?.(".cp-sidebar") != null;
+    const inSidebar = active?.closest?.('.cp-sidebar') != null;
 
     if (!inSidebar) {
       return;
@@ -121,7 +129,7 @@ watch(
 
     await nextTick();
     toggleButton.value?.focus();
-  },
+  }
 );
 
 /**
@@ -130,20 +138,24 @@ watch(
  * "collapsed", not "gone" — only a floating sidebar, which overlays the
  * content, actually leaves.
  */
-const collapsed = computed(() => sidebar.mode === "docked" && sidebar.visibility === "hidden");
+const collapsed = computed(
+  () => sidebar.mode === 'docked' && sidebar.visibility === 'hidden'
+);
 
 const icon = computed(() =>
-  sidebar.visibility === "visible" ? "arrow-left-to-line" : "arrow-right-from-line",
+  sidebar.visibility === 'visible'
+    ? 'arrow-left-to-line'
+    : 'arrow-right-from-line'
 );
 
 const width = computed(() => {
-  if (sidebar.mode === "docked") {
-    return sidebar.visibility === "visible"
-      ? "var(--global-sidebar-width)"
-      : "var(--global-sidebar-collapsed-width)";
+  if (sidebar.mode === 'docked') {
+    return sidebar.visibility === 'visible'
+      ? 'var(--global-sidebar-width)'
+      : 'var(--global-sidebar-collapsed-width)';
   }
 
-  return "auto";
+  return 'auto';
 });
 
 export function useGlobalSidebar(): {

@@ -33,7 +33,9 @@
 
 <style scoped lang="css">
   .system-info {
-    --system-info-icon-size: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
+    --system-info-icon-size: calc(
+      var(--c-size-touch-target) - var(--c-spacing-sm)
+    );
     display: grid;
     grid-template-columns: var(--system-info-icon-size) auto;
     gap: var(--c-spacing-md);

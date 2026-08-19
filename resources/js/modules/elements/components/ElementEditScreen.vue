@@ -1,124 +1,133 @@
 <script setup lang="ts">
-/**
- * The element editor, filling the shell's `main` slot.
- *
- * Same pipeline as `ElementEditPage` — `useElementEditPage()` owns the form,
- * autosave, activity polling and saving — but none of the page chrome is the
- * layout's: by taking the `main` slot it replaces `PageScreen`'s whole inner
- * region, so the breadcrumb bar, header, form element, content column and
- * details column are all rendered here, and free to be rearranged.
- *
- * Contract, inherited from that slot: this renders the `#main` landmark the
- * skip link targets, and owns its own `<form>`.
- *
- * Full-page only. In a slideout the panel's shell renders its own header,
- * form and footer, so pages dispatch to `ElementEditPage` there.
- */
-import { t } from "@craftcms/ui";
-import { computed } from "vue";
-import { router } from "@inertiajs/vue3";
-import AppLayout from "@/common/layouts/AppLayout.vue";
-import Breadcrumbs, { type BreadcrumbItem } from "@/common/components/Breadcrumbs.vue";
-import DynamicHtmlRenderer from "@/common/components/DynamicHtmlRenderer.vue";
-import FormActions from "@/common/components/FormActions.vue";
-import ErrorSummary from "@/common/form/ErrorSummary.vue";
-import FormRenderer from "@/modules/forms/FormRenderer.vue";
-import { useElementEditPage } from "@/modules/elements/composables/useElementEditPage";
-import { useElementActionMenu } from "@/modules/elements/composables/useElementActionMenu";
-import RevisionsList from "@/modules/elements/components/RevisionsList.vue";
-import AutosaveMessage from "@/modules/elements/components/AutosaveMessage.vue";
-
-const props = defineProps<{
   /**
-   * Identity attributes merged into every submission — the one per-type
-   * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
+   * The element editor, filling the shell's `main` slot.
+   *
+   * Same pipeline as `ElementEditPage` — `useElementEditPage()` owns the form,
+   * autosave, activity polling and saving — but none of the page chrome is the
+   * layout's: by taking the `main` slot it replaces `PageScreen`'s whole inner
+   * region, so the breadcrumb bar, header, form element, content column and
+   * details column are all rendered here, and free to be rearranged.
+   *
+   * Contract, inherited from that slot: this renders the `#main` landmark the
+   * skip link targets, and owns its own `<form>`.
+   *
+   * Full-page only. In a slideout the panel's shell renders its own header,
+   * form and footer, so pages dispatch to `ElementEditPage` there.
    */
-  saveData?: () => Record<string, unknown>;
-}>();
+  import {t} from '@craftcms/ui';
+  import {computed} from 'vue';
+  import {router} from '@inertiajs/vue3';
+  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import Breadcrumbs, {
+    type BreadcrumbItem,
+  } from '@/common/components/Breadcrumbs.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import FormActions from '@/common/components/FormActions.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
+  import FormRenderer from '@/modules/forms/FormRenderer.vue';
+  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
+  import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
 
-defineSlots<{
-  /** Extra content below the field layout. */
-  default?: (props: { payload: Record<string, unknown> }) => any;
-  /** Above the meta fields, e.g. an asset's file preview. */
-  "details-header"?: (props: { payload: Record<string, unknown> }) => any;
-}>();
+  const props = defineProps<{
+    /**
+     * Identity attributes merged into every submission — the one per-type
+     * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
+     */
+    saveData?: () => Record<string, unknown>;
+  }>();
 
-const {
-  activity,
-  autosave,
-  discardDraft,
-  errors,
-  form,
-  formPayload,
-  onMutation,
-  onSidebarMutation,
-  props: payload,
-  renderer,
-  save,
-  sidebarErrors,
-  sidebarPayload,
-  sidebarRenderer,
-  submitAction,
-} = useElementEditPage({ saveData: props.saveData });
+  defineSlots<{
+    /** Extra content below the field layout. */
+    default?: (props: {payload: Record<string, unknown>}) => any;
+    /** Above the meta fields, e.g. an asset's file preview. */
+    'details-header'?: (props: {payload: Record<string, unknown>}) => any;
+  }>();
 
-const crumbs = computed(() => (payload.crumbs ?? []) as Array<BreadcrumbItem>);
+  const {
+    activity,
+    autosave,
+    discardDraft,
+    errors,
+    form,
+    formPayload,
+    onMutation,
+    onSidebarMutation,
+    props: payload,
+    renderer,
+    save,
+    sidebarErrors,
+    sidebarPayload,
+    sidebarRenderer,
+    submitAction,
+  } = useElementEditPage({saveData: props.saveData});
 
-// Alternate saves in the Save button's menu, and the buttons beside it.
-const formActionItems = computed(() =>
-  payload.formActions.map((action) => ({
-    label: action.label,
-    onClick: () => submitAction(action),
-  })),
-);
+  const crumbs = computed(
+    () => (payload.crumbs ?? []) as Array<BreadcrumbItem>
+  );
 
-const headerButtons = computed(() =>
-  payload.headerActions.map((action) => ({
-    label: action.label,
-    variant: action.variant,
-    onClick: () => submitAction(action),
-  })),
-);
+  // Alternate saves in the Save button's menu, and the buttons beside it.
+  const formActionItems = computed(() =>
+    payload.formActions.map((action) => ({
+      label: action.label,
+      onClick: () => submitAction(action),
+    }))
+  );
 
-// The element's own actions (Validate, Copy, Delete, …). Behaviors are
-// dispatched client-side rather than via registered jQuery handlers.
-const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
-  // The entry type can be switched in the sidebar without saving, so the
-  // settings slideout should follow the field rather than the stored value.
-  currentEntryTypeId: () => form.typeId,
-});
+  const headerButtons = computed(() =>
+    payload.headerActions.map((action) => ({
+      label: action.label,
+      variant: action.variant,
+      onClick: () => submitAction(action),
+    }))
+  );
 
-// "View" opens the element on the front end. The hrefs arrive ready to
-// follow — a live element points at its own URL, anything else at a
-// token-minting redirect that lands on the tokenized preview.
-const viewButtons = computed(() =>
-  payload.previewTargets.map((target, index) => ({
-    label: payload.previewTargets.length === 1 ? t("View") : target.label,
-    variant: "outline",
-    key: `view-${index}`,
-    onClick: () => window.open(target.url, "_blank", "noopener"),
-  })),
-);
+  // The element's own actions (Validate, Copy, Delete, …). Behaviors are
+  // dispatched client-side rather than via registered jQuery handlers.
+  const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
+    // The entry type can be switched in the sidebar without saving, so the
+    // settings slideout should follow the field rather than the stored value.
+    currentEntryTypeId: () => form.typeId,
+  });
 
-const additionalButtons = computed(() => [...viewButtons.value, ...headerButtons.value]);
+  // "View" opens the element on the front end. The hrefs arrive ready to
+  // follow — a live element points at its own URL, anything else at a
+  // token-minting redirect that lands on the tokenized preview.
+  const viewButtons = computed(() =>
+    payload.previewTargets.map((target, index) => ({
+      label: payload.previewTargets.length === 1 ? t('View') : target.label,
+      variant: 'outline',
+      key: `view-${index}`,
+      onClick: () => window.open(target.url, '_blank', 'noopener'),
+    }))
+  );
 
-const hasDetails = computed(() => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml));
+  const additionalButtons = computed(() => [
+    ...viewButtons.value,
+    ...headerButtons.value,
+  ]);
 
-// Mirrors the legacy wording: a changed draft names the draft, anything else
-// names the element type.
-const staleMessage = computed(() =>
-  t("This {type} has been updated.", {
-    type:
-      activity.staleType.value === "element" &&
-      payload.draftId !== null &&
-      !payload.isProvisionalDraft
-        ? t("draft")
-        : payload.elementDisplayName,
-  }),
-);
+  const hasDetails = computed(
+    () => Boolean(sidebarPayload.value) || Boolean(payload.metadataHtml)
+  );
 
-function reload(): void {
-  router.reload();
-}
+  // Mirrors the legacy wording: a changed draft names the draft, anything else
+  // names the element type.
+  const staleMessage = computed(() =>
+    t('This {type} has been updated.', {
+      type:
+        activity.staleType.value === 'element' &&
+        payload.draftId !== null &&
+        !payload.isProvisionalDraft
+          ? t('draft')
+          : payload.elementDisplayName,
+    })
+  );
+
+  function reload(): void {
+    router.reload();
+  }
 </script>
 
 <template>
@@ -134,7 +143,9 @@ function reload(): void {
 
         <form method="post" @submit.prevent="save()">
           <div class="sticky top-0 z-1000 pb-2">
-            <header class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)">
+            <header
+              class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
+            >
               <div>
                 <h1 class="text-xl/7">
                   {{ payload.title }}
@@ -148,7 +159,7 @@ function reload(): void {
                     class="relative text-sm font-normal inline-flex"
                   >
                     <craft-icon name="pen-circle" slot="prefix"></craft-icon>
-                    {{ t("Edited") }}
+                    {{ t('Edited') }}
                   </craft-badge>
                   <DynamicHtmlRenderer
                     v-else-if="payload.statusLabelHtml"
@@ -207,7 +218,7 @@ function reload(): void {
                   @click="discardDraft"
                   inherit
                 >
-                  {{ t("Discard changes") }}
+                  {{ t('Discard changes') }}
                 </craft-button>
               </craft-callout>
 
@@ -226,12 +237,16 @@ function reload(): void {
                   @click="reload"
                   inherit
                 >
-                  {{ t("Reload") }}
+                  {{ t('Reload') }}
                 </craft-button>
               </craft-callout>
 
-              <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-                {{ t("This is a read-only view.") }}
+              <craft-callout
+                v-if="payload.readOnly"
+                variant="neutral"
+                icon="lock"
+              >
+                {{ t('This is a read-only view.') }}
               </craft-callout>
 
               <craft-callout
@@ -250,7 +265,7 @@ function reload(): void {
 
           <div
             class="element-editor__body"
-            :class="{ 'element-editor__body--details': hasDetails }"
+            :class="{'element-editor__body--details': hasDetails}"
           >
             <div class="element-editor__content">
               <craft-pane padding="none" appearance="plain">
@@ -271,15 +286,24 @@ function reload(): void {
               </craft-pane>
             </div>
 
-            <div v-if="hasDetails || $slots['details-header']" class="element-editor__details">
+            <div
+              v-if="hasDetails || $slots['details-header']"
+              class="element-editor__details"
+            >
               <craft-tabs size="small" placement="inline-end" collapsible>
                 <craft-tab slot="tab">
-                  <craft-icon name="circle-info" :label="t('Info')"></craft-icon>
+                  <craft-icon
+                    name="circle-info"
+                    :label="t('Info')"
+                  ></craft-icon>
                 </craft-tab>
                 <div slot="panel">
                   <craft-pane appearance="plain" padding="none">
-                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
-                      <h3 slot="title" class="text-xs/4">{{ t("Info") }}</h3>
+                    <div
+                      slot="header"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
+                    >
+                      <h3 slot="title" class="text-xs/4">{{ t('Info') }}</h3>
                     </div>
                     <div class="py-4">
                       <div class="grid gap-4">
@@ -308,24 +332,40 @@ function reload(): void {
                 </div>
 
                 <craft-tab slot="tab" id="tab-1">
-                  <craft-icon name="wave-pulse" :label="t('Activity')"></craft-icon>
+                  <craft-icon
+                    name="wave-pulse"
+                    :label="t('Activity')"
+                  ></craft-icon>
                 </craft-tab>
                 <div slot="panel">
                   <craft-pane appearance="plain">
-                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
-                      <h3 slot="title" class="text-xs/4">{{ t('Activity') }}</h3>
+                    <div
+                      slot="header"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
+                    >
+                      <h3 slot="title" class="text-xs/4">
+                        {{ t('Activity') }}
+                      </h3>
                     </div>
                     @TODO
                   </craft-pane>
                 </div>
 
                 <craft-tab slot="tab">
-                  <craft-icon name="clock-rotate-left" :label="t('Revisions')"></craft-icon>
+                  <craft-icon
+                    name="clock-rotate-left"
+                    :label="t('Revisions')"
+                  ></craft-icon>
                 </craft-tab>
                 <div slot="panel">
                   <craft-pane appearance="plain">
-                    <div slot="header" class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)">
-                      <h3 slot="title" class="text-xs/4">{{ t('Revisions') }}</h3>
+                    <div
+                      slot="header"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
+                    >
+                      <h3 slot="title" class="text-xs/4">
+                        {{ t('Revisions') }}
+                      </h3>
                     </div>
                     <RevisionsList :items="payload.contextMenu?.items ?? []" />
                   </craft-pane>
@@ -340,122 +380,121 @@ function reload(): void {
 </template>
 
 <style scoped lang="css">
-.element-editor__crumbs {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--c-spacing-sm);
-  padding-block: var(--c-spacing-xs);
-  padding-inline: var(--c-spacing-md);
-}
+  .element-editor__crumbs {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
+  }
 
-.element-editor__header {
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-md);
-  padding-inline: var(--c-spacing-lg);
-  padding-block: var(--c-spacing-md);
-  border-block-end: 1px solid var(--color-neutral-border-quiet);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: white;
-}
+  .element-editor__header {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-lg);
+    padding-block: var(--c-spacing-md);
+    border-block-end: 1px solid var(--color-neutral-border-quiet);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: white;
+  }
 
-.element-editor__status {
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-md);
-  margin-inline-start: auto;
-  padding-inline: var(--c-spacing-md);
-}
+  .element-editor__status {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    margin-inline-start: auto;
+    padding-inline: var(--c-spacing-md);
+  }
 
-.element-editor__body {
-  display: grid;
-  gap: var(--c-spacing-md);
-  padding-inline: var(--c-spacing-lg);
-}
+  .element-editor__body {
+    display: grid;
+    gap: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-lg);
+  }
 
-.element-editor__content {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--c-spacing-md);
-  align-content: start;
-}
+  .element-editor__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--c-spacing-md);
+    align-content: start;
+  }
 
-/* Wide content — a many-columned table, a long code block — otherwise sets a
+  /* Wide content — a many-columned table, a long code block — otherwise sets a
      min-content floor that pushes this column out of its track. */
-.element-editor__content > :deep(*) {
-  min-width: 0;
-}
+  .element-editor__content > :deep(*) {
+    min-width: 0;
+  }
 
-.element-editor__details {
-  display: grid;
-  gap: var(--c-spacing-lg);
-  container-type: inline-size;
-  position: sticky;
-  top: 60px;
-  border-radius: var(--c-radius-lg);
-  height: 100%;
-}
+  .element-editor__details {
+    display: grid;
+    gap: var(--c-spacing-lg);
+    container-type: inline-size;
+    position: sticky;
+    top: 60px;
+    border-radius: var(--c-radius-lg);
+    height: 100%;
+  }
 
-.element-editor__body.element-editor__body--details {
-  grid-template-columns: minmax(0, 1fr) clamp(21rem, 25%, 25rem);
-}
+  .element-editor__body.element-editor__body--details {
+    grid-template-columns: minmax(0, 1fr) clamp(21rem, 25%, 25rem);
+  }
 
-/* Closing the details tabs shrinks the element to just its rail, but the
+  /* Closing the details tabs shrinks the element to just its rail, but the
    track it sits in is sized independently — without this the content would
    keep its width and leave a hole. `auto` hands the space back, and the
    `collapsed` attribute is reflected by `craft-tabs`, so this needs no
    listener and can't fall out of step with the strip. */
-.element-editor__body.element-editor__body--details:has(
+  .element-editor__body.element-editor__body--details:has(
       craft-tabs[collapsed]
     ) {
-  grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
 
-  /* `container-type: inline-size` below is `contain: inline-size`, so the
+    /* `container-type: inline-size` below is `contain: inline-size`, so the
      column's contents can't size it — an `auto` track would collapse to
      zero and let the rail overhang the page. Containment only exists for
      queries inside the panel, and a collapsed strip has no panel showing,
      so it costs nothing to drop it while closed. */
-  .element-editor__details {
-    container-type: normal;
-  }
-}
-
-@container (width >= 768px) {
-  .element-editor__body {
-    align-items: start;
+    .element-editor__details {
+      container-type: normal;
+    }
   }
 
-}
-
-craft-tabs::part(base) {
-  gap: var(--c-spacing-sm);
-}
-
-craft-tabs::part(strip) {
-  border: 0;
-}
-
-craft-tab {
-  padding: 0;
-  width: var(--c-size-touch-target);
-  background-color: white;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border-radius: var(--c-radius-md);
-  border: 1px solid transparent;
-}
-
-craft-tab[selected="true"] {
-  background-color: var(--c-color-neutral-fill-normal);
-  border-color: var(--c-color-neutral-border-normal);
-  color: var(--c-color-neutral-on-normal);
-
-  &:after {
-    display: none;
+  @container (width >= 768px) {
+    .element-editor__body {
+      align-items: start;
+    }
   }
-}
+
+  craft-tabs::part(base) {
+    gap: var(--c-spacing-sm);
+  }
+
+  craft-tabs::part(strip) {
+    border: 0;
+  }
+
+  craft-tab {
+    padding: 0;
+    width: var(--c-size-touch-target);
+    background-color: white;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: var(--c-radius-md);
+    border: 1px solid transparent;
+  }
+
+  craft-tab[selected='true'] {
+    background-color: var(--c-color-neutral-fill-normal);
+    border-color: var(--c-color-neutral-border-normal);
+    color: var(--c-color-neutral-on-normal);
+
+    &:after {
+      display: none;
+    }
+  }
 </style>
