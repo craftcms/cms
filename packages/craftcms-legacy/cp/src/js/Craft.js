@@ -1990,7 +1990,6 @@ $.extend(Craft, {
   },
 
   _elementIndexClasses: {},
-  _elementSelectorModalClasses: {},
   _elementEditorClasses: {},
   _uploaderClasses: {},
   _authFormHandlers: {},
@@ -2029,24 +2028,6 @@ $.extend(Craft, {
     }
 
     this._uploaderClasses[fsType] = func;
-  },
-
-  /**
-   * Registers an element selector modal class for a given element type.
-   *
-   * @param {string} elementType
-   * @param {function} func
-   */
-  registerElementSelectorModalClass: function (elementType, func) {
-    if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
-      throw (
-        'An element selector modal class has already been registered for the element type “' +
-        elementType +
-        '”.'
-      );
-    }
-
-    this._elementSelectorModalClasses[elementType] = func;
   },
 
   registerAuthFormHandler(method, func) {
@@ -2095,24 +2076,6 @@ $.extend(Craft, {
     uploader.fsType = fsType;
 
     return uploader;
-  },
-
-  /**
-   * Creates a new element selector modal for a given element type.
-   *
-   * @param {string} elementType
-   * @param {Object} settings
-   */
-  createElementSelectorModal: function (elementType, settings) {
-    var func;
-
-    if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
-      func = this._elementSelectorModalClasses[elementType];
-    } else {
-      func = Craft.BaseElementSelectorModal;
-    }
-
-    return new func(elementType, settings);
   },
 
   /**

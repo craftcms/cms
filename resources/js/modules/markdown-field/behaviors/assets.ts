@@ -1,4 +1,5 @@
 import {t} from '@craftcms/ui';
+import {createElementSelectorModal} from '@/modules/element-selector-modal/registry';
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';
@@ -33,24 +34,21 @@ export function createAssetController(
 
   function open(): void {
     if (!assetSelectorModal) {
-      assetSelectorModal = Craft.createElementSelectorModal(
-        ASSET_ELEMENT_TYPE,
-        {
-          closeOtherModals: false,
-          criteria: assetCriteria,
-          hideOnSelect: true,
-          modalTitle: t('Choose an asset'),
-          multiSelect: false,
-          onSelect: (assets: AssetInfo[]) => {
-            const [asset] = assets;
+      assetSelectorModal = createElementSelectorModal(ASSET_ELEMENT_TYPE, {
+        closeOtherModals: false,
+        criteria: assetCriteria,
+        hideOnSelect: true,
+        modalTitle: t('Choose an asset'),
+        multiSelect: false,
+        onSelect: (assets: AssetInfo[]) => {
+          const [asset] = assets;
 
-            if (asset) {
-              insert(asset);
-            }
-          },
-          sources: assetSources,
-        }
-      );
+          if (asset) {
+            insert(asset);
+          }
+        },
+        sources: assetSources,
+      });
 
       return;
     }
