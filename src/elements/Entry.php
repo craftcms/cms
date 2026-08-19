@@ -2415,10 +2415,12 @@ JS, [
     {
         if ($handle === 'author' || $handle === 'authors') {
             $authors = $this->_authors;
-            if (is_array($authors)) {
-                $authors = ElementCollection::make($authors);
+            if ($authors === null) {
+                return null;
             }
 
+            $authors = ElementCollection::make($authors);
+            ElementHelper::setNextPrevOnElements($authors);
             return $authors;
         }
 
