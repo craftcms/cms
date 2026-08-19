@@ -80,9 +80,8 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
   }
 
   override onSelectionChange(): void {
-    const $selectedElements = this.elementIndex?.getSelectedElements();
     const allowTransforms =
-      !!$selectedElements?.length && !!this.settings.transforms?.length;
+      this.selectedElements.length > 0 && !!this.settings.transforms?.length;
 
     const menuBtn = this.$selectTransformBtn?.data('menuButton') ?? null;
 
@@ -107,12 +106,10 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
       AssetSelectorModal.transformUrls[transform] = {};
     }
 
-    const $selectedElements = this.elementIndex.getSelectedElements();
     const missingIds: number[] = [];
 
-    for (let i = 0; i < $selectedElements.length; i++) {
-      const $item = $($selectedElements[i]);
-      const elementId: number = Craft.getElementInfo($item).id;
+    for (const element of this.selectedElements) {
+      const elementId = element.id;
       if (
         typeof AssetSelectorModal.transformUrls[transform][elementId] ===
         'undefined'

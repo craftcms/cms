@@ -41,6 +41,63 @@ export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
     super.init('CraftCms\\Cms\\Asset\\Elements\\Asset', merged);
   }
 
+  /** The legacy jQuery index — see `_createElementIndex()` below. */
+  elementIndex: any = null;
+
+  /**
+   * Keeps the legacy element index, unlike every other selector modal.
+   *
+   * Folder picking is driven by the index's `sourcePath` — the breadcrumb of the
+   * folder you've navigated into, which is what "select the current folder"
+   * means when nothing is highlighted. The Vue index has no equivalent yet, so
+   * porting this one would lose that. It's the last thing keeping
+   * `ElementIndexHtml` and the HTML `element-indexes/*` endpoints alive.
+   */
+  override _createElementIndex(): void {
+    Craft.sendActionRequest('POST', this.settings.bodyAction, {
+      data: this.getElementIndexParams(),
+    }).then((response: any) => {
+      this.$body.html(response.data.html);
+
+      if (this.$body.has('.sidebar:not(.hidden)').length) {
+        this.$body.addClass('has-sidebar');
+        this.supportSidebarToggleView = true;
+      }
+
+      this.elementIndex = (Craft as any).createElementIndex(
+        this.elementType,
+        this.$body.children('.element-index'),
+        this.getIndexSettings()
+      );
+
+      this.$main = this.elementIndex.$main;
+      this.$sidebar = this.elementIndex.$sidebar;
+      this.$content = this.$body.find('.content');
+
+      this.updateSidebarView();
+      this.updateModalBottomPadding();
+
+      $(this.elementIndex.$elements).on(
+        'doubletap',
+        (ev: any, touchData: any) => {
+          if (touchData.firstTap.target === touchData.secondTap.target) {
+            this.selectElements();
+          }
+        }
+      );
+
+      this.on('updateSizeAndPosition', () => {
+        this.elementIndex.handleResize();
+      });
+
+      this.updateSelectBtnState();
+    });
+  }
+
+  override hasSelection(): boolean {
+    return !!this.elementIndex?.getSelectedElements().length;
+  }
+
   override getElementIndexParams(): Record<string, any> {
     return Object.assign({}, super.getElementIndexParams(), {
       foldersOnly: true,

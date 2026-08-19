@@ -6,6 +6,10 @@ import {
   type ModalSettings,
 } from '@craftcms/garnish';
 import {html, render, type TemplateResult} from 'lit';
+import {createApp, type App} from 'vue';
+import {createCpComponentRegistry} from '@/bootstrap/components';
+import ModalElementIndex from './ModalElementIndex.vue';
+import type {SelectedElement} from './useModalElementIndex';
 import {ref} from 'lit/directives/ref.js';
 import {uiLayerManager} from '@/modules/slideout/slideout';
 
@@ -13,6 +17,13 @@ declare const Craft: any;
 declare const $: any;
 
 const noop = () => {};
+
+/** What `ModalElementIndex` exposes back to the modal shell. */
+type ModalElementIndexInstance = {
+  clearSelection(): void;
+};
+
+const components = createCpComponentRegistry();
 
 // Non-runtime-dependent defaults, separated so the static getter can augment them.
 const BASE_DEFAULTS = {
@@ -81,7 +92,11 @@ export class BaseElementSelectorModal extends Modal {
   // in init() where Craft is guaranteed available.
 
   elementType: string | null = null;
-  elementIndex: any = null;
+  /** The mounted Vue index, and the app hosting it. */
+  index: ModalElementIndexInstance | null = null;
+  indexApp: App | null = null;
+  /** Pushed up by the index whenever its selection changes. */
+  selectedElements: SelectedElement[] = [];
   supportSidebarToggleView = false;
 
   // jQuery refs to modal DOM — accessed by subclasses and external code.
@@ -356,13 +371,10 @@ export class BaseElementSelectorModal extends Modal {
   }
 
   override onFadeIn(): void {
-    if (!this.elementIndex) {
+    if (!this.index) {
       this._createElementIndex();
     } else {
       this.updateModalBottomPadding();
-      if (!isMobileBrowser()) {
-        this.elementIndex.$search.focus();
-      }
     }
     super.onFadeIn();
   }
@@ -396,7 +408,7 @@ export class BaseElementSelectorModal extends Modal {
   }
 
   hasSelection(): boolean {
-    return !!this.elementIndex?.getSelectedElements().length;
+    return this.selectedElements.length > 0;
   }
 
   enableSelectBtn(): void {
@@ -430,35 +442,39 @@ export class BaseElementSelectorModal extends Modal {
   }
 
   selectElements(): void {
-    if (this.hasSelection()) {
-      if (this.elementIndex.view?.elementSelect) {
-        this.elementIndex.view.elementSelect.clearMouseUpTimeout();
-      }
+    if (!this.hasSelection()) {
+      return;
+    }
 
-      const $selectedElements = this.elementIndex.getSelectedElements();
-      const elementInfo = this.getElementInfo($selectedElements);
+    const elementInfo = this.getElementInfo(this.selectedElements);
 
-      this.onSelect(elementInfo);
+    this.onSelect(elementInfo);
 
-      if (this.settings.disableElementsOnSelect) {
-        this.elementIndex.disableElements(
-          this.elementIndex.getSelectedElements()
-        );
-      }
+    if (this.settings.disableElementsOnSelect) {
+      // Selected elements become unselectable, so the same one can't be picked
+      // twice while the modal stays open.
+      this.settings.disabledElementIds = [
+        ...(this.settings.disabledElementIds ?? []),
+        ...this.selectedElements.map((element) => element.id),
+      ];
+      this.index?.clearSelection();
+    }
 
-      if (this.settings.hideOnSelect) {
-        this.hide();
-      }
+    if (this.settings.hideOnSelect) {
+      this.hide();
     }
   }
 
-  getElementInfo($selectedElements: any): any[] {
-    const info = [];
-    for (let i = 0; i < $selectedElements.length; i++) {
-      const $element = $($selectedElements[i]);
-      info.push(Craft.getElementInfo($element));
-    }
-    return info;
+  /**
+   * Hook for subclasses to adjust what gets handed to `onSelect` — the asset
+   * modal splices a transformed URL in here.
+   *
+   * These arrive as plain objects from the index rather than being read back
+   * off chip data attributes, but carry the same keys `Craft.getElementInfo()`
+   * produced, since the relation field consumes them either way.
+   */
+  getElementInfo(elements: SelectedElement[]): any[] {
+    return elements.map((element) => ({...element}));
   }
 
   override onShow(): void {
@@ -475,10 +491,6 @@ export class BaseElementSelectorModal extends Modal {
     this.updateModalBottomPadding();
     this.updateSidebarView();
 
-    if (this.elementIndex?.searching) {
-      this.elementIndex.clearSearch(true);
-    }
-
     super.onShow();
   }
 
@@ -487,17 +499,28 @@ export class BaseElementSelectorModal extends Modal {
     super.onHide();
   }
 
+  /**
+   * The index is a Vue app rather than markup the modal owns, so it has to be
+   * unmounted explicitly — `Modal.destroy()` only clears the container.
+   */
+  override destroy(): void {
+    this.indexApp?.unmount();
+    this.indexApp = null;
+    this.index = null;
+    this.selectedElements = [];
+
+    super.destroy();
+  }
+
   onSelect(elementInfo: any): void {
     this.settings.onSelect(elementInfo);
   }
 
   override disable(): void {
-    this.elementIndex?.disable();
     super.disable();
   }
 
   override enable(): void {
-    this.elementIndex?.enable();
     super.enable();
   }
 
@@ -527,42 +550,33 @@ export class BaseElementSelectorModal extends Modal {
     Craft.sendActionRequest('POST', this.settings.bodyAction, {
       data: this.getElementIndexParams(),
     }).then((response: any) => {
-      this.$body.html(response.data.html);
+      this.$body.empty();
+      this.$content = this.$body;
 
-      if (this.$body.has('.sidebar:not(.hidden)').length) {
-        this.$body.addClass('has-sidebar');
-        this.supportSidebarToggleView = true;
-      }
+      const host = document.createElement('div');
+      host.className = 'modal-index-host';
+      this.$body[0].append(host);
 
-      this.elementIndex = Craft.createElementIndex(
-        this.elementType,
-        this.$body.children('.element-index'),
-        this.getIndexSettings()
-      );
-
-      this.$main = this.elementIndex.$main;
-      this.$sidebar = this.elementIndex.$sidebar;
-      this.$content = this.$body.find('.content');
-
-      this.updateSidebarView();
-      this.updateModalBottomPadding();
-
-      // doubletap is a jQuery synthetic event — must use jQuery .on(), NOT
-      // addListener (which uses native addEventListener and won't receive
-      // jQuery-triggered events).
-      $(this.elementIndex.$elements).on(
-        'doubletap',
-        (ev: any, touchData: any) => {
-          if (touchData.firstTap.target === touchData.secondTap.target) {
-            this.selectElements();
-          }
-        }
-      );
-
-      this.on('updateSizeAndPosition', () => {
-        this.elementIndex.handleResize();
+      this.indexApp = createApp(ModalElementIndex, {
+        url: Craft.getActionUrl(this.settings.bodyAction),
+        initial: response.data.props,
+        params: this.getElementIndexParams(),
+        disabledElementIds: this.settings.disabledElementIds ?? [],
+        onSelectionChange: (elements: SelectedElement[]) => {
+          this.selectedElements = elements;
+          this.onSelectionChange();
+        },
+        onChoose: () => this.selectElements(),
       });
 
+      components.install(this.indexApp);
+      this.indexApp.config.compilerOptions.isCustomElement = (tag: string) =>
+        tag.includes('-');
+      this.index = this.indexApp.mount(
+        host
+      ) as unknown as ModalElementIndexInstance;
+
+      this.updateModalBottomPadding();
       this.updateSelectBtnState();
     });
   }
@@ -583,16 +597,8 @@ export class BaseElementSelectorModal extends Modal {
         multiSelect: this.settings.multiSelect,
         waitForDoubleClicks: true,
         buttonContainer: this.$secondaryButtons,
-        onSelectionChange: () => {
-          if (this.elementIndex) {
-            this.onSelectionChange();
-          }
-        },
-        onSourcePathChange: () => {
-          if (this.elementIndex) {
-            this.onSelectionChange();
-          }
-        },
+        onSelectionChange: () => this.onSelectionChange(),
+        onSourcePathChange: () => this.onSelectionChange(),
         onSelectSource: this.onSelectSource.bind(this),
         hideSidebar: this.settings.hideSidebar,
         defaultSiteId: this.settings.defaultSiteId,

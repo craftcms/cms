@@ -801,16 +801,9 @@ export class BaseElementSelectInput extends Base {
       this.elementSelect.removeItems($elements);
     }
 
-    if (this.modal) {
-      const ids: number[] = [];
-      for (let i = 0; i < $elements.length; i++) {
-        const id = $elements.eq(i).data('id');
-        if (id) ids.push(id);
-      }
-      if (ids.length) {
-        this.modal.elementIndex.enableElementsById(ids);
-      }
-    }
+    // Removing a relation makes it selectable again, so the modal's disabled
+    // set has to shrink to match.
+    this.updateDisabledElementsInModal();
 
     $elements.children('input').prop('disabled', true);
 
@@ -1231,9 +1224,15 @@ export class BaseElementSelectInput extends Base {
     }
   }
 
+  /**
+   * Republishes which elements the modal may not select.
+   *
+   * The modal's index reads this as a whole set rather than being told to
+   * enable or disable individual ids, so both directions are one assignment.
+   */
   updateDisabledElementsInModal(): void {
-    if (this.modal?.elementIndex) {
-      this.modal.elementIndex.disableElementsById(this.getDisabledElementIds());
+    if (this.modal) {
+      this.modal.settings.disabledElementIds = this.getDisabledElementIds();
     }
   }
 
