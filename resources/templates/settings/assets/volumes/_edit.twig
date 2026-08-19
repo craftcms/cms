@@ -126,10 +126,12 @@
             }),
             id: 'title-translation-key-format',
             name: 'titleTranslationKeyFormat',
+            textExpanderTriggers: objectTemplateTextExpanderTriggers,
             value: old('titleTranslationKeyFormat', volume.titleTranslationKeyFormat),
             errors: volume.errors.get('titleTranslationKeyFormat'),
             data: {'error-key': 'titleTranslationKeyFormat'},
             disabled: readOnly,
+            tip: objectTemplateTip,
         }) }}
     </div>
 
@@ -165,10 +167,12 @@
             }),
             id: 'alt-translation-key-format',
             name: 'altTranslationKeyFormat',
+            textExpanderTriggers: objectTemplateTextExpanderTriggers,
             value: old('altTranslationKeyFormat', volume.altTranslationKeyFormat),
             errors: volume.errors.get('altTranslationKeyFormat'),
             data: {'error-key': 'altTranslationKeyFormat'},
             disabled: readOnly,
+            tip: objectTemplateTip,
         }) }}
     </div>
 {% endif %}

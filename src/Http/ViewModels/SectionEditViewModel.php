@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -54,6 +55,7 @@ class SectionEditViewModel extends ViewModel
             ? $values['type']
             : SectionType::from((string) $values['type']);
         $handle = Handle::make('handle');
+        $objectTemplateTriggers = $this->objectTemplateTriggers();
 
         if ($this->brandNew) {
             $handle->source('name');
@@ -132,7 +134,11 @@ class SectionEditViewModel extends ViewModel
                     'urlFormat' => [
                         'heading' => t('URL Format'),
                         'type' => 'singleline',
-                        'textExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true),
+                        'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                        'textExpanderTriggers' => [
+                            ...SelectOptions::getEnvTextExpanderTriggers(true),
+                            ...$objectTemplateTriggers,
+                        ],
                     ],
                     'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
                 ])
@@ -257,7 +263,12 @@ class SectionEditViewModel extends ViewModel
                 'enabled' => ['heading' => t('Enabled'), 'type' => 'lightswitch'],
                 'singleHomepage' => ['heading' => t('Homepage'), 'type' => 'checkbox'],
                 'singleUri' => ['heading' => t('URI'), 'type' => 'singleline'],
-                'uriFormat' => ['heading' => t('Entry URI Format'), 'type' => 'singleline'],
+                'uriFormat' => [
+                    'heading' => t('Entry URI Format'),
+                    'type' => 'singleline',
+                    'info' => SelectOptions::getObjectTemplateTip(),
+                    'textExpanderTriggers' => $this->objectTemplateTriggers(),
+                ],
                 'template' => [
                     'heading' => t('Template'),
                     'type' => 'template',
@@ -265,5 +276,14 @@ class SectionEditViewModel extends ViewModel
                 ],
                 'enabledByDefault' => ['heading' => t('Default Status'), 'type' => 'lightswitch'],
             ]);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function objectTemplateTriggers(): array
+    {
+        return SelectOptions::getObjectTemplateTextExpanderTriggers(
+            EntryElement::class,
+            array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->section->getEntryTypes()),
+        );
     }
 }

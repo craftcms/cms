@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
@@ -20,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
 use DateTimeZone;
@@ -149,6 +152,52 @@ class SelectOptions
         }
 
         return $triggers;
+    }
+
+    /**
+     * @param  class-string<ProvidesObjectTemplateSuggestions>  $objectType
+     * @param  list<FieldLayout>  $fieldLayouts
+     * @param  array<string, string>  $additionalProperties
+     * @return list<TextExpanderTrigger>
+     */
+    public static function getObjectTemplateTextExpanderTriggers(
+        string $objectType = Element::class,
+        array $fieldLayouts = [],
+        array $additionalProperties = [],
+    ): array {
+        $properties = $objectType::objectTemplateSuggestions();
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            $properties = array_merge($properties, $fieldLayout->objectTemplateSuggestions());
+        }
+
+        $properties = array_merge($properties, $additionalProperties);
+        $options = Collection::make($properties)
+            ->map(function (string $label, string $property): array {
+                $value = sprintf('{%s}', $property);
+
+                return [
+                    'label' => $label,
+                    'value' => $value,
+                    'keywords' => [$property],
+                    'data' => ['hint' => $value],
+                ];
+            })
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
+
+        return [[
+            'trigger' => '{',
+            'boundary' => 'anywhere',
+            'label' => t('Object Template Variables'),
+            'options' => $options,
+        ]];
+    }
+
+    public static function getObjectTemplateTip(): string
+    {
+        return t('Type `{` to choose an object template variable.');
     }
 
     /**
