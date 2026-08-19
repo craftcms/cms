@@ -496,7 +496,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * The shared server-side index state — source, column, sort-option and
      * menu resolution, shared with the server-rendered index shell.
      */
-    private function indexState(): ElementIndexState
+    protected function indexState(): ElementIndexState
     {
         return app(ElementIndexState::class);
     }
