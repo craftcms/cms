@@ -8,7 +8,9 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\Controls\Table;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -32,6 +34,7 @@ use Throwable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
+/** @phpstan-import-type TextExpanderTrigger from HasTextExpander */
 readonly class EmailSettingsController
 {
     use RespondsWithFlash;
@@ -110,32 +113,30 @@ readonly class EmailSettingsController
     private function emailSettingsForm(GeneralConfig $generalConfig): FormPayload
     {
         $environmentOptions = SelectOptions::getEnvSuggestions();
+        $environmentTextExpanderTriggers = SelectOptions::getEnvTextExpanderTriggers();
         $templateOptions = [
             ...SelectOptions::getTemplateSuggestions(),
             ...$environmentOptions,
         ];
         $environmentTip = sprintf(
             '%s [%s](%s)',
-            t('This can begin with an environment variable.'),
+            t('Type `$` to choose an environment variable.'),
             t('Learn more'),
             'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
         );
         $form = Form::make([
-            Field::make(t('System Email Address'), Combobox::make('fromEmail')
-                ->options($environmentOptions)
-                ->showAllOnEmpty())
+            Field::make(t('System Email Address'), Text::make('fromEmail')
+                ->textExpanderTriggers($environmentTextExpanderTriggers))
                 ->instructions(t('The email address Craft CMS will use when sending email.'))
                 ->required()
                 ->tip($environmentTip),
-            Field::make(t('Sender Name'), Combobox::make('fromName')
-                ->options($environmentOptions)
-                ->showAllOnEmpty())
+            Field::make(t('Sender Name'), Text::make('fromName')
+                ->textExpanderTriggers($environmentTextExpanderTriggers))
                 ->instructions(t('The “From” name Craft CMS will use when sending email.'))
                 ->required()
                 ->tip($environmentTip),
-            Field::make(t('Reply-To Address'), Combobox::make('replyToEmail')
-                ->options($environmentOptions)
-                ->showAllOnEmpty())
+            Field::make(t('Reply-To Address'), Text::make('replyToEmail')
+                ->textExpanderTriggers($environmentTextExpanderTriggers))
                 ->instructions(t('The Reply-To email address Craft CMS should use when sending email.'))
                 ->tip($environmentTip),
             Field::make(t('HTML Email Template'), Combobox::make('template')
@@ -149,7 +150,7 @@ readonly class EmailSettingsController
                 Separator::make('site-overrides-separator'),
                 Heading::make('site-overrides-heading', t('Site Overrides'))
                     ->description(t('Override the default email settings on a per-site basis. Blank values will use the defaults above.')),
-                $this->siteOverridesTable($environmentOptions, $templateOptions),
+                $this->siteOverridesTable($environmentTextExpanderTriggers, $templateOptions),
             ),
         )->add(
             Separator::make('mailer-separator'),
@@ -170,10 +171,10 @@ readonly class EmailSettingsController
     }
 
     /**
-     * @param  list<array<string, mixed>>  $environmentOptions
+     * @param  list<TextExpanderTrigger>  $environmentTextExpanderTriggers
      * @param  list<array<string, mixed>>  $templateOptions
      */
-    private function siteOverridesTable(array $environmentOptions, array $templateOptions): Field
+    private function siteOverridesTable(array $environmentTextExpanderTriggers, array $templateOptions): Field
     {
         return Field::make(control: Table::make('siteOverrides')
             ->keyed()
@@ -182,20 +183,17 @@ readonly class EmailSettingsController
                 'fromEmail' => [
                     'heading' => t('System Email Address'),
                     'type' => 'autosuggest',
-                    'options' => $environmentOptions,
-                    'suggestEnvVars' => true,
+                    'textExpanderTriggers' => $environmentTextExpanderTriggers,
                 ],
                 'fromName' => [
                     'heading' => t('Sender Name'),
                     'type' => 'autosuggest',
-                    'options' => $environmentOptions,
-                    'suggestEnvVars' => true,
+                    'textExpanderTriggers' => $environmentTextExpanderTriggers,
                 ],
                 'replyToEmail' => [
                     'heading' => t('Reply-To Address'),
                     'type' => 'autosuggest',
-                    'options' => $environmentOptions,
-                    'suggestEnvVars' => true,
+                    'textExpanderTriggers' => $environmentTextExpanderTriggers,
                 ],
                 'template' => [
                     'heading' => t('HTML Email Template'),

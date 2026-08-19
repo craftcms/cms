@@ -6,8 +6,8 @@ import {actionClient} from '@src/utilities/api/actionClient';
 import {t} from '@src/utilities/translate';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import type CraftPopover from '../popover/popover.js';
+import CraftOption from '../option/option.js';
 import styles from './text-expander.styles.js';
-import '../option/option.js';
 import '../popover/popover.js';
 
 export interface TextExpanderOption<Data = unknown> {
@@ -17,7 +17,11 @@ export interface TextExpanderOption<Data = unknown> {
   data?: Data;
 }
 
+export type TextExpanderTriggerBoundary = 'start' | 'whitespace' | 'anywhere';
+
 interface TextExpanderTriggerBase<Data = unknown> {
+  trigger: string;
+  boundary: TextExpanderTriggerBoundary;
   label?: string;
   limit?: number;
   renderOption?: (option: Readonly<TextExpanderOption<Data>>) => Node;
@@ -36,9 +40,7 @@ export type TextExpanderTrigger<Data = unknown> =
         }
     );
 
-export type TextExpanderTriggers = Readonly<
-  Record<string, TextExpanderTrigger>
->;
+export type TextExpanderTriggers = readonly TextExpanderTrigger[];
 
 export interface TextExpanderSelectDetail {
   character: string;
@@ -102,7 +104,7 @@ export default class CraftTextExpander extends LitElement {
   @property({reflect: true}) for = '';
 
   /** Trigger-specific static options or asynchronous sources. */
-  @property({type: Object}) triggers: TextExpanderTriggers = {};
+  @property({type: Array}) triggers: TextExpanderTriggers = [];
 
   @state() private loading = false;
   @state() private announcement = '';
@@ -530,7 +532,8 @@ export default class CraftTextExpander extends LitElement {
     const prefix = target.value.slice(0, end);
     let result: TextExpanderMatch | null = null;
 
-    for (const [character, trigger] of Object.entries(this.triggers)) {
+    for (const trigger of this.triggers) {
+      const character = trigger.trigger;
       const start = prefix.lastIndexOf(character);
       if (start === -1 || (result && start <= result.start)) {
         continue;
@@ -538,7 +541,13 @@ export default class CraftTextExpander extends LitElement {
 
       const before = Array.from(prefix.slice(0, start)).at(-1);
       const query = prefix.slice(start + character.length);
-      if ((!before || /\s/u.test(before)) && queryPattern.test(query)) {
+      const boundaryMatches =
+        trigger.boundary === 'anywhere' ||
+        (trigger.boundary === 'start'
+          ? start === 0
+          : !before || /\s/u.test(before));
+
+      if (boundaryMatches && queryPattern.test(query)) {
         result = {character, query, start, end, trigger};
       }
     }
@@ -558,11 +567,16 @@ export default class CraftTextExpander extends LitElement {
     );
 
     options.forEach((option, index) => {
-      const element = document.createElement('craft-option');
+      const element = document.createElement('craft-option') as CraftOption;
+      const hint = optionHint(option);
       element.id = `${this.#listbox.id}-option-${index}`;
       element.setAttribute('part', 'option');
       element.dataset.index = String(index);
-      element.setAttribute('aria-label', option.label);
+      element.setAttribute(
+        'aria-label',
+        hint ? `${option.label}, ${hint}` : option.label
+      );
+      element.hint = hint;
       element.append(
         this.#match?.trigger.renderOption?.(option) ??
           document.createTextNode(option.label)
@@ -731,6 +745,19 @@ export default class CraftTextExpander extends LitElement {
       this.announcement = '';
     }, announcementTimeout);
   }
+}
+
+function optionHint(option: Readonly<TextExpanderOption>): string | null {
+  if (
+    typeof option.data !== 'object' ||
+    option.data === null ||
+    !('hint' in option.data) ||
+    typeof option.data.hint !== 'string'
+  ) {
+    return null;
+  }
+
+  return option.data.hint;
 }
 
 function isTextTarget(value: unknown): value is TextExpanderTarget {

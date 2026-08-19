@@ -1,5 +1,6 @@
 import type {GarnishBaseSettings} from '@craftcms/garnish';
 import type {EditableTableCellType} from '@/common/types';
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 
 /**
  * A column definition for the editable table. Mirrors the `col` objects emitted
@@ -16,6 +17,7 @@ export interface EditableTableColumn {
   code?: boolean;
   value?: string | number;
   options?: Record<string, any> | any[];
+  textExpanderTriggers?: TextExpanderTriggers;
   /** Checkbox: only one in the column may be checked at a time. */
   radioMode?: boolean;
   /** Checkbox: column IDs to show/hide based on the checkbox state. */

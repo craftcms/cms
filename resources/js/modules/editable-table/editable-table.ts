@@ -1,5 +1,7 @@
 import {Base} from '@craftcms/garnish';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
+import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
+import '@craftcms/ui/components/text-expander/text-expander';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
@@ -696,6 +698,25 @@ export class EditableTable extends Base<EditableTableSettings> {
 
           case 'autosuggest':
           case 'template': {
+            if (col.textExpanderTriggers) {
+              const inputId = `editable-table-input-${crypto.randomUUID()}`;
+              Craft.ui
+                .createTextInput({
+                  id: inputId,
+                  name,
+                  value: typeof value !== 'object' ? value : null,
+                  placeholder: col.placeholder || null,
+                })
+                .appendTo($cell);
+              const expander = document.createElement(
+                'craft-text-expander'
+              ) as CraftTextExpander;
+              expander.for = inputId;
+              expander.triggers = col.textExpanderTriggers;
+              $cell.append(expander);
+              break;
+            }
+
             const combobox = document.createElement(
               'craft-combobox'
             ) as CraftCombobox;

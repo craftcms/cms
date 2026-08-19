@@ -182,7 +182,10 @@ vi.mock('../editable-table', () => ({
     constructor(
       id: string,
       baseName: string,
-      columns: Record<string, {type: string}>,
+      columns: Record<
+        string,
+        {type: string; textExpanderTriggers?: Record<string, unknown>}
+      >,
       settings: {minRows?: number | null} = {}
     ) {
       const body = document.querySelector<HTMLTableSectionElement>(
@@ -201,7 +204,10 @@ vi.mock('../editable-table', () => ({
 
     static createRow(
       rowId: string,
-      columns: Record<string, {type: string}>,
+      columns: Record<
+        string,
+        {type: string; textExpanderTriggers?: Record<string, unknown>}
+      >,
       baseName: string,
       values: Record<string, unknown>
     ) {
@@ -218,6 +224,14 @@ vi.mock('../editable-table', () => ({
             ? String(value)
             : '';
         if (['autosuggest', 'template'].includes(column.type)) {
+          if (column.textExpanderTriggers) {
+            const input = document.createElement('input');
+            input.name = `${baseName}[${rowId}][${key}]`;
+            input.value = stringValue;
+            cell.append(input);
+            continue;
+          }
+
           const combobox = document.createElement(
             'craft-combobox'
           ) as HTMLElement & {
@@ -379,7 +393,7 @@ describe('FormRenderer', () => {
     });
   });
 
-  it('includes editable table combobox changes in current values', async () => {
+  it('includes editable table text-expander input changes in current values', async () => {
     const table: FormPayload = {
       scope: [],
       refreshable: false,
@@ -393,7 +407,16 @@ describe('FormRenderer', () => {
             component: 'craft:table',
             props: {
               columns: {
-                fromEmail: {type: 'autosuggest'},
+                fromEmail: {
+                  type: 'autosuggest',
+                  textExpanderTriggers: [
+                    {
+                      trigger: '$',
+                      boundary: 'start',
+                      options: [{label: '$SITE_EMAIL', value: '$SITE_EMAIL'}],
+                    },
+                  ],
+                },
               },
               keyed: true,
             },
@@ -414,11 +437,9 @@ describe('FormRenderer', () => {
     app.unmount();
     await mount(table);
 
-    const combobox = container.querySelector('craft-combobox')!;
-    await vi.waitFor(() =>
-      expect(combobox.querySelector('input')).not.toBeNull()
-    );
-    const input = combobox.querySelector('input')!;
+    const input = container.querySelector<HTMLInputElement>(
+      'input[name="siteOverrides[site-uid][fromEmail]"]'
+    )!;
     input.value = '$SITE_EMAIL';
     input.dispatchEvent(
       new InputEvent('input', {bubbles: true, composed: true})

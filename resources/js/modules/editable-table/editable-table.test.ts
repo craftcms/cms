@@ -72,3 +72,47 @@ it('renders autosuggest cells as comboboxes', async () => {
   ]);
   expect(combobox.showAllOnEmpty).toBe(true);
 });
+
+it('renders autosuggest cells with text expanders when configured', () => {
+  vi.stubGlobal('$', $);
+  vi.stubGlobal('Craft', {
+    hasMousePointerEvents: () => true,
+    inArray: (value: unknown, values: unknown[]) => values.includes(value),
+    ui: {
+      createTextInput: (config: Record<string, string>) =>
+        $('<input>', {
+          id: config.id,
+          name: config.name,
+          value: config.value,
+        }),
+    },
+  });
+
+  const triggers = [
+    {
+      trigger: '$',
+      boundary: 'start' as const,
+      options: [{label: '$SYSTEM_EMAIL', value: '$SYSTEM_EMAIL'}],
+    },
+  ];
+  const row = EditableTable.createRow(
+    'site-uid',
+    {
+      fromEmail: {
+        type: 'autosuggest',
+        textExpanderTriggers: triggers,
+      },
+    },
+    'siteOverrides',
+    {fromEmail: '$SYSTEM_EMAIL'}
+  );
+  document.body.append(row[0]);
+  const input = row.find('input')[0] as HTMLInputElement;
+  const expander = row.find('craft-text-expander')[0];
+
+  expect(row.find('craft-combobox')).toHaveLength(0);
+  expect(input.name).toBe('siteOverrides[site-uid][fromEmail]');
+  expect(input.value).toBe('$SYSTEM_EMAIL');
+  expect(expander.for).toBe(input.id);
+  expect(expander.triggers).toEqual(triggers);
+});

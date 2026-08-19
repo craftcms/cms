@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -84,6 +85,39 @@ describe('getEnvSuggestions', function () {
         }
 
         unset($_SERVER['TEST_FORMAT_ENV_VAR']);
+    });
+});
+
+describe('getEnvTextExpanderTriggers', function () {
+    it('returns position-aware environment and alias triggers', function () {
+        $_SERVER['TEST_TEXT_EXPANDER'] = 'https://example.com';
+        Aliases::set('@testTextExpander', '/path/to/example');
+
+        try {
+            $triggers = SelectOptions::getEnvTextExpanderTriggers(includeAliases: true);
+            [$directTrigger, $embeddedTrigger, $aliasTrigger] = $triggers;
+            $direct = collect($directTrigger['options'])->firstWhere('value', '$TEST_TEXT_EXPANDER');
+            $embedded = collect($embeddedTrigger['options'])->firstWhere('value', '${TEST_TEXT_EXPANDER}');
+            $alias = collect($aliasTrigger['options'])->firstWhere('value', '@testTextExpander');
+
+            expect($directTrigger['trigger'])->toBe('$')
+                ->and($directTrigger['boundary'])->toBe('start')
+                ->and($embeddedTrigger['trigger'])->toBe('$')
+                ->and($embeddedTrigger['boundary'])->toBe('anywhere')
+                ->and($aliasTrigger['trigger'])->toBe('@')
+                ->and($aliasTrigger['boundary'])->toBe('start')
+                ->and($direct['data']['hint'])->toBe('https://example.com')
+                ->and($embedded['label'])->toBe('$TEST_TEXT_EXPANDER')
+                ->and($embedded['data']['hint'])->toBe('https://example.com')
+                ->and($alias['data']['hint'])->toBe('/path/to/example');
+        } finally {
+            unset($_SERVER['TEST_TEXT_EXPANDER']);
+            Aliases::remove('@testTextExpander');
+        }
+    });
+
+    it('omits empty triggers', function () {
+        expect(SelectOptions::getEnvTextExpanderTriggers(true, fn () => false))->toBeEmpty();
     });
 });
 
