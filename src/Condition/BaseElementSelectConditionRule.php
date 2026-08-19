@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Condition;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -198,17 +199,18 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             }
             $type = $this->elementType()::displayName();
 
-            return FormFields::autosuggestFieldHtml([
-                'suggestEnvVars' => true,
-                'suggestionFilter' => fn ($value) => is_int($value) && $value > 0,
+            return FormFields::textFieldHtml([
+                'textExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(
+                    filter: fn ($value) => filter_var($value, FILTER_VALIDATE_INT) !== false && (int) $value > 0,
+                ),
                 'required' => true,
                 'id' => 'elementIds',
                 'class' => 'code',
                 'name' => 'elementIds',
                 'value' => $value,
                 'tip' => $this->allowMultiple()
-                    ? t('This can be set to an environment variable, or a Twig template that outputs comma-separated IDs.')
-                    : t('This can be set to an environment variable, or a Twig template that outputs an ID.'),
+                    ? t('Type `$` to choose an environment variable, or enter a Twig template that outputs comma-separated IDs.')
+                    : t('Type `$` to choose an environment variable, or enter a Twig template that outputs an ID.'),
                 'placeholder' => $this->allowMultiple()
                     ? t('{type} ID(s)', ['type' => $type])
                     : t('{type} ID', ['type' => $type]),

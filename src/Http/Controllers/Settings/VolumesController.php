@@ -133,6 +133,7 @@ class VolumesController
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
                 'groupedFsOptions' => $groupedFsOptions,
+                'envTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(),
                 'readOnly' => $this->readOnly,
             ])
             ->unless(

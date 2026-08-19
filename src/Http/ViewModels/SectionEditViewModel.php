@@ -129,7 +129,11 @@ class SectionEditViewModel extends ViewModel
             Field::make(control: Table::make('previewTargets')
                 ->columns([
                     'label' => ['heading' => t('Label'), 'type' => 'singleline'],
-                    'urlFormat' => ['heading' => t('URL Format'), 'type' => 'singleline'],
+                    'urlFormat' => [
+                        'heading' => t('URL Format'),
+                        'type' => 'singleline',
+                        'textExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true),
+                    ],
                     'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
                 ])
                 ->allowAdd()
