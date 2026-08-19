@@ -73,46 +73,53 @@ it('renders autosuggest cells as comboboxes', async () => {
   expect(combobox.showAllOnEmpty).toBe(true);
 });
 
-it('renders autosuggest cells with text expanders when configured', () => {
-  vi.stubGlobal('$', $);
-  vi.stubGlobal('Craft', {
-    hasMousePointerEvents: () => true,
-    inArray: (value: unknown, values: unknown[]) => values.includes(value),
-    ui: {
-      createTextInput: (config: Record<string, string>) =>
-        $('<input>', {
-          id: config.id,
-          name: config.name,
-          value: config.value,
-        }),
-    },
-  });
-
-  const triggers = [
-    {
-      trigger: '$',
-      boundary: 'start' as const,
-      options: [{label: '$SYSTEM_EMAIL', value: '$SYSTEM_EMAIL'}],
-    },
-  ];
-  const row = EditableTable.createRow(
-    'site-uid',
-    {
-      fromEmail: {
-        type: 'autosuggest',
-        textExpanderTriggers: triggers,
+it.each(['autosuggest', 'template', 'singleline', 'multiline'])(
+  'renders %s cells with accessible text expanders when configured',
+  (type) => {
+    vi.stubGlobal('$', $);
+    vi.stubGlobal('Craft', {
+      hasMousePointerEvents: () => true,
+      inArray: (value: unknown, values: unknown[]) => values.includes(value),
+      ui: {
+        createTextInput: (config: Record<string, string>) =>
+          $('<input>', {
+            id: config.id,
+            name: config.name,
+            value: config.value,
+          }),
       },
-    },
-    'siteOverrides',
-    {fromEmail: '$SYSTEM_EMAIL'}
-  );
-  document.body.append(row[0]);
-  const input = row.find('input')[0] as HTMLInputElement;
-  const expander = row.find('craft-text-expander')[0];
+    });
 
-  expect(row.find('craft-combobox')).toHaveLength(0);
-  expect(input.name).toBe('siteOverrides[site-uid][fromEmail]');
-  expect(input.value).toBe('$SYSTEM_EMAIL');
-  expect(expander.for).toBe(input.id);
-  expect(expander.triggers).toEqual(triggers);
-});
+    const triggers = [
+      {
+        trigger: '$',
+        boundary: 'start' as const,
+        options: [{label: '$SYSTEM_EMAIL', value: '$SYSTEM_EMAIL'}],
+      },
+    ];
+    const row = EditableTable.createRow(
+      'site-uid',
+      {
+        fromEmail: {
+          type,
+          heading: 'System Email Address',
+          textExpanderTriggers: triggers,
+        },
+      },
+      'siteOverrides',
+      {fromEmail: '$SYSTEM_EMAIL'}
+    );
+    document.body.append(row[0]);
+    const input = row.find('input, textarea')[0] as
+      | HTMLInputElement
+      | HTMLTextAreaElement;
+    const expander = row.find('craft-text-expander')[0];
+
+    expect(row.find('craft-combobox')).toHaveLength(0);
+    expect(input.name).toBe('siteOverrides[site-uid][fromEmail]');
+    expect(input.value).toBe('$SYSTEM_EMAIL');
+    expect(input.getAttribute('aria-label')).toBe('System Email Address');
+    expect(expander.for).toBe(input.id);
+    expect(expander.triggers).toEqual(triggers);
+  }
+);

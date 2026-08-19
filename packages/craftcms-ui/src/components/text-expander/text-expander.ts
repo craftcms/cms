@@ -171,7 +171,8 @@ export default class CraftTextExpander extends LitElement {
 
     if (
       changedProperties.has('triggers') &&
-      changedProperties.get('triggers')
+      changedProperties.get('triggers') &&
+      this.#match
     ) {
       const selected = this.#listbox.querySelector<HTMLElement>(
         '[aria-selected="true"]'

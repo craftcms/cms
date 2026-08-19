@@ -441,6 +441,27 @@ describe('craft-text-expander', () => {
     expect(target.value).toBe('@brad');
   });
 
+  it('does not reopen after a trigger refresh when a suggestion was committed', async () => {
+    const trigger: TextExpanderTrigger = {
+      trigger: '@',
+      boundary: 'whitespace',
+      options: [{label: 'Brad', value: '@brad'}],
+    };
+    const {expander, target} = await createFixture([trigger]);
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+    expander.triggers = [{...trigger}];
+    await expander.updateComplete;
+
+    expect(target.value).toBe('@brad');
+    expect(options(expander)).toHaveLength(0);
+    expect(popover(expander).opened).toBe(false);
+  });
+
   it('closes the popup with Escape', async () => {
     const {expander, target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
