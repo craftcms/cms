@@ -1,9 +1,6 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
-  // From the leaf module, not the `@craftcms/ui` barrel: the barrel
-  // side-effect-registers every `craft-*` element, which is more than a field
-  // needs to say one word and drags that whole graph into anything rendering a
-  // form.
+  // Leaf module, not the barrel — the barrel registers every `craft-*` element.
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import FormNodeList from './FormNodeList.vue';
@@ -85,13 +82,8 @@
   );
   const value = computed(() => valueAt(props.values, control.value.path));
 
-  /**
-   * Whether the element carries unapplied changes to this field.
-   *
-   * Matched on the delta group rather than the control path so every control
-   * making up one field badges together — a field split across several inputs
-   * is modified as a whole, the same unit change detection already works in.
-   */
+  // Matched on the delta group, so a field split across several controls badges
+  // as one unit.
   const modifiedGroups = inject(FormModifiedGroups, undefined);
   const modified = computed(
     () => modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false

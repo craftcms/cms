@@ -39,11 +39,7 @@
       scope?: string[]
     ) => Promise<FormPayload>;
     errors?: FormPayload['errors'];
-    /**
-     * Delta groups the server reports as modified, as dotted paths — the
-     * granularity change detection already works in, so an element's
-     * `modifiedAttributes` map straight onto it.
-     */
+    /** Delta groups the server reports as modified, as dotted paths. */
     modified?: string[];
   }>();
   const emit = defineEmits<{

@@ -15,12 +15,7 @@ interface PasswordConfirmationOptions<T> {
 interface UseSettingsSaveOptions<T extends Record<string, any>> {
   transform?: (data: T) => Record<string, any>;
   onSuccess?: () => void;
-  /**
-   * Runs before a submission starts, however it was triggered — including the
-   * cmd/ctrl + s shortcut below, which callers can't intercept from outside.
-   * Screens that write in the background (element autosave) use this to stand
-   * down so their request can't race or land on top of the submission.
-   */
+  /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
   onBeforeSave?: () => void;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**

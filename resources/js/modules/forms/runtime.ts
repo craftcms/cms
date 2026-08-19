@@ -9,14 +9,7 @@ export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
   'FormControlOverrides'
 );
 
-/**
- * Delta groups the server has reported as modified, as dotted paths.
- *
- * Provided by the renderer and read by every field beneath it, rather than
- * threaded through the node components, so a nested form several levels down
- * marks its fields without every intermediate node forwarding a prop it has no
- * other use for.
- */
+/** Modified delta groups as dotted paths, provided to every field beneath. */
 export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
   Symbol('FormModifiedGroups');
 

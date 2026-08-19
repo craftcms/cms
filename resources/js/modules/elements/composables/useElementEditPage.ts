@@ -280,9 +280,7 @@ export function useElementEditPage({saveData}: Options = {}) {
           ? {redirect: pendingAction.value.redirect}
           : {}),
       }),
-      // A submission supersedes any draft write: drop the in-flight request and
-      // anything queued behind it, so a late draft save can't land on top of
-      // the submission or resurrect values it just consumed.
+      // A submission supersedes any in-flight draft write.
       onBeforeSave: () => autosave.cancel(),
       onSuccess: () => {
         autosave.suspend(() => {

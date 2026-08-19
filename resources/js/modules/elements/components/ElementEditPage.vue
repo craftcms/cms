@@ -108,18 +108,11 @@
     }
   });
 
-  /**
-   * A failed autosave is recoverable, so say what went wrong rather than just
-   * that something did — the legacy editor surfaces the status code the same way.
-   */
   const autosaveErrorCode = computed(() =>
     autosave.status.value === 'failed' ? autosave.httpStatus.value : null
   );
 
-  /**
-   * 400 from a draft save means the session went away. Reloading re-authenticates
-   * and restores the draft, so it's the one failure worth offering an action on.
-   */
+  // 400 from a draft save means the session expired; reloading restores it.
   const autosaveExpired = computed(() => autosaveErrorCode.value === 400);
 
   useAppLayout(() => ({
