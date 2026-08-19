@@ -5,6 +5,8 @@ import {
   bod,
   type ModalSettings,
 } from '@craftcms/garnish';
+import {html, render, type TemplateResult} from 'lit';
+import {ref} from 'lit/directives/ref.js';
 import {uiLayerManager} from '@/modules/slideout/slideout';
 
 declare const Craft: any;
@@ -55,6 +57,10 @@ const BASE_DEFAULTS = {
  * BaseElementSelectorModal — a port of `Craft.BaseElementSelectorModal` onto the
  * modern `@craftcms/garnish` `Modal`. Loads an element index into a modal via a
  * server action, then lets the user select elements and fires `onSelect`.
+ *
+ * Its own chrome is built with Lit templates (`chromeTemplate()`,
+ * `buildSidebarToggleView()`); the `$`-prefixed fields are jQuery wrappers around
+ * those nodes, since subclasses and the element select input manipulate them.
  *
  * The modal shell is modern (`extends Modal`), but element-index interaction
  * retains the jQuery seam: the still-legacy `Craft.createElementIndex` produces
@@ -132,58 +138,94 @@ export class BaseElementSelectorModal extends Modal {
     const headingId =
       'elementSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
 
-    const $container = $('<div/>', {
-      class: 'modal elementselectormodal',
-      'aria-labelledby': headingId,
-    }).appendTo($(bod));
-
-    const $headingContainer = $('<div/>', {
-      class: this.settings.showTitle ? 'header' : 'visually-hidden',
-    }).appendTo($container);
-    $('<h1/>', {id: headingId, text: this.settings.modalTitle}).appendTo(
-      $headingContainer
-    );
-
-    this.$body = $('<div/>', {class: 'body'})
-      .append($('<div/>', {class: 'spinner big'}))
-      .appendTo($container);
-
-    this.$footer = $('<div/>', {class: 'footer'}).appendTo($container);
+    // The container is created by hand rather than by the template: `render()`
+    // owns its container's children, and `setContainer()` needs an element that
+    // outlives the render.
+    const container = document.createElement('div');
+    container.className = 'modal elementselectormodal';
+    container.setAttribute('aria-labelledby', headingId);
 
     if (this.settings.fullscreen) {
-      $container.addClass('fullscreen');
+      container.classList.add('fullscreen');
       this.settings.minGutter = 0;
     }
 
-    this.setContainer($container[0]);
-
-    this.$secondaryButtons = $(
-      '<div class="buttons left secondary-buttons"/>'
-    ).appendTo(this.$footer);
-    this.$primaryButtons = $('<div class="buttons right"/>').appendTo(
-      this.$footer
-    );
-
-    this.$cancelBtn = $('<button/>', {
-      type: 'button',
-      class: 'btn',
-      text: Craft.t('app', 'Cancel'),
-    }).appendTo(this.$primaryButtons);
-
-    this.$selectBtn = Craft.ui
-      .createSubmitButton({
-        class: 'disabled',
-        label: this.settings.selectBtnLabel,
-        spinner: true,
-      })
-      .attr('aria-disabled', 'true')
-      .appendTo(this.$primaryButtons);
+    render(this.chromeTemplate(headingId), container);
+    bod.append(container);
+    this.setContainer(container);
 
     // Use native click — <button> fires click on keyboard activation natively.
     this.addListener(this.$cancelBtn[0], 'click', () => this.cancel());
     this.addListener(this.$selectBtn[0], 'click', () => this.selectElements());
 
     this.show();
+  }
+
+  /**
+   * The modal's own chrome — heading, body, footer and the two footer buttons.
+   *
+   * The `$`-prefixed fields stay jQuery objects: subclasses and the element
+   * select input reach for them (`$primaryButtons.append(…)`,
+   * `$selectBtn.addClass('loading')`), so only their construction moves here.
+   *
+   * The select button reproduces what `Craft.ui.createSubmitButton()` emits —
+   * `btn submit`, a `.label` inside an `.inline-flex` wrapper, and an absolutely
+   * positioned spinner — because the CP stylesheet selects on all three.
+   */
+  protected chromeTemplate(headingId: string): TemplateResult {
+    return html`
+      <div class=${this.settings.showTitle ? 'header' : 'visually-hidden'}>
+        <h1 id=${headingId}>${this.settings.modalTitle}</h1>
+      </div>
+      <div class="body" ${ref((el) => (this.$body = $(el)))}>
+        <div class="spinner big"></div>
+      </div>
+      <div class="footer" ${ref((el) => (this.$footer = $(el)))}>
+        <div
+          class="buttons left secondary-buttons"
+          ${ref((el) => (this.$secondaryButtons = $(el)))}
+        ></div>
+        <div
+          class="buttons right"
+          ${ref((el) => (this.$primaryButtons = $(el)))}
+        >
+          <button
+            type="button"
+            class="btn"
+            ${ref((el) => (this.$cancelBtn = $(el)))}
+          >
+            ${Craft.t('app', 'Cancel')}
+          </button>
+          <button
+            type="submit"
+            class="btn disabled submit"
+            aria-disabled="true"
+            ${ref((el) => (this.$selectBtn = $(el)))}
+          >
+            <div class="inline-flex gap-xs">
+              <div class="label">${this.settings.selectBtnLabel}</div>
+            </div>
+            <div class="spinner spinner-absolute"></div>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Renders a template and hands back its root element, detached.
+   *
+   * For markup that has to be inserted into DOM this class doesn't own — the
+   * element index's sidebar and main column, which the legacy index renders.
+   * `render()` would claim those containers and wipe them, so the template is
+   * rendered into a throwaway host and its root moved out. Safe only because
+   * none of these are ever re-rendered.
+   */
+  protected renderElement(template: TemplateResult): HTMLElement {
+    const host = document.createElement('div');
+    render(template, host);
+
+    return host.firstElementChild as HTMLElement;
   }
 
   updateModalBottomPadding(): void {
@@ -220,30 +262,39 @@ export class BaseElementSelectorModal extends Modal {
   buildSidebarToggleView(): void {
     if (this.$sidebarToggleBtn || !this.sidebarShouldBeHidden()) return;
 
-    this.$sidebarHeader = $('<div class="sidebar-header"/>').prependTo(
-      this.$sidebar
-    );
+    // `btn-empty` and the missing `btn` reproduce what `Craft.ui.createButton()`
+    // plus the `.removeClass('btn')` these two always did emit: an icon-only
+    // button that takes its appearance from `nav-close` / `nav-toggle`.
+    const sidebarHeader = this.renderElement(html`
+      <div class="sidebar-header">
+        <button
+          type="button"
+          class="nav-close close-btn btn-empty"
+          aria-label=${Craft.t('app', 'Close')}
+          ${ref((el) => (this.$sidebarCloseBtn = $(el)))}
+        ></button>
+      </div>
+    `);
+    this.$sidebar[0].prepend(sidebarHeader);
+    this.$sidebarHeader = $(sidebarHeader);
 
-    this.$sidebarCloseBtn = Craft.ui
-      .createButton({class: 'nav-close close-btn'})
-      .attr('aria-label', Craft.t('app', 'Close'))
-      .removeClass('btn')
-      .appendTo(this.$sidebarHeader);
-
-    this.$mainHeader = $('<div class="main-header"/>').prependTo(this.$main);
-    this.$mainHeading = $(
-      `<h2 class="main-heading">${this.getActiveSourceName()}</h2>`
-    ).appendTo(this.$mainHeader);
-
-    this.$sidebarToggleBtn = Craft.ui
-      .createButton({
-        toggle: true,
-        controls: 'modal-sidebar',
-        class: 'nav-toggle',
-      })
-      .removeClass('btn')
-      .attr('aria-label', Craft.t('app', 'Show sidebar'))
-      .appendTo(this.$mainHeader);
+    const mainHeader = this.renderElement(html`
+      <div class="main-header">
+        <h2 class="main-heading" ${ref((el) => (this.$mainHeading = $(el)))}>
+          ${this.getActiveSourceName()}
+        </h2>
+        <button
+          type="button"
+          class="nav-toggle btn-empty"
+          aria-expanded="false"
+          aria-controls="modal-sidebar"
+          aria-label=${Craft.t('app', 'Show sidebar')}
+          ${ref((el) => (this.$sidebarToggleBtn = $(el)))}
+        ></button>
+      </div>
+    `);
+    this.$main[0].prepend(mainHeader);
+    this.$mainHeader = $(mainHeader);
 
     this.$sidebar.attr('id', 'modal-sidebar');
     this.closeSidebar();

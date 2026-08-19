@@ -14,11 +14,10 @@ it('retains inherited modal settings during initialization', () => {
   trigger.focus();
 
   vi.stubGlobal('$', $);
+  // No `Craft.ui`: the chrome is built from Lit templates now, so nothing here
+  // reaches for the legacy jQuery button factories.
   vi.stubGlobal('Craft', {
     t: (_category: string, message: string) => message,
-    ui: {
-      createSubmitButton: () => $('<button/>'),
-    },
   });
 
   class TestModal extends BaseElementSelectorModal {
@@ -32,6 +31,83 @@ it('retains inherited modal settings during initialization', () => {
   expect(modal.settings.minGutter).toBe(10);
   expect(modal.settings.triggerElement).toBe(trigger);
   expect(() => modal.onFadeOut()).not.toThrow();
+
+  modal.destroy();
+});
+
+function mountModal(settings: Record<string, any> = {}) {
+  vi.stubGlobal('$', $);
+  vi.stubGlobal('Craft', {
+    t: (_category: string, message: string) => message,
+  });
+
+  class TestModal extends BaseElementSelectorModal {
+    override show(): void {}
+  }
+
+  const modal = new TestModal('test');
+  modal.init('test', settings);
+
+  return {
+    modal,
+    container: document.querySelector<HTMLElement>(
+      '.modal.elementselectormodal'
+    )!,
+  };
+}
+
+it('renders the chrome the CP stylesheet expects', () => {
+  const {modal, container} = mountModal({
+    modalTitle: 'Choose an asset',
+    selectBtnLabel: 'Select',
+    showTitle: true,
+  });
+
+  const heading = container.querySelector('h1')!;
+  expect(heading.textContent).toBe('Choose an asset');
+  expect(container.getAttribute('aria-labelledby')).toBe(heading.id);
+  expect(heading.parentElement!.className).toBe('header');
+
+  expect(container.querySelector('.body > .spinner.big')).not.toBeNull();
+  expect(
+    container.querySelector('.footer > .buttons.left.secondary-buttons')
+  ).not.toBeNull();
+  expect(container.querySelector('.footer > .buttons.right')).not.toBeNull();
+
+  const cancelBtn = container.querySelector<HTMLButtonElement>(
+    'button[type="button"]'
+  )!;
+  expect(cancelBtn.className).toBe('btn');
+  expect(cancelBtn.textContent!.trim()).toBe('Cancel');
+
+  // Reproduces `Craft.ui.createSubmitButton({class: 'disabled', spinner: true})`
+  // — the CP stylesheet selects on every part of this.
+  const selectBtn = container.querySelector<HTMLButtonElement>(
+    'button[type="submit"]'
+  )!;
+  expect(selectBtn.className).toBe('btn disabled submit');
+  expect(selectBtn.getAttribute('aria-disabled')).toBe('true');
+  expect(
+    selectBtn.querySelector('.inline-flex.gap-xs > .label')!.textContent!.trim()
+  ).toBe('Select');
+  expect(selectBtn.querySelector('.spinner.spinner-absolute')).not.toBeNull();
+
+  // The `$`-prefixed fields stay jQuery wrappers around those same nodes,
+  // because subclasses and the element select input manipulate them.
+  expect(modal.$selectBtn[0]).toBe(selectBtn);
+  expect(modal.$cancelBtn[0]).toBe(cancelBtn);
+  expect(modal.$body[0]).toBe(container.querySelector('.body'));
+  expect(modal.$footer[0]).toBe(container.querySelector('.footer'));
+
+  modal.destroy();
+});
+
+it('hides the heading unless showTitle is set', () => {
+  const {modal, container} = mountModal({modalTitle: 'Choose'});
+
+  expect(container.querySelector('h1')!.parentElement!.className).toBe(
+    'visually-hidden'
+  );
 
   modal.destroy();
 });
