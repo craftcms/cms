@@ -168,14 +168,17 @@
       </ul>
 
       <div v-if="editable" class="flex">
-        <button
+        <craft-button
           type="button"
-          class="btn add icon dashed wrap"
+          variant="dashed"
+          icon="plus"
+          command="--add-element"
           data-element-select-add
           :aria-label="control.props.selectionLabel"
+          @click=""
         >
           {{ control.props.selectionLabel }}
-        </button>
+        </craft-button>
         <div class="spinner hidden" />
       </div>
     </component>

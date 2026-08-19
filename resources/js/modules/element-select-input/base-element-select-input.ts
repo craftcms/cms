@@ -1,15 +1,15 @@
 import {
-  Base,
-  Select,
-  DragSort,
-  CustomSelect,
-  bod,
-  firstFocusableElement,
-  hasAttr,
   BACKSPACE_KEY,
+  Base,
+  bod,
+  CustomSelect,
   DELETE_KEY,
   DOWN_KEY,
+  DragSort,
+  firstFocusableElement,
+  hasAttr,
   RETURN_KEY,
+  Select,
   UP_KEY,
 } from '@craftcms/garnish';
 import {elementSelectInputData} from './support';
@@ -278,7 +278,7 @@ export class BaseElementSelectInput extends Base {
   }
 
   getAddElementsBtn(): any {
-    return this.$container.find('.btn.add:first');
+    return this.$container.find('[command="--add-element"]');
   }
 
   getSpinner(): any {

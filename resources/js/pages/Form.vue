@@ -105,8 +105,8 @@
 
 <template>
   <form @submit.prevent="save()">
-    <craft-pane appearance="raised">
-      <craft-field-group>
+    <craft-pane appearance="raised" padding="none">
+      <craft-field-group class="py-4">
         <FormRenderer
           ref="renderer"
           :payload="form"
