@@ -61,10 +61,12 @@ it('updates the active item when the shared navigation changes', async () => {
   }));
   await nextTick();
 
-  const items = container.querySelectorAll('craft-nav-item');
+  const items = Array.from(container.querySelectorAll('craft-nav-item'));
+  const entries = items.find((item) => item.textContent?.includes('Entries'));
+  const assets = items.find((item) => item.textContent?.includes('Assets'));
 
-  expect((items[0] as any).active).toBe(false);
-  expect((items[1] as any).active).toBe(true);
+  expect((entries as any).active).toBe(false);
+  expect((assets as any).active).toBe(true);
 
   app.unmount();
   container.remove();

@@ -4,7 +4,14 @@ import type {
 } from '@craftcms/ui/components/combobox/combobox';
 import CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import {property} from 'lit/decorators.js';
-import {CpScreenSlideout} from '@/modules/slideout/cp-screen-slideout';
+import {openSlideout} from '@/common/slideouts';
+
+type FilesystemSaveData = {
+  filesystem: {
+    name: string;
+    handle: string;
+  };
+};
 
 export default class CraftFilesystemSelect extends CraftCombobox {
   @property({type: String, attribute: 'create-url'}) createUrl = '';
@@ -48,23 +55,35 @@ export default class CraftFilesystemSelect extends CraftCombobox {
       this._inputNode.value = '';
     });
 
-    const slideout = new CpScreenSlideout(this.createUrl, {
-      onSubmit: ({data}: {data: {name: string; handle: string}}) => {
+    void openSlideout(this.createUrl, {
+      opener: this,
+      onSaved: ({data}) => {
+        const filesystem = (data as FilesystemSaveData).filesystem;
         const option = {
-          label: data.name,
-          value: data.handle,
-          data: {hint: data.handle},
+          label: filesystem.name,
+          value: filesystem.handle,
+          data: {hint: filesystem.handle},
         } satisfies ComboboxOption;
 
         this.options = this.options.map((item) =>
           insertBeforeCreateOption(item, option)
         );
         void this.updateComplete.then(() => {
+          const selectedOption = Array.from(
+            this._listboxNode.querySelectorAll('craft-option')
+          ).find((item) => String(item.choiceValue) === String(option.value));
+
+          if (!selectedOption) {
+            throw new Error('Created filesystem option was not rendered.');
+          }
+
           this.modelValue = option.value;
+          this._setTextboxValue(
+            this._getTextboxValueFromOption(selectedOption)
+          );
         });
       },
-    });
-    slideout.on('close', () => {
+    }).finally(() => {
       this.creating = false;
     });
   };

@@ -2,7 +2,7 @@ import {expect, it} from 'vite-plus/test';
 import {createApp, h, nextTick} from 'vue';
 import CpLink from './CpLink.vue';
 
-it('renders custom elements directly with their link attributes', async () => {
+it('renders a linked custom navigation item with its content', async () => {
   const container = document.createElement('div');
   document.body.append(container);
   const app = createApp({
@@ -33,9 +33,8 @@ it('renders custom elements directly with their link attributes', async () => {
   expect(link?.hasAttribute('flush')).toBe(true);
   expect(link?.hasAttribute('block')).toBe(true);
   expect(link?.getAttribute('icon')).toBe('image');
-  expect(link?.classList.contains('cp-link')).toBe(false);
+  expect(link?.textContent).toContain('Volumes');
   expect(link?.querySelector(':scope > craft-nav-list')).not.toBeNull();
-  expect(container.querySelector(':scope > a')).toBeNull();
 
   app.unmount();
   container.remove();

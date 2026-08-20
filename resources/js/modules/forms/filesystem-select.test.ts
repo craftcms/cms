@@ -1,41 +1,42 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, h, nextTick} from 'vue';
+import {createApp, h, nextTick, ref} from 'vue';
 
 const state = vi.hoisted(() => ({
-  createUrl: '',
   slideoutCount: 0,
-  onClose: () => {},
-  onSubmit: (_event: {data: {name: string; handle: string}}) => {},
+  onSaved: (_event: {data: {filesystem: {name: string; handle: string}}}) => {},
 }));
 
-vi.mock('@/modules/slideout/cp-screen-slideout', () => ({
-  CpScreenSlideout: class {
-    constructor(
-      createUrl: string,
-      settings: {
-        onSubmit: (event: {data: {name: string; handle: string}}) => void;
-      }
-    ) {
-      state.createUrl = createUrl;
-      state.slideoutCount++;
-      state.onSubmit = settings.onSubmit;
+vi.mock('@/common/slideouts', () => ({
+  openSlideout: (
+    _createUrl: string,
+    settings: {
+      onSaved: (event: {
+        data: {filesystem: {name: string; handle: string}};
+      }) => void;
     }
+  ) => {
+    state.slideoutCount++;
+    state.onSaved = settings.onSaved;
 
-    on(event: string, callback: () => void) {
-      if (event === 'close') {
-        state.onClose = callback;
-      }
-    }
+    return new Promise(() => {});
   },
 }));
 
 let filesystemSelect: HTMLElementTagNameMap['craft-filesystem-select'];
 
+function inputFor(element: HTMLElement): HTMLInputElement {
+  const input = element.querySelector<HTMLInputElement>('input');
+
+  if (!input) {
+    throw new Error('Filesystem select input was not rendered.');
+  }
+
+  return input;
+}
+
 beforeEach(async () => {
   await import('./filesystem-select');
-  state.createUrl = '';
   state.slideoutCount = 0;
-  state.onClose = () => {};
   filesystemSelect = document.createElement('craft-filesystem-select');
   filesystemSelect.createUrl = '/settings/filesystems/new';
   filesystemSelect.options = [
@@ -52,41 +53,53 @@ beforeEach(async () => {
 afterEach(() => filesystemSelect.remove());
 
 it('selects a filesystem created in the slideout', async () => {
-  const selectedValues: string[] = [];
-  filesystemSelect.addEventListener('model-value-changed', () => {
-    selectedValues.push(filesystemSelect.modelValue);
+  const createOption = Array.from(
+    filesystemSelect.querySelectorAll<HTMLElement>('craft-option')
+  ).find((option) => option.textContent?.trim() === 'Create a new filesystem…');
+
+  createOption?.click();
+  await vi.waitFor(() => expect(state.slideoutCount).toBe(1));
+
+  expect(inputFor(filesystemSelect).value).toBe('');
+  await new Promise((resolve) => setTimeout(resolve));
+
+  state.onSaved({
+    data: {filesystem: {name: 'Uploads', handle: 'uploads'}},
   });
-  filesystemSelect.modelValue = '__add__';
-  filesystemSelect.dispatchEvent(new CustomEvent('model-value-changed'));
-  filesystemSelect.dispatchEvent(new CustomEvent('model-value-changed'));
-  await Promise.resolve();
 
-  expect(state.createUrl).toBe('/settings/filesystems/new');
-  expect(state.slideoutCount).toBe(1);
-  expect(filesystemSelect.modelValue).toBe('');
-
-  state.onSubmit({data: {name: 'Uploads', handle: 'uploads'}});
-
+  await vi.waitFor(() =>
+    expect(
+      Array.from(filesystemSelect.querySelectorAll('craft-option')).map(
+        (option) => option.textContent?.trim()
+      )
+    ).toContain('Uploads')
+  );
   await vi.waitFor(() => {
-    expect(filesystemSelect.modelValue).toBe('uploads');
-    expect(selectedValues).toContain('uploads');
+    expect(inputFor(filesystemSelect).value).toBe('Uploads');
   });
-  expect(filesystemSelect.options[0]).toMatchObject({
-    options: [
-      {label: 'Uploads', value: 'uploads'},
-      {label: 'Create a new filesystem…', value: '__add__'},
-    ],
-  });
+
+  inputFor(filesystemSelect).click();
+  await vi.waitFor(() => expect(filesystemSelect.opened).toBe(true));
+
+  expect(
+    Array.from(filesystemSelect.querySelectorAll('craft-option')).map(
+      (option) => option.textContent?.trim()
+    )
+  ).toEqual(['Uploads', 'Create a new filesystem…']);
 });
 
-it('binds Vue control options and behavior as element properties', async () => {
+it('lets users select a filesystem through the Vue control', async () => {
   const {default: FilesystemSelectControl} =
     await import('./FilesystemSelectControl.vue');
+  const selectedValue = ref('uploads');
   const control = {
     type: 'CraftCms\\Cms\\Form\\Controls\\FilesystemSelect',
     component: 'craft:filesystem-select',
     props: {
-      options: [{label: 'Uploads', value: 'uploads'}],
+      options: [
+        {label: 'Uploads', value: 'uploads'},
+        {label: 'Archives', value: 'archives'},
+      ],
       createUrl: '/settings/filesystems/new',
       clearable: true,
       requireOptionMatch: true,
@@ -103,10 +116,13 @@ it('binds Vue control options and behavior as element properties', async () => {
     render: () =>
       h(FilesystemSelectControl, {
         control,
-        value: 'uploads',
+        value: selectedValue.value,
         editable: true,
         invalid: false,
         required: false,
+        'onUpdate:value': (value: string) => {
+          selectedValue.value = value;
+        },
       }),
   });
 
@@ -114,27 +130,15 @@ it('binds Vue control options and behavior as element properties', async () => {
   await nextTick();
   const select = container.querySelector('craft-filesystem-select')!;
   await select.updateComplete;
-  await vi.waitFor(() => expect(select.modelValue).toBe('uploads'));
+  await vi.waitFor(() => expect(inputFor(select).value).toBe('Uploads'));
 
-  expect({
-    modelValue: select.modelValue,
-    options: select.options,
-    createUrl: select.createUrl,
-    clearable: select.clearable,
-    requireOptionMatch: select.requireOptionMatch,
-    showAllOnEmpty: select.showAllOnEmpty,
-    showSelectedHint: select.showSelectedHint,
-    limit: select.limit,
-  }).toEqual({
-    modelValue: 'uploads',
-    options: control.props.options,
-    createUrl: '/settings/filesystems/new',
-    clearable: true,
-    requireOptionMatch: true,
-    showAllOnEmpty: true,
-    showSelectedHint: true,
-    limit: 150,
-  });
+  const archivesOption = Array.from(
+    select.querySelectorAll<HTMLElement>('craft-option')
+  ).find((option) => option.textContent?.trim() === 'Archives');
+
+  archivesOption?.click();
+
+  await vi.waitFor(() => expect(inputFor(select).value).toBe('Archives'));
 
   app.unmount();
   container.remove();

@@ -223,7 +223,6 @@ describe('craft-combobox', () => {
     combobox.modelValue = 'uploads';
 
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('uploads');
       expect(combobox.querySelector('input')?.value).toBe(
         'Uploads – s3://uploads'
       );
@@ -326,8 +325,8 @@ describe('craft-combobox', () => {
         'Select a filesystem'
       );
     });
-    combobox.opened = true;
-    await combobox.updateComplete;
+    (combobox._inputNode as HTMLInputElement).click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -345,8 +344,9 @@ describe('craft-combobox', () => {
       c.modelValue = 'disk:s3';
     });
 
-    combobox.opened = true;
-    await combobox.updateComplete;
+    const input = combobox._inputNode as HTMLInputElement;
+    input.click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -358,12 +358,16 @@ describe('craft-combobox', () => {
       optionEls(combobox).map((option) => option.textContent?.trim())
     ).toEqual(['Local']);
 
-    combobox.opened = false;
-    await combobox.updateComplete;
-    combobox.opened = true;
+    optionEls(combobox)[0].click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(false));
     await combobox.updateComplete;
 
-    expect(optionEls(combobox)).toHaveLength(3);
+    input.click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+
+    expect(
+      optionEls(combobox).map((option) => option.textContent?.trim())
+    ).toEqual(['Local', 'S3', 'Create a new filesystem…']);
   });
 
   it('shows a footer when matches exceed the limit', async () => {

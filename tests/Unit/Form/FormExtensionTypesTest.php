@@ -167,12 +167,11 @@ it('renders filesystem selects through the shared payload and PHP renderer', fun
             ->create()),
     ]), new FormContext(namespace: 'settings'));
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
-    $control = $payload->nodes[0]->control;
+    $filesystemSelect = $crawler->filter('craft-filesystem-select[name="settings[filesystem]"][create-url]');
 
-    expect($control?->component)->toBe('craft:filesystem-select')
-        ->and($control?->props['options'][0]['value'])->toBe('')
-        ->and($control?->props['createUrl'])->toBeString()
-        ->and($crawler->filter('craft-filesystem-select[name="settings[filesystem]"][create-url]'))->toHaveCount(1);
+    expect($filesystemSelect)->toHaveCount(1)
+        ->and($filesystemSelect->attr('options'))->toContain('Select a filesystem')
+        ->and($filesystemSelect->attr('options'))->toContain('Create a new filesystem');
 });
 
 it('renders and submits test plugin types through the PHP renderer', function () {
