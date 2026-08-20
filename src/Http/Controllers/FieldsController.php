@@ -311,6 +311,7 @@ class FieldsController
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
             'fieldLayouts' => ['nullable', 'array'],
+            'addRuleLabel' => ['nullable', 'string'],
         ]);
 
         $html = ConditionBuilderControl::builderHtml(
@@ -321,6 +322,7 @@ class FieldsController
             $data['name'],
             $data['disabled'],
             $data['fieldLayouts'] ?? [],
+            $data['addRuleLabel'] ?? null,
         );
 
         return new JsonResponse([
