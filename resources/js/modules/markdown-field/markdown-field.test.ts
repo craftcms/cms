@@ -28,7 +28,18 @@ it('applies properties from the Vue Markdown Control', async () => {
     control: {
       type: 'Markdown',
       component: 'craft:markdown',
-      props: {rows: 6, toolbarButtons: ['bold'], showToolbar: true},
+      props: {
+        rows: 6,
+        toolbarButtons: ['bold'],
+        showToolbar: true,
+        textExpanderTriggers: [
+          {
+            trigger: '@',
+            boundary: 'whitespace',
+            options: [{label: 'Ada Lovelace', value: '@ada'}],
+          },
+        ],
+      },
       path: ['body'],
       mode: 'editable',
       deltaGroup: ['body'],
@@ -37,11 +48,31 @@ it('applies properties from the Vue Markdown Control', async () => {
     editable: true,
     invalid: false,
     required: false,
+    slot: 'input',
+    'data-form-control-path': '["body"]',
   }).mount(container);
   await nextTick();
 
-  expect(container.querySelector('textarea')?.getAttribute('rows')).toBe('6');
+  const textarea = container.querySelector('textarea')!;
+  const textExpander = container.querySelector('craft-text-expander')!;
+
+  expect(textarea.getAttribute('rows')).toBe('6');
+  expect(textarea.closest('craft-markdown-field')).toMatchObject({
+    slot: 'input',
+    dataset: {formControlPath: '["body"]'},
+  });
   expect(container.querySelector('.overtype-toolbar')).not.toBeNull();
+  expect(textExpander.for).toBe(textarea.id);
+  expect(textExpander.slot).toBe('input');
+
+  textarea.focus();
+  textarea.value = '@a';
+  textarea.setSelectionRange(2, 2);
+  textarea.dispatchEvent(new InputEvent('input', {bubbles: true}));
+
+  expect(container.querySelector('craft-option')?.textContent).toContain(
+    'Ada Lovelace'
+  );
   expect(
     container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
   ).toBe('20px');

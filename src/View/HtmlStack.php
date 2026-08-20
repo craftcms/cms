@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\Data\ResourceEntry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use Illuminate\Container\Attributes\Scoped;
@@ -149,7 +150,10 @@ class HtmlStack
         $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::BodyEnd->value)) ?? Position::BodyEnd;
 
         $entries = $this->jsFiles[$position->value] ?? [];
-        $this->registerEntry($entries, $key, Html::javaScriptFile($url, $options));
+        $this->registerEntry($entries, $key, new ResourceEntry(
+            Html::javaScriptFile($url, $options),
+            [$url, $options],
+        ));
         $this->jsFiles[$position->value] = $entries;
     }
 
@@ -166,7 +170,10 @@ class HtmlStack
     public function cssFile(string $url, array $options = [], ?string $key = null): void
     {
         $entries = $this->cssFiles;
-        $this->registerEntry($entries, $key ?? $url, Html::cssFile($url, $options));
+        $this->registerEntry($entries, $key ?? $url, new ResourceEntry(
+            Html::cssFile($url, $options),
+            [$url, $options],
+        ));
         $this->cssFiles = $entries;
     }
 
@@ -183,7 +190,10 @@ class HtmlStack
     public function css(string $css, array $options = [], ?string $key = null): void
     {
         $entries = $this->css;
-        $this->registerEntry($entries, $key ?? md5($css), Html::style($css, $options));
+        $this->registerEntry($entries, $key ?? md5($css), new ResourceEntry(
+            Html::style($css, $options),
+            [$css, $options],
+        ));
         $this->css = $entries;
     }
 
@@ -202,7 +212,10 @@ class HtmlStack
     public function script(string $script, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         $entries = $this->scripts[$position->value] ?? [];
-        $this->registerEntry($entries, $key ?? md5($script), Html::script($script, $options));
+        $this->registerEntry($entries, $key ?? md5($script), new ResourceEntry(
+            Html::script($script, $options),
+            [$script, $options],
+        ));
         $this->scripts[$position->value] = $entries;
     }
 
@@ -283,7 +296,10 @@ class HtmlStack
     public function metaTag(array $attributes, ?string $key = null): void
     {
         $entries = $this->metaTags;
-        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), Html::tag('meta', attributes: $attributes));
+        $this->registerEntry($entries, $key ?? md5(serialize($attributes)), new ResourceEntry(
+            Html::tag('meta', attributes: $attributes),
+            $attributes,
+        ));
         $this->metaTags = $entries;
     }
 

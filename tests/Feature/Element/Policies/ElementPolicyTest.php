@@ -184,7 +184,7 @@ it('returns false when nested save is denied by the field', function () {
 
 it('returns null when nested save authorization is unresolved', function () {
     $user = UserModel::factory()->create();
-    $field = createElementPolicyField(save: null);
+    $field = createElementPolicyField();
     $element = createElementPolicyNestedElement(field: $field);
 
     $result = $this->policy->before($user, 'save', $element);

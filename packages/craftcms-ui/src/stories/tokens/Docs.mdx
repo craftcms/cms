@@ -183,7 +183,23 @@ Write your component CSS using the generic `--c-color-*` custom properties. The 
 }
 ```
 
-### 3. Add appearance support (optional)
+### 3. Color one region instead of the whole component (optional)
+
+Every rule in `variants.styles.ts` matches two ways: `:host([variant~='…'])`,
+which is the case above, and `[data-variant~='…']`, which any element inside
+your shadow root can ask for by attribute:
+
+```ts
+html`<div class="callout__action" data-variant=${this.variant}></div>`;
+```
+
+That's the shadow-DOM twin of the `[data-color]` rules in
+`shared/colorable.css`, which only reach light DOM. The tokens are ordinary
+custom properties, so a region set this way overrides the palette it inherits
+from the host — and a region that should stay neutral while the host is
+coloured can say `data-variant="neutral"`.
+
+### 4. Add appearance support (optional)
 
 If your component needs multiple visual intensities, add an `appearance` property and style each level:
 

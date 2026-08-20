@@ -190,8 +190,10 @@ trait HasCustomFields
         }
 
         if (! isset($this->_outdatedFields)) {
+            // Outdated fields are the ones that changed on the *canonical* element
+            // since this derivative was created (or last merged).
             $fields = DB::table(Table::CHANGEDFIELDS)
-                ->where('elementId', $this->id)
+                ->where('elementId', $this->getCanonicalId())
                 ->where('siteId', $this->siteId)
                 ->when(
                     value: $this->dateLastMerged,

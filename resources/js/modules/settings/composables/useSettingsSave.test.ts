@@ -16,9 +16,13 @@ vi.mock('axios', () => ({
   default: {request: axiosRequest},
 }));
 
+const pageProps = vi.hoisted(() => ({
+  value: {} as Record<string, unknown>,
+}));
+
 vi.mock('@inertiajs/vue3', () => ({
   router: {reload: routerReload},
-  usePage: () => ({props: {}}),
+  usePage: () => ({props: pageProps.value}),
 }));
 
 vi.mock('@/common/slideouts/useSlideout', () => ({
@@ -66,6 +70,7 @@ function run<T>(fn: () => T): T {
 beforeEach(() => {
   axiosRequest.mockReset().mockResolvedValue({data: {message: 'Saved.'}});
   routerReload.mockReset();
+  pageProps.value = {};
   elevated.require.mockReset().mockResolvedValue(true);
   slideout.value = {
     instance: {containerId: 'slideout-1'},
@@ -220,5 +225,57 @@ describe('useSettingsSave on a full page', () => {
 
     expect(form.submit).toHaveBeenCalled();
     expect(axiosRequest).not.toHaveBeenCalled();
+  });
+
+  /** The submitted payload, as the composable's `transform` builds it. */
+  function submittedData(form: ReturnType<typeof makeForm>) {
+    const [transform] = form.transform.mock.calls[0] as unknown as [
+      (data: Record<string, unknown>) => Record<string, unknown>,
+    ];
+
+    return transform(form.data());
+  }
+
+  it('sends the screen’s redirect when the save asked for one', () => {
+    pageProps.value = {redirectUrl: '/admin/entry-types'};
+
+    const form = makeForm();
+    const {save} = run(() => useSettingsSave(form as any, action));
+
+    save();
+
+    expect(submittedData(form).redirect).toBe('/admin/entry-types');
+  });
+
+  /**
+   * `save({redirect: false})` means "don't layer this screen's redirect on
+   * top" — not "drop the one the caller supplied". The element editor's
+   * "Create a draft" rides on that: its own redirect points at the draft it
+   * creates, so clobbering it strands the user on the canonical element.
+   */
+  it('keeps a redirect the caller’s transform supplied', () => {
+    pageProps.value = {redirectUrl: '/admin/entry-types'};
+
+    const form = makeForm();
+    const {save} = run(() =>
+      useSettingsSave(form as any, action, {
+        transform: (data) => ({...data, redirect: 'encrypted-cp-edit-url'}),
+      })
+    );
+
+    save({redirect: false});
+
+    expect(submittedData(form).redirect).toBe('encrypted-cp-edit-url');
+  });
+
+  it('sends no redirect at all for a plain save-and-continue', () => {
+    pageProps.value = {redirectUrl: '/admin/entry-types'};
+
+    const form = makeForm();
+    const {save} = run(() => useSettingsSave(form as any, action));
+
+    save({redirect: false});
+
+    expect(submittedData(form)).not.toHaveProperty('redirect');
   });
 });

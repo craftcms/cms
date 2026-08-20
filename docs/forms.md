@@ -37,6 +37,32 @@ while rendering.
 
 ## Replacement interfaces
 
+### Plugin settings
+
+Plugins override `Plugin::settingsForm()` for their standard settings page:
+
+```php
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+
+public function settingsForm(FormContext $context = new FormContext): ?Form
+{
+    return Form::make([
+        Field::make(
+            t('API key', category: 'my-plugin'),
+            Text::make('apiKey'),
+        ),
+    ]);
+}
+```
+
+Control paths are relative to the settings model. Craft supplies its current values and errors under the `settings`
+namespace and renders editable or read-only mode as required. The standard editable page requires a settings model and
+a Form. Plugins may still override `getSettingsResponse()` or `getReadOnlySettingsResponse()` to own the complete
+response and bypass the standard Form page.
+
 ### Component settings
 
 Implement `ConfigurableComponentInterface::settingsForm()` instead of `getSettingsHtml()`:
@@ -100,6 +126,38 @@ Return zero or one root Node. It may contain children or a composite Control. Th
 mode. Listen for `FieldLayoutFormResolving` to add, remove, or reorder typed Nodes after compilation; do not mutate
 rendered HTML or persisted layout data.
 
+### FieldLayout component settings
+
+Field layout components — tabs and layout elements — describe the form shown in the designer's settings slideout by
+implementing `settingsNodes()` instead of `settingsHtml()`:
+
+```php
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+
+protected function settingsNodes(FormContext $context): array
+{
+    return [
+        Field::make(t('Heading'), Text::make('heading')->value($this->heading)),
+    ];
+}
+```
+
+Return a list of Nodes with paths relative to the component's config, so a Control at `heading` posts back as the
+component's `heading` setting. `FieldLayoutComponent::settingsForm()` is `final`: it composes `settingsNodes()` and
+`conditionalSettingsNodes()`, separating them with a `Separator` Node when both are present, and returns `null` when
+neither produces a Node.
+
+`conditionalSettingsNodes()` supplies the visibility condition builders. Override it to append further condition
+groups — `CustomField` adds its editability conditions this way — and use `conditionGroupNode()` to build a group
+with the standard user/element condition pair.
+
+The settings scope is `settings`, and the form is refreshable: a `discrete` change posts back to
+`fields/refresh-layout-component-settings`, which rebuilds the component from the posted values and re-resolves the
+form. Use that instead of client-side scripting when one setting should change another's state — hiding a field's
+label, for instance, disables its label Control on the next refresh.
+
 ## Custom Nodes and Controls
 
 Use a core Node or Control when one already has the required value shape and behavior. A plugin-specific type is needed
@@ -116,6 +174,25 @@ A custom Node implements `CraftCms\Cms\Form\Contracts\Node`. A custom Control ca
 
 Container Nodes can extend `CraftCms\Cms\Form\Nodes\Container`, which provides stable UID storage, ordered children,
 fluent and conditional child addition, and the standard no-Control behavior.
+
+### Field actions
+
+A `Field` Node can carry action Nodes in its heading, rendered into `<craft-field>`'s `actions` slot — a hide-label
+toggle, a copy-value button, a settings menu:
+
+```php
+use CraftCms\Cms\Form\Controls\Checkbox;
+use CraftCms\Cms\Form\Nodes\Action;
+
+Field::make(t('Label'), Text::make('label'))
+    ->actions(Action::make(
+        Checkbox::make('labelHidden')->label(t('Hide')),
+    ));
+```
+
+Actions are resolved as ordinary child Nodes, so each one's Control gets its own path, value binding, mode, and error
+binding — an action is a real posting Control, not decoration. `Action` renders its Control without the surrounding
+field chrome.
 
 Register the PHP types during plugin boot:
 
@@ -176,6 +253,10 @@ Refreshable scopes send the complete current scoped value snapshot without persi
 dirty and touched state, focus, and selected tabs. Hidden paths retain transient values but are omitted from mutations.
 Changed delta groups submit complete canonical group values, including explicit empty values.
 
+Because the client owns them, no payload arriving from the server clears unsaved values — only the host can, by calling
+the renderer's `resetValues()`. Reserve it for the case where the user has abandoned their edits outright, such as
+discarding a provisional draft; it seeds the Form again from the payload and leaves it untouched and undirty.
+
 ## Missing providers
 
 Persisted FieldLayout types supplied by an unavailable plugin resolve to visible missing-provider placeholders. They submit
@@ -188,6 +269,9 @@ error and invalidates the Form.
 ## Yii2 adapter behavior
 
 Legacy HTML compatibility belongs exclusively to `craftcms/yii2-adapter`.
+
+Yii-era plugin classes keep their protected `settingsHtml()` hook; the adapter captures it into the plugin's
+`settingsForm()`.
 
 Plugins that extend the adapter's Yii-era component, field, or FieldLayout element classes keep their existing
 `getSettingsHtml()`, `getInputHtml()`, `getStaticHtml()`, and `formHtml()` overrides. The adapter implements the modern

@@ -146,13 +146,13 @@ export default class CraftChip extends LitElement {
       >
         ${this.selectable ? html` <input type="checkbox" />` : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
-        <div class="cp-chip__body">
-          <slot></slot>
-        </div>
+        <slot class="cp-chip__body"></slot>
         ${renderSuffix
-          ? html` <div class="cp-chip__suffix" part="suffix">
-              <slot name="suffix"></slot>
-            </div>`
+          ? html`<slot
+              name="suffix"
+              class="cp-chip__suffix"
+              part="suffix"
+            ></slot>`
           : nothing}
       </div>
     `;

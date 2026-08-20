@@ -23,6 +23,9 @@ class ConditionBuilder extends Control
 
     private bool $forProjectConfig = false;
 
+    /** @var list<array<string, mixed>> */
+    private array $fieldLayouts = [];
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
         return self::builderHtml(
@@ -32,6 +35,7 @@ class ConditionBuilder extends Control
             (bool) $control->props['forProjectConfig'],
             $attributes['name'],
             $attributes['name'] === null,
+            $control->props['fieldLayouts'] ?? [],
         );
     }
 
@@ -39,6 +43,7 @@ class ConditionBuilder extends Control
      * @param  array<string, mixed>  $value
      * @param  class-string<ConditionInterface>  $conditionClass
      * @param  list<string>  $queryParams
+     * @param  list<array<string, mixed>>  $fieldLayouts
      */
     public static function builderHtml(
         array $value,
@@ -47,8 +52,18 @@ class ConditionBuilder extends Control
         bool $forProjectConfig,
         ?string $name,
         bool $disabled,
+        array $fieldLayouts = [],
     ): string {
-        $condition = Conditions::createCondition([...$value, 'class' => $conditionClass]);
+        $config = [...$value, 'class' => $conditionClass];
+
+        // Only seed the layouts when the condition doesn’t carry its own —
+        // a saved condition’s config already includes them, and normalized
+        // form input never does.
+        if ($fieldLayouts !== [] && ! isset($config['fieldLayouts'])) {
+            $config['fieldLayouts'] = $fieldLayouts;
+        }
+
+        $condition = Conditions::createCondition($config);
         if (! $condition instanceof BaseCondition) {
             throw new InvalidArgumentException("Condition [{$conditionClass}] must extend ".BaseCondition::class.'.');
         }
@@ -97,6 +112,18 @@ class ConditionBuilder extends Control
         return $this;
     }
 
+    /**
+     * Field layout configs the condition can offer field-based rules for.
+     *
+     * @param  list<array<string, mixed>>  $fieldLayouts
+     */
+    public function fieldLayouts(array $fieldLayouts): static
+    {
+        $this->fieldLayouts = $fieldLayouts;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -108,13 +135,7 @@ class ConditionBuilder extends Control
             'conditionClass' => $this->conditionClass,
             'queryParams' => $this->queryParams,
             'forProjectConfig' => $this->forProjectConfig,
+            'fieldLayouts' => $this->fieldLayouts,
         ];
-    }
-
-    private static function leafName(string $name): string
-    {
-        preg_match('/(?:^|\[)([^\[\]]+)]?$/', $name, $matches);
-
-        return $matches[1] ?? $name;
     }
 }

@@ -9,6 +9,7 @@ use craft\base\ConfigurableComponentInterface;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement as LegacyFieldLayoutElement;
+use craft\base\Plugin as LegacyPlugin;
 use craft\fields\Addresses;
 use craft\fields\Assets;
 use craft\fields\BaseOptionsField;
@@ -87,6 +88,15 @@ class LegacySettingsComponent extends ConfigurableComponent
 {
     #[Override]
     public function getSettingsHtml(): string
+    {
+        return '<input name="apiKey" value="secret">';
+    }
+}
+
+class LegacySettingsPlugin extends LegacyPlugin
+{
+    #[Override]
+    protected function settingsHtml(): string
     {
         return '<input name="apiKey" value="secret">';
     }
@@ -248,6 +258,24 @@ it('implements replacement Form operations through legacy hooks', function() {
         ->and($fieldControl->props()['fragment']['html'])
         ->toContain('name="nested[block][fields][legacy]"', 'disabled');
 });
+
+it('wraps legacy plugin settings HTML in a Form', function(ControlMode $mode, bool $disabled) {
+    $context = new FormContext(namespace: 'settings', mode: $mode);
+    $form = new LegacySettingsPlugin('legacy-settings')->settingsForm($context);
+    $payload = app(FormResolver::class)->resolve($form, $context);
+    $control = $payload->nodes[0]->control;
+    $input = new Crawler($control?->props['fragment']['html']);
+
+    expect($control?->path)->toBe(['settings', '__legacySettings'])
+        ->and($control?->mode)->toBe($mode)
+        ->and($control?->deltaGroup)->toBe(['settings'])
+        ->and($control?->props['expandValues'])->toBeTrue()
+        ->and($input->filter('input[name="settings[apiKey]"]'))->toHaveCount(1)
+        ->and($input->filter('input[disabled]')->count() === 1)->toBe($disabled);
+})->with([
+    'editable' => [ControlMode::Editable, false],
+    'read-only' => [ControlMode::ReadOnly, true],
+]);
 
 it('preserves legacy hooks on public field aliases', function() {
     if (!class_exists(LegacyPlainTextField::class, false)) {

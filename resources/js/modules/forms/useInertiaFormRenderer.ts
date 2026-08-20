@@ -12,6 +12,7 @@ import type {FormChangeKind, FormPayload} from './types';
 interface FormRendererInstance {
   advanceBaseline(): void;
   currentValues(): FormPayload['values'];
+  resetValues(): void;
   setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
 }
 
@@ -60,9 +61,21 @@ export function useInertiaFormRenderer<
     })
   );
 
-  function onMutation(mutation: FormPayload['values']): void {
+  /**
+   * Applies the renderer's mutation to the Inertia form, and reports whether it
+   * carried anything.
+   *
+   * The mutation *is* the difference against the values the server sent, so an
+   * empty one means the screen matches the server — a control announcing itself
+   * as it's populated, say, rather than an edit. Callers that act on changes
+   * (autosave) read that from here rather than deciding for themselves, and
+   * `form.isDirty` says the same thing a tick later for callers that can wait.
+   */
+  function onMutation(mutation: FormPayload['values']): boolean {
     replaceMutation(mutation);
     values.value = renderer.value?.currentValues() ?? values.value;
+
+    return Object.keys(mutation).length > 0;
   }
 
   function replaceMutation(mutation: FormPayload['values']): void {
@@ -94,7 +107,23 @@ export function useInertiaFormRenderer<
     form.defaults();
   }
 
-  return {advanceBaseline, errors, onMutation, renderer, values};
+  /**
+   * Throws away the unsaved values and takes the currently loaded payload as
+   * the new baseline, leaving the Inertia form clean.
+   *
+   * Only for the case where the user has explicitly abandoned their edits —
+   * discarding a provisional draft. An ordinary refresh must keep them.
+   */
+  function resetValues(): void {
+    renderer.value?.resetValues();
+    // The renderer's reset emits an empty mutation of its own, but the bridge
+    // has to hold up on its own when nothing is mounted to emit one.
+    replaceMutation({});
+    values.value = clone(toValue(payload)?.values ?? {});
+    form.defaults();
+  }
+
+  return {advanceBaseline, errors, onMutation, renderer, resetValues, values};
 }
 
 function defaultErrorPath(path: string, scope: string[]): string[] | null {

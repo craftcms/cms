@@ -84,6 +84,15 @@ export {default as CraftSwitch} from './components/switch/switch.js';
 export {default as CraftTabs} from './components/tabs/tabs.js';
 export {default as CraftTab} from './components/tab/tab.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
+export {
+  default as CraftTextExpander,
+  type TextExpanderErrorDetail,
+  type TextExpanderOption,
+  type TextExpanderSelectDetail,
+  type TextExpanderTrigger,
+  type TextExpanderTriggerBoundary,
+  type TextExpanderTriggers,
+} from './components/text-expander/text-expander.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
 export {default as CraftTruncate} from './components/truncate/truncate.js';
 export {default as CraftVisuallyHidden} from './components/visually-hidden/visually-hidden.js';
@@ -125,7 +134,10 @@ export * from './types/index.js';
 // Web component styles
 export * from './styles/form.styles.js';
 export {default as hostStyles} from './styles/host.styles.js';
-export {default as variantStyles} from './styles/variants.styles.js';
+export {
+  default as variantStyles,
+  paletteStyles,
+} from './styles/variants.styles.js';
 export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.js';
 
 // Constants

@@ -36,6 +36,28 @@ describe('craft-input-money', () => {
     );
   });
 
+  it('applies the mask without dispatching user input', async () => {
+    const element = document.createElement('craft-input-money');
+    element.label = 'Price';
+    const inputEvents: Event[] = [];
+    const userChanges: Event[] = [];
+    element.addEventListener('input', (event) => inputEvents.push(event));
+    element.addEventListener('model-value-changed', (event) => {
+      if ((event as CustomEvent).detail?.isTriggeredByUser) {
+        userChanges.push(event);
+      }
+    });
+
+    document.body.append(element);
+    element.modelValue = '1234.56';
+    element.locale = 'de_DE';
+    element.currency = 'EUR';
+    await element.updateComplete;
+
+    expect(inputEvents).toEqual([]);
+    expect(userChanges).toEqual([]);
+  });
+
   it('clears its value', async () => {
     const element = await createInputMoney();
     element.modelValue = '12,50';

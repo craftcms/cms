@@ -153,9 +153,30 @@ export default class CraftInputDateTime extends LitElement {
   }
 
   #appendInput(input: CraftInput) {
-    if (input.parentElement !== this) {
-      this.append(input);
+    if (input.parentElement === this) {
+      return;
     }
+
+    // The inputs lead, in the order they're synced (date, time, timezone).
+    // Appending would instead put them *after* whatever the consumer slotted
+    // in — a clear button, say, which belongs after the inputs it clears in
+    // reading and tab order, not before them.
+    this.insertBefore(input, this.#firstSlottedChild());
+  }
+
+  /**
+   * The first child this component doesn't own, or `null` when it owns them
+   * all — i.e. where its own inputs stop and slotted content begins.
+   */
+  #firstSlottedChild(): Element | null {
+    return (
+      [...this.children].find(
+        (child) =>
+          !(child instanceof HTMLElement) ||
+          (child.dataset.dateTimePart === undefined &&
+            child.dataset.dateTimeMetadata === undefined)
+      ) ?? null
+    );
   }
 
   #configureInput(

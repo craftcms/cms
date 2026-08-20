@@ -118,7 +118,7 @@ $config = Arr::merge(
 );
 
 $localConfig = Arr::merge(
-    Arr::except($app->get('config')->get('craft.app', []), $appType),
+    Arr::except($app->get('config')->get('craft.app', []), ['web', 'console']),
     $app->get('config')->get("craft.app.{$appType}", []),
 );
 

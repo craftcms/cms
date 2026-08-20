@@ -18,6 +18,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -68,6 +69,14 @@ readonly class TwoFactorAuthenticationController
         }
 
         $returnUrl = $request->input('returnUrl');
+
+        if ($returnUrl) {
+            $returnUrl = preg_replace('/[\t\r\n]/', '', trim((string) $returnUrl));
+            if (Str::startsWith(Str::lower($returnUrl), 'javascript:')) {
+                $returnUrl = null;
+            }
+        }
+
         if (! $returnUrl) {
             if ($request->isCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false

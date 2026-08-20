@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Data;
 readonly class FieldMergeResult
 {
     public function __construct(
-        public readonly int $updatedLayouts,
-        public readonly string $migrationPath,
+        public int $updatedLayouts,
+        public string $migrationPath,
     ) {}
 }

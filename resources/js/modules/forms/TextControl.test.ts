@@ -24,6 +24,13 @@ describe('TextControl', () => {
         autocapitalize: false,
         size: 12,
         dir: 'rtl',
+        textExpanderTriggers: [
+          {
+            trigger: '@',
+            boundary: 'whitespace',
+            options: [{label: 'Ada Lovelace', value: '@ada'}],
+          },
+        ],
       },
       path: ['settings', 'name'],
       mode: 'editable',
@@ -39,6 +46,8 @@ describe('TextControl', () => {
           editable: true,
           invalid: false,
           required: false,
+          slot: 'input',
+          'data-form-control-path': '["settings","name"]',
         }),
     });
     app.mount(container);
@@ -47,7 +56,12 @@ describe('TextControl', () => {
     const input = container.querySelector<CraftInput>('craft-input')!;
     await input.updateComplete;
     const nativeInput = input.querySelector<HTMLInputElement>('input')!;
+    const textExpander = container.querySelector('craft-text-expander')!;
 
+    expect(input.slot).toBe('input');
+    expect(input.dataset.formControlPath).toBe('["settings","name"]');
+    expect(textExpander.for).toBe(nativeInput.id);
+    expect(textExpander.slot).toBe('input');
     expect(input.autofocus).toBe(true);
     expect(input.autocomplete).toBe('off');
     expect(input.inputSize).toBe(12);
@@ -57,6 +71,15 @@ describe('TextControl', () => {
     expect(nativeInput.getAttribute('autocorrect')).toBe('off');
     expect(nativeInput.getAttribute('autocapitalize')).toBe('none');
     expect(nativeInput.size).toBe(12);
+
+    nativeInput.focus();
+    nativeInput.value = '@love';
+    nativeInput.setSelectionRange(5, 5);
+    nativeInput.dispatchEvent(new InputEvent('input', {bubbles: true}));
+
+    expect(container.querySelector('craft-option')?.textContent).toContain(
+      'Ada Lovelace'
+    );
 
     control.props.autocorrect = true;
     control.props.autocapitalize = true;

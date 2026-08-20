@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Form\Controls;
 
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -16,6 +17,8 @@ use Illuminate\Support\Arr;
  */
 class Markdown extends Control
 {
+    use HasTextExpander;
+
     private int $rows = 8;
 
     private ?string $placeholder = null;
@@ -29,7 +32,7 @@ class Markdown extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        return Html::tag('craft-markdown-field', Html::encode((string) ($value ?? '')), [
+        $markdown = Html::tag('craft-markdown-field', Html::encode((string) ($value ?? '')), [
             'id' => $attributes['id'],
             'name' => $attributes['name'],
             'rows' => $control->props['rows'] ?? 8,
@@ -45,6 +48,8 @@ class Markdown extends Control
                 'describedby' => $attributes['aria']['describedby'] ?? null,
             ],
         ]);
+
+        return $markdown.self::textExpanderHtml($control, $attributes);
     }
 
     public function component(): string
@@ -97,6 +102,7 @@ class Markdown extends Control
             'maxLength' => $this->maxLength,
             'toolbarButtons' => $this->toolbarButtons,
             'showToolbar' => $this->showToolbar,
+            ...$this->textExpanderProps(),
         ]);
     }
 }

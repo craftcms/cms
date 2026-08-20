@@ -15,12 +15,31 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Workbench\App\Forms\FormKitchenSink;
 
 class FormKitchenSinkController
 {
+    private const array TextExpanderOptions = [
+        ['label' => 'Brandon Kelly', 'value' => '@brandon'],
+        ['label' => 'Leah Stephenson', 'value' => '@leah'],
+        ['label' => 'Brad Bell', 'value' => '@brad'],
+        ['label' => 'Tim Kelty', 'value' => '@tim'],
+        ['label' => 'Iwona Just', 'value' => '@iwona'],
+        ['label' => 'Rias Van der Veken', 'value' => '@rias'],
+        ['label' => 'Luke Holder', 'value' => '@luke'],
+        ['label' => 'Nathaniel Hammond', 'value' => '@nathaniel'],
+        ['label' => 'Brian Hanson', 'value' => '@brian'],
+        ['label' => 'Lupe Camacho', 'value' => '@lupe'],
+        ['label' => 'Marco Deleu', 'value' => '@marco'],
+        ['label' => 'August Miller', 'value' => '@august'],
+        ['label' => 'Kenneth Ormandy', 'value' => '@kenneth'],
+        ['label' => 'Oli Bon', 'value' => '@oli'],
+        ['label' => 'Tommy Silver', 'value' => '@tommy'],
+    ];
+
     public function __construct(
         private readonly FormKitchenSink $kitchenSink,
         private readonly FormHtmlRenderer $htmlRenderer,
@@ -35,6 +54,26 @@ class FormKitchenSinkController
     public function component(string $type, string $component): RedirectResponse
     {
         return redirect(Url::cpUrl("workbench/forms/{$type}/{$component}/vue"));
+    }
+
+    public function textExpanderOptions(Request $request): JsonResponse
+    {
+        $request->validate([
+            'query' => ['required', 'string'],
+            'limit' => ['required', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $query = Str::lower(Str::after($request->string('query')->toString(), '@'));
+        $options = collect(self::TextExpanderOptions)
+            ->filter(fn (array $option): bool => $query === '' || Str::contains(
+                Str::lower("{$option['label']} {$option['value']}"),
+                $query,
+            ))
+            ->take($request->integer('limit'))
+            ->values()
+            ->all();
+
+        return new JsonResponse($options);
     }
 
     public function show(Request $request, string $type, string $component, string $renderer): CpScreenResponse

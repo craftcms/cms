@@ -2,30 +2,66 @@ import {css} from 'lit';
 
 export default css`
   :host {
-    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
-    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-    --c-color-border-loud: var(--c-color-neutral-border-loud);
-    --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-    --c-color-on-loud: var(--c-color-neutral-on-loud);
-    --c-color-on-normal: var(--c-color-neutral-on-normal);
-    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+    display: contents;
+  }
+
+  .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
-    display: flex;
-    gap: var(--c-spacing-sm);
+    /*
+      The two padding axes are declared separately because the callout's
+      default is asymmetric — a tight block edge, a roomier inline one. The
+      \`padding\` attribute writes both of these on this element when it's set,
+      so these fallbacks are what a callout with no \`padding\` renders with.
+    */
+    --_callout-padding-block: var(
+      --c-callout-padding-block,
+      var(--c-spacing-sm)
+    );
+    --_callout-padding-inline: var(
+      --c-callout-padding-inline,
+      var(--c-spacing-md)
+    );
+    display: grid;
+    grid-template-areas: 'icon title action' 'icon description action';
+    grid-template-columns: auto 1fr minmax(0, max-content);
+    gap: 0 var(--c-spacing-sm);
     align-items: start;
-    padding: var(--c-spacing-sm) var(--c-spacing-md);
+    padding: var(--_callout-padding-block) var(--_callout-padding-inline);
     border: 1px solid transparent;
   }
 
-  .callout__body {
-    display: grid;
-    gap: var(--c-spacing-sm);
+  .callout--hide-icon {
+    grid-template-areas: 'title action' 'description action';
+    grid-template-columns: 1fr minmax(0, max-content);
+
+    .callout__icon {
+      display: none;
+    }
+  }
+
+  .callout--small {
+    font-size: var(--c-text-sm);
+    gap: 0 var(--c-spacing-xs);
   }
 
   .callout__title {
+    display: flex;
     font-weight: bold;
+    grid-area: title;
+  }
+
+  .callout__description {
+    grid-area: title;
+    align-self: center;
+  }
+
+  .callout__title + .callout__description {
+    grid-area: description;
+  }
+
+  .callout__action {
+    grid-area: action;
+    margin-inline-start: auto;
   }
 
   .callout__icon {
@@ -35,6 +71,7 @@ export default css`
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    grid-area: icon;
   }
 
   ::slotted(code) {
@@ -54,53 +91,53 @@ export default css`
     font-size: 0.9em;
   }
 
-  :host([rounded~='all']) {
+  :host([rounded~='all']) .callout {
     border-radius: var(--_radius);
   }
 
-  :host([rounded~='none']) {
+  :host([rounded~='none']) .callout {
     border-radius: 0;
   }
 
-  :host([rounded~='start']) {
+  :host([rounded~='start']) .callout {
     border-start-start-radius: var(--_radius);
     border-start-end-radius: var(--_radius);
   }
 
-  :host([rounded~='end']) {
+  :host([rounded~='end']) .callout {
     border-end-start-radius: var(--_radius);
     border-end-end-radius: var(--_radius);
   }
 
-  :host([appearance~='solid']) {
+  :host([appearance~='solid']) .callout {
     --c-text-link: var(--c-color-on-loud);
     background-color: var(--c-color-fill-loud);
     color: var(--c-color-on-loud);
     border-color: var(--c-color-border-loud);
   }
 
-  :host([appearance~='fill']) {
+  :host([appearance~='fill']) .callout {
     --c-text-link: var(--c-color-on-normal);
     border-color: transparent;
     background-color: var(--c-color-fill-normal);
     color: var(--c-color-on-normal);
   }
 
-  :host([appearance~='outline-fill']) {
+  :host([appearance~='outline-fill']) .callout {
     --c-text-link: var(--c-color-on-normal);
     border-color: var(--c-color-border-normal);
     background-color: var(--c-color-fill-normal);
     color: var(--c-color-on-normal);
   }
 
-  :host([appearance~='outline']) {
+  :host([appearance~='outline']) .callout {
     --c-text-link: var(--c-color-on-quiet);
     border-color: var(--c-color-border-quiet);
     background-color: transparent;
     color: var(--c-color-on-quiet);
   }
 
-  :host([appearance~='plain']) {
+  :host([appearance~='plain']) .callout {
     --c-text-link: var(--c-color-on-quiet);
     background-color: transparent;
     border-color: transparent;

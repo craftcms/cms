@@ -130,6 +130,9 @@ export default class CraftInputMoney extends CraftInput {
     const value = String(this.modelValue ?? '');
     const format = this.#format();
     input.inputmask?.remove();
+    // Seed the value before masking. `setValue()` afterwards would dispatch a
+    // real `input` event, which the form layer reads as typing.
+    input.value = value;
     new Inputmask({
       alias: 'currency',
       autoGroup: false,
@@ -141,7 +144,6 @@ export default class CraftInputMoney extends CraftInput {
       prefix: '',
       radixPoint: this.decimalSeparator ?? format.decimal,
     }).mask(input);
-    input.inputmask?.setValue(value);
   }
 
   #hasValue(): boolean {

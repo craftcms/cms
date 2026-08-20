@@ -186,19 +186,10 @@ class EditElementController
             default => null,
         };
 
-        $enabledSiteIds = $element->enabled && $element->id
-            ? array_flip($this->elements->getEnabledSiteIdsForElement($element->id))
-            : [];
-
         $response = new CpScreenResponse()
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->site($element::isLocalized() ? $element->getSite() : null)
-            ->selectableSites(array_map(fn (int $siteId) => [
-                'site' => $this->sites->getSiteById($siteId),
-                'status' => isset($enabledSiteIds[$siteId]) ? 'enabled' : 'disabled',
-            ], $propEditableSiteIds))
             ->crumbs($this->crumbs($element))
             ->contextMenuItems(fn () => $this->contextMenuItems(
                 element: $element,

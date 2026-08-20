@@ -1,7 +1,9 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
+import type {VirtualElement} from '@popperjs/core';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
+import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import styles from './popover.styles.js';
 
 /**
@@ -32,8 +34,8 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
 
-  /** Explicit anchor element; takes precedence over `for`. */
-  @property({attribute: false}) anchor?: HTMLElement;
+  /** Explicit element or virtual positioning anchor; takes precedence over `for`. */
+  @property({attribute: false}) anchor?: HTMLElement | VirtualElement;
 
   /** Popper.js placement for the overlay content. */
   @property({reflect: true}) placement:
@@ -86,47 +88,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
               offset: [0, this.distance],
             },
           },
-          {
-            // Position with top/left instead of `transform`. A transformed
-            // ancestor becomes the containing block for descendant
-            // `position: fixed` overlays, which would re-trap a nested popover
-            // inside this one's clipping pane. Using top/left keeps the viewport
-            // as the containing block so nested overlays escape.
-            name: 'computeStyles',
-            options: {
-              gpuAcceleration: false,
-            },
-          },
-          {
-            // Popper's `fixed` strategy writes viewport coordinates, but an
-            // ancestor that forms a fixed-position containing block
-            // (`transform`, `will-change: transform`, `container-type` — the
-            // CP slideout qualifies) rebases them onto itself, shifting the
-            // pane by the ancestor's offset. Popper can't see that ancestor
-            // from inside the shadow root, so measure where the pane actually
-            // landed after each write and subtract the difference.
-            name: 'containingBlockCorrection',
-            enabled: true,
-            phase: 'afterWrite' as const,
-            fn: ({state}: {state: {elements: {popper: HTMLElement}}}) => {
-              const pane = state.elements.popper;
-              const left = parseFloat(pane.style.left);
-              const top = parseFloat(pane.style.top);
-
-              if (Number.isNaN(left) || Number.isNaN(top)) {
-                return;
-              }
-
-              const rect = pane.getBoundingClientRect();
-              const dx = rect.x - left;
-              const dy = rect.y - top;
-
-              if (dx !== 0 || dy !== 0) {
-                pane.style.left = `${left - dx}px`;
-                pane.style.top = `${top - dy}px`;
-              }
-            },
-          },
+          ...viewportEscapingModifiers(),
         ],
       },
     };
@@ -147,8 +109,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // `slot="invoker"` child.
   // @ts-ignore Lion's JSDoc types this getter as always-defined.
   override get _overlayInvokerNode(): HTMLElement | undefined {
-    if (this.anchor) {
+    if (this.anchor instanceof HTMLElement) {
       return this.anchor;
+    }
+    if (this.anchor?.contextElement instanceof HTMLElement) {
+      return this.anchor.contextElement;
     }
     if (this.for) {
       // When disconnected, getRootNode() may return a root (the element
@@ -162,12 +127,16 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     return super._overlayInvokerNode;
   }
 
+  get _overlayReferenceNode(): HTMLElement | undefined {
+    return this.anchor as HTMLElement | undefined;
+  }
+
   protected override render(): unknown {
     return html`
       <slot name="invoker"></slot>
       <slot name="backdrop"></slot>
       <div id="overlay-content-node-wrapper">
-        <div class="popover-pane">
+        <div class="popover-pane" part="popup">
           <slot name="content">
             <slot name="content-body"></slot>
             <slot name="content-footer"></slot>
@@ -215,24 +184,24 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if (
-      (changed.has('for') || changed.has('anchor')) &&
-      (changed.get('for') !== undefined ||
-        changed.get('anchor') !== undefined) &&
-      this._overlayCtrl
-    ) {
-      this._overlayCtrl.updateConfig({invokerNode: this._overlayInvokerNode});
+    if ((changed.has('for') || changed.has('anchor')) && this._overlayCtrl) {
+      this._overlayCtrl.updateConfig({
+        invokerNode: this._overlayInvokerNode,
+        referenceNode: this._overlayReferenceNode,
+      });
     }
   }
 
   async show(): Promise<void> {
     this.opened = true;
     await this.updateComplete;
+    await this.open();
   }
 
   async hide(): Promise<void> {
     this.opened = false;
     await this.updateComplete;
+    await this.close();
   }
 }
 

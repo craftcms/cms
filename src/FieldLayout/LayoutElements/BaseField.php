@@ -12,7 +12,13 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Checkbox;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -25,7 +31,6 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 abstract class BaseField extends FieldLayoutElement
 {
@@ -346,14 +351,56 @@ abstract class BaseField extends FieldLayoutElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return template('_includes/forms/fld/field-settings', [
-            'field' => $this,
-            'defaultLabel' => $this->defaultLabel(),
-            'defaultInstructions' => $this->defaultInstructions(),
-            'labelHidden' => ! $this->showLabel(),
-        ]);
+        return [
+            $this->labelSettingsNode($context),
+            ...$this->instructionsSettingsNodes($context),
+            ...$this->noticeSettingsNodes($context),
+        ];
+    }
+
+    /**
+     * The Label field, with the “Hide” toggle in its actions slot. Hiding the
+     * label disables the text input, mirroring the value the layout stores.
+     */
+    protected function labelSettingsNode(FormContext $context): Field
+    {
+        $labelHidden = ! $this->showLabel();
+
+        return Field::make(t('Label'), Text::make('label')
+            ->value($labelHidden ? null : $this->label)
+            ->placeholder($this->defaultLabel())
+            ->mode($labelHidden ? ControlMode::Disabled : ControlMode::Editable))
+            ->actions(Action::make(
+                Checkbox::make('labelHidden')->label(t('Hide'))->value($labelHidden),
+            ));
+    }
+
+    /** @return list<Node> */
+    protected function instructionsSettingsNodes(FormContext $context): array
+    {
+        return [
+            Field::make(t('Instructions'), Textarea::make('instructions')
+                ->value($this->instructions)
+                ->placeholder($this->defaultInstructions())),
+            Field::make(t('Instructions position'), Choice::make('instructionsPosition')
+                ->options([
+                    ['label' => t('Before the input'), 'value' => 'before'],
+                    ['label' => t('After the input'), 'value' => 'after'],
+                ])
+                ->value($this->instructionsPosition)),
+        ];
+    }
+
+    /** @return list<Node> */
+    protected function noticeSettingsNodes(FormContext $context): array
+    {
+        return [
+            Field::make(t('Tip'), Textarea::make('tip')->rows(1)->value($this->tip)),
+            Field::make(t('Warning'), Textarea::make('warning')->rows(1)->value($this->warning)),
+        ];
     }
 
     #[Override]
@@ -369,6 +416,9 @@ abstract class BaseField extends FieldLayoutElement
             $control->mode($context->mode);
         }
 
+        $static = $context->mode !== ControlMode::Editable;
+        $status = $this->showStatus() ? $this->statusClass($context->element, $static) : null;
+
         return Field::make(
             $this->showLabel() ? $this->label() : null,
             $control,
@@ -378,6 +428,12 @@ abstract class BaseField extends FieldLayoutElement
             ->tip($this->tipText($context->element))
             ->warning($this->warningText($context->element))
             ->required($this->required)
+            ->status(
+                $status,
+                $status !== null
+                    ? ($this->statusLabel($context->element, $static) ?? ucfirst($status))
+                    : null,
+            )
             ->layoutUid($this->uid)
             ->width($this->width);
     }

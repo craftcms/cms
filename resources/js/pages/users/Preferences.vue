@@ -3,13 +3,13 @@
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PreferencesController';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -17,7 +17,6 @@
 
   type UserPreferencesViewModel =
     CraftCms.Cms.Http.ViewModels.UserPreferencesViewModel & {
-      details?: string | null;
       prefsHook?: CraftCms.Cms.View.HtmlFragment | null;
     };
 
@@ -99,161 +98,161 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised" padding="0">
-    <div class="grid gap-6 p-4">
-      <section class="grid gap-3">
-        <h2 class="text-base">{{ t('General') }}</h2>
-
-        <craft-field-group>
-          <CraftCombobox
-            v-model="form.preferredLanguage"
-            :label="t('Language')"
-            :help-text="t('The language that the control panel should use.')"
-            id="preferredLanguage"
-            name="preferredLanguage"
-            :options="props.languageOptions"
-            :error="form.errors.preferredLanguage"
-            :require-option-match="true"
-            show-all-on-empty
-          />
-
-          <CraftCombobox
-            v-model="form.preferredLocale"
-            :label="t('Formatting Locale')"
-            :help-text="
-              t(
-                'The locale that should be used for date and number formatting.'
-              )
-            "
-            id="preferredLocale"
-            name="preferredLocale"
-            :options="props.localeOptions"
-            :error="form.errors.preferredLocale"
-            :require-option-match="true"
-            show-all-on-empty
-          />
-
-          <Select
-            v-model="form.weekStartDay"
-            :label="t('Week Start Day')"
-            id="weekStartDay"
-            name="weekStartDay"
-            :options="props.weekStartDayOptions"
-            :error="form.errors.weekStartDay"
-          />
-
-          <CraftCombobox
-            v-model="form.timeZone"
-            :label="t('Time Zone')"
-            id="time-zone"
-            name="timeZone"
-            :options="props.timeZoneOptions"
-            :error="form.errors.timeZone"
-            :require-option-match="true"
-            show-all-on-empty
-          />
-        </craft-field-group>
-      </section>
-
-      <hr />
-
-      <section class="grid gap-3">
-        <h2 class="text-base">{{ t('Accessibility') }}</h2>
-
-        <craft-field-group>
-          <CheckboxGroup
-            v-model="displaySettings"
-            :label="t('Display Settings')"
-            :options="props.displaySettingOptions"
-          />
-
-          <CheckboxGroup
-            v-model="generalSettings"
-            :label="t('General Settings')"
-            :options="props.generalSettingOptions"
-          />
-
-          <Select
-            v-model="form.notificationDuration"
-            :label="t('Notification Duration')"
-            :help-text="
-              t(
-                'How long notifications should be shown before they disappear automatically.'
-              )
-            "
-            name="notificationDuration"
-            id="notificationDuration"
-            :options="props.notificationDurationOptions"
-            :error="form.errors.notificationDuration"
-          />
-
-          <craft-field-group>
-            <h3 class="text-sm">{{ t('Notification Position') }}</h3>
-            <craft-button-group role="group">
-              <craft-button
-                v-for="option in props.notificationPositionOptions"
-                :key="option.value"
-                type="button"
-                variant="outline"
-                :active="
-                  form.notificationPosition === option.value ? 'true' : null
-                "
-                :aria-pressed="form.notificationPosition === option.value"
-                :title="option.label"
-                @click="form.notificationPosition = option.value"
-              >
-                <craft-icon :name="option.icon" :label="option.label" />
-              </craft-button>
-            </craft-button-group>
-            <ul class="error-list" v-if="form.errors.notificationPosition">
-              <li>{{ form.errors.notificationPosition }}</li>
-            </ul>
-          </craft-field-group>
-
-          <craft-field-group>
-            <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
-            <craft-button-group role="group">
-              <craft-button
-                v-for="option in props.slideoutPositionOptions"
-                :key="option.value"
-                type="button"
-                variant="outline"
-                :active="form.slideoutPosition === option.value ? 'true' : null"
-                :aria-pressed="form.slideoutPosition === option.value"
-                :title="option.label"
-                @click="form.slideoutPosition = option.value"
-              >
-                <craft-icon :name="option.icon" :label="option.label" />
-              </craft-button>
-            </craft-button-group>
-            <ul class="error-list" v-if="form.errors.slideoutPosition">
-              <li>{{ form.errors.slideoutPosition }}</li>
-            </ul>
-          </craft-field-group>
-        </craft-field-group>
-      </section>
-
-      <template v-if="props.isAdmin">
-        <hr />
-
+  <UserScreen>
+    <craft-pane appearance="raised" padding="0">
+      <div class="grid gap-6 p-4">
         <section class="grid gap-3">
-          <h2 class="text-base">{{ t('Development') }}</h2>
+          <h2 class="text-base">{{ t('General') }}</h2>
 
           <craft-field-group>
-            <CheckboxGroup
-              v-model="developmentSettings"
-              :label="t('Development Settings')"
-              :options="props.developmentSettingOptions"
+            <CraftCombobox
+              v-model="form.preferredLanguage"
+              :label="t('Language')"
+              :help-text="t('The language that the control panel should use.')"
+              id="preferredLanguage"
+              name="preferredLanguage"
+              :options="props.languageOptions"
+              :error="form.errors.preferredLanguage"
+              :require-option-match="true"
+              show-all-on-empty
+            />
+
+            <CraftCombobox
+              v-model="form.preferredLocale"
+              :label="t('Formatting Locale')"
+              :help-text="
+                t(
+                  'The locale that should be used for date and number formatting.'
+                )
+              "
+              id="preferredLocale"
+              name="preferredLocale"
+              :options="props.localeOptions"
+              :error="form.errors.preferredLocale"
+              :require-option-match="true"
+              show-all-on-empty
+            />
+
+            <Select
+              v-model="form.weekStartDay"
+              :label="t('Week Start Day')"
+              id="weekStartDay"
+              name="weekStartDay"
+              :options="props.weekStartDayOptions"
+              :error="form.errors.weekStartDay"
+            />
+
+            <CraftCombobox
+              v-model="form.timeZone"
+              :label="t('Time Zone')"
+              id="time-zone"
+              name="timeZone"
+              :options="props.timeZoneOptions"
+              :error="form.errors.timeZone"
+              :require-option-match="true"
+              show-all-on-empty
             />
           </craft-field-group>
         </section>
-      </template>
 
-      <HtmlFragmentRenderer :fragment="props.prefsHook" />
-    </div>
-  </craft-pane>
+        <hr />
 
-  <LayoutSlot v-if="props.details" name="details">
-    <div v-html="props.details"></div>
-  </LayoutSlot>
+        <section class="grid gap-3">
+          <h2 class="text-base">{{ t('Accessibility') }}</h2>
+
+          <craft-field-group>
+            <CheckboxGroup
+              v-model="displaySettings"
+              :label="t('Display Settings')"
+              :options="props.displaySettingOptions"
+            />
+
+            <CheckboxGroup
+              v-model="generalSettings"
+              :label="t('General Settings')"
+              :options="props.generalSettingOptions"
+            />
+
+            <Select
+              v-model="form.notificationDuration"
+              :label="t('Notification Duration')"
+              :help-text="
+                t(
+                  'How long notifications should be shown before they disappear automatically.'
+                )
+              "
+              name="notificationDuration"
+              id="notificationDuration"
+              :options="props.notificationDurationOptions"
+              :error="form.errors.notificationDuration"
+            />
+
+            <craft-field-group>
+              <h3 class="text-sm">{{ t('Notification Position') }}</h3>
+              <craft-button-group role="group">
+                <craft-button
+                  v-for="option in props.notificationPositionOptions"
+                  :key="option.value"
+                  type="button"
+                  variant="outline"
+                  :active="
+                    form.notificationPosition === option.value ? 'true' : null
+                  "
+                  :aria-pressed="form.notificationPosition === option.value"
+                  :title="option.label"
+                  @click="form.notificationPosition = option.value"
+                >
+                  <craft-icon :name="option.icon" :label="option.label" />
+                </craft-button>
+              </craft-button-group>
+              <ul class="error-list" v-if="form.errors.notificationPosition">
+                <li>{{ form.errors.notificationPosition }}</li>
+              </ul>
+            </craft-field-group>
+
+            <craft-field-group>
+              <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
+              <craft-button-group role="group">
+                <craft-button
+                  v-for="option in props.slideoutPositionOptions"
+                  :key="option.value"
+                  type="button"
+                  variant="outline"
+                  :active="
+                    form.slideoutPosition === option.value ? 'true' : null
+                  "
+                  :aria-pressed="form.slideoutPosition === option.value"
+                  :title="option.label"
+                  @click="form.slideoutPosition = option.value"
+                >
+                  <craft-icon :name="option.icon" :label="option.label" />
+                </craft-button>
+              </craft-button-group>
+              <ul class="error-list" v-if="form.errors.slideoutPosition">
+                <li>{{ form.errors.slideoutPosition }}</li>
+              </ul>
+            </craft-field-group>
+          </craft-field-group>
+        </section>
+
+        <template v-if="props.isAdmin">
+          <hr />
+
+          <section class="grid gap-3">
+            <h2 class="text-base">{{ t('Development') }}</h2>
+
+            <craft-field-group>
+              <CheckboxGroup
+                v-model="developmentSettings"
+                :label="t('Development Settings')"
+                :options="props.developmentSettingOptions"
+              />
+            </craft-field-group>
+          </section>
+        </template>
+
+        <HtmlFragmentRenderer :fragment="props.prefsHook" />
+      </div>
+    </craft-pane>
+  </UserScreen>
 </template>

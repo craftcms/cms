@@ -12,8 +12,12 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Mutations\Mutation;
@@ -31,6 +35,8 @@ use Override;
 class TestPlugin extends Plugin
 {
     public static bool $useSettings = true;
+
+    public static bool $useSettingsForm = true;
 
     public static bool $beforeSaveSettings = true;
 
@@ -56,8 +62,6 @@ class TestPlugin extends Plugin
     public ?Migrator $customMigrator = null;
 
     public ?Closure $customNativeFields = null;
-
-    public ?string $customSettingsHtml = null;
 
     /** @var array<string, array|Closure> */
     public array $customCacheOptions = [];
@@ -104,11 +108,6 @@ class TestPlugin extends Plugin
     public function setPermissions(array $permissions): void
     {
         $this->customPermissions = $permissions;
-    }
-
-    public function setSettingsHtml(?string $settingsHtml): void
-    {
-        $this->customSettingsHtml = $settingsHtml;
     }
 
     /** @param array<int, class-string<Command>> $commands */
@@ -334,9 +333,15 @@ class TestPlugin extends Plugin
     }
 
     #[Override]
-    protected function settingsHtml(): ?string
+    public function settingsForm(FormContext $context = new FormContext): ?Form
     {
-        return $this->customSettingsHtml ?? '<input id="settings-foo" name="foo" value="'.e($this->getSettings()?->foo).'">';
+        if (! self::$useSettingsForm) {
+            return null;
+        }
+
+        return Form::make([
+            Field::make('Foo', Text::make('foo')),
+        ]);
     }
 
     #[Override]

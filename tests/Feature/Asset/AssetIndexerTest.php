@@ -3,17 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetIndexer;
-use CraftCms\Cms\Asset\Data\AssetIndexEntry;
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
+use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexData;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\AssetIndexer as AssetIndexerFacade;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +44,7 @@ it('can create an indexing session', function () {
         listEmptyFolders: false,
     );
 
-    expect($session)->toBeInstanceOf(IndexingSession::class);
+    expect($session)->toBeInstanceOf(AssetIndexingSession::class);
     expect($session->id)->not()->toBeNull();
     expect($session->totalEntries)->toBe(0);
     expect($session->processedEntries)->toBe(0);
@@ -53,6 +52,11 @@ it('can create an indexing session', function () {
     expect($session->isCli)->toBeTrue();
     expect($session->listEmptyFolders)->toBeFalse();
     expect($session->actionRequired)->toBeFalse();
+    expect($session->toArray())->toMatchArray([
+        'skippedEntries' => [],
+        'missingEntries' => [],
+        'forceStop' => false,
+    ]);
 
     expect(AssetIndexingSession::find($session->id))->not()->toBeNull();
 });
@@ -65,7 +69,7 @@ it('can get an indexing session by id', function () {
 
     $found = $this->indexer->getIndexingSessionById($session->id);
 
-    expect($found)->toBeInstanceOf(IndexingSession::class);
+    expect($found)->toBeInstanceOf(AssetIndexingSession::class);
     expect($found->id)->toBe($session->id);
 });
 
@@ -149,11 +153,10 @@ it('can get the next index entry', function () {
 
     $entry = $this->indexer->getNextIndexEntry($session);
 
-    expect($entry)->toBeInstanceOf(AssetIndexEntry::class);
+    expect($entry)->toBeInstanceOf(AssetIndexData::class);
     expect($entry->uri)->toBe('images');
     expect($entry->isDir)->toBeTrue();
-    expect($entry->completed)->toBeFalse();
-    expect($entry->inProgress)->toBeFalse();
+    expect($entry->status)->toBe(AssetIndexStatus::Pending);
 });
 
 it('returns null when no more index entries', function () {
@@ -165,7 +168,7 @@ it('returns null when no more index entries', function () {
     expect($this->indexer->getNextIndexEntry($session))->toBeNull();
 });
 
-it('can update an index entry', function () {
+it('can transition an index entry', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
 
@@ -174,20 +177,18 @@ it('can update an index entry', function () {
 
     $entry = $this->indexer->getNextIndexEntry($session);
 
-    $this->indexer->updateIndexEntry($entry->id, ['inProgress' => true]);
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Processing);
 
-    $updated = DB::table(Table::ASSETINDEXDATA)->where('id', $entry->id)->first();
-    expect((bool) $updated->inProgress)->toBeTrue();
+    expect(AssetIndexData::findOrFail($entry->id)->status)->toBe(AssetIndexStatus::Processing);
 
-    $this->indexer->updateIndexEntry($entry->id, ['completed' => true, 'inProgress' => false, 'recordId' => 42]);
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Indexed, 42);
 
-    $updated = DB::table(Table::ASSETINDEXDATA)->where('id', $entry->id)->first();
-    expect((bool) $updated->completed)->toBeTrue();
-    expect((bool) $updated->inProgress)->toBeFalse();
-    expect((int) $updated->recordId)->toBe(42);
+    $updated = AssetIndexData::findOrFail($entry->id);
+    expect($updated->status)->toBe(AssetIndexStatus::Indexed)
+        ->and($updated->recordId)->toBe(42);
 });
 
-it('only allows whitelisted fields in updateIndexEntry', function () {
+it('rejects invalid index entry transitions', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
 
@@ -195,14 +196,19 @@ it('only allows whitelisted fields in updateIndexEntry', function () {
     $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
 
     $entry = $this->indexer->getNextIndexEntry($session);
-    $originalUri = $entry->uri;
 
-    $this->indexer->updateIndexEntry($entry->id, ['uri' => 'hacked/path.jpg', 'inProgress' => true]);
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Indexed, 42);
+})->throws(LogicException::class, 'cannot transition from pending to indexed');
 
-    $updated = DB::table(Table::ASSETINDEXDATA)->where('id', $entry->id)->first();
-    expect($updated->uri)->toBe($originalUri);
-    expect((bool) $updated->inProgress)->toBeTrue();
-});
+it('requires a record ID when an entry is indexed', function () {
+    $volume = createIndexerTestVolume();
+    $session = $this->indexer->createIndexingSession([resolveIndexerVolumeData($volume)]);
+    $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, resolveIndexerVolumeData($volume));
+    $entry = $this->indexer->getNextIndexEntry($session);
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Processing);
+
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Indexed);
+})->throws(LogicException::class, 'require a record ID');
 
 it('skips completed and in-progress entries when getting next entry', function () {
     $volume = createIndexerTestVolume();
@@ -212,27 +218,100 @@ it('skips completed and in-progress entries when getting next entry', function (
     $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
 
     $first = $this->indexer->getNextIndexEntry($session);
-    $this->indexer->updateIndexEntry($first->id, ['inProgress' => true]);
+    $this->indexer->transitionIndexEntry($first->id, AssetIndexStatus::Processing);
 
     $second = $this->indexer->getNextIndexEntry($session);
     expect($second->id)->not()->toBe($first->id);
     expect($second->uri)->toBe('images/photo.jpg');
 });
 
-it('can get skipped items for a session', function () {
+it('rejects a second claim for the same entry', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData]);
+    $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
+    $entry = $this->indexer->getNextIndexEntry($session);
+
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Processing);
+
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Processing);
+})->throws(LogicException::class, 'cannot transition from processing to processing');
+
+it('can retry failed and missing entries', function (AssetIndexStatus $status) {
+    $volume = createIndexerTestVolume();
+    $session = $this->indexer->createIndexingSession([resolveIndexerVolumeData($volume)]);
+    $entry = AssetIndexData::create([
+        'sessionId' => $session->id,
+        'volumeId' => $volume->id,
+        'status' => $status,
+        'recordId' => 42,
+    ]);
+
+    $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Pending);
+
+    expect($entry->refresh()->status)->toBe(AssetIndexStatus::Pending)
+        ->and($entry->recordId)->toBeNull();
+})->with([AssetIndexStatus::Failed, AssetIndexStatus::Missing]);
+
+it('can get non-indexed terminal items for a session', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
 
     $session = $this->indexer->createIndexingSession([$volumeData]);
     $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
 
-    $entry = $this->indexer->getNextIndexEntry($session);
-    $this->indexer->updateIndexEntry($entry->id, ['completed' => true, 'isSkipped' => true]);
+    foreach ([AssetIndexStatus::Skipped, AssetIndexStatus::Missing, AssetIndexStatus::Failed] as $status) {
+        $entry = $this->indexer->getNextIndexEntry($session);
+        $this->indexer->transitionIndexEntry($entry->id, AssetIndexStatus::Processing);
+        $this->indexer->transitionIndexEntry($entry->id, $status);
+    }
 
     $skipped = $this->indexer->getSkippedItemsForSession($session);
 
-    expect($skipped)->toHaveCount(1);
-    expect($skipped[0])->toContain($entry->uri);
+    expect($skipped)->toHaveCount(3);
+});
+
+it('persists direct indexing success', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('direct.txt', 'content');
+    $listing = new FsListing([
+        'dirname' => '',
+        'basename' => 'direct.txt',
+        'type' => 'file',
+        'fileSize' => 7,
+        'dateModified' => time(),
+    ]);
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
+        $entry = AssetIndexData::where('sessionId', $session->id)->where('uri', 'direct.txt')->firstOrFail();
+
+        expect($entry->status)->toBe(AssetIndexStatus::Indexed)
+            ->and($entry->recordId)->toBe($asset->id);
+    } finally {
+        $volumeData->sourceDisk()->delete('direct.txt');
+    }
+});
+
+it('persists missing direct index entries before rethrowing', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $listing = new FsListing([
+        'dirname' => '',
+        'basename' => 'missing.txt',
+        'type' => 'file',
+        'fileSize' => 7,
+        'dateModified' => time(),
+    ]);
+
+    expect(fn () => $this->indexer->indexFileByListing($volumeData, $listing, $session->id, createIfMissing: false))
+        ->toThrow(MissingAssetException::class);
+
+    expect(AssetIndexData::where('sessionId', $session->id)->where('uri', 'missing.txt')->value('status'))
+        ->toBe(AssetIndexStatus::Missing);
 });
 
 it('throws when getting missing entries for unfinished session', function () {
@@ -345,7 +424,7 @@ it('can start an indexing session with files on disk', function () {
         listEmptyFolders: false,
     );
 
-    expect($session)->toBeInstanceOf(IndexingSession::class);
+    expect($session)->toBeInstanceOf(AssetIndexingSession::class);
     expect($session->totalEntries)->toBeGreaterThanOrEqual(2);
 
     $indexEntries = AssetIndexData::where('sessionId', $session->id)->count();
