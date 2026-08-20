@@ -21,9 +21,13 @@ describe('TextareaControl', () => {
             type: 'CraftCms\\Cms\\Form\\Controls\\Textarea',
             component: 'craft:textarea',
             props: {
-              textExpanderTriggers: {
-                '@': {options: [{label: 'Ada Lovelace', value: '@ada'}]},
-              },
+              textExpanderTriggers: [
+                {
+                  trigger: '@',
+                  boundary: 'whitespace',
+                  options: [{label: 'Ada Lovelace', value: '@ada'}],
+                },
+              ],
             },
             path: ['settings', 'notes'],
             mode: 'editable',

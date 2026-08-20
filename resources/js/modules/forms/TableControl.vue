@@ -186,10 +186,12 @@
     }
 
     if (['autosuggest', 'template'].includes(type)) {
-      return (
-        cell.querySelector<HTMLElement & {modelValue: string}>('craft-combobox')
-          ?.modelValue ?? ''
+      const combobox = cell.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
       );
+      if (combobox) {
+        return combobox.modelValue ?? '';
+      }
     }
 
     if (['checkbox', 'lightswitch'].includes(type)) {
