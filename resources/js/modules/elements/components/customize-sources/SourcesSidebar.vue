@@ -50,7 +50,7 @@
   }
 
   function label(source: SourceRow): string {
-    return source.label.trim();
+    return source.label;
   }
 
   function actions(source: SourceRow): ActionItem[] {
@@ -83,17 +83,13 @@
   <CustomSourceList
     :items="visible"
     :item-id="itemId"
+    :label="label"
     :selected="selectedKey"
     :disabled="unkeyed"
     :actions="actions"
     @select="(key) => emit('select', key)"
     @reorder="onReorder"
-  >
-    <template #label="{item}">
-      <span v-if="label(item)">{{ label(item) }}</span>
-      <em v-else>{{ t('(blank)') }}</em>
-    </template>
-  </CustomSourceList>
+  />
 
   <ActionMenu
     class="cs-add"

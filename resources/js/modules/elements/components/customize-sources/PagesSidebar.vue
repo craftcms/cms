@@ -3,7 +3,6 @@
   import {t} from '@craftcms/ui';
   import type {ActionItem} from '@/common/types';
   import CustomSourceList from './CustomSourceList.vue';
-  import PageIcon from './PageIcon.vue';
   import PageSettingsModal from './PageSettingsModal.vue';
   import {pageNameId, type PageRow} from './types';
 
@@ -23,9 +22,13 @@
   const editing = ref<PageRow | null>(null);
   const modalActive = ref(false);
 
-  /** A page's name is its identity. */
+  /** A page's name is both its identity and its label. */
   function itemId(page: PageRow): string {
     return page.name;
+  }
+
+  function icon(page: PageRow): string | null {
+    return page.icon;
   }
 
   function open(page: PageRow | null): void {
@@ -77,16 +80,13 @@
   <CustomSourceList
     :items="pages"
     :item-id="itemId"
+    :label="itemId"
+    :icon="icon"
     :selected="selected"
     :actions="actions"
     @select="(name) => emit('select', name)"
     @reorder="(from, to) => emit('reorder', from, to)"
-  >
-    <template #label="{item}">
-      <PageIcon :icon="item.icon" />
-      <span>{{ item.name }}</span>
-    </template>
-  </CustomSourceList>
+  />
 
   <craft-button type="button" class="cs-add" @click="open(null)">
     {{ t('New page') }}

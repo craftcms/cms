@@ -469,7 +469,7 @@
     // Wrapping is what the narrow layout below uses to stack the panes.
     flex-flow: row wrap;
     align-items: stretch;
-    gap: var(--c-spacing-l);
+    gap: var(--c-spacing-lg);
     container-type: inline-size;
   }
 
@@ -478,8 +478,8 @@
   }
 
   .cs-sidebar__heading {
-    margin-block: 0 var(--c-spacing-s);
-    font-size: var(--c-font-size-sm);
+    margin-block: 0 var(--c-spacing-sm);
+    font-size: var(--c-text-sm);
   }
 
   .cs-settings {
