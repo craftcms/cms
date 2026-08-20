@@ -169,7 +169,10 @@ class ImageTransformEditViewModel extends ViewModel
         }
 
         return $options
-            ->prepend(['label' => t('Default'), 'value' => ''])
+            ->prepend([
+                'label' => t('Default (Asset filesystem driver)'),
+                'value' => '',
+            ])
             ->values()
             ->all();
     }
