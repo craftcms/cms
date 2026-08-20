@@ -8,9 +8,13 @@
 namespace crafttests\unit\elements;
 
 use craft\fs\Local;
-use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -48,13 +52,26 @@ class AssetElementTest extends TestCase
             'filename' => 'foo.jpg',
         ]);
 
+        app(AssetTransforms::class)->extend('test', fn() => new class() implements AssetTransformDriver {
+            public function definition(): AssetTransformDriverDefinition
+            {
+                return new AssetTransformDriverDefinition('Test');
+            }
+
+            public function transform(AssetTransformRequest $request): AssetTransformResult
+            {
+                return new AssetTransformResult(
+                    "w={$request->operations['width']}&h={$request->operations['height']}",
+                    'image/jpeg',
+                );
+            }
+        });
+
         ImageTransforms::shouldReceive('getTransformByHandle')
             ->andReturn($this->make(ImageTransform::class, [
+                'driver' => 'test',
                 'width' => 400,
                 'height' => 200,
-                'getImageTransformer' => $this->make(ImageTransformer::class, [
-                    'getTransformUrl' => fn(Asset $asset, ImageTransform $transform) => 'w=' . $transform->width . '&h=' . $transform->height,
-                ]),
             ]));
 
         $previousValue = Cms::config()->generateTransformsBeforePageLoad;
