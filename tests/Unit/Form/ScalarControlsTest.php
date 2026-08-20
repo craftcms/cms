@@ -246,6 +246,69 @@ it('renders choice presentations through CP components', function (ChoicePresent
     'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
 ]);
 
+function renderChoice(Choice $choice, mixed $value): Crawler
+{
+    $payload = app(FormResolver::class)->resolve(
+        Form::make([Field::make()->control($choice)]),
+        new FormContext(namespace: 'settings', values: ['settings' => ['choice' => $value]]),
+    );
+
+    return new Crawler(app(FormHtmlRenderer::class)->render($payload));
+}
+
+it('only serializes sortable and allowAll when set', function () {
+    expect(Choice::make('choice')->multiple()->props())
+        ->not->toHaveKeys(['sortable', 'allowAll'])
+        ->and(Choice::make('choice')->sortable()->props())->toMatchArray([
+            'sortable' => true,
+            'multiple' => true,
+            'presentation' => 'checkboxes',
+        ])
+        ->and(Choice::make('choice')->allowAll()->props())->toMatchArray([
+            'allowAll' => true,
+            'multiple' => true,
+            'presentation' => 'checkboxes',
+        ]);
+});
+
+it('renders an All checkbox that checks and disables every option', function () {
+    $choice = Choice::make('choice')
+        ->options([
+            ['label' => 'One', 'value' => 'one'],
+            ['label' => 'Two', 'value' => 'two'],
+        ])
+        ->allowAll();
+
+    $all = renderChoice($choice, Choice::ALL_VALUE);
+    $some = renderChoice($choice, ['two']);
+
+    expect($all->filter('input.all[name="settings[choice]"][value="*"][checked]'))->toHaveCount(1)
+        ->and($all->filter('input[name="settings[choice][]"][checked][disabled]'))->toHaveCount(2)
+        // Exactly one always-post hidden input, from the All checkbox itself —
+        // the group must not add a second for the same name.
+        ->and($all->filter('input[type="hidden"][name="settings[choice]"]'))->toHaveCount(1)
+        ->and($some->filter('input.all[checked]'))->toHaveCount(0)
+        ->and($some->filter('input[name="settings[choice][]"][checked]'))->toHaveCount(1)
+        ->and($some->filter('input[name="settings[choice][]"][disabled]'))->toHaveCount(0);
+});
+
+it('renders sortable choices selected-first inside the sortable wrapper', function () {
+    $crawler = renderChoice(
+        Choice::make('choice')
+            ->options([
+                ['label' => 'One', 'value' => 'one'],
+                ['label' => 'Two', 'value' => 'two'],
+                ['label' => 'Three', 'value' => 'three'],
+            ])
+            ->sortable(),
+        ['three', 'two'],
+    );
+    $values = $crawler->filter('craft-sortable-checkbox-select input[type="checkbox"]')
+        ->each(fn (Crawler $node) => $node->attr('value'));
+
+    expect($values)->toBe(['three', 'two', 'one']);
+});
+
 it('uses scalar and choice Controls in built-in field settings', function () {
     $payload = app(FormResolver::class)->resolve(new PlainText()->settingsForm(), new FormContext(namespace: 'settings'));
     $components = collect($payload->nodes)

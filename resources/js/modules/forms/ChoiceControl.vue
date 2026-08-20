@@ -6,8 +6,15 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
+  import {computed, ref, watch} from 'vue';
+  import {t} from '@craftcms/ui';
+  import type {CheckboxOption} from '@/common/types';
+  import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {FormControlPayload} from './types';
   import {inputName, serverErrorValidators} from './runtime';
+
+  // Mirrors Choice::ALL_VALUE.
+  const ALL_VALUE = '*';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Form.Enums.ChoicePresentation;
@@ -21,6 +28,8 @@
     options: ChoiceOption[];
     multiple: boolean;
     presentation: ChoicePresentation;
+    sortable?: boolean;
+    allowAll?: boolean;
   };
 
   const props = defineProps<{
@@ -98,6 +107,131 @@
   function optionId(index: number): string {
     return `form-${props.control.path.join('-')}-${index}`;
   }
+
+  // Sortable and All both need affordances `craft-checkbox-group` doesn't have
+  // on its own, so they render through the CP's CheckboxGroup instead.
+  const useCheckboxGroup = computed(
+    () =>
+      props.control.props.presentation === 'checkboxes' &&
+      (props.control.props.sortable === true ||
+        props.control.props.allowAll === true)
+  );
+
+  const allSelected = computed(
+    () => props.control.props.allowAll === true && props.value === ALL_VALUE
+  );
+
+  // Display order is owned by the client: the server sends the selected options
+  // first, and a drag only reorders — it never changes what is checked.
+  const order = ref<string[]>(optionValues(props.control.props.options));
+
+  watch(
+    () => props.control.props.options,
+    (options) => {
+      const values = optionValues(options);
+      order.value = [
+        ...order.value.filter((value) => values.includes(value)),
+        ...values.filter((value) => !order.value.includes(value)),
+      ];
+    }
+  );
+
+  function optionValues(options: ChoiceOption[]): string[] {
+    return options.map((option) => inputValue(option.value));
+  }
+
+  function optionHtml(value: string): string | undefined {
+    return props.control.props.options.find(
+      (option) => inputValue(option.value) === value
+    )?.labelHtml;
+  }
+
+  const groupOptions = computed<CheckboxOption[]>(() => {
+    const byValue = new Map(
+      props.control.props.options.map((option) => [
+        inputValue(option.value),
+        option,
+      ])
+    );
+
+    const options: CheckboxOption[] = order.value.flatMap((value) => {
+      const option = byValue.get(value);
+
+      return option
+        ? [
+            {
+              label: option.label,
+              value,
+              // A checked All disables every other option, per
+              // Garnish.CheckboxSelect.
+              disabled: !props.editable || option.disabled || allSelected.value,
+            },
+          ]
+        : [];
+    });
+
+    if (props.control.props.allowAll) {
+      options.unshift({
+        label: t('All'),
+        value: ALL_VALUE,
+        disabled: !props.editable,
+      });
+    }
+
+    return options;
+  });
+
+  const groupValue = computed<string[]>(() =>
+    allSelected.value
+      ? [ALL_VALUE, ...order.value]
+      : Array.isArray(props.value)
+        ? props.value.map(inputValue)
+        : []
+  );
+
+  function onGroupValue(values: string[]): void {
+    if (props.control.props.allowAll) {
+      const hasAll = values.includes(ALL_VALUE);
+
+      // Resolve from the transition rather than the raw set: while All is
+      // checked every other option reports checked too.
+      if (hasAll && !allSelected.value) {
+        emit('update:value', ALL_VALUE);
+        return;
+      }
+
+      // Legacy clears the selection when All is unchecked rather than
+      // restoring the previous one.
+      if (!hasAll && allSelected.value) {
+        emit('update:value', []);
+        return;
+      }
+    }
+
+    emit(
+      'update:value',
+      order.value.filter((value) => values.includes(value))
+    );
+  }
+
+  function onGroupReorder(options: CheckboxOption[]): void {
+    order.value = options
+      .map((option) => option.value)
+      .filter((value) => value !== ALL_VALUE);
+
+    if (allSelected.value) {
+      return;
+    }
+
+    // The value carries the display order, so a reorder changes it too.
+    const selected = Array.isArray(props.value)
+      ? props.value.map(inputValue)
+      : [];
+    emit(
+      'update:value',
+      order.value.filter((value) => selected.includes(value))
+    );
+  }
 </script>
 
 <template>
@@ -164,12 +298,32 @@
       :value="inputValue(option.value)"
       :active="selected(option.value)"
       :disabled="!editable || option.disabled"
+      :aria-label="option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
     >
       <span v-if="option.labelHtml" v-html="option.labelHtml" />
       <template v-else>{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
+  <CheckboxGroup
+    v-else-if="useCheckboxGroup"
+    :name="editable ? `${inputName(control.path)}[]` : undefined"
+    :disabled="!editable"
+    :model-value="groupValue"
+    :options="groupOptions"
+    :sortable="control.props.sortable"
+    @update:model-value="onGroupValue"
+    @update:options="onGroupReorder"
+  >
+    <template #label="{option}">
+      <b v-if="option.value === ALL_VALUE">{{ option.label }}</b>
+      <span
+        v-else-if="optionHtml(option.value)"
+        v-html="optionHtml(option.value)"
+      />
+      <template v-else>{{ option.label }}</template>
+    </template>
+  </CheckboxGroup>
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
