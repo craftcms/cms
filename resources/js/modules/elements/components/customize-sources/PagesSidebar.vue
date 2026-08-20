@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {ref} from 'vue';
   import {t} from '@craftcms/ui';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import CustomSourceList from './CustomSourceList.vue';
   import PageIcon from './PageIcon.vue';
@@ -79,16 +78,13 @@
     :items="pages"
     :item-id="itemId"
     :selected="selected"
+    :actions="actions"
     @select="(name) => emit('select', name)"
     @reorder="(from, to) => emit('reorder', from, to)"
   >
     <template #label="{item}">
       <PageIcon :icon="item.icon" />
       <span>{{ item.name }}</span>
-    </template>
-
-    <template #actions="{item}">
-      <ActionMenu v-if="actions(item).length" :actions="actions(item)" />
     </template>
   </CustomSourceList>
 

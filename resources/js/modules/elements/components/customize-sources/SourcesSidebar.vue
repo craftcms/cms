@@ -85,16 +85,13 @@
     :item-id="itemId"
     :selected="selectedKey"
     :disabled="unkeyed"
+    :actions="actions"
     @select="(key) => emit('select', key)"
     @reorder="onReorder"
   >
     <template #label="{item}">
       <span v-if="label(item)">{{ label(item) }}</span>
       <em v-else>{{ t('(blank)') }}</em>
-    </template>
-
-    <template #actions="{item}">
-      <ActionMenu v-if="actions(item).length" :actions="actions(item)" />
     </template>
   </CustomSourceList>
 

@@ -3,8 +3,11 @@
    * The reorderable row list shared by the customize-sources sidebars: pages on
    * the left, sources beside them. It owns the markup, the drag and keyboard
    * reordering, and the selected/dragging states; callers supply the row's
-   * label and its action menu.
+   * label and the contents of its action menu.
    */
+  import {computed} from 'vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/types';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
 
   const props = defineProps<{
@@ -15,6 +18,8 @@
     selected?: string | null;
     /** Rows this returns true for can't be selected. */
     disabled?: (item: T) => boolean;
+    /** A row's action menu. Returning nothing renders no menu. */
+    actions?: (item: T, index: number) => ActionItem[];
   }>();
 
   const emit = defineEmits<{
@@ -22,55 +27,62 @@
     (e: 'reorder', from: number, to: number): void;
   }>();
 
-  function id(item: T, index: number): string {
-    return props.itemId(item, index);
-  }
+  // Resolved once per row rather than per binding: the id is read five times in
+  // the template, and the actions callback is not free.
+  const rows = computed(() =>
+    props.items.map((item, index) => ({
+      item,
+      index,
+      id: props.itemId(item, index),
+      actions: props.actions?.(item, index) ?? [],
+    }))
+  );
 
   function reorder(from: number, to: number): void {
     if (to < 0 || to > props.items.length - 1) return;
+
     emit('reorder', from, to);
   }
 
   const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
     useReorderableItems({
-      getItemIds: () => props.items.map((item, index) => id(item, index)),
+      getItemIds: () => rows.value.map((row) => row.id),
       onReorder: reorder,
       enabled: () => props.items.length > 1,
     });
 
-  function select(item: T, index: number): void {
+  function select(item: T, id: string): void {
     if (props.disabled?.(item)) return;
 
-    emit('select', id(item, index));
+    emit('select', id);
   }
 </script>
 
 <template>
   <ol class="cs-list">
     <li
-      v-for="(item, index) in items"
-      :key="id(item, index)"
-      :ref="(el) => setItemRef(el as HTMLElement, id(item, index))"
+      v-for="row in rows"
+      :key="row.id"
+      :ref="(el) => setItemRef(el as HTMLElement, row.id)"
       class="cs-item"
       :class="{
-        'cs-item--selected': id(item, index) === selected,
-        'cs-item--dragging':
-          getDragState(id(item, index)).type === 'is-dragging',
+        'cs-item--selected': row.id === selected,
+        'cs-item--dragging': getDragState(row.id).type === 'is-dragging',
       }"
-      :data-drop="getDropState(id(item, index)).type"
+      :data-drop="getDropState(row.id).type"
     >
       <span
-        v-if="items.length > 1"
-        :ref="(el) => setHandleRef(el as HTMLElement, id(item, index))"
+        v-if="rows.length > 1"
+        :ref="(el) => setHandleRef(el as HTMLElement, row.id)"
         class="cs-item__handle"
       >
         <craft-reorder-button
-          :position="getRowPosition(index)"
+          :position="getRowPosition(row.index)"
           @reorder="
             (e: CustomEvent<{direction: 'up' | 'down'}>) =>
               reorder(
-                index,
-                e.detail.direction === 'up' ? index - 1 : index + 1
+                row.index,
+                e.detail.direction === 'up' ? row.index - 1 : row.index + 1
               )
           "
         />
@@ -79,14 +91,14 @@
       <button
         type="button"
         class="cs-item__btn"
-        :aria-pressed="id(item, index) === selected"
-        :disabled="disabled?.(item)"
-        @click="select(item, index)"
+        :aria-pressed="row.id === selected"
+        :disabled="disabled?.(row.item)"
+        @click="select(row.item, row.id)"
       >
-        <slot name="label" :item="item" :index="index" />
+        <slot name="label" :item="row.item" :index="row.index" />
       </button>
 
-      <slot name="actions" :item="item" :index="index" />
+      <ActionMenu v-if="row.actions.length" :actions="row.actions" />
     </li>
   </ol>
 </template>
