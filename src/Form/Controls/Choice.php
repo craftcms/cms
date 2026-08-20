@@ -25,7 +25,7 @@ class Choice extends Control
     /** The value posted when the “All” option is selected. */
     public const string ALL_VALUE = '*';
 
-    /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}> */
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -58,7 +58,7 @@ class Choice extends Control
         return 'craft:choice';
     }
 
-    /** @param list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}> $options */
+    /** @param list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool}> $options */
     public function options(array $options): static
     {
         $this->options = $options;
@@ -226,7 +226,7 @@ class Choice extends Control
         $allChecked = $allowAll && $value === self::ALL_VALUE;
         $values = $allChecked ? [] : self::values($value);
 
-        /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool}> $options */
+        /** @var list<array{label: string, labelHtml?: string, icon?: string, value: bool|float|int|string, disabled?: bool}> $options */
         $options = $control->props['options'];
 
         // The value carries the display order, so selected options lead.
@@ -354,8 +354,15 @@ class Choice extends Control
         return array_map(function (array $option) use ($attributes, $values): Button {
             $optionValue = (string) $option['value'];
 
+            $icon = $option['icon'] ?? null;
+
             return Button::make()
-                ->label(self::optionLabel($option))
+                ->icon($icon)
+                // An icon-only button keeps its light DOM empty, which is what
+                // `<craft-button>` keys its square treatment on. The option's
+                // label becomes the button's accessible name instead.
+                ->label($icon !== null ? null : self::optionLabel($option))
+                ->attributes($icon !== null ? ['aria' => ['label' => $option['label']]] : [])
                 ->value($optionValue)
                 ->active(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false));

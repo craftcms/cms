@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -173,9 +172,10 @@ readonly class ElementSourceForm
     private function viewModeField(string $elementType, array $source): Field
     {
         $options = array_map(fn (array $viewMode) => [
-            // The icon carries no accessible name, so the title supplies one.
+            // The icon is presentational, so the title becomes the button's
+            // accessible name.
             'label' => $viewMode['title'],
-            'labelHtml' => (string) Icons::svg($viewMode['icon'] ?? 'table'),
+            'icon' => $viewMode['icon'] ?? 'table',
             'value' => $viewMode['mode'],
         ], $this->viewModes($elementType, $source));
 
@@ -196,8 +196,8 @@ readonly class ElementSourceForm
         $options = $this->sortOptions($elementType, $source);
         $dir = Choice::make('defaultSort.dir')
             ->options([
-                ['label' => t('Sort ascending'), 'labelHtml' => (string) Icons::svg('asc'), 'value' => 'asc'],
-                ['label' => t('Sort descending'), 'labelHtml' => (string) Icons::svg('desc'), 'value' => 'desc'],
+                ['label' => t('Sort ascending'), 'icon' => 'asc', 'value' => 'asc'],
+                ['label' => t('Sort descending'), 'icon' => 'desc', 'value' => 'desc'],
             ])
             ->presentation(ChoicePresentation::Buttons);
 

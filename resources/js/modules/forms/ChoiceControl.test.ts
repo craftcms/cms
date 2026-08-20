@@ -1,7 +1,14 @@
 import {createApp, h, nextTick, reactive} from 'vue';
-import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import ChoiceControl from './ChoiceControl.vue';
 import type {FormControlPayload} from './types';
+
+// `craft-button-group` calls attachInternals(), which happy-dom doesn't
+// implement. Same stub FormRenderer.test.ts uses.
+const attachInternals = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  'attachInternals'
+);
 
 describe('ChoiceControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -14,9 +21,26 @@ describe('ChoiceControl', () => {
     {label: 'Three', value: 'three'},
   ];
 
+  beforeEach(() => {
+    Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+      configurable: true,
+      value: () => ({setFormValue: vi.fn()}),
+    });
+  });
+
   afterEach(() => {
     app?.unmount();
     container?.remove();
+
+    if (attachInternals) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'attachInternals',
+        attachInternals
+      );
+    } else {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+    }
   });
 
   async function mount(
@@ -65,6 +89,31 @@ describe('ChoiceControl', () => {
   function checkboxes(): HTMLElement[] {
     return [...container!.querySelectorAll<HTMLElement>('craft-checkbox')];
   }
+
+  it('renders an icon option as an empty, labelled button', async () => {
+    await mount(
+      {
+        presentation: 'buttons',
+        multiple: false,
+        options: [
+          {label: 'Sort ascending', icon: 'asc', value: 'asc'},
+          {label: 'Sort descending', icon: 'desc', value: 'desc'},
+        ],
+      },
+      'asc'
+    );
+
+    const buttons = [...container!.querySelectorAll('craft-button')];
+
+    expect(buttons.map((b) => b.getAttribute('icon'))).toEqual(['asc', 'desc']);
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Sort ascending',
+      'Sort descending',
+    ]);
+    // `craft-button` only keeps its square icon-only treatment while its light
+    // DOM has no rendered content.
+    expect(buttons.every((b) => b.textContent?.trim() === '')).toBe(true);
+  });
 
   it('renders All checked and disables every other option', async () => {
     await mount({allowAll: true}, '*');

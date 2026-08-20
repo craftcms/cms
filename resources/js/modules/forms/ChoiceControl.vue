@@ -21,6 +21,8 @@
   type ChoiceOption = {
     label: string;
     labelHtml?: string;
+    /** Icon name; `craft-button` resolves and renders it. */
+    icon?: string;
     value: ChoiceValue;
     disabled?: boolean;
   };
@@ -291,6 +293,8 @@
       :name="`${inputName(control.path)}[]`"
       :value="inputValue(option.value)"
     />
+    <!-- `icon` is bound as an attribute because `craft-button` doesn't reflect
+         it, and its square icon-only treatment keys on the attribute. -->
     <craft-button
       v-for="option in control.props.options"
       :key="inputValue(option.value)"
@@ -298,11 +302,14 @@
       :value="inputValue(option.value)"
       :active="selected(option.value)"
       :disabled="!editable || option.disabled"
-      :aria-label="option.labelHtml ? option.label : undefined"
+      :icon.attr="option.icon"
+      :aria-label="option.icon || option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
     >
-      <span v-if="option.labelHtml" v-html="option.labelHtml" />
-      <template v-else>{{ option.label }}</template>
+      <!-- An icon option slots nothing: `craft-button` renders the icon
+           itself, and only stays square while its light DOM is empty. -->
+      <span v-if="!option.icon && option.labelHtml" v-html="option.labelHtml" />
+      <template v-else-if="!option.icon">{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
   <CheckboxGroup

@@ -222,6 +222,28 @@ it('serializes and validates combobox behavior', function () {
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
 });
 
+it('renders an icon-only choice button with an accessible name and no label', function () {
+    $crawler = renderChoice(
+        Choice::make('choice')
+            ->options([
+                ['label' => 'Sort ascending', 'icon' => 'asc', 'value' => 'asc'],
+                ['label' => 'Display as cards', 'icon' => 'custom-icons/element-cards', 'value' => 'cards'],
+            ])
+            ->presentation(ChoicePresentation::Buttons),
+        'asc',
+    );
+    $buttons = $crawler->filter('craft-button');
+
+    // The legacy alias and the family-prefixed custom icon both survive as a
+    // name the web component can resolve.
+    expect($buttons->eq(0)->attr('icon'))->toBe('arrow-down-short-wide')
+        ->and($buttons->eq(1)->attr('icon'))->toBe('custom-icons/element-cards')
+        // No slotted label: `<craft-button>` only stays square while empty.
+        ->and(trim($buttons->eq(0)->html()))->toBe('')
+        ->and($buttons->eq(0)->attr('aria-label'))->toBe('Sort ascending')
+        ->and($buttons->eq(1)->attr('aria-label'))->toBe('Display as cards');
+});
+
 it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {
     $choice = Choice::make('choice')
         ->options([
