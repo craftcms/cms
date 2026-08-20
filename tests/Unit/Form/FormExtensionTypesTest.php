@@ -16,6 +16,7 @@ use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FieldSelect;
+use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Hidden as HiddenControl;
@@ -77,6 +78,7 @@ it('registers core and plugin Node and Control types separately', function () {
             ElementSelect::class,
             FieldLayoutDesigner::class,
             FieldSelect::class,
+            FilesystemSelect::class,
             GroupedEntryTypeManager::class,
             Handle::class,
             HiddenControl::class,
@@ -151,6 +153,26 @@ it('renders collapsible groups through the shared payload and PHP renderer', fun
         'collapsible' => true,
     ])->and($crawler->filter('craft-disclosure[data-form-node="links"][label="Links"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-disclosure craft-field-group[slot="content"] input[name="settings[url]"]'))->toHaveCount(1);
+});
+
+it('renders filesystem selects through the shared payload and PHP renderer', function () {
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/filesystem-select'),
+    ]);
+
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Filesystem', FilesystemSelect::make('filesystem')
+            ->emptyOption('Select a filesystem')
+            ->create()),
+    ]), new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $control = $payload->nodes[0]->control;
+
+    expect($control?->component)->toBe('craft:filesystem-select')
+        ->and($control?->props['options'][0]['value'])->toBe('')
+        ->and($control?->props['createUrl'])->toBeString()
+        ->and($crawler->filter('craft-filesystem-select[name="settings[filesystem]"][create-url]'))->toHaveCount(1);
 });
 
 it('renders and submits test plugin types through the PHP renderer', function () {

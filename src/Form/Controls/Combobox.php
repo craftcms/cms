@@ -31,7 +31,7 @@ class Combobox extends Control
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        return ComboboxComponent::make()
+        return static::htmlComponent($control)
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
@@ -51,6 +51,11 @@ class Combobox extends Control
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
             ])
             ->toHtml();
+    }
+
+    protected static function htmlComponent(ControlPayload $_control): ComboboxComponent
+    {
+        return ComboboxComponent::make();
     }
 
     public function component(): string
