@@ -113,6 +113,11 @@ describe('create / edit', function () {
                 ->where('form.nodes', fn (Collection $nodes): bool => $nodes->contains(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
                         && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
+                ) && collect(['subpath', 'transformSubpath'])->every(
+                    fn (string $path): bool => $nodes->contains(
+                        fn (array $node): bool => ($node['control']['path'] ?? null) === [$path]
+                            && ! empty($node['control']['props']['textExpanderTriggers']),
+                    ),
                 )));
     });
 

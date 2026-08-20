@@ -10,7 +10,6 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -48,6 +47,7 @@ class VolumeEditViewModel extends ViewModel
             Asset::class,
             [$this->volume->getFieldLayout()],
         );
+        $envTextExpanderTriggers = SelectOptions::getEnvTextExpanderTriggers();
         $disabledFilesystemTargets = $this->volumes->getAllVolumes()
             ->reject(fn (Volume $volume): bool => $volume->id === $this->volume->id || (bool) $volume->getSubpath())
             ->map(fn (Volume $volume): ?string => $volume->getResolvedFsTarget())
@@ -75,21 +75,12 @@ class VolumeEditViewModel extends ViewModel
                 ->instructions(t('Choose which filesystem assets should be stored in.'))
                 ->tip(t('This can be set to an environment variable matching one of the option values.'))
                 ->required(),
-            // CONFLICT-REVIEW: 6.x swapped the Twig subpath inputs from `autosuggestField`
-            // (suggestEnvVars) to `textField` + env text expander triggers. This branch had
-            // already ported them to a Combobox seeded with the same env suggestions, so the
-            // Combobox is kept here rather than redesigning the control during the merge.
-            // Switch these two fields to Text::make(...)->textExpanderTriggers(
-            // SelectOptions::getEnvTextExpanderTriggers()) if the text expander is meant to
-            // replace the combobox everywhere.
             Field::make(
                 t('Subpath'),
-                Combobox::make('subpath')
-                    ->options(SelectOptions::getEnvSuggestions())
-                    ->showAllOnEmpty(),
+                Text::make('subpath')->textExpanderTriggers($envTextExpanderTriggers),
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
-                ->tip(t('This can begin with an environment variable.')),
+                ->tip(t('Type `$` to choose an environment variable.')),
             Field::make(
                 t('Transform Filesystem'),
                 FilesystemSelect::make('transformFsHandle')
@@ -104,12 +95,10 @@ class VolumeEditViewModel extends ViewModel
                 ->tip(t('This can be set to an environment variable matching one of the option values.')),
             Field::make(
                 t('Transform Subpath'),
-                Combobox::make('transformSubpath')
-                    ->options(SelectOptions::getEnvSuggestions())
-                    ->showAllOnEmpty(),
+                Text::make('transformSubpath')->textExpanderTriggers($envTextExpanderTriggers),
             )
                 ->instructions(t('Where transforms should be stored on the filesystem.'))
-                ->tip(t('This can begin with an environment variable.')),
+                ->tip(t('Type `$` to choose an environment variable.')),
         ]);
 
         if (Sites::isMultiSite()) {
