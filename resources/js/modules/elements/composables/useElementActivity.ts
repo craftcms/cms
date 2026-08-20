@@ -18,9 +18,16 @@ interface Options {
   elementType: string;
   /** The canonical element — activity is tracked against it, not the draft. */
   elementId: number | null;
-  draftId: number | null;
+  /**
+   * The draft the screen is editing, read per poll rather than captured:
+   * autosave creates a provisional draft partway through a session, and the
+   * poll has to follow it. Otherwise the server resolves — and timestamps —
+   * the canonical element, while {@link rebase} is storing the draft's stamp,
+   * and every poll after the first autosave reports a change nobody made.
+   */
+  draftId: () => number | null;
   siteId: number | null;
-  isProvisionalDraft: boolean;
+  isProvisionalDraft: () => boolean;
   /** Last-modified stamps as rendered, used to detect upstream changes. */
   updatedTimestamps: {element: number | null; canonical: number | null};
   intervalMs?: number;
@@ -44,21 +51,32 @@ export function useElementActivity(options: Options) {
   let elementStamp = options.updatedTimestamps.element;
   let canonicalStamp = options.updatedTimestamps.canonical;
 
+  // Bumped by every re-baseline. A poll that was in flight when the screen
+  // saved describes the state before that save, so its stamps would read as
+  // someone else's change — they're dropped instead.
+  let baseline = 0;
+
   async function poll(): Promise<void> {
     if (!options.url) {
       return;
     }
 
+    const polled = baseline;
+
     try {
       const {data} = await actionClient.post(options.url, {
         elementType: options.elementType,
         elementId: options.elementId,
-        draftId: options.draftId,
+        draftId: options.draftId(),
         siteId: options.siteId,
-        provisional: options.isProvisionalDraft ? 1 : null,
+        provisional: options.isProvisionalDraft() ? 1 : null,
       });
 
       activity.value = data.activity ?? [];
+
+      if (polled !== baseline) {
+        return;
+      }
 
       const elementChanged =
         elementStamp !== null && data.updatedTimestamp !== elementStamp;
@@ -86,8 +104,14 @@ export function useElementActivity(options: Options) {
    * which the next poll would otherwise report as someone else's change.
    */
   function rebase(timestamps: Options['updatedTimestamps']): void {
+    baseline++;
+
+    // Both stamps are comparable against what the poll reports: a save reports
+    // the `dateUpdated` of the element it just wrote, and the server keeps that
+    // the same instant as the one it reads back out of storage.
     elementStamp = timestamps.element;
     canonicalStamp = timestamps.canonical;
+
     isStale.value = false;
     staleType.value = null;
   }

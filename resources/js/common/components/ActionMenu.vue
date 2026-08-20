@@ -108,7 +108,7 @@
         <craft-button
           type="button"
           size="small"
-          icon="ellipsis"
+          :icon="icon"
           :aria-label="label"
           :variant="ButtonVariant.Plain"
         >

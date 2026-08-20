@@ -139,13 +139,14 @@
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
     <div :id="matrixId" class="matrix matrix-field">
       <span role="status" class="visually-hidden" data-status-message />
-      <div class="blocks" role="list">
-        <div
+      <div class="grid gap-1" role="list" data-matrix-blocks>
+        <craft-card
           v-for="(uid, index) in value.sortOrder"
           :key="uid"
           class="matrixblock js-deletable"
           :data-id="uid"
           :data-type="String(value.entries[uid]?.type ?? '')"
+          data-matrix-block
           role="listitem"
         >
           <template v-if="editable">
@@ -160,13 +161,11 @@
               :value="String(value.entries[uid]?.type ?? '')"
             />
           </template>
-          <div class="titlebar">
-            <div class="blocktype flex flex-nowrap flex-gap-xs">
-              {{ entryType(uid)?.label ?? uid }}
-            </div>
+          <div slot="label">
+            {{ entryType(uid)?.label ?? uid }}
             <div class="preview" />
           </div>
-          <div v-if="editable" class="actions">
+          <div v-if="editable" slot="actions">
             <craft-reorder-button
               class="move-btn"
               :disabled="value.sortOrder.length < 2"
@@ -181,6 +180,8 @@
             <craft-button
               type="button"
               icon="trash"
+              size="small"
+              variant="danger-plain"
               :disabled="
                 value.sortOrder.length <= (control.props.minEntries ?? 0)
               "
@@ -204,7 +205,7 @@
             </template>
             <craft-spinner v-else :label="t('Loading')" />
           </div>
-        </div>
+        </craft-card>
       </div>
       <div v-if="canAdd" class="buttons">
         <button

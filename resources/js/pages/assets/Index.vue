@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
   import {
     appendIndexQuery,
@@ -67,8 +66,6 @@
   });
 
   const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>

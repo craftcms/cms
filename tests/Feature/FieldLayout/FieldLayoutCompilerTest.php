@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutFormResolving;
@@ -33,6 +35,7 @@ use CraftCms\Cms\Form\Nodes\Missing as MissingNode;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
@@ -315,4 +318,119 @@ it('preserves missing persisted form providers without submitting their values',
         ->and($recovered->nodes[0]->children[1]->control?->component)->toBe('craft:text')
         ->and($recovered->values)->toBe(['fields' => ['unavailable' => 'Original content']])
         ->and($recoveredCrawler->filter('input[name="fields[unavailable]"]'))->toHaveCount(1);
+});
+
+it('carries per-field change-tracking status into the payload when compiling a draft', function () {
+    actingAs(User::findOne());
+
+    $field = FieldModel::factory()->create([
+        'handle' => 'body',
+        'type' => PlainText::class,
+    ]);
+
+    // Full-width uids on purpose: change tracking stores `layoutElementUid` in
+    // a `char(36)` column, and Postgres blank-pads a shorter value back out to
+    // 36 characters on read, so it stops matching the layout element it names.
+    // Real uids are UUIDs, so fixtures have to be the same width to be honest.
+    $entryModel = Entry::factory()
+        ->withFieldLayout(FieldLayoutModel::factory()->withContentTab([
+            new EntryTitleField(['uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a01']),
+            new CustomField(config: [
+                'uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a02',
+                'fieldUid' => $field->uid,
+            ]),
+        ]))
+        ->create();
+
+    $canonical = entryQuery()->id($entryModel->id)->one();
+    $canonical->title = 'Canonical title';
+    $canonical->setFieldValue('body', 'Canonical body');
+    Elements::saveElement($canonical);
+
+    $draft = app(Drafts::class)->createDraft($canonical, User::findOne()->id);
+    $draft->title = 'Draft title';
+    $draft->setDirtyAttributes(['title']);
+    $draft->setFieldValue('body', 'Draft body');
+    $draft->setDirtyFields(['body']);
+    Elements::saveElement($draft);
+
+    $draft = entryQuery()->id($draft->id)->drafts()->one();
+
+    $canonicalPayload = app(FieldLayoutCompiler::class)->compile(
+        $canonical->getFieldLayout(),
+        $canonical,
+    );
+    $payload = app(FieldLayoutCompiler::class)->compile($draft->getFieldLayout(), $draft);
+
+    $props = collect($payload->nodes[0]->children)
+        ->keyBy(fn ($node) => implode('.', $node->control?->path ?? []))
+        ->map(fn ($node) => $node->props);
+
+    expect($draft->getModifiedAttributes())->toContain('title')
+        ->and($draft->getModifiedFields())->toContain('body')
+        ->and($props['title']['status'])->toBe('modified')
+        ->and($props['title']['statusLabel'])->toBe('This field has been modified.')
+        ->and($props['fields.body']['status'])->toBe('modified')
+        ->and($props['fields.body']['statusLabel'])->toBe('This field has been modified.');
+
+    // The canonical element never reports a status.
+    expect(collect($canonicalPayload->nodes[0]->children)->pluck('props')->pluck('status')->filter())
+        ->toBeEmpty();
+
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+
+    expect($crawler->filter('craft-field[status="modified"]'))->toHaveCount(2)
+        ->and($crawler->filter('craft-field[status="modified"]')->eq(0)->attr('status-label'))
+        ->toBe('This field has been modified.');
+});
+
+it('reports outdated status for fields changed on the canonical element since the draft was created', function () {
+    actingAs(User::findOne());
+
+    $field = FieldModel::factory()->create([
+        'handle' => 'body',
+        'type' => PlainText::class,
+    ]);
+
+    // Full-width uids on purpose: change tracking stores `layoutElementUid` in
+    // a `char(36)` column, and Postgres blank-pads a shorter value back out to
+    // 36 characters on read, so it stops matching the layout element it names.
+    // Real uids are UUIDs, so fixtures have to be the same width to be honest.
+    $entryModel = Entry::factory()
+        ->withFieldLayout(FieldLayoutModel::factory()->withContentTab([
+            new EntryTitleField(['uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a01']),
+            new CustomField(config: [
+                'uid' => '5c2e4c8a-9f3d-4f1a-9f5a-1b1e6f0d7a02',
+                'fieldUid' => $field->uid,
+            ]),
+        ]))
+        ->create();
+
+    $canonical = entryQuery()->id($entryModel->id)->one();
+    $canonical->title = 'Canonical title';
+    $canonical->setFieldValue('body', 'Canonical body');
+    Elements::saveElement($canonical);
+
+    $draft = app(Drafts::class)->createDraft($canonical, User::findOne()->id);
+
+    // The canonical element moves on after the draft was created.
+    $canonical = entryQuery()->id($entryModel->id)->one();
+    $canonical->title = 'Newer canonical title';
+    $canonical->setDirtyAttributes(['title']);
+    $canonical->setFieldValue('body', 'Newer canonical body');
+    $canonical->setDirtyFields(['body']);
+    Elements::saveElement($canonical);
+
+    $draft = entryQuery()->id($draft->id)->drafts()->one();
+
+    $payload = app(FieldLayoutCompiler::class)->compile($draft->getFieldLayout(), $draft);
+    $props = collect($payload->nodes[0]->children)
+        ->keyBy(fn ($node) => implode('.', $node->control?->path ?? []))
+        ->map(fn ($node) => $node->props);
+
+    expect($draft->getOutdatedAttributes())->toContain('title')
+        ->and($draft->getOutdatedFields())->toContain('body')
+        ->and($props['title']['status'])->toBe('outdated')
+        ->and($props['title']['statusLabel'])->toBe('This field was updated in the Current revision.')
+        ->and($props['fields.body']['status'])->toBe('outdated');
 });

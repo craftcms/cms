@@ -2,7 +2,7 @@
   import {computed, h} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
-  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditPage';
+  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     label: string;

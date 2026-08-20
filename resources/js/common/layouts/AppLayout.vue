@@ -29,7 +29,8 @@
 
   const slots = defineSlots<ScreenSlots>();
 
-  const shell = inject(ScreenShellKey, PageScreen);
+  const providedShell = inject(ScreenShellKey, null);
+  const shell = computed(() => providedShell ?? PageScreen);
 
   // Forward whatever the page actually passed. Enumerating `ScreenSlots`
   // instead would hand the shell a function for every slot, defeating the

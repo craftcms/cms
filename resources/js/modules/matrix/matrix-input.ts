@@ -168,7 +168,11 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     this.form = this.container.closest('form');
-    this.entriesContainer = this.container.querySelector(':scope > .blocks');
+    // `.blocks` is the Twig markup's class; the Vue control styles its own
+    // container, so it marks the hook explicitly.
+    this.entriesContainer = this.container.querySelector(
+      ':scope > [data-matrix-blocks], :scope > .blocks'
+    );
     this.addEntryBtnContainer =
       this.container.querySelector(':scope > .buttons');
     this.addEntryBtn =

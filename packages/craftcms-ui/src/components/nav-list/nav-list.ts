@@ -11,6 +11,7 @@ export default class CraftNavList extends LitElement {
       margin: 0;
       padding: 0;
       list-style: none;
+      gap: var(--c-spacing-xs);
     }
   `;
 

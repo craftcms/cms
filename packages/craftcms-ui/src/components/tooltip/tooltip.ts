@@ -3,6 +3,7 @@ import {property} from 'lit/decorators.js';
 import {LionTooltip} from '@lion/ui/tooltip.js';
 import {withTooltipConfig} from '@lion/ui/overlays.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
 
 /**
  * craft-tooltip shows contextual text for an external trigger element
@@ -41,6 +42,10 @@ export default class CraftTooltip extends LionTooltip {
     return [
       ...super.styles,
       css`
+        :host {
+          display: contents;
+        }
+
         ::slotted([slot='content']) {
           background-color: var(--c-color-black-fill-loud);
           border: 1px solid var(--c-color-black-border-loud);
@@ -115,13 +120,15 @@ export default class CraftTooltip extends LionTooltip {
       // Disable Lion's hover/focus interaction.
       delete config.visibilityTriggerFunction;
     } else {
-      // Lion defaults both delayIn and delayOut to 300ms. delayOut is fine
-      // (prevents flicker when briefly overshooting), but delayIn makes
-      // tooltips feel sluggish. Show immediately.
+      // Lion defaults both delays to 300ms, which makes tooltips feel
+      // sluggish at both ends: slow to appear, and slow enough to leave that
+      // moving along a row of icons leaves the previous tooltip on screen
+      // beside the new one. Show immediately, and keep just enough of a delay
+      // out to not blink when the pointer clips an edge.
       const {visibilityTriggerFunction} = withTooltipConfig({
         invokerRelation: this.invokerRelation,
-        delayIn: 0,
-        delayOut: 300,
+        delayIn: 200,
+        delayOut: 0,
       });
       config.visibilityTriggerFunction = visibilityTriggerFunction;
     }
@@ -130,7 +137,12 @@ export default class CraftTooltip extends LionTooltip {
       ...config,
       popperConfig: {
         ...config.popperConfig,
+        strategy: 'fixed',
         placement: this.placement,
+        modifiers: [
+          ...(config.popperConfig?.modifiers ?? []),
+          ...viewportEscapingModifiers(),
+        ],
       },
     };
   }

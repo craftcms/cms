@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasAppearance;
 use CraftCms\Cms\Cp\Concerns\HasVariant;
+use CraftCms\Cms\Cp\Enums\Size;
 use Illuminate\Contracts\Support\Htmlable;
 use Stringable;
 
@@ -35,6 +36,10 @@ class Callout extends ViewComponent
     protected ?string $rounded = null;
 
     protected bool $inline = false;
+
+    protected ?string $size = null;
+
+    protected string|int|null $padding = null;
 
     protected function tagName(): string
     {
@@ -79,6 +84,36 @@ class Callout extends ViewComponent
         return $this;
     }
 
+    /**
+     * `small` steps the type down; `auto` (the web component's default) keeps
+     * it at the surrounding text size.
+     *
+     * Not the shared {@see Size} vocabulary — a
+     * callout sizes its type relative to its surroundings rather than picking
+     * from the component scale, and `auto` has no place in that enum.
+     *
+     * @param  'small'|'auto'|null  $size
+     */
+    public function size(?string $size): static
+    {
+        $this->size = $size;
+
+        return $this;
+    }
+
+    /**
+     * Spacing inside the callout: `sm`/`md`/`lg`/`xl` (mapped to
+     * `--c-spacing-*`), `0`, a unitless number (pixels), or any CSS length.
+     * Free-form by design, so it isn’t validated against a value set; the web
+     * component has its own default.
+     */
+    public function padding(string|int|null $padding): static
+    {
+        $this->padding = $padding;
+
+        return $this;
+    }
+
     /** The callout body (default slot). */
     public function content(string|Htmlable|Stringable|ViewComponent|null $content): static
     {
@@ -98,6 +133,8 @@ class Callout extends ViewComponent
             'hide-icon' => $this->hideIcon,
             'rounded' => $this->rounded,
             'inline' => $this->inline,
+            'size' => $this->size,
+            'padding' => $this->padding,
         ];
     }
 }

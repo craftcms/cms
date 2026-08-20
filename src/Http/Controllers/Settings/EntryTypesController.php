@@ -69,7 +69,7 @@ class EntryTypesController
 
         return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],
             ],
             'title' => t('Entry Types'),

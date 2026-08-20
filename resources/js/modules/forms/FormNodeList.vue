@@ -3,7 +3,7 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/icon/icon';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, nextTick, ref, watch} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import FormNode from './FormNode.vue';
   import {formTabPanelId, pathsMatch} from './runtime';
   import type {FormChange, FormNodePayload, FormPayload} from './types';
@@ -19,7 +19,6 @@
   const emit = defineEmits<{
     (event: 'change', change: FormChange): void;
   }>();
-  const tablist = ref<HTMLElement>();
   const tabs = computed(() =>
     props.nodes.filter(
       (node): node is FormNodePayload<{label: string}> & {uid: string} =>
@@ -61,51 +60,30 @@
     );
   }
 
-  function onTabKeydown(event: KeyboardEvent, index: number): void {
-    let nextIndex: number;
+  /**
+   * `craft-tabs` owns the selection — clicks, keyboard navigation, and the
+   * overflow menu all resolve to a `selectedIndex` — so the panel visibility
+   * this component drives follows the strip rather than tracking the
+   * interactions itself.
+   */
+  function onSelectionChanged(event: Event): void {
+    const index = (event.target as {selectedIndex?: number} | null)
+      ?.selectedIndex;
+    const tab = index === undefined ? undefined : tabs.value[index];
 
-    if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = tabs.value.length - 1;
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      if (!(event.currentTarget instanceof Element)) {
-        return;
-      }
-
-      const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
-      const previous = event.key === (rtl ? 'ArrowRight' : 'ArrowLeft');
-      nextIndex =
-        (index + (previous ? -1 : 1) + tabs.value.length) % tabs.value.length;
-    } else {
-      return;
+    if (tab) {
+      activeTab.value = tab.uid;
     }
-
-    event.preventDefault();
-    activeTab.value = tabs.value[nextIndex]!.uid;
-    nextTick(() =>
-      tablist.value
-        ?.querySelectorAll<HTMLElement>('[role="tab"]')
-        [nextIndex]?.focus()
-    );
   }
 </script>
 
 <template>
-  <craft-button-group v-if="tabs.length > 1" ref="tablist" role="tablist">
-    <craft-button
-      v-for="(tab, index) in tabs"
+  <craft-tabs v-if="tabs.length > 1" @selected-changed="onSelectionChanged">
+    <craft-tab
+      v-for="tab in tabs"
+      slot="tab"
       :key="tab.uid"
-      :id="`${tabPanelId(tab)}-tab`"
-      type="button"
-      role="tab"
-      variant="outline"
-      :active="activeTab === tab.uid"
-      :tabindex="activeTab === tab.uid ? 0 : -1"
-      :aria-selected="activeTab === tab.uid"
-      :aria-controls="tabPanelId(tab)"
-      @click="activeTab = tab.uid"
-      @keydown="onTabKeydown($event, index)"
+      :controls="`${tabPanelId(tab)}-tab`"
     >
       {{ tab.props.label }}
       <craft-icon
@@ -114,14 +92,15 @@
         :label="t('Errors')"
         slot="suffix"
       />
-    </craft-button>
-  </craft-button-group>
+    </craft-tab>
+  </craft-tabs>
   <FormNode
     v-for="node in nodes"
     :key="node.uid ?? node.control?.path.join('.')"
     :node="node"
+    slot="panel"
     :initially-hidden="node.component === 'craft:tab' && node.uid !== activeTab"
-    :tab-button-id="
+    :id="
       tabs.length > 1 && node.component === 'craft:tab' && node.uid
         ? `${formTabPanelId(node.uid, scope)}-tab`
         : undefined

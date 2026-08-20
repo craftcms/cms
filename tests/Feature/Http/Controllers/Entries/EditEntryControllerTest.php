@@ -234,6 +234,35 @@ it('lists drafts and revisions in the context menu', function () {
         );
 });
 
+it('caps the context menu at five revisions, listing every draft', function () {
+    foreach (range(1, 7) as $i) {
+        app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i");
+    }
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contextMenu.items', function (Collection $items) {
+                // The flat list is grouped by headings, so count the links
+                // between each heading and whatever follows it.
+                $group = function (string $heading) use ($items): Collection {
+                    $start = $items->search(
+                        fn (array $item): bool => ($item['label'] ?? null) === $heading,
+                    );
+
+                    return $items
+                        ->slice($start + 1)
+                        ->takeWhile(fn (array $item): bool => ($item['type'] ?? null) === 'link');
+                };
+
+                return $group('Drafts')->count() === 7
+                    && $group('Recent Revisions')->count() === 5;
+            })
+            ->etc()
+        );
+});
+
 it('renders a provisional draft in the Inertia editor', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), provisional: true);
 

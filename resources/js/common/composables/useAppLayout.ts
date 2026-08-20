@@ -10,7 +10,6 @@ import type {
 
 export interface UseAppLayoutOptions {
   title?: string;
-  fullWidth?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<'saveAndContinueEditing'>;
   formActions?: Array<ActionItem>;

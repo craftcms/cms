@@ -41,6 +41,7 @@ interface TestIntegration {
   renderer: ShallowRef<{
     advanceBaseline(): void;
     currentValues(): FormValues;
+    resetValues(): void;
     setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
   } | null>;
   values: ShallowRef<FormValues>;
@@ -78,6 +79,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: vi.fn(() => integration.onMutation({})),
         currentValues: () => structuredClone(currentValues),
+        resetValues: vi.fn(),
         setValue: vi.fn(),
       };
     });
@@ -119,6 +121,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: advanceRendererBaseline,
         currentValues: () => payload.values,
+        resetValues: vi.fn(),
         setValue: vi.fn(),
       };
     });
@@ -203,6 +206,7 @@ describe('useInertiaFormRenderer', () => {
       integration.renderer.value = {
         advanceBaseline: vi.fn(() => integration.onMutation({})),
         currentValues: () => rootPayload.values,
+        resetValues: vi.fn(),
         setValue: vi.fn(),
       };
     });
