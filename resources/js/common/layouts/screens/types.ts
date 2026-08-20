@@ -18,7 +18,6 @@ export type DefaultFormAction = 'saveAndContinueEditing';
 export interface ScreenProps {
   title?: string;
   debug?: any;
-  fullWidth?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<DefaultFormAction>;
   formActions?: Array<ActionItem>;

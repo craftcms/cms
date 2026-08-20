@@ -41,7 +41,7 @@ readonly class GeneralSettingsController
         return new CpScreenResponse()
             ->title(t('General Settings'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('General Settings')],
             ])
             ->redirectUrl('settings')

@@ -5,6 +5,7 @@
   import {CraftElementSelectInput} from '@/modules/element-select-input';
   import type {FormChangeKind, FormControlPayload} from './types';
   import {inputName} from './runtime';
+  import VarDump from '@/common/components/VarDump.vue';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -63,6 +64,9 @@
       limit: props.control.props.limit,
       showSiteMenu: props.control.props.showSiteMenu,
       sortable: false,
+      // Explicit so the chips rendered here and the ones the input fetches from
+      // `app/render-elements` after a selection agree on having a menu.
+      showActionMenu: true,
       modalSettings: {modalTitle: props.control.props.selectionLabel},
     })
   );
@@ -149,6 +153,16 @@
               :name="`${inputName(control.path)}[]`"
               :value="String(elementId(selectedValue))"
             />
+            <!--
+              Left empty on purpose: `BaseElementSelectInput` calls
+              `Craft.addActionsToChip()` on every chip it finds, and this is the
+              container it looks for. With one it builds a `craft-action-menu`
+              here; without one it falls all the way back to the old jQuery
+              disclosure menu and appends it to the chip's body slot. Vue never
+              renders children into this div, so the injected menu survives
+              re-renders of the surrounding list.
+            -->
+            <div slot="suffix"></div>
           </craft-chip>
         </li>
       </ul>

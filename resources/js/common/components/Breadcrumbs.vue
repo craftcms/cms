@@ -2,7 +2,7 @@
   import type {ActionItems} from '@/common/types';
 
   export interface BreadcrumbItem {
-    url?: string | null;
+    href?: string | null;
     label?: string | null;
     /** Server-rendered crumb content, e.g. an element chip. */
     html?: string | null;
@@ -60,7 +60,7 @@
 </script>
 
 <template>
-  <craft-breadcrumbs :label="t('Breadcrumbs')">
+  <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
     <craft-breadcrumb-item
       v-for="(item, idx) in items"
       :key="idx"
@@ -72,11 +72,11 @@
       <template v-if="item.html">
         <DynamicHtmlRenderer :html="item.html" />
       </template>
-      <template v-else-if="item.url">
+      <template v-else-if="item.href">
         <CpLink
-          :href="item.url"
+          :href="item.href"
           :inertia="interceptNavigation ? false : undefined"
-          @click="interceptNavigation && onNavigate($event, item.url)"
+          @click="interceptNavigation && onNavigate($event, item.href)"
           >{{ item.label }}</CpLink
         >
       </template>
@@ -86,6 +86,7 @@
       <ActionMenu
         v-if="item.actions?.length"
         slot="suffix"
+        icon="chevron-down"
         :actions="item.actions"
         :label="t('Actions')"
       />

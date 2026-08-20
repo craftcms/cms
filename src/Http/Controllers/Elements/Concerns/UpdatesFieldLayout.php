@@ -9,6 +9,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormHtmlRenderer;
+use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\TemplateMode;
@@ -20,28 +21,35 @@ use function CraftCms\Cms\template;
 trait UpdatesFieldLayout
 {
     /**
-     * @return array<string, mixed>
+     * Compiles the element's field layout at the scope the request asked for.
+     *
+     * Split out so a caller that needs the layout for something else as well —
+     * autosave rebuilds the whole edit screen payload around it — can compile
+     * it once and hand the same payload to {@see fieldLayoutData()}.
      */
-    protected function fieldLayoutData(ElementInterface $element): array
+    protected function compileFieldLayout(ElementInterface $element): FormPayload
     {
-        $namespace = request()->header('X-Craft-Namespace');
-        $rootScope = $this->requestedFormScope(
-            'X-Craft-Form-Root-Scope',
-            $namespace === null || $namespace === ''
-                ? []
-                : explode('[', str_replace([']', '.'], ['', '['], $namespace)),
-        );
-        $requestedScope = $this->requestedFormScope('X-Craft-Form-Scope', $rootScope);
-        $rootPayload = app(FieldLayoutCompiler::class)->compile(
+        return app(FieldLayoutCompiler::class)->compile(
             $element->getFieldLayout(),
             $element,
             new FormContext(
-                namespace: $rootScope,
+                namespace: $this->fieldLayoutRootScope(),
                 errors: $element->errors()->getMessages(),
                 mode: ControlMode::Editable,
                 refreshable: true,
             ),
         );
+    }
+
+    /**
+     * @param  FormPayload|null  $rootPayload  An already-compiled layout to reuse; compiled here when omitted.
+     * @return array<string, mixed>
+     */
+    protected function fieldLayoutData(ElementInterface $element, ?FormPayload $rootPayload = null): array
+    {
+        $requestedScope = $this->requestedFormScope('X-Craft-Form-Scope', $this->fieldLayoutRootScope());
+        $rootPayload ??= $this->compileFieldLayout($element);
+
         try {
             $payload = $rootPayload->forScope($requestedScope);
         } catch (InvalidArgumentException $exception) {
@@ -68,6 +76,24 @@ trait UpdatesFieldLayout
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
         ];
+    }
+
+    /**
+     * The scope the whole layout is compiled at — the namespace a slideout or
+     * the legacy editor posts under, and the page root otherwise.
+     *
+     * @return list<string>
+     */
+    private function fieldLayoutRootScope(): array
+    {
+        $namespace = request()->header('X-Craft-Namespace');
+
+        return $this->requestedFormScope(
+            'X-Craft-Form-Root-Scope',
+            $namespace === null || $namespace === ''
+                ? []
+                : explode('[', str_replace([']', '.'], ['', '['], $namespace)),
+        );
     }
 
     /**

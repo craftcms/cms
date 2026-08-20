@@ -68,3 +68,26 @@ it('rejects invalid variant and appearance strings', function () {
     expect(fn () => Callout::make()->appearance('sparkly')->toHtml())
         ->toThrow(ValueError::class);
 });
+
+it('renders the size and padding settings', function () {
+    $html = Callout::make()->size('small')->padding('lg')->toHtml();
+
+    expect($html)->toContain('size="small"')
+        ->and($html)->toContain('padding="lg"');
+});
+
+it('passes padding values through without validating them', function (string|int $padding, string $expected) {
+    expect(Callout::make()->padding($padding)->toHtml())->toContain($expected);
+})->with([
+    ['md', 'padding="md"'],
+    [0, 'padding="0"'],
+    [12, 'padding="12"'],
+    ['1.5rem', 'padding="1.5rem"'],
+]);
+
+it('omits size and padding when unset, so the web component defaults apply', function () {
+    $html = Callout::make()->content('Hi')->toHtml();
+
+    expect($html)->not->toContain('size=')
+        ->and($html)->not->toContain('padding=');
+});

@@ -14,16 +14,28 @@
   }>();
   const craftData = useCraftData();
   const nav = computed(() => craftData.nav);
+
+  // Renders the nav as a rail: labels drop to tooltips, and subnavs move into
+  // a flyout on hover or focus, since there's no room to indent them.
+  const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
   const queue = computed(() => page.props.queue);
 </script>
 
 <template>
   <craft-nav-list>
+    <!--
+      CONFLICT-REVIEW: 6.x added :icon-only when this was still a plain
+      craft-nav-item; it's now routed through CpLink, which sets
+      inheritAttrs: false and spreads $attrs onto the custom element, so the
+      undeclared icon-only attribute still reaches craft-nav-item. Worth a
+      visual check that the collapsed rail + flyout behave with Inertia links.
+    -->
     <CpLink
       v-for="item in nav"
       :key="item.url"
       as="craft-nav-item"
       :icon="item.icon || undefined"
+      :icon-only="iconOnly || undefined"
       :href="item.url"
       :active.prop="item.selected"
       :indicator.prop="!!item.badgeCount"
@@ -33,7 +45,7 @@
       {{ item.label }}
 
       <template v-if="item.subnav">
-        <craft-nav-list slot="subnav" v-if="item.subnav">
+        <craft-nav-list slot="subnav">
           <CpLink
             v-for="subnavItem in item.subnav"
             :key="subnavItem.url"

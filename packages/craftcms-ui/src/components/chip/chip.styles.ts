@@ -69,6 +69,11 @@ export default css`
   }
 
   .cp-chip__body {
+    display: flex;
+    gap: var(--c-spacing-sm);
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
     flex: 1 1 auto;
     white-space: nowrap;
     overflow: hidden;
@@ -85,6 +90,7 @@ export default css`
   }
 
   .cp-chip__suffix {
+    display: flex;
     padding-inline-start: var(--c-spacing-md);
   }
 

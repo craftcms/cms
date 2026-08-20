@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
   import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
   import {usePage} from '@inertiajs/vue3';
@@ -61,8 +60,6 @@
   });
 
   const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>

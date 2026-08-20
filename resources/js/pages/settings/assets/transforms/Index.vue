@@ -13,7 +13,6 @@
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import Empty from '@/common/components/Empty.vue';
   import {router} from '@inertiajs/vue3';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   type ExistingImageTransform = Omit<
@@ -104,8 +103,6 @@
       },
     },
   });
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>

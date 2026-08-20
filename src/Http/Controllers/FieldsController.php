@@ -75,7 +75,7 @@ class FieldsController
 
         return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],
             ],
             'title' => t('Fields'),
