@@ -37,6 +37,7 @@
     :width="width"
     :height="height"
     :max-height="maxHeight"
+    :resizable="resizable"
   >
     <form @submit.prevent="submitHandler">
       <!--

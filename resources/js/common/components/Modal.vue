@@ -1,6 +1,8 @@
 <script setup lang="ts">
-  import {onKeyStroke} from '@vueuse/core';
-  import {computed} from 'vue';
+  import {onKeyStroke, useEventListener} from '@vueuse/core';
+  import {computed, onScopeDispose, ref, shallowRef, watch} from 'vue';
+  import {BaseDrag, ResizeHandle} from '@craftcms/garnish';
+  import {t} from '@craftcms/ui';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -8,6 +10,8 @@
     width?: string;
     height?: string;
     maxHeight?: string;
+    /** Adds a corner handle for dragging the modal to a new size. */
+    resizable?: boolean;
   }
 
   const emit = defineEmits<{
@@ -19,6 +23,7 @@
     isActive: false,
     overlay: true,
     width: 'md',
+    resizable: false,
   });
 
   onKeyStroke('Escape', () => {
@@ -38,7 +43,166 @@
     if (props.maxHeight) {
       style.maxHeight = `min(${props.maxHeight}, ${viewportCap})`;
     }
+    // A dragged size wins over the width class and the height prop.
+    if (resizedWidth.value !== null) {
+      style.width = `${resizedWidth.value}px`;
+    }
+    if (resizedHeight.value !== null) {
+      style.height = `${resizedHeight.value}px`;
+    }
     return Object.keys(style).length ? style : undefined;
+  });
+
+  // --- Resizing -------------------------------------------------------------
+  //
+  // Mirrors Garnish's resizable Modal: a BaseDrag on a corner handle, growing
+  // the modal by twice the pointer delta because it stays centered, so both
+  // edges move. The upper bound comes from the CSS max-width/max-height rather
+  // than a hard-coded gutter — clamping against it keeps a drag back from the
+  // edge responsive instead of unwinding invisible overshoot first.
+
+  /** Smallest size a drag can leave the modal at, in px. Garnish parity. */
+  const MIN_SIZE = 200;
+  /** Arrow-key increment, in px. */
+  const STEP = 16;
+  const LARGE_STEP = 64;
+
+  const content = shallowRef<HTMLElement | null>(null);
+  const handle = shallowRef<HTMLElement | null>(null);
+  const resizedWidth = ref<number | null>(null);
+  const resizedHeight = ref<number | null>(null);
+
+  function bounds(el: HTMLElement): {width: number; height: number} {
+    const styles = getComputedStyle(el);
+
+    // max-width/max-height compute to px even when authored as calc(), which
+    // the custom properties they're built from do not.
+    return {
+      width: parseFloat(styles.maxWidth) || window.innerWidth,
+      height: parseFloat(styles.maxHeight) || window.innerHeight,
+    };
+  }
+
+  function resize(width: number, height: number): void {
+    const el = content.value;
+    if (!el) return;
+
+    const max = bounds(el);
+    resizedWidth.value = Math.round(
+      Math.min(Math.max(width, MIN_SIZE), max.width)
+    );
+    resizedHeight.value = Math.round(
+      Math.min(Math.max(height, MIN_SIZE), max.height)
+    );
+  }
+
+  function measured(): {width: number; height: number} {
+    const rect = content.value?.getBoundingClientRect();
+
+    return {
+      width: Math.round(rect?.width ?? 0),
+      height: Math.round(rect?.height ?? 0),
+    };
+  }
+
+  function nudge(deltaX: number, deltaY: number): void {
+    // Build on the last size we asked for, not the rendered one: key repeats
+    // outrun Vue's DOM updates, so measuring every time would have them all read
+    // the same stale box and overwrite each other.
+    const size = measured();
+    const width = resizedWidth.value ?? size.width;
+    const height = resizedHeight.value ?? size.height;
+    const rtl = content.value
+      ? getComputedStyle(content.value).direction === 'rtl'
+      : false;
+
+    resize(width + (rtl ? -deltaX : deltaX), height + deltaY);
+  }
+
+  function onHandleKeydown(ev: KeyboardEvent): void {
+    const step = ev.shiftKey ? LARGE_STEP : STEP;
+
+    switch (ev.key) {
+      case 'ArrowLeft':
+        nudge(-step, 0);
+        break;
+      case 'ArrowRight':
+        nudge(step, 0);
+        break;
+      case 'ArrowUp':
+        nudge(0, -step);
+        break;
+      case 'ArrowDown':
+        nudge(0, step);
+        break;
+      case 'Enter':
+        reset();
+        break;
+      default:
+        return;
+    }
+
+    ev.preventDefault();
+  }
+
+  /** Hands the size back to CSS. Wired to double-click and Enter. */
+  function reset(): void {
+    resizedWidth.value = null;
+    resizedHeight.value = null;
+  }
+
+  let dragger: BaseDrag | null = null;
+  let startWidth = 0;
+  let startHeight = 0;
+  let startDistX = 0;
+  let startDistY = 0;
+  let sign = 1;
+
+  watch(handle, (el) => {
+    dragger?.destroy();
+    dragger = null;
+
+    if (!el) return;
+
+    dragger = new BaseDrag(el, {
+      // The default selector list would swallow pointer-downs on the handle's
+      // own SVG; the handle *is* the control here.
+      ignoreHandleSelector: null,
+      onBeforeDragStart: () => {
+        // Sync, unlike onDragStart, so we measure what was on screen when the
+        // drag threshold was crossed, and discount the distance already
+        // travelled so the modal doesn't jump by it.
+        const size = measured();
+        startWidth = size.width;
+        startHeight = size.height;
+        startDistX = dragger?.mouseDistX ?? 0;
+        startDistY = dragger?.mouseDistY ?? 0;
+        sign =
+          content.value && getComputedStyle(content.value).direction === 'rtl'
+            ? -1
+            : 1;
+      },
+      onDrag: () => {
+        const dx = ((dragger?.mouseDistX ?? 0) - startDistX) * sign;
+        const dy = (dragger?.mouseDistY ?? 0) - startDistY;
+
+        // Centered, so each edge moves by the pointer delta.
+        resize(startWidth + dx * 2, startHeight + dy * 2);
+      },
+    });
+  });
+
+  // A smaller viewport lowers the cap; re-clamp so dragging back responds at
+  // once rather than after the overshoot unwinds.
+  useEventListener(window, 'resize', () => {
+    if (resizedWidth.value !== null && resizedHeight.value !== null) {
+      resize(resizedWidth.value, resizedHeight.value);
+    }
+  });
+
+  onScopeDispose(() => {
+    dragger?.destroy();
+    dragger = null;
   });
 </script>
 
@@ -46,6 +210,7 @@
   <Transition name="body" @after-enter="(el) => emit('opened', el as Element)">
     <div class="cp-modal" v-if="isActive">
       <div
+        ref="content"
         :class="{
           content: true,
           [widthClass]: true,
@@ -54,6 +219,16 @@
       >
         <slot></slot>
       </div>
+      <button
+        v-if="resizable"
+        ref="handle"
+        type="button"
+        class="resizehandle"
+        :aria-label="t('Resize')"
+        @keydown="onHandleKeydown"
+        @dblclick="reset"
+        v-html="ResizeHandle"
+      ></button>
     </div>
   </Transition>
 
@@ -75,6 +250,10 @@
     position: relative;
     overflow-y: scroll;
     pointer-events: auto;
+    /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
+     from painting over the modal's chrome, such as the resize handle. Nothing
+     can escape this box visually anyway; it scrolls. */
+    isolation: isolate;
   }
 
   .cp-modal,
@@ -89,8 +268,51 @@
     z-index: 10002;
     display: grid;
     justify-content: center;
+    /* Content-sized in both axes, matching what justify-content does for the
+     column, so the resize handle's `align-self: end` lands on the content's
+     edge rather than the viewport's. */
+    align-content: center;
     align-items: center;
     pointer-events: none;
+  }
+
+  /* Overlaid on the content's own grid cell so the handle can sit in its corner
+   without joining the scrolling box. */
+  .cp-modal > * {
+    grid-area: 1 / 1;
+  }
+
+  .resizehandle {
+    align-self: end;
+    justify-self: end;
+    /* Positioned so the z-index reliably lifts it above `.content`, which is
+     itself positioned and would otherwise paint over the corner. */
+    position: relative;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+    padding: var(--c-spacing-xs);
+    border: none;
+    background: none;
+    cursor: nwse-resize;
+    touch-action: none;
+    pointer-events: auto;
+  }
+
+  .resizehandle :deep(path) {
+    fill: var(--c-text-quiet);
+  }
+
+  .resizehandle :deep(svg.rtl) {
+    display: none;
+  }
+
+  [dir='rtl'] .resizehandle :deep(svg.ltr) {
+    display: none;
+  }
+
+  [dir='rtl'] .resizehandle :deep(svg.rtl) {
+    display: block;
   }
 
   .cp-overlay {
