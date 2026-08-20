@@ -15,6 +15,7 @@
     FormChangeKind,
     FormNodePayload,
     FormPayload,
+    FormValue,
   } from './types';
 
   type FieldNodeProps = {
@@ -62,15 +63,12 @@
 
   onErrorCaptured((error) => {
     invalidate(
-      `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${errorMessage(error)}`
+      `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${error instanceof Error ? error.message : String(error)}`
     );
 
     return false;
   });
 
-  function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
-  }
   const editable = computed(() => control.value.mode === 'editable');
   const controlErrors = computed(() =>
     props.errors.flatMap((error) =>
@@ -79,7 +77,7 @@
   );
   const value = computed(() => valueAt(props.values, control.value.path));
 
-  function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
+  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
 
     emit('change', {

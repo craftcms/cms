@@ -9,6 +9,7 @@
     FormControlOverrideProps,
     FormControlPayload,
     FormPayload,
+    FormValue,
   } from '@/modules/forms/types';
   import {inputName, serverErrorValidators} from '@/modules/forms/runtime';
   import FormPage from '@/pages/Form.vue';
@@ -31,7 +32,21 @@
   const createdPhotoVolumeOptions = ref<SelectOption[]>([]);
 
   function options(control: FormControlPayload): SelectOption[] {
-    return control.props.options as SelectOption[];
+    const options = control.props.options;
+    if (!Array.isArray(options)) {
+      return [];
+    }
+    return options.flatMap((option) => {
+      if (
+        !(option instanceof Object) ||
+        Array.isArray(option) ||
+        Object(option.label).constructor !== String ||
+        Object(option.value).constructor !== String
+      ) {
+        return [];
+      }
+      return [{label: String(option.label), value: String(option.value)}];
+    });
   }
 
   function photoVolumeOptions(control: FormControlPayload): SelectOption[] {
@@ -70,6 +85,7 @@
   ): void {
     void openSlideout(createVolume.url(), {
       onSaved: ({data}) => {
+        // SAFETY: the volume create endpoint returns its documented saved volume.
         const volume = (data as VolumeSaveData | undefined)?.volume;
 
         if (!volume) {
@@ -89,7 +105,7 @@
     });
   }
 
-  function require2faValues(value: unknown): string[] {
+  function require2faValues(value: FormValue): string[] {
     if (value === 'all') {
       return ['all'];
     }
@@ -101,9 +117,13 @@
     event: CustomEvent,
     setValue: FormControlOverrideProps['setValue']
   ): void {
+    const target = event.currentTarget;
     const values =
-      (event.currentTarget as HTMLElement & {modelValue?: string[]})
-        .modelValue ?? [];
+      target instanceof HTMLElement &&
+      'modelValue' in target &&
+      Array.isArray(target.modelValue)
+        ? target.modelValue.map(String)
+        : [];
 
     setValue(
       values.includes('all') ? 'all' : values.length > 0 ? values : false

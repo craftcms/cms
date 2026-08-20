@@ -40,7 +40,7 @@ export interface UseAppLayoutOptions {
 export function useAppLayout(
   options: UseAppLayoutOptions | (() => UseAppLayoutOptions)
 ): void {
-  const resolve = typeof options === 'function' ? options : () => options;
+  const resolve = options instanceof Function ? options : () => options;
   const screenProps = useScreenPropsStore();
 
   // `setLayoutProps` types its `props` argument as `Partial<LayoutProps>`,
@@ -49,8 +49,9 @@ export function useAppLayout(
   // `Record<string, unknown>` since `UseAppLayoutOptions` is structurally
   // compatible but doesn't declare an index signature.
   const apply = screenProps
-    ? (props: Record<string, unknown>) => screenProps.set(props)
-    : setLayoutProps;
+    ? (props: UseAppLayoutOptions) => screenProps.set(props)
+    : (props: UseAppLayoutOptions) =>
+        setLayoutProps<UseAppLayoutOptions>(props);
 
-  watchEffect(() => apply(resolve() as Record<string, unknown>));
+  watchEffect(() => apply(resolve()));
 }

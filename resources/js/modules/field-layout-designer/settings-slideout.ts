@@ -1,10 +1,38 @@
+import type {FormPayload, FormValues} from '@/modules/forms/types';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
+import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+
 export interface OpenLayoutSettingsOptions {
   title: string;
   triggerElement?: HTMLElement | null;
   /** Identifies the component being edited, for the refresh request. */
-  requestData: () => Record<string, unknown>;
+  requestData: () => FormValues;
   /** Persists the settings. Rejects with the axios error on a failure. */
-  apply: (values: Record<string, unknown>) => Promise<void>;
+  apply: (values: FormValues) => Promise<void>;
+}
+
+interface LayoutSettingsResponse {
+  form: FormPayload;
+  headHtml?: string;
+  bodyHtml?: string;
+}
+
+export interface LayoutSettingsContext {
+  payload: FormPayload;
+  requestData: () => FormValues;
+  apply: (values: FormValues) => Promise<void>;
+}
+
+const contexts = new Map<string, LayoutSettingsContext>();
+let nextContextId = 0;
+
+export function takeLayoutSettingsContext(id: string): LayoutSettingsContext {
+  const context = contexts.get(id);
+  contexts.delete(id);
+  if (!context) {
+    throw new Error('Layout component settings context was not found.');
+  }
+  return context;
 }
 
 /**
@@ -16,7 +44,7 @@ export interface OpenLayoutSettingsOptions {
  * presence is the documented signal for "this is an Inertia page".
  */
 export function canUseVueSlideout(): boolean {
-  return typeof (window as any).Craft?.openSlideout === 'function';
+  return window.Craft?.openSlideout instanceof Function;
 }
 
 /**
@@ -35,7 +63,7 @@ export function canUseVueSlideout(): boolean {
  * unsaved changes in a panel this one would have replaced.
  */
 export async function openLayoutComponentSettings(
-  data: any,
+  data: LayoutSettingsResponse,
   options: OpenLayoutSettingsOptions
 ): Promise<boolean> {
   const [{openSlideoutWith}, {default: LayoutComponentSettings}] =
@@ -44,33 +72,39 @@ export async function openLayoutComponentSettings(
       import('./LayoutComponentSettings.vue'),
     ]);
 
+  const contextId = `layout-settings-${++nextContextId}`;
+  contexts.set(contextId, {
+    payload: data.form,
+    requestData: options.requestData,
+    apply: options.apply,
+  });
+
+  // SAFETY: The slideout host renders this imported Vue SFC exactly like its
+  // Inertia page components; it does not require an Inertia page module.
+  const slideoutComponent = LayoutComponentSettings as InertiaPageComponent;
   const panel = openSlideoutWith(
-    LayoutComponentSettings as any,
+    slideoutComponent,
     {
-      payload: data.form,
+      contextId,
       title: options.title,
-      requestData: options.requestData,
-      apply: options.apply,
     },
-    {opener: options.triggerElement ?? null}
+    {
+      opener: options.triggerElement ?? null,
+    }
   );
 
   if (!panel) {
+    contexts.delete(contextId);
     return false;
   }
 
   // Server-rendered controls in the form (condition builders, field selects)
   // register their own assets.
-  const craft = Craft as typeof Craft & {
-    appendHeadHtml(html: string): Promise<void>;
-    appendBodyHtml(html: string): Promise<void>;
-  };
-
   if (data.headHtml) {
-    await craft.appendHeadHtml(data.headHtml);
+    await appendHeadHtml(data.headHtml);
   }
   if (data.bodyHtml) {
-    await craft.appendBodyHtml(data.bodyHtml);
+    await appendBodyHtml(data.bodyHtml);
   }
 
   return true;

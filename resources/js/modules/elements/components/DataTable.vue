@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
   import {t} from '@craftcms/ui';
-  import {computed, ref, useId} from 'vue';
+  import {computed, type HTMLAttributes, ref, useId} from 'vue';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
@@ -69,7 +69,8 @@
     }
 
     if (
-      (event.target as HTMLElement).closest(
+      event.target instanceof HTMLElement &&
+      event.target.closest(
         'a[href], button, input, craft-checkbox, craft-reorder-button'
       )
     ) {
@@ -98,15 +99,7 @@
     return props.title ? `${props.title}, ` : null;
   });
 
-  function resolveMetaClasses(value: any) {
-    if (!value) {
-      return {};
-    }
-
-    if (typeof value === 'string') {
-      return {[value]: true};
-    }
-
+  function resolveMetaClasses(value: HTMLAttributes['class']) {
     return value;
   }
 
@@ -147,10 +140,6 @@
 
     const columnCount = visibleColumnCount.value;
 
-    const styles: {[key: string]: number | string} = {
-      '--table-column-count': columnCount,
-    };
-
     const gridDef = visibleColumns.reduce(
       (acc: Array<string>, column: Column<any>) => {
         acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
@@ -168,9 +157,10 @@
       gridDef.unshift('44px');
     }
 
-    styles['--table-template-columns'] = gridDef.join(' ');
-
-    return styles;
+    return {
+      '--table-column-count': columnCount,
+      '--table-template-columns': gridDef.join(' '),
+    };
   });
 
   function getRowPosition(index: number) {
@@ -198,7 +188,8 @@
   ) {
     if (!props.selectable) return;
     const rows = props.table.getRowModel().rows;
-    const target = event.currentTarget as HTMLElement;
+    if (!(event.currentTarget instanceof HTMLElement)) return;
+    const target = event.currentTarget;
     index = Number(index);
     switch (event.key) {
       case ' ':
@@ -227,6 +218,10 @@
         break;
       }
     }
+  }
+
+  function checkboxValue(event: Event): boolean {
+    return event.target instanceof HTMLInputElement && event.target.checked;
   }
 </script>
 
@@ -282,21 +277,21 @@
           :key="header.id"
           :colSpan="header.colSpan"
           :id="`header-${header.id}`"
-          :class="{
-            'cp-table-cell': true,
-            'cp-table-cell--header': true,
-            'cursor-pointer select-none': header.column.getCanSort(),
-          }"
+          :class="[
+            {
+              'cp-table-cell': true,
+              'cp-table-cell--header': true,
+              'cursor-pointer select-none': header.column.getCanSort(),
+            },
+            resolveMetaClasses(header.column.columnDef.meta?.columnClass),
+            resolveMetaClasses(header.column.columnDef.meta?.headerClass),
+          ]"
           scope="col"
           :aria-sort="getAriaSortAttribute(header.column)"
         >
           <div
             class="flex gap-1 items-center"
-            :class="{
-              'sr-only': header.column.columnDef.meta?.headerSrOnly,
-              ...resolveMetaClasses(header.column.columnDef.meta?.columnClass),
-              ...resolveMetaClasses(header.column.columnDef.meta?.headerClass),
-            }"
+            :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
           >
             <ColumnHeaderTitle
               :is-sortable="header.column.getCanSort()"
@@ -393,13 +388,15 @@
             v-for="cell in row.getVisibleCells()"
             :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
             :key="cell.id"
-            :class="{
-              'cp-table-cell': true,
-              [`cp-table-cell--${cell.column.id}`]: true,
-              'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
-              ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
-              ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
-            }"
+            :class="[
+              {
+                'cp-table-cell': true,
+                [`cp-table-cell--${cell.column.id}`]: true,
+                'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+              },
+              resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
+              resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
+            ]"
           >
             <FlexRender
               :render="cell.column.columnDef.cell"

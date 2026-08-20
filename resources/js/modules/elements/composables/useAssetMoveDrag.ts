@@ -7,6 +7,7 @@ import {
   moveAssets,
 } from './assetMover';
 import {useElementIndexTable} from './useElementIndexTable';
+import type {RowSelectionState} from '@tanstack/vue-table';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */
 export interface AssetMoveConflictPrompt {
@@ -34,7 +35,7 @@ export function useAssetMoveDrag() {
   // The row selection as it was when the current drag began, captured before the
   // grab force-selects the dragged row. Restored on drop so a row that wasn't
   // already selected doesn't stay checked (a pre-selected group survives).
-  let preDragSelection: Record<string, boolean> = {};
+  let preDragSelection: RowSelectionState = {};
 
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
 

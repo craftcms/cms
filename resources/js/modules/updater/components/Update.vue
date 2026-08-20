@@ -40,9 +40,7 @@
   // Computed: should we show the update button?
   const showUpdateCta = computed(() => {
     return (
-      props.allowUpdates &&
-      props.latestVersion &&
-      typeof props.ctaUrl !== 'undefined'
+      props.allowUpdates && props.latestVersion && props.ctaUrl !== undefined
     );
   });
 

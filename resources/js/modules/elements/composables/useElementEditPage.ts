@@ -4,13 +4,21 @@ import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-import type {FormPayload} from '@/modules/forms/types';
+import type {FormPayload, FormValues} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+
+export interface ElementEditFormData {
+  typeId?: string | number | null;
+  enabled?: string | number | boolean | null;
+  enabledForSite?: Record<string, string | number | boolean | null>;
+  provisional?: number;
+  redirect?: string;
+}
 
 /**
  * A save the screen can perform besides the plain Save button — an alternate
@@ -22,7 +30,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 export interface ElementFormAction {
   label: string;
   actionUrl: string | null;
-  params: Record<string, unknown>;
+  params: FormValues;
   /** Pre-encrypted by the server; the save controllers decrypt it. */
   redirect: string | null;
   variant?: string;
@@ -51,7 +59,7 @@ export interface ElementEditPayload {
   fieldLayoutId: number | null;
   title: string;
   docTitle: string;
-  crumbs: Array<Record<string, any>>;
+  crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
   form: FormPayload | null;
   sidebarForm: FormPayload | null;
@@ -78,8 +86,46 @@ export interface ElementEditPayload {
     label: string;
     items: Array<ElementContextMenuItem>;
   } | null;
-  // Element-type view models add their own keys on top of the shared payload.
-  [key: string]: unknown;
+}
+
+const elementEditPayloadKeys = [
+  'elementId',
+  'canonicalId',
+  'elementType',
+  'siteId',
+  'fieldLayoutId',
+  'title',
+  'docTitle',
+  'crumbs',
+  'readOnly',
+  'form',
+  'sidebarForm',
+  'metadataHtml',
+  'saveUrl',
+  'applyDraftUrl',
+  'formActions',
+  'headerActions',
+  'autosaveUrl',
+  'discardDraftUrl',
+  'isProvisionalDraft',
+  'draftId',
+  'canAutosave',
+  'notice',
+  'mergeNotice',
+  'canDiscardDraft',
+  'submitButtonLabel',
+  'actionMenu',
+  'previewTargets',
+  'elementDisplayName',
+  'activityUrl',
+  'updatedTimestamps',
+  'contextMenu',
+] satisfies (keyof ElementEditPayload)[];
+
+function isElementEditPayload(
+  payload: Partial<ElementEditPayload>
+): payload is ElementEditPayload {
+  return elementEditPayloadKeys.every((key) => Object.hasOwn(payload, key));
 }
 
 interface Options {
@@ -87,7 +133,7 @@ interface Options {
    * Identity and element-type attributes merged into every submission —
    * whatever the type's save action needs to resolve the element it's saving.
    */
-  saveData?: () => Record<string, unknown>;
+  saveData?: () => FormValues;
 }
 
 /**
@@ -110,7 +156,14 @@ export function useElementEditPage({saveData}: Options = {}) {
   // an element with no drafts — does that without remounting this component, so
   // the title, notices, and timestamps below have to track the live payload.
   const props = toReactive(
-    computed(() => pageProps() as unknown as ElementEditPayload)
+    computed(() => {
+      const payload: Partial<ElementEditPayload> = {};
+      Object.assign(payload, pageProps());
+      if (!isElementEditPayload(payload)) {
+        throw new Error('The element edit payload is incomplete.');
+      }
+      return payload;
+    })
   );
 
   // Autosave answers with the field layout as the server now sees it, and
@@ -120,7 +173,7 @@ export function useElementEditPage({saveData}: Options = {}) {
   const savedForm = shallowRef<FormPayload | null>(null);
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
-  const form = useForm<Record<string, any>>({});
+  const form = useForm<ElementEditFormData>({});
 
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a
@@ -249,9 +302,9 @@ export function useElementEditPage({saveData}: Options = {}) {
       method: 'post' as const,
     }),
     {
-      transform: (data) => ({
-        ...data,
-        ...saveData?.(),
+      transform: (data) => {
+        const transformed = {...data, ...saveData?.()};
+
         // Once autosave has created a provisional draft, the submission has to
         // target it — otherwise applying would save the canonical element and
         // strand the draft holding the newer values.
@@ -259,21 +312,24 @@ export function useElementEditPage({saveData}: Options = {}) {
         // This posts to a shared `elements/*` action rather than the element
         // type's own, so it needs the generic identity params: the type-specific
         // ones (an entry's `entryId`) mean nothing there.
-        ...(autosave.draftId.value !== null
-          ? {
-              elementType: props.elementType,
-              elementId: props.canonicalId,
-              draftId: autosave.draftId.value,
-              ...(draftIsProvisional.value ? {provisional: 1} : {}),
-            }
-          : {}),
+        if (autosave.draftId.value !== null) {
+          Object.assign(transformed, {
+            elementType: props.elementType,
+            elementId: props.canonicalId,
+            draftId: autosave.draftId.value,
+          });
+          if (draftIsProvisional.value) transformed.provisional = 1;
+        }
+
         // An alternate action's own params win — "Create a draft" has to be
         // able to override the provisional targeting above.
-        ...pendingAction.value?.params,
-        ...(pendingAction.value?.redirect
-          ? {redirect: pendingAction.value.redirect}
-          : {}),
-      }),
+        Object.assign(transformed, pendingAction.value?.params);
+        if (pendingAction.value?.redirect) {
+          transformed.redirect = pendingAction.value.redirect;
+        }
+
+        return transformed;
+      },
       onSuccess: () => {
         autosave.suspend(() => {
           advanceBaseline();

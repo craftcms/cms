@@ -7,11 +7,11 @@ type InputValue = string | string[] | null;
 
 function firstElement<T extends Element>(target: T | string | ArrayLike<T>): T {
   const element =
-    typeof target === 'string'
-      ? document.querySelector<T>(target)
-      : target instanceof Element
-        ? target
-        : target[0];
+    target instanceof Element
+      ? target
+      : target instanceof Object
+        ? target[0]
+        : document.querySelector<T>(String(target));
 
   if (!element) {
     throw new Error('Unable to find the elevated-session form.');
@@ -164,10 +164,11 @@ export class ElevatedSessionForm {
   };
 
   private track(target: InputTarget): void {
-    if (typeof target === 'string') {
-      this.inputSelectors.push(target);
+    if (!(target instanceof Object)) {
+      const selector = String(target);
+      this.inputSelectors.push(selector);
       this.form
-        .querySelectorAll(target)
+        .querySelectorAll(selector)
         .forEach((input) => this.inputs.set(input, inputValue(input)));
       return;
     }

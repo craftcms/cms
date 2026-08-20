@@ -28,7 +28,7 @@
   }>();
 
   const page = usePage<{
-    envSuggestions?: Array<any>;
+    envSuggestions?: Array<SelectItem>;
     readOnly?: boolean;
     templateSuggestions: Array<SelectItem>;
   }>();
@@ -44,7 +44,12 @@
     data: () => props.modelValue,
     key: 'uid',
     name: 'siteOverrides',
-    onChange: (data) => emit('update:modelValue', data as ModelValue),
+    onChange: (data) => {
+      if (Array.isArray(data)) {
+        throw new Error('Site overrides must remain keyed by site UID.');
+      }
+      emit('update:modelValue', data);
+    },
     columns: ({columnHelper}) => [
       columnHelper.display({
         id: 'name',

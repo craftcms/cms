@@ -1,13 +1,18 @@
-import {useForm} from '@inertiajs/vue3';
+import {useForm, type InertiaForm} from '@inertiajs/vue3';
 import {createApp, defineComponent, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {useElementAutosave} from './useElementAutosave';
+import {
+  useElementAutosave,
+  type ElementAutosaveOptions,
+} from './useElementAutosave';
 
-const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
+interface AutosaveForm {
+  title: string;
+}
 
-vi.mock('@craftcms/ui', () => ({
-  actionClient: {post: postSpy},
-}));
+type AutosaveOverrides = Partial<ElementAutosaveOptions>;
+
+const postSpy = vi.fn();
 
 describe('useElementAutosave', () => {
   let app: ReturnType<typeof createApp>;
@@ -23,26 +28,30 @@ describe('useElementAutosave', () => {
     container?.remove();
   });
 
-  function mount(overrides: Record<string, any> = {}) {
+  function mount(overrides: AutosaveOverrides = {}) {
     let autosave!: ReturnType<typeof useElementAutosave>;
-    let form!: ReturnType<typeof useForm<Record<string, any>>>;
+    let form!: InertiaForm<AutosaveForm>;
 
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(
       defineComponent({
         setup() {
-          form = useForm<Record<string, any>>({title: 'Original'});
-          autosave = useElementAutosave(form, {
-            url: '/actions/elements/save-draft',
-            elementType: 'craft\\elements\\Entry',
-            elementId: 12,
-            siteId: 1,
-            draftId: null,
-            isProvisional: false,
-            enabled: true,
-            ...overrides,
-          });
+          form = useForm<AutosaveForm>({title: 'Original'});
+          autosave = useElementAutosave<AutosaveForm>(
+            form,
+            {
+              url: '/actions/elements/save-draft',
+              elementType: 'craft\\elements\\Entry',
+              elementId: 12,
+              siteId: 1,
+              draftId: null,
+              isProvisional: false,
+              enabled: true,
+              ...overrides,
+            },
+            {post: postSpy}
+          );
 
           return () => null;
         },
@@ -59,21 +68,26 @@ describe('useElementAutosave', () => {
     await autosave.save();
 
     expect(postSpy).toHaveBeenCalledTimes(1);
-    expect(postSpy.mock.calls[0]![1]).toMatchObject({
+    const firstRequest = postSpy.mock.calls[0];
+    if (!firstRequest) throw new Error('Expected the first autosave request.');
+    expect(firstRequest[1]).toMatchObject({
       elementType: 'craft\\elements\\Entry',
       elementId: 12,
       siteId: 1,
       provisional: 1,
     });
-    expect(postSpy.mock.calls[0]![1].draftId).toBeUndefined();
+    expect(firstRequest[1].draftId).toBeUndefined();
     expect(autosave.draftId.value).toBe(7);
 
     await autosave.save();
 
     // The second save targets the existing draft; `provisional` is dropped
     // because sending it would narrow the server's lookup.
-    expect(postSpy.mock.calls[1]![1]).toMatchObject({draftId: 7});
-    expect(postSpy.mock.calls[1]![1].provisional).toBeUndefined();
+    const secondRequest = postSpy.mock.calls[1];
+    if (!secondRequest)
+      throw new Error('Expected the second autosave request.');
+    expect(secondRequest[1]).toMatchObject({draftId: 7});
+    expect(secondRequest[1].provisional).toBeUndefined();
   });
 
   it('reports status and the saved timestamp', async () => {
@@ -88,7 +102,10 @@ describe('useElementAutosave', () => {
   });
 
   it('records a failure without throwing', async () => {
-    postSpy.mockRejectedValue({response: {data: {message: 'Nope.'}}});
+    postSpy.mockRejectedValue({
+      isAxiosError: true,
+      response: {data: {message: 'Nope.'}},
+    });
 
     const {autosave} = mount();
 

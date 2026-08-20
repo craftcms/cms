@@ -1,17 +1,15 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import {createApp, defineComponent, h, ref, shallowRef, type App} from 'vue';
 import FormRenderer from './FormRenderer.vue';
-import type {FormPayload} from './types';
+import {isRecord} from './runtime';
+import type {FormPayload, FormPropertyValue, FormValues} from './types';
 
 // TODO: Remove this legacy bridge once the field layout designer's settings
 // slideout is rendered by the Inertia/Vue CP.
 
 type FormErrors = Record<string, string | string[]>;
 
-type CraftRuntime = typeof Craft & {
-  appendHeadHtml(html: string): Promise<void>;
-  appendBodyHtml(html: string): Promise<void>;
-};
 type FormRendererInstance = {
   currentValues(): FormPayload['values'];
 };
@@ -20,8 +18,8 @@ type FormRendererInstance = {
 export type LayoutComponentRequestData = {
   uid: string;
   elementType: string;
-  layoutConfig: unknown;
-  config?: unknown;
+  layoutConfig: FormPropertyValue;
+  config?: FormPropertyValue;
 };
 
 export function defineLayoutComponentSettingsFormHost(
@@ -98,10 +96,11 @@ export function defineLayoutComponentSettingsFormHost(
       }
 
       /** The settings values, relative to the component (not the form scope). */
-      currentValues(): Record<string, unknown> {
+      currentValues(): FormValues {
         const values = this.#renderer.value?.currentValues() ?? {};
+        const settings = values.settings;
 
-        return (values.settings ?? {}) as Record<string, unknown>;
+        return isRecord(settings) ? settings : {};
       }
 
       async #refresh(
@@ -135,9 +134,8 @@ export function defineLayoutComponentSettingsFormHost(
 
         // Server-rendered controls (condition builders, field selects) register
         // their own assets on every render.
-        const craft = Craft as CraftRuntime;
-        await craft.appendHeadHtml(data.headHtml);
-        await craft.appendBodyHtml(data.bodyHtml);
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
 
         return data.form;
       }

@@ -12,6 +12,7 @@ const DEFAULTS = {
   fileInput: null,
   // Resolved from `Craft.maxUploadSize` at init (see the static `defaults`
   // getter) so module load order can't capture an undefined value.
+  // SAFETY: Upload size is nullable until the runtime Craft config is available.
   maxFileSize: null as number | null,
   allowedKinds: null,
   events: {},
@@ -71,8 +72,8 @@ export class BaseUploader extends Base {
     }
 
     if (this.settings.allowedKinds && this.settings.allowedKinds.length) {
-      if (typeof this.settings.allowedKinds === 'string') {
-        this.settings.allowedKinds = [this.settings.allowedKinds];
+      if (Object(this.settings.allowedKinds).constructor === String) {
+        this.settings.allowedKinds = [String(this.settings.allowedKinds)];
       }
 
       this.allowedKinds = this.settings.allowedKinds;
@@ -86,8 +87,8 @@ export class BaseUploader extends Base {
   setParams(paramObject: any): void {
     // If CSRF protection isn't enabled, these won't be defined.
     if (
-      typeof Craft.csrfTokenName !== 'undefined' &&
-      typeof Craft.csrfTokenValue !== 'undefined'
+      Craft.csrfTokenName !== undefined &&
+      Craft.csrfTokenValue !== undefined
     ) {
       // Add the CSRF token
       paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
@@ -193,7 +194,7 @@ export class BaseUploader extends Base {
     for (let i = 0; i < this.allowedKinds.length; i++) {
       const allowedKind = this.allowedKinds[i];
 
-      if (typeof Craft.fileKinds[allowedKind] !== 'undefined') {
+      if (Craft.fileKinds[allowedKind] !== undefined) {
         for (
           let j = 0;
           j < Craft.fileKinds[allowedKind].extensions.length;

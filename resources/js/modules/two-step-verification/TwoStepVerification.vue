@@ -17,7 +17,7 @@
     methods: AuthMethod[];
   }>();
 
-  const craft = (window as any).Craft;
+  const {Craft: craft} = window;
 
   // Re-request the full elevated-session window (capped at 5 minutes) so there's
   // time to complete a setup flow before it lapses.
@@ -171,6 +171,9 @@
             ];
           }
 
+          const separators: ActionItems = method.actions.length
+            ? [{type: 'hr'}]
+            : [];
           const items: ActionItems = [
             ...method.actions.map((action): ActionItems[number] => ({
               type: 'button',
@@ -178,9 +181,7 @@
               icon: action.icon ?? undefined,
               onClick: () => runAction(action),
             })),
-            ...(method.actions.length
-              ? [{type: 'hr'} as ActionItems[number]]
-              : []),
+            ...separators,
             {
               type: 'button',
               label: t('Remove'),

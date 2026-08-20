@@ -4,6 +4,10 @@ import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
   EditableTableColumns,
+  EditableTableOption,
+  EditableTableOptions,
+  EditableTableRow,
+  EditableTableValue,
   EditableTableSettings,
 } from './types';
 import {type ReorderDirection} from '@craftcms/ui';
@@ -17,6 +21,20 @@ declare const Garnish: any;
 declare const $: any;
 
 const noop = (): void => {};
+
+function defaultOptionValue(
+  options: EditableTableOptions | EditableTableOption[] | undefined
+): EditableTableValue | null {
+  if (Array.isArray(options)) {
+    return options.find((option) => option.default)?.value ?? null;
+  }
+  for (const [key, option] of Object.entries(options ?? {})) {
+    if (option.default) {
+      return option.value ?? key;
+    }
+  }
+  return null;
+}
 
 /** Column types rendered as text inputs, with row-nav, paste-import, and validation. */
 const TEXTUAL_COL_TYPES = [
@@ -417,7 +435,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     rowId: string,
     columns: EditableTableColumns,
     baseName: string,
-    values: Record<string, any>
+    values: EditableTableRow
   ): any {
     return EditableTable.createRow(
       rowId,
@@ -551,7 +569,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     rowId: string,
     columns: EditableTableColumns,
     baseName: string,
-    values: Record<string, any>,
+    values: EditableTableRow,
     allowReorder?: boolean,
     allowDelete?: boolean,
     staticRows = false,
@@ -569,7 +587,7 @@ export class EditableTable extends Base<EditableTableSettings> {
       }
 
       const col: EditableTableColumn = columns[colId]!;
-      const value = typeof values[colId] !== 'undefined' ? values[colId] : '';
+      const value = values[colId] === undefined ? '' : values[colId];
       let $cell;
 
       if (col.type === 'heading') {
@@ -611,7 +629,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             Craft.ui
               .createIconPicker({
                 name: name,
-                value: typeof value !== 'object' ? value : null,
+                value: value instanceof Object ? null : value,
                 small: true,
               })
               .appendTo($cell);
@@ -621,7 +639,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             Craft.ui
               .createColorInput({
                 name: name,
-                value: typeof value !== 'object' ? value : null,
+                value: value instanceof Object ? null : value,
                 small: true,
               })
               .appendTo($cell);
@@ -652,22 +670,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               .createSelect({
                 name: name,
                 options: col.options,
-                value:
-                  value ||
-                  (function () {
-                    const options = col.options as Record<string, any>;
-                    for (const key in options) {
-                      if (
-                        Object.prototype.hasOwnProperty.call(options, key) &&
-                        options[key].default
-                      ) {
-                        return typeof options[key].value !== 'undefined'
-                          ? options[key].value
-                          : key;
-                      }
-                    }
-                    return null;
-                  })(),
+                value: value || defaultOptionValue(col.options),
                 class: 'small',
               })
               .appendTo($cell);
@@ -687,7 +690,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             Craft.ui
               .createTextInput({
                 name: name,
-                value: typeof value !== 'object' ? value : null,
+                value: value instanceof Object ? null : value,
                 type: col.type,
                 placeholder: col.placeholder || null,
               })
@@ -696,12 +699,16 @@ export class EditableTable extends Base<EditableTableSettings> {
 
           case 'autosuggest':
           case 'template': {
-            const combobox = document.createElement(
-              'craft-combobox'
-            ) as CraftCombobox;
+            const combobox: CraftCombobox =
+              document.createElement('craft-combobox');
             combobox.name = name;
             combobox.label = col.heading ?? colId;
-            combobox.options = Array.isArray(col.options) ? col.options : [];
+            combobox.options = Array.isArray(col.options)
+              ? col.options.map((option) => ({
+                  label: option.label ?? String(option.value ?? ''),
+                  value: String(option.value ?? ''),
+                }))
+              : [];
             combobox.modelValue = String(value ?? '');
             combobox.showAllOnEmpty = true;
             combobox.setAttribute('label-sr-only', '');
@@ -723,7 +730,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             const $textarea = $('<textarea/>', {
               name: name,
               rows: col.rows || 1,
-              val: typeof value !== 'object' ? value : null,
+              val: value instanceof Object ? null : value,
               placeholder: col.placeholder,
             }).appendTo($cell);
 
@@ -844,7 +851,7 @@ export class Row extends Base {
 
     this.$textareas = $();
     this.niceTexts = [];
-    const textInputsByColId: Record<string, any> = {};
+    const textInputsByColId: Record<string, JQuery> = {};
 
     let i = 0;
     let colId: string;
@@ -868,7 +875,7 @@ export class Row extends Base {
         } else {
           $input = $('textarea', td);
           this.$textareas = this.$textareas.add($input);
-          if (typeof Garnish.NiceText === 'function') {
+          if (Garnish.NiceText instanceof Function) {
             this.niceTexts.push(
               new Garnish.NiceText($input, {
                 onHeightChange: this.onTextareaHeightChange.bind(this),
@@ -910,7 +917,7 @@ export class Row extends Base {
         $checkbox = $('input[type="checkbox"]', td);
 
         if (col.radioMode) {
-          if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
+          if (this.table.radioCheckboxes[colId] === undefined) {
             this.table.radioCheckboxes[colId] = [];
           }
           this.table.radioCheckboxes[colId]!.push($checkbox[0]);
@@ -961,20 +968,21 @@ export class Row extends Base {
       }
 
       col = this.table.columns![colId]!;
+      const input = textInputsByColId[colId];
+      const sourceInput = col.autopopulate
+        ? textInputsByColId[col.autopopulate]
+        : undefined;
 
       if (
         col.autopopulate &&
-        typeof textInputsByColId[col.autopopulate] !== 'undefined' &&
-        !textInputsByColId[colId].val() &&
-        !textInputsByColId[col.autopopulate].val()
+        input &&
+        sourceInput &&
+        !input.val() &&
+        !sourceInput.val()
       ) {
-        new Craft.HandleGenerator(
-          textInputsByColId[colId],
-          textInputsByColId[col.autopopulate],
-          {
-            allowNonAlphaStart: true,
-          }
-        );
+        new Craft.HandleGenerator(input, sourceInput, {
+          allowNonAlphaStart: true,
+        });
       }
     }
 
@@ -1045,7 +1053,9 @@ export class Row extends Base {
 
   handleActionClick(event: Event): void {
     event.preventDefault();
-    this.onActionSelect(event.target as HTMLElement);
+    if (event.target instanceof HTMLElement) {
+      this.onActionSelect(event.target);
+    }
   }
 
   onReorder(event: CustomEvent<{direction: ReorderDirection}>): void {

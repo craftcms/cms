@@ -1,4 +1,5 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
 import {FieldLayoutDesigner} from './field-layout-designer';
@@ -8,8 +9,8 @@ const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
 afterEach(() => {
-  delete (window as any).Craft;
-  delete (window as any).$;
+  delete window.Craft;
+  delete window.$;
   vi.clearAllMocks();
   vi.restoreAllMocks();
   vi.useRealTimers();
@@ -17,8 +18,8 @@ afterEach(() => {
 
 it('waits for the jQuery seam before initializing', async () => {
   vi.useFakeTimers();
-  (window as any).Craft = {Grid: class {}};
-  delete (window as any).$;
+  window.Craft = Object.assign(Object.create(null), {Grid: class {}});
+  delete window.$;
 
   const deferredInit = vi
     .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
@@ -47,9 +48,11 @@ it('waits for the jQuery seam before initializing', async () => {
 
   const search = document.createElement('input');
   search.type = 'search';
-  container.querySelector('.fld-field-library')!.prepend(search);
+  const library = container.querySelector('.fld-field-library');
+  if (!library) throw new Error('Expected the field library fixture.');
+  library.prepend(search);
 
-  (window as any).$ = vi.fn();
+  window.$ = $;
   await vi.advanceTimersByTimeAsync(100);
 
   expect(deferredInit).toHaveBeenCalledOnce();
@@ -57,6 +60,7 @@ it('waits for the jQuery seam before initializing', async () => {
 });
 
 it('adds a field returned by the field editor slideout', () => {
+  // SAFETY: This test deliberately creates a FieldLayoutDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
     FieldLayoutDesigner.prototype
   ) as FieldLayoutDesigner;
@@ -68,14 +72,16 @@ it('adds a field returned by the field editor slideout', () => {
   designer.refreshLibraryFields = vi.fn();
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = addLibraryElementToActiveTab;
-  designer.getActiveHud = vi.fn(() => null);
-  (window as any).Craft = {
+  designer.getActiveHud = vi.fn(() => undefined);
+  window.Craft = Object.assign(Object.create(null), {
     getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  };
+  });
 
   designer.createField();
 
-  const options = openSlideout.mock.calls[0]![1];
+  const call = openSlideout.mock.calls[0];
+  if (!call) throw new Error('Expected createField to open a slideout.');
+  const options = call[1];
   const selectorHtml = '<div class="fld-element">New field</div>';
   options.onSaved({data: {selectorHtml}});
 
@@ -94,6 +100,7 @@ it('leaves sortable checkbox teardown to its custom element', () => {
   const baseDestroy = vi
     .spyOn(Base.prototype, 'destroy')
     .mockImplementation(() => {});
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
     CardViewDesigner.prototype
   ) as CardViewDesigner;

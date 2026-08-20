@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
-  import type {FormControlPayload} from './types';
+  import type {FormControlPayload, FormValues} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
@@ -12,15 +12,11 @@
 
   const props = defineProps<{
     control: FormControlPayload<ConditionBuilderProps>;
-    value: Record<string, unknown>;
+    value: FormValues;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (
-      event: 'update:value',
-      value: Record<string, unknown>,
-      kind: 'discrete'
-    ): void;
+    (event: 'update:value', value: FormValues, kind: 'discrete'): void;
   }>();
   let headHtml = '';
   let bodyHtml = '';
@@ -66,7 +62,7 @@
         ])
       ).toString();
       const response = await actionClient.post<{
-        value: Record<string, unknown>;
+        value: FormValues;
       }>('fields/normalize-condition-builder', {
         serialized: serializedForm,
         path: props.control.path,

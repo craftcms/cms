@@ -41,9 +41,7 @@
   // Re-emit the real shell's save so it reaches the page's `@save` listener on
   // the inline `<AppLayout>` between us.
   if (store) {
-    onScopeDispose(
-      store.onSave((options) => emit('save', options as FormSaveOptions))
-    );
+    onScopeDispose(store.onSave((options) => emit('save', options)));
   }
 </script>
 

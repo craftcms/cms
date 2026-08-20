@@ -24,7 +24,7 @@ export function useServerPagination({
 
   function getNextPaginationParams(updater: Updater<PaginationState>) {
     const next =
-      typeof updater === 'function' ? updater(paginationState.value) : updater;
+      updater instanceof Function ? updater(paginationState.value) : updater;
 
     const currentQuery = new URLSearchParams(window.location.search);
 

@@ -22,11 +22,11 @@
   }>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    emit(
-      'update:value',
-      String((event.target as CraftInputColor).modelValue ?? ''),
-      'discrete'
-    );
+    if (!(event.target instanceof CraftInputColor)) {
+      throw new TypeError('Expected a color input event target.');
+    }
+
+    emit('update:value', String(event.target.modelValue ?? ''), 'discrete');
   });
 </script>
 

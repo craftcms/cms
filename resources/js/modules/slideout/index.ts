@@ -70,6 +70,7 @@ registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
 // ctrl-click. Contexts that need richer editor wiring (e.g. the nested
 // element manager's draft handling) strip the button's `action` and attach
 // their own behavior instead.
+// SAFETY: craft:edit-element is a registered CustomEvent with the editor detail payload.
 window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
   const {elementType, settings, cpEditUrl, trigger, sourceEvent} =
     ev.detail ?? {};
@@ -81,7 +82,9 @@ window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
 
   // Focus the trigger so that when the slideout is closed, focus is
   // returned to it.
-  (trigger as HTMLElement | undefined)?.focus();
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
 
   const editorSettings = {...settings, elementType};
   // If the settings have a draftId but the (possibly since-replaced) card no

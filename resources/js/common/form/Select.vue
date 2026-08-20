@@ -14,7 +14,7 @@
 
   const normalizedOptions = computed(() => {
     return props.options.map((option) => {
-      if (typeof option === 'string' || typeof option === 'number') {
+      if (!(option instanceof Object)) {
         return {
           label: option.toString(),
           value: option,

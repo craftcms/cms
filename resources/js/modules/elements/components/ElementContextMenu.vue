@@ -39,9 +39,7 @@
         type: 'link',
         href: item.href!,
         label: item.label!,
-        // Shown beneath the label — who saved it and when.
-        description: item.description,
-        selected: item.selected,
+        variant: item.selected ? 'accent' : undefined,
       };
     })
   );

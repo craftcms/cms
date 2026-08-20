@@ -12,30 +12,27 @@ it('preserves legacy element select input extension points', () => {
   expect('_initialized' in input).toBe(true);
   expect('_$replaceElement' in input).toBe(true);
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectInput.prototype,
       'thumbLoader'
-    )?.get
-  ).toBe('function');
+    )
+  ).toMatchObject({get: expect.any(Function)});
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectInput.prototype,
       '_animateStructureElementAway'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
 
   expect(
-    typeof Object.getOwnPropertyDescriptor(
-      EntrySelectInput.prototype,
-      'section'
-    )?.get
-  ).toBe('function');
+    Object.getOwnPropertyDescriptor(EntrySelectInput.prototype, 'section')
+  ).toMatchObject({get: expect.any(Function)});
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       EntrySelectInput.prototype,
       'showElementEditor'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
 
   for (const method of [
     'focusOption',
@@ -47,16 +44,13 @@ it('preserves legacy element select input extension points', () => {
     expect(Object.hasOwn(TagSelectInput.prototype, method)).toBe(true);
   }
   expect(
-    typeof Object.getOwnPropertyDescriptor(
-      TagSelectInput.prototype,
-      'fieldName'
-    )?.get
-  ).toBe('function');
+    Object.getOwnPropertyDescriptor(TagSelectInput.prototype, 'fieldName')
+  ).toMatchObject({get: expect.any(Function)});
 
   expect(BaseElementSelectInput.defaults).toMatchObject({
     allowAdd: true,
     allowRemove: true,
     modalSettings: {},
   });
-  expect(TagSelectInput.defaults).toEqual({tagGroupId: null});
+  expect(TagSelectInput.defaults).toMatchObject({tagGroupId: null});
 });

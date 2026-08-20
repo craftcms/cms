@@ -18,7 +18,7 @@ import quoteLeftIcon from '@icons/solid/quote-left.svg?raw';
 import strikethroughIcon from '@icons/solid/strikethrough.svg?raw';
 import uploadIcon from '@icons/solid/upload.svg?raw';
 
-export const customIcons: Record<string, string> = {
+export const customIcons = {
   bold: decorativeIcon(boldIcon),
   'circle-question': decorativeIcon(circleQuestionIcon),
   code: decorativeIcon(codeIcon),

@@ -8,7 +8,7 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 // Re-expose the Row sub-class on the constructor, as the legacy bundle did
 // (`Craft.GeneratedFieldsTable.Row`).
-(GeneratedFieldsTable as any).Row = GeneratedFieldsTableRow;
+Object.assign(GeneratedFieldsTable, {Row: GeneratedFieldsTableRow});
 
 // Assign onto the legacy `Craft` global so the PHP-emitted
 // `new Craft.GeneratedFieldsTable(...)` keeps working. Nothing subclasses it via

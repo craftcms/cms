@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import CraftInputMoney from '@craftcms/ui/components/input-money/input-money';
-  import type {FormControlPayload} from './types';
-  import {inputName, serverErrorValidators} from './runtime';
+  import type {FormControlPayload, FormValue} from './types';
+  import {inputName, isRecord, serverErrorValidators} from './runtime';
 
   type MoneyValue = {value: string | null; locale: string};
   type MoneyControlProps = {
@@ -16,7 +16,7 @@
 
   const props = defineProps<{
     control: FormControlPayload<MoneyControlProps>;
-    value: unknown;
+    value: FormValue;
     label?: string;
     editable: boolean;
     invalid: boolean;
@@ -27,16 +27,25 @@
   }>();
 
   function moneyValue(): MoneyValue {
-    return typeof props.value === 'object' && props.value !== null
-      ? (props.value as MoneyValue)
-      : {
-          value: props.value == null ? null : String(props.value),
-          locale: props.control.props.locale,
-        };
+    if (isRecord(props.value)) {
+      return {
+        value: props.value.value == null ? null : String(props.value.value),
+        locale: String(props.value.locale ?? props.control.props.locale),
+      };
+    }
+
+    return {
+      value: props.value == null ? null : String(props.value),
+      locale: props.control.props.locale,
+    };
   }
 
   const onInput = (event: Event) => {
-    const modelValue = (event.target as CraftInputMoney).modelValue;
+    if (!(event.target instanceof CraftInputMoney)) {
+      throw new TypeError('Expected a money input event target.');
+    }
+
+    const modelValue = event.target.modelValue;
 
     emit(
       'update:value',

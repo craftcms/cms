@@ -11,6 +11,7 @@ import {
   DOWN_KEY,
   RETURN_KEY,
   UP_KEY,
+  type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {elementSelectInputData} from './support';
 
@@ -19,37 +20,111 @@ declare const $: any;
 
 const noop = () => {};
 
+type CriteriaValue =
+  | string
+  | number
+  | boolean
+  | null
+  | CriteriaValue[]
+  | ElementCriteria;
+
+interface ElementCriteria {
+  [key: string]: CriteriaValue;
+}
+
+interface ElementSelectModalSettings {
+  matchSiteBeforeDisablingElement?: boolean;
+  siteId?: number;
+}
+
+type ElementSelectViewMode =
+  | 'list'
+  | 'list-inline'
+  | 'thumbs'
+  | 'large'
+  | 'cards'
+  | 'cards-grid';
+
+export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
+  id: string | null;
+  name: string | null;
+  fieldId: number | null;
+  elementType: string | null;
+  sources: string[] | null;
+  condition: ElementCriteria | null;
+  referenceElementId: number | null;
+  referenceElementOwnerId: number | null;
+  referenceElementSiteId: number | null;
+  criteria: ElementCriteria;
+  searchCriteria: ElementCriteria | null;
+  allowAdd: boolean;
+  allowRemove: boolean;
+  allowSelfRelations: boolean;
+  sourceElementId: number | null;
+  disabledElementIds: number[] | null;
+  viewMode: ElementSelectViewMode;
+  single: boolean;
+  maintainHierarchy: boolean;
+  branchLimit: number | null;
+  limit: number | null;
+  defaultPlacement: 'beginning' | 'end';
+  showSiteMenu: boolean;
+  siteIds: number[] | null;
+  modalStorageKey: string | null;
+  modalSettings: ElementSelectModalSettings;
+  onAddElements(): void;
+  onSelectElements(elements: Array<{id: number}>): void;
+  onRemoveElements(): void;
+  sortable: boolean;
+  selectable: boolean;
+  showActionMenu: boolean;
+  editable: boolean;
+  prevalidate: boolean;
+  editorSettings: Record<string, never>;
+  canUpload?: boolean;
+  describedBy?: string;
+  fsType?: string;
+  sectionId?: number;
+  tagGroupId?: number | null;
+  targetSiteId?: number;
+  selectionLabel?: string;
+}
+
+interface ActionMenuElement extends HTMLElement {
+  opened: boolean;
+}
+
 /**
  * Settings defaults that don't rely on runtime globals.
  * Craft.t() labels are resolved lazily in init() so Craft is available.
  */
-const DEFAULTS = {
-  id: null as string | null,
-  name: null as string | null,
-  fieldId: null as number | null,
-  elementType: null as string | null,
-  sources: null as string[] | null,
-  condition: null as any,
-  referenceElementId: null as number | null,
-  referenceElementOwnerId: null as number | null,
-  referenceElementSiteId: null as number | null,
-  criteria: {} as Record<string, any>,
-  searchCriteria: null as Record<string, any> | null,
+const DEFAULTS: BaseElementSelectInputSettings = {
+  id: null,
+  name: null,
+  fieldId: null,
+  elementType: null,
+  sources: null,
+  condition: null,
+  referenceElementId: null,
+  referenceElementOwnerId: null,
+  referenceElementSiteId: null,
+  criteria: {},
+  searchCriteria: null,
   allowAdd: true,
   allowRemove: true,
   allowSelfRelations: false,
-  sourceElementId: null as number | null,
-  disabledElementIds: null as number[] | null,
+  sourceElementId: null,
+  disabledElementIds: null,
   viewMode: 'list',
   single: false,
   maintainHierarchy: false,
-  branchLimit: null as number | null,
-  limit: null as number | null,
+  branchLimit: null,
+  limit: null,
   defaultPlacement: 'end',
   showSiteMenu: false,
-  siteIds: null as number[] | null,
-  modalStorageKey: null as string | null,
-  modalSettings: {} as Record<string, any>,
+  siteIds: null,
+  modalStorageKey: null,
+  modalSettings: {},
   onAddElements: noop,
   onSelectElements: noop,
   onRemoveElements: noop,
@@ -58,7 +133,7 @@ const DEFAULTS = {
   showActionMenu: true,
   editable: true,
   prevalidate: false,
-  editorSettings: {} as Record<string, any>,
+  editorSettings: {},
 };
 
 /**
@@ -78,12 +153,12 @@ const DEFAULTS = {
  *   so there is no custom element — the class is registered on `window.Craft`
  *   via `registerCraftGlobals`.
  */
-export class BaseElementSelectInput extends Base {
-  declare settings: any;
+export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings> {
+  declare settings: BaseElementSelectInputSettings;
 
   static readonly ADD_FX_DURATION = 200;
   static readonly REMOVE_FX_DURATION = 200;
-  static defaults: Record<string, any> = DEFAULTS;
+  static defaults = DEFAULTS;
 
   elementSelect: any = null;
   elementSort: any = null;
@@ -141,10 +216,10 @@ export class BaseElementSelectInput extends Base {
         'modalStorageKey',
         'fieldId',
       ];
-      const normalized: Record<string, any> = {};
+      const normalized: Partial<BaseElementSelectInputSettings> = {};
       for (let i = 0; i < argNames.length; i++) {
-        if (typeof initArgs[i] !== 'undefined') {
-          normalized[argNames[i]!] = initArgs[i];
+        if (initArgs[i] !== undefined) {
+          Object.assign(normalized, {[argNames[i]!]: initArgs[i]});
         } else {
           break;
         }
@@ -196,8 +271,11 @@ export class BaseElementSelectInput extends Base {
     });
 
     if (this.elementSelect) {
-      this.addListener(window, 'mousedown', ((ev: MouseEvent) => {
-        const target = ev.target as Element;
+      this.addListener(window, 'mousedown', (ev) => {
+        if (!(ev instanceof MouseEvent) || !(ev.target instanceof Element)) {
+          return;
+        }
+        const target = ev.target;
         if (
           !this.$container.is(target) &&
           !this.$container.find(target).length &&
@@ -205,7 +283,7 @@ export class BaseElementSelectInput extends Base {
         ) {
           this.elementSelect.deselectAll();
         }
-      }) as any);
+      });
     }
 
     setTimeout(() => {
@@ -338,7 +416,7 @@ export class BaseElementSelectInput extends Base {
               return null;
           }
         })(),
-        axis: this.getElementSortAxis() as 'x' | 'y' | null,
+        axis: this.getElementSortAxis(),
         collapseDraggees: true,
         magnetStrength: 4,
         helperLagBase: 1.5,
@@ -359,7 +437,7 @@ export class BaseElementSelectInput extends Base {
     }
   }
 
-  getElementSortAxis(): string | null {
+  getElementSortAxis(): 'x' | 'y' | null {
     if (
       this.settings.viewMode === 'list' &&
       !this.getElementsContainer().hasClass('inline-chips')
@@ -489,7 +567,11 @@ export class BaseElementSelectInput extends Base {
         // The common case (`ElementHtml::componentActionMenu()`): a modern
         // `<craft-action-menu>`, whose `craft-action-item`s aren't jQuery
         // disclosure-menu items, so there's no `disclosureMenu` data to read.
-        const actionMenu = $element.find('craft-action-menu').first().get(0);
+        const element = $element[0];
+        const actionMenu =
+          element instanceof Element
+            ? element.querySelector<ActionMenuElement>('craft-action-menu')
+            : null;
 
         if (actionMenu) {
           const moveForwardItem = actionMenu.querySelector(
@@ -503,7 +585,7 @@ export class BaseElementSelectInput extends Base {
           // (mirroring the disclosure-menu `show` handler below), so watch
           // its reflected `opened` attribute instead.
           const observer = new MutationObserver(() => {
-            if (!(actionMenu as any).opened) {
+            if (!actionMenu.opened) {
               return;
             }
 
@@ -610,7 +692,10 @@ export class BaseElementSelectInput extends Base {
 
     // keydown is native — addListener works.
     $elements.each((_: number, el: Element) => {
-      this.addListener(el, 'keydown', ((ev: KeyboardEvent) => {
+      this.addListener(el, 'keydown', (ev) => {
+        if (!(ev instanceof KeyboardEvent)) {
+          return;
+        }
         if ([BACKSPACE_KEY, DELETE_KEY].includes(ev.keyCode)) {
           ev.stopPropagation();
           ev.preventDefault();
@@ -619,7 +704,7 @@ export class BaseElementSelectInput extends Base {
             this.removeElement($selected.eq(i));
           }
         }
-      }) as any);
+      });
     });
 
     this.$elements = this.$elements.add($elements);
@@ -1044,7 +1129,7 @@ export class BaseElementSelectInput extends Base {
     );
 
     for (let i = 0; i < elements.length; i++) {
-      if (typeof data.elements[elements[i].id] !== 'undefined') {
+      if (data.elements[elements[i].id] !== undefined) {
         elements[i].$modalElement = elements[i].$element;
         elements[i].$element = $(data.elements[elements[i].id][0]);
       }
@@ -1312,7 +1397,10 @@ export class BaseElementSelectInput extends Base {
       }, 500);
     });
 
-    this.addListener(this.$searchInput[0], 'keydown', ((ev: KeyboardEvent) => {
+    this.addListener(this.$searchInput[0], 'keydown', (ev) => {
+      if (!(ev instanceof KeyboardEvent)) {
+        return;
+      }
       if (ev.keyCode === RETURN_KEY) {
         ev.preventDefault();
       }
@@ -1366,7 +1454,7 @@ export class BaseElementSelectInput extends Base {
           return;
         }
       }
-    }) as any);
+    });
 
     this.addListener(this.$searchInput[0], 'focus', () => {
       if (this.searchMenu) {
@@ -1451,8 +1539,9 @@ export class BaseElementSelectInput extends Base {
         const $li = $('<li/>').appendTo($ul);
         const optionLabel = `${Craft.t('app', 'Existing {type}', {
           type:
-            Craft.elementTypeNames[this.settings.elementType]?.[2] ??
-            Craft.t('app', 'element'),
+            (this.settings.elementType
+              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
+              : null) ?? Craft.t('app', 'element'),
         })}: ${element.title}`;
         $li.attr('aria-label', optionLabel);
 
@@ -1470,8 +1559,9 @@ export class BaseElementSelectInput extends Base {
         const $li = $('<li/>').appendTo($ul);
         const optionLabel = `${Craft.t('app', 'Create {type}', {
           type:
-            Craft.elementTypeNames[this.settings.elementType]?.[2] ??
-            Craft.t('app', 'element'),
+            (this.settings.elementType
+              ? Craft.elementTypeNames[this.settings.elementType]?.[2]
+              : null) ?? Craft.t('app', 'element'),
         })}: ${val}`;
         $li.attr('aria-label', optionLabel);
 

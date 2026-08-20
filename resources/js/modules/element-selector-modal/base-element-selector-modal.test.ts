@@ -56,17 +56,17 @@ it('preserves legacy Craft class extension', () => {
 
 it('exposes select button state controls to element select inputs', () => {
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectorModal.prototype,
       'enableSelectBtn'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectorModal.prototype,
       'disableSelectBtn'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
 });
 
 it('preserves legacy selector modal extension points', async () => {
@@ -86,10 +86,13 @@ it('preserves legacy selector modal extension points', async () => {
     VolumeFolderSelectorModal,
   });
 
-  expect((AssetSelectorModal as any).ancestor).toBe(BaseElementSelectorModal);
-  expect((VolumeFolderSelectorModal as any).ancestor).toBe(
-    BaseElementSelectorModal
-  );
+  expect(
+    Object.getOwnPropertyDescriptor(AssetSelectorModal, 'ancestor')?.value
+  ).toBe(BaseElementSelectorModal);
+  expect(
+    Object.getOwnPropertyDescriptor(VolumeFolderSelectorModal, 'ancestor')
+      ?.value
+  ).toBe(BaseElementSelectorModal);
 
   for (const method of [
     'sidebarShouldBeHidden',
@@ -102,9 +105,12 @@ it('preserves legacy selector modal extension points', async () => {
     'getActiveSourceName',
     'updateHeading',
   ]) {
-    expect((BaseElementSelectorModal.prototype as any)[method]).toBeTypeOf(
-      'function'
-    );
+    expect(
+      Object.getOwnPropertyDescriptor(
+        BaseElementSelectorModal.prototype,
+        method
+      )?.value
+    ).toBeInstanceOf(Function);
   }
 
   for (const method of [
@@ -113,9 +119,10 @@ it('preserves legacy selector modal extension points', async () => {
     'selectImagesWithTransform',
     'fetchMissingTransformUrls',
   ]) {
-    expect((AssetSelectorModal.prototype as any)[method]).toBeTypeOf(
-      'function'
-    );
+    expect(
+      Object.getOwnPropertyDescriptor(AssetSelectorModal.prototype, method)
+        ?.value
+    ).toBeInstanceOf(Function);
   }
 
   expect(BaseElementSelectorModal.defaults).toMatchObject({

@@ -12,6 +12,8 @@
     FormChange,
     FormChangeKind,
     FormPayload,
+    FormValue,
+    FormValues,
   } from '@/modules/forms/types';
   import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -27,7 +29,7 @@
   const emit = defineEmits<{
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
-  const inertiaForm = useForm<Record<string, any>>({});
+  const inertiaForm = useForm({});
   const elevatedBaseline = shallowRef(
     structuredClone(toRaw(props.form.values))
   );
@@ -75,7 +77,7 @@
 
   function setValue(
     path: string[],
-    value: unknown,
+    value: FormValue,
     kind: FormChangeKind = 'discrete'
   ): void {
     renderer.value?.setValue(path, value, kind);
@@ -100,8 +102,10 @@
     return data.form;
   }
 
-  function normalize(value: unknown): string {
-    return JSON.stringify(Array.isArray(value) ? [...value].sort() : value);
+  function normalize(value: FormValue): string {
+    return (
+      JSON.stringify(Array.isArray(value) ? [...value].sort() : value) ?? ''
+    );
   }
 </script>
 

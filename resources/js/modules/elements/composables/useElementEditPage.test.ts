@@ -1,40 +1,74 @@
 import {createApp, defineComponent, h, provide} from 'vue';
 import {router} from '@inertiajs/vue3';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import {ScreenPagePropsKey} from '@/common/composables/screen';
-import {SlideoutControllerKey} from '@/common/slideouts/types';
-import {useElementEditPage} from './useElementEditPage';
+import {
+  ScreenPagePropsKey,
+  type ScreenPageProps,
+} from '@/common/composables/screen';
+import {
+  SlideoutControllerKey,
+  type SlideoutController,
+} from '@/common/slideouts/types';
+import {
+  useElementEditPage,
+  type ElementEditPayload,
+} from './useElementEditPage';
 
 /** Enough of the shared payload for the composable to boot. */
-function payload(overrides: Record<string, unknown> = {}) {
+function payload(
+  overrides: Partial<ElementEditPayload> = {}
+): ElementEditPayload {
   return {
     elementId: 12,
     canonicalId: 12,
     elementType: 'craft\\elements\\Entry',
     siteId: 1,
+    fieldLayoutId: 1,
+    title: 'Test entry',
+    docTitle: 'Test entry',
+    crumbs: [],
+    readOnly: false,
     draftId: null,
     isProvisionalDraft: false,
     canAutosave: false,
     form: null,
     sidebarForm: null,
+    metadataHtml: null,
     saveUrl: '/actions/entries/save-entry',
     applyDraftUrl: '/actions/elements/apply-draft',
     autosaveUrl: '/actions/elements/save-draft',
     discardDraftUrl: '/actions/elements/delete-draft',
+    notice: null,
+    mergeNotice: null,
+    canDiscardDraft: true,
+    submitButtonLabel: 'Save',
     activityUrl: null,
     updatedTimestamps: {element: 1, canonical: 1},
     formActions: [],
     headerActions: [],
     actionMenu: [],
     previewTargets: [],
+    elementDisplayName: 'entry',
+    contextMenu: null,
     ...overrides,
   };
 }
 
 /** Only what the composable reaches for. */
-function slideoutController() {
+function slideoutController(): SlideoutController {
   return {
-    instance: {id: 'slideout-1', containerId: 'container-1'},
+    instance: {
+      id: 'slideout-1',
+      width: null,
+      containerId: 'container-1',
+      href: '',
+      component: null,
+      props: {},
+      loading: false,
+      error: null,
+      opener: null,
+      onSaved: null,
+    },
     close: vi.fn(),
     reload: vi.fn().mockResolvedValue(undefined),
     saved: vi.fn().mockReturnValue(false),
@@ -55,7 +89,7 @@ describe('useElementEditPage', () => {
    * the way `SlideoutPanel` does — and, in a panel, the slideout controller.
    */
   function mount(
-    screenProps: Record<string, unknown>,
+    screenProps: ElementEditPayload,
     slideout: ReturnType<typeof slideoutController> | null = null
   ) {
     let editor!: ReturnType<typeof useElementEditPage>;
@@ -70,10 +104,13 @@ describe('useElementEditPage', () => {
 
     const Shell = defineComponent({
       setup() {
-        provide(ScreenPagePropsKey, () => screenProps);
+        const pageProps: ScreenPageProps = Object.fromEntries(
+          Object.entries(screenProps)
+        );
+        provide(ScreenPagePropsKey, () => pageProps);
 
         if (slideout) {
-          provide(SlideoutControllerKey, slideout as any);
+          provide(SlideoutControllerKey, slideout);
         }
 
         return () => h(Editor);

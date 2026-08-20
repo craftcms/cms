@@ -26,7 +26,7 @@
     preferredLocale: string;
     weekStartDay: string;
     timeZone: string;
-    useShapes: boolean;
+    statusIndicators: boolean;
     underlineLinks: boolean;
     disableAutofocus: boolean;
     notificationDuration: string;
@@ -40,12 +40,12 @@
   const props = usePage<UserPreferencesViewModel>().props;
   const preferences = props.preferences;
 
-  const form = useForm<UserPreferencesForm>({
+  const initialForm: UserPreferencesForm = {
     preferredLanguage: preferences.preferredLanguage?.toString() ?? '',
     preferredLocale: preferences.preferredLocale?.toString() ?? '',
     weekStartDay: preferences.weekStartDay?.toString() ?? '0',
     timeZone: preferences.timeZone?.toString() ?? '__blank__',
-    useShapes: Boolean(preferences.useShapes),
+    statusIndicators: Boolean(preferences['useShapes']),
     underlineLinks: Boolean(preferences.underlineLinks),
     disableAutofocus: Boolean(preferences.disableAutofocus),
     notificationDuration:
@@ -53,26 +53,31 @@
     notificationPosition:
       preferences.notificationPosition?.toString() ?? 'end-start',
     slideoutPosition: preferences.slideoutPosition?.toString() ?? 'end',
-    ...(props.isAdmin
-      ? {
-          showFieldHandles: Boolean(preferences.showFieldHandles),
-          showExceptionView: Boolean(preferences.showExceptionView),
-          profileTemplates: Boolean(preferences.profileTemplates),
-        }
-      : {}),
-  });
+  };
+  if (props.isAdmin) {
+    initialForm.showFieldHandles = Boolean(preferences.showFieldHandles);
+    initialForm.showExceptionView = Boolean(preferences.showExceptionView);
+    initialForm.profileTemplates = Boolean(preferences.profileTemplates);
+  }
 
-  const {save} = useSettingsSave(form, update);
+  const form = useForm<UserPreferencesForm>(initialForm);
+
+  const {save} = useSettingsSave(form, update, {
+    transform: ({statusIndicators, ...data}) => ({
+      ...data,
+      ['useShapes']: statusIndicators,
+    }),
+  });
 
   useAppLayout({form, onSave: save});
 
   const displaySettings = computed({
     get: () => [
-      ...(form.useShapes ? ['useShapes'] : []),
+      ...(form.statusIndicators ? ['useShapes'] : []),
       ...(form.underlineLinks ? ['underlineLinks'] : []),
     ],
     set: (values: Array<string>) => {
-      form.useShapes = values.includes('useShapes');
+      form.statusIndicators = values.includes('useShapes');
       form.underlineLinks = values.includes('underlineLinks');
     },
   });

@@ -15,7 +15,7 @@ export interface EditableTableColumn {
   rows?: number;
   code?: boolean;
   value?: string | number;
-  options?: Record<string, any> | any[];
+  options?: EditableTableOptions | EditableTableOption[];
   /** Checkbox: only one in the column may be checked at a time. */
   radioMode?: boolean;
   /** Checkbox: column IDs to show/hide based on the checkbox state. */
@@ -24,8 +24,39 @@ export interface EditableTableColumn {
   autopopulate?: string;
   /** Number column: locale used for formatting/parsing. */
   locale?: string;
-  [key: string]: any;
+  [key: string]: EditableTableColumnValue;
 }
+
+export type EditableTableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | EditableTableValue[]
+  | EditableTableRow;
+
+export interface EditableTableRow {
+  [key: string]: EditableTableValue;
+}
+
+export interface EditableTableOption {
+  label?: string;
+  value?: EditableTableValue;
+  default?: boolean;
+}
+
+export interface EditableTableOptions {
+  [key: string]: EditableTableOption;
+}
+
+type EditableTableColumnValue =
+  | string
+  | number
+  | boolean
+  | undefined
+  | string[]
+  | EditableTableOptions
+  | EditableTableOption[];
 
 /** Map of column ID → column definition. */
 export type EditableTableColumns = Record<string, EditableTableColumn>;
@@ -39,7 +70,7 @@ export interface EditableTableSettings extends GarnishBaseSettings {
   /** Prefix prepended to generated numeric row IDs (e.g. `row` → `row0`). */
   rowIdPrefix: string;
   /** Default `{colId: value}` applied to newly added rows. */
-  defaultValues: Record<string, any>;
+  defaultValues: EditableTableRow;
   allowAdd: boolean;
   allowReorder: boolean;
   allowDelete: boolean;

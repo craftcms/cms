@@ -9,13 +9,14 @@
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
     /**
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => Record<string, unknown>;
+    saveData?: () => FormValues;
   }>();
 
   const {
@@ -57,7 +58,7 @@
   const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
     // The entry type can be switched in the sidebar without saving, so the
     // settings slideout should follow the field rather than the stored value.
-    currentEntryTypeId: () => form.typeId,
+    currentEntryTypeId: () => form.typeId ?? null,
   });
 
   // "View" opens the element on the front end. The hrefs arrive ready to

@@ -1,7 +1,14 @@
-import {useForm} from '@inertiajs/vue3';
-import {createApp, defineComponent, nextTick, ref} from 'vue';
+import {useForm, type InertiaForm} from '@inertiajs/vue3';
+import {
+  createApp,
+  defineComponent,
+  nextTick,
+  ref,
+  type ComputedRef,
+  type ShallowRef,
+} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {FormPayload} from './types';
+import type {FormChangeKind, FormPayload, FormValue, FormValues} from './types';
 import {useInertiaFormRenderer} from './useInertiaFormRenderer';
 
 const payload: FormPayload = {
@@ -27,6 +34,27 @@ const rootPayload: FormPayload = {
   },
 };
 
+interface TestIntegration {
+  advanceBaseline(): void;
+  errors: ComputedRef<Array<{path: string[]; messages: string[]}>>;
+  onMutation(mutation: FormValues): boolean;
+  renderer: ShallowRef<{
+    advanceBaseline(): void;
+    currentValues(): FormValues;
+    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+  } | null>;
+  values: ShallowRef<FormValues>;
+}
+
+type TestSettings = Record<string, string | boolean>;
+
+interface SharedFormValues {
+  title?: string;
+  fields?: {email: string};
+  slug?: string;
+  enabled?: boolean;
+}
+
 describe('useInertiaFormRenderer', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
@@ -38,18 +66,8 @@ describe('useInertiaFormRenderer', () => {
 
   it('keeps full values separate from the submitted mutation', async () => {
     const currentPayload = ref(payload);
-    let form!: ReturnType<
-      typeof useForm<{
-        title: string;
-        settings: Record<string, any>;
-      }>
-    >;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<
-        {title: string; settings: Record<string, any>},
-        'settings'
-      >
-    >;
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
     let currentValues = structuredClone(payload.values);
 
     mount(() => {
@@ -89,18 +107,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('advances the renderer and Inertia baselines together', async () => {
-    let form!: ReturnType<
-      typeof useForm<{
-        title: string;
-        settings: Record<string, any>;
-      }>
-    >;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<
-        {title: string; settings: Record<string, any>},
-        'settings'
-      >
-    >;
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
     const advanceRendererBaseline = vi.fn(() => integration.onMutation({}));
 
     mount(() => {
@@ -134,18 +142,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('maps only scoped Laravel errors by default', async () => {
-    let form!: ReturnType<
-      typeof useForm<{
-        title: string;
-        settings: Record<string, any>;
-      }>
-    >;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<
-        {title: string; settings: Record<string, any>},
-        'settings'
-      >
-    >;
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
     mount(() => {
       form = useForm({title: '', settings: {}});
@@ -169,18 +167,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('supports screen-specific Laravel error paths', async () => {
-    let form!: ReturnType<
-      typeof useForm<{
-        name: string;
-        settings: Record<string, any>;
-      }>
-    >;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<
-        {name: string; settings: Record<string, any>},
-        'settings'
-      >
-    >;
+    let form!: InertiaForm<{name: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
     mount(() => {
       form = useForm({name: '', settings: {}});
@@ -206,10 +194,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('replaces the root Inertia data with the current mutation', async () => {
-    let form!: ReturnType<typeof useForm<{title: string; enabled: boolean}>>;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<{title: string; enabled: boolean}>
-    >;
+    let form!: InertiaForm<{title: string; enabled: boolean}>;
+    let integration!: TestIntegration;
 
     mount(() => {
       form = useForm({title: 'Original', enabled: true});
@@ -236,7 +222,9 @@ describe('useInertiaFormRenderer', () => {
     await nextTick();
 
     expect('title' in form).toBe(false);
-    expect(Reflect.get(form, 'introducedByRefresh')).toBe('New value');
+    expect(
+      Object.getOwnPropertyDescriptor(form, 'introducedByRefresh')?.value
+    ).toBe('New value');
     expect(form.data()).toEqual({
       title: undefined,
       enabled: undefined,
@@ -254,10 +242,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('maps all Laravel errors for a root form', async () => {
-    let form!: ReturnType<typeof useForm<{title: string; enabled: boolean}>>;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<{title: string; enabled: boolean}>
-    >;
+    let form!: InertiaForm<{title: string; enabled: boolean}>;
+    let integration!: TestIntegration;
 
     mount(() => {
       form = useForm({title: 'Original', enabled: true});
@@ -277,18 +263,8 @@ describe('useInertiaFormRenderer', () => {
   });
 
   it('advances the Inertia baseline without a mounted renderer', async () => {
-    let form!: ReturnType<
-      typeof useForm<{
-        title: string;
-        settings: Record<string, any>;
-      }>
-    >;
-    let integration!: ReturnType<
-      typeof useInertiaFormRenderer<
-        {title: string; settings: Record<string, any>},
-        'settings'
-      >
-    >;
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
     mount(() => {
       form = useForm({title: 'Original', settings: {}});
@@ -325,14 +301,12 @@ describe('useInertiaFormRenderer', () => {
       globalErrors: [],
     };
 
-    let form!: ReturnType<typeof useForm<Record<string, any>>>;
-    let layout!: ReturnType<typeof useInertiaFormRenderer<Record<string, any>>>;
-    let sidebar!: ReturnType<
-      typeof useInertiaFormRenderer<Record<string, any>>
-    >;
+    let form!: InertiaForm<SharedFormValues>;
+    let layout!: TestIntegration;
+    let sidebar!: TestIntegration;
 
     mount(() => {
-      form = useForm<Record<string, any>>({});
+      form = useForm<SharedFormValues>({});
       layout = useInertiaFormRenderer(form, layoutPayload);
       sidebar = useInertiaFormRenderer(form, sidebarPayload);
     });

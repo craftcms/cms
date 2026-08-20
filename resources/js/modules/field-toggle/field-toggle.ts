@@ -161,13 +161,16 @@ export class FieldToggle extends Base {
   }
 
   getToggleVal(): boolean | string | null {
-    const toggle = this.toggle as HTMLInputElement & HTMLSelectElement;
+    const toggle = this.toggle;
+    if (!toggle) {
+      return null;
+    }
 
     if (this.type === 'checkbox' && this.targetPrefix === null) {
-      if (typeof toggle.checked !== 'undefined') {
+      if (toggle instanceof HTMLInputElement) {
         return toggle.checked;
       }
-      return this.toggle!.getAttribute('aria-checked') === 'true';
+      return toggle.getAttribute('aria-checked') === 'true';
     }
 
     if (this.type === 'booleanMenu') {
@@ -175,7 +178,11 @@ export class FieldToggle extends Base {
       if (attr !== null) {
         return attr === 'true' ? true : attr === 'false' ? false : !!attr;
       }
-      const val = toggle.value;
+      const val =
+        toggle instanceof HTMLInputElement ||
+        toggle instanceof HTMLSelectElement
+          ? toggle.value
+          : '';
       return !!val && val !== '0';
     }
 
@@ -185,7 +192,11 @@ export class FieldToggle extends Base {
       return this.normalizeToggleVal(checked?.value);
     }
 
-    return this.normalizeToggleVal(toggle.value);
+    return this.normalizeToggleVal(
+      toggle instanceof HTMLInputElement || toggle instanceof HTMLSelectElement
+        ? toggle.value
+        : null
+    );
   }
 
   normalizeToggleVal(val: string | null | undefined): string | null {
@@ -197,10 +208,16 @@ export class FieldToggle extends Base {
 
   async onToggleChange(): Promise<void> {
     // Is this a selectize input that looks like it was just opened?
-    const selectize = jq()?.(this.toggle).data('selectize');
-    if (selectize && (this.toggle as HTMLInputElement).value === '') {
+    const $ = jq();
+    const selectize =
+      $ && this.toggle ? $(this.toggle).data('selectize') : undefined;
+    if (
+      selectize instanceof Object &&
+      this.toggle instanceof HTMLInputElement &&
+      this.toggle.value === ''
+    ) {
       await new Promise((resolve) => setTimeout(resolve, 1));
-      if (selectize.isOpen) {
+      if ('isOpen' in selectize && selectize.isOpen === true) {
         return;
       }
     }
@@ -216,7 +233,7 @@ export class FieldToggle extends Base {
       if (this.type === 'button') {
         show = this.#buttonIsCollapsed();
       } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
-        show = (this.toggle as HTMLInputElement).checked;
+        show = this.toggle instanceof HTMLInputElement && this.toggle.checked;
       } else {
         show = !!this.getToggleVal();
       }

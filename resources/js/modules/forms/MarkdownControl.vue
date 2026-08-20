@@ -28,7 +28,11 @@
   }>();
 
   function onInput(event: Event): void {
-    emit('update:value', (event.target as HTMLTextAreaElement).value, 'typing');
+    if (!(event.target instanceof HTMLTextAreaElement)) {
+      throw new TypeError('Expected a textarea event target.');
+    }
+
+    emit('update:value', event.target.value, 'typing');
   }
 </script>
 

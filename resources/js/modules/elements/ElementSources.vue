@@ -46,7 +46,7 @@
     return props.route.url({
       source: key,
       site: site?.handle,
-      ...(props.viewMode ? {viewMode: props.viewMode} : {}),
+      viewMode: props.viewMode || undefined,
     });
   }
 
@@ -98,21 +98,18 @@
   // Folder/volume sources double as drag-and-drop move targets: their `data`
   // carries the backend `folder-id` / `can-move-to` flags. Inert unless an
   // asset-move drag is set up on the page.
-  function sourceMoveAttrs(source: Source): Record<string, string> {
+  function sourceMoveAttrs(source: Source) {
     const data = 'data' in source ? source.data : undefined;
     const folderId = data?.['folder-id'];
     if (folderId == null || folderId === false) {
       return {};
     }
 
-    const attrs: Record<string, string> = {
+    return {
       'data-folder-drop-target': '',
       'data-folder-id': String(folderId),
+      'data-can-move-to': data?.['can-move-to'] ? '' : undefined,
     };
-    if (data?.['can-move-to']) {
-      attrs['data-can-move-to'] = '';
-    }
-    return attrs;
   }
 </script>
 

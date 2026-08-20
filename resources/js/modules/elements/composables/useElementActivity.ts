@@ -1,6 +1,6 @@
 import {actionClient} from '@craftcms/ui';
 import {useDocumentVisibility, useIntervalFn} from '@vueuse/core';
-import {readonly, ref, watch, type Ref} from 'vue';
+import {readonly, ref, watch} from 'vue';
 
 /** One person currently working on the element. */
 export interface ElementActivityEntry {
@@ -34,13 +34,7 @@ interface Options {
  * a backgrounded tab has nobody to show the avatars to, and the timestamps are
  * re-read on the first poll after it returns.
  */
-export function useElementActivity(options: Options): {
-  activity: Readonly<Ref<Array<ElementActivityEntry>>>;
-  isStale: Readonly<Ref<boolean>>;
-  staleType: Readonly<Ref<'element' | 'canonical' | null>>;
-  poll: () => Promise<void>;
-  rebase: (timestamps: Options['updatedTimestamps']) => void;
-} {
+export function useElementActivity(options: Options) {
   const activity = ref<Array<ElementActivityEntry>>([]);
   const isStale = ref(false);
   const staleType = ref<'element' | 'canonical' | null>(null);
@@ -122,7 +116,7 @@ export function useElementActivity(options: Options): {
   });
 
   return {
-    activity: readonly(activity) as Readonly<Ref<Array<ElementActivityEntry>>>,
+    activity: readonly(activity),
     isStale: readonly(isStale),
     staleType: readonly(staleType),
     poll,

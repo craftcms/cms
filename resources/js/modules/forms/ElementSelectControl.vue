@@ -3,7 +3,11 @@
   import {useEventListener} from '@vueuse/core';
   import {computed, reactive, ref, useId} from 'vue';
   import {CraftElementSelectInput} from '@/modules/element-select-input';
-  import type {FormChangeKind, FormControlPayload} from './types';
+  import type {
+    FormChangeKind,
+    FormControlPayload,
+    FormProperties,
+  } from './types';
   import {inputName} from './runtime';
 
   /**
@@ -16,7 +20,7 @@
     siteId?: number | string | null;
   };
   type ElementInfo = ElementPresentation & {
-    $element?: {data?: (key: string) => unknown};
+    $element?: {data?: (key: string) => string | number | null | undefined};
   };
   type ElementSelectElement =
     | 'craft-element-select-input'
@@ -27,7 +31,7 @@
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
     sources: string[] | null;
-    criteria: Record<string, unknown>;
+    criteria: FormProperties;
     selectionLabel: string;
     limit: number | null;
     showSiteMenu: boolean;
@@ -86,8 +90,11 @@
   }
 
   function selected(event: Event): void {
-    const elements = (event as CustomEvent<{elements?: ElementInfo[]}>)?.detail
-      ?.elements;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+
+    const elements: ElementInfo[] | undefined = event.detail?.elements;
     elements?.forEach((element) => {
       const selectedId = Number(element.id);
       presentations.set(selectedId, {

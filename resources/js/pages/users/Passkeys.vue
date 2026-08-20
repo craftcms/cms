@@ -30,7 +30,7 @@
   // survives the browser's WebAuthn prompt during registration.
   const ELEVATED_SETUP_SECONDS = 300;
 
-  const craft = (window as any).Craft;
+  const craft = window.Craft;
 
   const supported = ref(true);
   const adding = ref(false);

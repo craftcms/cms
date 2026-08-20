@@ -480,9 +480,15 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     this.#dragSort?.removeItems(li);
 
     // The next still-selected chip, for the focus handoff.
-    let nextLi = li.nextElementSibling as HTMLElement | null;
+    let nextLi =
+      li.nextElementSibling instanceof HTMLElement
+        ? li.nextElementSibling
+        : null;
     while (nextLi && nextLi.dataset.removing !== undefined) {
-      nextLi = nextLi.nextElementSibling as HTMLElement | null;
+      nextLi =
+        nextLi.nextElementSibling instanceof HTMLElement
+          ? nextLi.nextElementSibling
+          : null;
     }
 
     const finish = (): void => {
@@ -525,9 +531,10 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /** Delegated Choose-menu option activation. */
   #handleMenuClick = (ev: Event): void => {
-    const option = (ev.target as Element | null)?.closest<HTMLElement>(
-      'craft-action-item[data-id]'
-    );
+    const option =
+      ev.target instanceof Element
+        ? ev.target.closest<HTMLElement>('craft-action-item[data-id]')
+        : null;
     if (!option || option.hasAttribute('hidden')) {
       return;
     }
@@ -776,21 +783,15 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * `this.settings.getInputValue?.()` so a hook set on the element after boot
    * is still honored.
    */
-  #renderSettings(id: string | number): Record<string, unknown> {
-    const settings: Record<string, unknown> = {
+  #renderSettings(id: string | number) {
+    return {
       showActionMenu: this.settings.showActionMenus,
       showHandle: this.settings.showHandles,
       showDescription: this.settings.showDescription,
       inputName: this.settings.name,
       hyperlink: this.settings.hyperlinks,
+      inputValue: this.settings.getInputValue?.()?.(id),
     };
-
-    const inputValue = this.settings.getInputValue?.()?.(id);
-    if (inputValue != null) {
-      settings.inputValue = inputValue;
-    }
-
-    return settings;
   }
 
   // --- Sorting ---------------------------------------------------------------------
@@ -822,7 +823,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     });
 
     this.addListener(window, 'mousedown', (ev: any) => {
-      const target = ev.target as Node | null;
+      const target = ev.target instanceof Node ? ev.target : null;
       if (target !== this.container && !this.container.contains(target)) {
         this.#select?.deselectAll();
       }
@@ -868,8 +869,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * class). Runs at drag start off the sorter's current `$targetItem`.
    */
   #draggeeFilter(): HTMLElement[] {
-    const targetLi = this.#dragSort?.$targetItem as HTMLElement | null;
-    if (!targetLi) {
+    const targetLi = this.#dragSort?.$targetItem;
+    if (!(targetLi instanceof HTMLElement)) {
       return [];
     }
 
@@ -912,8 +913,11 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       btn.setAttribute('orientation', 'horizontal');
     }
     btn.addEventListener('reorder', (event: Event) => {
-      const {direction} = (event as CustomEvent<{direction: ReorderDirection}>)
-        .detail;
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+      // SAFETY: craft-reorder-button emits this registered detail contract.
+      const {direction} = event.detail as {direction: ReorderDirection};
       // Resolve the owning select at event time — the li may have been
       // adopted by a different select since this listener was bound.
       (closestRegistered(li, componentSelectData) ?? this).moveComponent(
@@ -1138,9 +1142,9 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     const isHidden = (btn: HTMLElement | null): boolean =>
       !btn || btn.classList.contains('hidden');
 
-    const wrapper = (this.#menu ?? this.#createBtn)?.closest(
+    const wrapper = (this.#menu ?? this.#createBtn)?.closest<HTMLElement>(
       '[data-id="component-select-footer"]'
-    ) as HTMLElement | null;
+    );
     wrapper?.classList.toggle(
       'hidden',
       isHidden(this.#menu) && isHidden(this.#createBtn)
@@ -1179,7 +1183,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    * unavailable.
    */
   #animateAway(li: HTMLElement, done: () => void): void {
-    if (prefersReducedMotion() || typeof li.animate !== 'function') {
+    if (prefersReducedMotion() || !(li.animate instanceof Function)) {
       done();
       return;
     }

@@ -1,7 +1,7 @@
 import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@/modules/queue/types';
-import type {JobInfo, JobUpdateDetail} from '@/modules/queue/types';
+import type {JobInfo} from '@/modules/queue/types';
 
 import '@craftcms/ui/components/progress/progress';
 import {QueueService} from '@/modules/queue/queue';
@@ -40,10 +40,7 @@ class CpQueueIndicator extends LitElement {
       this.displayedJob = this.#queue.displayedJob;
     }
 
-    this.#queue.addEventListener(
-      'job-update',
-      this.#handleJobUpdate as EventListener
-    );
+    this.#queue.addEventListener('job-update', this.#handleJobUpdate);
 
     // Set initial visibility based on current state
     this.#updateVisibility();
@@ -53,10 +50,7 @@ class CpQueueIndicator extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.#queue.removeEventListener(
-      'job-update',
-      this.#handleJobUpdate as EventListener
-    );
+    this.#queue.removeEventListener('job-update', this.#handleJobUpdate);
   }
 
   protected override update(changedProperties: PropertyValues) {
@@ -74,8 +68,10 @@ class CpQueueIndicator extends LitElement {
     }
   }
 
-  #handleJobUpdate = (event: CustomEvent<JobUpdateDetail>) => {
-    this.displayedJob = event.detail.displayedJob;
+  #handleJobUpdate = (event: Event) => {
+    if (event instanceof CustomEvent) {
+      this.displayedJob = event.detail.displayedJob;
+    }
   };
 
   #updateQueue() {

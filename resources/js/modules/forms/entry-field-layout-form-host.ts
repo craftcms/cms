@@ -1,23 +1,72 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
-import {actionClient} from '@craftcms/ui';
+import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
 import FormRenderer from './FormRenderer.vue';
-import {inputName} from './runtime';
-import type {FormPayload} from './types';
+import {inputName, isRecord} from './runtime';
+import type {FormPayload, FormValue, FormValues} from './types';
 
 type ElementEditor = {
-  settings: Record<string, any>;
+  settings: {
+    elementType: string;
+    elementId: number | null;
+    canonicalId: number | null;
+    draftId: number | null;
+    revisionId: number | null;
+    fieldId: number | null;
+    ownerId: number | null;
+    siteId: number | null;
+    isProvisionalDraft: boolean;
+  };
   handleDismissibleTips?: () => void;
-};
-
-type CraftRuntime = typeof Craft & {
-  appendHeadHtml(html: string): Promise<void>;
-  appendBodyHtml(html: string): Promise<void>;
 };
 
 export interface EntryFieldLayoutFormHost extends HTMLElement {
   payload: FormPayload | null;
-  requestMetadata: () => Record<string, unknown>;
+  requestMetadata: () => FormValues;
+}
+
+function parseElementEditor(value: FormValue): ElementEditor | null {
+  if (!isRecord(value) || !isRecord(value.settings)) {
+    return null;
+  }
+
+  const settings = value.settings;
+  const nullableNumberKeys = [
+    'elementId',
+    'canonicalId',
+    'draftId',
+    'revisionId',
+    'fieldId',
+    'ownerId',
+    'siteId',
+  ];
+  const valid =
+    Object(settings.elementType).constructor === String &&
+    Boolean(settings.isProvisionalDraft) === settings.isProvisionalDraft &&
+    nullableNumberKeys.every(
+      (key) => settings[key] === null || Number(settings[key]) === settings[key]
+    );
+
+  if (!valid) {
+    return null;
+  }
+
+  const nullableNumber = (key: string): number | null =>
+    settings[key] === null ? null : Number(settings[key]);
+
+  return {
+    settings: {
+      elementType: String(settings.elementType),
+      elementId: nullableNumber('elementId'),
+      canonicalId: nullableNumber('canonicalId'),
+      draftId: nullableNumber('draftId'),
+      revisionId: nullableNumber('revisionId'),
+      fieldId: nullableNumber('fieldId'),
+      ownerId: nullableNumber('ownerId'),
+      siteId: nullableNumber('siteId'),
+      isProvisionalDraft: Boolean(settings.isProvisionalDraft),
+    },
+  };
 }
 
 export function defineEntryFieldLayoutFormHost(
@@ -32,7 +81,7 @@ export function defineEntryFieldLayoutFormHost(
     class extends HTMLElement {
       readonly #payload = shallowRef<FormPayload | null>(null);
       #app: App | null = null;
-      requestMetadata = (): Record<string, unknown> => ({});
+      requestMetadata = (): FormValues => ({});
 
       set payload(payload: FormPayload | null) {
         this.#payload.value = payload;
@@ -81,7 +130,7 @@ export function defineEntryFieldLayoutFormHost(
       ): Promise<FormPayload> {
         const form = this.closest('form');
         const editor = form
-          ? ($(form).data('elementEditor') as ElementEditor)
+          ? parseElementEditor($(form).data('elementEditor'))
           : null;
 
         if (!form || !editor) {
@@ -114,19 +163,18 @@ export function defineEntryFieldLayoutFormHost(
           data.set(inputName([...rootScope, 'selectedTab']), selectedTab);
         }
 
-        const craft = Craft as CraftRuntime;
+        const headers = {
+          'X-Craft-Namespace': rootScope.length
+            ? inputName(rootScope)
+            : undefined,
+          'X-Craft-Form-Root-Scope': JSON.stringify(rootScope),
+          'X-Craft-Form-Scope': JSON.stringify(scope),
+        };
+
         const {data: response} = await actionClient.post(
           'elements/update-field-layout',
           data.toString(),
-          {
-            headers: {
-              ...(rootScope.length
-                ? {'X-Craft-Namespace': inputName(rootScope)}
-                : {}),
-              'X-Craft-Form-Root-Scope': JSON.stringify(rootScope),
-              'X-Craft-Form-Scope': JSON.stringify(scope),
-            },
-          }
+          {headers}
         );
 
         if (!response.form) {
@@ -135,8 +183,8 @@ export function defineEntryFieldLayoutFormHost(
           );
         }
 
-        await craft.appendHeadHtml(response.headHtml);
-        await craft.appendBodyHtml(response.bodyHtml);
+        await appendHeadHtml(response.headHtml);
+        await appendBodyHtml(response.bodyHtml);
         editor.handleDismissibleTips?.();
 
         return response.form;

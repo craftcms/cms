@@ -69,8 +69,11 @@
     } else if (event.key === 'End') {
       nextIndex = tabs.value.length - 1;
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      const rtl =
-        getComputedStyle(event.currentTarget as Element).direction === 'rtl';
+      if (!(event.currentTarget instanceof Element)) {
+        return;
+      }
+
+      const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
       const previous = event.key === (rtl ? 'ArrowRight' : 'ArrowLeft');
       nextIndex =
         (index + (previous ? -1 : 1) + tabs.value.length) % tabs.value.length;

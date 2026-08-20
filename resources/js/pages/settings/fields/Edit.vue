@@ -5,7 +5,7 @@
   import type {ActionItem, FormSaveOptions} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {pathsMatch} from '@/modules/forms/runtime';
-  import type {FormChange, FormPayload} from '@/modules/forms/types';
+  import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
   import FormPage from '@/pages/Form.vue';
 
   const props = defineProps<{
@@ -18,7 +18,7 @@
 
   const formPage = ref<{
     save(options?: FormSaveOptions): void;
-    setValue(path: string[], value: unknown, kind?: FormChange['kind']): void;
+    setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
   }>();
   const formActions: ActionItem[] = [
     {

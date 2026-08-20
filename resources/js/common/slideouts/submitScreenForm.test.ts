@@ -1,11 +1,9 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {submitScreenForm} from './submitScreenForm';
+import {firstMessages} from './errors';
 
-const post = vi.hoisted(() => vi.fn());
-
-vi.mock('@craftcms/ui', () => ({actionClient: {post}}));
-
-const {submitScreenForm} = await import('./submitScreenForm');
-const {firstMessages} = await import('./errors');
+const post = vi.fn();
+const client = {post};
 
 /**
  * A screen rendered through `cp/Screen`: real inputs, namespaced per panel,
@@ -49,29 +47,41 @@ describe('submitScreenForm', () => {
   it('posts the namespaced inputs to the action', async () => {
     const form = renderScreenForm();
 
-    const result = await submitScreenForm(form, {
-      action: 'elements/save',
-      namespace: 'abc123',
-      containerId: 'slideout-1',
-    });
+    const result = await submitScreenForm(
+      form,
+      {
+        action: 'elements/save',
+        namespace: 'abc123',
+        containerId: 'slideout-1',
+      },
+      client
+    );
 
     expect(result.ok).toBe(true);
 
-    const [action, body, config] = post.mock.calls[0]!;
+    const call = post.mock.calls[0];
+    if (!call) throw new Error('Expected the screen form request.');
+    const [action, body, config] = call;
     expect(action).toBe('elements/save');
     expect(body).toBeInstanceOf(FormData);
     // The inputs stay namespaced on the wire; the server un-prefixes them.
-    expect((body as FormData).get('abc123[title]')).toBe('Hello');
+    if (!(body instanceof FormData))
+      throw new Error('Expected a FormData request body.');
+    expect(body.get('abc123[title]')).toBe('Hello');
     expect(config.headers['X-Craft-Namespace']).toBe('abc123');
     expect(config.headers['X-Craft-Container-Id']).toBe('slideout-1');
   });
 
   it('omits the namespace header when there is no namespace', async () => {
-    await submitScreenForm(renderScreenForm(), {action: 'elements/save'});
-
-    expect(post.mock.calls[0]![2].headers).not.toHaveProperty(
-      'X-Craft-Namespace'
+    await submitScreenForm(
+      renderScreenForm(),
+      {action: 'elements/save'},
+      client
     );
+
+    const call = post.mock.calls[0];
+    if (!call) throw new Error('Expected the screen form request.');
+    expect(call[2].headers).not.toHaveProperty('X-Craft-Namespace');
   });
 
   it('returns flattened field errors on a 400', async () => {
@@ -82,9 +92,11 @@ describe('submitScreenForm', () => {
       })
     );
 
-    const result = await submitScreenForm(renderScreenForm(), {
-      action: 'elements/save',
-    });
+    const result = await submitScreenForm(
+      renderScreenForm(),
+      {action: 'elements/save'},
+      client
+    );
 
     expect(result).toEqual({ok: false, errors: {title: 'Required.'}});
   });
@@ -94,9 +106,11 @@ describe('submitScreenForm', () => {
       Promise.reject({response: {status: 400, data: {message: 'Nope.'}}})
     );
 
-    const result = await submitScreenForm(renderScreenForm(), {
-      action: 'elements/save',
-    });
+    const result = await submitScreenForm(
+      renderScreenForm(),
+      {action: 'elements/save'},
+      client
+    );
 
     expect(result).toEqual({ok: false, message: 'Nope.'});
   });
@@ -105,9 +119,11 @@ describe('submitScreenForm', () => {
     const boom = new Error('network down');
     post.mockImplementation(() => Promise.reject(boom));
 
-    const result = await submitScreenForm(renderScreenForm(), {
-      action: 'elements/save',
-    });
+    const result = await submitScreenForm(
+      renderScreenForm(),
+      {action: 'elements/save'},
+      client
+    );
 
     expect(result.ok).toBe(false);
     expect(result.fatal).toBe(boom);

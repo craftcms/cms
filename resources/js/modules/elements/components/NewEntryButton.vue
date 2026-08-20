@@ -63,10 +63,10 @@
 
   // Custom sources can be pinned to a single entry type; when so, the primary
   // button should create that type.
-  const currentEntryTypeHandle = computed<string | undefined>(
-    () =>
-      (props.source?.data?.['entry-type'] as string | undefined) ?? undefined
-  );
+  const currentEntryTypeHandle = computed<string | undefined>(() => {
+    const handle = props.source?.data?.['entry-type'];
+    return Object(handle).constructor === String ? String(handle) : undefined;
+  });
 
   // Builds the create-entry URL the legacy button used: a GET request to
   // `entries/{section}/new` (optionally scoped to an entry type + the active
