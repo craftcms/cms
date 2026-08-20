@@ -17,5 +17,6 @@ export default css`
   ::slotted([slot='input']) {
     padding-block: var(--c-spacing-md);
     line-height: var(--leading-normal);
+    resize: none;
   }
 `;

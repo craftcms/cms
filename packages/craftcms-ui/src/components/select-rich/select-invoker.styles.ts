@@ -13,6 +13,7 @@ export default css`
     min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
     font: inherit;
     overflow: clip;
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
   }
 
   :host([disabled]) {

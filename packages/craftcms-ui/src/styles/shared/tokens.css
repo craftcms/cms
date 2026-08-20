@@ -11,6 +11,7 @@
   --c-color-focus-outline: var(--color-blue-500);
   --c-focus-outline-offset: 2px;
   --c-focus-outline-width: 2px;
+  --c-focus-outline-style: solid;
 
   /* Surface tokens (replaces --c-bg-*) */
   --c-surface-default: var(--color-base-100);

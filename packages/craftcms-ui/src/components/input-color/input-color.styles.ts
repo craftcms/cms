@@ -61,10 +61,8 @@ export default css`
   }
 
   .input-color__swatch:focus-within {
-    box-shadow: var(
-      --focus-ring,
-      0 0 0 2px var(--c-color-accent-border-normal)
-    );
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style) var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
   }
 
   .input-color__preview {
@@ -116,5 +114,11 @@ export default css`
     border: 0;
     appearance: none;
     background-color: transparent;
+  }
+
+  .input-group__prefix + .input-group__input ::slotted([slot='input']),
+  .input-group__input:has(+ .input-group__suffix) ::slotted([slot='input']) {
+    --c-focus-outline-style: inset;
+    --c-focus-outline-offset: -2px;
   }
 `;
