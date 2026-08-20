@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
 use CraftCms\Cms\Cp\Enums\TabsLayout;
+use CraftCms\Cms\Cp\Enums\TabsPlacement;
 use Illuminate\Support\HtmlString;
 
 use function CraftCms\Cms\ui;
@@ -138,4 +139,48 @@ it('builds from the registry', function () {
     expect($html)->toStartWith('<craft-tabs')
         ->and($html)->toContain('layout="vertical"')
         ->and($html)->toContain('<craft-tab slot="tab">One</craft-tab>');
+});
+
+it('renders the size, placement, and collapsible settings', function () {
+    $html = Tabs::make()
+        ->size('small')
+        ->placement(TabsPlacement::InlineStart)
+        ->collapsible()
+        ->tab('One', 'Panel one')
+        ->toHtml();
+
+    expect($html)->toContain('size="small"')
+        ->and($html)->toContain('placement="inline-start"')
+        ->and($html)->toContain('collapsible');
+});
+
+it('validates placement strings against the enum', function () {
+    expect(Tabs::make()->placement('inline-end')->toHtml())
+        ->toContain('placement="inline-end"');
+
+    expect(fn () => Tabs::make()->placement('sideways')->toHtml())
+        ->toThrow(ValueError::class);
+});
+
+it('omits the new settings when unset, so the web component defaults apply', function () {
+    $html = Tabs::make()->tab('One', 'Panel one')->toHtml();
+
+    expect($html)->not->toContain('size=')
+        ->and($html)->not->toContain('placement=')
+        ->and($html)->not->toContain('collapsible');
+});
+
+it('builds placement and collapsible from the registry', function () {
+    $html = (string) ui('tabs', [
+        'placement' => 'inline-start',
+        'collapsible' => true,
+        'size' => 'small',
+        'tabs' => [
+            ['label' => 'One', 'panel' => 'Panel one'],
+        ],
+    ]);
+
+    expect($html)->toContain('placement="inline-start"')
+        ->and($html)->toContain('collapsible')
+        ->and($html)->toContain('size="small"');
 });

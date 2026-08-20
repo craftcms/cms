@@ -20,10 +20,9 @@ export default css`
   }
 
   craft-badge-indicator {
-      position: absolute;
-      inset-inline-end: 0;
-      inset-block-end: 0;
-    }
+    position: absolute;
+    inset-inline-end: 0;
+    inset-block-end: 0;
   }
 
   .nav-item--prefixed {
@@ -70,7 +69,7 @@ export default css`
     aspect-ratio: 1;
     width: 100%;
   }
-  
+
   .nav-item__suffix {
     justify-self: end;
   }
@@ -96,11 +95,30 @@ export default css`
     border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);
   }
 
-  :host([icon-only]) {
-    .nav-item {
-      gap: 0;
-      grid-template-columns: calc(24rem / 16);
-    }
+  /*
+   * Collapsed to a rail there's nowhere to indent a subnav, so it moves into a
+   * popover. The label leads it as the group's heading, standing in for the
+   * tooltip a childless item would get.
+   */
+  .flyout {
+    display: grid;
+    gap: var(--c-spacing-xs);
+    padding: var(--c-spacing-sm);
+  }
+
+  .flyout__label {
+    padding-inline: var(--c-spacing-sm);
+    font-size: var(--c-text-sm);
+    font-weight: 600;
+    color: var(--c-text-quiet);
+  }
+
+  .nav-item--icon {
+    width: calc(var(--c-size-touch-target) - var(--c-spacing-sm));
+    display: block;
+    border: 1px solid transparent;
+    aspect-ratio: 1;
+    padding: 0;
 
     .nav-item__suffix {
       display: grid;

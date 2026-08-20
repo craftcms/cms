@@ -3,6 +3,14 @@ import {css} from 'lit';
 export default css`
   :host {
     display: block;
+    /*
+      Pairs with the clip overflow below: a pane clips its own content, so it
+      should never widen past its container either. As a flex/grid item the
+      default \`min-width: auto\` would let wide content (a many-columned
+      table) push it out of the layout instead — and would stop the content's
+      own scroll container from ever engaging.
+    */
+    min-width: 0;
 
     /*
       Private surface vars. Each appearance/variant re-declares only what it
@@ -35,6 +43,11 @@ export default css`
   }
 
   /* Appearances ------------------------------------------------------------ */
+
+  :host([appearance='plain']) {
+    --_pane-border-color: transparent;
+    --_pane-shadow: none;
+  }
 
   :host([appearance='raised']) {
     --_pane-border-color: var(--c-color-neutral-border-quiet);

@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
-import {html} from 'lit';
+import {html, nothing} from 'lit';
 
 import './callout.js';
 import {appearances} from '@src/constants/appearances.js';
@@ -128,6 +128,15 @@ export const KitchenSink: Story = {
           <li><a href="#">Slug</a> is required.</li>
           <li><a href="#">Feature Image</a> must have at least one item.</li>
         </ul>
+
+        <craft-button
+          type="button"
+          slot="action"
+          variant="outline"
+          inherit
+          size="small"
+          >Action</craft-button
+        >
       </craft-callout>
     `;
   },
@@ -147,6 +156,40 @@ export const Variants: Story = {
             >
           `;
         })}
+      </div>
+    `;
+  },
+};
+
+/**
+ * The default (no `padding` attribute) keeps the callout's asymmetric pair —
+ * `sm` on the block axis, `md` on the inline one. Any value that is given
+ * applies to both axes, the way a one-value CSS `padding` shorthand does.
+ */
+export const Padding: Story = {
+  args: {
+    variant: 'info',
+  },
+  argTypes: {
+    padding: {
+      control: {type: 'text'},
+    },
+  },
+  render: ({appearance, variant, message}) => {
+    return html`
+      <div class="stack">
+        ${[undefined, 'none', 'sm', 'md', 'lg', 'xl', '24', '2rem'].map(
+          (padding) => html`
+            <craft-callout
+              variant="${variant}"
+              appearance="${appearance}"
+              padding="${padding ?? nothing}"
+            >
+              ${padding ? `padding="${padding}"` : 'no padding attribute'} —
+              ${message}
+            </craft-callout>
+          `
+        )}
       </div>
     `;
   },

@@ -21,7 +21,6 @@
     submit: UrlMethodPair;
     elevatedFields?: string[] | '*';
     refreshUrl?: string;
-    fullWidth?: UseAppLayoutOptions['fullWidth'];
     defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
   }>();
   const emit = defineEmits<{
@@ -67,7 +66,6 @@
   });
 
   useAppLayout({
-    fullWidth: props.fullWidth,
     form: inertiaForm,
     defaultFormActions: props.defaultFormActions,
     onSave: save,

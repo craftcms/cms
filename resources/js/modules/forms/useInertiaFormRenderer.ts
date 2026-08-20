@@ -12,6 +12,7 @@ import type {FormChangeKind, FormPayload} from './types';
 interface FormRendererInstance {
   advanceBaseline(): void;
   currentValues(): FormPayload['values'];
+  resetValues(): void;
   setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
 }
 
@@ -106,7 +107,23 @@ export function useInertiaFormRenderer<
     form.defaults();
   }
 
-  return {advanceBaseline, errors, onMutation, renderer, values};
+  /**
+   * Throws away the unsaved values and takes the currently loaded payload as
+   * the new baseline, leaving the Inertia form clean.
+   *
+   * Only for the case where the user has explicitly abandoned their edits —
+   * discarding a provisional draft. An ordinary refresh must keep them.
+   */
+  function resetValues(): void {
+    renderer.value?.resetValues();
+    // The renderer's reset emits an empty mutation of its own, but the bridge
+    // has to hold up on its own when nothing is mounted to emit one.
+    replaceMutation({});
+    values.value = clone(toValue(payload)?.values ?? {});
+    form.defaults();
+  }
+
+  return {advanceBaseline, errors, onMutation, renderer, resetValues, values};
 }
 
 function defaultErrorPath(path: string, scope: string[]): string[] | null {

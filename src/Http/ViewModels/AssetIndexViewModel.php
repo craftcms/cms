@@ -99,7 +99,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
             $crumb = [
                 'label' => $info['label'],
                 'icon' => $info['icon'] ?? null,
-                'url' => $isCurrent ? null : Url::cpUrl($info['uri']),
+                'href' => $isCurrent ? null : Url::cpUrl($info['uri']),
             ];
 
             // Ancestors the user can move into become drop targets, matching the
