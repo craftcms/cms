@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -233,6 +234,14 @@ class Assets extends BaseRelationField
             'value' => $option['value'],
         ], $this->getSourceOptions());
         $form = parent::settingsForm($context);
+        $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
+            'author.username' => t('Author Username'),
+            'owner.slug' => t('Owner Slug'),
+            'owner.title' => t('Owner Title'),
+            'owner.uid' => t('Owner UID'),
+            'owner.site.handle' => t('Owner Site Handle'),
+        ]);
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
 
         return $form->add(
             FormField::make(t('Restrict assets to a single location'))
@@ -240,15 +249,27 @@ class Assets extends BaseRelationField
             FormField::make(t('Restricted Location Source'))
                 ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource)),
             FormField::make(t('Restricted Location Subpath'))
-                ->control(Text::make('restrictedLocationSubpath')->placeholder(t('path/to/subfolder'))->value($this->restrictedLocationSubpath)),
+                ->control(Text::make('restrictedLocationSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->restrictedLocationSubpath))
+                ->tip($objectTemplateTip),
             FormField::make(t('Allow subfolders'))
                 ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders)),
             FormField::make(t('Restricted Default Upload Subpath'))
-                ->control(Text::make('restrictedDefaultUploadSubpath')->placeholder(t('path/to/subfolder'))->value($this->restrictedDefaultUploadSubpath)),
+                ->control(Text::make('restrictedDefaultUploadSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->restrictedDefaultUploadSubpath))
+                ->tip($objectTemplateTip),
             FormField::make(t('Default Upload Location Source'))
                 ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource)),
             FormField::make(t('Default Upload Location Subpath'))
-                ->control(Text::make('defaultUploadLocationSubpath')->placeholder(t('path/to/subfolder'))->value($this->defaultUploadLocationSubpath)),
+                ->control(Text::make('defaultUploadLocationSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->defaultUploadLocationSubpath))
+                ->tip($objectTemplateTip),
             FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),

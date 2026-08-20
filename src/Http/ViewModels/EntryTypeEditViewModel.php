@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -45,6 +46,11 @@ class EntryTypeEditViewModel extends ViewModel
     {
         $values = $this->values ?? $this->initialValues();
         $handle = Handle::make('handle');
+        $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(
+            Entry::class,
+            [$this->entryType->getFieldLayout()],
+        );
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
 
         if ($this->brandNew && empty($values['handle'])) {
             $handle->source('name');
@@ -61,8 +67,11 @@ class EntryTypeEditViewModel extends ViewModel
             Field::make(t('Description'), Textarea::make('description')),
             Field::make(t('Icon'), IconPicker::make('icon')),
             Field::make(t('Color'), Color::make('color')),
-            Field::make(t('UI Label Format'), Text::make('uiLabelFormat')->monospace())
-                ->instructions(t('How {type} of this type should be labeled in the control panel.', ['type' => Entry::lowerDisplayName()])),
+            Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
+                ->monospace()
+                ->textExpanderTriggers($objectTemplateTriggers))
+                ->instructions(t('How {type} of this type should be labeled in the control panel.', ['type' => Entry::lowerDisplayName()]))
+                ->tip($objectTemplateTip),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -76,14 +85,19 @@ class EntryTypeEditViewModel extends ViewModel
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
                 $form->add(Field::make(
                     t('Title Translation Key Format'),
-                    Text::make('titleTranslationKeyFormat')->monospace(),
-                ));
+                    Text::make('titleTranslationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($objectTemplateTriggers),
+                )->tip($objectTemplateTip));
             }
         }
 
         $form->add(
-            Field::make(t('Default Title Format'), Text::make('titleFormat')->monospace())
-                ->instructions(t('The format that {type} titles should take when generated.', ['type' => Entry::lowerDisplayName()])),
+            Field::make(t('Default Title Format'), Text::make('titleFormat')
+                ->monospace()
+                ->textExpanderTriggers($objectTemplateTriggers))
+                ->instructions(t('The format that {type} titles should take when generated.', ['type' => Entry::lowerDisplayName()]))
+                ->tip($objectTemplateTip),
             Field::make(t('Allow line breaks in titles'), Lightswitch::make('allowLineBreaksInTitles')),
             Field::make(t('Show the Slug field'), Lightswitch::make('showSlugField')),
         );
@@ -99,8 +113,10 @@ class EntryTypeEditViewModel extends ViewModel
             if (($values['slugTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
                 $form->add(Field::make(
                     t('Slug Translation Key Format'),
-                    Text::make('slugTranslationKeyFormat')->monospace(),
-                ));
+                    Text::make('slugTranslationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($objectTemplateTriggers),
+                )->tip($objectTemplateTip));
             }
         }
 

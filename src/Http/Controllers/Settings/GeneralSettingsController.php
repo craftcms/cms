@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -84,13 +85,12 @@ readonly class GeneralSettingsController
         $statusOptions = $this->statusOptions();
 
         $form = Form::make([
-            Field::make(t('System Name'), Combobox::make('name')
-                ->options(SelectOptions::getEnvSuggestions())
-                ->showAllOnEmpty())
+            Field::make(t('System Name'), Text::make('name')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
                 ->required()
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable.'),
+                    t('Type `$` to choose an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
