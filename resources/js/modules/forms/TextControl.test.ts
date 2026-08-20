@@ -24,9 +24,13 @@ describe('TextControl', () => {
         autocapitalize: false,
         size: 12,
         dir: 'rtl',
-        textExpanderTriggers: {
-          '@': {options: [{label: 'Ada Lovelace', value: '@ada'}]},
-        },
+        textExpanderTriggers: [
+          {
+            trigger: '@',
+            boundary: 'whitespace',
+            options: [{label: 'Ada Lovelace', value: '@ada'}],
+          },
+        ],
       },
       path: ['settings', 'name'],
       mode: 'editable',

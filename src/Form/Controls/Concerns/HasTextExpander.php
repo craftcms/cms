@@ -16,10 +16,10 @@ use CraftCms\Cms\Support\Json;
  *     data?: mixed,
  * }
  * @phpstan-type TextExpanderTrigger (
- *     array{label?: string, options: list<TextExpanderOption>, source?: never, limit?: int}
- *     | array{label?: string, source: string, options?: never, limit?: int}
+ *     array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, options: list<TextExpanderOption>, source?: never, limit?: int}
+ *     | array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, source: string, options?: never, limit?: int}
  * )
- * @phpstan-type TextExpanderTriggers array<string, TextExpanderTrigger>
+ * @phpstan-type TextExpanderTriggers list<TextExpanderTrigger>
  */
 trait HasTextExpander
 {

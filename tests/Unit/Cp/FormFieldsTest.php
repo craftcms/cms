@@ -210,6 +210,20 @@ describe('field helper methods', function () {
         ['>Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
         ['<textarea', 'textareaFieldHtml'],
     ]);
+
+    it('maps text expander triggers onto text fields', function () {
+        $html = FormFields::textFieldHtml([
+            'id' => 'path',
+            'name' => 'path',
+            'textExpanderTriggers' => [[
+                'trigger' => '$',
+                'boundary' => 'start',
+                'options' => [['label' => '$BASE_PATH', 'value' => '$BASE_PATH']],
+            ]],
+        ]);
+
+        expect($html)->toContainTag('craft-text-expander', ['for' => 'path']);
+    });
 });
 
 describe('addressFieldsHtml', function () {

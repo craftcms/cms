@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -243,6 +244,11 @@ class FieldLayoutDesigner
                 'heading' => t('Template'),
                 'type' => 'multiline',
                 'code' => true,
+                'info' => SelectOptions::getObjectTemplateTip(),
+                'textExpanderTriggers' => SelectOptions::getObjectTemplateTextExpanderTriggers(
+                    $fieldLayout->type,
+                    [$fieldLayout],
+                ),
             ],
         ];
 
