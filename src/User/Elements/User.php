@@ -417,6 +417,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'username' => t('Username'),
+            'email' => t('Email'),
+            'firstName' => t('First Name'),
+            'lastName' => t('Last Name'),
+            'fullName' => t('Full Name'),
+            'preferredLanguage' => t('Preferred Language'),
+            'preferredLocale' => t('Preferred Locale'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');

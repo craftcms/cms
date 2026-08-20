@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
@@ -94,8 +95,12 @@ class FieldEditViewModel extends ViewModel
             if ($translationMethod === TranslationMethod::Custom->value) {
                 $nodes[] = FormField::make(
                     t('Translation Key Format'),
-                    Text::make('translationKeyFormat')->monospace(),
-                )->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'));
+                    Text::make('translationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers()),
+                )
+                    ->instructions(t('Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.'))
+                    ->tip(SelectOptions::getObjectTemplateTip());
             }
         } else {
             $nodes[] = HiddenField::make('translationMethod');

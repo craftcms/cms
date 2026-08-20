@@ -1,5 +1,7 @@
 import {Base} from '@craftcms/garnish';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
+import type CraftTextExpander from '@craftcms/ui/components/text-expander/text-expander';
+import '@craftcms/ui/components/text-expander/text-expander';
 import {editableTableData, editableTableRowData} from './support';
 import type {
   EditableTableColumn,
@@ -594,6 +596,9 @@ export class EditableTable extends Base<EditableTableSettings> {
           $cell.addClass('code');
         }
 
+        let textExpanderTarget: HTMLInputElement | HTMLTextAreaElement | null =
+          null;
+
         switch (col.type) {
           case 'checkbox':
             $('<div class="checkbox-wrapper"/>')
@@ -683,8 +688,8 @@ export class EditableTable extends Base<EditableTableSettings> {
             break;
 
           case 'email':
-          case 'url':
-            Craft.ui
+          case 'url': {
+            const $input = Craft.ui
               .createTextInput({
                 name: name,
                 value: typeof value !== 'object' ? value : null,
@@ -692,10 +697,24 @@ export class EditableTable extends Base<EditableTableSettings> {
                 placeholder: col.placeholder || null,
               })
               .appendTo($cell);
+            textExpanderTarget = $input[0];
             break;
+          }
 
           case 'autosuggest':
           case 'template': {
+            if (col.textExpanderTriggers) {
+              const $input = Craft.ui
+                .createTextInput({
+                  name,
+                  value: typeof value !== 'object' ? value : null,
+                  placeholder: col.placeholder || null,
+                })
+                .appendTo($cell);
+              textExpanderTarget = $input[0];
+              break;
+            }
+
             const combobox = document.createElement(
               'craft-combobox'
             ) as CraftCombobox;
@@ -726,6 +745,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               val: typeof value !== 'object' ? value : null,
               placeholder: col.placeholder,
             }).appendTo($cell);
+            textExpanderTarget = $textarea[0];
 
             if (col.code) {
               $textarea.attr({
@@ -735,6 +755,17 @@ export class EditableTable extends Base<EditableTableSettings> {
                 spellcheck: 'false',
               });
             }
+        }
+
+        if (col.textExpanderTriggers && textExpanderTarget) {
+          textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
+          textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
+          const expander = document.createElement(
+            'craft-text-expander'
+          ) as CraftTextExpander;
+          expander.for = textExpanderTarget.id;
+          expander.triggers = col.textExpanderTriggers;
+          $cell.append(expander);
         }
       }
 

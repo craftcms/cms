@@ -356,6 +356,22 @@ class Asset extends Element
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'filename' => t('Filename'),
+            'extension' => t('File Extension'),
+            'kind' => t('File Kind'),
+            'width' => t('Image Width'),
+            'height' => t('Image Height'),
+            'alt' => t('Alternative Text'),
+            'volume.handle' => t('Volume Handle'),
+            'uploader.username' => t('Uploader Username'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('asset');

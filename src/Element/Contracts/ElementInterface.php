@@ -28,6 +28,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
 use IteratorAggregate;
@@ -48,7 +49,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @extends ArrayAccess<array-key,mixed>
  * @extends IteratorAggregate<array-key,mixed>
  */
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].

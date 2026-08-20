@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
-use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormResolver;
@@ -27,11 +27,10 @@ it('exposes the complete local filesystem settings as a typed form', function ()
     ))->toBe(['hasUrls', 'url', 'path'])
         ->and(array_map(fn ($node): string => $node->control->type, $payload->nodes))->toBe([
             Lightswitch::class,
-            Combobox::class,
-            Combobox::class,
+            Text::class,
+            Text::class,
         ])
-        ->and($payload->nodes[1]->control->props['options'])->toBeArray()
-        ->and($payload->nodes[2]->control->props['options'])->not->toBeEmpty()
+        ->and($payload->nodes[2]->control->props['textExpanderTriggers'])->not->toBeEmpty()
         ->and($payload->values)->toBe([
             'settings' => [
                 'hasUrls' => true,
