@@ -3,6 +3,7 @@
   import {computed, onScopeDispose, ref, shallowRef, watch} from 'vue';
   import {BaseDrag, ResizeHandle} from '@craftcms/garnish';
   import {t} from '@craftcms/ui';
+  import {useBodyScrollLock} from '@/common/composables/useBodyScrollLock';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -29,6 +30,9 @@
   onKeyStroke('Escape', () => {
     emit('close');
   });
+
+  // The page behind the overlay shouldn't scroll out from under it.
+  useBodyScrollLock(() => props.isActive);
 
   const widthClass = computed(() => {
     return `w-${props.width}`;
