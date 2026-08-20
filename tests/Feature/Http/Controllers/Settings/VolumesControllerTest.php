@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
+use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -12,6 +13,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
@@ -217,6 +219,20 @@ describe('store', function () {
             'handle' => '',
             'fsHandle' => '',
         ])->assertUnprocessable();
+    });
+
+    test('store validates changes made by saving event listeners', function () {
+        Event::listen(VolumeSaving::class, function (VolumeSaving $event) {
+            $event->volume->handle = '';
+        });
+
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'disk:test-disk',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('handle');
     });
 });
 

@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -148,8 +149,9 @@ class VolumesController
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
-        $volume->validate(throw: true);
-        $volumes->saveVolume($volume, runValidation: false);
+        if (! $volumes->saveVolume($volume)) {
+            throw ValidationException::withMessages($volume->errors()->getMessages());
+        }
 
         return $this->asModelSuccess($volume, t('Volume saved.'), 'volume');
     }

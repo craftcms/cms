@@ -177,6 +177,11 @@ export default class CraftCombobox extends LionCombobox {
     if (parsed !== this.modelValue) {
       this.modelValue = parsed;
     }
+
+    this._notifyModelValueChanged();
+  }
+
+  protected _notifyModelValueChanged(): void {
     if (this.modelValue !== this.#lastNotifiedValue) {
       this.#lastNotifiedValue = this.modelValue;
       this.dispatchEvent(

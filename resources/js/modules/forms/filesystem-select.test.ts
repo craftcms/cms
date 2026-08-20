@@ -99,6 +99,11 @@ it('lets users select a filesystem through the Vue control', async () => {
       options: [
         {label: 'Uploads', value: 'uploads'},
         {label: 'Archives', value: 'archives'},
+        {
+          type: 'optgroup' as const,
+          label: 'Craft Filesystems',
+          options: [{label: 'Create a new filesystem…', value: '__add__'}],
+        },
       ],
       createUrl: '/settings/filesystems/new',
       clearable: true,
@@ -139,6 +144,19 @@ it('lets users select a filesystem through the Vue control', async () => {
   archivesOption?.click();
 
   await vi.waitFor(() => expect(inputFor(select).value).toBe('Archives'));
+  expect(selectedValue.value).toBe('archives');
+
+  const createOption = Array.from(
+    select.querySelectorAll<HTMLElement>('craft-option')
+  ).find((option) => option.textContent?.trim() === 'Create a new filesystem…');
+
+  createOption?.click();
+  await vi.waitFor(() => expect(selectedValue.value).toBe(''));
+
+  state.onSaved({
+    data: {filesystem: {name: 'Private', handle: 'private'}},
+  });
+  await vi.waitFor(() => expect(selectedValue.value).toBe('private'));
 
   app.unmount();
   container.remove();

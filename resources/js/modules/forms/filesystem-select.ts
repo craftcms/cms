@@ -53,6 +53,7 @@ export default class CraftFilesystemSelect extends CraftCombobox {
     queueMicrotask(() => {
       this.modelValue = '';
       this._inputNode.value = '';
+      this._notifyModelValueChanged();
     });
 
     void openSlideout(this.createUrl, {
@@ -81,6 +82,7 @@ export default class CraftFilesystemSelect extends CraftCombobox {
           this._setTextboxValue(
             this._getTextboxValueFromOption(selectedOption)
           );
+          this._notifyModelValueChanged();
         });
       },
     }).finally(() => {
