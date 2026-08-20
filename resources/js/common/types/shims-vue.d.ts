@@ -1,5 +1,14 @@
 declare module '*.vue' {
   import type {DefineComponent} from 'vue';
-  const component: DefineComponent;
+  type ComponentProp =
+    | string
+    | number
+    | boolean
+    | bigint
+    | symbol
+    | object
+    | null
+    | undefined;
+  const component: DefineComponent<Record<string, ComponentProp>>;
   export default component;
 }
