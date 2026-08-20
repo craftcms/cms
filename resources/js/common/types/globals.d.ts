@@ -177,10 +177,6 @@ interface CraftStatic {
     new (url: string, settings?: object): SlideoutInstance;
   };
   createElementEditor(elementType: string, settings?: object): SlideoutInstance;
-  CustomizeSourcesModal: new (
-    elementIndex: unknown,
-    settings?: object
-  ) => {destroy(): void};
   FieldLayoutDesigner: {
     new (container: any, settings?: object): FieldLayoutDesignerInstance;
   };

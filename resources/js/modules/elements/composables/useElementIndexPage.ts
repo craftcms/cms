@@ -156,33 +156,6 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     refreshResults();
   }
 
-  function createCustomizeSourcesModal() {
-    // The modal was written for the legacy BaseElementIndex instance, but it
-    // only reads a few things off it: the element type (to load/save settings),
-    // the current `settings.page`, and the current/root source key (to preselect
-    // a row). Its save flow reloads the page, so `asyncSelectSourceByKey` /
-    // `$visibleSources` only need to be safe no-ops here.
-    const elementIndexShim = {
-      elementType: elementIndex.elementType,
-      settings: {page: elementIndex.page},
-      sourceKey: elementIndex.source?.key ?? null,
-      rootSourceKey: elementIndex.source?.key ?? null,
-      $visibleSources: {first: () => ({data: () => null})},
-      asyncSelectSourceByKey: () => Promise.resolve(),
-    };
-
-    // Recreate it each time, mirroring the legacy implementation.
-    const modal = new Craft.CustomizeSourcesModal(elementIndexShim, {
-      hideOnEsc: false,
-      hideOnShadeClick: false,
-      onFadeOut: function () {
-        modal.destroy();
-      },
-    });
-
-    return modal;
-  }
-
   const elementTable = useVueTable<Element>({
     get data() {
       return elementIndex.data ?? [];
@@ -250,6 +223,5 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     rowSelection,
     refreshResults,
     onActionPerformed,
-    createCustomizeSourcesModal,
   };
 }
