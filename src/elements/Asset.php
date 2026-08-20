@@ -330,13 +330,15 @@ class Asset extends Element
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'uploader') {
-            /** @var User|null $uploader */
-            $uploader = $elements[0] ?? null;
-            $this->setUploader($uploader);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'uploader':
+                /** @var User|null $uploader */
+                $uploader = $elements[0] ?? null;
+                $this->setUploader($uploader);
+                break;
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
