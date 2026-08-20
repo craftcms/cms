@@ -23,13 +23,6 @@
 
 <template>
   <craft-nav-list>
-    <!--
-      CONFLICT-REVIEW: 6.x added :icon-only when this was still a plain
-      craft-nav-item; it's now routed through CpLink, which sets
-      inheritAttrs: false and spreads $attrs onto the custom element, so the
-      undeclared icon-only attribute still reaches craft-nav-item. Worth a
-      visual check that the collapsed rail + flyout behave with Inertia links.
-    -->
     <CpLink
       v-for="item in nav"
       :key="item.url"
