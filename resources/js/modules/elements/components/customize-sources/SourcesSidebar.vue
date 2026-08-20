@@ -3,7 +3,7 @@
   import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
-  import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import CustomSourceList from './CustomSourceList.vue';
   import type {PageRow, SourceRow} from './types';
 
   const props = defineProps<{
@@ -34,40 +34,27 @@
     return props.sources.indexOf(source);
   }
 
-  function reorder(from: number, to: number): void {
+  function onReorder(from: number, to: number): void {
     const items = visible.value;
-    if (to < 0 || to > items.length - 1) return;
+
     emit('reorder', indexOf(items[from]!), indexOf(items[to]!));
   }
 
+  /** A source with no key can't be addressed; fall back to its position. */
   function itemId(source: SourceRow, index: number): string {
     return source.key ?? `unkeyed-${index}`;
   }
 
-  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
-    useReorderableItems({
-      getItemIds: () => visible.value.map(itemId),
-      onReorder: reorder,
-      enabled: () => visible.value.length > 1,
-    });
+  function unkeyed(source: SourceRow): boolean {
+    return !source.key;
+  }
 
   function label(source: SourceRow): string {
     return source.label.trim();
   }
 
-  function actions(source: SourceRow, index: number): ActionItem[] {
-    const items: ActionItem[] = [
-      {
-        label: t('Move up'),
-        disabled: index === 0,
-        onClick: () => reorder(index, index - 1),
-      },
-      {
-        label: t('Move down'),
-        disabled: index === visible.value.length - 1,
-        onClick: () => reorder(index, index + 1),
-      },
-    ];
+  function actions(source: SourceRow): ActionItem[] {
+    const items: ActionItem[] = [];
 
     for (const page of props.pages) {
       if (page.name !== source.page && source.key) {
@@ -93,50 +80,23 @@
 </script>
 
 <template>
-  <ol class="cs-list">
-    <li
-      v-for="(source, index) in visible"
-      :key="itemId(source, index)"
-      :ref="(el) => setItemRef(el as HTMLElement, itemId(source, index))"
-      class="cs-item"
-      :class="{
-        'cs-item--selected': source.key === selectedKey,
-        'cs-item--dragging':
-          getDragState(itemId(source, index)).type === 'is-dragging',
-      }"
-      :data-drop="getDropState(itemId(source, index)).type"
-    >
-      <span
-        v-if="visible.length > 1"
-        :ref="(el) => setHandleRef(el as HTMLElement, itemId(source, index))"
-        class="cs-item__handle"
-      >
-        <craft-reorder-button
-          :position="getRowPosition(index)"
-          @reorder="
-            (e: CustomEvent<{direction: 'up' | 'down'}>) =>
-              reorder(
-                index,
-                e.detail.direction === 'up' ? index - 1 : index + 1
-              )
-          "
-        />
-      </span>
+  <CustomSourceList
+    :items="visible"
+    :item-id="itemId"
+    :selected="selectedKey"
+    :disabled="unkeyed"
+    @select="(key) => emit('select', key)"
+    @reorder="onReorder"
+  >
+    <template #label="{item}">
+      <span v-if="label(item)">{{ label(item) }}</span>
+      <em v-else>{{ t('(blank)') }}</em>
+    </template>
 
-      <button
-        type="button"
-        class="cs-item__btn"
-        :aria-pressed="source.key === selectedKey"
-        :disabled="!source.key"
-        @click="source.key && emit('select', source.key)"
-      >
-        <span v-if="label(source)">{{ label(source) }}</span>
-        <em v-else>{{ t('(blank)') }}</em>
-      </button>
-
-      <ActionMenu v-if="source.key" :actions="actions(source, index)" />
-    </li>
-  </ol>
+    <template #actions="{item}">
+      <ActionMenu v-if="actions(item).length" :actions="actions(item)" />
+    </template>
+  </CustomSourceList>
 
   <ActionMenu
     class="cs-add"
@@ -147,59 +107,3 @@
     ]"
   />
 </template>
-
-<style scoped lang="scss">
-  .cs-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-xs);
-    margin: 0 0 var(--c-spacing-m);
-    padding: 0;
-    list-style: none;
-  }
-
-  .cs-item {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding-inline-end: var(--c-spacing-xs);
-    border-radius: var(--c-border-radius-md);
-    background-color: var(--c-bg-subtle);
-  }
-
-  .cs-item--selected {
-    background-color: var(--c-bg-selected, var(--c-color-accent));
-    color: var(--c-text-inverted, inherit);
-  }
-
-  .cs-item--dragging {
-    opacity: 0.4;
-  }
-
-  .cs-item__handle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--c-text-quiet);
-    cursor: grab;
-  }
-
-  .cs-item__handle:active {
-    cursor: grabbing;
-  }
-
-  .cs-item__btn {
-    flex: 1;
-    min-width: 0;
-    padding: var(--c-spacing-xs) 0;
-    border: none;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-</style>
