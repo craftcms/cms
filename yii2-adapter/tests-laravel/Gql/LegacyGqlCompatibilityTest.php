@@ -234,7 +234,7 @@ it('applies legacy immediately behavior without mutating transform operations or
         ->and($driver->requests[0]->settings)->toBe(['generateBeforePageLoad' => false])
         ->and($driver->requests[1]->operations)->toBe(['width' => 640])
         ->and($driver->requests[1]->settings)->toBe(['generateBeforePageLoad' => true])
-        ->and($driver->requests[2]->operations)->toBe(['width' => '960'])
+        ->and($driver->requests[2]->operations)->toBe(['width' => 960])
         ->and($driver->requests[2]->settings)->toBe(['generateBeforePageLoad' => true]);
 });
 
