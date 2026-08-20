@@ -17,6 +17,8 @@ export default css`
   ::slotted([slot='listbox']) {
     display: grid;
     gap: var(--c-spacing-xs);
+    max-height: calc(320rem / 16);
+    overflow-y: auto;
     outline: none;
   }
 

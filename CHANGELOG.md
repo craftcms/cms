@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
 - Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
 - Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
 - Element edit screens now indicate which fields a draft has unapplied changes to.
