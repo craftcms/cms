@@ -103,6 +103,8 @@ export default class CraftCombobox extends LionCombobox {
   /** Last model value we've announced via `model-value-changed`. */
   #lastNotifiedValue: unknown = undefined;
 
+  #filtering = false;
+
   override firstUpdated(changed: Map<PropertyKey, unknown>) {
     super.firstUpdated(changed);
     this._inputNode?.addEventListener('input', this.#onInput);
@@ -118,6 +120,9 @@ export default class CraftCombobox extends LionCombobox {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    if (changed.has('opened') && !this.opened) {
+      this.#filtering = false;
+    }
     if (changed.has('placeholder')) {
       this._inputNode.placeholder = this.placeholder;
     }
@@ -145,6 +150,7 @@ export default class CraftCombobox extends LionCombobox {
   }
 
   #onInput = () => {
+    this.#filtering = true;
     this.#renderOptions();
     this.#syncModelFromInput();
   };
@@ -262,7 +268,7 @@ export default class CraftCombobox extends LionCombobox {
       return;
     }
 
-    const query = this._inputNode?.value ?? '';
+    const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
     const matched = this.#matchedOptions(query);
     const visible = matched.slice(0, this.limit);
 
