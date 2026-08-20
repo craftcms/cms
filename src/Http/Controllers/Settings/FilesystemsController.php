@@ -103,8 +103,8 @@ class FilesystemsController
     public function store(Request $request): Response
     {
         $data = $request->validate([
-            'assetTransform' => ['nullable', 'array'],
-            'assetTransform.driver' => ['nullable', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
+            'assetTransform' => ['required', 'array'],
+            'assetTransform.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
             'assetTransform.settings' => ['nullable', 'array'],
         ]);
         $type = $request->string('type')->toString();
@@ -116,7 +116,7 @@ class FilesystemsController
             'handle' => $request->input('handle'),
             'oldHandle' => $oldHandle,
             'settings' => $this->filesystemSettings($type, $oldHandle, $request->array('settings')),
-            'assetTransform' => $this->assetTransform($data['assetTransform'] ?? null),
+            'assetTransform' => $this->assetTransform($data['assetTransform']),
         ]);
 
         if (! $this->filesystems->saveFilesystem($fs)) {
@@ -143,8 +143,8 @@ class FilesystemsController
             'values.handle' => ['nullable', 'string'],
             'values.oldHandle' => ['nullable', 'string'],
             'values.settings' => ['nullable', 'array'],
-            'values.assetTransform' => ['nullable', 'array'],
-            'values.assetTransform.driver' => ['nullable', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
+            'values.assetTransform' => ['required', 'array'],
+            'values.assetTransform.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
             'values.assetTransform.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -159,7 +159,7 @@ class FilesystemsController
             'handle' => $values['handle'] ?? null,
             'oldHandle' => $values['oldHandle'] ?? null,
             'settings' => $settings,
-            'assetTransform' => $this->assetTransform($values['assetTransform'] ?? null, false),
+            'assetTransform' => $this->assetTransform($values['assetTransform'], false),
         ]);
 
         return new JsonResponse([
@@ -220,20 +220,12 @@ class FilesystemsController
     }
 
     /**
-     * @param  array{driver?: string|null, settings?: array<string, mixed>|null}|null  $config
-     * @return array{driver:string,settings:array<string,mixed>}|null
+     * @param  array{driver: string, settings?: array<string, mixed>|null}  $config
+     * @return array{driver:string,settings:array<string,mixed>}
      */
-    private function assetTransform(?array $config, bool $validateSettings = true): ?array
+    private function assetTransform(array $config, bool $validateSettings = true): array
     {
-        if ($config === null || $config === []) {
-            return null;
-        }
-
-        $driver = $config['driver'] ?? null;
-        if ($driver === null || $driver === '') {
-            return null;
-        }
-
+        $driver = $config['driver'];
         $settings = $config['settings'] ?? [];
         $definition = $this->assetTransforms->driver($driver)->definition();
 

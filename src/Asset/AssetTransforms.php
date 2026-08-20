@@ -44,11 +44,11 @@ class AssetTransforms extends Manager
 
         $this->operations = [
             'fill' => ['string'],
-            'format' => ['string', Rule::in(ImageTransformFormat::cases())],
+            'format' => ['string', Rule::enum(ImageTransformFormat::class)],
             'height' => ['integer', 'min:1'],
-            'interlace' => ['string', Rule::in(ImageTransformInterlace::cases())],
-            'mode' => ['string', Rule::in(ImageTransformMode::cases())],
-            'position' => ['string', Rule::in(ImageTransformPosition::cases())],
+            'interlace' => ['string', Rule::enum(ImageTransformInterlace::class)],
+            'mode' => ['string', Rule::enum(ImageTransformMode::class)],
+            'position' => ['string', Rule::enum(ImageTransformPosition::class)],
             'quality' => ['integer', 'between:1,100'],
             'upscale' => ['boolean'],
             'width' => ['integer', 'min:1'],

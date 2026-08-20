@@ -50,6 +50,18 @@ function filesystemFormControls(array $nodes): array
     return $controls;
 }
 
+function craftAssetTransformConfig(): array
+{
+    return [
+        'driver' => 'craft',
+        'settings' => [
+            'filesystem' => null,
+            'subpath' => null,
+            'generateBeforePageLoad' => false,
+        ],
+    ];
+}
+
 test('requires authentication for index', function () {
     Auth::logout();
 
@@ -124,6 +136,10 @@ test('create renders a functional filesystem form', function () {
             ->component('Form')
             ->where('form.values.oldHandle', null)
             ->where('form.values.type', Local::class)
+            ->where('form.values.assetTransform.driver', 'craft')
+            ->where('form.values.assetTransform.settings.filesystem', null)
+            ->where('form.values.assetTransform.settings.subpath', '')
+            ->where('form.values.assetTransform.settings.generateBeforePageLoad', false)
             ->where('submit.url', action([FilesystemsController::class, 'store']))
             ->where('refreshUrl', action([FilesystemsController::class, 'renderForm']))
             ->where('form.nodes', function ($nodes): bool {
@@ -204,6 +220,7 @@ test('save creates filesystem with valid data', function () {
         'settings' => [
             'path' => sys_get_temp_dir().'/test-uploads',
         ],
+        'assetTransform' => craftAssetTransformConfig(),
     ])->assertOk();
 
     $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
@@ -211,7 +228,8 @@ test('save creates filesystem with valid data', function () {
         ->and($fs->name)->toBe('New Test Filesystem')
         ->and($fs->getSettings())->toMatchArray([
             'path' => File::normalizePath(sys_get_temp_dir().'/test-uploads', '/'),
-        ]);
+        ])
+        ->and($fs->getAssetTransform())->toEqual(craftAssetTransformConfig());
 });
 
 test('save persists one complete Asset Transform override unchanged', function () {
@@ -300,6 +318,7 @@ test('save validates the Asset Transform request shape', function (mixed $assetT
         ->assertJsonValidationErrors($error);
 })->with([
     'configuration' => ['invalid', 'assetTransform'],
+    'missing driver' => [[], 'assetTransform.driver'],
     'settings' => [[
         'driver' => 'filesystemTest',
         'settings' => 'invalid',
@@ -318,6 +337,7 @@ test('refreshes filesystem settings without saving', function () {
                 'url' => '@web/uploads',
                 'path' => sys_get_temp_dir().'/uploads',
             ],
+            'assetTransform' => craftAssetTransformConfig(),
         ],
         'scope' => [],
     ])->assertOk()
@@ -359,6 +379,7 @@ test('refresh omits controls that do not apply to the current settings', functio
             'url' => '@web/uploads',
             'path' => sys_get_temp_dir().'/uploads',
         ],
+        'assetTransform' => craftAssetTransformConfig(),
     ];
 
     $withoutBaseUrl = postJson(action([FilesystemsController::class, 'renderForm']), [
@@ -399,6 +420,7 @@ test('save updates existing filesystem with oldHandle', function () {
         'name' => 'Updated Name',
         'handle' => 'updatedHandle',
         'oldHandle' => 'originalHandle',
+        'assetTransform' => craftAssetTransformConfig(),
     ])->assertOk();
 
     $newFs = Filesystems::getFilesystemByHandle('updatedHandle');
@@ -424,6 +446,7 @@ test('save does not carry settings across filesystem types', function () {
         'handle' => 'changedFilesystem',
         'oldHandle' => 'originalFilesystem',
         'settings' => ['path' => sys_get_temp_dir().'/stale-local-path'],
+        'assetTransform' => craftAssetTransformConfig(),
     ])->assertOk();
 
     $filesystem = Filesystems::getFilesystemByHandle('changedFilesystem');
@@ -439,6 +462,7 @@ test('save returns failure on invalid data', function () {
         'name' => '',
         'handle' => '',
         'settings' => [],
+        'assetTransform' => craftAssetTransformConfig(),
     ]);
 
     $response

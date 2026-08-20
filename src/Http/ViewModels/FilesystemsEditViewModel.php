@@ -44,7 +44,10 @@ class FilesystemsEditViewModel extends ViewModel
             'handle' => $this->filesystem->handle,
             'oldHandle' => $this->oldHandle,
             'type' => $this->filesystem::class,
-            'assetTransform' => $this->filesystem->getAssetTransform(),
+            'assetTransform' => $this->filesystem->getAssetTransform() ?? [
+                'driver' => $this->assetTransforms->getDefaultDriver(),
+                'settings' => [],
+            ],
             'settings' => [
                 ...$this->filesystem->getSettings(),
                 'hasUrls' => $this->filesystem->hasUrls,
@@ -66,7 +69,8 @@ class FilesystemsEditViewModel extends ViewModel
             Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions()))
                 ->instructions(t('What type of filesystem is this?')),
             Field::make(t('Asset Transform Driver'), Choice::make('assetTransform.driver')->options($this->assetTransformDriverOptions()))
-                ->instructions(t('Select a driver to override the default Asset Transform driver for this filesystem.')),
+                ->instructions(t('Select the Asset Transform driver for this filesystem.'))
+                ->required(),
         ]), new FormContext(
             values: $values,
             errors: Arr::only($errors, ['name', 'handle', 'type']),
@@ -154,7 +158,6 @@ class FilesystemsEditViewModel extends ViewModel
 
         return $options
             ->sortBy('label')
-            ->prepend(['value' => '', 'label' => t('Use the default driver')])
             ->values()
             ->all();
     }
