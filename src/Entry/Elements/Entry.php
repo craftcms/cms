@@ -1989,8 +1989,10 @@ JS, [
     {
         match ($plan->handle) {
             'author', 'authors' => $this->setAuthors($elements),
-            default => $this->traitSetEagerLoadedElements($handle, $elements, $plan),
+            default => null,
         };
+
+        $this->traitSetEagerLoadedElements($handle, $elements, $plan);
     }
 
     // Indexes, etc.

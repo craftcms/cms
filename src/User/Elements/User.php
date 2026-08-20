@@ -1955,9 +1955,9 @@ JS, [
             /** @var Asset|null $photo */
             $photo = $elements[0] ?? null;
             $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

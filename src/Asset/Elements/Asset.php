@@ -462,9 +462,9 @@ class Asset extends Element
             /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**
