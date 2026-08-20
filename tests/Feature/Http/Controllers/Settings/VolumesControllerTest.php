@@ -110,15 +110,20 @@ describe('create / edit', function () {
                 ->where('form.values.volumeId', null)
                 ->where('form.values.name', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
-                ->where('form.nodes', fn (Collection $nodes): bool => $nodes->contains(
-                    fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
-                        && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
-                ) && collect(['subpath', 'transformSubpath'])->every(
-                    fn (string $path): bool => $nodes->contains(
-                        fn (array $node): bool => ($node['control']['path'] ?? null) === [$path]
-                            && ! empty($node['control']['props']['textExpanderTriggers']),
-                    ),
-                )));
+                ->where('form.nodes', function (Collection $nodes): bool {
+                    $paths = $nodes->pluck('control.path');
+
+                    return $nodes->contains(
+                        fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
+                            && ($node['control']['props']['createUrl'] ?? null) === action([FilesystemsController::class, 'create']),
+                    )
+                        && $nodes->contains(
+                            fn (array $node): bool => ($node['control']['path'] ?? null) === ['subpath']
+                                && ! empty($node['control']['props']['textExpanderTriggers']),
+                        )
+                        && $paths->doesntContain(['transformFsHandle'])
+                        && $paths->doesntContain(['transformSubpath']);
+                }));
     });
 
     test('edit loads existing volume', function () {
@@ -168,8 +173,6 @@ describe('create / edit', function () {
                 'handle' => 'newVolume',
                 'fsHandle' => 'disk:test-disk',
                 'subpath' => '',
-                'transformFsHandle' => '',
-                'transformSubpath' => '',
                 'titleTranslationMethod' => 'site',
                 'titleTranslationKeyFormat' => '',
                 'altTranslationMethod' => 'none',

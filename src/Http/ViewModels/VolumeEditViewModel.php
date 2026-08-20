@@ -81,24 +81,6 @@ class VolumeEditViewModel extends ViewModel
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
                 ->tip(t('Type `$` to choose an environment variable.')),
-            Field::make(
-                t('Transform Filesystem'),
-                FilesystemSelect::make('transformFsHandle')
-                    ->disabledTargets($disabledFilesystemTargets)
-                    ->emptyOption(t('Same as asset filesystem'))
-                    ->includeEnvVars()
-                    ->create()
-                    ->placeholder(t('Same as asset filesystem'))
-                    ->clearable(),
-            )
-                ->instructions(t('Choose which filesystem image transforms should be stored in.'))
-                ->tip(t('This can be set to an environment variable matching one of the option values.')),
-            Field::make(
-                t('Transform Subpath'),
-                Text::make('transformSubpath')->textExpanderTriggers($envTextExpanderTriggers),
-            )
-                ->instructions(t('Where transforms should be stored on the filesystem.'))
-                ->tip(t('Type `$` to choose an environment variable.')),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -185,8 +167,6 @@ class VolumeEditViewModel extends ViewModel
             'handle' => $this->volume->handle ?? '',
             'fsHandle' => $this->volume->getFsHandle(false) ?? '',
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
-            'transformFsHandle' => $this->volume->getTransformFsHandle(false) ?? '',
-            'transformSubpath' => $this->volume->getTransformSubpath(ensureTrailing: false, parse: false),
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
