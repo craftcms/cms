@@ -185,6 +185,7 @@ interface CraftStatic {
       message?: string,
       settings?: CpNotificationSettings
     ) => object;
+    runQueue?: () => void;
   };
   broadcaster?: {postMessage(message: LegacyWidgetSettings): void};
   defaultIndexCriteria: LegacyWidgetSettings;
