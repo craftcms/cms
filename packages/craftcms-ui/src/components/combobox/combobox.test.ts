@@ -210,6 +210,26 @@ describe('craft-combobox', () => {
     });
   });
 
+  it('includes the matching option hint when selected hints are enabled', async () => {
+    const combobox = await createFixture();
+    combobox.options = [
+      {
+        label: 'Uploads',
+        value: 'uploads',
+        data: {hint: 's3://uploads'},
+      },
+    ];
+    combobox.showSelectedHint = true;
+    combobox.modelValue = 'uploads';
+
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('uploads');
+      expect(combobox.querySelector('input')?.value).toBe(
+        'Uploads – s3://uploads'
+      );
+    });
+  });
+
   it('preserves a custom value on mount', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
