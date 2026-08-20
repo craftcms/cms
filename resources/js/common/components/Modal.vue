@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {onKeyStroke, useEventListener} from '@vueuse/core';
+  import {onKeyStroke, useElementSize, useEventListener} from '@vueuse/core';
   import {computed, onScopeDispose, ref, shallowRef, watch} from 'vue';
   import {BaseDrag, ResizeHandle} from '@craftcms/garnish';
   import {t} from '@craftcms/ui';
@@ -54,6 +54,11 @@
     if (resizedHeight.value !== null) {
       style.height = `${resizedHeight.value}px`;
     }
+    // Only meaningful while the height is content-driven — an explicit one
+    // already fixes the box.
+    if (floorHeight.value !== null && !style.height) {
+      style.minHeight = `${floorHeight.value}px`;
+    }
     return Object.keys(style).length ? style : undefined;
   });
 
@@ -85,6 +90,45 @@
       width: parseFloat(styles.maxWidth) || window.innerWidth,
       height: parseFloat(styles.maxHeight) || window.innerHeight,
     };
+  }
+
+  // --- Height floor ---------------------------------------------------------
+  //
+  // A modal whose content shrinks — swapping a source's settings for a new
+  // heading's single field — would otherwise collapse under whoever is reading
+  // it. Remember the tallest it has been while open and refuse to go below it.
+  // It only ever grows, and resets when the modal closes, so reopening starts
+  // from the new content again.
+
+  const floorHeight = ref<number | null>(null);
+  // Border-box, so the floor matches the rendered box the cap is measured
+  // against — a content-box floor sits a border short and lets it creep down.
+  const {height: contentHeight} = useElementSize(content, undefined, {
+    box: 'border-box',
+  });
+
+  watch(contentHeight, (height) => {
+    if (!props.isActive || !height) return;
+
+    raiseFloor(Math.round(height));
+  });
+
+  watch(
+    () => props.isActive,
+    (active) => {
+      if (!active) floorHeight.value = null;
+    }
+  );
+
+  function raiseFloor(height: number): void {
+    const cap = content.value ? bounds(content.value).height : Infinity;
+    // min-height beats max-height, so the floor has to respect the cap itself
+    // or a shrinking viewport would leave the modal taller than the screen.
+    const next = Math.min(height, cap);
+
+    if (floorHeight.value === null || next > floorHeight.value) {
+      floorHeight.value = next;
+    }
   }
 
   function resize(width: number, height: number): void {
@@ -201,6 +245,13 @@
   useEventListener(window, 'resize', () => {
     if (resizedWidth.value !== null && resizedHeight.value !== null) {
       resize(resizedWidth.value, resizedHeight.value);
+    }
+
+    if (floorHeight.value !== null && content.value) {
+      floorHeight.value = Math.min(
+        floorHeight.value,
+        bounds(content.value).height
+      );
     }
   });
 
