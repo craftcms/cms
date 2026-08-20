@@ -142,7 +142,6 @@
       appearance="button"
       :href="create().url"
       variant="accent"
-      :inertia="false"
       icon="plus"
     >
       {{ t('New volume') }}
