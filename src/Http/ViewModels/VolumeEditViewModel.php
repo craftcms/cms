@@ -43,6 +43,11 @@ class VolumeEditViewModel extends ViewModel
     {
         $values = $this->values ?? $this->initialValues();
         $handle = Handle::make('handle');
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+        $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(
+            Asset::class,
+            [$this->volume->getFieldLayout()],
+        );
         $disabledFilesystemTargets = $this->volumes->getAllVolumes()
             ->reject(fn (Volume $volume): bool => $volume->id === $this->volume->id || (bool) $volume->getSubpath())
             ->map(fn (Volume $volume): ?string => $volume->getResolvedFsTarget())
@@ -70,6 +75,13 @@ class VolumeEditViewModel extends ViewModel
                 ->instructions(t('Choose which filesystem assets should be stored in.'))
                 ->tip(t('This can be set to an environment variable matching one of the option values.'))
                 ->required(),
+            // CONFLICT-REVIEW: 6.x swapped the Twig subpath inputs from `autosuggestField`
+            // (suggestEnvVars) to `textField` + env text expander triggers. This branch had
+            // already ported them to a Combobox seeded with the same env suggestions, so the
+            // Combobox is kept here rather than redesigning the control during the merge.
+            // Switch these two fields to Text::make(...)->textExpanderTriggers(
+            // SelectOptions::getEnvTextExpanderTriggers()) if the text expander is meant to
+            // replace the combobox everywhere.
             Field::make(
                 t('Subpath'),
                 Combobox::make('subpath')
@@ -112,10 +124,14 @@ class VolumeEditViewModel extends ViewModel
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
                 $form->add(Field::make(
                     t('{name} Translation Key Format', ['name' => t('Title')]),
-                    Text::make('titleTranslationKeyFormat')->monospace(),
-                )->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                    'name' => t('Title'),
-                ])));
+                    Text::make('titleTranslationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($objectTemplateTriggers),
+                )
+                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                        'name' => t('Title'),
+                    ]))
+                    ->tip($objectTemplateTip));
             }
 
             $form->add(Field::make(
@@ -126,10 +142,14 @@ class VolumeEditViewModel extends ViewModel
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
                 $form->add(Field::make(
                     t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
-                    Text::make('altTranslationKeyFormat')->monospace(),
-                )->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
-                    'name' => t('Alternative Text'),
-                ])));
+                    Text::make('altTranslationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($objectTemplateTriggers),
+                )
+                    ->instructions(t('Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.', [
+                        'name' => t('Alternative Text'),
+                    ]))
+                    ->tip($objectTemplateTip));
             }
         }
 

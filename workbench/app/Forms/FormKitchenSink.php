@@ -57,14 +57,14 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 class FormKitchenSink
 {
     private const array TextExpanderTriggers = [
-        ':' => ['label' => 'Emoji', 'options' => [
+        ['trigger' => ':', 'boundary' => 'whitespace', 'label' => 'Emoji', 'options' => [
             ['label' => '😀', 'value' => '😀', 'keywords' => ['grinning', 'face', 'smile', 'happy']],
             ['label' => '🎉', 'value' => '🎉', 'keywords' => ['party', 'popper', 'celebration', 'confetti']],
             ['label' => '👍', 'value' => '👍', 'keywords' => ['thumbs', 'up', 'approve', 'yes']],
             ['label' => '❤️', 'value' => '❤️', 'keywords' => ['red', 'heart', 'love']],
             ['label' => '🚀', 'value' => '🚀', 'keywords' => ['rocket', 'launch', 'ship']],
         ]],
-        '@' => ['label' => 'Users', 'source' => 'workbench/text-expander-options'],
+        ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'Users', 'source' => 'workbench/text-expander-options'],
     ];
 
     /** @var array<string, array<string, class-string>> */

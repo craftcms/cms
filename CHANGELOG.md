@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
+
 ## 6.0.0-alpha.17 - 2026-08-18
 
 - Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.

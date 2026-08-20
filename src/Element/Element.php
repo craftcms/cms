@@ -12,6 +12,7 @@ use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -186,6 +187,37 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     public static function displayName(): string
     {
         return t('Element');
+    }
+
+    #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        $suggestions = [
+            'id' => t('ID'),
+            'uid' => t('UID'),
+            'title' => t('Title'),
+            'slug' => t('Slug'),
+            'uri' => t('URI'),
+            'dateCreated' => t('Date Created'),
+            'dateUpdated' => t('Date Updated'),
+            'site.handle' => t('Site Handle'),
+            'site.name' => t('Site Name'),
+            'site.language' => t('Site Language'),
+        ];
+
+        if (! is_a(static::class, NestedElementInterface::class, true)) {
+            return $suggestions;
+        }
+
+        return [
+            ...$suggestions,
+            'owner.id' => t('Owner ID'),
+            'owner.uid' => t('Owner UID'),
+            'owner.title' => t('Owner Title'),
+            'owner.slug' => t('Owner Slug'),
+            'owner.uri' => t('Owner URI'),
+            'owner.site.handle' => t('Owner Site Handle'),
+        ];
     }
 
     public static function lowerDisplayName(): string
