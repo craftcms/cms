@@ -293,7 +293,11 @@
 </template>
 
 <style scoped>
+  /* A column flex box so slotted content can grow into a height the floor is
+   holding open, instead of sitting at its natural height with a gap below. */
   .content {
+    display: flex;
+    flex-direction: column;
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     box-shadow: var(--c-modal-shadow);
