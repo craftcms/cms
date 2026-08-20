@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -22,6 +23,48 @@ use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
+/** @return list<list<string>> */
+function controlPaths(array $form): array
+{
+    return array_map(fn (array $control) => $control['path'], formControls($form));
+}
+
+/** @return array<string, mixed>|null */
+function control(array $form, array $path): ?array
+{
+    return collect(formControls($form))->firstWhere('path', $path);
+}
+
+/** @return array<string, mixed> */
+function controlProps(array $form, array $path): array
+{
+    return control($form, $path)['props'] ?? [];
+}
+
+/** @return array<string, mixed> */
+function sourceValues(array $source): array
+{
+    return $source['form']['values']['sources'][$source['key']] ?? [];
+}
+
+/** @return list<array<string, mixed>> */
+function formControls(array $form): array
+{
+    $controls = [];
+    $walk = function (array $nodes) use (&$walk, &$controls): void {
+        foreach ($nodes as $node) {
+            if (isset($node['control'])) {
+                $controls[] = $node['control'];
+            }
+
+            $walk($node['children'] ?? []);
+        }
+    };
+    $walk($form['nodes'] ?? []);
+
+    return $controls;
+}
+
 beforeEach(function () {
     actingAs(User::findOne());
 
@@ -30,6 +73,8 @@ beforeEach(function () {
 
 it('returns fully normalized source customization data', function () {
     $primarySite = Sites::getPrimarySite();
+    // The Sites field is only offered on a multi-site install.
+    Site::factory()->create();
 
     $field = Field::factory()->create([
         'name' => 'Preview Field',
@@ -103,49 +148,124 @@ it('returns fully normalized source customization data', function () {
     $response->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('multiPage', true)
+            ->where('elementTypeName', 'Test Element')
+            ->where('pageSettings.entries.label', 'Entries')
             ->where('sources.0.type', ElementSources::TYPE_HEADING)
             ->where('sources.0.page', 'Test Elements')
+            // ElementSources synthesizes a keyless blank heading as a
+            // separator; it's regenerated on every read and isn't saveable.
+            ->where('sources.0.form', null)
             ->where('sources.1.page', 'Test Elements')
-            ->where('sources.1.sortOptions.0.attr', 'structure')
-            ->where('sources.1.defaultSort.0', 'slug')
-            ->where('sources.1.defaultSort.1', 'asc')
-            ->where('sources.1.tableAttributes.0.0', 'slug')
-            ->where('sources.1.tableAttributes.0.1', 'Slug')
-            ->where('sources.2.defaultSort.0', 'id')
-            ->where('sources.2.defaultSort.1', 'asc')
-            ->where('sources.3.defaultSort.0', 'field:'.$field->uid)
-            ->where('sources.3.defaultSort.1', 'desc')
-            ->where('sources.3.sites.0', $primarySite->uid)
-            ->where('sources.3.userGroups', [])
-            ->missing('sources.3.condition')
-            ->where('sources.4.sites', [])
-            ->where('pageSettings.entries.label', 'Entries')
-            ->where('defaultSortOptions.0.attr', 'field:'.$field->uid)
-            ->where('availableTableAttributes.0.0', 'title')
-            ->where('customFieldAttributes.0.0', 'field:'.$field->uid)
-            ->where('customFieldAttributes.0.1', 'Preview Field')
-            ->where('elementTypeName', 'Test Element')
-            ->where('userGroups.0.label', t($userGroup->name, category: 'site'))
-            ->where('userGroups.0.value', $userGroup->uid)
+            ->where('sources.1.form.scope', ['sources', 'structured'])
+            // Everything the modal used to build its fields client-side now
+            // arrives inside each source's Form.
+            ->missing('viewModes')
+            ->missing('baseSortOptions')
+            ->missing('defaultSortOptions')
+            ->missing('availableTableAttributes')
+            ->missing('customFieldAttributes')
+            ->missing('conditionBuilderHtml')
+            ->missing('conditionBuilderJs')
+            ->missing('userGroups')
+            ->missing('headHtml')
+            ->missing('bodyHtml')
             ->etc()
         );
 
-    $payload = $response->json();
-    $structuredSortAttrs = array_column($payload['sources'][1]['sortOptions'], 'attr');
-    $baseSortAttrs = array_column($payload['baseSortOptions'], 'attr');
-    $viewModes = collect($payload['viewModes']);
+    $sources = collect($response->json('sources'))->keyBy('key');
+    $structured = $sources['structured'];
+    $fallback = $sources['fallback'];
+    $custom = $sources['custom:existing'];
 
-    expect($payload['sources'][3]['conditionBuilderHtml'])->toContain('condition-container')
-        ->and($payload['sources'][3]['conditionBuilderJs'])->toContain('Craft.initUiElements')
-        ->and($payload['sources'][1]['availableTableAttributes'])->toBe([])
-        ->and($payload['sources'][3]['tableAttributes'][0])->toBe(['title', 'Test Element'])
-        ->and($structuredSortAttrs)->toContain('title', 'slug', 'postDate')
-        ->and($baseSortAttrs)->toContain('id', 'title', 'slug', 'postDate')
-        ->and($viewModes->contains(fn (array $viewMode) => $viewMode['mode'] === 'table' && is_string($viewMode['iconSvg'])))->toBeTrue()
-        ->and($payload['conditionBuilderHtml'])->toContain('__SOURCE_KEY__')
-        ->and($payload['conditionBuilderJs'])->toContain('Craft.initUiElements')
-        ->and($payload['headHtml'])->toBeString()
-        ->and($payload['bodyHtml'])->toBeString();
+    expect(controlPaths($structured['form']))->toBe([
+        ['sources', 'structured', 'enabled'],
+        ['sources', 'structured', 'defaultViewMode'],
+        ['sources', 'structured', 'defaultSort', 'attr'],
+        ['sources', 'structured', 'defaultSort', 'dir'],
+        ['sources', 'structured', 'tableAttributes'],
+    ])
+        ->and(controlPaths($custom['form']))->toBe([
+            ['sources', 'custom:existing', 'label'],
+            ['sources', 'custom:existing', 'condition'],
+            ['sources', 'custom:existing', 'defaultSort', 'attr'],
+            ['sources', 'custom:existing', 'defaultSort', 'dir'],
+            ['sources', 'custom:existing', 'tableAttributes'],
+            ['sources', 'custom:existing', 'defaultViewMode'],
+            ['sources', 'custom:existing', 'sites'],
+            ['sources', 'custom:existing', 'userGroups'],
+        ])
+        ->and(controlPaths($sources['heading:content']['form'] ?? ['nodes' => []]))->toBe([]);
+
+    // Seeded values, normalized the way store() expects them back.
+    expect(sourceValues($structured))->toMatchArray([
+        'enabled' => true,
+        'defaultSort' => ['attr' => 'slug', 'dir' => 'asc'],
+        'tableAttributes' => ['slug'],
+    ])
+        ->and(sourceValues($fallback)['defaultSort'])->toBe(['attr' => 'id', 'dir' => 'asc'])
+        ->and(sourceValues($custom))->toMatchArray([
+            'label' => 'Existing Custom',
+            'defaultSort' => ['attr' => 'field:'.$field->uid, 'dir' => 'desc'],
+            'sites' => [$primarySite->uid],
+            'userGroups' => [],
+        ])
+        // An untouched condition builder posts back whatever was seeded, so the
+        // seed has to carry its class.
+        ->and(sourceValues($custom)['condition'])->toHaveKey('class')
+        // An absent key means "all"; an explicit false means "none".
+        ->and(sourceValues($sources['custom:false-sites'])['sites'])->toBe([])
+        ->and(sourceValues($sources['custom:false-sites'])['userGroups'])->toBe('*');
+
+    // Every Choice's options must serialize as a JSON list — an associative
+    // array becomes an object, which the Vue control can't map over.
+    foreach (formControls($custom['form']) as $control) {
+        if ($control['component'] === 'craft:choice') {
+            expect(array_is_list($control['props']['options']))
+                ->toBeTrue(implode('.', $control['path']).' options must be a list');
+        }
+    }
+
+    // Only a structured source offers structure ordering, and it has no
+    // direction to pick.
+    expect(controlProps($structured['form'], ['sources', 'structured', 'defaultSort', 'attr'])['options'][0]['value'])
+        ->toBe('structure')
+        ->and(controlProps($fallback['form'], ['sources', 'fallback', 'defaultSort', 'attr'])['options'][0]['value'])
+        ->not->toBe('structure')
+        ->and(control($structured['form'], ['sources', 'structured', 'defaultViewMode'])['props']['options'])
+        ->toHaveCount(count(TestElementSourcesElement::indexViewModes()));
+
+    // A new custom source can pick previewable custom fields as columns, since
+    // its field layouts aren't known yet.
+    $newSource = postJson(action([ElementSourcesController::class, 'form']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceKey' => 'custom:new',
+        'type' => ElementSources::TYPE_CUSTOM,
+    ])->assertOk()->json('form');
+
+    expect($newSource['scope'])->toBe(['sources', 'custom:new'])
+        ->and($newSource['values']['sources']['custom:new']['condition'])->toHaveKey('class')
+        ->and(array_column(controlProps($newSource, ['sources', 'custom:new', 'tableAttributes'])['options'], 'value'))
+        ->toContain('field:'.$field->uid);
+});
+
+it('re-resolves a source Form from posted settings', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class), [
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'structured',
+        ],
+    ]);
+
+    $form = postJson(action([ElementSourcesController::class, 'form']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceKey' => 'structured',
+        'type' => ElementSources::TYPE_NATIVE,
+        'settings' => [
+            'defaultSort' => ['attr' => 'structure', 'dir' => 'desc'],
+        ],
+    ])->assertOk()->json('form');
+
+    expect(control($form, ['sources', 'structured', 'defaultSort', 'dir'])['mode'])->toBe('disabled');
 });
 
 it('stores normalized source settings for multi-page sources', function () {
@@ -491,3 +611,43 @@ class TestSinglePageElementSourcesElement extends TestElementSourcesElement
         return false;
     }
 }
+
+it('normalizes the Form defaultSort shape and an empty source scope', function () {
+    $projectConfig = app(ProjectConfig::class);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => ['native-enabled', 'custom:scoped'],
+        'sourcePages' => [
+            'native-enabled' => 'Content',
+            'custom:scoped' => 'Content',
+        ],
+        'pageSettings' => ['Content' => ['label' => 'Content']],
+        'sources' => [
+            'native-enabled' => [
+                'tableAttributes' => ['slug'],
+                'defaultSort' => ['attr' => 'slug', 'dir' => 'desc'],
+                'enabled' => true,
+            ],
+            'custom:scoped' => [
+                'label' => 'Scoped',
+                'tableAttributes' => ['slug'],
+                'condition' => [
+                    'class' => ElementCondition::class,
+                    'elementType' => TestElementSourcesElement::class,
+                    'conditionRules' => [],
+                ],
+                // An empty selection means “none”, not “all”.
+                'sites' => [],
+                'userGroups' => [],
+            ],
+        ],
+    ])->assertOk();
+
+    $config = collect($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class)))
+        ->keyBy('key');
+
+    expect($config['native-enabled']['defaultSort'])->toBe(['slug', 'desc'])
+        ->and($config['custom:scoped']['sites'])->toBeFalse()
+        ->and($config['custom:scoped']['userGroups'])->toBeFalse();
+});
