@@ -114,7 +114,7 @@
           v-else
           slot="primary-action"
           type="submit"
-          variant="accent"
+          variant="primary"
           :loading="loading"
         >
           {{ submitLabel }}
