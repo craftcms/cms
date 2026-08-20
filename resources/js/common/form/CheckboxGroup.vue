@@ -5,6 +5,7 @@
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroupItem from '@/common/form/CheckboxGroupItem.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import {ignoreModelValueInitialization} from '@/modules/forms/runtime';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<string>): void;
@@ -35,10 +36,13 @@
     return [...new Set([...props.modelValue, ...forced])];
   });
 
-  function handleValueChange(event: CustomEvent) {
+  // Lion announces a model value as its children register, before the group
+  // has applied ours. Treating that as a change would emit an empty selection
+  // over whatever the caller passed in.
+  const handleValueChange = ignoreModelValueInitialization((event) => {
     const target = event.target as CraftCheckbox;
     emit('update:modelValue', target.modelValue);
-  }
+  });
 
   // Only non-disabled options are reorderable; disabled options (e.g. a pinned
   // "always on" column) keep their position.
