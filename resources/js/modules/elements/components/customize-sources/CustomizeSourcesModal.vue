@@ -439,7 +439,7 @@
 
       <div ref="settingsPane" class="cs-settings">
         <template v-for="source in sources" :key="source.key">
-          <div
+          <craft-field-group
             v-if="source.mounted && source.form && source.key"
             v-show="source.key === selectedKey"
           >
@@ -454,7 +454,7 @@
               "
               @change="(change, values) => onChange(source, change, values)"
             />
-          </div>
+          </craft-field-group>
         </template>
 
         <craft-spinner v-if="selected && !selected.form" />

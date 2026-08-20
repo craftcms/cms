@@ -7,13 +7,36 @@ export default class CraftFieldGroup extends LitElement {
         craft-field-group {
           display: grid;
           grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: var(--gap, var(--c-spacing-lg));
+          gap: var(--gap, var(--c-spacing-lg)) 0;
           container-type: inline-size;
         }
 
         craft-field-group > * {
           grid-column: 1 / -1;
           min-width: 0;
+        }
+        
+        @container (min-width: 30rem){
+          craft-field-group > .width-25 {
+            grid-column: span 3;
+          }
+
+          craft-field-group > .width-33 {
+            grid-column: span 4;
+          }
+
+          craft-field-group > .width-50 {
+            grid-column: span 6;
+          }
+
+          craft-field-group > .width-66 {
+            grid-column: span 6;
+          }
+
+          craft-field-group > .width-75 {
+            grid-column: span 6;
+          }
+          
         }
 
         @container (min-width: 50rem) {
