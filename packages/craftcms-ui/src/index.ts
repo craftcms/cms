@@ -112,6 +112,7 @@ export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
 export * from './utilities/create.js';
 export * from './utilities/focus-trap.js';
+export * from './core/element-selector/index.js';
 
 // Services
 export {ConfigService} from './services/Config.js';
