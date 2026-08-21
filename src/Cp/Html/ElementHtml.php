@@ -100,6 +100,7 @@ readonly class ElementHtml
             'show-thumb' => $config['showThumb'],
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
+            'appearance' => $config['appearance'] ?? null,
             'data' => array_filter([
                 'type' => $component::class,
                 'id' => $component->getId(),

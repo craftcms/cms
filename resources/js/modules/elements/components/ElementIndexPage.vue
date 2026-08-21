@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
@@ -46,8 +45,6 @@
     onActionPerformed,
     createCustomizeSourcesModal,
   } = page;
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>
@@ -80,7 +77,7 @@
     </div>
   </LayoutSlot>
 
-  <craft-pane size="none">
+  <craft-pane padding="none">
     <BaseElementIndex
       :table="elementTable"
       :selectable="true"

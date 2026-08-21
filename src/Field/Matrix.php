@@ -527,19 +527,20 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $entryTypes = collect($this->getEntryTypes())
             ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->name])
             ->all() ?: ['entry' => Entry::displayName()];
-        $entries = match (true) {
+        $entries = array_values(match (true) {
             $context->value instanceof ElementCollection => $context->value->all(),
             $context->value instanceof EntryQuery => $context->value->all(),
             default => [],
-        };
+        });
         $values = $forms = $sortOrder = [];
+        $identities = ElementHelper::nestedElementIdentities($entries);
 
-        foreach ($entries as $entry) {
+        foreach ($entries as $index => $entry) {
             if (! $entry instanceof Entry) {
                 throw new LogicException('Matrix Controls require Entry values.');
             }
 
-            $uid = $entry->uid ?? (string) $entry->id;
+            $uid = $identities[$index];
             $values[$uid] = ['type' => $entry->getType()->handle];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $entry->getFieldLayout(),

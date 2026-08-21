@@ -446,6 +446,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 ### Elements
 
+- Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
 - Added `CraftCms\Cms\Element\ElementCaches` and `CraftCms\Cms\Support\Facades\ElementCaches`.
   - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
   - Deprecated `craft\services\Elements::startCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()` should be used instead.

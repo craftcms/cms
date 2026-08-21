@@ -2,7 +2,6 @@
   import {t} from '@craftcms/ui';
   import {h} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Empty from '@/common/components/Empty.vue';
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
@@ -54,8 +53,6 @@
     },
     getCoreRowModel: getCoreRowModel<UserGroup>(),
   });
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>

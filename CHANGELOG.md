@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
+- Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
 
 ## 6.0.0-alpha.17 - 2026-08-18

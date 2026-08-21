@@ -33,7 +33,7 @@ readonly class TokensController extends GqlController
     {
         return Inertia::render('graphql/tokens/Index', [
             'crumbs' => fn () => [
-                ['label' => t('GraphQL'), 'url' => Url::cpUrl('graphql/tokens')],
+                ['label' => t('GraphQL'), 'href' => Url::cpUrl('graphql/tokens')],
                 ['label' => t('Tokens')],
             ],
             'title' => t('GraphQL Tokens'),
@@ -138,7 +138,7 @@ readonly class TokensController extends GqlController
             ->title($title)
             ->selectedSubnavItem('tokens')
             ->crumbs([
-                ['label' => t('GraphQL Tokens'), 'url' => 'graphql/tokens'],
+                ['label' => t('GraphQL Tokens'), 'href' => Url::cpUrl('graphql/tokens')],
                 ['label' => $title],
             ])
             ->redirectUrl('graphql/tokens')

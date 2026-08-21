@@ -88,9 +88,18 @@ export default class CraftBreadcrumbs extends LitElement {
     ) as CraftBreadcrumbItem[];
 
     items.forEach((item, index) => {
-      // Append separators to each item if they don't already have one
+      const isLast = index === items.length - 1;
       const separator = item.querySelector('[slot="separator"]');
-      if (separator === null) {
+
+      if (isLast) {
+        // Nothing follows the last crumb, so it gets no separator. Clear any
+        // default one we added while this item still had a sibling after it —
+        // slot changes can promote an item to last. A custom separator is the
+        // author's call, so leave it be.
+        if (separator?.hasAttribute('data-default')) {
+          separator.remove();
+        }
+      } else if (separator === null) {
         // No separator exists, add one
         item.append(this.getSeparator());
       } else if (separator.hasAttribute('data-default')) {
@@ -101,7 +110,7 @@ export default class CraftBreadcrumbs extends LitElement {
       }
 
       // The last breadcrumb item is the "current page"
-      if (index === items.length - 1) {
+      if (isLast) {
         item.setAttribute('aria-current', 'page');
       } else {
         item.removeAttribute('aria-current');

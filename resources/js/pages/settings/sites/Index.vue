@@ -204,7 +204,7 @@
     }
   }
 
-  useAppLayout(() => ({fullWidth: true, title: props.title}));
+  useAppLayout(() => ({title: props.title}));
 </script>
 
 <template>

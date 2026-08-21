@@ -13,7 +13,7 @@ describe('metadataHtml', function () {
         ]);
 
         expect($html)->toContain('<dl class="cp-metadata-list">')
-            ->and($html)->toContain('<dt>One</dt>')
+            ->and($html)->toContain('>One</dt>')
             ->and($html)->toContain('<dd>Value</dd>')
             ->and($html)->toContain('<dd>Computed</dd>')
             ->and($html)->not->toContain('Hidden');

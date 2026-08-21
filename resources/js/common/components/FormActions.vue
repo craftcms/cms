@@ -56,7 +56,9 @@
 </script>
 
 <template>
-  <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
+  <div class="flex flex-col justify-center">
+    <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
+  </div>
 
   <div v-if="!readOnly" class="flex items-center justify-end gap-2">
     <craft-button
@@ -80,7 +82,7 @@
       <slot name="submit-button">
         <craft-button
           type="submit"
-          :variant="ButtonVariant.Solid"
+          :variant="ButtonVariant.Primary"
           :loading="isButtonProcessing(primaryButton)"
           :disabled="form.processing"
         >
@@ -91,7 +93,7 @@
         <template #invoker="{label}">
           <craft-button
             slot="invoker"
-            :variant="ButtonVariant.Solid"
+            :variant="ButtonVariant.Primary"
             type="button"
             icon
           >

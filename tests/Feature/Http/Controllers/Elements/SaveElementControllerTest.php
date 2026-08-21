@@ -54,6 +54,25 @@ beforeEach(function () {
     ]);
 });
 
+/** A saved, disabled entry. `enabled` lives on `elements`, so not a factory attribute. */
+function disabledEntry(Section $section, EntryType $entryType): Entry
+{
+    $entry = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement([
+            'title' => 'Canonical Title',
+            'slug' => 'canonical-title',
+        ]);
+
+    /** @var Entry $element */
+    $element = Entry::find()->id($entry->id)->status(null)->one();
+    $element->enabled = false;
+    Elements::saveElement($element);
+
+    return $element;
+}
+
 function createSaveElementMatrixFixture(): array
 {
     $innerField = Field::factory()->create([
@@ -451,6 +470,66 @@ describe('store', function () {
                 ->where('type', ElementActivityType::Save->value)
                 ->exists())
             ->toBeTrue();
+    });
+
+    /**
+     * One save per test on purpose: the controller takes its `ElementRequest`
+     * through the constructor, so a second post in the same process is served
+     * the first one's params.
+     */
+    it('disables an element when the status control posts false', function () {
+        $entry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Canonical Title',
+                'slug' => 'canonical-title',
+            ]);
+
+        expect($entry->enabled)->toBeTrue();
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'enabled' => false,
+        ])->assertOk();
+
+        expect(Entry::find()->id($entry->id)->status(null)->one()->enabled)->toBeFalse();
+    });
+
+    it('enables a disabled element when the status control posts true', function () {
+        $entry = disabledEntry($this->section, $this->entryType);
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'enabled' => true,
+        ])->assertOk();
+
+        expect(Entry::find()->id($entry->id)->status(null)->one()->enabled)->toBeTrue();
+    });
+
+    /**
+     * Unlike Craft 5, which force-enabled on a POST carrying no status: saves
+     * that don't carry a status control — a delta save of one field, say —
+     * leave the element's status alone. See CHANGELOG-WIP.md.
+     */
+    it('leaves the status alone when none is posted', function () {
+        $entry = disabledEntry($this->section, $this->entryType);
+
+        postJson(action([SaveElementController::class, 'store']), [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'title' => 'Renamed',
+        ])->assertOk();
+
+        $saved = Entry::find()->id($entry->id)->status(null)->one();
+
+        expect($saved->title)->toBe('Renamed')
+            ->and($saved->enabled)->toBeFalse();
     });
 
     it('can clear asset alt text', function () {

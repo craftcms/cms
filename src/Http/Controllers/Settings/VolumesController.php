@@ -56,8 +56,8 @@ class VolumesController
 
         return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets')],
                 ['label' => t('Volumes')],
             ],
             'sort' => $sort,
