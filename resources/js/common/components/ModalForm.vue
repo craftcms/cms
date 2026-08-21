@@ -57,12 +57,16 @@
         <div v-if="$slots.title" slot="title" class="contents">
           <slot name="title"></slot>
         </div>
-        <div
-          slot="header-actions"
-          class="contents"
-        >
+        <div slot="header-actions" class="contents">
           <slot name="header-actions">
-            <craft-button type="button" icon="x" :aria-label="t('Close')" variant="plain" size="small" @click="emit('close')"></craft-button>
+            <craft-button
+              type="button"
+              icon="x"
+              :aria-label="t('Close')"
+              variant="plain"
+              size="small"
+              @click="emit('close')"
+            ></craft-button>
           </slot>
         </div>
         <div v-if="$slots.body" slot="body" class="contents">
