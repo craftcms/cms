@@ -217,7 +217,7 @@ class EagerLoadedElementConsistencyTest extends TestCase
                 'administrativeArea' => 'CA',
                 'locality' => 'Los Angeles',
                 'postalCode' => '90002',
-            ]
+            ],
         ];
         $addresses = array_map(fn($data) => new Address($data), $addressData);
 
