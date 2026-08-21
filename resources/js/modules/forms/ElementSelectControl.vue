@@ -67,13 +67,6 @@
       limit: props.control.props.limit,
       showSiteMenu: props.control.props.showSiteMenu,
       sortable: false,
-      // CONFLICT-REVIEW: 6.x set this to `true` so `Craft.addActionsToChip()`
-      // would build the menu. That's superseded here — the chips' action menus
-      // are rendered below in Vue, so the input must not add its own: this both
-      // stops `Craft.addActionsToChip()` from injecting a duplicate set of
-      // items into our `craft-action-menu`, and keeps the chips the input
-      // fetches from `app/render-elements` after a selection menu-less until
-      // this component re-renders them.
       showActionMenu: false,
       modalSettings: {modalTitle: props.control.props.selectionLabel},
     })
@@ -196,12 +189,6 @@
               :name="`${inputName(control.path)}[]`"
               :value="String(elementId(selectedValue))"
             />
-            <!--
-              CONFLICT-REVIEW: 6.x left this suffix container empty so
-              `Craft.addActionsToChip()` would inject the menu into it. That's
-              superseded here — the menu is rendered by Vue instead, and the
-              input is told not to add its own (`showActionMenu: false` above).
-            -->
             <div slot="suffix">
               <ActionMenu
                 v-if="editable"
