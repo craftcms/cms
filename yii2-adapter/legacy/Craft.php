@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Typecast;
 use GuzzleHttp\Client;
@@ -84,6 +85,20 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
+        if (
+            $alias === '@icons' ||
+            str_starts_with($alias, '@icons/') ||
+            $alias === '@appicons' ||
+            str_starts_with($alias, '@appicons/') ||
+            $alias === '@app/icons' ||
+            str_starts_with($alias, '@app/icons/')
+        ) {
+            Deprecator::log(
+                'Craft::getAlias(icon)',
+                'Icon aliases have been deprecated. Use `Icons::resolveIconPath()` or `CmsAssets::resourcesPath()` instead.',
+            );
+        }
+
         if ($alias === '@icons') {
             return CmsAssets::resourcesPath('icons');
         }

@@ -3,8 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Facades\Deprecator;
 
 it('resolves legacy icon paths through Craft', function(string $alias, string $path) {
+    Deprecator::shouldReceive('log')
+        ->once()
+        ->with(
+            'Craft::getAlias(icon)',
+            'Icon aliases have been deprecated. Use `Icons::resolveIconPath()` or `CmsAssets::resourcesPath()` instead.',
+        );
+
     expect(Craft::getAlias($alias))->toBe(CmsAssets::resourcesPath("icons/$path"));
 })->with([
     'icons root' => ['@icons', ''],
