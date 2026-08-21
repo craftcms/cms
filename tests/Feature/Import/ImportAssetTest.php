@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -164,27 +165,28 @@ it('ignores an explicit volumeId in the incoming data in favor of the field layo
         ->and($asset->volumeId)->toBe($this->volume->id);
 });
 
-it('nulls out a local temp file path that resolves outside of all allowed roots', function () {
+it('throws for a local temp file path that resolves outside of all allowed roots', function () {
     // A real, existing file outside every allowed temp root — e.g. one under tests/, which
-    // Path::system() excludes — should have its tempFilePath nulled out rather than used.
+    // Path::system() excludes.
     $outsidePath = base_path('tests/fixtures-import-asset-'.bin2hex(random_bytes(4)).'.txt');
     file_put_contents($outsidePath, 'not allowed');
 
     try {
         $asset = new Asset;
         $asset->setVolumeId($this->volume->id);
-        $asset->setAttributesForImport(['tempFilePath' => $outsidePath]);
 
-        expect($asset->tempFilePath)->toBeNull();
+        expect(fn () => $asset->setAttributesForImport(['tempFilePath' => $outsidePath]))
+            ->toThrow(FileException::class);
     } finally {
         @unlink($outsidePath);
     }
 });
 
-it('nulls out a local temp file path that does not exist on disk', function () {
+it('throws for a local temp file path that does not exist on disk', function () {
     $asset = new Asset;
     $asset->setVolumeId($this->volume->id);
-    $asset->setAttributesForImport(['tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt')]);
 
-    expect($asset->tempFilePath)->toBeNull();
+    expect(fn () => $asset->setAttributesForImport([
+        'tempFilePath' => Path::temp('does-not-exist-'.bin2hex(random_bytes(4)).'.txt'),
+    ]))->toThrow(FileException::class);
 });
