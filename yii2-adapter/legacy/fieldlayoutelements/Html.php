@@ -21,7 +21,7 @@ if (false) {
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Html} instead.
      */
-    class Html extends \CraftCms\Cms\FieldLayout\LayoutElements\Html
+    class Html extends \CraftCms\Yii2Adapter\FieldLayout\LayoutElements\Html
     {
     }
 }

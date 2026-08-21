@@ -1,5 +1,3 @@
-import '../components/dialog/dialog.js';
-import '../components/copy-button/copy-button.js';
 import type CraftDialog from '../components/dialog/dialog.js';
 import {createTextInput} from './create-text-input.js';
 

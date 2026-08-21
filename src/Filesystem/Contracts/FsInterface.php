@@ -39,14 +39,4 @@ interface FsInterface extends ConfigurableComponentInterface, SavableComponentIn
      * Returns whether the “Base URL” setting should be shown.
      */
     public function getShowUrlSetting(): bool;
-
-    /**
-     * Returns whether [[getSettingsHtml()]] returns legacy control panel HTML
-     * (Twig markup that may register asset bundles and inline JS), as opposed
-     * to a Vue component tag.
-     *
-     * Legacy settings are rendered as an isolated HTML island; component
-     * settings are compiled as part of the Vue page.
-     */
-    public function hasLegacySettingsHtml(): bool;
 }

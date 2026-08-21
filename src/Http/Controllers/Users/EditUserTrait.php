@@ -5,38 +5,21 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
-use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\User\Events\EditUserScreensResolving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 use function CraftCms\Cms\currentUser;
-use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 trait EditUserTrait
 {
     use EnforcesPermissions;
-
-    private const string SCREEN_PROFILE = 'profile';
-
-    private const string SCREEN_ADDRESSES = 'addresses';
-
-    private const string SCREEN_PERMISSIONS = 'permissions';
-
-    private const string SCREEN_PREFERENCES = 'preferences';
-
-    private const string SCREEN_PASSWORD = 'password';
-
-    private const string SCREEN_PASSKEYS = 'passkeys';
-
-    private const string SCREEN_SIGN_IN_PROVIDERS = 'sign-in-providers';
 
     /**
      * Returns the user being edited.
@@ -69,34 +52,7 @@ trait EditUserTrait
 
     protected function asEditUserScreen(User $user, string $screen, ?CpScreenResponse $response = null): CpScreenResponse
     {
-        $screens = [
-            self::SCREEN_PROFILE => ['label' => t('Profile')],
-        ];
-
-        if ($this->showPermissionsScreen()) {
-            $screens[self::SCREEN_PERMISSIONS] = ['label' => t('Permissions')];
-        }
-
-        if ($user->getIsCurrent()) {
-            $screens[self::SCREEN_PREFERENCES] = ['label' => t('Preferences')];
-        }
-
-        $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
-
-        $currentUser = currentUserElement();
-
-        event($event = new EditUserScreensResolving($currentUser, $user, $screens));
-
-        $screens = $event->screens;
-
-        if ($user->getIsCurrent() && $user->getHasPassword()) {
-            $screens[self::SCREEN_PASSWORD] = ['label' => t('Password & Verification')];
-            $screens[self::SCREEN_PASSKEYS] = ['label' => t('Passkeys')];
-        }
-
-        if ($this->showSignInProvidersScreen($user)) {
-            $screens[self::SCREEN_SIGN_IN_PROVIDERS] = ['label' => t('Sign-in Providers')];
-        }
+        $screens = app(EditUserScreens::class)->screens($user);
 
         abort_if(! isset($screens[$screen]), 403, 'User not authorized to perform this action.');
 
@@ -105,7 +61,7 @@ trait EditUserTrait
             ->when(
                 $user->getIsCurrent(),
                 fn (CpScreenResponse $response) => $response
-                    ->title(t('My Account'))
+                    ->title($pageName)
                     ->docTitle($pageName),
                 function (CpScreenResponse $response) use ($user, $pageName) {
                     $username = $user->getUiLabel();
@@ -115,72 +71,32 @@ trait EditUserTrait
                 }
             );
 
-        $sidebarItems = [];
-        $currentSidebarItems = &$sidebarItems;
-        $subnavItems = [];
-        $accountSecurityItem = null;
-        $currentSubnavItems = &$subnavItems;
-
-        foreach ($screens as $s => $screenInfo) {
-            if (
-                $accountSecurityItem === null &&
-                in_array($s, [self::SCREEN_PASSWORD, self::SCREEN_SIGN_IN_PROVIDERS], true)
-            ) {
-                $sidebarItem = [
-                    'heading' => t('Account Security'),
-                    'nested' => [],
-                ];
-                $sidebarItems[] = &$sidebarItem;
-                $currentSidebarItems = &$sidebarItem['nested'];
-
-                $accountSecurityItem = new NavItem([
-                    'label' => t('Account Security'),
-                    'url' => '#',
-                    'selected' => false,
-                    'group' => true,
-                    'subnav' => [],
-                ]);
-                $subnavItems[] = $accountSecurityItem;
-                $currentSubnavItems = &$accountSecurityItem->subnav;
-            }
-
-            $url = $screenInfo['url'] ?? $this->editUserScreenUrl($user, $s);
-            $selected = $s === $screen;
-
-            $currentSidebarItems[] = [
-                'label' => $screenInfo['label'],
-                'url' => $url,
-                'selected' => $selected,
-            ];
-
-            if ($selected && $accountSecurityItem) {
-                $accountSecurityItem->selected = true;
-            }
-
-            $currentSubnavItems[] = new NavItem([
-                'label' => $screenInfo['label'],
-                'url' => $url,
-                'selected' => $selected,
-            ]);
-        }
+        $screensService = app(EditUserScreens::class);
 
         $response->pageSidebarTemplate('_includes/nav', [
             'label' => t('Account'),
-            'items' => $sidebarItems,
-        ])->subnav($subnavItems);
+            'items' => $screensService->sidebarItems($user, $screen, $screens),
+        ])->subnav($screensService->subnav($user, $screen, $screens));
 
+        // Users / {user chip} / {screen}. The chip is no longer the last crumb,
+        // so hyperlink it back to the user — `craft-breadcrumbs` derives
+        // `aria-current="page"` from position, and that now belongs to the screen.
         $response->crumbs([
             ...$user->getCrumbs(),
             [
                 'html' => app(ElementHtml::class)->elementChipHtml($user, [
                     'showDraftName' => false,
                     'class' => 'chromeless',
+                    'hyperlink' => true,
+                    'attributes' => [
+                        'appearance' => Appearance::Plain->value,
+                    ],
                 ]),
-                'current' => true,
             ],
+            ['label' => $pageName],
         ]);
 
-        if ($screen !== self::SCREEN_PROFILE) {
+        if ($screen !== EditUserScreens::PROFILE) {
             $response->addAltAction(t('Save and continue editing'), [
                 'redirect' => $this->editUserScreenUrl($user, $screen),
                 'shortcut' => true,
@@ -217,28 +133,11 @@ trait EditUserTrait
 
     private function showPermissionsScreen(): bool
     {
-        $currentUser = currentUser();
-
-        if (! $currentUser) {
-            return false;
-        }
-
-        return $currentUser->can('viewPermissionsScreen', User::class);
-    }
-
-    private function showSignInProvidersScreen(User $user): bool
-    {
-        return $user->getIsCurrent() && app(OAuth::class)->getProviderDefinitions()->isNotEmpty();
+        return app(EditUserScreens::class)->showPermissionsScreen();
     }
 
     private function editUserScreenUrl(User $user, string $screen): string
     {
-        $basePath = $user->getIsCurrent() ? 'myaccount' : "users/$user->id";
-        $path = match ($screen) {
-            self::SCREEN_PROFILE => $basePath,
-            default => "$basePath/$screen",
-        };
-
-        return Url::cpUrl($path);
+        return app(EditUserScreens::class)->url($user, $screen);
     }
 }

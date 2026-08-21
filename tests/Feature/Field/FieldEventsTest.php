@@ -101,7 +101,7 @@ it('can mutate field rendering option and keyword events', function () {
         $event->html = '<input name="custom">';
     });
 
-    expect($plainText->getInputHtml('Original', null))->toBe('<input name="custom">');
+    expect($plainText->getInlineInputHtml('Original', null))->toBe('<input name="custom">');
 
     $optionsField = new TestOptionsEventField;
     $optionsField->options = [

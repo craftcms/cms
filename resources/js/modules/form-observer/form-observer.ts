@@ -9,8 +9,7 @@ type FormObserverCallback = (formData: string | null) => void;
  * FormObserver — a port of `Craft.FormObserver` onto `@craftcms/garnish` `Base`.
  * Watches a form (or any container of named inputs) and invokes a callback when
  * its serialized value actually changes, debounced and slowed while the user is
- * actively typing. Backs draft autosave in `Craft.ElementEditor` and
- * `Craft.ContentBlockEditor`.
+ * actively typing. Backs draft autosave in `Craft.ElementEditor`.
  *
  * jQuery-free: `serializeFormInputs` (from `@craftcms/ui`) replaces jQuery's
  * `.serialize()`, and change detection rides on native `MutationObserver` +

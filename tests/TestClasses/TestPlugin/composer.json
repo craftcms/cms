@@ -1,0 +1,17 @@
+{
+    "name": "craftcms/test-plugin",
+    "description": "Test plugin for Craft CMS",
+    "version": "1.0.1",
+    "type": "craft-plugin",
+    "autoload": {
+        "psr-4": {
+            "CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\": ""
+        }
+    },
+    "extra": {
+        "class": "CraftCms\\Cms\\Tests\\TestClasses\\TestPlugin\\src\\TestPlugin",
+        "handle": "test-plugin",
+        "name": "Test Plugin",
+        "schemaVersion": "1.0.0"
+    }
+}

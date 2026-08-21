@@ -15,7 +15,10 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Validation\ElementRules;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
@@ -23,8 +26,10 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\Responses\ElementResponse;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -181,19 +186,10 @@ class EditElementController
             default => null,
         };
 
-        $enabledSiteIds = $element->enabled && $element->id
-            ? array_flip($this->elements->getEnabledSiteIdsForElement($element->id))
-            : [];
-
         $response = new CpScreenResponse()
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->site($element::isLocalized() ? $element->getSite() : null)
-            ->selectableSites(array_map(fn (int $siteId) => [
-                'site' => $this->sites->getSiteById($siteId),
-                'status' => isset($enabledSiteIds[$siteId]) ? 'enabled' : 'disabled',
-            ], $propEditableSiteIds))
             ->crumbs($this->crumbs($element))
             ->contextMenuItems(fn () => $this->contextMenuItems(
                 element: $element,
@@ -231,9 +227,9 @@ class EditElementController
                     $canSave,
                     $response,
                     $containerId,
-                    fn (?FieldLayoutForm $form) => $this->editorContent($element, $canSave, $form),
-                    fn (?FieldLayoutForm $form) => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
-                    fn (?FieldLayoutForm $form) => [
+                    fn (?string $form) => $this->editorContent($element, $canSave, $form),
+                    fn () => $this->editorSidebar($element, $mergeCanonicalChanges, $canSave),
+                    fn () => [
                         'additionalSites' => $addlEditableSites,
                         'canCreateDrafts' => $canCreateDrafts,
                         'canEditMultipleSites' => $canEditMultipleSites,
@@ -260,8 +256,6 @@ class EditElementController
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
                         'siteToken' => (! app()->isLive() || ! $element->getSite()->getEnabled()) ? Crypt::encrypt((string) $element->siteId) : null,
-                        'visibleLayoutElements' => $form?->getVisibleElements() ?? [],
-                        'staticLayoutElements' => $form?->getStaticElements() ?? [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
                         'isStatic' => $isRevision || ! $canSave,
@@ -673,11 +667,32 @@ class EditElementController
         callable $jsSettingsFn,
     ): void {
         $fieldLayout = $element->getFieldLayout();
-        $form = $fieldLayout?->createForm($element, ! $canSave, [
-            'registerDeltas' => true,
-        ]);
-        $contentHtml = $contentFn($form);
-        $sidebarHtml = $sidebarFn($form);
+        $payload = null;
+        $vueForm = $this->request->expectsJson();
+
+        if ($fieldLayout !== null) {
+            $payload = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
+                $fieldLayout,
+                $element,
+                new FormContext(
+                    namespace: $vueForm ? (InputNamespace::get() ?? []) : [],
+                    errors: $element->errors()->getMessages(),
+                    mode: $canSave ? ControlMode::Editable : ControlMode::ReadOnly,
+                    refreshable: true,
+                ),
+            ));
+        }
+
+        $renderer = app(FormHtmlRenderer::class);
+        $formContent = match (true) {
+            $payload === null => null,
+            $vueForm => Html::tag('craft-entry-field-layout-form', '', [
+                'data' => ['payload' => Json::encode($payload)],
+            ]),
+            default => $renderer->render($payload),
+        };
+        $contentHtml = $contentFn($formContent);
+        $sidebarHtml = $sidebarFn();
 
         if ($contentHtml === '' && $sidebarHtml !== '' && $this->request->acceptsJson()) {
             $contentHtml = Html::tag('div', $sidebarHtml, [
@@ -717,13 +732,18 @@ class EditElementController
             $contentHtml = implode("\n", $components);
         }
 
-        $response->tabs($form?->getTabMenu() ?? []);
+        $response->tabs($payload === null || $vueForm ? [] : $renderer->tabMenu($payload));
         $response->contentHtml($contentHtml);
         $response->metaSidebarHtml($sidebarHtml);
 
-        $settings = $jsSettingsFn($form);
+        $settings = $jsSettingsFn();
 
-        if ($this->isSlideout()) {
+        if ($this->request->inertia()) {
+            // The Vue slideout builds its own `Craft.ElementEditor`, but can't
+            // receive settings the jQuery way: that script looks the container
+            // up by id and runs before Vue has put the panel in the document.
+            $response->screenData(['elementEditorSettings' => $settings]);
+        } elseif ($this->isSlideout()) {
             HtmlStack::jsWithVars(fn ($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [
@@ -741,11 +761,9 @@ JS, [
         $element->prepareEditScreen($response, $containerId);
     }
 
-    private function editorContent(ElementInterface $element, bool $canSave, ?FieldLayoutForm $form): string
+    private function editorContent(ElementInterface $element, bool $canSave, ?string $form): string
     {
-        $html = $form?->render() ?? '';
-
-        event($event = new ElementEditorContentResolving($element, $html, ! $canSave));
+        event($event = new ElementEditorContentResolving($element, $form ?? '', ! $canSave));
 
         return trim($event->html);
     }

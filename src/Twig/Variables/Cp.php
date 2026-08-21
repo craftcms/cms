@@ -380,6 +380,33 @@ class Cp extends Component
     }
 
     /**
+     * Renders a date input's HTML from the legacy date variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function date(array $config = []): string
+    {
+        return FormFields::dateHtml($config);
+    }
+
+    /**
+     * Renders date and time inputs from the legacy datetime variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function dateTime(array $config = []): string
+    {
+        return FormFields::dateTimeHtml($config);
+    }
+
+    /**
+     * Renders a time input's HTML from the legacy time variables.
+     */
+    /** @param array<string, mixed> $config */
+    public function time(array $config = []): string
+    {
+        return FormFields::timeHtml($config);
+    }
+
+    /**
      * Renders a lightswitch's HTML from the legacy lightswitch variables.
      */
     /** @param array<string, mixed> $config */

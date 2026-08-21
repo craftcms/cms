@@ -9,14 +9,17 @@
 
 namespace craft\services;
 
+use craft\models\AssetIndexData;
+use craft\models\AssetIndexingSession;
 use CraftCms\Cms\Asset\AssetIndexer as AssetIndexerService;
-use CraftCms\Cms\Asset\Data\AssetIndexEntry as AssetIndexData;
-use CraftCms\Cms\Asset\Data\IndexingSession as AssetIndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
+use CraftCms\Cms\Asset\Models\AssetIndexData as AssetIndexDataModel;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use Generator;
+use LogicException;
 use yii\base\Component;
 
 /**
@@ -109,12 +112,44 @@ class AssetIndexer extends Component
 
     public function getNextIndexEntry(AssetIndexingSession $session): ?AssetIndexData
     {
-        return $this->service()->getNextIndexEntry($session);
+        $entry = $this->service()->getNextIndexEntry($session);
+
+        return $entry ? new AssetIndexData($entry->getAttributes()) : null;
     }
 
     public function updateIndexEntry(int $entryId, array $data): void
     {
-        $this->service()->updateIndexEntry($entryId, $data);
+        $entry = AssetIndexDataModel::findOrFail($entryId);
+        $status = $entry->getAttribute('status');
+
+        if (!$status instanceof AssetIndexStatus) {
+            throw new LogicException("Invalid asset index status for entry $entryId.");
+        }
+
+        $legacyFlags = $this->legacyFlags($status);
+        $updatedFlags = $legacyFlags;
+
+        foreach (array_keys($legacyFlags) as $flag) {
+            if (array_key_exists($flag, $data)) {
+                $updatedFlags[$flag] = (bool) $data[$flag];
+            }
+        }
+
+        $recordId = array_key_exists('recordId', $data) ? (int) $data['recordId'] : null;
+
+        if ($updatedFlags === $legacyFlags && $recordId === null) {
+            return;
+        }
+
+        $status = match ($updatedFlags) {
+            ['inProgress' => false, 'completed' => false, 'isSkipped' => false] => AssetIndexStatus::Pending,
+            ['inProgress' => true, 'completed' => false, 'isSkipped' => false] => AssetIndexStatus::Processing,
+            ['inProgress' => false, 'completed' => true, 'isSkipped' => false] => AssetIndexStatus::Indexed,
+            ['inProgress' => false, 'completed' => true, 'isSkipped' => true] => AssetIndexStatus::Skipped,
+            default => throw new LogicException('Invalid legacy asset index status flags.'),
+        };
+
+        $this->service()->transitionIndexEntry($entryId, $status, $recordId);
     }
 
     public function indexFile(
@@ -162,5 +197,18 @@ class AssetIndexer extends Component
     private function service(): AssetIndexerService
     {
         return app(AssetIndexerService::class);
+    }
+
+    /** @return array{inProgress: bool, completed: bool, isSkipped: bool} */
+    private function legacyFlags(AssetIndexStatus $status): array
+    {
+        return match ($status) {
+            AssetIndexStatus::Pending => ['inProgress' => false, 'completed' => false, 'isSkipped' => false],
+            AssetIndexStatus::Processing => ['inProgress' => true, 'completed' => false, 'isSkipped' => false],
+            AssetIndexStatus::Indexed => ['inProgress' => false, 'completed' => true, 'isSkipped' => false],
+            AssetIndexStatus::Skipped,
+            AssetIndexStatus::Missing,
+            AssetIndexStatus::Failed => ['inProgress' => false, 'completed' => true, 'isSkipped' => true],
+        };
     }
 }

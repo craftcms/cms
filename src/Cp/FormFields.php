@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
 use CraftCms\Cms\Cp\Components\Field;
+use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Cp\Components\Input;
 use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\Components\InputCopy;
+use CraftCms\Cms\Cp\Components\InputDate;
+use CraftCms\Cms\Cp\Components\InputDateTime;
 use CraftCms\Cms\Cp\Components\InputPassword;
+use CraftCms\Cms\Cp\Components\InputTime;
 use CraftCms\Cms\Cp\Components\Lightswitch;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -33,10 +37,10 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use DateTimeInterface;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
-use Illuminate\Validation\ConditionalRules;
-use Illuminate\Validation\Rules\RequiredIf;
 use InvalidArgumentException;
 use Stringable;
 
@@ -44,6 +48,7 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
+/** @phpstan-import-type AddressFormField from Addresses */
 readonly class FormFields
 {
     /**
@@ -111,10 +116,14 @@ readonly class FormFields
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&
-            ($label || $showAttribute || isset($config['labelExtra']))
+            ($label || $showAttribute || isset($config['actions']) || isset($config['labelExtra']))
         );
 
-        $labelExtra = implode('', array_filter([
+        self::deprecateConfig('field', $config, [
+            'labelExtra' => 'has been deprecated. `actions` should be used instead.',
+        ]);
+
+        $actions = implode('', array_filter([
             $showActionMenu
                 ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
                     'hiddenLabel' => t('Actions'),
@@ -130,12 +139,12 @@ readonly class FormFields
                     'value' => $config['attribute'],
                 ])
                 : null,
-            isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
+            isset($config['actions']) ? (string) $config['actions'] : null,
         ]));
 
         $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
 
-        return Field::make()
+        $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
             ->required((bool) ($config['required'] ?? false))
@@ -152,7 +161,7 @@ readonly class FormFields
             ->errors($errors !== null ? collect($errors)->map(fn ($error): string => (string) $error)->all() : [])
             ->headingPrefix($config['headingPrefix'] ?? null)
             ->headingSuffix($config['headingSuffix'] ?? null)
-            ->labelExtra($labelExtra !== '' ? $labelExtra : null)
+            ->actions($actions !== '' ? $actions : null)
             ->input($input)
             ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
@@ -173,6 +182,12 @@ readonly class FormFields
                     $config['fieldAttributes'] ?? [],
                 ),
             ));
+
+        if (isset($config['labelExtra'])) {
+            $field->labelExtra((string) $config['labelExtra']);
+        }
+
+        return $field;
     }
 
     /**
@@ -929,6 +944,7 @@ readonly class FormFields
             ->suffix(($config['suffix'] ?? $config['unit'] ?? false) ?: null)
             ->descriptionId($config['descriptionId'] ?? null)
             ->showCharsLeft((bool) ($config['showCharsLeft'] ?? false))
+            ->textExpanderTriggers($config['textExpanderTriggers'] ?? [])
             ->labelledBy(empty($inputAttributes['aria']['label']) ? ($config['labelledBy'] ?? null) : null)
             ->describedBy(($config['describedBy'] ?? false) ?: null)
             ->inputAttributes(Arr::merge(
@@ -1086,7 +1102,45 @@ readonly class FormFields
     /** @param array<string, mixed> $config */
     public static function dateHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/date', $config);
+        $html = self::dateFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateFromConfig(array $config): InputDate
+    {
+        $id = ($config['id'] ?? 'date'.mt_rand()).'-date';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDate::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'Y-m-d', $config['timeZone'] ?? null))
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Date') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1094,13 +1148,63 @@ readonly class FormFields
     {
         $config['id'] ??= 'date'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/date', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateHtml($c),
+            $config,
+        );
     }
 
     /** @param array<string, mixed> $config */
     public static function timeHtml(array $config): string
     {
-        return self::renderTemplate('_includes/forms/time', $config);
+        $html = self::timeFromConfig($config)->toHtml();
+
+        return ($config['hasOuterContainer'] ?? false)
+            ? $html
+            : Html::tag('craft-input-date-time', $html, ['class' => 'datetimewrapper']);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function timeFromConfig(array $config): InputTime
+    {
+        $id = ($config['id'] ?? 'time'.mt_rand()).'-time';
+        $locale = I18N::getFormattingLocale()->id;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($config['value'] ?? null)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputTime::make()
+            ->id($id)
+            ->name($config['name'] ?? null)
+            ->value(self::formattedDateTimeValue($config['value'] ?? null, 'H:i', $config['timeZone'] ?? null))
+            ->min(self::formattedTime($config['minTime'] ?? null))
+            ->max(self::formattedTime($config['maxTime'] ?? null))
+            ->inputSize(10)
+            ->autocomplete(false)
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->inputAttributes(Arr::merge([
+                'required' => (bool) ($config['required'] ?? false),
+                'aria' => ['label' => ($config['isDateTime'] ?? false) ? t('Time') : null],
+            ], $config['inputAttributes'] ?? []))
+            ->locale($locale)
+            ->timezone($timezone)
+            ->outputLocaleParam((bool) ($config['outputLocaleParam'] ?? true))
+            ->outputTimezoneParam((bool) ($config['outputTzParam'] ?? true))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1108,7 +1212,54 @@ readonly class FormFields
     {
         $config['id'] ??= 'time'.mt_rand();
 
-        return self::fieldHtml('template:_includes/forms/time', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::timeHtml($c),
+            $config,
+        );
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateTimeHtml(array $config): string
+    {
+        return self::dateTimeFromConfig($config)->toHtml();
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function dateTimeFromConfig(array $config): InputDateTime
+    {
+        $value = $config['value'] ?? null;
+        $timezone = ($config['timeZone'] ?? null) === false
+            ? self::valueTimezone($value)
+            : (($config['timeZone'] ?? null) ?: Cms::timezone());
+
+        return InputDateTime::make()
+            ->id($config['id'] ?? 'datetime'.mt_rand())
+            ->name($config['name'] ?? null)
+            ->dateValue(self::formattedDateTimeValue($value, 'Y-m-d', $config['timeZone'] ?? null))
+            ->timeValue(self::formattedDateTimeValue($value, 'H:i', $config['timeZone'] ?? null))
+            ->timezone($timezone)
+            ->locale(I18N::getFormattingLocale()->id)
+            ->min(self::formattedDateTimeValue($config['min'] ?? null, 'Y-m-d'))
+            ->max(self::formattedDateTimeValue($config['max'] ?? null, 'Y-m-d'))
+            ->minTime(self::formattedTime($config['minTime'] ?? null))
+            ->maxTime(self::formattedTime($config['maxTime'] ?? null))
+            ->disabledTimeRanges(array_map(
+                fn (array $range): array => [
+                    self::formattedTime($range[0]) ?? '',
+                    self::formattedTime($range[1]) ?? '',
+                ],
+                $config['disableTimeRanges'] ?? [],
+            ))
+            ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
+            ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
+            ->disabled((bool) ($config['disabled'] ?? false))
+            ->readOnly((bool) ($config['readonly'] ?? false))
+            ->required((bool) ($config['required'] ?? false))
+            ->describedBy(($config['describedBy'] ?? false) ?: null)
+            ->attributes(Arr::merge(
+                ['class' => Html::explodeClass($config['class'] ?? [])],
+                $config['containerAttributes'] ?? [],
+            ));
     }
 
     /** @param array<string, mixed> $config */
@@ -1119,7 +1270,43 @@ readonly class FormFields
             'fieldset' => true,
         ];
 
-        return self::fieldHtml('template:_includes/forms/datetime', $config);
+        return self::fieldHtml(
+            fn (array $c): string => self::dateTimeHtml($c),
+            $config,
+        );
+    }
+
+    private static function formattedDateTimeValue(mixed $value, string $format, bool|string|null $timezone = null): ?string
+    {
+        $date = DateTimeHelper::toDateTime($value, true, $timezone !== false);
+
+        if (! $date) {
+            return null;
+        }
+
+        if (is_string($timezone)) {
+            $date = Date::instance($date)->setTimezone($timezone);
+        }
+
+        return $date->format($format);
+    }
+
+    private static function formattedTime(mixed $value): ?string
+    {
+        if (is_numeric($value)) {
+            $seconds = (int) $value;
+
+            return sprintf('%02d:%02d', intdiv($seconds, 3600), intdiv($seconds % 3600, 60));
+        }
+
+        return self::formattedDateTimeValue($value, 'H:i');
+    }
+
+    private static function valueTimezone(mixed $value): string
+    {
+        return $value instanceof DateTimeInterface
+            ? $value->getTimezone()->getName()
+            : Cms::timezone();
     }
 
     /** @param array<string, mixed> $config */
@@ -1140,6 +1327,12 @@ readonly class FormFields
     public static function entryTypeSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function fieldSelectHtml(array $config): string
+    {
+        return self::renderTemplate('_includes/forms/fieldSelect', $config);
     }
 
     /** @param array<string, mixed> $config */
@@ -1179,278 +1372,64 @@ readonly class FormFields
         return self::fieldHtml('template:_includes/forms/autosuggest', $config);
     }
 
-    public static function addressFieldsHtml(Address $address, bool $static = false): string
-    {
-        $requiredFields = [];
-        $scenario = $address->ruleset->getScenario();
-        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-
-        $activeRules = $address->ruleset->rules();
-
-        foreach ($activeRules as $attribute => $rules) {
-            foreach (Arr::wrap($rules) as $rule) {
-                if (self::isRequiredRule($rule)) {
-                    $requiredFields[$attribute] = true;
-
-                    break;
-                }
-            }
-        }
-
-        $address->ruleset->useScenario($scenario);
-        $belongsToCurrentUser = $address->getBelongsToCurrentUser();
-
-        $addressesService = app(Addresses::class);
-        $visibleFields = array_flip(array_merge(
-            $addressesService->getUsedFields($address->countryCode),
-            $addressesService->getUsedSubdivisionFields($address->countryCode),
-        )) + $requiredFields;
-
-        $parents = self::subdivisionParents($address, $visibleFields);
-
-        return
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine1'),
-                'label' => $address->getAttributeLabel('addressLine1'),
-                'id' => 'addressLine1',
-                'name' => 'addressLine1',
-                'value' => $address->addressLine1,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
-                'required' => isset($requiredFields['addressLine1']),
-                'errors' => ! $static ? $address->errors()->get('addressLine1') : [],
-                'data' => [
-                    'error-key' => 'addressLine1',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine2'),
-                'label' => $address->getAttributeLabel('addressLine2'),
-                'id' => 'addressLine2',
-                'name' => 'addressLine2',
-                'value' => $address->addressLine2,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
-                'required' => isset($requiredFields['addressLine2']),
-                'errors' => ! $static ? $address->errors()->get('addressLine2') : [],
-                'data' => [
-                    'error-key' => 'addressLine2',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'status' => $address->getAttributeStatus('addressLine3'),
-                'label' => $address->getAttributeLabel('addressLine3'),
-                'id' => 'addressLine3',
-                'name' => 'addressLine3',
-                'value' => $address->addressLine3,
-                'autocomplete' => $belongsToCurrentUser ? 'address-line3' : 'off',
-                'required' => isset($requiredFields['addressLine3']),
-                'errors' => ! $static ? $address->errors()->get('addressLine3') : [],
-                'data' => [
-                    'error-key' => 'addressLine3',
-                ],
-                'disabled' => $static,
-            ]).
-            self::subdivisionField(
-                $address,
-                'administrativeArea',
-                $belongsToCurrentUser ? 'address-level1' : 'off',
-                isset($visibleFields['administrativeArea']),
-                isset($requiredFields['administrativeArea']),
-                [$address->countryCode],
-                true,
-                $static,
-            ).
-            self::subdivisionField(
-                $address,
-                'locality',
-                $belongsToCurrentUser ? 'address-level2' : 'off',
-                isset($visibleFields['locality']),
-                isset($requiredFields['locality']),
-                $parents['locality'],
-                true,
-                $static,
-            ).
-            self::subdivisionField(
-                $address,
-                'dependentLocality',
-                $belongsToCurrentUser ? 'address-level3' : 'off',
-                isset($visibleFields['dependentLocality']),
-                isset($requiredFields['dependentLocality']),
-                $parents['dependentLocality'],
-                false,
-                $static,
-            ).
-            self::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    ! isset($visibleFields['postalCode']) ? 'hidden' : null,
-                ]),
-                'status' => $address->getAttributeStatus('postalCode'),
-                'label' => $address->getAttributeLabel('postalCode'),
-                'id' => 'postalCode',
-                'name' => 'postalCode',
-                'value' => $address->postalCode,
-                'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
-                'required' => isset($requiredFields['postalCode']),
-                'errors' => ! $static ? $address->errors()->get('postalCode') : [],
-                'data' => [
-                    'error-key' => 'postalCode',
-                ],
-                'disabled' => $static,
-            ]).
-            self::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    ! isset($visibleFields['sortingCode']) ? 'hidden' : null,
-                ]),
-                'status' => $address->getAttributeStatus('sortingCode'),
-                'label' => $address->getAttributeLabel('sortingCode'),
-                'id' => 'sortingCode',
-                'name' => 'sortingCode',
-                'value' => $address->sortingCode,
-                'required' => isset($requiredFields['sortingCode']),
-                'errors' => ! $static ? $address->errors()->get('sortingCode') : [],
-                'data' => [
-                    'error-key' => 'sortingCode',
-                ],
-                'disabled' => $static,
-            ]);
-    }
-
-    private static function isRequiredRule(mixed $rule): bool
-    {
-        if ($rule === 'required') {
-            return true;
-        }
-
-        if ($rule instanceof RequiredIf) {
-            return (string) $rule === 'required';
-        }
-
-        if ($rule instanceof ConditionalRules) {
-            $conditionalRules = $rule->passes() ? $rule->rules() : $rule->defaultRules();
-
-            foreach (Arr::wrap($conditionalRules) as $conditionalRule) {
-                if (self::isRequiredRule($conditionalRule)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param  array<string, int>  $visibleFields
-     * @return array{locality: list<string|null>, dependentLocality: list<string|null>}
-     */
-    private static function subdivisionParents(Address $address, array $visibleFields): array
-    {
-        $baseSubdivisionRepository = new BaseSubdivisionRepository;
-
-        $localityParents = [$address->countryCode];
-        $administrativeAreas = $baseSubdivisionRepository->getList([$address->countryCode]);
-
-        if (array_key_exists('administrativeArea', $visibleFields) || empty($administrativeAreas)) {
-            $localityParents[] = $address->administrativeArea;
-        }
-
-        $dependentLocalityParents = $localityParents;
-        $localities = $baseSubdivisionRepository->getList($localityParents);
-        if (array_key_exists('locality', $visibleFields) || empty($localities)) {
-            $dependentLocalityParents[] = $address->locality;
-        }
-
-        return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
-    }
-
-    /** @param list<string|null>|null $parents */
-    private static function subdivisionField(
+    public static function addressFieldsHtml(
         Address $address,
-        string $name,
-        string $autocomplete,
-        bool $visible,
-        bool $required,
-        ?array $parents,
-        bool $spinner,
         bool $static = false,
+        ?bool $belongsToCurrentUser = null,
     ): string {
-        $value = $address->$name;
-        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, app()->getLocale());
+        return FieldGroup::make()
+            ->children(array_map(
+                fn (array $field): HtmlString => new HtmlString(self::addressFieldHtml($field, $static)),
+                app(Addresses::class)->getFormFieldDefinitions($address, $belongsToCurrentUser),
+            ))
+            ->toHtml();
+    }
 
-        if ($options) {
-            // Persist invalid values in the UI
-            if ($value && ! isset($options[$value])) {
-                $options[$value] = $value;
-            }
+    /** @param AddressFormField $field */
+    private static function addressFieldHtml(array $field, bool $static): string
+    {
+        $errors = $static && ($field['type'] === 'text' || ($field['spinner'] ?? false))
+            ? []
+            : $field['errors'];
+        $fieldClass = array_filter([
+            isset($field['width']) ? "width-{$field['width']}" : null,
+            $field['visible'] ? null : 'hidden',
+        ]);
+        $config = [
+            'fieldClass' => $fieldClass,
+            'status' => $field['status'] ?? null,
+            'label' => $field['label'],
+            'id' => $field['name'],
+            'name' => $field['name'],
+            'value' => $field['value'],
+            'options' => $field['options'] ?? null,
+            'autocomplete' => $field['autocomplete'] ?? null,
+            'required' => $field['required'],
+            'errors' => $errors,
+            'data' => ['error-key' => $field['name']],
+            'disabled' => $static,
+        ];
 
-            if ($spinner) {
-                $errors = ! $static ? $address->errors()->get($name) : [];
-                $input =
-                    Html::beginTag('div', [
-                        'class' => ['flex', 'flex-nowrap'],
-                    ]).
-                    self::selectizeHtml([
-                        'id' => $name,
-                        'name' => $name,
-                        'value' => $value,
-                        'options' => $options,
-                        'errors' => $errors,
-                        'autocomplete' => $autocomplete,
-                        'disabled' => $static,
-                    ]).
-                    Html::tag('div', '', [
-                        'id' => "$name-spinner",
-                        'class' => ['spinner', 'hidden'],
-                    ]).
-                    Html::endTag('div');
-
-                return self::fieldHtml($input, [
-                    'fieldClass' => ! $visible ? 'hidden' : null,
-                    'label' => $address->getAttributeLabel($name),
-                    'id' => $name,
-                    'required' => $required,
-                    'errors' => $errors,
-                    'data' => [
-                        'error-key' => $name,
-                    ],
-                    'disabled' => $static,
-                ]);
-            }
-
-            return self::selectizeFieldHtml([
-                'fieldClass' => ! $visible ? 'hidden' : null,
-                'status' => $address->getAttributeStatus($name),
-                'label' => $address->getAttributeLabel($name),
-                'id' => $name,
-                'name' => $name,
-                'value' => $value,
-                'options' => $options,
-                'required' => $required,
-                'errors' => $address->errors()->get($name),
-                'autocomplete' => $autocomplete,
-                'data' => [
-                    'error-key' => $name,
-                ],
-                'disabled' => $static,
-            ]);
+        if ($field['type'] === 'text') {
+            return self::textFieldHtml($config);
         }
 
-        // No preconfigured subdivisions for the given parents, so just output a text input
-        return self::textFieldHtml([
-            'fieldClass' => ! $visible ? 'hidden' : null,
-            'status' => $address->getAttributeStatus($name),
-            'label' => $address->getAttributeLabel($name),
-            'autocomplete' => $autocomplete,
-            'id' => $name,
-            'name' => $name,
-            'value' => $value,
-            'required' => $required,
-            'errors' => ! $static ? $address->errors()->get($name) : [],
-            'data' => [
-                'error-key' => $name,
-            ],
+        if (! ($field['spinner'] ?? false)) {
+            return self::selectizeFieldHtml($config);
+        }
+
+        $input = Html::tag('div', self::selectizeHtml($config).Html::tag('div', '', [
+            'id' => "{$field['name']}-spinner",
+            'class' => ['spinner', 'hidden'],
+        ]), ['class' => ['flex', 'flex-nowrap']]);
+
+        return self::fieldHtml($input, [
+            'fieldClass' => $fieldClass,
+            'label' => $field['label'],
+            'id' => $field['name'],
+            'required' => $field['required'],
+            'errors' => $errors,
+            'data' => ['error-key' => $field['name']],
             'disabled' => $static,
         ]);
     }

@@ -108,7 +108,7 @@ test('getPasskeyRequestOptions returns PublicKeyCredentialRequestOptions', funct
     expect($options->userVerification)->toBe(PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED);
 });
 
-test('verifyPasskey persists the validated credential source', function () {
+test('verifyPasskey returns the validated credential source', function () {
     $requestOptionsJson = '{"challenge":"test-challenge"}';
     $responseJson = '{"id":"test-credential-id"}';
     $requestOptions = PublicKeyCredentialRequestOptions::create(challenge: 'test-challenge');
@@ -129,6 +129,8 @@ test('verifyPasskey persists the validated credential source', function () {
         userHandle: 'user-handle',
         counter: 1,
     );
+    $updatedCredentialRecord = clone $credentialRecord;
+    $updatedCredentialRecord->counter = 2;
 
     $serializer = Mockery::mock(SerializerInterface::class);
     $serializer
@@ -148,17 +150,14 @@ test('verifyPasskey persists the validated credential source', function () {
         ->once()
         ->with('test-credential-id', false)
         ->andReturn($credentialRecord);
-    $credentialRepository
-        ->shouldReceive('saveCredentialSource')
-        ->once()
-        ->with($credentialRecord);
+    $credentialRepository->shouldNotReceive('saveCredentialSource');
 
     $assertionResponseValidator = Mockery::mock(AuthenticatorAssertionResponseValidator::class);
     $assertionResponseValidator
         ->shouldReceive('check')
         ->once()
         ->with($credentialRecord, $authenticatorAssertionResponse, $requestOptions, 'localhost', $this->passkeys->passkeyUserEntity($this->user)->id)
-        ->andReturn($credentialRecord);
+        ->andReturn($updatedCredentialRecord);
 
     $webauthnServer = Mockery::mock(WebauthnServer::class);
     $webauthnServer->shouldReceive('getSerializer')->andReturn($serializer);
@@ -168,7 +167,7 @@ test('verifyPasskey persists the validated credential source', function () {
     $property = new ReflectionProperty($this->passkeys, 'webauthnServer');
     $property->setValue($this->passkeys, $webauthnServer);
 
-    expect($this->passkeys->verifyPasskey($this->user, $requestOptionsJson, $responseJson))->toBeTrue();
+    expect($this->passkeys->verifyPasskey($this->user, $requestOptionsJson, $responseJson))->toBe($updatedCredentialRecord);
 });
 
 test('deletePasskey removes passkey from database', function () {

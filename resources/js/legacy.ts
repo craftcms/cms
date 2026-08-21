@@ -1,5 +1,19 @@
 import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
 
+/**
+ * Register the full `craft-*` element set, same as `cp.ts` does.
+ *
+ * Legacy-rendered pages emit components that aren't imported anywhere in this
+ * entrypoint's module graph (`craft-callout`, `craft-pane`, `craft-action-menu`,
+ * `craft-info-icon`, …) — both from `resources/templates/**` directly and from
+ * the PHP `src/Cp/Components/*` builders. Until now those only got defined
+ * because the cpcompat webpack bundle happened to inline the whole
+ * `@craftcms/ui` barrel, which also gave the page a second copy of Lit. The
+ * barrel belongs here instead, so there is one Lit instance and one set of
+ * element definitions on every CP page.
+ */
+import '@craftcms/ui';
+
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
 import './modules/auth/components/login/login-form.js';
@@ -8,6 +22,9 @@ import './modules/auth/components/verify-email/verify-email-form.js';
 import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
+import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
+import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 
 import './modules/listbox/index';
 import './modules/matrix/index';
@@ -59,6 +76,9 @@ window.Cp = Cp as unknown as typeof window.Cp;
 // only: `start()` mounts the Inertia app, which legacy pages must not do.
 Cp.config((window as any).Craft ?? {});
 Cp.init();
+defineDashboardWidgetSettingsFormHost(Cp.$components);
+defineEntryFieldLayoutFormHost(Cp.$components);
+defineLayoutComponentSettingsFormHost(Cp.$components);
 
 mountElevatedSessionHost();
 

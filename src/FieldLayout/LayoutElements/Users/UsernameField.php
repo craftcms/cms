@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
-use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use InvalidArgumentException;
@@ -16,10 +16,8 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-class UsernameField extends TextField implements ImportableFieldLayoutElementInterface
+class UsernameField extends TextField
 {
-    use ImportableFieldLayoutElement;
-
     #[Override]
     public bool $mandatory = true;
 
@@ -64,6 +62,12 @@ class UsernameField extends TextField implements ImportableFieldLayoutElementInt
     }
 
     #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return Cms::config()->useEmailAsUsername ? null : parent::formControl($context);
+    }
+
+    #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (Cms::config()->useEmailAsUsername) {
@@ -84,11 +88,5 @@ class UsernameField extends TextField implements ImportableFieldLayoutElementInt
         return [
             'autocomplete' => $element->getIsCurrent() ? 'username' : 'off',
         ];
-    }
-
-    #[Override]
-    public function canBeMatchCriteria(): bool
-    {
-        return true;
     }
 }

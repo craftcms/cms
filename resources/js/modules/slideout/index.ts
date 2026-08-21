@@ -1,4 +1,4 @@
-import {Garnish, HUD, isCtrlKeyPressed} from '@craftcms/garnish';
+import {isCtrlKeyPressed} from '@craftcms/garnish';
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout, type SlideoutSettings} from './slideout';
 import {
@@ -108,20 +108,9 @@ window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
     });
 }) as EventListener);
 
-// Reposition any open HUDs whenever a slideout opens or closes. Registered
-// against the modern `Slideout` class: the class-event dispatch is an
-// `instanceof` check, and `compatify()`/`.extend()` build real subclasses,
-// so this fires for legacy-extended slideouts too.
-Garnish.on(Slideout, 'open close', () => {
-    // The legacy garnish bundle keeps its own `Garnish.HUD` instance registry,
-    // separate from the modern class's — sweep both.
-    const legacyInstances = (window as any).Garnish?.HUD?.instances ?? [];
-    for (const hud of [...HUD.instances, ...legacyInstances]) {
-        if (hud.showing) {
-            hud.updateSizeAndPosition(true);
-        }
-    }
-});
+// Repositioning open HUDs when a slideout opens or closes used to be hooked
+// up here, via `Garnish.on(Slideout, 'open close')`. It now lives in the
+// shared panel stack, so Vue slideouts trigger it too.
 
 export {
     Slideout,

@@ -6,12 +6,17 @@ namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Override;
@@ -179,7 +184,11 @@ abstract class FieldLayoutComponent extends Component
      */
     protected function normalizeCondition(mixed $condition): ?ConditionInterface
     {
-        if ($condition === null) {
+        // An empty array is how a ConditionBuilder Control represents “no
+        // condition”, and is what it posts back when nothing has been set.
+        // getElementCondition() may have merged `fieldLayouts` in by then, so
+        // treat any classless config as “no condition” rather than failing.
+        if ($condition === null || (is_array($condition) && ! isset($condition['class']))) {
             return null;
         }
 
@@ -211,72 +220,102 @@ abstract class FieldLayoutComponent extends Component
     }
 
     /**
-     * Returns the settings HTML for the layout element.
+     * Returns the settings Form for the layout component.
      *
      * ::: tip
-     * Subclasses should override [[settingsHtml()]] instead of this method.
+     * Subclasses should override [[settingsNodes()]] instead of this method.
      * :::
      */
-    final public function getSettingsHtml(): string
+    final public function settingsForm(FormContext $context = new FormContext): ?Form
     {
-        return implode("\n<hr>\n", array_filter([
-            $this->settingsHtml(),
-            $this->conditionalSettingsHtml(),
-        ]));
+        $settings = $this->settingsNodes($context);
+        $conditions = $this->conditionalSettingsNodes($context);
+
+        $nodes = match (true) {
+            $settings === [] => $conditions,
+            $conditions === [] => $settings,
+            default => [...$settings, Separator::make('settings-conditions'), ...$conditions],
+        };
+
+        return $nodes === [] ? null : Form::make($nodes);
     }
 
-    protected function settingsHtml(): ?string
+    /** @return list<Node> */
+    protected function settingsNodes(FormContext $context): array
     {
-        return null;
+        return [];
     }
 
-    protected function conditionalSettingsHtml(): ?string
+    /** @return list<Node> */
+    protected function conditionalSettingsNodes(FormContext $context): array
     {
         if (! $this->conditional()) {
-            return null;
+            return [];
         }
 
-        $html = Html::beginTag('fieldset', ['class' => 'pane']).
-            Html::tag('legend', t('Visibility Conditions')).
-            Html::beginTag('div');
+        return [
+            $this->conditionGroupNode(
+                'visibility-conditions',
+                t('Visibility Conditions'),
+                'userCondition',
+                t('Only show for users who match the following rules:'),
+                $this->getUserCondition(),
+                'elementCondition',
+                'Only show when editing {type} that match the following rules:',
+                $this->getElementCondition(),
+            ),
+        ];
+    }
 
-        $userCondition = $this->getUserCondition() ?? self::defaultUserCondition();
-        $userCondition->mainTag = 'div';
-        $userCondition->id = 'user-condition';
-        $userCondition->name = 'userCondition';
-        $userCondition->forProjectConfig = true;
-
-        $html .= FormFields::fieldHtml($userCondition->getBuilderHtml(), [
-            'label' => t('Current User Condition'),
-            'instructions' => t('Only show for users who match the following rules:'),
-        ]);
+    /**
+     * Builds a fieldset of user/element condition builders — the shared shape
+     * behind the visibility and editability condition groups.
+     */
+    protected function conditionGroupNode(
+        string $groupUid,
+        string $groupLabel,
+        string $userPath,
+        string $userInstructions,
+        ?ConditionInterface $userCondition,
+        string $elementPath,
+        string $elementInstructionsPattern,
+        ?ConditionInterface $elementCondition,
+        ?ConditionInterface $defaultUserCondition = null,
+        ?string $defaultElementConditionClass = null,
+    ): Group {
+        $children = [
+            Field::make(t('Current User Condition'), ConditionBuilder::make($userPath)
+                ->conditionClass(($defaultUserCondition ?? self::defaultUserCondition())::class)
+                ->forProjectConfig()
+                ->value($userCondition?->getConfig() ?? []))
+                ->instructions($userInstructions),
+        ];
 
         // Do we know the element type?
         /** @var class-string<ElementInterface>|string|null $elementType */
-        $elementType = $this->elementType ?? $this->getLayout()->type;
+        $elementType = $this->elementType ?? $this->getLayout()?->type;
 
         if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-            $elementCondition = $this->getElementCondition();
-            if (! $elementCondition) {
-                $elementCondition = clone self::defaultElementCondition($elementType);
-                $elementCondition->setFieldLayouts([$this->getLayout()]);
-            }
-            $elementCondition->mainTag = 'div';
-            $elementCondition->id = 'element-condition';
-            $elementCondition->name = 'elementCondition';
-            $elementCondition->forProjectConfig = true;
+            $conditionClass = $defaultElementConditionClass
+                ?? self::defaultElementCondition($elementType)::class;
 
-            $html .= FormFields::fieldHtml($elementCondition->getBuilderHtml(), [
-                'label' => t('{type} Condition', [
-                    'type' => $elementType::displayName(),
-                ]),
-                'instructions' => t('Only show when editing {type} that match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ]),
-            ]);
+            // getConfig() is null for an empty layout, which has no fields to
+            // offer rules for anyway.
+            $layoutConfig = $this->getLayout()?->getConfig();
+
+            $children[] = Field::make(
+                t('{type} Condition', ['type' => $elementType::displayName()]),
+                ConditionBuilder::make($elementPath)
+                    ->conditionClass($conditionClass)
+                    ->fieldLayouts($layoutConfig === null ? [] : [$layoutConfig])
+                    ->forProjectConfig()
+                    ->value($elementCondition?->getConfig() ?? []),
+            )->instructions(t($elementInstructionsPattern, [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ]));
         }
 
-        return $html.(Html::endTag('div').Html::endTag('fieldset'));
+        return Group::make($groupUid, $children)->label($groupLabel);
     }
 
     /**

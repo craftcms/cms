@@ -1,5 +1,6 @@
 import {LionCheckboxGroup} from '@lion/ui/checkbox-group.js';
 import {css, type PropertyValues} from 'lit';
+import {baseFieldStyles} from '@src/styles/form.styles';
 
 export default class CraftCheckboxGroup extends LionCheckboxGroup {
   private __ssrNameAdopted = false;
@@ -45,6 +46,8 @@ export default class CraftCheckboxGroup extends LionCheckboxGroup {
     return [
       ...LionCheckboxGroup.styles,
       css`
+        ${baseFieldStyles}
+
         .input-group {
           display: grid;
           gap: var(--c-spacing-sm);

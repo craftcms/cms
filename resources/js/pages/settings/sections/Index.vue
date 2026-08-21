@@ -6,7 +6,6 @@
     import DeleteSectionButton from '@/modules/sections/components/DeleteSectionButton.vue';
     import {create, edit, index} from '@actions/Settings/SectionsController';
     import {router} from '@inertiajs/vue3';
-    import Pane from '@/common/components/Pane.vue';
     import CpLink from '@/common/components/CpLink.vue';
     import useCraftData from '@/common/composables/useCraftData';
     import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
@@ -144,7 +143,7 @@
 
     <CalloutReadOnly v-if="readOnly"></CalloutReadOnly>
 
-    <Pane :padding="0" appearance="raised">
+    <craft-pane padding="0" appearance="raised">
         <AdminTable
             :title="title"
             :table="sectionTable"
@@ -158,5 +157,5 @@
                 <SearchForm :action="index()" v-model="searchTerm" />
             </template>
         </AdminTable>
-    </Pane>
+    </craft-pane>
 </template>

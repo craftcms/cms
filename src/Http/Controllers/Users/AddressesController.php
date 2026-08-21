@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +28,7 @@ readonly class AddressesController
     {
         $user = $this->editedUser($userId);
 
-        return $this->asEditUserScreen($user, self::SCREEN_ADDRESSES)
+        return $this->asEditUserScreen($user, EditUserScreens::ADDRESSES)
             ->inertiaPage('users/Addresses', new UserAddressesViewModel($user));
     }
 

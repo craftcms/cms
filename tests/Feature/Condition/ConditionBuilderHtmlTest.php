@@ -5,8 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Form\Controls\ConditionBuilder;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -55,6 +57,21 @@ describe('BaseCondition::getBuilderHtml()', function () {
 
         expect($jsBuffer)->toContain('Craft.initUiElements');
     });
+});
+
+it('renders Form control inputs with the requested nested name', function () {
+    $html = ConditionBuilder::builderHtml(
+        [],
+        EntryCondition::class,
+        ['site'],
+        true,
+        'settings[selectionCondition]',
+        false,
+    );
+
+    expect($html)
+        ->toContain('name="settings[selectionCondition][class]"')
+        ->not->toContain('name="settings[selectionCondition]][class]"');
 });
 
 describe('BaseCondition::getBuilderInnerHtml()', function () {
@@ -146,6 +163,24 @@ describe('BaseCondition::getBuilderInnerHtml()', function () {
 });
 
 describe('BaseCondition::getBuilderInnerHtml() with rules', function () {
+    it('renders environment suggestions as a text expander for project config element rules', function () {
+        $_SERVER['TEST_AUTHOR_ID'] = '42';
+
+        try {
+            $condition = new EntryCondition(Entry::class);
+            $condition->forProjectConfig = true;
+            $rule = new AuthorConditionRule;
+            $rule->condition = $condition;
+
+            expect($rule->html)
+                ->toContain('<craft-text-expander')
+                ->toContain('$TEST_AUTHOR_ID')
+                ->not->toContain('vue-autosuggest');
+        } finally {
+            unset($_SERVER['TEST_AUTHOR_ID']);
+        }
+    });
+
     it('renders a fieldset for each configured rule', function () {
         $condition = new ElementCondition(Entry::class);
         $rule = $condition->createConditionRule(TitleConditionRule::class);

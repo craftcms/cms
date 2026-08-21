@@ -73,6 +73,8 @@ class Field extends ViewComponent
 
     protected string|Htmlable|Stringable|ViewComponent|null $labelExtra = null;
 
+    protected string|Htmlable|Stringable|ViewComponent|null $actions = null;
+
     protected function tagName(): string
     {
         return 'craft-field';
@@ -207,10 +209,24 @@ class Field extends ViewComponent
         return $this;
     }
 
-    /** Extra heading content (handle-copy buttons, action menus). Strings are trusted HTML. */
+    /**
+     * Extra heading content. Strings are trusted HTML.
+     */
+    #[\Deprecated(message: 'in 6.0. [[actions()]] should be used instead.')]
     public function labelExtra(string|Htmlable|Stringable|ViewComponent|null $labelExtra): static
     {
         $this->labelExtra = $labelExtra;
+
+        return $this;
+    }
+
+    /**
+     * Field-level actions (hide-label toggles, copy-value buttons, field
+     * settings menus). Strings are trusted HTML.
+     */
+    public function actions(string|Htmlable|Stringable|ViewComponent|null $actions): static
+    {
+        $this->actions = $actions;
 
         return $this;
     }
@@ -275,6 +291,7 @@ class Field extends ViewComponent
             $tip !== '' ? $this->renderSlot('tip', new HtmlString($this->parseNotice($tip))) : '',
             $warning !== '' ? $this->renderSlot('warning', new HtmlString($this->parseNotice($warning))) : '',
             $this->renderSlot('label-extra', $this->trustedHtml($this->labelExtra)),
+            $this->renderSlot('actions', $this->trustedHtml($this->actions)),
             $this->renderSlot('heading-prefix', $this->trustedHtml($this->headingPrefix)),
             $this->renderSlot('heading-suffix', $this->trustedHtml($this->headingSuffix)),
             $errors !== [] ? $this->renderSlot('feedback', new HtmlString($this->errorListHtml($errors))) : '',

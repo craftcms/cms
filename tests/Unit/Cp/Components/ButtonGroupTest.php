@@ -42,3 +42,17 @@ it('emits no name attribute without a name', function () {
     expect($html)->not->toContain('type="hidden"')
         ->and($html)->not->toContain('name=');
 });
+
+it('renders a form-associated multiple button group', function () {
+    $html = ButtonGroup::make()
+        ->name('topics')
+        ->multiple()
+        ->buttons([
+            Button::make()->label('One')->value('one')->active(),
+            Button::make()->label('Two')->value('two'),
+        ])
+        ->toHtml();
+
+    expect($html)->toContainTag('craft-button-group', ['name' => 'topics', 'multiple' => true, 'role' => 'group'])
+        ->and($html)->toContainTag('craft-button', ['value' => 'one', 'active' => 'true']);
+});

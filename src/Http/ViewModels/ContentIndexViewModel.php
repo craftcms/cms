@@ -702,7 +702,12 @@ abstract class ContentIndexViewModel extends ViewModel
             return $chip;
         }
 
-        return Html::tag('CpLink', $chip, ['href' => $editUrl, 'inertia' => false]);
+        // `:inertia`, bound — a plain `inertia => false` renders nothing at all
+        // (Html::tag drops false attributes), so the prop falls back to its
+        // `true` default and the title becomes an Inertia <Link> that navigates
+        // on click. The element edit screen isn't an Inertia page, so that
+        // visit only ends in a hard redirect anyway.
+        return Html::tag('CpLink', $chip, ['href' => $editUrl, ':inertia' => 'false']);
     }
 
     /**

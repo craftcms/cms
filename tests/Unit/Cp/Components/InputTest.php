@@ -38,6 +38,13 @@ describe('input', function () {
             ->and($html)->toContain('maxlength="255" ');
     });
 
+    it('reflects inputmode on the host and the native input', function () {
+        $html = Input::make()->id('i')->inputmode('numeric')->toHtml();
+
+        expect($html)->toContain('<craft-input inputmode="numeric">')
+            ->and(substr_count($html, 'inputmode="numeric"'))->toBe(2);
+    });
+
     it('maps autocomplete booleans to on/off and passes strings through', function () {
         expect(Input::make()->id('i')->autocomplete(true)->toHtml())->toContain('autocomplete="on"')
             ->and(Input::make()->id('i')->autocomplete('postal-code')->toHtml())->toContain('autocomplete="postal-code"');
@@ -86,6 +93,25 @@ describe('input', function () {
 
         expect($html)->toContain('dir="rtl"')
             ->and($html)->toContain('class="text fullwidth extra"');
+    });
+
+    it('renders a configured text expander for the native input', function () {
+        $html = Input::make()
+            ->id('path')
+            ->name('path')
+            ->textExpanderTriggers([
+                [
+                    'trigger' => '$',
+                    'boundary' => 'start',
+                    'options' => [['label' => '$BASE_PATH', 'value' => '$BASE_PATH']],
+                ],
+            ])
+            ->toHtml();
+
+        expect($html)->toContainTag('craft-text-expander', [
+            'for' => 'path',
+            'triggers' => '[{"trigger":"$","boundary":"start","options":[{"label":"$BASE_PATH","value":"$BASE_PATH"}]}]',
+        ]);
     });
 });
 

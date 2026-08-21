@@ -157,8 +157,8 @@ export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
             var(--c-form-control-border-color)
           );
           border-radius: var(--c-input-radius, var(--c-radius-sm));
-          width: var(--c-size-control-2xs);
-          height: var(--c-size-control-2xs);
+          width: var(--c-checkbox-size);
+          height: var(--c-checkbox-size);
         }
 
         .choice-field__help-text {

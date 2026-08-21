@@ -9,6 +9,9 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -79,38 +82,36 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): ?string
-    {
-        return $this->sourcesSettingHtml();
-    }
-
-    /**
-     * Returns the HTML for the “Sources” setting
-     */
-    protected function sourcesSettingHtml(): ?string
-    {
-        $sources = Collection::make($this->availableSources())
-            ->keyBy(fn (array $source) => $source['key'])
-            ->map(fn (array $source) => $source['label']);
-
-        if ($sources->isEmpty()) {
-            return null;
-        }
-
-        return FormFields::checkboxSelectFieldHtml([
-            'label' => t('{type} Sources', [
-                'type' => static::elementType()::displayName(),
-            ]),
-            'name' => 'sources',
-            'options' => $sources->all(),
-            'values' => $this->sources ?? '*',
-            'showAllOption' => true,
-        ]);
-    }
-
     public function supports(string $value): bool
     {
         return (bool) preg_match(sprintf('/^\{%s:(\d+)(@(\d+))?:url\}$/', static::elementType()::refHandle()), $value);
+    }
+
+    #[Override]
+    public function settingsNodes(string $prefix): array
+    {
+        $sources = Collection::make($this->availableSources())
+            ->map(fn (array $source): array => [
+                'label' => (string) $source['label'],
+                'value' => $source['key'],
+            ])
+            ->values()
+            ->all();
+
+        if ($sources === []) {
+            return [];
+        }
+
+        array_unshift($sources, ['label' => t('All'), 'value' => '*']);
+
+        return [
+            FormField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
+                ->control(Choice::make($this->settingPath($prefix, 'sources'))
+                    ->multiple()
+                    ->presentation(ChoicePresentation::Checkboxes)
+                    ->options($sources)
+                    ->value($this->sources ?? ['*'])),
+        ];
     }
 
     #[Override]

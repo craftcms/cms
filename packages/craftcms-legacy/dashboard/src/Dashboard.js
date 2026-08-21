@@ -1,5 +1,4 @@
 import './dashboard.scss';
-import '@craftcms/ui';
 
 (function ($) {
   /** global: Craft */
@@ -64,6 +63,18 @@ import '@craftcms/ui';
       }
     },
 
+    getSettingsForm: function (type, namespace) {
+      const form = this.getTypeInfo(type, 'settingsForm', null);
+
+      if (!form) {
+        return null;
+      }
+
+      return JSON.parse(
+        JSON.stringify(form).replaceAll('__NAMESPACE__', namespace)
+      );
+    },
+
     handleNewWidgetOptionSelect: function (e) {
       this.$newWidgetBtn.data('trigger').hide();
       const $option = $(e.target);
@@ -88,6 +99,10 @@ import '@craftcms/ui';
               /__NAMESPACE__/g,
               settingsNamespace
             )
+          : null;
+      const settingsForm =
+        typeof responseData === 'undefined'
+          ? this.getSettingsForm(type, settingsNamespace)
           : null;
       const $gridItem = $(
         '<div class="item" data-colspan="1" style="display: block">'
@@ -157,7 +172,7 @@ import '@craftcms/ui';
         )
         .appendTo($gridItem);
 
-      if (settingsHtml) {
+      if (settingsForm || settingsHtml) {
         $container.addClass('flipped');
         $container.children('.front').addClass('hidden');
       } else {
@@ -174,7 +189,9 @@ import '@craftcms/ui';
           ? () => {
               eval(settingsJs);
             }
-          : $.noop
+          : $.noop,
+        undefined,
+        settingsForm
       );
 
       // Append the new widget after the last one
@@ -194,7 +211,7 @@ import '@craftcms/ui';
       if (typeof responseData !== 'undefined') {
         $container.removeClass('loading');
         widget.update(responseData);
-      } else if (!settingsHtml) {
+      } else if (!settingsForm && !settingsHtml) {
         const data = {
           type: type,
         };
@@ -363,6 +380,7 @@ import '@craftcms/ui';
     $settingsToggle: null,
     $saveBtn: null,
     $settingsErrorList: null,
+    settingsHost: null,
 
     id: null,
     type: null,
@@ -372,12 +390,19 @@ import '@craftcms/ui';
 
     totalCols: null,
     settingsHtml: null,
+    settingsForm: null,
     initSettingsFn: null,
     showingSettings: false,
 
     colspanPicker: null,
 
-    init: function (container, settingsHtml, initSettingsFn, storedSettings) {
+    init: function (
+      container,
+      settingsHtml,
+      initSettingsFn,
+      storedSettings,
+      settingsForm
+    ) {
       this.$container = $(container);
       this.storedSettings = storedSettings;
 
@@ -404,7 +429,7 @@ import '@craftcms/ui';
       this.$subtitle = this.$heading.find('> h5');
       this.$bodyContainer = this.$front.find('> .pane > .body');
 
-      this.setSettingsHtml(settingsHtml, initSettingsFn);
+      this.setSettings(settingsHtml, initSettingsFn, settingsForm);
 
       if (!this.$container.hasClass('flipped')) {
         this.onShowFront();
@@ -445,11 +470,12 @@ import '@craftcms/ui';
       return window.dashboard.getTypeInfo(this.type, property, defaultValue);
     },
 
-    setSettingsHtml: function (settingsHtml, initSettingsFn) {
+    setSettings: function (settingsHtml, initSettingsFn, settingsForm) {
       this.settingsHtml = settingsHtml;
       this.initSettingsFn = initSettingsFn;
+      this.settingsForm = settingsForm;
 
-      if (this.settingsHtml) {
+      if (this.settingsForm || this.settingsHtml) {
         this.$settingsBtn.removeClass('hidden');
       } else {
         this.$settingsBtn.addClass('hidden');
@@ -457,6 +483,20 @@ import '@craftcms/ui';
     },
 
     refreshSettings: function () {
+      this.$settingsContainer.empty();
+      this.settingsHost = null;
+
+      if (this.settingsForm) {
+        this.settingsHost = document.createElement(
+          'craft-dashboard-widget-settings-form'
+        );
+        this.settingsHost.payload = structuredClone(this.settingsForm);
+        this.settingsHost.widgetType = this.type;
+        this.$settingsContainer.append(this.settingsHost);
+
+        return;
+      }
+
       this.$settingsContainer.html(this.settingsHtml);
 
       Garnish.requestAnimationFrame(() => {
@@ -541,6 +581,10 @@ import '@craftcms/ui';
                 Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
                 if (response.data.errors) {
+                  if (this.settingsHost) {
+                    this.settingsHost.errors = response.data.errors;
+                  }
+
                   this.$settingsErrorList = Craft.ui
                     .createErrorList(response.data.errors)
                     .insertAfter(this.$settingsContainer);
@@ -623,9 +667,13 @@ import '@craftcms/ui';
 
       Craft.cp.elementThumbLoader.load(this.$bodyContainer);
 
-      this.setSettingsHtml(response.info.settingsHtml, function () {
-        eval(response.info.settingsJs);
-      });
+      this.setSettings(
+        response.info.settingsHtml,
+        function () {
+          eval(response.info.settingsJs);
+        },
+        response.info.settingsForm
+      );
     },
 
     cancelSettings: function () {

@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -229,9 +230,15 @@ it('creates a new matrix entry draft and renders its block html', function () {
         ->and($entry->getOwnerId())->toBe($this->fixture['owner']->id)
         ->and($entry->draftId)->not->toBeNull();
 
-    expect($response->json('blockHtml'))
+    $html = $response->json('blockHtml');
+    $host = new Crawler($html)->filter('craft-entry-field-layout-form[data-payload]');
+
+    expect($html)
         ->toContain('Matrix Block')
-        ->toContain('testNamespace[matrixField][entries][uid:'.$entry->uid.'][fresh]');
+        ->toContain('testNamespace[matrixField][entries][uid:'.$entry->uid.'][fresh]')
+        ->and($host)->toHaveCount(1)
+        ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR)['scope'])
+        ->toBe(['testNamespace', 'matrixField', 'entries', "uid:{$entry->uid}"]);
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {

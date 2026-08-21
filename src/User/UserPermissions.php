@@ -61,20 +61,6 @@ use function CraftCms\Cms\t;
 class UserPermissions
 {
     /**
-     * @var Collection<int, PermissionGroup>
-     *
-     * @see getAllPermissions()
-     */
-    private Collection $allPermissions;
-
-    /**
-     * @var Collection<string, string>
-     *
-     * @see validatePermission()
-     */
-    private Collection $permissionNamesByLowercase;
-
-    /**
      * @var Collection<int, Collection<int, string>>
      */
     private Collection $permissionsByGroupId;
@@ -120,21 +106,16 @@ class UserPermissions
      */
     public function getAllPermissions(): Collection
     {
-        if (isset($this->allPermissions)) {
-            return $this->allPermissions;
-        }
+        $permissions = new Collection;
 
-        $this->allPermissions = new Collection;
+        $this->generalPermissions($permissions);
+        $this->userPermissions($permissions);
+        $this->sitePermissions($permissions);
+        $this->entryPermissions($permissions);
+        $this->volumePermissions($permissions);
+        $this->utilityPermissions($permissions);
 
-        $this->generalPermissions($this->allPermissions);
-        $this->userPermissions($this->allPermissions);
-        $this->sitePermissions($this->allPermissions);
-        $this->entryPermissions($this->allPermissions);
-        $this->volumePermissions($this->allPermissions);
-        $this->utilityPermissions($this->allPermissions);
-        $this->importPermissions($this->allPermissions);
-
-        return $this->allPermissions = $this->permissionGroupCatalog->apply($this->allPermissions);
+        return $this->permissionGroupCatalog->apply($permissions);
     }
 
     /**
@@ -179,7 +160,7 @@ class UserPermissions
                 ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
-                ->map(fn (string $permission) => $this->canonicalPermissionName($permission)),
+                ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
         );
     }
 
@@ -201,7 +182,7 @@ class UserPermissions
             ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
-            ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
+            ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
     }
 
     /**
@@ -262,7 +243,7 @@ class UserPermissions
                         ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
                         ->where('p_u.userId', $userId)
                         ->pluck('p.name')
-                        ->map(fn (string $permission) => $this->canonicalPermissionName($permission));
+                        ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
                 } else {
                     $userPermissions = [];
                 }
@@ -274,7 +255,7 @@ class UserPermissions
 
     public function validatePermission(string $permission): bool
     {
-        return $this->permissionNamesByLowercase()->has(strtolower($permission));
+        return $this->permissionNamesByLowercase()->has(Str::lower($permission));
     }
 
     /**
@@ -776,50 +757,6 @@ class UserPermissions
         ));
     }
 
-    private function importPermissions(Collection $permissions): void
-    {
-        $permissions->add(new PermissionGroup(
-            heading: t('Import'),
-            permissions: collect([
-                new Permission(
-                    key: 'accessImports',
-                    label: t('Access imports'),
-                    nested: collect([
-                        new Permission(
-                            key: 'viewImportConfigs',
-                            label: t('View import configs'),
-                            nested: collect([
-                                new Permission(
-                                    key: 'editImportConfigs',
-                                    label: t('Edit import configs'),
-                                    info: t('Users with this permission can potentially create import config for items or sites that they don’t have permissions to. Take care when granting this permission.'),
-                                ),
-                                new Permission(key: 'deleteImportConfigs', label: t('Delete import configs')),
-                            ])
-                        ),
-                        new Permission(
-                            key: 'viewImportRuns',
-                            label: t('View import runs'),
-                            nested: collect([
-                                new Permission(
-                                    key: 'editImportRuns',
-                                    label: t('Edit import runs'),
-                                    info: t('Users with this permission can create import runs that imports items that user doesn’t have permissions to. Take care when granting this permission.'),
-                                ),
-                                new Permission(key: 'deleteImportRuns', label: t('Delete import runs')),
-                                new Permission(
-                                    key: 'triggerImportRuns',
-                                    label: t('Trigger import runs'),
-                                    warning: t('Users with this permission can manipulate content they don’t have access to. Take care when granting this permission.'),
-                                ),
-                            ])
-                        ),
-                    ])
-                ),
-            ])
-        ));
-    }
-
     /**
      * Filters out any permissions that aren't assignable by the current user.
      *
@@ -934,9 +871,7 @@ class UserPermissions
      */
     private function getPermissionModelByName(string $permissionName): UserPermission
     {
-        $permissionName = $this->canonicalPermissionName($permissionName);
-
-        if ($permissionModel = UserPermission::whereIn('name', [$permissionName, strtolower($permissionName)])->first()) {
+        if ($permissionModel = UserPermission::whereIn('name', [$permissionName, Str::lower($permissionName)])->first()) {
             return $permissionModel;
         }
 
@@ -948,18 +883,14 @@ class UserPermissions
     /** @return Collection<string, string> */
     private function permissionNamesByLowercase(): Collection
     {
-        if (! isset($this->permissionNamesByLowercase)) {
-            $this->permissionNamesByLowercase = $this->getAllPermissions()
-                ->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions))
-                ->mapWithKeys(fn (string $permission) => [strtolower($permission) => $permission]);
-        }
-
-        return $this->permissionNamesByLowercase;
+        return $this->getAllPermissions()
+            ->flatMap(fn (PermissionGroup $group) => $this->collectPermissionNames($group->permissions))
+            ->mapWithKeys(fn (string $permission) => [Str::lower($permission) => $permission]);
     }
 
     private function canonicalPermissionName(string $permission): string
     {
-        return $this->permissionNamesByLowercase()->get(strtolower($permission), $permission);
+        return $this->permissionNamesByLowercase()->get(Str::lower($permission), $permission);
     }
 
     /**
@@ -968,7 +899,12 @@ class UserPermissions
      */
     private function canonicalPermissionNames(array $permissions): array
     {
-        return array_values(array_unique(array_map($this->canonicalPermissionName(...), $permissions)));
+        $permissionNamesByLowercase = $this->permissionNamesByLowercase();
+
+        return array_values(array_unique(array_map(
+            fn (string $permission) => $permissionNamesByLowercase->get(Str::lower($permission), $permission),
+            $permissions,
+        )));
     }
 
     private function createUserPermissionsQuery(): Builder
@@ -982,8 +918,6 @@ class UserPermissions
     public function reset(): void
     {
         unset(
-            $this->allPermissions,
-            $this->permissionNamesByLowercase,
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );

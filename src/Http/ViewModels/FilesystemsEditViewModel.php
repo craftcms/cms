@@ -4,133 +4,118 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Handle;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\HiddenField;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\HtmlFragment;
-use Illuminate\Support\Collection;
 
-/**
- * @phpstan-type FsPayload array{
- *     name: string|null,
- *     handle: string|null,
- *     hasUrls: bool,
- *     url: string|null,
- *     type: class-string<FsInterface>,
- *     settingsHtml: string|null,
- *     settingsFragment: HtmlFragment|null,
- *     showHasUrlSetting: bool,
- *     showUrlSetting: bool,
- *     ...
- * }
- * @phpstan-type FsOption array{value: class-string<FsInterface>, label: string}
- */
+use function CraftCms\Cms\t;
+
 class FilesystemsEditViewModel extends ViewModel
 {
     private readonly FsInterface $filesystem;
 
-    /** @var Collection<class-string<FsInterface>, FsInterface> */
-    private Collection $instances;
-
     public function __construct(
         ?FsInterface $filesystem,
         private readonly Filesystems $filesystems,
+        private readonly FormResolver $formResolver,
         private readonly ?string $oldHandle = null,
-        public readonly bool $readOnly = false,
+        private readonly bool $readOnly = false,
     ) {
-        $this->filesystem = $filesystem ?? app()->make($this->fsTypes()[0]);
+        $this->filesystem = $filesystem ?? app()->make($filesystems->getAllFilesystemTypes()->firstOrFail());
     }
 
-    public function oldHandle(): ?string
+    public function form(): FormPayload
     {
-        return $this->oldHandle;
+        $values = [
+            'name' => $this->filesystem->name,
+            'handle' => $this->filesystem->handle,
+            'oldHandle' => $this->oldHandle,
+            'type' => $this->filesystem::class,
+            'settings' => [
+                ...$this->filesystem->getSettings(),
+                'hasUrls' => $this->filesystem->hasUrls,
+                'url' => $this->filesystem->url,
+            ],
+        ];
+        $errors = $this->filesystem->errors()->getMessages();
+        $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
+        $handle = Handle::make('handle');
+
+        if ($this->oldHandle === null) {
+            $handle->source('name');
+        }
+
+        $form = $this->formResolver->resolve(Form::make([
+            HiddenField::make('oldHandle'),
+            Field::make(t('Name'), Text::make('name')->autocomplete(false)->autofocus())->required(),
+            Field::make(t('Handle'), $handle)->required(),
+            Field::make(t('Filesystem Type'), Choice::make('type')->options($this->filesystemOptions()))
+                ->instructions(t('What type of filesystem is this?')),
+        ]), new FormContext(
+            values: $values,
+            errors: Arr::only($errors, ['name', 'handle', 'type']),
+            mode: $mode,
+            refreshable: true,
+        ));
+        $settingsContext = new FormContext(
+            namespace: 'settings',
+            values: $values,
+            errors: Arr::except($errors, ['name', 'handle', 'type']),
+            mode: $mode,
+            refreshable: true,
+        );
+        $settings = $this->formResolver->resolve(
+            $this->filesystem->settingsForm($settingsContext) ?? Form::make(),
+            $settingsContext,
+        );
+
+        return new FormPayload(
+            scope: [],
+            refreshable: true,
+            nodes: [...$form->nodes, ...$settings->nodes],
+            values: $values,
+            errors: [...$form->errors, ...$settings->errors],
+            globalErrors: [...$form->globalErrors, ...$settings->globalErrors],
+        );
     }
 
-    /** @return FsPayload */
-    public function filesystem(): array
+    /** @return array{method: 'post', url: string} */
+    public function submit(): array
     {
-        return $this->fsPayload($this->filesystem);
+        return [
+            'method' => 'post',
+            'url' => action([FilesystemsController::class, 'store']),
+        ];
     }
 
-    /** @return array<int, FsOption> */
-    public function fsOptions(): array
+    public function refreshUrl(): ?string
     {
-        $options = $this->instances()
-            ->map(fn (FsInterface $fs): array => [
-                'value' => $fs::class,
-                'label' => $fs::displayName(),
+        return $this->readOnly
+            ? null
+            : action([FilesystemsController::class, 'renderForm']);
+    }
+
+    /** @return list<array{value: class-string<FsInterface>, label: string}> */
+    private function filesystemOptions(): array
+    {
+        return $this->filesystems->getAllFilesystemTypes()
+            ->map(fn (string $type): array => [
+                'value' => $type,
+                'label' => $type::displayName(),
             ])
+            ->sortBy('label')
             ->values()
             ->all();
-
-        return array_values(Arr::sort($options, 'label'));
-    }
-
-    /** @return array<class-string<FsInterface>, FsPayload> */
-    public function fsInstances(): array
-    {
-        return $this->instances()
-            ->map(fn (FsInterface $fs): array => $this->fsPayload($fs))
-            ->all();
-    }
-
-    /**
-     * @return array<int, class-string<FsInterface>>
-     */
-    public function fsTypes(): array
-    {
-        return $this->filesystems->getAllFilesystemTypes()->values()->all();
-    }
-
-    // @TODO this should probably be its own item on SelectOptions
-    /** @return list<array{type: 'optgroup', label: string, options: list<array{label: string, value: string, data: array{hint: mixed}}>}>
-     */
-    public function baseUrlSuggestions(): array
-    {
-        return SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value));
-    }
-
-    /** @return list<array{type: 'optgroup', label: string, options: list<array{label: string, value: string, data: array{hint: mixed}}>}>
-     */
-    public function basePathSuggestions(): array
-    {
-        return SelectOptions::getEnvSuggestions(true);
-    }
-
-    /**
-     * One instance per filesystem type; the type being edited is represented
-     * by the actual filesystem so its slot reflects the saved settings.
-     *
-     * @return Collection<class-string<FsInterface>, FsInterface>
-     */
-    private function instances(): Collection
-    {
-        return $this->instances ??= collect($this->fsTypes())->mapWithKeys(fn (string $type): array => [
-            $type => $type === $this->filesystem::class ? $this->filesystem : app()->make($type),
-        ]);
-    }
-
-    /** @return FsPayload */
-    private function fsPayload(FsInterface $filesystem): array
-    {
-        $settingsHtml = fn (): string => (string) ($this->readOnly
-            ? $filesystem->getReadOnlySettingsHtml()
-            : $filesystem->getSettingsHtml());
-
-        $legacy = $filesystem->hasLegacySettingsHtml();
-
-        return [
-            ...$filesystem->toArray(),
-            'type' => $filesystem::class,
-            'settingsHtml' => $legacy ? null : $settingsHtml(),
-            // Legacy settings may register asset bundles and inline JS, so they
-            // are captured as a fragment and rendered as an isolated HTML island
-            'settingsFragment' => $legacy ? HtmlStack::capture($settingsHtml) : null,
-            'showHasUrlSetting' => $filesystem->getShowHasUrlSetting(),
-            'showUrlSetting' => $filesystem->getShowUrlSetting(),
-        ];
     }
 }

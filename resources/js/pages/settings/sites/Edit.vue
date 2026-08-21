@@ -1,66 +1,76 @@
 <script setup lang="ts">
-  import {useForm} from '@inertiajs/vue3';
-  import type {Site} from '@/common/types';
-  import {t} from '@craftcms/ui';
-  import {store} from '@actions/Settings/SitesController';
-  import SiteFields from '@/modules/sites/components/SiteFields.vue';
-  import DeleteSiteModal from '@/modules/sites/components/DeleteSiteModal.vue';
-  import {ref} from 'vue';
-  import Badge from '@/common/components/Badge.vue';
-  import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
-  import Pane from '@/common/components/Pane.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+    import type {Site} from '@/common/types';
+    import type {UrlMethodPair} from '@inertiajs/core';
+    import {t, toEnvVar} from '@craftcms/ui';
+    import {ref} from 'vue';
+    import Badge from '@/common/components/Badge.vue';
+    import LayoutSlot from '@/common/components/LayoutSlot.vue';
+    import FormPage from '@/pages/Form.vue';
+    import type {
+        FormChange,
+        FormChangeKind,
+        FormPayload,
+    } from '@/modules/forms/types';
+    import {pathsMatch} from '@/modules/forms/runtime';
 
-  const props = defineProps<{
-    title: string;
-    crumbs: Array<any>; // @TODO
-    site: Site;
-    groupId?: number | string;
-    flash?: Record<any, any>;
-    errors: Record<any, any> | null;
-    isMultiSite: boolean;
-  }>();
+    const props = defineProps<{
+        site: Site;
+        form: FormPayload;
+        submit: UrlMethodPair;
+        refreshUrl: string;
+    }>();
 
-  const form = useForm({
-    siteId: props.site.id ?? null,
-    group: props.groupId,
-    name: props.site.nameRaw,
-    handle: props.site.handle,
-    language: props.site.languageRaw,
-    enabled: props.site.enabledRaw,
-    hasUrls: props.site.hasUrls,
-    primary: props.site.primary,
-    baseUrl: props.site.baseUrlRaw ?? '',
-  });
+    const formPage = ref<{
+        setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
+    }>();
+    const baseUrlDirty = ref(
+        Boolean(props.form.values.siteId) || Boolean(props.form.values.baseUrl)
+    );
 
-  const {save} = useSettingsSave(form, store);
+    function onChange(change: FormChange, values: FormPayload['values']): void {
+        if (pathsMatch(change.path, ['baseUrl'])) {
+            baseUrlDirty.value = true;
 
-  const modalActive = ref(false);
+            return;
+        }
 
-  useAppLayout(() => ({title: props.title, form, onSave: save}));
+        if (baseUrlDirty.value || !values.hasUrls) {
+            return;
+        }
+
+        if (
+            !pathsMatch(change.path, ['name']) &&
+            !pathsMatch(change.path, ['hasUrls'])
+        ) {
+            return;
+        }
+
+        formPage.value?.setValue(
+            ['baseUrl'],
+            toEnvVar(String(values.name ?? ''), {
+                prefix: '$',
+                suffix: '_URL',
+            }),
+            change.kind
+        );
+    }
 </script>
 
 <template>
-  <LayoutSlot name="title-badge">
-    <Badge :variant="site.enabled ? 'success' : 'default'">
-      {{ site.enabled ? t('Enabled') : t('Disabled') }}
-    </Badge>
-    <craft-callout v-if="site.primary" size="small" inline>
-      <span>{{ t('Primary') }}</span>
-    </craft-callout>
-  </LayoutSlot>
+    <LayoutSlot name="title-badge">
+        <Badge :variant="site.enabled ? 'success' : 'default'">
+            {{ site.enabled ? t('Enabled') : t('Disabled') }}
+        </Badge>
+        <craft-callout v-if="site.primary" size="small" inline>
+            <span>{{ t('Primary') }}</span>
+        </craft-callout>
+    </LayoutSlot>
 
-  <Pane appearance="raised">
-    <div class="grid gap-3">
-      <SiteFields :inertia-form="form" />
-    </div>
-  </Pane>
-
-  <DeleteSiteModal
-    @close="modalActive = false"
-    :open="modalActive"
-    :site="props.site"
-    v-if="!site.primary"
-  />
+    <FormPage
+        ref="formPage"
+        :form="form"
+        :submit="submit"
+        :refresh-url="refreshUrl"
+        @change="onChange"
+    />
 </template>

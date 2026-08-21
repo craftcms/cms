@@ -11,6 +11,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Site\Sites as SitesService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
@@ -33,7 +34,7 @@ beforeEach(function () {
 
     $this->sections = app(Sections::class);
 
-    Section::factory()->create();
+    Section::factory()->create(['name' => 'mmm Middle Section']);
 });
 
 it('requires authentication', function () {
@@ -42,6 +43,7 @@ it('requires authentication', function () {
     get(action([SectionsController::class, 'index']))->assertRedirect();
     get(action([SectionsController::class, 'create']))->assertRedirect();
     get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertRedirect();
+    postJson(action([SectionsController::class, 'renderForm']))->assertUnauthorized();
     postJson(action([SectionsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertUnauthorized();
 });
@@ -54,6 +56,7 @@ it('requires admin changes', function () {
 
     // Not allowed
     get(action([SectionsController::class, 'create']))->assertForbidden();
+    postJson(action([SectionsController::class, 'renderForm']))->assertForbidden();
     postJson(action([SectionsController::class, 'store']))->assertForbidden();
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertForbidden();
 });
@@ -83,7 +86,21 @@ test('index can be sorted', function () {
 test('create can be loaded', function () {
     get(action([SectionsController::class, 'create']))
         ->assertOk()
-        ->assertSee(t('Create a new section'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/sections/Edit')
+            ->where('title', t('Create a new section'))
+            ->where('form.values.sectionId', null)
+            ->where('form.values.type', SectionType::Channel->value)
+            ->where('form.refreshable', true)
+            ->where('submit.url', action([SectionsController::class, 'store']))
+            ->where('refreshUrl', action([SectionsController::class, 'renderForm']))
+            ->where('form.nodes', function ($nodes): bool {
+                $paths = collect($nodes)->pluck('control.path')->filter();
+
+                return $paths->contains(['entryTypes'])
+                    && $paths->contains(['sites'])
+                    && $paths->contains(['previewTargets']);
+            }));
 });
 
 test('it can edit a section', function () {
@@ -91,7 +108,65 @@ test('it can edit a section', function () {
 
     get(action([SectionsController::class, 'edit'], [$section->id]))
         ->assertOk()
-        ->assertSee($section->name);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('settings/sections/Edit')
+            ->where('form.values.sectionId', $section->id)
+            ->where('form.values.name', $section->name)
+            ->where('form.values.handle', $section->handle));
+});
+
+function sectionFormValues(array $overrides = []): array
+{
+    return array_merge([
+        'sectionId' => null,
+        'name' => 'News',
+        'handle' => 'news',
+        'type' => SectionType::Channel->value,
+        'entryTypes' => [],
+        'enableVersioning' => true,
+        'minAuthors' => 0,
+        'maxAuthors' => '',
+        'maxLevels' => '',
+        'propagationMethod' => 'all',
+        'defaultPlacement' => 'end',
+        'previewTargets' => [],
+        'sites' => ['default' => ['enabled' => true]],
+    ], $overrides);
+}
+
+it('refreshes the fields that depend on the section type', function () {
+    Site::factory()->create();
+    app(SitesService::class)->refreshSites();
+    $paths = fn (array $nodes) => collect($nodes)->pluck('control.path')->filter()->values();
+
+    $channel = postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(),
+        'scope' => [],
+    ])->assertOk();
+    $structure = postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(['type' => SectionType::Structure->value]),
+        'scope' => [],
+    ])->assertOk();
+    $single = postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(['type' => SectionType::Single->value]),
+        'scope' => [],
+    ])->assertOk();
+
+    expect($paths($channel->json('form.nodes')))
+        ->toContain(['propagationMethod'], ['minAuthors'], ['maxAuthors'])
+        ->not->toContain(['maxLevels'], ['defaultPlacement'])
+        ->and($paths($structure->json('form.nodes')))
+        ->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors'])
+        ->and($paths($single->json('form.nodes')))
+        ->not->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors']);
+});
+
+it('rejects an invalid section type when refreshing', function () {
+    postJson(action([SectionsController::class, 'renderForm']), [
+        'values' => sectionFormValues(['type' => 'invalid']),
+        'scope' => [],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('values.type');
 });
 
 it('404s when a section does not exist', function () {

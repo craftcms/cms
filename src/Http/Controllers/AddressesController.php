@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -14,6 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 readonly class AddressesController
 {
+    public function __construct(private Addresses $addresses) {}
+
     public function fields(Request $request, HtmlStack $HtmlStack): Response
     {
         $request->validate([
@@ -35,6 +38,7 @@ readonly class AddressesController
 
         return new JsonResponse([
             'fieldsHtml' => $html,
+            'fieldDefinitions' => $this->addresses->getFormFieldDefinitions($address),
             'headHtml' => $HtmlStack->headHtml(),
             'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);

@@ -20,11 +20,9 @@ permissions:
 
 jobs:
   setup:
-    name: 'Setup / Install + Build + Generate'
+    name: 'Build + Check'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,7 +45,7 @@ jobs:
         # `testbench typescript:transform` and `testbench wayfinder:generate`
         # derive their output from controllers, DTOs, and routes in src/.
         run: |
-          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
+          echo "value=js-ci-v3-${{ runner.os }}-${{ hashFiles('package-lock.json', 'composer.lock', 'package.json', 'packages/*/package.json', 'packages/craftcms-ui/src/**', 'packages/craftcms-ui/tsconfig*.json', 'packages/craftcms-ui/vite.config.*', 'packages/craftcms-ui/tsdown.config.*', 'packages/craftcms-garnish/src/**', 'packages/craftcms-garnish/tsconfig*.json', 'packages/craftcms-garnish/vite.config.*', 'routes/**/*.php', 'src/**/*.php', 'workbench/**/*.php') }}" >> "$GITHUB_OUTPUT"
 
       - name: Restore install + build + generated cache
         id: cache
@@ -65,15 +63,16 @@ jobs:
             resources/js/generated
           key: ${{ steps.cache-key.outputs.value }}
 
-      - name: Install Composer dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: composer install --no-interaction --no-progress
+      - parallel:
+          - name: Install Composer dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: composer install --no-interaction --no-progress
 
-      - name: Install frontend dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: vp install --frozen-lockfile
-        env:
-          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+          - name: Install frontend dependencies
+            if: steps.cache.outputs.cache-hit != 'true'
+            run: vp install --frozen-lockfile
+            env:
+              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       # Build the garnish package so its `dist/*.d.ts` exist — `vue-tsc` resolves
       # `@craftcms/garnish` from `dist` (its `types`), and dist is gitignored.
@@ -101,108 +100,19 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: vp run generate:wayfinder
 
-  eslint:
-    name: 'Code Quality / Oxlint'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: true
-
-      - name: Restore install + build + generated cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-            packages/craftcms-ui/dist
-            packages/craftcms-garnish/dist
-            vendor
-            resources/js/actions
-            resources/js/routes
-            resources/js/wayfinder
-            resources/js/generated
-          key: ${{ needs.setup.outputs.cache-key }}
-
-      - name: Run Oxlint
-        run: vp lint resources/js/
-
-  typecheck:
-    name: 'Code Quality / TypeScript'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: true
-
-      - name: Restore install + build + generated cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-            packages/craftcms-ui/dist
-            packages/craftcms-garnish/dist
-            vendor
-            resources/js/actions
-            resources/js/routes
-            resources/js/wayfinder
-            resources/js/generated
-          key: ${{ needs.setup.outputs.cache-key }}
-
-      # Skip the `pretypecheck` hook (it would re-run generate:types +
-      # generate:wayfinder, which need PHP/Composer that this job doesn't set
-      # up — the setup job already produced and cached the output).
-      - name: Run TypeScript type check
-        run: vp run typecheck
-
-  test-ui:
-    name: 'Tests / @craftcms/ui'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: true
-
-      - name: Restore install + build + generated cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-            packages/craftcms-ui/dist
-            packages/craftcms-garnish/dist
-            vendor
-            resources/js/actions
-            resources/js/routes
-            resources/js/wayfinder
-            resources/js/generated
-          key: ${{ needs.setup.outputs.cache-key }}
-
-      # The storybook tests run in real Chromium via @vitest/browser-playwright.
+      # `vp run` skips the npm pretypecheck hook, which would redundantly run
+      # generate:types and generate:wayfinder.
+      # The Storybook tests run headlessly via @vitest/browser-playwright, so
+      # the full headed Chromium build is unnecessary.
       - name: Install Playwright Chromium
-        run: vp exec playwright install --with-deps chromium
+        run: vp exec playwright install --with-deps --only-shell chromium
 
-      - name: Run @craftcms/ui tests
-        run: vp run test:ui
+      - parallel:
+          - name: Run Oxlint
+            run: vp lint resources/js/
+
+          - name: Run TypeScript type check
+            run: vp run typecheck
+
+          - name: Run @craftcms/ui tests
+            run: vp run test:ui

@@ -11,7 +11,6 @@
         destroy,
         index,
     } from '@actions/Settings/EntryTypesController';
-    import Pane from '@/common/components/Pane.vue';
     import {useServerPagination} from '@/modules/admin-table/composables/useServerPagination';
     import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
     import {useServerSort} from '@/modules/admin-table/composables/useServerSort';
@@ -160,7 +159,7 @@
         </CpLink>
     </LayoutSlot>
 
-    <Pane :padding="0" appearance="raised">
+    <craft-pane padding="0" appearance="raised">
         <AdminTable
             :table="table"
             :reorderable="false"
@@ -179,5 +178,5 @@
                 <SearchForm :action="index()" v-model="searchTerm" />
             </template>
         </AdminTable>
-    </Pane>
+    </craft-pane>
 </template>

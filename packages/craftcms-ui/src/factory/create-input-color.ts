@@ -1,5 +1,4 @@
 import type CraftInputColor from '../components/input-color/input-color.js';
-import '../components/input-color/input-color.js';
 import {t} from '@src/utilities/translate';
 import {createSlottedInput} from './internal/slotted-input.js';
 

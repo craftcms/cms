@@ -6,6 +6,8 @@ interface ElementIndexHandle {
     table: Table<any>;
     /** The index's post-action refresh: clears selection + partial reload. */
     onActionPerformed: () => void;
+    /** Re-pull just the results, leaving selection and scroll alone. */
+    refreshResults: () => void;
 }
 
 // The active element index. There's a single one per CP page, so a module-scoped
@@ -32,5 +34,10 @@ export function useElementIndexTable() {
         active.value?.onActionPerformed();
     }
 
-    return {table, onActionPerformed, register};
+    /** Re-pull the active index's results, if one is registered. */
+    function refreshResults() {
+        active.value?.refreshResults();
+    }
+
+    return {table, onActionPerformed, refreshResults, register};
 }

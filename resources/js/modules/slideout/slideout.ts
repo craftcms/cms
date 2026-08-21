@@ -24,58 +24,29 @@
 
 import {
     Base,
-    Garnish,
-    initGarnish,
     ESC_KEY,
     bod,
     addModalAttributes,
-    hideModalBackgroundLayers,
-    resetModalBackgroundLayerVisibility,
     prefersReducedMotion,
     type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {
+    registerPanel,
+    shadeElement,
+    syncPanelStack,
+    uiLayerManager,
+    unregisterPanel,
+    type StackedPanel,
+} from '@/common/slideouts/panel-stack';
 import {containerSlideouts} from './support';
 
 declare const Craft: any;
 declare const $: any;
 
-// Populate `Garnish.uiLayerManager` (idempotent) so it's available the first
-// time a slideout opens, regardless of whether anything else has imported
-// `@craftcms/garnish/compat` (which also calls this) yet.
-initGarnish();
-
-/**
- * The UI-layer manager slideouts should coordinate with. The legacy garnish
- * bundle instantiates its OWN `Garnish.UiLayerManager` singleton, and every
- * legacy layer consumer (modals, menus, HUDs) registers with it — if slideouts
- * used the modern singleton on those pages, Escape handling and layer stacking
- * would run in two disconnected managers (e.g. one Escape press closing both a
- * menu and the slideout behind it). Prefer the page's legacy manager when
- * present; fall back to the modern one for legacy-free surfaces.
- *
- * Exported so `cp-screen-slideout.ts` can reuse this same lookup for its own
- * `registerShortcut`/`addLayer`/`removeLayer` calls instead of reimplementing it.
- */
-export function uiLayerManager(): any {
-    return (window as any).Garnish?.uiLayerManager ?? Garnish.uiLayerManager!;
-}
-
-/**
- * Same split-brain concern as {@link uiLayerManager}: the modern
- * `hideModalBackgroundLayers`/`resetModalBackgroundLayerVisibility` utils keep
- * their own hidden-layer bookkeeping, separate from the legacy bundle's. Use
- * the page's legacy implementations when present so a slideout's hide/reset
- * pairs with the modals/HUDs it stacks against.
- */
-function hideBackgroundLayers(): void {
-    const legacy = (window as any).Garnish?.hideModalBackgroundLayers;
-    (legacy ?? hideModalBackgroundLayers)();
-}
-
-function resetBackgroundLayerVisibility(): void {
-    const legacy = (window as any).Garnish?.resetModalBackgroundLayerVisibility;
-    (legacy ?? resetModalBackgroundLayerVisibility)();
-}
+// Re-exported because `cp-screen-slideout.ts` and legacy consumers reach for
+// it here; the lookup itself lives with the rest of the cross-stack
+// coordination.
+export {uiLayerManager};
 
 /**
  * A single status live region shared by every slideout — it moves (not
@@ -131,7 +102,7 @@ export interface SlideoutSettings extends GarnishBaseSettings {
  * slideout.on('close', () => console.log('closed'));
  * ```
  */
-export class Slideout extends Base<SlideoutSettings> {
+export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     /** Default {@link SlideoutSettings}, merged with the per-instance overrides. */
     static defaults: SlideoutSettings = {
         containerElement: 'div',
@@ -167,11 +138,7 @@ export class Slideout extends Base<SlideoutSettings> {
     /** Register a newly-opened panel and reposition the stack. */
     static addPanel(panel: Slideout): void {
         Slideout.openPanels.unshift(panel);
-        if (panel.useMobileStyles) {
-            panel.$container.css('top', 0);
-        } else {
-            Slideout.updateStyles();
-        }
+        registerPanel(panel);
     }
 
     /**
@@ -184,25 +151,27 @@ export class Slideout extends Base<SlideoutSettings> {
         if (index !== -1) {
             Slideout.openPanels.splice(index, 1);
         }
+
+        // Park it offscreen on the way out. The shared stack repositions what's
+        // left, but a panel it no longer knows about has to see itself off.
         if (panel.useMobileStyles) {
             panel.$container.css('top', '100vh');
         } else {
             panel.$container.css(Slideout.positionProp(), '100vw');
-            Slideout.updateStyles();
         }
+
+        unregisterPanel(panel);
     }
 
-    /** Reposition every open panel, and toggle the body's `no-scroll` class. */
+    /**
+     * Reposition every open panel and re-sync the body scroll lock.
+     *
+     * Both are now the shared stack's job — a Vue slideout can be open at the
+     * same time as this one, and only the shared stack sees both. Kept as a
+     * delegating shim because `Craft.Slideout.updateStyles()` is public API.
+     */
     static updateStyles(): void {
-        const totalPanels = Slideout.totalPanels();
-        Slideout.openPanels.forEach((panel, i) => {
-            panel.$container.css(
-                Slideout.positionProp(),
-                `${45 * ((totalPanels - i) / totalPanels)}vw`
-            );
-        });
-
-        document.body.classList.toggle('no-scroll', totalPanels !== 0);
+        syncPanelStack();
     }
 
     // --- Instance state (jQuery-typed; see the class docblock for why) --------
@@ -216,6 +185,59 @@ export class Slideout extends Base<SlideoutSettings> {
     isOpen = false;
     isOpening = false;
     useMobileStyles: boolean | null = null;
+
+    /** Whether this opened inside a live preview pane. See {@link open}. */
+    _inPreview = false;
+
+    // --- Shared panel stack (see `@/common/slideouts/panel-stack`) -----------
+
+    /** The element the stack moves, reflows, and fires lifecycle events on. */
+    get element(): HTMLElement {
+        return this.$container[0];
+    }
+
+    /**
+     * Place this panel at `index` of `total`, counting from the oldest.
+     *
+     * `45` is `100 - 55` — the viewport left over beside a 55%-wide panel. The
+     * newest panel (`index + 1 === total`) ends up flush against the trailing
+     * edge and each one below it peeks out a little further, so the stack never
+     * runs off the screen however deep it goes.
+     */
+    position(index: number, total: number): void {
+        if (this.useMobileStyles) {
+            // A full-screen sheet slides up from the bottom; there's no room beside
+            // it to stagger anything into.
+            this.$container.css('top', 0);
+
+            return;
+        }
+
+        this.$container.css(
+            Slideout.positionProp(),
+            `${45 * ((index + 1) / total)}vw`
+        );
+    }
+
+    /**
+     * What a click on the shared shade should do.
+     *
+     * Overridden by `CpScreenSlideout`, which checks for unsaved changes first.
+     */
+    handleShadeClick(): void {
+        if (this.settings!.closeOnShadeClick) {
+            this.close();
+        }
+    }
+
+    /**
+     * A mobile-layout slideout covers the viewport, so there's nothing left to
+     * shade behind it — unless it's in a live preview pane, where it only
+     * covers the editor half.
+     */
+    suppressShade(): boolean {
+        return this.useMobileStyles === true && !this._inPreview;
+    }
 
     /**
      * @param contents - Anything jQuery's `.append()` accepts (an element,
@@ -283,6 +305,7 @@ export class Slideout extends Base<SlideoutSettings> {
 
         const activePreview =
             Craft.Preview.getActive() || Craft.LivePreview.getActive();
+        this._inPreview = !!activePreview;
         this.useMobileStyles = activePreview || Craft.useMobileStyles();
 
         this.$outerContainer.removeClass('so-mobile so-lp');
@@ -295,25 +318,12 @@ export class Slideout extends Base<SlideoutSettings> {
             this.$container.addClass('so-mobile');
         }
 
-        if (activePreview || !this.useMobileStyles) {
-            if (!this.$shade) {
-                this.$shade = $('<div class="slideout-shade"/>');
-
-                if (this.settings!.closeOnShadeClick) {
-                    this.addListener(this.$shade, 'click', (ev: any) => {
-                        ev.stopPropagation();
-                        this.close();
-                    });
-                }
-            }
-
-            // Keep the shade + container at the end of <body> so they get the
-            // highest sub-z-indexes.
-            this.$shade.appendTo(bod).show();
-        } else if (this.$shade) {
-            this.$shade.remove();
-            this.$shade = null;
-        }
+        // One shade, shared with every other open panel — Vue ones included —
+        // and owned by the panel stack, which shows it, hides it, and routes
+        // clicks on it to the topmost panel's `handleShadeClick()`. Still kept on
+        // `$shade` because that's public API (see the class docblock), and
+        // because `updateWidthsForPreviewPane()` resizes it.
+        this.$shade = $(shadeElement());
 
         this.$outerContainer.appendTo(bod).removeClass('hidden');
 
@@ -356,20 +366,16 @@ export class Slideout extends Base<SlideoutSettings> {
             this.setFocusWithin();
         });
 
-        if (this.$shade) {
-            // Force a reflow so the `so-visible` class transitions instead of
-            // applying instantly.
-            void this.$shade[0].offsetWidth;
-            this.$shade.addClass('so-visible');
-        }
-
-        // Force a reflow before the position/top change above transitions.
-        void this.$container[0].offsetWidth;
-        Slideout.addPanel(this);
-
         this.enable();
+
+        // Before `addPanel`: registering with the stack is what hides the rest of
+        // the page from assistive technology, and that needs this layer already
+        // in place to know which container to leave alone.
         uiLayerManager().addLayer(this.$outerContainer[0]);
-        hideBackgroundLayers();
+
+        // Positions the panel (transitioning it in from the offscreen position
+        // set above), shows the shade, and locks body scroll.
+        Slideout.addPanel(this);
 
         if (this.settings!.closeOnEsc) {
             uiLayerManager().registerShortcut(ESC_KEY, () => {
@@ -408,16 +414,17 @@ export class Slideout extends Base<SlideoutSettings> {
 
         this._cancelTransitionListeners();
 
-        if (this.$shade) {
-            this.$shade.removeClass('so-visible');
-            this._afterTransition(this.$shade, () => {
-                this.$shade.hide();
-            });
-        }
+        // By element, not the bare pop: with two slideout stacks interleaving,
+        // this panel isn't necessarily the topmost layer any more. Before
+        // `removePanel`, which is what restores the background layers — it reads
+        // the highest remaining modal layer to decide what to un-hide.
+        uiLayerManager().removeLayer(this.$outerContainer[0]);
 
+        // Hides the shade if this was the last panel open, and repositions the
+        // rest of the stack.
         Slideout.removePanel(this);
-        uiLayerManager().removeLayer();
-        resetBackgroundLayerVisibility();
+        this.$shade = null;
+
         this._afterTransition(this.$container, () => {
             this.$outerContainer.addClass('hidden');
             this.trigger('close');
@@ -461,10 +468,6 @@ export class Slideout extends Base<SlideoutSettings> {
     }
 
     _cancelTransitionListeners(): void {
-        if (this.$shade) {
-            this.$shade.off('transitionend.slideout');
-        }
-
         this.$container.off('transitionend.slideout');
     }
 
@@ -475,10 +478,9 @@ export class Slideout extends Base<SlideoutSettings> {
      * `destroy`, removes tracked listeners).
      */
     override destroy(): void {
-        if (this.$shade) {
-            this.$shade.remove();
-            this.$shade = null;
-        }
+        // Only drop the reference — the shade is shared with every other panel
+        // and belongs to the stack, so removing it would take it away from them.
+        this.$shade = null;
 
         this.$outerContainer.remove();
 

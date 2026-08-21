@@ -1,28 +1,14 @@
-import {ConfigService} from '@craftcms/ui';
-import {QueueService} from '@/modules/queue/queue';
 import {createInertiaApp, router} from '@inertiajs/vue3';
-import QueueManager from '@/modules/utilities/components/queue-manager/QueueManager.vue';
-import {Axios, Config, Queue} from '@/common/types/keys';
 import axios from 'axios';
-import QueueManagerToolbar from '@/modules/utilities/components/queue-manager/QueueManagerToolbar.vue';
-import DeprecationErrors from '@/modules/utilities/components/deprecation-errors/DeprecationErrors.vue';
-import ClearCaches from '@/modules/utilities/components/clear-caches/ClearCaches.vue';
-import FindReplace from '@/modules/utilities/components/find-replace/FindReplace.vue';
-import DatabaseBackup from '@/modules/utilities/components/DatabaseBackup.vue';
-import Migrations from '@/modules/utilities/components/Migrations.vue';
-import Updates from '@/modules/updater/components/Updates.vue';
-import ProjectConfig from '@/modules/utilities/components/project-config/ProjectConfig.vue';
-import AssetIndexes from '@/modules/utilities/components/asset-indexes/AssetIndexes.vue';
-import SystemMessages from '@/modules/utilities/components/system-messages/SystemMessages.vue';
-import DeprecationErrorsToolbar from '@/modules/utilities/components/deprecation-errors/DeprecationErrorsToolbar.vue';
-import CpLink from '@/common/components/CpLink.vue';
-import {setTranslations} from '@craftcms/ui/utilities/translate';
+import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
-import {createCpComponentRegistry} from './components.js';
+import {registerSlideoutGlobals} from '@/common/slideouts';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
-import LocalFsSettings from '@/components/Filesystems/LocalFsSettings.vue';
+import {config, installCpApp, queue} from './cp-app';
+import {cpComponentRegistry} from './components.js';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -38,135 +24,133 @@ const shellLessPagePrefixes = ['auth/', 'install/'];
  * it props or fill its slots) opt out with `defineOptions({layout: []})`.
  */
 function defaultPageLayout(name: string) {
-  if (shellLessPagePrefixes.some((prefix) => name.startsWith(prefix))) {
-    return null;
-  }
+    if (shellLessPagePrefixes.some((prefix) => name.startsWith(prefix))) {
+        return null;
+    }
 
-  return AppLayout;
+    return AppLayout;
 }
 
-// Instantiate services
-const config = ConfigService.getInstance();
-const queue = QueueService.getInstance();
-const components = createCpComponentRegistry();
-
 function routeSegment(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
+    if (value === null || value === undefined) {
+        return '';
+    }
 
-  return value.toString().replace(/^\/+|\/+$/g, '');
+    return value.toString().replace(/^\/+|\/+$/g, '');
 }
 
 // Create our object
 const Cp = {
-  initialConfig: {} as Record<string, any>,
+    initialConfig: {} as Record<string, any>,
 
-  get $config() {
-    return config;
-  },
+    get $config() {
+        return config;
+    },
 
-  get $queue() {
-    return queue;
-  },
+    get $queue() {
+        return queue;
+    },
 
-  get $axios() {
-    return axios;
-  },
+    get $axios() {
+        return axios;
+    },
 
-  get $inertia() {
-    return inertiaPageRegistry;
-  },
+    get $inertia() {
+        return inertiaPageRegistry;
+    },
 
-  get $components() {
-    return components;
-  },
+    get $components() {
+        return cpComponentRegistry;
+    },
 
-  booted(callback: (instance: any) => void) {
-    bootedCallbacks.push(callback);
-  },
+    booted(callback: (instance: any) => void) {
+        bootedCallbacks.push(callback);
+    },
 
-  booting(callback: (instance: any) => void) {
-    bootingCallbacks.push(callback);
-  },
+    booting(callback: (instance: any) => void) {
+        bootingCallbacks.push(callback);
+    },
 
-  config(config: Record<any, any>) {
-    this.initialConfig = config;
-  },
+    config(config: Record<any, any>) {
+        this.initialConfig = config;
+    },
 
-  init() {
-    config.initialize(this.initialConfig);
-    configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
+    init() {
+        config.initialize(this.initialConfig);
+        configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
 
-    setUrlDefaults(() => ({
-      cpTrigger: routeSegment(config.get('cpTrigger')),
-      actionTrigger: routeSegment(config.get('actionTrigger')),
-    }));
+        setUrlDefaults(() => ({
+            cpTrigger: routeSegment(config.get('cpTrigger')),
+            actionTrigger: routeSegment(config.get('actionTrigger')),
+        }));
 
-    queue.initialize({
-      runAutomatically: config.get('runQueueAutomatically', true),
-      enabled: true,
-      appId: config.get('systemUid', ''),
-      canAccessQueueManager: config.get('canAccessQueueManager', false),
-    });
+        queue.initialize({
+            runAutomatically: config.get('runQueueAutomatically', true),
+            enabled: true,
+            appId: config.get('systemUid', ''),
+            canAccessQueueManager: config.get('canAccessQueueManager', false),
+        });
 
-    setTranslations(this.initialConfig.translations);
-  },
+        setTranslations(this.initialConfig.translations);
+    },
 
-  async start() {
-    this.init();
+    async start() {
+        this.init();
 
-    axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      this.$config.get('csrfTokenValue');
+        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+        axios.defaults.headers.common['X-CSRF-TOKEN'] =
+            this.$config.get('csrfTokenValue');
 
-    console.groupCollapsed('Craft configuration');
-    console.log(config.all().entries());
-    console.groupEnd();
+        console.groupCollapsed('Craft configuration');
+        console.log(config.all().entries());
+        console.groupEnd();
 
-    console.log('Calling booting callbacks', bootingCallbacks);
-    bootingCallbacks.forEach((callback) => callback(this));
-    bootingCallbacks = [];
+        console.log('Calling booting callbacks', bootingCallbacks);
+        bootingCallbacks.forEach((callback) => callback(this));
+        bootingCallbacks = [];
 
-    await createInertiaApp({
-      resolve: (name) => resolveInertiaPage(name),
-      layout: defaultPageLayout,
-      title: (title) => `${title} - ${this.$config.get('systemName')}`,
-      withApp(app) {
-        app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+        await createInertiaApp({
+            resolve: (name) => resolveInertiaPage(name),
+            layout: defaultPageLayout,
+            title: (title) => `${title} - ${this.$config.get('systemName')}`,
+            withApp(app) {
+                installCpApp(app);
+            },
+        });
 
-        app.provide(Queue, queue);
-        app.provide(Axios, axios);
-        app.provide(Config, config);
-        app.provide(Craft, config);
+        handleNonInertiaRequests();
+        handleAccessibleRouting();
+        ensureLegacyNotificationContainer();
+        registerSlideoutGlobals();
 
-        app.component('QueueManager', QueueManager);
-        app.component('QueueManagerToolbar', QueueManagerToolbar);
-        app.component('DeprecationErrors', DeprecationErrors);
-        app.component('DeprecationErrorsToolbar', DeprecationErrorsToolbar);
-        app.component('ClearCaches', ClearCaches);
-        app.component('FindReplace', FindReplace);
-        app.component('DatabaseBackup', DatabaseBackup);
-        app.component('Migrations', Migrations);
-        app.component('Updates', Updates);
-        app.component('ProjectConfig', ProjectConfig);
-        app.component('AssetIndexes', AssetIndexes);
-        app.component('SystemMessages', SystemMessages);
-        app.component('CpLink', CpLink);
-        app.component('LocalFsSettings', LocalFsSettings);
-
-        components.install(app);
-      },
-    });
-
-    handleNonInertiaRequests();
-    ensureLegacyNotificationContainer();
-
-    console.log('Calling booted callbacks', bootedCallbacks);
-    bootedCallbacks.forEach((callback) => callback(this));
-    bootedCallbacks = [];
-  },
+        console.log('Calling booted callbacks', bootedCallbacks);
+        bootedCallbacks.forEach((callback) => callback(this));
+        bootedCallbacks = [];
+    },
 };
+
+/**
+ * When navigating to a new page, set keyboard focus on the route focus anchor and
+ * announce route change.
+ */
+function handleAccessibleRouting() {
+    const {announce} = useAnnouncer();
+    let previousPathname: string | null = null;
+    router.on('navigate', (event) => {
+        const {props, url} = event.detail.page;
+        const pathname = new URL(url, window.location.origin).pathname;
+        if (pathname === previousPathname) return;
+        previousPathname = pathname;
+
+        const routeFocusAnchor: HTMLElement | null =
+            document.getElementById('route-focus-anchor');
+        routeFocusAnchor?.focus();
+
+        if (!props.title) return;
+
+        announce(t('Navigated to {title} page', {title: props.title}));
+    });
+}
 
 /**
  * The legacy notifier (`Craft.cp.displayNotification()`, element-copy
@@ -177,57 +161,57 @@ const Cp = {
  * existed.
  */
 function ensureLegacyNotificationContainer() {
-  if (!document.getElementById('notifications')) {
-    const container = document.createElement('div');
-    container.id = 'notifications';
-    container.setAttribute('role', 'status');
-    document.body.appendChild(container);
-  }
+    if (!document.getElementById('notifications')) {
+        const container = document.createElement('div');
+        container.id = 'notifications';
+        container.setAttribute('role', 'status');
+        document.body.appendChild(container);
+    }
 
-  if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
-    Craft.cp.$notificationContainer = $('#notifications');
-  }
+    if (Craft.cp && !Craft.cp.$notificationContainer?.length && window.$) {
+        Craft.cp.$notificationContainer = $('#notifications');
+    }
 }
 
 function handleNonInertiaRequests() {
-  let fallbackUrl = '';
+    let fallbackUrl = '';
 
-  router.on('start', (event) => {
-    const visit = event.detail.visit;
+    router.on('start', (event) => {
+        const visit = event.detail.visit;
 
-    if (visit.prefetch || visit.async || visit.method !== 'get') {
-      return;
-    }
+        if (visit.prefetch || visit.async || visit.method !== 'get') {
+            return;
+        }
 
-    fallbackUrl = visit.url.href;
-  });
+        fallbackUrl = visit.url.href;
+    });
 
-  router.on('finish', (event) => {
-    const visit = event.detail.visit;
+    router.on('finish', (event) => {
+        const visit = event.detail.visit;
 
-    if (fallbackUrl === visit.url.href) {
-      fallbackUrl = '';
-    }
-  });
+        if (fallbackUrl === visit.url.href) {
+            fallbackUrl = '';
+        }
+    });
 
-  router.on('httpException', (event) => {
-    const response = event.detail.response;
+    router.on('httpException', (event) => {
+        const response = event.detail.response;
 
-    const shouldReload =
-      [200, 302, 301].includes(response.status) &&
-      response.headers['content-type']?.includes('text/html');
+        const shouldReload =
+            [200, 302, 301].includes(response.status) &&
+            response.headers['content-type']?.includes('text/html');
 
-    if (response.headers['x-redirect']) {
-      fallbackUrl = response.headers['x-redirect'];
-    }
+        if (response.headers['x-redirect']) {
+            fallbackUrl = response.headers['x-redirect'];
+        }
 
-    if (!fallbackUrl || !shouldReload) {
-      return;
-    }
+        if (!fallbackUrl || !shouldReload) {
+            return;
+        }
 
-    event.preventDefault();
-    window.location.assign(fallbackUrl);
-  });
+        event.preventDefault();
+        window.location.assign(fallbackUrl);
+    });
 }
 
 export default Cp;

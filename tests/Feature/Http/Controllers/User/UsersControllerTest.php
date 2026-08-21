@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\UserFactory;
 use CraftCms\Cms\Edition;
@@ -8,6 +10,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -37,6 +40,18 @@ describe('create', function () {
             ->assertRedirectContains('users/');
     });
 
+    // The draft has no email or username yet, which the editor's metadata has
+    // to survive.
+    test('the new draft’s edit screen renders', function () {
+        $redirect = get(action([UsersController::class, 'create']))->headers->get('Location');
+
+        get($redirect)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('users/Edit')
+                ->has('metadataHtml'));
+    });
+
     test('create requires proper authorization', function () {
         Gate::before(function ($user, $ability) {
             if ($ability === 'registerUsers') {
@@ -57,8 +72,10 @@ describe('edit', function () {
             ->assertSee(t('Profile'));
     });
 
+    // `action()` resolves this controller action to `myaccount`, which is
+    // registered first, so another user's screen has to be addressed by URL.
     test('edit can show specific user by ID', function () {
-        get(action([UsersController::class, 'edit'], ['userId' => User::findOne()->id]))->assertOk();
+        get(cp_url('users/'.User::findOne()->id))->assertOk();
     });
 
     test('edit renders the Inertia profile page for the current user', function () {
@@ -67,22 +84,35 @@ describe('edit', function () {
         get(action([UsersController::class, 'edit']))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('users/Profile')
+                ->component('users/Edit')
                 ->where('userId', $user->getCraftUserId())
-                ->where('email', $user->email)
+                ->where('elementType', User::class)
                 ->where('title', t('My Account'))
+                ->where('docTitle', t('Profile'))
                 ->has('crumbs', 2)
                 ->where('crumbs.0.label', t('Users'))
-                ->has('tabMenu')
-                ->has('subnav')
-                ->where('formFragment.html', fn (string $html): bool => str_contains($html, 'data-layout-tab')));
+                ->has('form.nodes')
+                ->has('subnav'));
     });
 
-    test('edit renders the legacy element editor for other users', function () {
+    test('edit renders the same Inertia page for other users', function () {
         $other = UserFactory::new()->createElement();
 
-        get(action([UsersController::class, 'edit'], ['userId' => $other->id]))
+        get(cp_url("users/$other->id"))
             ->assertOk()
-            ->assertDontSee('users/Profile');
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('users/Edit')
+                ->where('userId', $other->id)
+                ->where('title', $other->getUiLabel()));
+    });
+
+    test('edit posts to the user save action', function () {
+        get(action([UsersController::class, 'edit']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('saveUrl', fn (string $url): bool => str_contains($url, 'users/save-user'))
+                // A user has no drafts to autosave into.
+                ->where('canAutosave', false)
+                // Their status follows from the account actions, not a switch.
+                ->where('sidebarForm', null));
     });
 });

@@ -6,6 +6,10 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -21,7 +25,12 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::findOne());
 
-    $this->entryType = EntryType::factory()->create();
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new EntryTitleField(['uid' => 'entry-title'])));
+    $config = $layout->getConfig();
+    $config['tabs'][0]['uid'] = 'entry-content';
+    $layout = FieldLayoutModel::factory()->create(['type' => Entry::class, 'config' => $config]);
+    $this->entryType = EntryType::factory()->create(['fieldLayoutId' => $layout->id]);
     $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'blog',
     ]);
@@ -89,11 +98,15 @@ it('returns updated field layout data for existing elements', function () {
         ]);
 
     postJson(action(UpdateFieldLayoutController::class), [
-        'elementType' => Entry::class,
-        'elementId' => $entry->id,
-        'siteId' => $entry->siteId,
-        'title' => 'Updated Title',
-        'slug' => 'updated-title',
+        'editor' => ['entry' => [
+            'elementType' => Entry::class,
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'title' => 'Updated Title',
+            'slug' => 'updated-title',
+        ]],
+    ], [
+        'X-Craft-Namespace' => 'editor[entry]',
     ])->assertOk()
         ->assertJson(fn (AssertableJson $json) => $json
             ->where('message', 'Field layout updated.')
@@ -101,7 +114,9 @@ it('returns updated field layout data for existing elements', function () {
             ->where('element.id', $entry->id)
             ->where('element.title', 'Updated Title')
             ->where('element.slug', 'updated-title')
-            ->has('missingElements')
+            ->where('form.scope', ['editor', 'entry'])
+            ->where('form.values.editor.entry.title', 'Updated Title')
+            ->has('form.nodes')
             ->has('initialDeltaValues')
             ->has('headHtml')
             ->has('bodyHtml')
@@ -124,7 +139,6 @@ it('returns field layout data for new elements', function () {
             ->where('element.sectionId', $this->section->id)
             ->where('element.typeId', $this->entryType->id)
             ->where('element.slug', fn (string $slug) => $slug !== '')
-            ->has('missingElements')
             ->has('initialDeltaValues')
             ->has('headHtml')
             ->has('bodyHtml')

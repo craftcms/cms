@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
-use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -20,10 +20,8 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-class EmailField extends TextField implements ImportableFieldLayoutElementInterface
+class EmailField extends TextField
 {
-    use ImportableFieldLayoutElement;
-
     #[Override]
     public bool $mandatory = true;
 
@@ -86,6 +84,22 @@ class EmailField extends TextField implements ImportableFieldLayoutElementInterf
     }
 
     #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        $element = $context->element;
+
+        if ($element && ! $element instanceof User) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
+        }
+
+        if ($element && ! $element->getIsCurrent() && ! $element->getIsDraft() && ! Gate::check('administrateUsers')) {
+            return null;
+        }
+
+        return parent::formControl($context);
+    }
+
+    #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element) {
@@ -133,11 +147,5 @@ JS, [
         }
 
         return array_merge($element->errors()->get('email'), $element->errors()->get('unverifiedEmail'));
-    }
-
-    #[Override]
-    public function canBeMatchCriteria(): bool
-    {
-        return true;
     }
 }

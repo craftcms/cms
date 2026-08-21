@@ -10,10 +10,6 @@ import './js/Craft.js';
 // UI
 import './js/UI.js';
 
-// craft-element-label is superseded by @craftcms/ui's craft-truncate, but keep
-// it registered for backwards compatibility (e.g. plugins / the yii2 adapter).
-import '@craftcms/ui/components/truncate/truncate';
-
 // Utilities
 import './js/Queue.js';
 
@@ -22,7 +18,6 @@ import './js/BaseElementIndex.js';
 import './js/BaseElementIndexView.js';
 
 // Modals
-
 
 // Element thumb loader
 
@@ -35,7 +30,6 @@ import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
-import './js/ContentBlockEditor.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';

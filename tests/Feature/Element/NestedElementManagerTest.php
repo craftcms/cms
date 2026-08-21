@@ -30,12 +30,21 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     actingAs(User::findOne());
 });
+
+class LegacyMatrixInputField extends Matrix
+{
+    public function renderInput(mixed $value, ?ElementInterface $element): string
+    {
+        return $this->inputHtml($value, $element, false);
+    }
+}
 
 function createMatrixEntryType(): EntryTypeModel
 {
@@ -152,6 +161,26 @@ function createMatrixQuery(Matrix $field, ?ElementInterface $owner): EntryQuery
 
     return $query;
 }
+
+it('renders a Form host for each legacy Matrix block', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+    $entry = createMatrixNestedEntry($owner, $field, $entryType, 1, 'Block');
+    $query = createMatrixQuery($field, $owner);
+    $query->setResultOverride([$entry]);
+    $field = new LegacyMatrixInputField([
+        'id' => $field->id,
+        'handle' => $field->handle,
+        'entryTypes' => [$entryType],
+        'viewMode' => Matrix::VIEW_MODE_BLOCKS,
+    ]);
+
+    $host = new Crawler($field->renderInput($query, $owner))
+        ->filter('craft-entry-field-layout-form[data-payload]');
+
+    expect($host)->toHaveCount(1)
+        ->and(json_decode((string) $host->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR))
+        ->toHaveKeys(['nodes', 'values']);
+});
 
 it('saves matrix nested entries in collection order and deletes detached entries', function () {
     ['owner' => $owner, 'field' => $field, 'entryType' => $entryType, 'manager' => $manager] = createMatrixOwnerFixture();
@@ -932,7 +961,11 @@ it('restores a nested entry when reverting to an old revision without an integri
 
     createMatrixNestedEntry($owner, $field, $entryType, 1, 'Revision 1 content');
 
-    $revisionId = app(Revisions::class)->createRevision($owner);
+    // The nested entry is added straight to the database, so the owner’s dateUpdated is untouched.
+    // If the section has versioning enabled it already has a revision from its initial save — taken
+    // before the nested entry existed — and createRevision() would hand that one back rather than
+    // snapshot the current state. Force a revision so the snapshot always contains the nested entry.
+    $revisionId = app(Revisions::class)->createRevision($owner, force: true);
     $v1 = EntryElement::find()->id($revisionId)->revisions()->status(null)->one();
     expect($v1)->not->toBeNull();
 

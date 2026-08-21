@@ -1,6 +1,9 @@
 <?php
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -12,6 +15,8 @@ use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
+use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
 use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
@@ -20,18 +25,22 @@ use ReflectionProperty;
  * Component is the base class for classes representing Craft components that are configurable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
-abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
+abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface, LegacySettingsComponent
 {
+    use LegacySettingsForm;
+
     /**
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
+     *
      * @since 3.7.0
      */
     public const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function settingsAttributes(): array
     {
@@ -56,7 +65,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettings(): array
     {
@@ -77,7 +86,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettingsHtml(): ?string
     {
@@ -85,7 +94,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getReadOnlySettingsHtml(): ?string
     {

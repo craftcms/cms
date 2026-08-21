@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserPasswordViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\User\Validation\UserRules;
@@ -43,7 +44,7 @@ readonly class PasswordController
 
         $user = $currentUser->asElement();
 
-        return $this->asEditUserScreen($user, self::SCREEN_PASSWORD)
+        return $this->asEditUserScreen($user, EditUserScreens::PASSWORD)
             ->inertiaPage('users/Password', new UserPasswordViewModel($user, $auth));
     }
 

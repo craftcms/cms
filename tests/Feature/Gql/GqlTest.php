@@ -17,6 +17,7 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\GqlMutations;
 use CraftCms\Cms\Gql\GqlQueries;
 use CraftCms\Cms\Gql\GqlTypes;
@@ -89,6 +90,19 @@ it('uses currently registered directives', function () {
     expect($schema->getDirective(MockDirective::name()))->toBeNull()
         ->and($schema->getDirective('parseRefs'))->not->toBeNull()
         ->and($schema->getDirective('transform'))->not->toBeNull();
+});
+
+it('coerces custom scalar directive arguments', function () {
+    $registry = app(GqlDirectives::class);
+    $registry->register(MockDirective::class);
+    app(GqlQueries::class)->register(MockQuery::class);
+
+    $gql = app(Gql::class);
+    $result = $gql->executeQuery(new GqlSchema, '{ mockQuery @mockDirective(prefix: "custom") }');
+
+    $registry->remove(MockDirective::class);
+
+    expect($result)->toBe(['data' => ['mockQuery' => 'mockmocked']]);
 });
 
 it('uses registered types', function () {
@@ -354,7 +368,7 @@ class MockQuery extends BaseQuery
             'mockQuery' => [
                 'type' => Type::string(),
                 'args' => [],
-                'resolve' => static fn () => 'mocked',
+                'resolve' => static fn ($source, $arguments, $context, $resolveInfo) => GqlHelper::applyDirectives($source, $resolveInfo, 'mocked'),
             ],
         ];
     }

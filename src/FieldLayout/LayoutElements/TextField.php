@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
@@ -104,6 +108,22 @@ class TextField extends BaseNativeField
     {
         // Don't include the value
         return Arr::except(parent::fields(), ['value']);
+    }
+
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        return Text::make($this->name ?? $this->attribute())
+            ->inputType($this->inputType ?? 'text')
+            ->value($this->value($context->element))
+            ->mode($this->disabled
+                ? ControlMode::Disabled
+                : ($this->readonly ? ControlMode::ReadOnly : ControlMode::Editable))
+            ->maxLength($this->maxlength)
+            ->placeholder($this->placeholder)
+            ->step($this->step)
+            ->min($this->min)
+            ->max($this->max);
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string

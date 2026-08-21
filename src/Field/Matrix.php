@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -24,18 +24,28 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Table as TableControl;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
@@ -43,7 +53,6 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
 use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
-use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -57,11 +66,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\MatrixAsset;
 use GraphQL\Type\Definition\Type;
@@ -73,13 +80,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -92,13 +98,8 @@ use function CraftCms\Cms\template;
  * @phpstan-type SerializedEntryData array{type?:string,title?:string|null,slug?:string|null,uid?:string|null,enabled?:bool|int|string,collapsed?:bool|int|string,fresh?:bool|int|string,fields?:array<string,mixed>}
  * @phpstan-type SerializedEntries array<int|string,SerializedEntryData>
  */
-class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
-    use ImportableElementContainerField {
-        validateMapping as traitValidateMapping;
-        normalizeNestedEntryForImport as traitNormalizeNestedEntryForImport;
-    }
-
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
@@ -294,6 +295,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         if (array_key_exists('maxBlocks', $config)) {
             $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
+        if (isset($config['siteSettings']) && is_array($config['siteSettings'])) {
+            foreach ($config['siteSettings'] as &$siteSettings) {
+                if (is_array($siteSettings)) {
+                    unset($siteSettings['heading']);
+                }
+            }
+            unset($siteSettings);
+        }
 
         parent::__construct($config);
 
@@ -361,6 +370,119 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         ]);
     }
 
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+        $ownerTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers();
+        $entryTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(
+            Entry::class,
+            array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->_entryTypes),
+        );
+        $form = Form::make([
+            FormField::make(t('Entry Types'))
+                ->instructions(t('Choose the types of entries that can be created in this field.'))
+                ->control(GroupedEntryTypeManager::make('entryTypes')
+                    ->value(array_map(fn (EntryType $type): array => $type->getUsageConfig(), $this->_entryTypes))),
+        ]);
+
+        if (Sites::isMultiSite()) {
+            $form->add(
+                FormField::make(t('Propagation Method'))
+                    ->instructions(t('Which sites should entries be saved to?'))
+                    ->control(Choice::make('propagationMethod')->options([
+                        ['label' => t('Only save entries to the site they were created in'), 'value' => PropagationMethod::None->value],
+                        ['label' => t('Save entries to other sites in the same site group'), 'value' => PropagationMethod::SiteGroup->value],
+                        ['label' => t('Save entries to other sites with the same language'), 'value' => PropagationMethod::Language->value],
+                        ['label' => t('Save entries to all sites the owner element is saved in'), 'value' => PropagationMethod::All->value],
+                        ['label' => t('Custom…'), 'value' => PropagationMethod::Custom->value],
+                    ])->value($this->propagationMethod->value)),
+                FormField::make(t('Propagation Key Format'))
+                    ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
+                    ->control(Text::make('propagationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($ownerTemplateTriggers)
+                        ->value($this->propagationKeyFormat))
+                    ->tip($objectTemplateTip),
+            );
+        }
+
+        $siteSettings = [];
+        foreach (Sites::getAllSites() as $site) {
+            $siteSettings[$site->uid] = [
+                'heading' => t($site->getName(), category: 'site'),
+                'uriFormat' => $this->siteSettings[$site->uid]['uriFormat'] ?? '',
+                ...(! config('craft.general.headlessMode') ? [
+                    'template' => $this->siteSettings[$site->uid]['template'] ?? '',
+                ] : []),
+            ];
+        }
+        $siteColumns = [
+            'heading' => ['heading' => t('Site'), 'type' => 'heading'],
+            'uriFormat' => [
+                'heading' => t('Entry URI Format'),
+                'type' => 'singleline',
+                'placeholder' => t('Leave blank if entries don’t have URLs'),
+                'code' => true,
+                'info' => $objectTemplateTip,
+                'textExpanderTriggers' => $entryTemplateTriggers,
+            ],
+        ];
+        if (! config('craft.general.headlessMode')) {
+            $siteColumns['template'] = ['heading' => t('Template'), 'type' => 'singleline', 'code' => true];
+        }
+
+        $indexViewModes = array_values(array_map(fn (array $viewMode): array => [
+            'label' => $viewMode['title'],
+            'value' => $viewMode['mode'],
+        ], array_filter(Entry::indexViewModes(), fn (array $viewMode): bool => ! ($viewMode['structuresOnly'] ?? false))));
+
+        return $form->add(
+            FormField::make(t('Site Settings'))
+                ->instructions(t('Choose the site-specific settings for nested entries.'))
+                ->control(TableControl::make('siteSettings')->columns($siteColumns)->keyed()->value($siteSettings)),
+            FormField::make(t('Min {type}', ['type' => t('Entries')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('entries')]))
+                ->control(Number::make('minEntries')->min(0)->value($this->minEntries)),
+            FormField::make(t('Max {type}', ['type' => t('Entries')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('entries')]))
+                ->control(Number::make('maxEntries')->min(0)->value($this->maxEntries)),
+            FormField::make(t('Enable versioning for entries in this field'))
+                ->control(Lightswitch::make('enableVersioning')->value($this->enableVersioning)),
+            FormField::make(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('entries')]))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                        ['label' => t('Card grid'), 'value' => self::VIEW_MODE_CARDS_GRID],
+                        ['label' => t('Blocks'), 'value' => self::VIEW_MODE_BLOCKS],
+                        ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                    ])
+                    ->value($this->viewMode)),
+            FormField::make(t('Include Table View'))
+                ->instructions(t('Whether the element index should allow viewing nested {type} in a table.', ['type' => t('entries')]))
+                ->control(Lightswitch::make('includeTableView')->value($this->includeTableView)),
+            FormField::make(t('Default Table Columns'))
+                ->instructions(t('Choose which table columns should be visible by default.'))
+                ->control(Choice::make('defaultTableColumns')
+                    ->multiple()
+                    ->options(self::defaultTableColumnOptions($this->_entryTypes))
+                    ->value($this->defaultTableColumns)),
+            FormField::make(t('Default View Mode'))
+                ->control(Choice::make('defaultIndexViewMode')->options($indexViewModes)->value($this->defaultIndexViewMode)),
+            FormField::make(t('{type} Per Page', ['type' => t('Entries')]))
+                ->instructions(t('The total number of {type} to display per page within the element index.', ['type' => t('entries')]))
+                ->control(Choice::make('pageSize')->options(array_map(fn (int $size): array => [
+                    'label' => (string) $size,
+                    'value' => $size,
+                ], [10, 20, 50, 100]))->value($this->pageSize ?? 50)),
+            FormField::make(t('“New” Button Label'))
+                ->instructions(t('The text label for the entry creation button.'))
+                ->control(Text::make('createButtonLabel')->placeholder($this->defaultCreateButtonLabel())->value($this->createButtonLabel)),
+        );
+    }
+
     private function entryManager(): NestedElementManager
     {
         if (! isset($this->_entryManager)) {
@@ -397,6 +519,43 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     public function getEntryTypes(): array
     {
         return $this->_entryTypes;
+    }
+
+    #[Override]
+    public function formControl(FieldContext $context): Control
+    {
+        $entryTypes = collect($this->getEntryTypes())
+            ->mapWithKeys(fn (EntryType $type): array => [$type->handle => $type->name])
+            ->all() ?: ['entry' => Entry::displayName()];
+        $entries = array_values(match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof EntryQuery => $context->value->all(),
+            default => [],
+        });
+        $values = $forms = $sortOrder = [];
+        $identities = ElementHelper::nestedElementIdentities($entries);
+
+        foreach ($entries as $index => $entry) {
+            if (! $entry instanceof Entry) {
+                throw new LogicException('Matrix Controls require Entry values.');
+            }
+
+            $uid = $identities[$index];
+            $values[$uid] = ['type' => $entry->getType()->handle];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $entry->getFieldLayout(),
+                $entry,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
+
+        return MatrixControl::make($context->path)
+            ->entryTypes($entryTypes)
+            ->forms($forms)
+            ->minEntries($this->minEntries)
+            ->maxEntries($this->maxEntries)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     /**
@@ -558,78 +717,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         return $value->count();
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
-    #[Override]
-    public function getReadOnlySettingsHtml(): string
-    {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        $entryTypes = Collection::make($this->_entryTypes);
-        $entryTypeSelectConfig = [
-            'name' => 'entryTypes[]',
-            'renderDefaultInput' => false,
-            'allowOverrides' => true,
-            'create' => true,
-            // No jsClass → componentSelect.twig renders the self-booting
-            // `<craft-component-select>`, orchestrated by
-            // `<craft-entry-type-manager>` (resources/js/modules/entry-types).
-            'jsClass' => false,
-            'errors' => $this->errors()->get('entryTypes'),
-            'data' => [
-                'error-key' => 'entryTypes',
-                'disabled' => $readOnly,
-            ],
-        ];
-
-        if (! $readOnly) {
-            // The select template for new groups, with TEMP_ID placeholder ids
-            // the manager swaps client-side. Rendered with NO ambient namespace
-            // so the markup stays raw (a clean TEMP_ID and un-namespaced input
-            // names); the field settings' own namespace pass then namespaces the
-            // whole settings HTML — including this `<template>`'s contents —
-            // exactly once, the same single pass the inline group selects get.
-            // Applying `namespaceInputs()` here too would double it up, breaking
-            // the TEMP_ID swap and producing over-nested `entryTypes[]` names
-            // (which fail to save as unknown `types` properties).
-            // The JS buffer only guards against stray registered JS leaking
-            // TEMP_ID references into the page — the web-component path registers
-            // none, so it's discarded.
-            HtmlStack::startJsBuffer();
-            $entryTypeSelectHtml = InputNamespace::with(
-                namespace: null,
-                callback: fn () => FormFields::entryTypeSelectHtml([
-                    ...$entryTypeSelectConfig,
-                    'id' => 'TEMP_ID',
-                ]),
-            );
-            HtmlStack::clearJsBuffer();
-        }
-
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
-
-        return template('_components/fieldtypes/Matrix/settings', [
-            'field' => $this,
-            'entryTypes' => $entryTypes,
-            'entryTypeSelectConfig' => $entryTypeSelectConfig,
-            'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
-            'defaultTableColumnOptions' => self::defaultTableColumnOptions($this->_entryTypes),
-            'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
-            'indexViewModes' => array_filter(
-                Entry::indexViewModes(),
-                fn (array $viewMode) => ! ($viewMode['structuresOnly'] ?? false),
-            ),
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-            'readOnly' => $readOnly,
-        ]);
     }
 
     #[Override]
@@ -961,12 +1048,6 @@ JS, [
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($value, $element, true);
-    }
-
     private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
     {
         return match ($this->viewMode) {
@@ -1069,6 +1150,9 @@ JS, [
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
+            'forms' => collect($value)->mapWithKeys(fn (Entry $entry): array => [
+                $entry->uid => $this->blockFormVariables($entry, $static),
+            ])->all(),
         ]);
 
         // The `<craft-matrix-input>` element (resources/js/modules/matrix)
@@ -1081,6 +1165,25 @@ JS, [
             'input-name-prefix' => InputNamespace::namespaceInputName($this->handle),
             'settings' => Json::encode($settings),
         ]);
+    }
+
+    /** @return array{formPayload: array<string, mixed>} */
+    public function blockFormVariables(Entry $entry, bool $static): array
+    {
+        $namespace = InputNamespace::namespaceInputName("{$this->handle}[entries][uid:{$entry->uid}]");
+        $payload = app(FieldLayoutCompiler::class)->compile(
+            $entry->getFieldLayout(),
+            $entry,
+            new FormContext(
+                namespace: explode('[', str_replace(']', '', $namespace)),
+                errors: $entry->errors()->getMessages(),
+                mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
+            ),
+        );
+
+        return [
+            'formPayload' => $payload->jsonSerialize(),
+        ];
     }
 
     private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
@@ -1776,184 +1879,5 @@ JS, [
 
         /** @var Entry[] $entries */
         return $entries;
-    }
-
-    /**
-     * Normalizes value so that it can be imported into a Matrix-type field.
-     *
-     * The value has to be an array; there are 2 options for this:
-     *   option 1:
-     *     each item in the array represents a nested entry (matrix "block");
-     *     in this case the sort order will follow the order of items this array
-     *   option 2:
-     *     it can contain 'sortOrder' and 'entries' keys (as per https://craftcms.com/docs/5.x/reference/field-types/matrix.html#saving-matrix-fields)
-     *
-     * In either case, each item represents a nested entry:
-     *   - must contain the "type" key, with a value containing the handle of the entry type it uses,
-     *   - should have the custom field values nested under a "fields" key
-     * (just as per the first paragraph here: https://craftcms.com/docs/5.x/reference/field-types/matrix.html#entry-data).
-     *
-     * If you want to update existing nested entries, you can find them via an optional "matchCriteria" key.
-     *
-     * Returned should be an array containing 'sortOrder' and 'entries' keys.
-     * The 'entries' array should be keyed by the entry ID if we're updating an existing entry,
-     * or by "new:X" key where X is an incremented integer
-     */
-    #[Override]
-    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null): array
-    {
-        if (! is_array($value)) {
-            return [];
-        }
-
-        $normalizedValue = [
-            'sortOrder' => [],
-            'entries' => [],
-        ];
-        $allowedEntryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
-
-        if (array_key_exists('entries', $value)) {
-            $entries = $value['entries'];
-        } else {
-            $entries = $value;
-        }
-
-        $arrayIsList = array_is_list($entries);
-        $i = 0;
-
-        foreach ($entries as $entry) {
-            $entryElement = null;
-            $newKey = null;
-
-            // if there's no type or type is not allowed - bail
-            if (! isset($entry['type'])) {
-                continue;
-            }
-            if (! isset($allowedEntryTypes[$entry['type']])) {
-                continue;
-            }
-
-            $entryType = $allowedEntryTypes[$entry['type']];
-
-            // try to match existing matrix entries,
-            // but only if owner already has an ID; no point trying to match nested entry for a new owner element
-            if (($rootOwner?->id)) {
-                $criteria = [];
-
-                if (! empty($entry['matchCriteria'])) {
-                    $criteria = $entry['matchCriteria'];
-                }
-
-                if (! empty($criteria)) {
-                    // try to find an existing entry
-                    $query = Entry::find()
-                        ->type($entry['type'])
-                        ->fieldId($this->id)
-                        ->ownerId($rootOwner->id)
-                        ->siteId($rootOwner->siteId);
-
-                    Typecast::configure($query, $criteria);
-                    $entryElement = $query->one();
-                }
-
-                if ($entryElement) {
-                    $newKey = $entryElement->id;
-                } else {
-                    $newKey = 'new:'.++$i;
-                }
-            }
-
-            // if we still don't have a key, generate a new one
-            if ($newKey === null) {
-                $newKey = 'new:'.++$i;
-            }
-
-            Arr::forget($entry, [/* 'type', */ 'matchCriteria']);
-
-            $normalizedValue['sortOrder'][] = $newKey;
-            $normalizedValue['entries'][$newKey] = $this->normalizeNestedEntryForImport($entry, $importer, $entryType->getFieldLayout(), $entryElement);
-        }
-
-        // if we have a predefined sort order and entries were not a list - use that predefined sortOrder
-        if (! empty($value['sortOrder']) && ! $arrayIsList) {
-            $normalizedValue['sortOrder'] = $value['sortOrder'];
-            // todo (iwona): this doesn't seem needed;
-            // if we were to use it we should also array_intersect($normalizedValue['sortOrder'], $normalizedValue['entries']) or something like that
-            // $normalizedValue['entries'] = array_replace(array_flip($normalizedValue['sortOrder']), $value['entries']);
-        }
-
-        return $normalizedValue;
-    }
-
-    public function normalizeNestedEntryForImport(array $dataItem, BaseImporter $importer, FieldLayout $fieldLayout, ?ElementInterface $owner = null): array
-    {
-        // ensure each entry has the custom fields wrapped in 'fields' key?
-        if (! isset($dataItem['fields'])) {
-            $customFieldHandles = array_filter(
-                array_map(
-                    fn ($fieldLayoutElement) => $fieldLayoutElement instanceof CustomField ? $fieldLayoutElement->attribute() : null,
-                    $fieldLayout->getAllElements()
-                )
-            );
-
-            $customFields = [];
-            foreach ($dataItem as $key => $value) {
-                if (in_array($key, $customFieldHandles)) {
-                    $customFields[$key] = $value;
-                    unset($dataItem[$key]);
-                }
-            }
-
-            $dataItem['fields'] = $customFields;
-        }
-
-        return self::traitNormalizeNestedEntryForImport($dataItem, $importer, $fieldLayout, $owner);
-    }
-
-    /**
-     * Matrix fields can have multiple field layout providers (multiple entry types),
-     * so the prefix needs to account for that.
-     */
-    #[Override]
-    public function getMappingUiPrefix(FieldLayout $fieldLayout, mixed $provider = null, ?string $prefix = null): string
-    {
-        $newPrefix = '';
-
-        if (! empty($prefix)) {
-            $newPrefix = $prefix;
-        }
-
-        // bail silently if we don't have an entry type here
-        if (empty($provider)) {
-            return $newPrefix;
-        }
-
-        return $newPrefix."[$provider->handle]";
-    }
-
-    #[Override]
-    public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
-    {
-        $field = $params['field'];
-
-        // validate that the provider types are allowed
-        $providers = $field->getFieldLayoutProviders();
-        $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);
-
-        $typesFromMap = array_unique(array_keys($value));
-
-        if (array_diff($typesFromMap, $providerHandles)) {
-            $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
-
-            return false;
-        }
-
-        // todo (iwona): validate that the fields in each provider are allowed
-        foreach ($providers as $provider) {
-            $fieldLayout = $provider->getFieldLayout();
-            // self::traitValidateMapping($value,  $attribute,  $fail,  $validator, $params);
-        }
-
-        return true;
     }
 }

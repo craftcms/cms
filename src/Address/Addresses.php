@@ -13,6 +13,7 @@ use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\AddressCountriesResolving;
 use CraftCms\Cms\Address\Events\AddressFieldLabelResolving;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Address\Events\AddressUsedFieldsResolving;
 use CraftCms\Cms\Address\Events\AddressUsedSubdivisionFieldsResolving;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -28,11 +30,36 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Rules\RequiredIf;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-type AddressFormField array{
+ *     name: string,
+ *     label: string,
+ *     type: 'select'|'text',
+ *     value: string|null,
+ *     visible: bool,
+ *     required: bool,
+ *     autocomplete: string|null,
+ *     status: array{0: string, 1: string}|null,
+ *     errors: list<string>,
+ *     options?: array<string, string>,
+ *     spinner?: bool,
+ *     width?: int,
+ * }
+ * @phpstan-type AddressVisibleFields array<string, int|true>
+ * @phpstan-type AddressSubdivisionParents array{
+ *     locality: list<string|null>,
+ *     dependentLocality: list<string|null>,
+ * }
+ */
 #[Singleton]
 readonly class Addresses implements FieldLayoutProviderInterface
 {
@@ -157,6 +184,190 @@ readonly class Addresses implements FieldLayoutProviderInterface
         event($event = new AddressFieldLabelResolving($countryCode, $field, $label));
 
         return $event->label;
+    }
+
+    /** @return list<AddressFormField> */
+    public function getFormFieldDefinitions(Address $address, ?bool $belongsToCurrentUser = null): array
+    {
+        $requiredFields = [];
+        $scenario = $address->ruleset->getScenario();
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+
+        foreach ($address->ruleset->rules() as $attribute => $rules) {
+            foreach (Arr::wrap($rules) as $rule) {
+                if ($this->isRequiredRule($rule)) {
+                    $requiredFields[$attribute] = true;
+
+                    break;
+                }
+            }
+        }
+
+        $address->ruleset->useScenario($scenario);
+        $belongsToCurrentUser ??= $address->getBelongsToCurrentUser();
+        $visibleFields = array_flip(array_merge(
+            $this->getUsedFields($address->countryCode),
+            $this->getUsedSubdivisionFields($address->countryCode),
+        )) + $requiredFields;
+        $parents = $this->subdivisionParents($address, $visibleFields);
+
+        return [
+            $this->textFieldDefinition($address, 'addressLine1', true, isset($requiredFields['addressLine1']), $belongsToCurrentUser ? 'address-line1' : 'off'),
+            $this->textFieldDefinition($address, 'addressLine2', true, isset($requiredFields['addressLine2']), $belongsToCurrentUser ? 'address-line2' : 'off'),
+            $this->textFieldDefinition($address, 'addressLine3', true, isset($requiredFields['addressLine3']), $belongsToCurrentUser ? 'address-line3' : 'off'),
+            $this->subdivisionFieldDefinition(
+                $address,
+                'administrativeArea',
+                $belongsToCurrentUser ? 'address-level1' : 'off',
+                isset($visibleFields['administrativeArea']),
+                isset($requiredFields['administrativeArea']),
+                [$address->countryCode],
+                true,
+            ),
+            $this->subdivisionFieldDefinition(
+                $address,
+                'locality',
+                $belongsToCurrentUser ? 'address-level2' : 'off',
+                isset($visibleFields['locality']),
+                isset($requiredFields['locality']),
+                $parents['locality'],
+                true,
+            ),
+            $this->subdivisionFieldDefinition(
+                $address,
+                'dependentLocality',
+                $belongsToCurrentUser ? 'address-level3' : 'off',
+                isset($visibleFields['dependentLocality']),
+                isset($requiredFields['dependentLocality']),
+                $parents['dependentLocality'],
+                false,
+            ),
+            $this->textFieldDefinition(
+                $address,
+                'postalCode',
+                isset($visibleFields['postalCode']),
+                isset($requiredFields['postalCode']),
+                $belongsToCurrentUser ? 'postal-code' : 'off',
+                50,
+            ),
+            $this->textFieldDefinition(
+                $address,
+                'sortingCode',
+                isset($visibleFields['sortingCode']),
+                isset($requiredFields['sortingCode']),
+                width: 50,
+            ),
+        ];
+    }
+
+    /** @return AddressFormField */
+    private function textFieldDefinition(
+        Address $address,
+        string $name,
+        bool $visible,
+        bool $required,
+        ?string $autocomplete = null,
+        ?int $width = null,
+    ): array {
+        $status = $address->getAttributeStatus($name);
+        $definition = [
+            'name' => $name,
+            'label' => $address->getAttributeLabel($name),
+            'type' => 'text',
+            'value' => $address->$name,
+            'visible' => $visible,
+            'required' => $required,
+            'autocomplete' => $autocomplete,
+            'status' => $status ? [Str::toString($status[0]), $status[1]] : null,
+            'errors' => $address->errors()->get($name),
+        ];
+
+        if ($width !== null) {
+            $definition['width'] = $width;
+        }
+
+        return $definition;
+    }
+
+    /**
+     * @param  list<string|null>  $parents
+     * @return AddressFormField
+     */
+    private function subdivisionFieldDefinition(
+        Address $address,
+        string $name,
+        string $autocomplete,
+        bool $visible,
+        bool $required,
+        array $parents,
+        bool $spinner,
+    ): array {
+        $definition = $this->textFieldDefinition($address, $name, $visible, $required, $autocomplete);
+        $options = $this->subdivisionRepository->getList($parents, app()->getLocale());
+
+        if ($options === []) {
+            return $definition;
+        }
+
+        $value = $address->$name;
+        if ($value && ! isset($options[$value])) {
+            $options[$value] = $value;
+        }
+
+        return [
+            ...$definition,
+            'type' => 'select',
+            'options' => $options,
+            'spinner' => $spinner,
+        ];
+    }
+
+    /**
+     * @param  AddressVisibleFields  $visibleFields
+     * @return AddressSubdivisionParents
+     */
+    private function subdivisionParents(Address $address, array $visibleFields): array
+    {
+        $repository = new BaseSubdivisionRepository;
+        $localityParents = [$address->countryCode];
+        $administrativeAreas = $repository->getList([$address->countryCode]);
+
+        if (isset($visibleFields['administrativeArea']) || $administrativeAreas === []) {
+            $localityParents[] = $address->administrativeArea;
+        }
+
+        $dependentLocalityParents = $localityParents;
+        $localities = $repository->getList($localityParents);
+        if (isset($visibleFields['locality']) || $localities === []) {
+            $dependentLocalityParents[] = $address->locality;
+        }
+
+        return ['locality' => $localityParents, 'dependentLocality' => $dependentLocalityParents];
+    }
+
+    private function isRequiredRule(mixed $rule): bool
+    {
+        if ($rule === 'required') {
+            return true;
+        }
+
+        if ($rule instanceof RequiredIf) {
+            return (string) $rule === 'required';
+        }
+
+        if (! $rule instanceof ConditionalRules) {
+            return false;
+        }
+
+        $conditionalRules = $rule->passes() ? $rule->rules() : $rule->defaultRules();
+
+        foreach (Arr::wrap($conditionalRules) as $conditionalRule) {
+            if ($this->isRequiredRule($conditionalRule)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

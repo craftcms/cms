@@ -281,14 +281,21 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware([
             RequireAdminChanges::class,
         ])->group(function () {
+            Route::post('entry-types/render-form', [EntryTypesController::class, 'renderForm']);
             Route::post('entry-types/render-override-settings', [EntryTypesController::class, 'renderOverrideSettings']);
             Route::post('entry-types/apply-override-settings', [EntryTypesController::class, 'applyOverrideSettings']);
         });
 
         // Fields
+        Route::post('fields/render-field-layout-designer', [FieldsController::class, 'renderFieldLayoutDesigner']);
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('fields/render-settings', [FieldsController::class, 'renderSettings']);
+            Route::post('fields/render-form', [FieldsController::class, 'renderForm']);
+            Route::post('fields/render-grouped-entry-type-manager', [FieldsController::class, 'renderGroupedEntryTypeManager']);
+            Route::post('fields/render-condition-builder', [FieldsController::class, 'renderConditionBuilder']);
+            Route::post('fields/normalize-condition-builder', [FieldsController::class, 'normalizeConditionBuilder']);
+            Route::post('fields/render-field-select', [FieldsController::class, 'renderFieldSelect']);
             Route::post('fields/render-layout-component-settings', [FieldsController::class, 'renderLayoutComponentSettings']);
+            Route::post('fields/refresh-layout-component-settings', [FieldsController::class, 'refreshLayoutComponentSettings']);
             Route::post('fields/apply-layout-tab-settings', [FieldsController::class, 'applyLayoutTabSettings']);
             Route::post('fields/apply-layout-element-settings', [FieldsController::class, 'applyLayoutElementSettings']);
             Route::post('fields/render-card-preview', [FieldsController::class, 'renderCardPreview']);
@@ -358,6 +365,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // Widgets
         Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
         Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
+        Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);

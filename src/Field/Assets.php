@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
@@ -25,6 +26,12 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -217,6 +224,77 @@ class Assets extends BaseRelationField
             'allowedKinds' => Rule::when(fn ($input) => $input->restrictFiles, ['required'], ['nullable']),
             'previewMode' => Rule::in([self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS]),
         ]);
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $sourceOptions = array_map(fn (array $option): array => [
+            'label' => (string) $option['label'],
+            'value' => $option['value'],
+        ], $this->getSourceOptions());
+        $form = parent::settingsForm($context);
+        $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
+            'author.username' => t('Author Username'),
+            'owner.slug' => t('Owner Slug'),
+            'owner.title' => t('Owner Title'),
+            'owner.uid' => t('Owner UID'),
+            'owner.site.handle' => t('Owner Site Handle'),
+        ]);
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+
+        return $form->add(
+            FormField::make(t('Restrict assets to a single location'))
+                ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
+            FormField::make(t('Restricted Location Source'))
+                ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource)),
+            FormField::make(t('Restricted Location Subpath'))
+                ->control(Text::make('restrictedLocationSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->restrictedLocationSubpath))
+                ->tip($objectTemplateTip),
+            FormField::make(t('Allow subfolders'))
+                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders)),
+            FormField::make(t('Restricted Default Upload Subpath'))
+                ->control(Text::make('restrictedDefaultUploadSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->restrictedDefaultUploadSubpath))
+                ->tip($objectTemplateTip),
+            FormField::make(t('Default Upload Location Source'))
+                ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource)),
+            FormField::make(t('Default Upload Location Subpath'))
+                ->control(Text::make('defaultUploadLocationSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->textExpanderTriggers($objectTemplateTriggers)
+                    ->value($this->defaultUploadLocationSubpath))
+                ->tip($objectTemplateTip),
+            FormField::make(t('Show unpermitted volumes'))
+                ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
+                ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
+            FormField::make(t('Show unpermitted files'))
+                ->instructions(t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'))
+                ->control(Lightswitch::make('showUnpermittedFiles')->value($this->showUnpermittedFiles)),
+            FormField::make(t('Restrict allowed file types'))
+                ->control(Lightswitch::make('restrictFiles')->value($this->restrictFiles)),
+            FormField::make(t('Allowed Kinds'))
+                ->control(Choice::make('allowedKinds')
+                    ->multiple()
+                    ->options($this->getFileKindOptions())
+                    ->value($this->allowedKinds ?? [])),
+            FormField::make(t('Allow uploading directly to the field'))
+                ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
+                ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
+            FormField::make(t('Preview Mode'))
+                ->instructions(t('How the related {type} should be displayed within element indexes.', [
+                    'type' => Asset::pluralLowerDisplayName(),
+                ]))
+                ->control(Choice::make('previewMode')->options([
+                    ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
+                    ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
+                ])->value($this->previewMode)),
+        );
     }
 
     /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */

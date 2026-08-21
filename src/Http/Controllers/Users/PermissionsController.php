@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
@@ -44,7 +45,7 @@ readonly class PermissionsController
         // Elevation is handled client-side by the Inertia page via
         // `useSettingsSave({elevatedFields: […]})`, and enforced server-side in
         // `update()` via `requireConfirmedPassword()`.
-        return $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS)
+        return $this->asEditUserScreen($user, EditUserScreens::PERMISSIONS)
             ->inertiaPage('users/Permissions', new UserPermissionsViewModel($user, $currentUser));
     }
 

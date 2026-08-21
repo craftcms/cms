@@ -25,8 +25,11 @@ export default css`
     display: none;
   }
 
-  /* Status badge (.field > .status-badge in the CP) */
-  .status-badge {
+  .form-field {
+    padding-inline: var(--c-spacing-lg);
+  }
+
+  .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
     inset-inline-start: 0;
@@ -37,18 +40,18 @@ export default css`
     border-radius: 1px;
   }
 
-  .status-badge.modified {
+  .form-field--modified .form-field__status-indicator {
     background-color: var(--blue-600, #2563eb);
     box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
   }
 
-  .status-badge.outdated {
+  .form-field--outdated .form-field__status-indicator {
     background-color: var(--bg-pending, #c96a11);
     box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
   }
 
-  /* Heading (.field > .heading in the CP) */
-  .heading {
+  /* Heading row (the CP's .field > .heading) */
+  .form-field__label {
     position: relative;
     display: flex;
     flex-wrap: wrap;
@@ -58,14 +61,22 @@ export default css`
     margin-block-end: var(--c-spacing-xs, 0.25rem);
   }
 
-  .heading .flex-grow {
+  /* Pushes slotted label extras to the far end of the heading row. */
+  .form-field__label .flex-grow {
     flex: 1 0 0;
+  }
+
+  .field-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--c-spacing-2xs, 0.125rem);
+    align-items: center;
   }
 
   ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--c-spacing-xs);
     align-items: center;
   }
 

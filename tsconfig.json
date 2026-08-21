@@ -15,7 +15,11 @@
   "include": [
     "resources/js/**/*.ts",
     "resources/js/**/*.d.ts",
-    "resources/js/**/*.vue"
+    "resources/js/**/*.vue",
+    "tests/TestClasses/TestPlugin/resources/js/**/*.ts",
+    "tests/TestClasses/TestPlugin/resources/js/**/*.vue",
+    "workbench/resources/js/**/*.ts",
+    "workbench/resources/js/**/*.vue"
   ],
   "exclude": ["node_modules"]
 }

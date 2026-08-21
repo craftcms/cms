@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +36,7 @@ readonly class SignInProvidersController
 
         $user = $currentUser->asElement();
 
-        return $this->asEditUserScreen($user, self::SCREEN_SIGN_IN_PROVIDERS)
+        return $this->asEditUserScreen($user, EditUserScreens::SIGN_IN_PROVIDERS)
             ->inertiaPage('users/SignInProviders', new UserSignInProvidersViewModel($user, $this->oauth));
     }
 

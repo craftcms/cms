@@ -7,8 +7,11 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
@@ -19,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
 use DateTimeZone;
@@ -31,6 +35,11 @@ use SplFileInfo;
 
 use function CraftCms\Cms\t;
 
+/**
+ * @phpstan-import-type TextExpanderTrigger from HasTextExpander
+ *
+ * @phpstan-type SuggestionOption array{label: string, value: string, data: array{hint: mixed}}
+ */
 class SelectOptions
 {
     /**
@@ -43,7 +52,7 @@ class SelectOptions
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}, 1?: array{type: 'optgroup', label: string, options: list<array<string, mixed>>}}
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: list<SuggestionOption>}, 1?: array{type: 'optgroup', label: string, options: list<SuggestionOption>}}
      */
     public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
     {
@@ -103,6 +112,94 @@ class SelectOptions
         return $suggestions;
     }
 
+    /** @return list<TextExpanderTrigger> */
+    public static function getEnvTextExpanderTriggers(bool $includeAliases = false, ?callable $filter = null): array
+    {
+        $suggestions = self::getEnvSuggestions($includeAliases, $filter);
+        $environmentOptions = $suggestions[0]['options'];
+        $triggers = [];
+
+        if (! empty($environmentOptions)) {
+            $triggers[] = [
+                'trigger' => '$',
+                'boundary' => 'start',
+                'label' => t('Environment Variables'),
+                'options' => $environmentOptions,
+            ];
+            $triggers[] = [
+                'trigger' => '$',
+                'boundary' => 'anywhere',
+                'label' => t('Environment Variables'),
+                'options' => array_map(function (array $option): array {
+                    $name = substr($option['value'], 1);
+
+                    return [
+                        ...$option,
+                        'value' => sprintf('${%s}', $name),
+                    ];
+                }, $environmentOptions),
+            ];
+        }
+
+        $aliasOptions = $suggestions[1]['options'] ?? [];
+        if (! empty($aliasOptions)) {
+            $triggers[] = [
+                'trigger' => '@',
+                'boundary' => 'start',
+                'label' => t('Aliases'),
+                'options' => $aliasOptions,
+            ];
+        }
+
+        return $triggers;
+    }
+
+    /**
+     * @param  class-string<ProvidesObjectTemplateSuggestions>  $objectType
+     * @param  list<FieldLayout>  $fieldLayouts
+     * @param  array<string, string>  $additionalProperties
+     * @return list<TextExpanderTrigger>
+     */
+    public static function getObjectTemplateTextExpanderTriggers(
+        string $objectType = Element::class,
+        array $fieldLayouts = [],
+        array $additionalProperties = [],
+    ): array {
+        $properties = $objectType::objectTemplateSuggestions();
+
+        foreach ($fieldLayouts as $fieldLayout) {
+            $properties = array_merge($properties, $fieldLayout->objectTemplateSuggestions());
+        }
+
+        $properties = array_merge($properties, $additionalProperties);
+        $options = Collection::make($properties)
+            ->map(function (string $label, string $property): array {
+                $value = sprintf('{%s}', $property);
+
+                return [
+                    'label' => $label,
+                    'value' => $value,
+                    'keywords' => [$property],
+                    'data' => ['hint' => $value],
+                ];
+            })
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
+
+        return [[
+            'trigger' => '{',
+            'boundary' => 'anywhere',
+            'label' => t('Object Template Variables'),
+            'options' => $options,
+        ]];
+    }
+
+    public static function getObjectTemplateTip(): string
+    {
+        return t('Type `{` to choose an object template variable.');
+    }
+
     /**
      * Returns environment variable options for a select input.
      */
@@ -148,7 +245,13 @@ class SelectOptions
     /**
      * Returns environment variable options for a boolean menu.
      */
-    /** @return list<array<string, mixed>> */
+    /**
+     * @return list<array{
+     *     type: 'optgroup',
+     *     label: string,
+     *     options: Collection<int, array{label: string, value: string, data: array{boolean: string}}>,
+     * }>
+     */
     public static function getBooleanEnvOptions(): array
     {
         $options = [];

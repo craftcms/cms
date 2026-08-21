@@ -18,9 +18,10 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
+use CraftCms\Yii2Adapter\Field\BaseRelationField;
 use GraphQL\Type\Definition\Type;
-
 use Override;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -28,7 +29,7 @@ use function CraftCms\Cms\t;
  *
  * @deprecated in 6.0.0
  */
-class Categories extends \CraftCms\Cms\Field\BaseRelationField
+class Categories extends BaseRelationField
 {
     /**
      * {@inheritdoc}

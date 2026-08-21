@@ -24,20 +24,17 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
-use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -48,7 +45,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
@@ -81,7 +77,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Traits\Macroable;
@@ -190,7 +185,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
-    #[Importable('photoId', 'Photo ID')]
     public ?int $photoId = null;
 
     /**
@@ -221,32 +215,29 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
-    #[Importable('admin', 'Is Admin?', canBeMatchCriteria: false)]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
     #[AllowedInSandbox]
-    public ?string $username = null; // imported via Field Layout Element
+    public ?string $username = null;
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
-    public ?string $email = null; // imported via Field Layout Element
+    public ?string $email = null;
 
     /**
      * @var string|null Password
      */
-    #[Importable('password', 'Password', canBeMatchCriteria: false)]
     public ?string $password = null;
 
     /**
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
-    #[Importable('affiliatedSiteId', 'Affiliated Site ID', canBeMatchCriteria: false)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -278,7 +269,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Password reset required
      */
-    #[Importable('passwordResetRequired', 'Password Reset Required?', canBeMatchCriteria: false)]
     public bool $passwordResetRequired = false;
 
     /**
@@ -316,7 +306,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      *
      * @see getAddresses()
      */
-    #[Importable('addresses', 'Addresses', false, true, false)]
     private ElementCollection $_addresses;
 
     /**
@@ -429,6 +418,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'username' => t('Username'),
+            'email' => t('Email'),
+            'firstName' => t('First Name'),
+            'lastName' => t('Last Name'),
+            'fullName' => t('Full Name'),
+            'preferredLanguage' => t('Preferred Language'),
+            'preferredLocale' => t('Preferred Locale'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');
@@ -449,6 +453,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public static function refHandle(): string
     {
         return 'user';
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return UserEditViewModel::class;
     }
 
     #[Override]
@@ -840,7 +850,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return [
             [
                 'label' => t('Users'),
-                'url' => 'users',
+                'href' => Url::cpUrl('users'),
             ],
         ];
     }
@@ -1358,6 +1368,234 @@ XML;
         return Url::cpUrl("users/$this->id");
     }
 
+    /**
+     * The account actions for the Inertia editor — the Form-system counterpart
+     * to the items {@see safeActionMenuItems()} and
+     * {@see destructiveActionMenuItems()} build with inline jQuery.
+     *
+     * Everything here posts to an existing `users/*` action; the client
+     * dispatches them, so nothing needs an inline script.
+     *
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(): array
+    {
+        $currentUser = currentUser();
+
+        if (
+            ! $this->id ||
+            $this->getIsUnpublishedDraft() ||
+            ! $currentUser instanceof CraftUser ||
+            Edition::get() === Edition::Solo
+        ) {
+            return [];
+        }
+
+        $isCurrentUser = $this->getIsCurrent();
+        $canAdministrateUsers = $currentUser->can('administrateUsers');
+        $status = $this->getStatus();
+
+        $items = [
+            ...$this->statusActionDescriptors($currentUser, $status, $isCurrentUser),
+            ...$this->passwordResetActionDescriptors($canAdministrateUsers, $status, $isCurrentUser),
+            ...$this->sessionActionDescriptors($currentUser, $isCurrentUser),
+        ];
+
+        // Suspending and deactivating revoke access, so they're flagged the way
+        // deleting is and sort with it.
+        if (! $isCurrentUser && Users::canSuspend($currentUser, $this) && $this->active && ! $this->suspended) {
+            $items[] = [
+                'label' => t('Suspend'),
+                'icon' => 'ban',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/suspend-user'),
+                    'params' => ['userId' => $this->id],
+                ],
+            ];
+        }
+
+        if (Gate::check('deactivate', $this) && ($this->active || $this->pending)) {
+            $items[] = [
+                'label' => t('Deactivate'),
+                'icon' => 'disabled',
+                'destructive' => true,
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/deactivate-user'),
+                    'params' => ['userId' => $this->id],
+                    'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Actions that move the account between statuses — enabling, activating,
+     * unsuspending, unlocking, and the password-reset emails that go with them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function statusActionDescriptors(CraftUser $currentUser, string $status, bool $isCurrentUser): array
+    {
+        $items = [];
+
+        switch ($status) {
+            case Element::STATUS_ARCHIVED:
+            case Element::STATUS_DISABLED:
+                if (Gate::check('save', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Enable'), 'users/enable-user');
+                }
+                break;
+
+            case self::STATUS_INACTIVE:
+            case self::STATUS_PENDING:
+                // Activation only means something for an account that can be
+                // emailed about it.
+                if (! $this->email) {
+                    break;
+                }
+
+                if (Gate::check('sendActivationEmail', $this)) {
+                    $items[] = $this->userActionDescriptor(t('Send activation email'), 'users/send-activation-email', 'paperplane');
+                }
+
+                if (Gate::check('activate', $this)) {
+                    if (! $this->password && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy activation URL…'), 'users/get-password-reset-url');
+                    }
+
+                    $items[] = $this->userActionDescriptor(t('Activate account'), 'users/activate-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_SUSPENDED:
+                if (Users::canSuspend($currentUser, $this)) {
+                    $items[] = $this->userActionDescriptor(t('Unsuspend'), 'users/unsuspend-user', 'enabled');
+                }
+                break;
+
+            case self::STATUS_ACTIVE:
+                if (
+                    $this->locked &&
+                    ! $isCurrentUser &&
+                    ($currentUser->isAdmin() || ! $this->admin) &&
+                    $currentUser->can('moderateUsers') &&
+                    (
+                        ($impersonatorId = app(Impersonation::class)->getImpersonatorId()) === null ||
+                        $this->id !== $impersonatorId
+                    )
+                ) {
+                    $items[] = $this->userActionDescriptor(t('Unlock'), 'users/unlock-user');
+                }
+
+                if (! $isCurrentUser && Gate::check('editUsers')) {
+                    $items[] = $this->userActionDescriptor(t('Send password reset email'), 'users/send-password-reset-email', 'paperplane');
+
+                    if ($currentUser->can('administrateUsers') && (! $this->admin || $currentUser->isAdmin())) {
+                        $items[] = $this->copyUrlDescriptor(t('Copy password reset URL…'), 'users/get-password-reset-url');
+                    }
+                }
+                break;
+        }
+
+        return $items;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function passwordResetActionDescriptors(bool $canAdministrateUsers, string $status, bool $isCurrentUser): array
+    {
+        if (
+            ! $canAdministrateUsers ||
+            $isCurrentUser ||
+            ! in_array($status, [self::STATUS_PENDING, self::STATUS_ACTIVE], true)
+        ) {
+            return [];
+        }
+
+        return [$this->passwordResetRequired
+            ? [
+                ...$this->userActionDescriptor(
+                    t('Don’t require a password reset on next login'),
+                    'users/remove-password-reset-requirement',
+                    'asterisk-slash',
+                ),
+                'color' => Color::Gray->value,
+            ]
+            : $this->userActionDescriptor(
+                t('Require a password reset on next login'),
+                'users/require-password-reset',
+                'asterisk',
+            ),
+        ];
+    }
+
+    /**
+     * Signing in as this user, which always needs a fresh password first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function sessionActionDescriptors(CraftUser $currentUser, bool $isCurrentUser): array
+    {
+        if ($isCurrentUser || ! Users::canImpersonate($currentUser, $this)) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => trim($this->getName())
+                    ? t('Sign in as {user}', ['user' => $this->getName()])
+                    : t('Sign in as user'),
+                'icon' => 'key',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('users/impersonate'),
+                    'params' => ['userId' => $this->id],
+                    'requireElevatedSession' => true,
+                ],
+            ],
+            $this->copyUrlDescriptor(t('Copy impersonation URL…'), 'users/get-impersonation-url'),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function userActionDescriptor(string $label, string $action, ?string $icon = null): array
+    {
+        return array_filter([
+            'label' => $label,
+            'icon' => $icon,
+            'behavior' => [
+                'type' => 'submit',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+            ],
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * An action that fetches a one-off URL and offers it for copying, behind an
+     * elevated session — these URLs grant access to the account.
+     *
+     * @return array<string, mixed>
+     */
+    private function copyUrlDescriptor(string $label, string $action): array
+    {
+        return [
+            'label' => $label,
+            'icon' => 'clipboard',
+            'behavior' => [
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl($action),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the URL, and open it in a new private window.'),
+            ],
+        ];
+    }
+
     /** @return array<int, array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
@@ -1829,6 +2067,17 @@ JS, [
         ];
     }
 
+    /**
+     * A user's status follows from the account actions (activate, suspend,
+     * deactivate…), not from an editable switch, so the editor sidebar shows
+     * none — matching {@see statusFieldHtml()}, which renders nothing.
+     */
+    #[Override]
+    protected function showStatusField(): bool
+    {
+        return false;
+    }
+
     #[Override]
     protected function statusFieldHtml(): string
     {
@@ -1842,7 +2091,11 @@ JS, [
         $formatter = I18N::getFormatter();
 
         return [
-            t('Email') => Html::a($this->email, "mailto:$this->email"),
+            // A brand-new account has no email yet, and the editor renders this
+            // for unsaved drafts too.
+            t('Email') => fn () => $this->email
+                ? Html::a($this->email, "mailto:$this->email")
+                : false,
             t('Cooldown Time Remaining') => function () use ($formatter) {
                 if (
                     ! $this->locked ||
@@ -2042,41 +2295,5 @@ JS, [
         $this->getAddressManager()->deleteNestedElements($this, $this->hardDelete);
 
         return true;
-    }
-
-    public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array
-    {
-        return match ($property) {
-            'addresses' => ImportHelper::getDestinationColsForFieldLayout(
-                app(Fields::class)->getLayoutByType(Address::class), null, null, $property
-            ),
-            default => null
-        };
-    }
-
-    /**
-     * Special method that can be used to import data into a container-type attribute.
-     * It handles normalizing value for import and saving the data.
-     * It returns indication of whether it changed any pre-existing data.
-     */
-    public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
-    {
-        // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,
-        // but when added to User element, they're not "taken care of" by `NestedElementManager->maintainNestedElements()`;
-        // that's why we have to prep them and then save them once we're sure that the User they belong to actually exists;
-        if ($attribute['name'] === 'addresses' && isset($item['addresses'])) {
-            $addressesField = new Addresses;
-            $addresses = ElementCollection::make($addressesField->normalizeValueForImport($item['addresses'], $importer, $this));
-            $this->_addresses = $addresses;
-
-            Event::listen(function (ElementSaved $event) use ($addressesField) {
-                if ($event->element === $this && $this->_addresses->isNotEmpty()) {
-                    $addresses = $addressesField->createAddressesFromSerializedData($this->_addresses->all(), $event->element, true);
-                    foreach ($addresses as $address) {
-                        Elements::saveElement($address);
-                    }
-                }
-            });
-        }
     }
 }

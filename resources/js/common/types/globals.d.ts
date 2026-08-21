@@ -89,11 +89,13 @@ type FieldLayoutDesignerInstance = any;
 interface ElementSelectorModalSettings {
     closeOtherModals?: boolean;
     criteria?: Record<string, unknown>;
+    disabledElementIds?: number[];
     hideOnSelect?: boolean;
     modalTitle?: string;
     multiSelect?: boolean;
     onSelect?: (elements: any[]) => void;
-    sources?: string[];
+    showSiteMenu?: boolean;
+    sources?: string[] | null;
 }
 
 interface CraftStatic {
@@ -107,6 +109,7 @@ interface CraftStatic {
         action: string,
         options?: object
     ): Promise;
+    namespaceId(id: string, namespace?: string | null): string;
     initUiElements(container: Element | JQuery): void;
     createElementSelectorModal(
         elementType: string,
@@ -149,7 +152,12 @@ interface CraftStatic {
             message?: string | CpNotificationSettings,
             settings?: CpNotificationSettings
         ) => object;
+        displayNotice?: (
+            message?: string,
+            settings?: CpNotificationSettings
+        ) => object;
     };
+    broadcaster?: {postMessage(message: Record<string, unknown>): void};
     defaultIndexCriteria: Record<string, any>;
     systemUid?: string;
     canAccessQueueManager?: boolean;
@@ -194,6 +202,20 @@ interface CraftStatic {
             minSafeElevatedSessionTimeout?: number
         ): void | Promise<void>;
     };
+
+    ui: {
+        createCopyTextPrompt(settings: {label: string; value: string}): unknown;
+    };
+
+    // Asset editing, still served by the legacy bundle.
+    isImagick?: boolean;
+    PreviewFileModal: new (assetId: number, settings?: object) => unknown;
+    AssetImageEditor: new (assetId: number, settings?: object) => unknown;
+    createUploader(
+        fsType: string,
+        $element: unknown,
+        settings?: object
+    ): {setParams(params: Record<string, unknown>): void};
 }
 
 // oxlint-disable-next-line @typescript-eslint/no-empty-object-type

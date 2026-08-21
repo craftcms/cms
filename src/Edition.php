@@ -181,12 +181,12 @@ enum Edition: int implements Arrayable
 
     public function supportsRequiring2FA(): bool
     {
-        return self::isAtLeast(self::Team);
+        return $this->value >= self::Team->value;
     }
 
     public function supportsPublicRegistration(): bool
     {
-        return self::isAtLeast(self::Pro);
+        return $this->value >= self::Pro->value;
     }
 
     public function toArray(): array

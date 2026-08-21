@@ -1,4 +1,4 @@
-import {BaseElementSelectInput} from '@/modules/element-select-input';
+import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -24,6 +24,13 @@ export class AssetSelectInput extends BaseElementSelectInput {
     uploader: any = null;
     progressBar: any = null;
     openPreviewTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    constructor(settings?: any) {
+        super(settings);
+        if (new.target === AssetSelectInput) {
+            this.init(settings);
+        }
+    }
 
     override init(...initArgs: any[]): void {
         super.init(...initArgs);
@@ -277,7 +284,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
             if (errorMessages.length) {
                 message = errorMessages.join('\n');
             } else if (filename) {
-                message = Craft.t('app', 'Upload failed for "{filename}".', {
+                message = Craft.t('app', 'Upload failed for “{filename}”.', {
                     filename,
                 });
             } else {

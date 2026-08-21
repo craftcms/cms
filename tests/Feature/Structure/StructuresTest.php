@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\Events\ElementMovedInStructure;
+use CraftCms\Cms\Structure\Data\Operation;
+use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Structure\Structures;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -59,4 +61,22 @@ it('reuses the structure lock for nested moves', function () {
 
     expect(app(Structures::class)->moveAfter($structure->id, $child1, $child2))->toBeTrue();
     expect($nestedMoveHandled)->toBeTrue();
+});
+
+it('represents removals as operations', function () {
+    [
+        'structure' => $structure,
+        'children' => [$child],
+    ] = createStructureHierarchy();
+
+    $operation = null;
+
+    StructureElement::deleting(function (StructureElement $model) use ($child, &$operation) {
+        if ($model->elementId === $child->id) {
+            $operation = $model->nestedSetOperation?->type;
+        }
+    });
+
+    expect(app(Structures::class)->remove($structure->id, $child))->toBeTrue();
+    expect($operation)->toBe(Operation::Remove);
 });

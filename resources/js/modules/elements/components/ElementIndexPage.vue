@@ -1,6 +1,5 @@
 <script setup lang="ts">
     import {t} from '@craftcms/ui';
-    import {useAppLayout} from '@/common/composables/useAppLayout';
     import LayoutSlot from '@/common/components/LayoutSlot.vue';
     import ActionMenu from '@/common/components/ActionMenu.vue';
     import ElementSources from '@/modules/elements/ElementSources.vue';
@@ -9,6 +8,7 @@
     import ElementCards from '@/modules/elements/components/ElementCards.vue';
     import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
     import {useElementIndexPage} from '@/modules/elements/composables/useElementIndexPage';
+    import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
     import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
     import {TableSpacing} from '@/common/types';
     import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -24,6 +24,9 @@
         route: props.route,
         pinnedColumn: props.pinnedColumn,
     });
+
+    // Double-click an element to edit it in a slideout.
+    const quickEdit = useElementQuickEdit();
 
     const {
         elementIndex,
@@ -42,8 +45,6 @@
         onActionPerformed,
         createCustomizeSourcesModal,
     } = page;
-
-    useAppLayout({fullWidth: true});
 </script>
 
 <template>
@@ -53,10 +54,7 @@
     </LayoutSlot>
 
     <LayoutSlot name="sidebar">
-        <nav aria-labelledby="source-heading">
-            <h2 id="source-heading" class="sr-only">
-                {{ t('Sources') }}
-            </h2>
+        <nav :aria-label="t('Secondary')">
             <ElementSources
                 :sources="elementIndex.sources"
                 :route="route"
@@ -79,7 +77,7 @@
         </div>
     </LayoutSlot>
 
-    <craft-pane size="none">
+    <craft-pane padding="none">
         <BaseElementIndex
             :table="elementTable"
             :selectable="true"
@@ -114,27 +112,32 @@
             </template>
             <template #navbar><slot name="navbar"></slot></template>
             <template #body>
-                <ElementCards
-                    v-if="mode === 'cards'"
-                    :table="elementTable"
-                    :data="elementIndex.data"
-                    :selectable="true"
-                    :loading="loading"
-                />
-                <ElementThumbs
-                    v-else-if="mode === 'thumbs'"
-                    :table="elementTable"
-                    :data="elementIndex.data"
-                    :selectable="true"
-                    :loading="loading"
-                />
-                <DataTable
-                    v-else
-                    :table="elementTable"
-                    :selectable="true"
-                    :loading="loading"
-                    :spacing="TableSpacing.Spacious"
-                />
+                <!-- Delegated so every view mode gets double-click-to-edit without
+          any of them knowing about it, matching Craft 5's element container
+          listener. -->
+                <div @dblclick="quickEdit.onDblClick">
+                    <ElementCards
+                        v-if="mode === 'cards'"
+                        :table="elementTable"
+                        :data="elementIndex.data"
+                        :selectable="true"
+                        :loading="loading"
+                    />
+                    <ElementThumbs
+                        v-else-if="mode === 'thumbs'"
+                        :table="elementTable"
+                        :data="elementIndex.data"
+                        :selectable="true"
+                        :loading="loading"
+                    />
+                    <DataTable
+                        v-else
+                        :table="elementTable"
+                        :selectable="true"
+                        :loading="loading"
+                        :spacing="TableSpacing.Spacious"
+                    />
+                </div>
             </template>
         </BaseElementIndex>
     </craft-pane>

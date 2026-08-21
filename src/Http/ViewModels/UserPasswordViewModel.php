@@ -66,7 +66,7 @@ class UserPasswordViewModel extends ViewModel
                 'icon' => $item['icon'] ?? null,
                 'action' => $item['action'] ?? null,
                 'requireElevatedSession' => (bool) ($item['requireElevatedSession'] ?? false),
-                'download' => isset($item['action']) && str_contains($item['action'], 'download'),
+                'download' => isset($item['action']) && str_contains((string) $item['action'], 'download'),
             ])
             ->values()
             ->all();

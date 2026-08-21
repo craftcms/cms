@@ -1,5 +1,4 @@
 import type CraftSwitch from '../components/switch/switch.js';
-import '../components/switch/switch.js';
 
 export interface SwitchConfig {
   id?: string;

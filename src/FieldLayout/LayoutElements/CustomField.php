@@ -7,26 +7,28 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
-use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
-use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\FieldSelect;
+use CraftCms\Cms\Form\Controls\Missing as MissingControl;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -38,7 +40,6 @@ use Throwable;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -49,7 +50,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-consistent-constructor
  */
-class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
+class CustomField extends BaseField
 {
     private static UserCondition $defaultEditCondition;
 
@@ -77,6 +78,8 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     public ?string $handle = null;
 
     private ?FieldInterface $_field = null;
+
+    private ?FieldInterface $_sourceField = null;
 
     private ?string $_fieldUid = null;
 
@@ -436,6 +439,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
      */
     public function setField(FieldInterface $field): void
     {
+        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -464,6 +468,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
+        $this->_sourceField = null;
     }
 
     /**
@@ -592,18 +597,29 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    protected function settingsHtml(): ?string
+    protected function settingsNodes(FormContext $context): array
     {
         // Make sure setField() has had a chance to set the default values
-        $this->getField();
+        $field = $this->getField();
+        $originalField = Fields::getFieldByUid($field->uid);
 
-        return template('_includes/forms/fld/custom-field-settings', [
-            'field' => $this,
-            'defaultLabel' => $this->defaultLabel(),
-            'defaultHandle' => $this->_originalHandle,
-            'defaultInstructions' => $this->defaultInstructions(),
-            'labelHidden' => ! $this->showLabel(),
-        ]);
+        return [
+            Group::make('custom-field-settings', array_values(array_filter([
+                $originalField === null ? null : Field::make(t('Field'), FieldSelect::make('fieldId')
+                    ->limit(1)
+                    ->value($originalField->id))
+                    ->warning(t('Changing this may result in data loss.')),
+                $this->labelSettingsNode($context),
+                Field::make(t('Handle'), Text::make('handle')
+                    ->monospace()
+                    ->maxLength(64)
+                    ->value($this->handle)
+                    ->placeholder($this->_originalHandle))
+                    ->required(),
+                ...$this->instructionsSettingsNodes($context),
+                ...$this->noticeSettingsNodes($context),
+            ]))),
+        ];
     }
 
     /** @return array{class?: list<string>, id?: string, data: array{base-input-name: string, error-key: string, type?: class-string<FieldInterface>}} */
@@ -746,50 +762,27 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    protected function conditionalSettingsHtml(): string
+    protected function conditionalSettingsNodes(FormContext $context): array
     {
-        $html = (string) parent::conditionalSettingsHtml();
+        $elementType = $this->elementType ?? $this->getLayout()?->type;
 
-        $editCondition = $this->getEditCondition() ?? self::defaultEditCondition();
-        $editCondition->mainTag = 'div';
-        $editCondition->id = 'edit-condition';
-        $editCondition->name = 'editCondition';
-        $editCondition->forProjectConfig = true;
-
-        $editConditionsHtml = FormFields::fieldHtml($editCondition->getBuilderHtml(), [
-            'label' => t('Current User Condition'),
-            'instructions' => t('Only make editable for users who match the following rules:'),
-        ]);
-
-        // Do we know the element type?
-        /** @var class-string<ElementInterface>|string|null $elementType */
-        $elementType = $this->elementType ?? $this->getLayout()->type;
-
-        if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-            $elementEditCondition = $this->getElementEditCondition();
-            if (! $elementEditCondition) {
-                $elementEditCondition = clone self::defaultElementEditCondition($elementType);
-                $elementEditCondition->setFieldLayouts([$this->getLayout()]);
-            }
-            $elementEditCondition->mainTag = 'div';
-            $elementEditCondition->id = 'element-edit-condition';
-            $elementEditCondition->name = 'elementEditCondition';
-            $elementEditCondition->forProjectConfig = true;
-
-            $editConditionsHtml .= FormFields::fieldHtml($elementEditCondition->getBuilderHtml(), [
-                'label' => t('{type} Condition', [
-                    'type' => $elementType::displayName(),
-                ]),
-                'instructions' => t('Only make editable when editing {type} that match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ]),
-            ]);
-        }
-
-        return $html.Html::beginTag('fieldset', ['class' => 'pane']).
-            Html::tag('legend', t('Editability Conditions')).
-            Html::tag('div', $editConditionsHtml).
-            Html::endTag('fieldset');
+        return [
+            ...parent::conditionalSettingsNodes($context),
+            $this->conditionGroupNode(
+                'editability-conditions',
+                t('Editability Conditions'),
+                'editCondition',
+                t('Only make editable for users who match the following rules:'),
+                $this->getEditCondition(),
+                'elementEditCondition',
+                'Only make editable when editing {type} that match the following rules:',
+                $this->getElementEditCondition(),
+                self::defaultEditCondition(),
+                $elementType && is_subclass_of($elementType, ElementInterface::class)
+                    ? self::defaultElementEditCondition($elementType)::class
+                    : null,
+            ),
+        ];
     }
 
     /**
@@ -816,15 +809,35 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
     }
 
     #[Override]
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    public function formMode(?ElementInterface $element): ControlMode
     {
-        $active = DeltaRegistry::isActive() &&
-            ($element->id ?? false) &&
-            ! $static;
+        return $this->editable($element) ? ControlMode::Editable : ControlMode::ReadOnly;
+    }
 
-        return DeltaRegistry::withActive($active, fn () => InputNamespace::namespaceInputs(
-            fn () => (string) parent::formHtml($element, $static),
-            'fields',
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        try {
+            $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        $field = $this->_sourceField;
+
+        if ($field instanceof MissingField) {
+            return MissingControl::make(['fields', $this->attribute()])
+                ->provider($field->expectedType)
+                ->mode(ControlMode::Disabled)
+                ->value($this->value($context->element));
+        }
+
+        return $field->formControl(new FieldContext(
+            ['fields', $this->attribute()],
+            $this->value($context->element),
+            $context->element,
+            $context->form,
+            $context->mode,
         ));
     }
 
@@ -862,34 +875,6 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         return $field->getLabelId();
-    }
-
-    protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return null;
-        }
-
-        $field->static = $static;
-        $value = $element ? $element->getFieldValue($field->handle) : $field->normalizeValue(null, null);
-
-        if ($static) {
-            return $field->getStaticHtml($value, $element);
-        }
-
-        $isDirty = $element?->isFieldDirty($field->handle);
-        DeltaRegistry::registerName($field->handle, $isDirty);
-
-        $describedBy = $field->describedBy;
-        $field->describedBy = $this->describedBy($element, $static);
-
-        $html = $field->getInputHtml($value, $element);
-
-        $field->describedBy = $describedBy;
-
-        return $html !== '' ? $html : null;
     }
 
     #[Override]
@@ -965,92 +950,5 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         }
 
         return $items;
-    }
-
-    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
-    {
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return [];
-        }
-
-        if (method_exists($field, 'getFieldsForImportMapping')) {
-            return $field->getFieldsForImportMapping();
-        }
-
-        $attribute = $this->attribute();
-        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
-
-        $content = [
-            'handle' => $attribute,
-            'label' => $this->label(),
-            'prefixedHandleForMap' => $prefixedHandleForMap,
-            'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
-            'prefixedHandleForClear' => $prefixedHandleForClear,
-            'prefixedHandle' => $prefixedHandle,
-            'prefixedHandleAsArray' => $prefixedHandleAsArray,
-            'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
-            'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
-            'canBeCleared' => $this->canBeCleared(),
-        ];
-
-        if ($content['isContainer']) {
-            $content['fieldUid'] = $field->uid;
-        }
-
-        return $content;
-    }
-
-    public function canBeMatchCriteria(): bool
-    {
-        if ($this instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return false;
-        }
-
-        if ($field instanceof BaseRelationField) {
-            return false;
-        }
-
-        if (method_exists($field, 'canBeImportMatchCriteria')) {
-            return $field->canBeImportMatchCriteria();
-        }
-
-        return true;
-    }
-
-    public function canBeCleared(): bool
-    {
-        if ($this instanceof ImportableElementContainerFieldInterface) {
-            return false;
-        }
-
-        try {
-            // getField() needs to be called before label() or we won't always get the label.
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            // skip silently
-            return false;
-        }
-
-        if ($field instanceof BaseRelationField) {
-            return false;
-        }
-
-        if (method_exists($field, 'canBeImportCleared')) {
-            return $field->canBeImportCleared();
-        }
-
-        return true;
     }
 }

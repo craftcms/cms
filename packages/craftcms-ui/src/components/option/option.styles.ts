@@ -1,6 +1,7 @@
 import {css} from 'lit';
 export default css`
-  :host([checked]) {
+  :host([checked]),
+  :host([aria-selected='true']) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
   }
@@ -23,7 +24,8 @@ export default css`
     color: var(--c-color-neutral-on-loud);
   }
 
-  :host([checked]) {
+  :host([checked]),
+  :host([aria-selected='true']) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
   }
@@ -42,7 +44,8 @@ export default css`
     white-space: nowrap;
   }
 
-  :host([active]) .hint {
+  :host([active]) .hint,
+  :host([aria-selected='true']) .hint {
     color: var(--c-color-neutral-on-loud);
   }
 

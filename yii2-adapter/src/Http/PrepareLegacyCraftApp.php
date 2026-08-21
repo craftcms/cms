@@ -47,7 +47,6 @@ readonly class PrepareLegacyCraftApp
         $yiiRequest->csrfCookie = Craft::cookieConfig([], $yiiRequest);
 
         Craft::$app->set('request', $yiiRequest);
-        Craft::$app->set('view', Craft::createObject(App::viewConfig()));
         Craft::$app->set('user', Craft::createObject(App::userConfig()));
     }
 }

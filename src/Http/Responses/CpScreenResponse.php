@@ -7,12 +7,9 @@ namespace CraftCms\Cms\Http\Responses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -93,20 +90,6 @@ class CpScreenResponse implements Responsable
     public ?string $selectedSubnavItem = null;
 
     /**
-     * @var Site|null The site that should be displayed within the breadcrumbs.
-     *
-     * @see Site()
-     */
-    public ?Site $site = null;
-
-    /**
-     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
-     *
-     * @see selectableSites()
-     */
-    public ?array $selectableSites = null;
-
-    /**
      * @var list<array<string, mixed>>|callable|null Breadcrumbs.
      *
      * This will only be used by full-page screens.
@@ -125,7 +108,7 @@ class CpScreenResponse implements Responsable
     public array $tabs = [];
 
     /**
-     * @var array<string, array<string, mixed>|NavItem>|null Secondary navigation items.
+     * @var list<array<string, mixed>|NavItem>|null Secondary navigation items.
      *
      * @see subnav()
      */
@@ -135,6 +118,15 @@ class CpScreenResponse implements Responsable
      * @var string|null Class that should be added to the slideout body.
      */
     public ?string $slideoutBodyClass = null;
+
+    /**
+     * @var array<string, mixed> Extra data merged into the Inertia `screen`
+     *                           prop, for screens whose client-side behavior
+     *                           needs configuring.
+     *
+     * @see screenData()
+     */
+    private array $screenData = [];
 
     /**
      * @var array<string, mixed> Custom attributes to add to the `<main>` tag.
@@ -330,14 +322,24 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the breadcrumbs.
      *
-     * Breadcrumbs should be defined by arrays with the following keys:
+     * A breadcrumb is shaped like a link action item, so the same array can be
+     * used as a crumb and as an entry in another crumb's menu:
      *
      * - `label` – The breadcrumb label, to be HTML-encoded
-     * - `url` – The URL that the breadcrumb should link to
-     * - `icon` – The icon which should be displayed beside the label
-     * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
-     * - `current` – Whether the breadcrumb represents the current page
+     * - `href` – The URL the breadcrumb links to. Absolute: nothing normalizes
+     *   it downstream, so build it with [[\CraftCms\Cms\Support\Url::cpUrl()]]
+     * - `icon` – The icon displayed beside the label
+     *
+     * Plus three keys only a crumb uses:
+     *
+     * - `html` – Server-rendered crumb content (e.g. an element chip), used
+     *   instead of `label`
+     * - `attrs` – Extra HTML attributes for the crumb
+     * - `actions` – A dropdown of link action items shown alongside the crumb
+     *   (e.g. the other sections available from an entry's section crumb)
+     *
+     * The last crumb is treated as the current page — `aria-current` is derived
+     * from position, so there is no `current` key.
      *
      * This will only be used by full-page screens.
      */
@@ -362,30 +364,8 @@ class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => $url ? Url::cpUrl($url) : null,
+            'href' => $url ? Url::cpUrl($url) : null,
         ];
-
-        return $this;
-    }
-
-    /**
-     * Sets the site that should be displayed within the breadcrumbs.
-     */
-    public function site(?Site $value): self
-    {
-        $this->site = $value;
-
-        return $this;
-    }
-
-    /**
-     * Sets the sites that should be selectable by the site breadcrumb menu.
-     *
-     * @param  array<Site|array{site:Site,status?:string}>|null  $value
-     */
-    public function selectableSites(?array $value): self
-    {
-        $this->selectableSites = $value;
 
         return $this;
     }
@@ -413,8 +393,11 @@ class CpScreenResponse implements Responsable
 
     /**
      * Sets the secondary navigation items.
+     *
+     * A list, not a keyed array: the CP shell counts these to decide whether to
+     * draw the secondary nav, which a JSON object wouldn't let it do.
      */
-    /** @param array<string, array<string, mixed>|NavItem>|null $value */
+    /** @param list<array<string, mixed>|NavItem>|null $value */
     public function subnav(?array $value): self
     {
         $this->subnav = $value;
@@ -751,22 +734,67 @@ class CpScreenResponse implements Responsable
         );
     }
 
+    /**
+     * Merge extra data into the Inertia `screen` prop.
+     *
+     * For screens that hand configuration to client-side code. The Twig/jQuery
+     * paths pass such config by injecting a script that looks the container up
+     * by id — which races Vue's mount, since the panel's subtree isn't in the
+     * document yet when that script runs. Props arrive with the page instead.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function screenData(array $data): self
+    {
+        $this->screenData = [...$this->screenData, ...$data];
+
+        return $this;
+    }
+
     public function toResponse($request): Response
     {
         if ($request->wantsJson()) {
-            return $this->jsonResponse($request);
+            return $this->slideoutResponse($request);
         }
 
         return $this->response($request);
     }
 
-    private function jsonResponse(Request $request): JsonResponse
+    /**
+     * Render the screen into a slideout.
+     *
+     * Two clients ask for this, and they want different wire formats. The Vue
+     * client sends `X-Inertia` and gets an Inertia page it can mount as a
+     * component; the legacy jQuery `CpScreenSlideout` gets the flat payload of
+     * server-rendered HTML it has always got. Both are built from one pass over
+     * the screen, so a screen behaves identically whichever one asks.
+     *
+     * A regular Inertia page visit never lands here: Inertia's own client sends
+     * `Accept: text/html`, so `wantsJson()` is false for it.
+     */
+    private function slideoutResponse(Request $request): Response
+    {
+        $parts = $this->prepareSlideout($request);
+
+        return $request->inertia()
+            ? $this->slideoutInertiaResponse($request, $parts)
+            : $this->slideoutJsonResponse($parts);
+    }
+
+    /**
+     * Resolve the screen's parts under a per-request input namespace.
+     *
+     * The namespace keeps two slideouts of the same screen from colliding on
+     * input names, so it has to wrap `prepareScreen` as well as the rendering.
+     *
+     * @return array<string, mixed>
+     */
+    private function prepareSlideout(Request $request): array
     {
         $namespace = Str::random(10);
+        $containerId = $request->header('X-Craft-Container-Id');
 
         if ($this->prepareScreen) {
-            $containerId = $request->header('X-Craft-Container-Id');
-
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
             InputNamespace::set($namespace);
@@ -800,30 +828,118 @@ class CpScreenResponse implements Responsable
         $sidebar = $this->metaSidebarHtml ? InputNamespace::namespaceInputs($this->metaSidebarHtml, $namespace) : null;
         $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
-        return new JsonResponse([
-            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+        // Read after everything above: rendering the screen is what pushes onto
+        // the HTML stack and registers delta names.
+        return [
             'namespace' => $namespace,
-            'title' => $this->title,
+            'containerId' => $containerId,
+            'extraToolbarItems' => $extraToolbarItems,
             'notice' => $notice,
             'tabs' => $tabs,
-            'bodyClass' => $this->slideoutBodyClass,
-            'formAttributes' => $this->formAttributes,
-            'action' => $this->action,
-            'extraToolbarItems' => $extraToolbarItems,
-            'submitButtonLabel' => $this->submitButtonLabel,
+            'content' => $content,
+            'inertiaPage' => $this->inertiaPage,
+            'inertiaProps' => $this->inertiaProps instanceof Arrayable
+                ? $this->inertiaProps->toArray()
+                : $this->inertiaProps,
+            'sidebar' => $sidebar,
+            'errorSummary' => $errorSummary,
             'actionMenu' => $this->actionMenu(withDestructive: false, config: [
                 'withButton' => false,
             ], namespace: $namespace),
-            'content' => $content,
-            'inertiaPage' => $this->inertiaPage,
-            'inertiaProps' => $this->inertiaProps,
-            'sidebar' => $sidebar,
-            'errorSummary' => $errorSummary,
+        ];
+    }
+
+    /**
+     * The legacy `Craft.CpScreenSlideout` payload.
+     *
+     * @param  array<string, mixed>  $parts
+     */
+    private function slideoutJsonResponse(array $parts): JsonResponse
+    {
+        return new JsonResponse([
+            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+            'namespace' => $parts['namespace'],
+            'title' => $this->title,
+            'notice' => $parts['notice'],
+            'tabs' => $parts['tabs'],
+            'bodyClass' => $this->slideoutBodyClass,
+            'formAttributes' => $this->formAttributes,
+            'action' => $this->action,
+            'extraToolbarItems' => $parts['extraToolbarItems'],
+            'submitButtonLabel' => $this->submitButtonLabel,
+            'actionMenu' => $parts['actionMenu'],
+            'content' => $parts['content'],
+            // The legacy slideout mounts a Vue page of its own when the screen
+            // has one, so it needs these too — it isn't only the Inertia
+            // payload's business.
+            'inertiaPage' => $parts['inertiaPage'],
+            'inertiaProps' => $parts['inertiaProps'],
+            'sidebar' => $parts['sidebar'],
+            'errorSummary' => $parts['errorSummary'],
             'headHtml' => HtmlStack::headHtml(),
             'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
+    }
+
+    /**
+     * The Inertia slideout payload.
+     *
+     * Screens that haven't been ported to a Vue page still render here — they
+     * fall back to the `cp/Screen` component, which draws the same HTML
+     * fragments the legacy payload carries.
+     *
+     * @param  array<string, mixed>  $parts
+     */
+    private function slideoutInertiaResponse(Request $request, array $parts): Response
+    {
+        return Inertia::render($this->inertiaPage ?? 'cp/Screen', $this->inertiaProps)
+            ->with($this->screenProps('slideout', [
+                'containerId' => $parts['containerId'],
+                'namespace' => $parts['namespace'],
+                'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+                'bodyClass' => $this->slideoutBodyClass,
+                'action' => $this->action,
+                'formAttributes' => $this->formAttributes,
+                'deltaNames' => DeltaRegistry::getNames(),
+                'initialDeltaValues' => DeltaRegistry::getInitialValues(),
+            ]))
+            ->with([
+                'title' => $this->title,
+                'submitButtonLabel' => $this->submitButtonLabel,
+                'actionMenu' => $parts['actionMenu'],
+                'toolbar' => $parts['extraToolbarItems'],
+                // Populated for every screen; `cp/Screen` renders them, and a
+                // Vue page ignores them.
+                'tabs' => $parts['tabs'],
+                'contentNotice' => $parts['notice'],
+                'content' => $parts['content'],
+                'details' => $parts['sidebar'],
+                'errorSummary' => $parts['errorSummary'],
+            ])
+            ->toResponse($request);
+    }
+
+    /**
+     * Tells the client which context the screen is rendering in.
+     *
+     * `headHtml`/`bodyHtml` ride along as props because the blade root view —
+     * where `HandleInertiaRequests` normally injects them — isn't rendered for
+     * an XHR Inertia response.
+     *
+     * @param  array<string, mixed>  $extra
+     * @return array<string, mixed>
+     */
+    private function screenProps(string $mode, array $extra = [], bool $withAssets = true): array
+    {
+        return [
+            'screen' => ['mode' => $mode] + $extra + $this->screenData,
+            ...($withAssets ? [
+                'headHtml' => HtmlStack::headHtml(),
+                'bodyHtml' => HtmlStack::bodyHtml(),
+            ] : []),
+        ];
     }
 
     private function response(Request $request): Response
@@ -844,22 +960,6 @@ class CpScreenResponse implements Responsable
         $sidebar = is_callable($this->metaSidebarHtml) ? call_user_func($this->metaSidebarHtml) : $this->metaSidebarHtml;
         $pageSidebar = is_callable($this->pageSidebarHtml) ? call_user_func($this->pageSidebarHtml) : $this->pageSidebarHtml;
         $errorSummary = is_callable($this->errorSummary) ? call_user_func($this->errorSummary) : $this->errorSummary;
-
-        if (isset($this->site) && Sites::isMultiSite()) {
-            array_unshift($crumbs, [
-                'id' => 'site-crumb',
-                'icon' => Icons::earth(),
-                'label' => t($this->site->getName(), category: 'site'),
-                'menu' => [
-                    'label' => t('Select site'),
-                    'items' => ! empty($this->selectableSites)
-                        ? app(MenuHtml::class)->siteMenuItems($this->selectableSites, $this->site, [
-                            'includeOmittedSites' => true,
-                        ])
-                        : null,
-                ],
-            ]);
-        }
 
         if ($this->action) {
             $content .= Html::actionInput($this->action, [
@@ -883,13 +983,7 @@ class CpScreenResponse implements Responsable
             'docTitle' => $docTitle,
             'title' => $this->title,
             'selectedSubnavItem' => $this->selectedSubnavItem,
-            'crumbs' => array_map(function (array $crumb): array {
-                if (isset($crumb['url'])) {
-                    $crumb['url'] = Url::cpUrl($crumb['url']);
-                }
-
-                return $crumb;
-            }, $crumbs ?? []),
+            'crumbs' => $crumbs,
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
             'actionMenuItems' => $this->actionMenuItemProps(),
@@ -931,6 +1025,7 @@ class CpScreenResponse implements Responsable
 
             return Inertia::render($this->inertiaPage, $this->inertiaProps)
                 ->with($templateProps)
+                ->with($this->screenProps('page', withAssets: $request->inertia()))
                 ->toResponse($request);
         }
 

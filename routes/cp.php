@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\EditAssetController;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
+use CraftCms\Cms\Http\Controllers\Entries\EditEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
@@ -115,7 +117,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
+    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -184,9 +186,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
-    Route::get('assets/edit/{id}{slug}', EditElementController::class)->where($idSlugParams);
-    Route::get('entries/{section}/{id}{slug?}', EditElementController::class)->where($idSlugParams);
-    Route::get('content/{page}/{section}/{id}{slug?}', EditElementController::class)->where([
+    Route::get('assets/edit/{id}{slug}', EditAssetController::class)->where($idSlugParams);
+    Route::get('entries/{section}/{id}{slug?}', EditEntryController::class)->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}', EditEntryController::class)->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);
@@ -402,7 +404,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
             ->name('settings.sections.index');
-        Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::get('settings/sections/new', [SectionsController::class, 'create']);
+            Route::post('settings/sections/render-form', [SectionsController::class, 'renderForm']);
+        });
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
         Route::middleware(RequireAdminChanges::class)->delete('settings/sections/{section}', [SectionsController::class, 'destroy']);
         Route::middleware(RequireAdminChanges::class)->post('sections/sections', [SectionsController::class, 'store']);
@@ -416,8 +421,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
 
                 Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::post('form', [VolumesController::class, 'renderForm']);
                     Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
-                    Route::post('/', [VolumesController::class, 'save']);
+                    Route::post('/', [VolumesController::class, 'store']);
                 });
             });
         });
@@ -429,6 +435,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::middleware(RequireAdminChanges::class)->group(function () {
                 Route::get('new', [ImageTransformsController::class, 'create'])->name('create');
                 Route::post('/', [ImageTransformsController::class, 'store']);
+                Route::post('form', [ImageTransformsController::class, 'renderForm']);
                 Route::delete('{transformId}', [ImageTransformsController::class, 'destroy'])->name('destroy');
             });
 
@@ -441,6 +448,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::middleware(RequireAdminChanges::class)
             ->group(function () {
                 Route::get('settings/sites/new', [SitesController::class, 'create']);
+                Route::post('settings/sites/form', [SitesController::class, 'renderForm']);
                 Route::post('settings/sites/reorder', [SitesController::class, 'reorder']);
                 Route::post('settings/sites', [SitesController::class, 'store']);
                 Route::delete('settings/sites/{site}', [SitesController::class, 'destroy']);
@@ -481,8 +489,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
         // User settings
         Route::get('settings/users/settings', [UserSettingsController::class, 'index'])->name('settings.users.index');
-        Route::middleware(RequireAdminChanges::class)
-            ->post('settings/users/settings', [UserSettingsController::class, 'store']);
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::post('settings/users/settings/render-form', [UserSettingsController::class, 'renderForm']);
+            Route::post('settings/users/settings', [UserSettingsController::class, 'store']);
+        });
     });
 
     Route::prefix('settings/filesystems')->group(function () {
@@ -499,6 +509,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('/', [FilesystemsController::class, 'store']);
+            Route::post('form', [FilesystemsController::class, 'renderForm']);
             Route::delete('{handle}', [FilesystemsController::class, 'destroy']);
         });
     });

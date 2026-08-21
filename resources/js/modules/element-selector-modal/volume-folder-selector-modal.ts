@@ -15,19 +15,30 @@ const DEFAULTS = {
  * highlighted.
  */
 export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
+    static override defaults =
+        DEFAULTS as typeof BaseElementSelectorModal.defaults & typeof DEFAULTS;
+
     constructor(settings?: any) {
-        const merged = Object.assign({}, DEFAULTS, settings, {
-            // showSiteMenu is always false for folder selection
-            showSiteMenu: false,
-        });
+        super('CraftCms\\Cms\\Asset\\Elements\\Asset');
+        if (new.target === VolumeFolderSelectorModal) {
+            this.init(settings);
+        }
+    }
+
+    override init(settings?: any): void {
+        const merged = Object.assign(
+            {},
+            VolumeFolderSelectorModal.defaults,
+            settings,
+            {
+                // showSiteMenu is always false for folder selection
+                showSiteMenu: false,
+            }
+        );
         merged.indexSettings = Object.assign({}, merged.indexSettings, {
             disabledFolderIds: merged.disabledFolderIds,
         });
-
-        super('CraftCms\\Cms\\Asset\\Elements\\Asset', merged);
-        if (new.target === VolumeFolderSelectorModal) {
-            this.init('CraftCms\\Cms\\Asset\\Elements\\Asset', merged);
-        }
+        super.init('CraftCms\\Cms\\Asset\\Elements\\Asset', merged);
     }
 
     override getElementIndexParams(): Record<string, any> {

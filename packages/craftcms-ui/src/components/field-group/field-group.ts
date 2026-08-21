@@ -1,4 +1,4 @@
-import {css, html, LitElement} from 'lit';
+import {html, LitElement} from 'lit';
 
 export default class CraftFieldGroup extends LitElement {
   protected override render() {
@@ -6,7 +6,42 @@ export default class CraftFieldGroup extends LitElement {
       <style>
         craft-field-group {
           display: grid;
+          grid-template-columns: repeat(12, minmax(0, 1fr));
           gap: var(--gap, var(--c-spacing-lg));
+          container-type: inline-size;
+        }
+
+        craft-field-group > * {
+          grid-column: 1 / -1;
+          min-width: 0;
+        }
+
+        @container (min-width: 50rem) {
+          craft-field-group > .width-25 {
+            grid-column: span 3;
+          }
+
+          craft-field-group > .width-33 {
+            grid-column: span 4;
+          }
+
+          craft-field-group > .width-50 {
+            grid-column: span 6;
+          }
+
+          craft-field-group > .width-66 {
+            grid-column: span 8;
+          }
+
+          craft-field-group > .width-75 {
+            grid-column: span 9;
+          }
+        }
+
+        @container (min-width: 25rem) and (max-width: calc(50rem - 1px)) {
+          craft-field-group > .width-25 {
+            grid-column: span 6;
+          }
         }
       </style>
       <slot></slot>

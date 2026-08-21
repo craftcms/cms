@@ -12,6 +12,7 @@ import {
     RETURN_KEY,
     UP_KEY,
 } from '@craftcms/garnish';
+import {elementSelectInputData} from './support';
 
 declare const Craft: any;
 declare const $: any;
@@ -82,6 +83,7 @@ export class BaseElementSelectInput extends Base {
 
     static readonly ADD_FX_DURATION = 200;
     static readonly REMOVE_FX_DURATION = 200;
+    static defaults: Record<string, any> = DEFAULTS;
 
     elementSelect: any = null;
     elementSort: any = null;
@@ -102,17 +104,26 @@ export class BaseElementSelectInput extends Base {
     $searchInput: any = null;
     $searchSpinner: any = null;
 
-    protected modalStorageKey: string | null = null;
+    modalStorageKey: string | null = null;
 
-    #$replaceElement: any = null;
+    _$replaceElement: any = null;
+    _ignoreSearchBlur = false;
+    _initialized = false;
+
     #handleShowElementEditor: ((ev: any) => void) | null = null;
-    #ignoreSearchBlur = false;
 
     constructor(settings?: any) {
         super();
         if (new.target === BaseElementSelectInput) {
             this.init(settings);
         }
+    }
+
+    get thumbLoader(): any {
+        console.warn(
+            'Craft.BaseElementSelectInput::thumbLoader is deprecated. Craft.cp.elementThumbLoader should be used instead.'
+        );
+        return Craft.cp.elementThumbLoader;
     }
 
     init(...initArgs: any[]): void {
@@ -141,7 +152,11 @@ export class BaseElementSelectInput extends Base {
             settings = normalized;
         }
 
-        this.settings = Object.assign({}, DEFAULTS, settings);
+        this.settings = Object.assign(
+            {},
+            BaseElementSelectInput.defaults,
+            settings
+        );
 
         if (this.settings.modalStorageKey) {
             this.modalStorageKey =
@@ -153,6 +168,7 @@ export class BaseElementSelectInput extends Base {
         }
 
         this.$container = this.getContainer();
+        elementSelectInputData.set(this.$container[0], this);
         this.$form = this.$container.closest('form');
         this.$container.data('elementSelect', this);
 
@@ -170,11 +186,13 @@ export class BaseElementSelectInput extends Base {
 
         if (this.$addElementBtn.length) {
             // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-            $(this.$addElementBtn).on('activate', () => this.showModal());
+            $(this.$addElementBtn).on('activate.elementSelectInput', () =>
+                this.showModal()
+            );
         }
 
         requestAnimationFrame(() => {
-            // initialization complete
+            this._initialized = true;
         });
 
         if (this.elementSelect) {
@@ -195,6 +213,36 @@ export class BaseElementSelectInput extends Base {
                 .closest('form')
                 .data('elementEditor');
         }, 100);
+    }
+
+    override destroy(): void {
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = null;
+        }
+
+        if (this.searchMenu) {
+            this.killSearchMenu();
+        }
+
+        this.$addElementBtn?.off('.elementSelectInput');
+        if (this.#handleShowElementEditor) {
+            this.$elements?.off('taphold', this.#handleShowElementEditor);
+            this.#handleShowElementEditor = null;
+        }
+
+        this.elementSort?.destroy?.();
+        this.elementSort = null;
+        this.elementSelect?.destroy?.();
+        this.elementSelect = null;
+        this.modal?.destroy?.();
+        this.modal = null;
+
+        if (this.$container?.[0]) {
+            elementSelectInputData.delete(this.$container[0]);
+        }
+
+        super.destroy();
     }
 
     get totalSelected(): number {
@@ -660,7 +708,7 @@ export class BaseElementSelectInput extends Base {
                     icon: async () => await Craft.ui.icon('arrows-rotate'),
                     label: Craft.t('app', 'Replace'),
                     callback: () => {
-                        this.#$replaceElement = $element;
+                        this._$replaceElement = $element;
                         this.showModal();
                     },
                 });
@@ -856,7 +904,7 @@ export class BaseElementSelectInput extends Base {
 
         if (this.settings.maintainHierarchy) {
             for (let i = 0; i < $elements.length; i++) {
-                this.#animateStructureElementAway($elements, i);
+                this._animateStructureElementAway($elements, i);
             }
         } else {
             for (let i = 0; i < $elements.length; i++) {
@@ -893,7 +941,7 @@ export class BaseElementSelectInput extends Base {
     }
 
     showModal(): void {
-        if (!this.#$replaceElement && !this.canAddMoreElements()) {
+        if (!this._$replaceElement && !this.canAddMoreElements()) {
             return;
         }
 
@@ -996,9 +1044,9 @@ export class BaseElementSelectInput extends Base {
 
         this.elementEditor?.pause();
 
-        if (this.#$replaceElement) {
-            this.removeElement(this.#$replaceElement);
-            this.#$replaceElement = null;
+        if (this._$replaceElement) {
+            this.removeElement(this._$replaceElement);
+            this._$replaceElement = null;
         }
 
         const [inputUiType, inputUiSize] = (() => {
@@ -1081,7 +1129,7 @@ export class BaseElementSelectInput extends Base {
             this.modal.destroy();
             this.modal = null;
         }
-        this.#$replaceElement = null;
+        this._$replaceElement = null;
     }
 
     async selectElements(elements: any[]): Promise<void> {
@@ -1267,7 +1315,7 @@ export class BaseElementSelectInput extends Base {
         this.$container.trigger('change');
     }
 
-    #animateStructureElementAway($allElements: any, i: number): void {
+    _animateStructureElementAway($allElements: any, i: number): void {
         let callback: (() => void) | undefined;
 
         if (i === $allElements.length - 1) {
@@ -1390,8 +1438,8 @@ export class BaseElementSelectInput extends Base {
         });
 
         this.addListener(this.$searchInput[0], 'blur', () => {
-            if (this.#ignoreSearchBlur) {
-                this.#ignoreSearchBlur = false;
+            if (this._ignoreSearchBlur) {
+                this._ignoreSearchBlur = false;
                 return;
             }
             setTimeout(() => {
@@ -1526,7 +1574,7 @@ export class BaseElementSelectInput extends Base {
 
             // mousedown on menu → keep focus on search input (ignore next blur).
             this.addListener($menu[0], 'mousedown', () => {
-                this.#ignoreSearchBlur = true;
+                this._ignoreSearchBlur = true;
             });
 
             this.searchMenu.show();

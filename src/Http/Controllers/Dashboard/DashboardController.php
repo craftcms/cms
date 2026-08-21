@@ -11,7 +11,6 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Dashboard\WidgetTypes;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\DashboardAsset;
@@ -59,22 +58,18 @@ readonly class DashboardController
                 ]);
             });
 
-        /** @var Collection<string, array{iconSvg: string|null, name: string, maxColspan: int|null, settingsHtml: string, settingsJs: string, selectable: bool}> $widgetTypeInfo */
+        /** @var Collection<string, array<string, mixed>> $widgetTypeInfo */
         $widgetTypeInfo = Collection::make();
 
         foreach ($widgetConfigs as $type => $config) {
-            $this->HtmlStack->startJsBuffer();
             $widget = $this->dashboard->createWidget($config);
-            $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-            $settingsJs = (string) $this->HtmlStack->clearJsBuffer(false);
 
             $widgetTypeInfo->put($type, [
                 'iconSvg' => $this->getWidgetIconSvg($widget),
                 'name' => $widget->getDisplayName(),
                 'maxColspan' => $widget->getMaxColspan(),
-                'settingsHtml' => $settingsHtml,
-                'settingsJs' => $settingsJs,
                 'selectable' => true,
+                ...$this->getWidgetSettingsInfo($widget, '__NAMESPACE__'),
             ]);
         }
 
@@ -100,6 +95,7 @@ readonly class DashboardController
                         'iconSvg' => $this->getWidgetIconSvg($widget),
                         'name' => $widget->getDisplayName(),
                         'maxColspan' => $widget->getMaxColspan(),
+                        'settingsForm' => null,
                         'settingsHtml' => '',
                         'settingsJs' => '',
                         'selectable' => false,
@@ -110,7 +106,8 @@ readonly class DashboardController
                 $allWidgetJs .= 'new Craft.Widget("#widget'.$widget->id.'", '.
                     Json::encode($info['settingsHtml']).', '.
                     '() => {'.$info['settingsJs'].'},'.
-                    Json::encode($info['settings']).
+                    Json::encode($info['settings']).','.
+                    Json::encode($info['settingsForm']).
                     ");\n";
 
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -14,6 +13,12 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Lightswitch as LightswitchControl;
+use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -106,51 +111,22 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function settingsForm(FormContext $context = new FormContext): Form
     {
-        return $this->settingsHtml(true);
-    }
-
-    private function settingsHtml(bool $readOnly): string
-    {
-        return
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Default Value'),
-                'id' => 'default',
-                'name' => 'default',
-                'on' => $this->default,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::textFieldHtml([
-                'label' => t('OFF Label'),
-                'instructions' => t('The label text to display beside the lightswitch’s disabled state.'),
-                'id' => 'off-label',
-                'name' => 'offLabel',
-                'value' => $this->offLabel,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::textFieldHtml([
-                'label' => t('ON Label'),
-                'instructions' => t('The label text to display beside the lightswitch’s enabled state.'),
-                'id' => 'on-label',
-                'name' => 'onLabel',
-                'value' => $this->onLabel,
-                'disabled' => $readOnly,
-            ]).
-            FormFields::lightswitchFieldHtml([
-                'label' => t('Show ON/OFF labels in cards'),
-                'instructions' => t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
-                'id' => 'show-labels-in-cards',
-                'name' => 'showLabelsInCards',
-                'on' => $this->showLabelsInCards,
-                'disabled' => $readOnly,
-            ]);
+        return Form::make([
+            FormField::make(t('Default Value'))
+                ->control(LightswitchControl::make('default')->value($this->default)),
+            FormField::make(t('OFF Label'))
+                ->instructions(t('The label text to display beside the lightswitch’s disabled state.'))
+                ->control(Text::make('offLabel')->value($this->offLabel)),
+            FormField::make(t('ON Label'))
+                ->instructions(t('The label text to display beside the lightswitch’s enabled state.'))
+                ->control(Text::make('onLabel')->value($this->onLabel)),
+            FormField::make(t('Show ON/OFF labels in cards'))
+                ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
+                ->control(LightswitchControl::make('showLabelsInCards')->value($this->showLabelsInCards)),
+        ]);
     }
 
     #[Override]
@@ -160,15 +136,18 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->_inputHtmlInternal($value, false);
+        return LightswitchControl::make($context->path)
+            ->onLabel(t($this->onLabel, category: 'site'))
+            ->offLabel(t($this->offLabel, category: 'site'))
+            ->value((bool) $context->value);
     }
 
     #[Override]
-    public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->_inputHtmlInternal($value, true);
+        return $this->_inputHtmlInternal($value, false);
     }
 
     /**

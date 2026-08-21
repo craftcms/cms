@@ -11,7 +11,6 @@
     import dbBg from '@public/images/install/db.png';
     import DbFields from '@/modules/install/components/DbFields.vue';
     import InstallingScreen from '@/modules/install/components/InstallingScreen.vue';
-    import Pane from '@/common/components/Pane.vue';
     import Modal from '@/common/components/Modal.vue';
     import StepScreen from '@/modules/install/components/StepScreen.vue';
 
@@ -128,7 +127,7 @@
         <Modal :is-active="modalActive" :overlay="false" width="2xl">
             <!-- License screen -->
             <template v-if="isCurrent('license')">
-                <Pane class="max-w-[80ch] mx-auto">
+                <craft-pane class="max-w-[80ch] mx-auto">
                     <Deferred data="licenseHtml">
                         <template #fallback>
                             <div class="flex justify-center">
@@ -139,18 +138,16 @@
                         <div class="license" v-html="licenseHtml"></div>
                     </Deferred>
 
-                    <template #actions>
-                        <div class="flex justify-center w-full">
-                            <craft-button
-                                type="button"
-                                variant="accent"
-                                @click="goTo('account')"
-                            >
-                                {{ t('Got it') }}
-                            </craft-button>
-                        </div>
-                    </template>
-                </Pane>
+                    <div slot="actions" class="flex justify-center w-full">
+                        <craft-button
+                            type="button"
+                            variant="accent"
+                            @click="goTo('account')"
+                        >
+                            {{ t('Got it') }}
+                        </craft-button>
+                    </div>
+                </craft-pane>
             </template>
 
             <!-- Installing -->
@@ -160,12 +157,14 @@
 
             <!-- Form screens -->
             <template v-else>
-                <div>
-                    <Pane
-                        as="form"
-                        :action="current.action"
-                        @submit.prevent="handleSubmit"
-                    >
+                <!--
+          `craft-pane` can't be rendered as a `<form>` the way the old Vue
+          `Pane` could (its `as` prop is gone), so the form wraps the pane
+          instead. The footer's submit button is still a light-DOM descendant
+          of the form, so submission behaves the same.
+        -->
+                <form :action="current.action" @submit.prevent="handleSubmit">
+                    <craft-pane>
                         <StepScreen
                             :illustration-src="accountBg"
                             :heading="current.heading"
@@ -216,55 +215,51 @@
                             </Deferred>
                         </StepScreen>
 
-                        <template #footer-content>
-                            <div
-                                class="grid grid-cols-3 items-center gap-2 w-full"
+                        <div
+                            slot="footer-content"
+                            class="grid grid-cols-3 items-center gap-2 w-full"
+                        >
+                            <craft-button
+                                type="button"
+                                @click="goToPrevious"
+                                variant="plain"
+                                class="justify-self-start"
                             >
-                                <craft-button
-                                    type="button"
-                                    @click="goToPrevious"
-                                    variant="plain"
-                                    class="justify-self-start"
-                                >
-                                    {{ t('Back') }}
-                                    <craft-icon
-                                        name="arrow-left"
-                                        slot="prefix"
-                                    ></craft-icon>
-                                </craft-button>
-                                <ul class="flex gap-2 justify-center">
-                                    <li
-                                        v-for="(step, id) in dotSteps"
-                                        :key="id"
+                                {{ t('Back') }}
+                                <craft-icon
+                                    name="arrow-left"
+                                    slot="prefix"
+                                ></craft-icon>
+                            </craft-button>
+                            <ul class="flex gap-2 justify-center">
+                                <li v-for="(step, id) in dotSteps" :key="id">
+                                    <span
+                                        class="dot"
+                                        :class="{
+                                            'dot--active': isCurrent(id),
+                                        }"
                                     >
-                                        <span
-                                            class="dot"
-                                            :class="{
-                                                'dot--active': isCurrent(id),
-                                            }"
-                                        >
-                                            <span class="sr-only">
-                                                {{ step.label }}
-                                            </span>
+                                        <span class="sr-only">
+                                            {{ step.label }}
                                         </span>
-                                    </li>
-                                </ul>
-                                <craft-button
-                                    class="justify-self-end"
-                                    type="submit"
-                                    variant="accent"
-                                    :loading="formData.processing"
-                                >
-                                    {{ current.submitLabel ?? t('Next') }}
-                                    <craft-icon
-                                        name="arrow-right"
-                                        slot="suffix"
-                                    ></craft-icon>
-                                </craft-button>
-                            </div>
-                        </template>
-                    </Pane>
-                </div>
+                                    </span>
+                                </li>
+                            </ul>
+                            <craft-button
+                                class="justify-self-end"
+                                type="submit"
+                                variant="accent"
+                                :loading="formData.processing"
+                            >
+                                {{ current.submitLabel ?? t('Next') }}
+                                <craft-icon
+                                    name="arrow-right"
+                                    slot="suffix"
+                                ></craft-icon>
+                            </craft-button>
+                        </div>
+                    </craft-pane>
+                </form>
             </template>
         </Modal>
     </div>

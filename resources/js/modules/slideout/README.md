@@ -51,14 +51,23 @@ collection, HTML string, or array of those.
 
 ### Stacking & statics
 
-Open panels stack, each one pushed further from the viewport edge:
+Open panels stack, each one pushed further from the viewport edge. The stack
+itself lives in `@/common/slideouts/panel-stack` and is **shared with the Vue
+slideouts**, so the two kinds interleave — a Vue panel opened over one of these
+moves it back, and both answer to the same shade, scroll lock, and Escape
+ordering. `open()` registers with it; `close()` unregisters.
 
-- `Slideout.openPanels` — open panels, most recently opened first.
+- `Slideout.openPanels` — open panels of *this* kind, most recently opened
+  first. Vue panels aren't in here; use `stackedPanels()` from the shared
+  module for everything that's open.
 - `Slideout.instances` — instances keyed by container id (only for slideouts
   whose container has an `id`).
 - `Slideout.totalPanels()` / `positionProp()` / `addPanel()` / `removePanel()` /
-  `updateStyles()` — the stacking machinery, used internally by
-  `open()`/`close()`.
+  `updateStyles()` — kept as public API; the last three now delegate to the
+  shared stack.
+- `position(index, total)` / `handleShadeClick()` / `suppressShade()` — what
+  the shared stack calls back into. `CpScreenSlideout` overrides
+  `handleShadeClick()` so a shade click runs its unsaved-changes check.
 
 ### Finding an instance
 
@@ -117,7 +126,8 @@ saved model's payload).
 ## The jQuery API surface
 
 The `$`-prefixed instance members are jQuery collections and are public API —
-external code reads them directly: `$container`, `$outerContainer`, `$shade`,
+external code reads them directly: `$container`, `$outerContainer`, `$shade`
+(the shade shared with every other open panel — don't remove it),
 and on CP screens `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
 `$saveBtn`, etc. The same goes for the jQuery data entries the submit flow
 maintains: `data('initialSerializedValue')`, `data('delta-names')`,

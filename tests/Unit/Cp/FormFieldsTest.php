@@ -133,6 +133,30 @@ describe('checkboxFieldHtml', function () {
     });
 });
 
+describe('dateTimeHtml', function () {
+    it('renders native inputs and owns the form metadata', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{% include "_includes/forms/datetime" %}',
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'value' => new DateTimeImmutable('2026-08-05 12:30:00', new DateTimeZone('Europe/Brussels')),
+                'timeZone' => false,
+                'minuteIncrement' => 15,
+            ],
+            TemplateMode::Cp,
+        );
+
+        expect($html)->toContainTag('craft-input-date-time', ['name' => 'startsAt'])
+            ->and($html)->toContainTag('craft-input-date', ['name' => 'startsAt[date]'])
+            ->and($html)->toContainTag('input', ['type' => 'date', 'name' => 'startsAt[date]', 'value' => '2026-08-05'])
+            ->and($html)->toContainTag('craft-input-time', ['name' => 'startsAt[time]', 'minute-increment' => '15'])
+            ->and($html)->toContainTag('input', ['type' => 'time', 'name' => 'startsAt[time]', 'value' => '12:30', 'step' => '900'])
+            ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'startsAt[locale]'])
+            ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'startsAt[timezone]', 'value' => 'Europe/Brussels']);
+    });
+});
+
 describe('config deprecations', function () {
     it('logs a deprecation for unsupported legacy config keys', function (string $method, array $config, string $needle) {
         $logged = false;
@@ -186,6 +210,20 @@ describe('field helper methods', function () {
         ['>Test unit</div>', 'textFieldHtml', ['unit' => 'Test unit']],
         ['<textarea', 'textareaFieldHtml'],
     ]);
+
+    it('maps text expander triggers onto text fields', function () {
+        $html = FormFields::textFieldHtml([
+            'id' => 'path',
+            'name' => 'path',
+            'textExpanderTriggers' => [[
+                'trigger' => '$',
+                'boundary' => 'start',
+                'options' => [['label' => '$BASE_PATH', 'value' => '$BASE_PATH']],
+            ]],
+        ]);
+
+        expect($html)->toContainTag('craft-text-expander', ['for' => 'path']);
+    });
 });
 
 describe('addressFieldsHtml', function () {

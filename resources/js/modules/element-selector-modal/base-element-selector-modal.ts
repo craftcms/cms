@@ -1,4 +1,10 @@
-import {Modal, ESC_KEY, isMobileBrowser, bod} from '@craftcms/garnish';
+import {
+    Modal,
+    ESC_KEY,
+    isMobileBrowser,
+    bod,
+    type ModalSettings,
+} from '@craftcms/garnish';
 import {uiLayerManager} from '@/modules/slideout/slideout';
 
 declare const Craft: any;
@@ -30,7 +36,9 @@ const BASE_DEFAULTS = {
     disabledElementIds: [] as number[],
     disableElementsOnSelect: false,
     hideOnSelect: true,
+    modalTitle: null as string | null,
     showTitle: false,
+    selectBtnLabel: null as string | null,
     onCancel: noop,
     onSelect: noop as (elementInfo: any, ...args: any[]) => void,
     hideSidebar: false,
@@ -56,6 +64,9 @@ const BASE_DEFAULTS = {
  * events).
  */
 export class BaseElementSelectorModal extends Modal {
+    static override defaults: ModalSettings & typeof BASE_DEFAULTS =
+        Object.assign({}, Modal.defaults, BASE_DEFAULTS);
+
     // Shadows Modal's typed `settings` so we can store our own key/value shape.
     declare settings: any;
 
@@ -73,16 +84,21 @@ export class BaseElementSelectorModal extends Modal {
     $footer: any = null;
     $selectBtn: any = null;
     $sidebar: any = null;
+    $sources: any = null;
+    $sourceToggles: any = null;
+    $search: any = null;
+    $elements: any = null;
+    $tbody: any = null;
     $primaryButtons: any = null;
     $secondaryButtons: any = null;
     $cancelBtn: any = null;
     $main: any = null;
 
-    #$mainHeader: any = null;
-    #$sidebarHeader: any = null;
-    #$sidebarCloseBtn: any = null;
-    #$sidebarToggleBtn: any = null;
-    #$mainHeading: any = null;
+    $mainHeader: any = null;
+    $sidebarHeader: any = null;
+    $sidebarCloseBtn: any = null;
+    $sidebarToggleBtn: any = null;
+    $mainHeading: any = null;
 
     constructor(elementType: string, settings?: any) {
         // Construct Modal shell without a container and without auto-showing.
@@ -100,10 +116,15 @@ export class BaseElementSelectorModal extends Modal {
         // not at module load time where Craft may not exist yet).
         this.settings = Object.assign(
             {},
-            BASE_DEFAULTS,
+            BaseElementSelectorModal.defaults,
+            this.settings,
             {
-                modalTitle: Craft.t('app', 'Select element'),
-                selectBtnLabel: Craft.t('app', 'Select'),
+                modalTitle:
+                    BaseElementSelectorModal.defaults.modalTitle ??
+                    Craft.t('app', 'Select element'),
+                selectBtnLabel:
+                    BaseElementSelectorModal.defaults.selectBtnLabel ??
+                    Craft.t('app', 'Select'),
             },
             settings
         );
@@ -181,47 +202,47 @@ export class BaseElementSelectorModal extends Modal {
     updateSidebarView(): void {
         if (!this.supportSidebarToggleView) return;
 
-        if (this.#sidebarShouldBeHidden()) {
-            if (!this.#$sidebarToggleBtn) this.#buildSidebarToggleView();
+        if (this.sidebarShouldBeHidden()) {
+            if (!this.$sidebarToggleBtn) this.buildSidebarToggleView();
         } else {
-            if (this.#$sidebarToggleBtn) this.#resetView();
+            if (this.$sidebarToggleBtn) this.resetView();
         }
     }
 
-    #sidebarShouldBeHidden(): boolean {
+    sidebarShouldBeHidden(): boolean {
         return $(this.$container).outerWidth() < 550;
     }
 
-    #resetView(): void {
-        this.#$mainHeader?.remove();
-        this.#$sidebarHeader?.remove();
-        this.#$sidebarToggleBtn = null;
+    resetView(): void {
+        this.$mainHeader?.remove();
+        this.$sidebarHeader?.remove();
+        this.$sidebarToggleBtn = null;
         this.$body.addClass('has-sidebar');
         this.$content.addClass('has-sidebar');
         this.$sidebar.removeClass('hidden');
     }
 
-    #buildSidebarToggleView(): void {
-        if (this.#$sidebarToggleBtn || !this.#sidebarShouldBeHidden()) return;
+    buildSidebarToggleView(): void {
+        if (this.$sidebarToggleBtn || !this.sidebarShouldBeHidden()) return;
 
-        this.#$sidebarHeader = $('<div class="sidebar-header"/>').prependTo(
+        this.$sidebarHeader = $('<div class="sidebar-header"/>').prependTo(
             this.$sidebar
         );
 
-        this.#$sidebarCloseBtn = Craft.ui
+        this.$sidebarCloseBtn = Craft.ui
             .createButton({class: 'nav-close close-btn'})
             .attr('aria-label', Craft.t('app', 'Close'))
             .removeClass('btn')
-            .appendTo(this.#$sidebarHeader);
+            .appendTo(this.$sidebarHeader);
 
-        this.#$mainHeader = $('<div class="main-header"/>').prependTo(
+        this.$mainHeader = $('<div class="main-header"/>').prependTo(
             this.$main
         );
-        this.#$mainHeading = $(
-            `<h2 class="main-heading">${this.#getActiveSourceName()}</h2>`
-        ).appendTo(this.#$mainHeader);
+        this.$mainHeading = $(
+            `<h2 class="main-heading">${this.getActiveSourceName()}</h2>`
+        ).appendTo(this.$mainHeader);
 
-        this.#$sidebarToggleBtn = Craft.ui
+        this.$sidebarToggleBtn = Craft.ui
             .createButton({
                 toggle: true,
                 controls: 'modal-sidebar',
@@ -229,69 +250,64 @@ export class BaseElementSelectorModal extends Modal {
             })
             .removeClass('btn')
             .attr('aria-label', Craft.t('app', 'Show sidebar'))
-            .appendTo(this.#$mainHeader);
+            .appendTo(this.$mainHeader);
 
         this.$sidebar.attr('id', 'modal-sidebar');
-        this.#closeSidebarInternal();
+        this.closeSidebar();
 
-        this.addListener(this.#$sidebarToggleBtn[0], 'click', () =>
-            this.#toggleSidebar()
+        this.addListener(this.$sidebarToggleBtn[0], 'click', () =>
+            this.toggleSidebar()
         );
-        this.addListener(this.#$sidebarCloseBtn[0], 'click', () =>
-            this.#toggleSidebar()
+        this.addListener(this.$sidebarCloseBtn[0], 'click', () =>
+            this.toggleSidebar()
         );
     }
 
-    #sidebarIsOpen(): boolean {
-        return this.#$sidebarToggleBtn?.attr('aria-expanded') === 'true';
+    sidebarIsOpen(): boolean {
+        return this.$sidebarToggleBtn?.attr('aria-expanded') === 'true';
     }
 
-    #toggleSidebar(): void {
-        if (this.#sidebarIsOpen()) {
-            this.#closeSidebarInternal();
+    toggleSidebar(): void {
+        if (this.sidebarIsOpen()) {
+            this.closeSidebar();
         } else {
-            this.#openSidebar();
+            this.openSidebar();
         }
     }
 
-    #openSidebar(): void {
+    openSidebar(): void {
         this.$body.addClass('has-sidebar');
         this.$content.addClass('has-sidebar');
         this.$sidebar.removeClass('hidden');
-        this.#$sidebarToggleBtn.attr('aria-expanded', 'true');
+        this.$sidebarToggleBtn.attr('aria-expanded', 'true');
         this.$sidebar.find(':focusable').first().focus();
 
         uiLayerManager().addLayer(this.$sidebar[0]);
         uiLayerManager().registerShortcut(ESC_KEY, () => {
-            this.#closeSidebarInternal();
+            this.closeSidebar();
         });
     }
 
-    #closeSidebarInternal(): void {
-        if (!this.#$sidebarToggleBtn) return;
+    closeSidebar(): void {
+        if (!this.$sidebarToggleBtn) return;
 
-        if (this.#sidebarIsOpen()) {
+        if (this.sidebarIsOpen()) {
             uiLayerManager().removeLayer();
         }
 
         this.$sidebar.addClass('hidden');
-        this.#$sidebarToggleBtn.attr('aria-expanded', 'false');
+        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
 
         const focusedEl = document.activeElement;
         if (focusedEl && this.$sidebar[0].contains(focusedEl)) {
-            this.#$sidebarToggleBtn.focus();
+            this.$sidebarToggleBtn.focus();
         }
 
         this.$body.removeClass('has-sidebar');
         this.$content.removeClass('has-sidebar');
     }
 
-    /** Exposed for `onHide` to close the sidebar before hiding. */
-    protected closeSidebar(): void {
-        this.#closeSidebarInternal();
-    }
-
-    #getActiveSourceName(): string {
+    getActiveSourceName(): string {
         return this.$sidebar.find('.sel').text();
     }
 
@@ -312,21 +328,21 @@ export class BaseElementSelectorModal extends Modal {
     }
 
     onSelectSource(): void {
-        this.#updateHeading();
+        this.updateHeading();
         this.updateModalBottomPadding();
     }
 
-    #updateHeading(): void {
-        if (!this.#$mainHeading) return;
-        this.#$mainHeading.text(this.#getActiveSourceName());
+    updateHeading(): void {
+        if (!this.$mainHeading) return;
+        this.$mainHeading.text(this.getActiveSourceName());
     }
 
     updateSelectBtnState(): void {
         if (this.$selectBtn) {
             if (this.shouldEnableSelectBtn()) {
-                this.#enableSelectBtn();
+                this.enableSelectBtn();
             } else {
-                this.#disableSelectBtn();
+                this.disableSelectBtn();
             }
         }
     }
@@ -339,11 +355,11 @@ export class BaseElementSelectorModal extends Modal {
         return !!this.elementIndex?.getSelectedElements().length;
     }
 
-    #enableSelectBtn(): void {
+    enableSelectBtn(): void {
         this.$selectBtn.removeClass('disabled').attr('aria-disabled', 'false');
     }
 
-    #disableSelectBtn(): void {
+    disableSelectBtn(): void {
         this.$selectBtn.addClass('disabled').attr('aria-disabled', 'true');
     }
 

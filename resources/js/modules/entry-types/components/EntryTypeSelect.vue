@@ -18,6 +18,7 @@
     import type {SlideoutInstance} from '@/common/types/globals';
     import EntryTypeChip from '@/modules/entry-types/components/EntryTypeChip.vue';
     import SlideoutButton from '@/common/components/SlideoutButton.vue';
+    import type {SlideoutSaveResult} from '@/common/slideouts';
     import {router} from '@inertiajs/vue3';
     import DragShadow from '@/common/components/DragShadow.vue';
     import {
@@ -95,6 +96,17 @@
         );
     }
 
+    function selectCreatedEntryType({data}: SlideoutSaveResult) {
+        const entryType = data?.entryType as EntryType | undefined;
+
+        if (!entryType) {
+            throw new Error('The created entry type was not returned.');
+        }
+
+        emit('update:modelValue', [...props.modelValue, entryType]);
+        router.reload({only: ['entryTypes']});
+    }
+
     const slideout = ref<SlideoutInstance | undefined>(undefined);
     const overrides = ref({});
 
@@ -128,10 +140,7 @@
             },
         });
 
-        const form = slideout.$container[0];
-        if (!form) {
-            return;
-        }
+        const form = slideout.$container[0]!;
 
         form.addEventListener('submit', async (event: SubmitEvent) => {
             event.preventDefault();
@@ -182,7 +191,7 @@
         });
 
         // Bind up the buttons
-        form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
+        form.querySelectorAll<HTMLElement>('[data-action]').forEach((el) => {
             el.addEventListener('click', (e: Event) => {
                 const target = e.target as HTMLElement;
                 if (!target) {
@@ -271,14 +280,14 @@
                     :description="entryType.description"
                     :draggable="modelValue.length > 1"
                     :indicators="entryType.indicators"
-                    :actions="[
-                        {
-                            label: t('Settings'),
-                            icon: 'gear',
-                            onClick: () => openSlideout(entryType.id),
-                        },
-                        ...(!readOnly
+                    :actions="
+                        !readOnly
                             ? [
+                                  {
+                                      label: t('Settings'),
+                                      icon: 'gear',
+                                      onClick: () => openSlideout(entryType.id),
+                                  },
                                   {
                                       label: t('Remove'),
                                       variant: 'danger',
@@ -286,8 +295,8 @@
                                       onClick: () => removeItem(entryType.id),
                                   },
                               ]
-                            : []),
-                    ]"
+                            : []
+                    "
                     @handle-ref="(el) => setHandleRef(el, entryType.id)"
                 >
                     <template #drag-handle>
@@ -385,7 +394,7 @@
         <SlideoutButton
             v-if="!readOnly"
             :url="create().url"
-            @success="router.reload({only: ['entryTypes']})"
+            @success="selectCreatedEntryType"
         >
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ t('Create') }}

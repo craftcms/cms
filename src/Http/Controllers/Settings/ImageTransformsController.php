@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ImageTransformEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
-use CraftCms\Cms\Image\Enums\ImageTransformQuality;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,12 +32,17 @@ class ImageTransformsController
 {
     use RespondsWithFlash;
 
+    public function __construct(
+        private readonly GeneralConfig $generalConfig,
+        private readonly FormResolver $formResolver,
+    ) {}
+
     public function index(ImageTransforms $imageTransforms): \Inertia\Response
     {
         return Inertia::render('settings/assets/transforms/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets/transforms')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets/transforms')],
                 ['label' => t('Image Transforms')],
             ],
             'subnav' => [
@@ -110,6 +119,36 @@ class ImageTransformsController
         );
     }
 
+    public function renderForm(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
+    {
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.transformId' => ['nullable', 'integer'],
+            'values.name' => ['nullable', 'string'],
+            'values.handle' => ['nullable', 'string'],
+            'values.width' => ['nullable', 'integer', 'min:1'],
+            'values.height' => ['nullable', 'integer', 'min:1'],
+            'values.mode' => ['required', Rule::enum(ImageTransformMode::class)],
+            'values.position' => ['required', Rule::enum(ImageTransformPosition::class)],
+            'values.quality' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'values.interlace' => ['required', Rule::enum(ImageTransformInterlace::class)],
+            'values.format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
+            'values.fill' => ['nullable', 'string'],
+            'values.upscale' => ['required', 'boolean'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+        $values = $data['values'];
+        $transform = empty($values['transformId'])
+            ? new ImageTransform
+            : $imageTransforms->getTransformById((int) $values['transformId']);
+
+        abort_if($transform === null, 404, 'Transform not found');
+
+        return new JsonResponse([
+            'form' => $this->viewModel($transform, $images, $values)->form(),
+        ]);
+    }
+
     public function destroy(ImageTransforms $imageTransforms, int $transformId): Response
     {
         $imageTransforms->deleteTransformById($transformId);
@@ -130,25 +169,18 @@ class ImageTransformsController
             ->addCrumb(t('Image Transforms'), 'settings/assets/transforms')
             ->addCrumb($title)
             ->redirectUrl('settings/assets/transforms')
-            ->inertiaPage('settings/assets/transforms/Edit', [
-                'transform' => $transform,
-                'modeOptions' => ImageTransformMode::asOptions(),
-                'positionOptions' => ImageTransformPosition::asOptions(),
-                'interlaceOptions' => ImageTransformInterlace::asOptions(),
-                'formatOptions' => $this->formatOptions($images, $transform),
-                'qualityOptions' => ImageTransformQuality::asOptions(),
-            ]);
+            ->inertiaPage('settings/assets/transforms/Edit', $this->viewModel($transform, $images));
     }
 
-    /**
-     * @return array<int, array{label: string, value: string|int}>
-     */
-    private function formatOptions(Images $images, ImageTransform $transform): array
+    /** @param array<string, mixed>|null $values */
+    private function viewModel(ImageTransform $transform, Images $images, ?array $values = null): ImageTransformEditViewModel
     {
-        return collect(ImageTransformFormat::asOptions())
-            ->prepend(['label' => t('Auto'), 'value' => ''])
-            ->reject(fn (array $option) => $transform->format !== $option['value'] && $option['value'] !== '' && ! $images->supportsFormat($option['value']))
-            ->values()
-            ->all();
+        return new ImageTransformEditViewModel(
+            $transform,
+            $images,
+            $this->formResolver,
+            readOnly: ! $this->generalConfig->allowAdminChanges,
+            values: $values,
+        );
     }
 }

@@ -1,13 +1,17 @@
 import {Base, HUD} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
+import {
+    canUseVueSlideout,
+    openLayoutComponentSettings,
+} from './settings-slideout';
 import {Element as FldElement} from './element';
 import {
-  firstFocusableInSiblings,
-  fldElementData,
-  fldTabData,
-  hudData,
+    firstFocusableInSiblings,
+    fldElementData,
+    fldTabData,
+    hudData,
 } from './support';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem} from '@craftcms/ui';
 
 declare const Craft: any;
 declare const $: any;
@@ -19,392 +23,441 @@ declare const $: any;
  * `craft-action-menu` web component.
  */
 export class Tab extends Base {
-  designer: FieldLayoutDesigner;
-  uid: any = null;
-  $container: any = null;
-  $addBtn: any = null;
-  $actionBtn: any = null;
-  slideout: any = null;
-  settingsNamespace: any = null;
-  hud: any = null;
-  destroyed = false;
+    designer: FieldLayoutDesigner;
+    uid: any = null;
+    $container: any = null;
+    $addBtn: any = null;
+    $actionBtn: any = null;
+    slideout: any = null;
+    hud: any = null;
+    destroyed = false;
 
-  constructor(designer: FieldLayoutDesigner, $container: any) {
-    super();
-    this.designer = designer;
-    this.$container = $container;
-    fldTabData.set(this.$container, this);
-    this.uid = this.$container.dataset.uid;
+    constructor(designer: FieldLayoutDesigner, $container: any) {
+        super();
+        this.designer = designer;
+        this.$container = $container;
+        fldTabData.set(this.$container, this);
+        this.uid = this.$container.dataset.uid;
 
-    // New tab?
-    if (!this.uid) {
-      this.uid = Craft.uuid();
-      this.config = {
-        uid: this.uid,
-        name:
-          this.$container.querySelector('.tabs .tab .fld-tab__name')
-            ?.textContent ?? '',
-        elements: [],
-      };
-    }
-
-    if (this.designer.settings!.customizableTabs) {
-      this.createMenu();
-    }
-
-    // initialize the elements
-    const $tabContent = this.$container.querySelector(
-      ':scope > .fld-tabcontent'
-    );
-
-    this.addListener($tabContent, 'resize', () => {
-      this.designer.tabGrid.refreshCols(true);
-    });
-
-    this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
-
-    const hud = (this.hud = new HUD(this.$addBtn, {
-      hudClass: 'hud fld-library-hud',
-      listenToMainResize: false,
-      showOnInit: false,
-      orientations: ['right', 'bottom', 'left'],
-    }));
-    // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
-    // with the FLD WeakMap so `designer.getActiveHud()` can find it.
-    hudData.set(hud.$hud!, hud);
-    hud.on('show', () => {
-      hud.$main!.appendChild(this.designer.$libraryContainer);
-      this.designer.libraryPicker?.select(0);
-      this.designer.$fieldSearch.focus();
-      this.designer.clearSearch();
-      this.designer.$fieldLibrary.scrollTop = 0;
-    });
-    hud.on('hide', () => {
-      this.$addBtn.focus();
-    });
-
-    this.addListener(this.$addBtn, 'activate', () => {
-      hud.show();
-    });
-
-    const $elements = (
-      Array.from($tabContent.children) as HTMLElement[]
-    ).filter((el) => el !== this.$addBtn);
-
-    for (const el of $elements) {
-      this.initElement(el);
-    }
-  }
-
-  createMenu(): void {
-    const $tab = this.$container.querySelector('.tabs .tab');
-
-    const menu = document.createElement('craft-action-menu');
-    menu.label = Craft.t('app', 'Actions');
-    // Disable the generated (default ellipsis) invoker when read-only.
-    menu.disabled = !!this.designer.settings!.readOnly;
-    // Anchor the settings slideout (focus return) to the menu element, since the
-    // default invoker lives inside the web component's light DOM.
-    this.$actionBtn = menu;
-
-    // Provider function — re-evaluated each time the menu opens, so move items
-    // reflect the tab's current sibling state (replacing the legacy
-    // `on('show')` + `toggleItem` logic).
-    menu.actions = (): ActionMenuItem[] => {
-      const items: ActionMenuItem[] = [
-        {
-          label: Craft.t('app', 'Settings'),
-          icon: 'gear',
-          onClick: () => {
-            this.createSettings();
-          },
-        },
-        {type: 'hr'},
-      ];
-
-      const prev = this.$container.previousElementSibling;
-      const next = this.$container.nextElementSibling;
-      const hasPrev = !!(prev && prev.matches('.fld-tab'));
-      const hasNext = !!(next && next.matches('.fld-tab'));
-
-      if (hasPrev) {
-        items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the left')
-              : Craft.t('app', 'Move to the right'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
-          onClick: () => {
-            this.moveLeft();
-          },
-        });
-      }
-
-      if (hasNext) {
-        items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the right')
-              : Craft.t('app', 'Move to the left'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
-          onClick: () => {
-            this.moveRight();
-          },
-        });
-      }
-
-      items.push(
-        {type: 'hr'},
-        {
-          label: Craft.t('app', 'Remove'),
-          icon: 'xmark',
-          variant: 'danger',
-          onClick: () => {
-            this.destroy();
-          },
+        // New tab?
+        if (!this.uid) {
+            this.uid = Craft.uuid();
+            this.config = {
+                uid: this.uid,
+                name:
+                    this.$container.querySelector('.tabs .tab .fld-tab__name')
+                        ?.textContent ?? '',
+                elements: [],
+            };
         }
-      );
 
-      return items;
-    };
+        if (this.designer.settings!.customizableTabs) {
+            this.createMenu();
+        }
 
-    $tab.appendChild(menu);
-  }
+        // initialize the elements
+        const $tabContent = this.$container.querySelector(
+            ':scope > .fld-tabcontent'
+        );
 
-  async createSettings(): Promise<void> {
-    let data;
-    try {
-      const response = await Craft.sendActionRequest(
-        'POST',
-        'fields/render-layout-component-settings',
-        {
-          data: {
+        this.addListener($tabContent, 'resize', () => {
+            this.designer.tabGrid.refreshCols(true);
+        });
+
+        this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
+
+        const hud = (this.hud = new HUD(this.$addBtn, {
+            hudClass: 'hud fld-library-hud',
+            listenToMainResize: false,
+            showOnInit: false,
+            orientations: ['right', 'bottom', 'left'],
+        }));
+        // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
+        // with the FLD WeakMap so `designer.getActiveHud()` can find it.
+        hudData.set(hud.$hud!, hud);
+        hud.on('show', () => {
+            hud.$main!.appendChild(this.designer.$libraryContainer);
+            this.designer.libraryPicker?.select(0);
+            this.designer.$fieldSearch.focus();
+            this.designer.clearSearch();
+            this.designer.$fieldLibrary.scrollTop = 0;
+        });
+        hud.on('hide', () => {
+            this.$addBtn.focus();
+        });
+
+        this.addListener(this.$addBtn, 'activate', () => {
+            hud.show();
+        });
+
+        const $elements = (
+            Array.from($tabContent.children) as HTMLElement[]
+        ).filter((el) => el !== this.$addBtn);
+
+        for (const el of $elements) {
+            this.initElement(el);
+        }
+    }
+
+    createMenu(): void {
+        const $tab = this.$container.querySelector('.tabs .tab');
+
+        const menu = document.createElement('craft-action-menu');
+        menu.label = Craft.t('app', 'Actions');
+        // Disable the generated (default ellipsis) invoker when read-only.
+        menu.disabled = !!this.designer.settings!.readOnly;
+        // Anchor the settings slideout (focus return) to the menu element, since the
+        // default invoker lives inside the web component's light DOM.
+        this.$actionBtn = menu;
+
+        // Provider function — re-evaluated each time the menu opens, so move items
+        // reflect the tab's current sibling state (replacing the legacy
+        // `on('show')` + `toggleItem` logic).
+        menu.actions = (): ActionMenuItem[] => {
+            const items: ActionMenuItem[] = [
+                {
+                    label: Craft.t('app', 'Settings'),
+                    icon: 'gear',
+                    onClick: () => {
+                        this.createSettings();
+                    },
+                },
+                {type: 'hr'},
+            ];
+
+            const prev = this.$container.previousElementSibling;
+            const next = this.$container.nextElementSibling;
+            const hasPrev = !!(prev && prev.matches('.fld-tab'));
+            const hasNext = !!(next && next.matches('.fld-tab'));
+
+            if (hasPrev) {
+                items.push({
+                    label:
+                        Craft.orientation === 'ltr'
+                            ? Craft.t('app', 'Move to the left')
+                            : Craft.t('app', 'Move to the right'),
+                    icon:
+                        Craft.orientation === 'ltr'
+                            ? 'arrow-left'
+                            : 'arrow-right',
+                    onClick: () => {
+                        this.moveLeft();
+                    },
+                });
+            }
+
+            if (hasNext) {
+                items.push({
+                    label:
+                        Craft.orientation === 'ltr'
+                            ? Craft.t('app', 'Move to the right')
+                            : Craft.t('app', 'Move to the left'),
+                    icon:
+                        Craft.orientation === 'ltr'
+                            ? 'arrow-right'
+                            : 'arrow-left',
+                    onClick: () => {
+                        this.moveRight();
+                    },
+                });
+            }
+
+            items.push(
+                {type: 'hr'},
+                {
+                    label: Craft.t('app', 'Remove'),
+                    icon: 'xmark',
+                    variant: 'danger',
+                    onClick: () => {
+                        this.destroy();
+                    },
+                }
+            );
+
+            return items;
+        };
+
+        $tab.appendChild(menu);
+    }
+
+    private settingsRequestData(): Record<string, unknown> {
+        return {
             uid: this.uid,
             layoutConfig: this.designer.config,
             elementType: this.designer.settings!.elementType,
-          },
+        };
+    }
+
+    async createSettings(): Promise<void> {
+        let data;
+        try {
+            const response = await Craft.sendActionRequest(
+                'POST',
+                'fields/render-layout-component-settings',
+                {
+                    data: {
+                        ...this.settingsRequestData(),
+                    },
+                }
+            );
+            data = response.data;
+        } catch (e: any) {
+            Craft.cp.displayError(e?.response?.data?.message);
+            throw e;
         }
-      );
-      data = response.data;
-    } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
-      throw e;
+
+        if (canUseVueSlideout()) {
+            await openLayoutComponentSettings(data, {
+                title: this.config?.name || Craft.t('app', 'Settings'),
+                triggerElement: this.$actionBtn,
+                requestData: () => this.settingsRequestData(),
+                apply: (settings) => this.applyTabSettings(settings),
+            });
+
+            return;
+        }
+
+        this.slideout = await FieldLayoutDesigner.createSlideout(data, {
+            triggerElement: this.$actionBtn,
+            requestData: () => this.settingsRequestData(),
+        });
+
+        // slideout.$container is a Craft jQuery object; bind on the native form.
+        this.addListener(this.slideout.$container[0], 'submit', (ev: any) => {
+            ev.preventDefault();
+            this.applySettings();
+        });
+        this.slideout.on('close', () => {
+            this.slideout.destroy();
+            this.slideout = null;
+        });
     }
 
-    this.settingsNamespace = data.namespace;
-    this.slideout = await FieldLayoutDesigner.createSlideout(data, {
-      triggerElement: this.$actionBtn,
-    });
+    applySettings(): void {
+        const $container = this.slideout.$container[0];
+        const settingsForm = this.slideout.settingsForm;
+        const settings = settingsForm?.currentValues() ?? {};
 
-    // slideout.$container is a Craft jQuery object; bind on the native form.
-    this.addListener(this.slideout.$container[0], 'submit', (ev: any) => {
-      ev.preventDefault();
-      this.applySettings();
-    });
-    this.slideout.on('close', () => {
-      this.slideout.destroy();
-      this.slideout = null;
-    });
-  }
+        // update the UI
+        const $submitBtn = $container.querySelector('button[type=submit]');
+        $submitBtn?.classList.add('loading');
 
-  applySettings(): void {
-    const $container = this.slideout.$container[0];
-    const $nameInput = $container.querySelector('[name$="[name]"]');
-    if (!$nameInput?.value) {
-      Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
-      return;
+        this.applyTabSettings(settings)
+            .catch((e: any) => {
+                Craft.cp.displayError(
+                    e?.name === 'TabNameRequired' ? e.message : undefined
+                );
+            })
+            .finally(() => {
+                $submitBtn?.classList.remove('loading');
+                this.slideout?.close();
+            });
     }
 
-    // update the UI
-    const $submitBtn = $container.querySelector('button[type=submit]');
-    $submitBtn?.classList.add('loading');
+    /**
+     * Persists the tab's settings and re-renders its label.
+     *
+     * Rejects on failure so the Vue settings panel can surface the errors
+     * against the fields they belong to.
+     */
+    async applyTabSettings(settings: Record<string, unknown>): Promise<void> {
+        if (!settings.name) {
+            const message = Craft.t('app', 'You must specify a tab name.');
 
-    const config = Object.assign({}, this.config);
-    delete config.elements;
+            throw Object.assign(new Error(message), {
+                name: 'TabNameRequired',
+                response: {data: {errors: {name: message}}},
+            });
+        }
 
-    Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
-      data: {
-        uid: this.uid,
-        layoutConfig: this.designer.config,
-        elementType: this.designer.settings!.elementType,
-        config,
-        settingsNamespace: this.settingsNamespace,
-        settings: serializeFormInputs(this.slideout.$container[0]),
-      },
-    })
-      .then((response: any) => {
-        this.updateConfig((config) =>
-          Object.assign(response.data.config, {elements: config.elements})
+        const config = Object.assign({}, this.config);
+        delete config.elements;
+
+        const response = await Craft.sendActionRequest(
+            'POST',
+            'fields/apply-layout-tab-settings',
+            {
+                data: {
+                    ...this.settingsRequestData(),
+                    config,
+                    settings,
+                },
+            }
         );
+
+        this.updateConfig((config) =>
+            Object.assign(response.data.config, {elements: config.elements})
+        );
+
         // Preserve the action menu across the label re-render.
         const $label = this.$container.querySelector('.tabs .tab');
         const $menu = $label.querySelector(':scope > craft-action-menu');
         $menu?.remove();
         $label.innerHTML = response.data.labelHtml;
         if ($menu) {
-          $label.appendChild($menu);
+            $label.appendChild($menu);
         }
-        this.slideout.close();
-      })
-      .catch((e: any) => {
-        Craft.cp.displayError();
-        console.error(e);
-      })
-      .finally(() => {
-        $submitBtn?.classList.remove('loading');
-        this.slideout.close();
-      });
-  }
-
-  moveLeft(): void {
-    const $prev = this.$container.previousElementSibling;
-    if ($prev && $prev.matches('.fld-tab')) {
-      $prev.before(this.$container);
-      this.updatePositionInConfig();
-    }
-  }
-
-  moveRight(): void {
-    const $next = this.$container.nextElementSibling;
-    if ($next && $next.matches('.fld-tab')) {
-      $next.after(this.$container);
-      this.updatePositionInConfig();
-    }
-  }
-
-  initElement($element: any): FldElement {
-    return new FldElement(this, $element);
-  }
-
-  get index(): number {
-    return this.designer.config.tabs.findIndex((c: any) => c.uid === this.uid);
-  }
-
-  get config(): any {
-    if (!this.uid) {
-      throw 'Tab is missing its UID';
-    }
-    let config = this.designer.config.tabs.find((c: any) => c.uid === this.uid);
-    if (!config) {
-      config = {
-        uid: this.uid,
-        elements: [],
-      };
-      this.config = config;
-    }
-    return config;
-  }
-
-  set config(config: any) {
-    if (this.destroyed) {
-      return;
     }
 
-    // Is the name changing?
-    if (config.name && config.name !== this.config.name) {
-      const $name = this.$container.querySelector('.tabs .tab .fld-tab__name');
-      if ($name) {
-        $name.textContent = config.name;
-      }
+    moveLeft(): void {
+        const $prev = this.$container.previousElementSibling;
+        if ($prev && $prev.matches('.fld-tab')) {
+            $prev.before(this.$container);
+            this.updatePositionInConfig();
+        }
     }
 
-    const designerConfig = this.designer.config;
-    const index = this.index;
-    if (index !== -1) {
-      designerConfig.tabs[index] = config;
-    } else {
-      const siblings = Array.from(
-        this.$container.parentElement.querySelectorAll(':scope > .fld-tab')
-      );
-      const newIndex = siblings.indexOf(this.$container);
-      designerConfig.tabs.splice(newIndex, 0, config);
-    }
-    this.designer.config = designerConfig;
-  }
-
-  updateConfig(callback: (config: any) => any): void {
-    if (this.destroyed) {
-      return;
+    moveRight(): void {
+        const $next = this.$container.nextElementSibling;
+        if ($next && $next.matches('.fld-tab')) {
+            $next.after(this.$container);
+            this.updatePositionInConfig();
+        }
     }
 
-    const config = callback(this.config);
-    if (config !== false) {
-      this.config = config;
-    }
-  }
-
-  updatePositionInConfig(): void {
-    if (this.destroyed) {
-      return;
+    initElement($element: any): FldElement {
+        return new FldElement(this, $element);
     }
 
-    this.designer.updateConfig((config) => {
-      const tabConfig = this.config;
-      const oldIndex = this.index;
-      const siblings = Array.from(
-        this.$container.parentElement.querySelectorAll(':scope > .fld-tab')
-      );
-      const newIndex = siblings.indexOf(this.$container);
-      if (oldIndex !== -1) {
-        config.tabs.splice(oldIndex, 1);
-      }
-      config.tabs.splice(newIndex, 0, tabConfig);
-      return config;
-    });
-  }
-
-  /**
-   * Release this tab's controller resources for a designer reboot (host innerHTML
-   * swap). Unlike {@link destroy}, this does NOT mutate the config, move focus, or
-   * remove DOM — it only disposes what outlives the detached tab subtree: the HUD
-   * (lives in `<body>`) and any open settings slideout. Detached-node listeners are
-   * released by `super.destroy()` / GC.
-   */
-  dispose(): void {
-    if (this.destroyed) {
-      return;
+    get index(): number {
+        return this.designer.config.tabs.findIndex(
+            (c: any) => c.uid === this.uid
+        );
     }
 
-    this.destroyed = true;
-    this.hud?.destroy();
-    this.slideout?.destroy?.();
-    super.destroy();
-  }
-
-  override destroy(): void {
-    if (this.destroyed) {
-      return;
+    get config(): any {
+        if (!this.uid) {
+            throw 'Tab is missing its UID';
+        }
+        let config = this.designer.config.tabs.find(
+            (c: any) => c.uid === this.uid
+        );
+        if (!config) {
+            config = {
+                uid: this.uid,
+                elements: [],
+            };
+            this.config = config;
+        }
+        return config;
     }
 
-    this.destroyed = true;
+    set config(config: any) {
+        if (this.destroyed) {
+            return;
+        }
 
-    this.designer.updateConfig((config) => {
-      const index = this.index;
-      if (index === -1) {
-        return false;
-      }
-      config.tabs.splice(index, 1);
-      return config;
-    });
+        // Is the name changing?
+        if (config.name && config.name !== this.config.name) {
+            const $name = this.$container.querySelector(
+                '.tabs .tab .fld-tab__name'
+            );
+            if ($name) {
+                $name.textContent = config.name;
+            }
+        }
 
-    // First destroy the tab's elements
-    this.$container
-      .querySelectorAll('.fld-element')
-      .forEach((el: HTMLElement) => fldElementData.get(el)?.destroy());
-
-    // Set focus to the closest tab's first focusable element
-    const $focusElement = firstFocusableInSiblings(this.$container);
-    if ($focusElement) {
-      $focusElement.focus();
-    } else {
-      this.designer.$newTabBtn.focus();
+        const designerConfig = this.designer.config;
+        const index = this.index;
+        if (index !== -1) {
+            designerConfig.tabs[index] = config;
+        } else {
+            const siblings = Array.from(
+                this.$container.parentElement.querySelectorAll(
+                    ':scope > .fld-tab'
+                )
+            );
+            const newIndex = siblings.indexOf(this.$container);
+            designerConfig.tabs.splice(newIndex, 0, config);
+        }
+        this.designer.config = designerConfig;
     }
 
-    this.designer.tabGrid.removeItems($(this.$container));
-    this.designer.tabDrag!.removeItems(this.$container);
-    this.$container.remove();
-    this.designer.refreshSelectedFields();
+    updateConfig(callback: (config: any) => any): void {
+        if (this.destroyed) {
+            return;
+        }
 
-    super.destroy();
-  }
+        const config = callback(this.config);
+        if (config !== false) {
+            this.config = config;
+        }
+    }
+
+    updatePositionInConfig(): void {
+        if (this.destroyed) {
+            return;
+        }
+
+        this.designer.updateConfig((config) => {
+            const tabConfig = this.config;
+            const oldIndex = this.index;
+            const siblings = Array.from(
+                this.$container.parentElement.querySelectorAll(
+                    ':scope > .fld-tab'
+                )
+            );
+            const newIndex = siblings.indexOf(this.$container);
+            if (oldIndex !== -1) {
+                config.tabs.splice(oldIndex, 1);
+            }
+            config.tabs.splice(newIndex, 0, tabConfig);
+            return config;
+        });
+    }
+
+    /**
+     * Release this tab's controller resources for a designer reboot (host innerHTML
+     * swap). Unlike {@link destroy}, this does NOT mutate the config, move focus, or
+     * remove DOM — it only disposes what outlives the detached tab subtree: the HUD
+     * (lives in `<body>`) and any open settings slideout. Detached-node listeners are
+     * released by `super.destroy()` / GC.
+     */
+    dispose(): void {
+        if (this.destroyed) {
+            return;
+        }
+
+        this.destroyed = true;
+        this.hud?.destroy();
+        this.slideout?.destroy?.();
+        super.destroy();
+    }
+
+    override destroy(): void {
+        if (this.destroyed) {
+            return;
+        }
+
+        this.destroyed = true;
+
+        this.designer.updateConfig((config) => {
+            const index = this.index;
+            if (index === -1) {
+                return false;
+            }
+            config.tabs.splice(index, 1);
+            return config;
+        });
+
+        // First destroy the tab's elements
+        this.$container
+            .querySelectorAll('.fld-element')
+            .forEach((el: HTMLElement) => fldElementData.get(el)?.destroy());
+
+        // Set focus to the closest tab's first focusable element
+        const $focusElement = firstFocusableInSiblings(this.$container);
+        if ($focusElement) {
+            $focusElement.focus();
+        } else {
+            this.designer.$newTabBtn.focus();
+        }
+
+        this.designer.tabGrid.removeItems($(this.$container));
+        this.designer.tabDrag!.removeItems(this.$container);
+        this.$container.remove();
+        this.designer.refreshSelectedFields();
+
+        super.destroy();
+    }
 }

@@ -42,6 +42,7 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -67,6 +68,7 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 use RuntimeException;
 use Stringable;
@@ -106,7 +108,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      *
-     * @see FieldInterface::getInputHtml()
+     * @see FieldInterface::formControl()
      */
     public ?string $describedBy = null;
 
@@ -294,6 +296,11 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public static function icon(): string
     {
         return 'i-cursor';
+    }
+
+    public function formControl(FieldContext $context): Control
+    {
+        throw new LogicException(sprintf('%s does not provide a Form Control.', static::class));
     }
 
     public static function isMultiInstance(): bool
@@ -484,9 +491,15 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             ];
             HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 (() => {
-$('#' + $id).on('activate', () => {
-new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {
-  params: $params,
+const action = $('#' + $id);
+action.on('activate', () => {
+Craft.openSlideout(Craft.getCpUrl('settings/fields/edit', $params), {
+  onSaved: ({data}) => {
+    action[0].dispatchEvent(new CustomEvent('field-saved', {
+      bubbles: true,
+      detail: data,
+    }));
+  },
 })
 });
 })();
@@ -585,21 +598,6 @@ JS, [
         return $this->normalizeValue($value, $element);
     }
 
-    public function getInputHtml(mixed $value, ?ElementInterface $element): string
-    {
-        $html = $this->inputHtml($value, $element, false);
-
-        event($event = new FieldHtmlResolving(
-            field: $this,
-            value: $value,
-            inline: false,
-            element: $element,
-            html: $html,
-        ));
-
-        return $event->html;
-    }
-
     /**
      * @see InlineEditableFieldInterface::getInlineInputHtml()
      */
@@ -626,18 +624,10 @@ JS, [
      * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
      * @param  bool  $inline  Whether this is for an inline edit form.
      * @return string The input HTML.
-     *
-     * @see getInputHtml()
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return Html::textarea($this->handle, $value)->render();
-    }
-
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        // Just return the input HTML with disabled inputs by default
-        return Html::disableInputs(fn () => $this->getInputHtml($value, $element));
     }
 
     public function prepareForElementValidation(mixed $value): mixed

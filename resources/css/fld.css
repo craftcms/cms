@@ -15,135 +15,135 @@
 
 /* Designer root + container */
 .layoutdesigner {
-  container-type: inline-size;
+    container-type: inline-size;
 }
 
 .fld-container {
-  display: flex;
-  align-items: stretch;
-  position: relative;
-  border-radius: var(--c-radius-md);
-  box-shadow: none;
-  min-height: 500px;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    border-radius: var(--c-radius-md);
+    box-shadow: none;
+    min-height: 500px;
 }
 
 .errors > .layoutdesigner > .fld-container {
-  border: 1px solid var(--c-color-danger-border-normal);
+    border: 1px solid var(--c-color-danger-border-normal);
 }
 
 /* Workspace */
 .fld-workspace {
-  flex: 1;
-  max-width: 100%;
-  border-start-start-radius: calc(var(--c-radius-sm) - 1px);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-  border-end-start-radius: calc(var(--c-radius-sm) - 1px);
-  padding-inline: 24px 0;
-  padding-block: 24px;
-  background: var(--workspace-bg);
-  background-position: -1px -1px;
-  box-shadow: var(--c-shadow-sunken);
+    flex: 1;
+    max-width: 100%;
+    border-start-start-radius: calc(var(--c-radius-sm) - 1px);
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: calc(var(--c-radius-sm) - 1px);
+    padding-inline: 24px 0;
+    padding-block: 24px;
+    background: var(--workspace-bg);
+    background-position: -1px -1px;
+    box-shadow: var(--c-shadow-sunken);
 }
 
 .fld-tabs {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 /* Tabs */
 .fld-tab {
-  width: 312px;
-  max-width: 100%;
-  padding-inline: 0 25px;
-  padding-block: 0 24px;
-  box-sizing: border-box;
+    width: 312px;
+    max-width: 100%;
+    padding-inline: 0 25px;
+    padding-block: 0 24px;
+    box-sizing: border-box;
 }
 
 .fld-tab .tabs {
-  margin-block: -10px 0;
-  margin-inline: -12px;
-  padding-block: 10px 0;
-  padding-inline: 12px;
-  overflow: hidden;
-  display: flex;
+    margin-block: -10px 0;
+    margin-inline: -12px;
+    padding-block: 10px 0;
+    padding-inline: 12px;
+    overflow: hidden;
+    display: flex;
 }
 
 .fld-tab .tab {
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-sm);
-  max-width: calc(100% - 10px);
-  box-sizing: border-box;
-  padding-block: 8px;
-  padding-inline: 14px;
-  border-radius: var(--c-radius-md) var(--c-radius-md) 0 0;
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    max-width: calc(100% - 10px);
+    box-sizing: border-box;
+    padding-block: 8px;
+    padding-inline: 14px;
+    border-radius: var(--c-radius-md) var(--c-radius-md) 0 0;
 }
 
 body:not(.dragging) .fld-tab .tab.draggable {
-  cursor: move;
-  cursor: grab;
+    cursor: move;
+    cursor: grab;
 }
 
 .fld-tab__name {
-  margin-block: 0;
-  font-size: var(--c-text-base);
-  font-weight: normal;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    margin-block: 0;
+    font-size: var(--c-text-base);
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Tab + tab content surface */
 .fld-tab .tab,
 .fld-tabcontent {
-  background-color: var(--c-surface-overlay);
-  box-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
+    background-color: var(--c-surface-overlay);
+    box-shadow:
+        0 0 0 1px hsl(210deg 24% 16% / 10%),
+        0 2px 5px -2px hsl(210deg 24% 16% / 20%);
 }
 
 .fld-tabcontent {
-  display: grid;
-  gap: var(--c-spacing-sm);
-  padding: var(--c-spacing-lg);
-  border-start-start-radius: 0;
-  border-start-end-radius: var(--c-radius-md);
-  border-end-end-radius: var(--c-radius-md);
-  border-end-start-radius: var(--c-radius-md);
+    display: grid;
+    gap: var(--c-spacing-sm);
+    padding: var(--c-spacing-lg);
+    border-start-start-radius: 0;
+    border-start-end-radius: var(--c-radius-md);
+    border-end-end-radius: var(--c-radius-md);
+    border-end-start-radius: var(--c-radius-md);
 }
 
 .fld-tab.fld-insertion .tab,
 .fld-tab.fld-insertion .fld-tabcontent {
-  border: 2px dashed var(--c-color-neutral-border-quiet);
-  box-shadow: none;
-  background-color: var(--c-color-neutral-fill-quiet);
-  background-image: var(--workspace-bg-image);
-  background-size: var(--workspace-bg-size);
+    border: 2px dashed var(--c-color-neutral-border-quiet);
+    box-shadow: none;
+    background-color: var(--c-color-neutral-fill-quiet);
+    background-image: var(--workspace-bg-image);
+    background-size: var(--workspace-bg-size);
 }
 
 .fld-tab.fld-insertion .tab {
-  background-position: -1px -1px;
+    background-position: -1px -1px;
 }
 
 .fld-tab.fld-insertion .fld-tabcontent {
-  background-position: -1px -13px;
+    background-position: -1px -13px;
 }
 
 .fld-tab-caboose {
-  min-height: 24px;
+    min-height: 24px;
 }
 
 .fld-new-tab-btn {
-  background: var(--c-surface-overlay);
-  box-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
+    background: var(--c-surface-overlay);
+    box-shadow:
+        0 0 0 1px hsl(210deg 24% 16% / 10%),
+        0 2px 5px -2px hsl(210deg 24% 16% / 20%);
 }
 
 .fld-new-tab-btn:active {
-  background-color: var(--c-color-neutral-fill-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
 }
 
 /* Layout elements (chips) */
@@ -151,200 +151,200 @@ body:not(.dragging) .fld-tab .tab.draggable {
 /* Settings (gear) action button — shown on tabs and elements */
 .fld-tab .settings::before,
 .fld-element .settings::before {
-  margin-block-start: -2px;
-  font-size: 16px;
-  opacity: 0.5;
+    margin-block-start: -2px;
+    font-size: 16px;
+    opacity: 0.5;
 }
 
 .fld-tab .settings:hover::before,
 .fld-tab .settings.active::before,
 .fld-element .settings:hover::before,
 .fld-element .settings.active::before {
-  opacity: 1;
+    opacity: 1;
 }
 
 .fld-element {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: var(--c-spacing-sm);
-  gap: var(--c-spacing-sm);
-  box-shadow: inset 0 0 0 1px var(--c-color-neutral-border-quiet);
-  border-radius: var(--c-radius-md);
-  background-color: var(--c-surface-overlay);
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: var(--c-spacing-sm);
+    gap: var(--c-spacing-sm);
+    box-shadow: inset 0 0 0 1px var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-md);
+    background-color: var(--c-surface-overlay);
 }
 
 body:not(.dragging) .fld-element {
-  cursor: move;
-  cursor: grab;
+    cursor: move;
+    cursor: grab;
 }
 
 .fld-element.fld-insertion {
-  box-sizing: border-box;
-  border: 2px dashed var(--c-color-neutral-border-quiet);
-  border-radius: var(--c-radius-md);
-  background: none;
-  box-shadow: none;
+    box-sizing: border-box;
+    border: 2px dashed var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-md);
+    background: none;
+    box-shadow: none;
 }
 
 .fld-element.draghelper {
-  box-shadow: 0 1px 5px -1px hsl(210deg 24% 16% / 20%);
+    box-shadow: 0 1px 5px -1px hsl(210deg 24% 16% / 20%);
 }
 
 .fld-element.fld-field {
-  color: var(--c-color-on-quiet);
-  background-color: var(--c-color-fill-quiet);
-  border: 1px solid var(--c-color-border-quiet);
+    color: var(--c-color-on-quiet);
+    background-color: var(--c-color-fill-quiet);
+    border: 1px solid var(--c-color-border-quiet);
 }
 
 .fld-element.fld-field:not(.draghelper, :focus) {
-  box-shadow: none;
+    box-shadow: none;
 }
 
 .fld-element.fld-field .field-name {
-  display: flex;
-  flex-direction: column;
-  gap: var(--c-spacing-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-xs);
 }
 
 .fld-element-icon {
-  text-align: center;
-  align-self: start;
-  position: relative;
-  inset-block-start: calc((1lh - 1em) / 2);
-  width: 1em;
-  height: 1em;
+    text-align: center;
+    align-self: start;
+    position: relative;
+    inset-block-start: calc((1lh - 1em) / 2);
+    width: 1em;
+    height: 1em;
 }
 
 .fld-element-icon svg {
-  width: 90%;
-  height: 90%;
+    width: 90%;
+    height: 90%;
 }
 
 .fld-element-icon svg * {
-  fill: currentColor;
-  stroke-width: 0;
+    fill: currentColor;
+    stroke-width: 0;
 }
 
 .fld-element .field-name {
-  flex: 1;
-  overflow: hidden;
+    flex: 1;
+    overflow: hidden;
 }
 
 .fld-element-label,
 .fld-attribute {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-xs);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
 }
 
 .fld-element-label h4,
 .fld-attribute .smalltext {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fld-element-label h4 {
-  font-weight: normal;
-  color: var(--c-text-default);
-  margin: 0;
+    font-weight: normal;
+    color: var(--c-text-default);
+    margin: 0;
 }
 
 /* UI element dividers (horizontal rule / line break) */
 .fld-hr,
 .fld-br {
-  position: relative;
-  flex: 1;
-  display: flex;
-  justify-content: center;
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
 .fld-hr::before,
 .fld-br::before {
-  position: absolute;
-  display: block;
-  inset-block-start: calc(50% - 2px);
-  inset-inline-start: 0;
-  width: 100%;
-  height: 4px;
-  content: '';
-  font-size: 0;
-  border-radius: 2px;
+    position: absolute;
+    display: block;
+    inset-block-start: calc(50% - 2px);
+    inset-inline-start: 0;
+    width: 100%;
+    height: 4px;
+    content: '';
+    font-size: 0;
+    border-radius: 2px;
 }
 
 .fld-hr__label,
 .fld-br__label {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-  font-size: var(--c-text-sm);
-  color: var(--c-color-on-quiet);
-  background-color: var(--c-color-fill-quiet);
-  border-radius: var(--c-radius-lg);
-  padding-block: 0;
-  padding-inline: var(--c-spacing-md);
-  height: var(--c-size-touch-target-sm);
+    font-size: var(--c-text-sm);
+    color: var(--c-color-on-quiet);
+    background-color: var(--c-color-fill-quiet);
+    border-radius: var(--c-radius-lg);
+    padding-block: 0;
+    padding-inline: var(--c-spacing-md);
+    height: var(--c-size-touch-target-sm);
 }
 
 .fld-hr::before {
-  background-color: var(--c-color-border-quiet);
+    background-color: var(--c-color-border-quiet);
 }
 
 .fld-br::before {
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--c-color-border-quiet),
-    var(--c-color-border-quiet) 5.2632%,
-    transparent 5.2632%,
-    transparent 10.5263%,
-    var(--c-color-border-quiet) 10.5263%
-  );
+    background-image: repeating-linear-gradient(
+        to right,
+        var(--c-color-border-quiet),
+        var(--c-color-border-quiet) 5.2632%,
+        transparent 5.2632%,
+        transparent 10.5263%,
+        var(--c-color-border-quiet) 10.5263%
+    );
 }
 
 /* Library */
 .fld-library {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .fld-container .fld-library {
-  display: none;
+    display: none;
 }
 
 .layoutdesigner .fld-library {
-  background-color: var(--c-surface-overlay);
-  box-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
+    background-color: var(--c-surface-overlay);
+    box-shadow:
+        0 0 0 1px hsl(210deg 24% 16% / 10%),
+        0 2px 5px -2px hsl(210deg 24% 16% / 20%);
 }
 
 .fld-library .btngroup {
-  margin-block-end: 14px;
+    margin-block-end: 14px;
 }
 
 .fld-field-library,
 .fld-ui-library {
-  margin-block: -3px;
-  margin-inline: -14px;
-  padding-block: 3px;
-  padding-inline: 14px;
-  flex: 1;
-  min-height: 0;
-  max-height: 550px;
-  overflow: auto;
+    margin-block: -3px;
+    margin-inline: -14px;
+    padding-block: 3px;
+    padding-inline: 14px;
+    flex: 1;
+    min-height: 0;
+    max-height: 550px;
+    overflow: auto;
 }
 
 .fld-field-group {
-  margin-block-start: 14px;
+    margin-block-start: 14px;
 }
 
 .fld-field-group > *:not(:first-child) {
-  margin-block-start: var(--c-spacing-sm);
+    margin-block-start: var(--c-spacing-sm);
 }
 
 /*.fld-field-indicators {*/
@@ -352,72 +352,81 @@ body:not(.dragging) .fld-element {
 /*}*/
 
 .fld-ui-library > *:not(:first-child) {
-  margin-block-start: var(--c-spacing-sm);
+    margin-block-start: var(--c-spacing-sm);
 }
 
 .fld-library .filtered {
-  display: none;
+    display: none;
 }
 
 .fld-library-hud {
-  width: 287px;
-  max-width: 100%;
+    width: 287px;
+    max-width: 100%;
 }
 
 .fld-library-hud .main {
-  height: 100%;
-  padding: 14px;
+    height: 100%;
+    padding: 14px;
 }
 
 /* Element settings (slideout) */
+
+/* Never taller than the viewport, so the body scrolls rather than the slideout
+   growing past the window. */
+.fld-element-settings {
+    max-height: 100dvh;
+}
+
 .fld-element-settings-body {
-  flex: 1;
-  margin-block: -24px 0;
+    flex: 1;
 
-  /* TODO: no token yet for --neg-padding */
-  margin-inline: var(--neg-padding);
-  padding-block: 24px;
+    /* Flex items default to min-height: auto, which refuses to shrink below the
+     content and stops `overflow` below from ever engaging. */
+    min-height: 0;
 
-  /* TODO: no token yet for --padding */
-  padding-inline: var(--padding);
-  overflow: hidden auto;
-  position: relative;
+    /* TODO: no token yet for --neg-padding */
+    margin-inline: var(--neg-padding);
+    padding-block: 24px;
+
+    /* TODO: no token yet for --padding */
+    padding-inline: var(--padding);
+    overflow: hidden auto;
+    position: relative;
 }
 
 .fld-element-settings-body hr {
-  margin-block: var(--c-spacing-xl);
+    margin-block: var(--c-spacing-xl);
 }
 
 .fld-element-settings-footer {
-  position: relative;
-  display: flex;
-  gap: var(--c-spacing-sm);
-  flex-direction: row;
-  margin-block: 0 -24px;
+    position: relative;
+    display: flex;
+    gap: var(--c-spacing-sm);
+    flex-direction: row;
 
-  /* TODO: no token yet for --neg-padding */
-  margin-inline: var(--neg-padding);
-  padding-block: 5px;
+    /* TODO: no token yet for --neg-padding */
+    margin-inline: var(--neg-padding);
+    padding-block: 5px;
 
-  /* TODO: no token yet for --padding */
-  padding-inline: var(--padding);
-  box-shadow: var(--c-pane-shadow);
-  background-color: var(--c-color-neutral-fill-quiet);
-  z-index: 3;
+    /* TODO: no token yet for --padding */
+    padding-inline: var(--padding);
+    box-shadow: var(--c-pane-shadow);
+    background-color: var(--c-color-neutral-fill-quiet);
+    z-index: 3;
 }
 
 .fld-element-settings-footer > .ee-site-select {
-  flex: 1;
+    flex: 1;
 }
 
 .fld-element-settings-footer > .btn {
-  margin-inline-start: 5px;
+    margin-inline-start: 5px;
 }
 
 .fld-element-settings-footer > .spinner {
-  /* TODO: no token yet for --neg-padding */
-  margin-inline: 0 var(--neg-padding);
-  margin-block: 0;
+    /* TODO: no token yet for --neg-padding */
+    margin-inline: 0 var(--neg-padding);
+    margin-block: 0;
 }
 
 /* Card view designer styles now live in cvd.css */

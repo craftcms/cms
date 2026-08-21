@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueServiceProvider;
 use Illuminate\Queue\Events\JobFailed;
@@ -71,6 +72,14 @@ it('tracks failed jobs with error message', function () {
         ->not->toBeNull()
         ->status->toBe(JobStatus::Failed)
         ->error->toBe('Test failure');
+});
+
+it('marks sync jobs as completed', function () {
+    dispatch(new SyncProgressJob);
+
+    $progress = app(JobProgress::class)->getAll()->firstWhere('description', SyncProgressJob::class);
+
+    expect($progress?->status)->toBe(JobStatus::Done);
 });
 
 it('handles jobs without uuid method gracefully', function () {
@@ -164,3 +173,11 @@ it('does not track jobs on non-tracked queues', function () {
     // Progress should still exist because the queue is not tracked
     expect($progressService->getProgress($uid))->not->toBeNull();
 });
+
+class SyncProgressJob extends Job
+{
+    public function handle(): void
+    {
+        $this->setProgress(50);
+    }
+}

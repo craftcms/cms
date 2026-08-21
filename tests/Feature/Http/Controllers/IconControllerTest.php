@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -133,11 +134,14 @@ describe('pickerOptions', function () {
             ->toContain('<svg');
     });
 
-    test('pickerOptions sets correct ARIA labels and titles on buttons', function () {
+    test('pickerOptions sets icon values and accessible labels on buttons', function () {
         $json = get(action([IconController::class, 'pickerOptions']))
             ->assertOk()
             ->json();
 
+        $gear = new Crawler($json['listHtml'])->filter('button[title="gear"]');
+
+        expect($gear->attr('value'))->toBe('gear');
         expect($json['listHtml'])
             ->toContain('aria-label=')
             ->toContain('title=')

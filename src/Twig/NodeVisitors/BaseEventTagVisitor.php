@@ -33,8 +33,8 @@ abstract class BaseEventTagVisitor implements NodeVisitorInterface
     protected static function foundAllEventTags(): bool
     {
         return
-            static::$foundHead === true &&
-            static::$foundBeginBody === true &&
-            static::$foundEndBody === true;
+            static::$foundHead &&
+            static::$foundBeginBody &&
+            static::$foundEndBody;
     }
 }

@@ -19,8 +19,11 @@ const DEFAULTS = {
  * the legacy class static property.
  */
 export class AssetSelectorModal extends BaseElementSelectorModal {
+    static override defaults =
+        DEFAULTS as typeof BaseElementSelectorModal.defaults & typeof DEFAULTS;
+
     $selectTransformBtn: any = null;
-    #selectedTransform: string | null = null;
+    _selectedTransform: string | null = null;
 
     /** Cross-instance cache of transform URL lookups keyed by `[transform][elementId]`. */
     static transformUrls: Record<string, Record<number, string | false>> = {};
@@ -33,15 +36,15 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
     }
 
     override init(elementType: string, settings?: any): void {
-        settings = Object.assign({}, DEFAULTS, settings);
+        settings = Object.assign({}, AssetSelectorModal.defaults, settings);
         super.init(elementType, settings);
 
         if (settings.transforms?.length) {
-            this.#createSelectTransformButton(settings.transforms);
+            this.createSelectTransformButton(settings.transforms);
         }
     }
 
-    #createSelectTransformButton(
+    createSelectTransformButton(
         transforms: Array<{handle: string; name: string}>
     ): void {
         if (!transforms?.length) return;
@@ -69,8 +72,7 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
         }
 
         const menuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
-            onOptionSelect: (option: Element) =>
-                this.#onSelectTransform(option),
+            onOptionSelect: (option: Element) => this.onSelectTransform(option),
         });
         menuButton.disable();
 
@@ -95,12 +97,12 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
         super.onSelectionChange();
     }
 
-    #onSelectTransform(option: Element): void {
+    onSelectTransform(option: Element): void {
         const transform = $(option).data('transform') as string;
-        this.#selectImagesWithTransform(transform);
+        this.selectImagesWithTransform(transform);
     }
 
-    #selectImagesWithTransform(transform: string): void {
+    selectImagesWithTransform(transform: string): void {
         if (
             typeof AssetSelectorModal.transformUrls[transform] === 'undefined'
         ) {
@@ -124,25 +126,25 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
 
         if (missingIds.length) {
             this.showFooterSpinner();
-            this.#fetchMissingTransformUrls(missingIds, transform, () => {
+            this.fetchMissingTransformUrls(missingIds, transform, () => {
                 this.hideFooterSpinner();
-                this.#selectImagesWithTransform(transform);
+                this.selectImagesWithTransform(transform);
             });
         } else {
-            this.#selectedTransform = transform;
+            this._selectedTransform = transform;
             this.selectElements();
-            this.#selectedTransform = null;
+            this._selectedTransform = null;
         }
     }
 
-    #fetchMissingTransformUrls(
+    fetchMissingTransformUrls(
         ids: number[],
         transform: string,
         callback: () => void
     ): void {
         const elementId = ids.pop()!;
         // Ensure the transform bucket exists (may have been created in
-        // #selectImagesWithTransform, but guard here for safety).
+        // selectImagesWithTransform(), but guard here for safety).
         AssetSelectorModal.transformUrls[transform] ??= {};
         const bucket = AssetSelectorModal.transformUrls[transform]!;
 
@@ -157,7 +159,7 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
             })
             .finally(() => {
                 if (ids.length) {
-                    this.#fetchMissingTransformUrls(ids, transform, callback);
+                    this.fetchMissingTransformUrls(ids, transform, callback);
                 } else {
                     callback();
                 }
@@ -167,9 +169,9 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
     override getElementInfo($selectedElements: any): any[] {
         const info = super.getElementInfo($selectedElements);
 
-        if (this.#selectedTransform) {
+        if (this._selectedTransform) {
             const cache =
-                AssetSelectorModal.transformUrls[this.#selectedTransform] ?? {};
+                AssetSelectorModal.transformUrls[this._selectedTransform] ?? {};
             for (const item of info) {
                 const url = cache[item.id as number];
                 if (typeof url !== 'undefined' && url !== false) {
@@ -182,13 +184,6 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
     }
 
     override onSelect(elementInfo: any): void {
-        this.settings.onSelect(elementInfo, this.#selectedTransform);
+        this.settings.onSelect(elementInfo, this._selectedTransform);
     }
 }
-
-// Register as the element selector modal class for Asset elements.
-// This call mutates `Craft._elementSelectorModalClasses` on the legacy global.
-Craft.registerElementSelectorModalClass(
-    'CraftCms\\Cms\\Asset\\Elements\\Asset',
-    AssetSelectorModal
-);

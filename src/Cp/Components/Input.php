@@ -7,9 +7,11 @@ namespace CraftCms\Cms\Cp\Components;
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Concerns\HasSize;
+use CraftCms\Cms\Form\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use Stringable;
 
 use function CraftCms\Cms\currentUserElement;
@@ -29,6 +31,8 @@ use function CraftCms\Cms\t;
  *
  * `size()` is the shared control size (`small`/`medium`/`large`); the native
  * input's character-width `size` attribute is {@see self::inputSize()}.
+ *
+ * @phpstan-import-type TextExpanderTriggers from HasTextExpander
  */
 class Input extends ViewComponent
 {
@@ -97,6 +101,9 @@ class Input extends ViewComponent
 
     /** @var array<string, mixed> Additional attributes for the native input. */
     protected array $inputAttributes = [];
+
+    /** @var TextExpanderTriggers */
+    protected array $textExpanderTriggers = [];
 
     protected function tagName(): string
     {
@@ -355,6 +362,29 @@ class Input extends ViewComponent
         return $this;
     }
 
+    /** @param TextExpanderTriggers $triggers */
+    public function textExpanderTriggers(array $triggers): static
+    {
+        $this->textExpanderTriggers = $triggers;
+
+        return $this;
+    }
+
+    #[\Override]
+    public function toHtml(): string
+    {
+        $html = parent::toHtml();
+
+        if ($this->name === null || $this->textExpanderTriggers === []) {
+            return $html;
+        }
+
+        return $html.Html::tag('craft-text-expander', '', [
+            'for' => $this->getId(),
+            'triggers' => Json::encode($this->textExpanderTriggers),
+        ]);
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -373,6 +403,7 @@ class Input extends ViewComponent
             // keeps them too, for pre-upgrade correctness (form posts,
             // password masking, CSS).
             'type' => $this->type !== 'text' ? $this->type : null,
+            'inputmode' => $this->inputmode,
             'placeholder' => $this->placeholder !== null && $this->placeholder !== '' ? $this->placeholder : null,
             'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),

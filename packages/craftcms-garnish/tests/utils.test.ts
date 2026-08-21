@@ -1,6 +1,12 @@
 import {describe, expect, it} from 'vite-plus/test';
 
-import {getDist, within, isString, isTextNode} from '../src/utils/misc';
+import {
+  getDist,
+  within,
+  isString,
+  isTextNode,
+  deferUntil,
+} from '../src/utils/misc';
 import {getInputPostVal, getPostData, findInputs} from '../src/utils/forms';
 import {hasAttr, nearestSibling, closestRegistered} from '../src/utils/dom';
 
@@ -20,6 +26,52 @@ describe('misc utils', () => {
   it('isTextNode', () => {
     expect(isTextNode(document.createTextNode('x'))).toBe(true);
     expect(isTextNode(document.createElement('div'))).toBe(false);
+  });
+  it('deferUntil resolves immediately if test() is already truthy', async () => {
+    const test = () => 'ready';
+    expect(await deferUntil(test)).toBe('ready');
+  });
+  it('deferUntil polls test() at the given interval until it’s truthy', async () => {
+    let calls = 0;
+    const test = () => (++calls >= 3 ? calls : false);
+    expect(await deferUntil(test, 5)).toBe(3);
+    expect(calls).toBe(3);
+  });
+  it('deferUntil awaits an async test() before checking truthiness', async () => {
+    let calls = 0;
+    const test = async () => {
+      calls++;
+      return calls >= 2;
+    };
+    expect(await deferUntil(test, 5)).toBe(true);
+    expect(calls).toBe(2);
+  });
+  it('deferUntil rejects if test() throws', async () => {
+    const test = () => {
+      throw new Error('nope');
+    };
+    await expect(deferUntil(test, 5)).rejects.toThrow('nope');
+  });
+  it('deferUntil rejects immediately if the signal is already aborted', async () => {
+    const controller = new AbortController();
+    controller.abort(new Error('cancelled'));
+    const test = () => true;
+    await expect(deferUntil(test, 5, controller.signal)).rejects.toThrow(
+      'cancelled'
+    );
+  });
+  it('deferUntil rejects if the signal aborts while waiting to poll again', async () => {
+    const controller = new AbortController();
+    const test = () => false;
+    const promise = deferUntil(test, 20, controller.signal);
+    setTimeout(() => controller.abort(new Error('cancelled')), 5);
+    await expect(promise).rejects.toThrow('cancelled');
+  });
+  it('deferUntil stops polling once truthy, even with a signal attached', async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const test = () => (++calls >= 2 ? calls : false);
+    expect(await deferUntil(test, 5, controller.signal)).toBe(2);
   });
 });
 

@@ -148,6 +148,26 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'fullName' => t('Full Name'),
+            'organization' => t('Organization'),
+            'organizationTaxId' => t('Organization Tax ID'),
+            'countryCode' => t('Country Code'),
+            'administrativeArea' => t('Administrative Area'),
+            'locality' => t('Locality'),
+            'dependentLocality' => t('Dependent Locality'),
+            'postalCode' => t('Postal Code'),
+            'addressLine1' => t('Address Line 1'),
+            'addressLine2' => t('Address Line 2'),
+            'latitude' => t('Latitude'),
+            'longitude' => t('Longitude'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('address');

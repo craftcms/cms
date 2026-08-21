@@ -1,6 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -16,11 +20,13 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use Illuminate\Support\Facades\Gate;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -29,6 +35,7 @@ use function CraftCms\Cms\t;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  * @deprecated in 6.0.0
  */
@@ -37,7 +44,6 @@ class GlobalsController extends Controller
     /**
      * Index
      *
-     * @return Response
      * @throws ForbiddenHttpException if the user isn't authorized to edit any global sets
      */
     public function actionIndex(): Response
@@ -54,7 +60,6 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
-     * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
      * @throws BadRequestHttpException
      */
@@ -100,13 +105,13 @@ class GlobalsController extends Controller
         $this->setSuccessFlash(t('{type} saved.', [
             'type' => GlobalSet::displayName(),
         ]));
+
         return $this->redirectToPostedUrl($globalSet);
     }
 
     /**
      * Reorders global sets.
      *
-     * @return Response
      * @since 3.7.0
      */
     public function actionReorderSets(): Response
@@ -123,8 +128,6 @@ class GlobalsController extends Controller
 
     /**
      * Deletes a global set.
-     *
-     * @return Response
      */
     public function actionDeleteSet(): Response
     {
@@ -142,9 +145,9 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string $globalSetHandle The global set’s handle.
-     * @param GlobalSet|null $globalSet The global set being edited, if there were any validation errors.
-     * @return Response
+     * @param  string  $globalSetHandle  The global set’s handle.
+     * @param  GlobalSet|null  $globalSet  The global set being edited, if there were any validation errors.
+     *
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
@@ -178,9 +181,7 @@ class GlobalsController extends Controller
         }
 
         // Prep the form tabs & content
-        $form = $globalSet->getFieldLayout()->createForm($globalSet, false, [
-            'registerDeltas' => true,
-        ]);
+        $form = FieldLayoutForm::fromLayout($globalSet->getFieldLayout(), $globalSet);
 
         // Render the template!
         return $this->rendertemplate('yii2-adapter/globals/_edit', [
@@ -195,7 +196,6 @@ class GlobalsController extends Controller
     /**
      * Saves a global set's content.
      *
-     * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveContent(): ?Response
@@ -243,6 +243,7 @@ class GlobalsController extends Controller
         $this->setSuccessFlash(t('{type} saved.', [
             'type' => GlobalSet::displayName(),
         ]));
+
         return $this->redirectToPostedUrl();
     }
 }

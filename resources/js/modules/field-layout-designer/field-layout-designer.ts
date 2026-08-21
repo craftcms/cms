@@ -1,5 +1,6 @@
 import {
     Base,
+    deferUntil,
     ESC_KEY,
     type GarnishEvent,
     hasAttr,
@@ -14,6 +15,7 @@ import {ElementDrag, TabDrag} from './drags';
 import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
+import {openSlideout} from '@/common/slideouts';
 import {Slideout} from '@/modules/slideout';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
@@ -101,7 +103,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
         this.$fieldLibrary = this.$selectedLibrary =
             this.$libraryContainer.querySelector(':scope > .fld-field-library');
-        this.$fieldSearch = this.$fieldLibrary.querySelector('[type="search"]');
         this.$fieldGroups = Array.from(
             this.$libraryContainer.querySelectorAll('.fld-field-group')
         );
@@ -114,6 +115,21 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         if (this.settings!.readOnly) {
             this.$fieldLibrary.setAttribute('tabindex', '-1');
         }
+
+        void deferUntil(
+            () =>
+                !!Craft?.Grid &&
+                typeof $ === 'function' &&
+                !!this.$fieldLibrary.querySelector('input[type="search"]')
+        ).then(() => {
+            this.$fieldSearch = this.$fieldLibrary.querySelector(
+                'input[type="search"]'
+            );
+            this.deferredInit();
+        });
+    }
+
+    deferredInit(): void {
         // Set up the layout grids — Craft.Grid is a jQuery seam.
         this.tabGrid = new Craft.Grid($(this.$tabContainer), {
             itemSelector: '.fld-tab',
@@ -291,7 +307,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
         if (skipLinkAnchor) {
             const $skipLink = document.createElement('a');
-            $skipLink.className = 'skip-link btn';
+            $skipLink.className = 'skip-link';
             $skipLink.textContent = Craft.t(
                 'app',
                 'Skip to card view designer'
@@ -408,6 +424,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     set config(config: FieldLayoutConfig) {
         this._config = config;
         this.$configInput.value = JSON.stringify(config);
+
+        // Assigning `.value` fires nothing, and the designer's edits are drags and
+        // menu actions, so wrappers have no other signal that the config changed.
+        this.$configInput.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
     updateConfig(
@@ -459,25 +479,27 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     }
 
     createField(): void {
-        const slideout = new Craft.CpScreenSlideout(
-            Craft.getCpUrl('settings/fields/edit')
-        );
+        void openSlideout(Craft.getCpUrl('settings/fields/edit'), {
+            opener: this.$createFieldBtn,
+            onSaved: ({data}) => {
+                // add the library selector
+                const $selector = htmlToElement(
+                    (data as {selectorHtml: string}).selectorHtml
+                );
+                const $lastGroup =
+                    this.$fieldGroups[this.$fieldGroups.length - 1];
+                $lastGroup.appendChild($selector);
+                $lastGroup.classList.remove('hidden');
+                this.refreshLibraryFields();
+                this.initLibraryElements($selector);
 
-        slideout.on('submit', async ({response}: any) => {
-            // add the library selector
-            const $selector = htmlToElement(response.data.selectorHtml);
-            const $lastGroup = this.$fieldGroups[this.$fieldGroups.length - 1];
-            $lastGroup.appendChild($selector);
-            $lastGroup.classList.remove('hidden');
-            this.refreshLibraryFields();
-            this.initLibraryElements($selector);
+                // add it to the active tab
+                this.addLibraryElementToActiveTab($selector);
 
-            // add it to the active tab
-            this.addLibraryElementToActiveTab($selector);
-
-            requestAnimationFrame(() => {
-                this.getActiveHud()?.hide();
-            });
+                requestAnimationFrame(() => {
+                    this.getActiveHud()?.hide();
+                });
+            },
         });
     }
 
@@ -553,7 +575,17 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         $body.className = 'fld-element-settings-body';
         const $fields = document.createElement('div');
         $fields.className = 'fields';
-        $fields.innerHTML = data.settingsHtml;
+        const $form = document.createElement(
+            'craft-layout-component-settings-form'
+        ) as HTMLElement & {
+            payload: unknown;
+            requestData: () => unknown;
+        };
+        $form.payload = data.form;
+        if (settings.requestData) {
+            $form.requestData = settings.requestData;
+        }
+        $fields.appendChild($form);
         $body.appendChild($fields);
 
         const $footer = document.createElement('div');
@@ -569,6 +601,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         $footer.appendChild(cancelBtn);
 
         const submitBtn = document.createElement('craft-button');
+        submitBtn.type = 'submit';
         submitBtn.variant = ButtonVariant.Primary;
         submitBtn.innerText = t('Apply');
         $footer.appendChild(submitBtn);
@@ -591,12 +624,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         );
 
         slideout.on('open', () => {
-            // Hold off a sec until it's positioned...
+            // Hold off until it's positioned and the form has mounted...
             requestAnimationFrame(() => {
-                // Focus on the first text input
+                // Focus on the first editable control
                 (
                     slideout.$container[0].querySelector(
-                        '.text'
+                        'input:not([type=hidden]):not([disabled]), textarea:not([disabled]), craft-input, craft-combobox, .text'
                     ) as HTMLElement | null
                 )?.focus();
             });
@@ -614,6 +647,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         }
 
         Craft.initUiElements(slideout.$container);
+
+        (slideout as any).settingsForm = $form;
 
         return slideout;
     }

@@ -8,50 +8,18 @@
     disabled: readOnly,
   } %}
     {% block input %}
-      {% import "_includes/forms" as forms %}
-      {% set groupedEntryTypes = entryTypes.groupBy(et => (et.group ?? 'General'|t('app'))) %}
-      {% if not groupedEntryTypes|length %}
-        {% set groupedEntryTypes = {
-          ('General'|t('app')): [],
-        } %}
-      {% endif %}
-      {{ hiddenInput('entryTypes', '') }}
-      <craft-entry-type-manager
-        id="entry-type-manager"
-        class="entry-type-manager"
-        slot="input"
-        namespace="{{ InputNamespace.get() ?: false }}"
-        default-columns-id="{{ 'default-table-columns-input'|namespaceInputId }}"
-        {% if entryTypeSelectConfig.allowOverrides ?? false %}allow-overrides{% endif %}
-        {% if readOnly %}disabled{% endif %}
-      >
-        <ul class="entry-type-groups mb-s">
-          {% for groupName, entryTypes in groupedEntryTypes %}
-            {% tag 'li' with {
-              class: 'entry-type-group',
-              data: {
-                name: groupName,
-              },
-            } %}
-              <div class="entry-type-group--titlebar">
-                <span>{{ groupName }}</span>
-              </div>
-              {{ forms.entryTypeSelect(entryTypeSelectConfig|merge({
-                id: "entry-type-select-#{random()}",
-                values: entryTypes,
-                includeGroupInValues: true,
-                disabled: readOnly,
-              })) }}
-            {% endtag %}
-          {% endfor %}
-        </ul>
-        {% if not readOnly and entryTypeSelectHtml %}
-          {# Server-rendered select markup for new groups; the manager clones it,
-             swapping the namespaced TEMP_ID placeholders for a unique id, and the
-             `<craft-component-select>` inside self-boots — no JS blob needed. #}
-          <template data-entry-type-select>{{ entryTypeSelectHtml|raw }}</template>
-        {% endif %}
-      </craft-entry-type-manager>
+      {% include '_components/fieldtypes/Matrix/grouped-entry-type-manager-control.twig' with {
+        entryTypes,
+        entryTypeSelectConfig,
+        entryTypeSelectHtml,
+        disabled: readOnly,
+        groupedManagerAttributes: {
+          id: 'entry-type-manager',
+          slot: 'input',
+          'default-columns-id': 'default-table-columns-input'|namespaceInputId,
+          'allow-overrides': entryTypeSelectConfig.allowOverrides ?? false,
+        },
+      } only %}
     {% endblock %}
   {% endembed %}
 

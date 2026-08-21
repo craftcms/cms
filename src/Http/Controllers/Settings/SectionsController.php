@@ -5,23 +5,26 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\SectionEditViewModel;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -34,8 +37,9 @@ readonly class SectionsController
     private bool $readOnly;
 
     public function __construct(
-        GeneralConfig $generalConfig,
+        private GeneralConfig $generalConfig,
         private EntryTypes $entryTypes,
+        private FormResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -53,7 +57,7 @@ readonly class SectionsController
         return new CpScreenResponse()
             ->title(t('Sections'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
             ])
             ->inertiaPage('settings/sections/Index', [
@@ -77,7 +81,7 @@ readonly class SectionsController
             ->addCrumb(t('Settings'), 'settings')
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('settings/sections/Edit', $this->sectionProps($section, $sites, brandNew: true));
+            ->inertiaPage('settings/sections/Edit', $this->viewModel($section, $sites, brandNew: true));
     }
 
     public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
@@ -90,44 +94,32 @@ readonly class SectionsController
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->inertiaPage('settings/sections/Edit', $this->sectionProps($sectionData, $sites, brandNew: false));
+            ->inertiaPage('settings/sections/Edit', $this->viewModel($sectionData, $sites, brandNew: false));
     }
 
-    /** @return array<string, mixed> */
-    private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array
+    public function renderForm(Request $request, Sites $sites, Sections $sections): JsonResponse
     {
-        $headlessMode = app(GeneralConfig::class)->headlessMode;
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
+            'values.type' => ['required', Rule::enum(SectionType::class)],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+        $values = $data['values'];
+        $section = empty($values['sectionId'])
+            ? new SectionData(['type' => SectionType::Channel])
+            : $sections->getSectionById((int) $values['sectionId']);
 
-        $allSites = $sites->getAllSites();
-        $siteSettings = [];
+        abort_if($section === null, 404, 'Section not found');
 
-        foreach ($allSites as $site) {
-            $settings = $section->siteSettings[$site->id] ?? null;
-            $siteSettings[] = [
-                'siteId' => $site->id,
-                'handle' => $site->handle,
-                'name' => $site->getName(),
-                'enabled' => $brandNew || $settings !== null,
-                'enabledByDefault' => $settings->enabledByDefault ?? true,
-                'uriFormat' => $settings?->uriFormat,
-                'template' => $settings?->template,
-            ];
-        }
-
-        return [
-            'section' => SectionResource::make($section),
-            'homepageUri' => Element::HOMEPAGE_URI,
-            'brandNew' => $brandNew,
-            'entryTypes' => $this->entryTypes->getAllEntryTypes(),
-            'typeOptions' => SectionType::asOptions(),
-            'propagationOptions' => PropagationMethod::asOptions(),
-            'placementOptions' => DefaultPlacement::asOptions(),
-            'templateOptions' => SelectOptions::getTemplateSuggestions(),
-            'siteSettings' => $siteSettings,
-            'isMultiSite' => $sites->isMultiSite(),
-            'headlessMode' => $headlessMode,
-            'readOnly' => $this->readOnly,
-        ];
+        return new JsonResponse([
+            'form' => $this->viewModel(
+                $section,
+                $sites,
+                brandNew: $section->id === null,
+                values: $values,
+            )->form(),
+        ]);
     }
 
     public function store(
@@ -205,7 +197,17 @@ readonly class SectionsController
         $section->setSiteSettings($allSiteSettings);
 
         if (! $sections->saveSection($section)) {
-            throw ValidationException::withMessages($section->errors()->getMessages());
+            $errors = $section->errors()->getMessages();
+            $siteErrors = collect($errors)
+                ->filter(fn (array $messages, string $path): bool => str_starts_with($path, 'siteSettings'))
+                ->flatten()
+                ->all();
+
+            if ($siteErrors !== []) {
+                $errors['sites'] = $siteErrors;
+            }
+
+            throw ValidationException::withMessages($errors);
         }
 
         return $this->asSuccess(t('Section saved.'));
@@ -219,5 +221,24 @@ readonly class SectionsController
         return $this->asSuccess(t('Section “{name}” deleted.', [
             'name' => $name,
         ]));
+    }
+
+    /** @param array<string, mixed>|null $values */
+    private function viewModel(
+        SectionData $section,
+        Sites $sites,
+        bool $brandNew,
+        ?array $values = null,
+    ): SectionEditViewModel {
+        return new SectionEditViewModel(
+            $section,
+            $sites,
+            $this->entryTypes,
+            $this->formResolver,
+            $brandNew,
+            $this->readOnly,
+            $this->generalConfig->headlessMode,
+            $values,
+        );
     }
 }

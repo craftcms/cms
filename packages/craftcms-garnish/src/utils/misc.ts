@@ -73,6 +73,48 @@ export function log(msg: unknown): void {
 }
 
 /**
+ * Resolves once `test()` returns a truthy value, calling it again every
+ * `delay` milliseconds in the meantime.
+ *
+ * `test` may return a promise; its resolved value is awaited before being
+ * checked for truthiness, and the next call isn’t scheduled until it settles.
+ * A rejection/throw from `test()` propagates, rejecting the returned promise.
+ *
+ * @param test A function to call repeatedly until it returns (or resolves to) a truthy value.
+ * @param delay The interval, in milliseconds, between calls (default `100`).
+ * @param signal An optional `AbortSignal`. If already aborted, or aborted while
+ * waiting for the next call, the returned promise rejects with `signal.reason`
+ * instead of continuing to poll — use this to stop polling once a caller (e.g.
+ * an owning class' `destroy()`) no longer cares about the result.
+ * @returns A promise that resolves with `test()`’s truthy return value.
+ */
+export async function deferUntil<T>(
+  test: () => T | Promise<T>,
+  delay = 100,
+  signal?: AbortSignal
+): Promise<T> {
+  if (signal?.aborted) {
+    throw signal.reason;
+  }
+  const result = await test();
+  if (result) {
+    return result;
+  }
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, delay);
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      },
+      {once: true}
+    );
+  });
+  return deferUntil(test, delay, signal);
+}
+
+/**
  * Space/Enter → preventDefault + callback.
  * @deprecated The `activate` event should be used instead.
  */

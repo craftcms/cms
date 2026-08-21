@@ -1,0 +1,173 @@
+{
+    "scope": ["settings"],
+    "refreshable": false,
+    "nodes": [
+        {
+            "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+            "component": "craft:field",
+            "props": {
+                "label": "UI Mode",
+                "instructions": "How the field should be presented in the control panel.",
+                "required": false
+            },
+            "control": {
+                "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+                "component": "craft:choice",
+                "props": {
+                    "options": [
+                        {"label": "Normal", "value": "normal"},
+                        {"label": "Enlarged", "value": "enlarged"}
+                    ],
+                    "multiple": false,
+                    "presentation": "select"
+                },
+                "path": ["settings", "uiMode"],
+                "mode": "editable",
+                "deltaGroup": ["settings", "uiMode"]
+            }
+        },
+        {
+            "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+            "component": "craft:field",
+            "props": {
+                "label": "Placeholder Text",
+                "instructions": "The text that will be shown if the field doesn’t have a value.",
+                "required": false
+            },
+            "control": {
+                "type": "CraftCms\\Cms\\Form\\Controls\\Text",
+                "component": "craft:text",
+                "props": [],
+                "path": ["settings", "placeholder"],
+                "mode": "editable",
+                "deltaGroup": ["settings", "placeholder"]
+            }
+        },
+        {
+            "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+            "component": "craft:group",
+            "props": {"label": "Field Limit"},
+            "uid": "plain-text-field-limit",
+            "children": [
+                {
+                    "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+                    "component": "craft:field",
+                    "props": {
+                        "label": "Maximum",
+                        "instructions": "The maximum number of characters or bytes the field is allowed to have.",
+                        "required": false
+                    },
+                    "control": {
+                        "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+                        "component": "craft:number",
+                        "props": {"inputType": "number", "min": 1},
+                        "path": ["settings", "fieldLimit"],
+                        "mode": "editable",
+                        "deltaGroup": ["settings"]
+                    }
+                },
+                {
+                    "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+                    "component": "craft:field",
+                    "props": {
+                        "label": "Unit",
+                        "instructions": null,
+                        "required": false
+                    },
+                    "control": {
+                        "type": "CraftCms\\Cms\\Form\\Controls\\Choice",
+                        "component": "craft:choice",
+                        "props": {
+                            "options": [
+                                {"label": "Characters", "value": "chars"},
+                                {"label": "Bytes", "value": "bytes"}
+                            ],
+                            "multiple": false,
+                            "presentation": "select"
+                        },
+                        "path": ["settings", "limitUnit"],
+                        "mode": "editable",
+                        "deltaGroup": ["settings"]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "CraftCms\\Cms\\Form\\Nodes\\Group",
+            "component": "craft:group",
+            "props": {"label": null},
+            "uid": "plain-text-behavior",
+            "children": [
+                {
+                    "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+                    "component": "craft:field",
+                    "props": {
+                        "label": "Use a monospaced font",
+                        "instructions": null,
+                        "required": false
+                    },
+                    "control": {
+                        "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",
+                        "component": "craft:lightswitch",
+                        "props": [],
+                        "path": ["settings", "code"],
+                        "mode": "editable",
+                        "deltaGroup": ["settings", "code"]
+                    }
+                },
+                {
+                    "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+                    "component": "craft:field",
+                    "props": {
+                        "label": "Allow line breaks",
+                        "instructions": null,
+                        "required": false
+                    },
+                    "control": {
+                        "type": "CraftCms\\Cms\\Form\\Controls\\Lightswitch",
+                        "component": "craft:lightswitch",
+                        "props": [],
+                        "path": ["settings", "multiline"],
+                        "mode": "editable",
+                        "deltaGroup": ["settings", "multiline"]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "CraftCms\\Cms\\Form\\Nodes\\Field",
+            "component": "craft:field",
+            "props": {
+                "label": "Initial Rows",
+                "instructions": null,
+                "required": false
+            },
+            "control": {
+                "type": "CraftCms\\Cms\\Form\\Controls\\Number",
+                "component": "craft:number",
+                "props": {"inputType": "number", "min": 1},
+                "path": ["settings", "initialRows"],
+                "mode": "editable",
+                "deltaGroup": ["settings", "initialRows"]
+            }
+        }
+    ],
+    "values": {
+        "settings": {
+            "uiMode": "enlarged",
+            "placeholder": "Submitted placeholder",
+            "fieldLimit": 120,
+            "limitUnit": "chars",
+            "code": true,
+            "multiline": true,
+            "initialRows": 8
+        }
+    },
+    "errors": [
+        {
+            "path": ["settings", "placeholder"],
+            "messages": ["Placeholder is invalid."]
+        }
+    ],
+    "globalErrors": ["The settings could not be saved."]
+}

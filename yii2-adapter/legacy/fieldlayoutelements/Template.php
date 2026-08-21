@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
  *
@@ -19,7 +21,7 @@ if (false) {
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Template} instead.
      */
-    class Template extends \CraftCms\Cms\FieldLayout\LayoutElements\Template
+    class Template extends \CraftCms\Yii2Adapter\FieldLayout\LayoutElements\Template
     {
     }
 }

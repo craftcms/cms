@@ -8,6 +8,10 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use Override;
 
 abstract class BaseLinkType extends Component implements ConfigurableComponentInterface
 {
@@ -18,6 +22,25 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
      * Link fields’ [[\craft\fields\Link::types]] settings.
      */
     abstract public static function id(): string;
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): ?Form
+    {
+        $nodes = $this->settingsNodes('');
+
+        return $nodes === [] ? null : Form::make($nodes);
+    }
+
+    /** @return list<Node> */
+    public function settingsNodes(string $prefix): array
+    {
+        return [];
+    }
+
+    protected function settingPath(string $prefix, string $setting): string
+    {
+        return $prefix === '' ? $setting : "{$prefix}.{$setting}";
+    }
 
     /**
      * Returns whether the given value is supported by this link type.

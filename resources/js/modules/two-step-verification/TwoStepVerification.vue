@@ -3,7 +3,6 @@
     import {router, useHttp} from '@inertiajs/vue3';
     import {t} from '@craftcms/ui';
     import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
-    import Pane from '@/common/components/Pane.vue';
     import Badge from '@/common/components/Badge.vue';
     import ActionMenu from '@/common/components/ActionMenu.vue';
     import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -216,7 +215,7 @@
 </script>
 
 <template>
-    <Pane :padding="0" appearance="raised">
+    <craft-pane :padding="0" appearance="raised">
         <AdminTable :table="table" spacing="spacious" />
-    </Pane>
+    </craft-pane>
 </template>

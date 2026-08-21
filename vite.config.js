@@ -186,6 +186,7 @@ export default defineConfig(({mode}) => {
       ignorePatterns: [
         '**/*',
         '!resources/js/**',
+        '!workbench/resources/js/**',
         'resources/build/**',
         'resources/legacy/**',
         'resources/js/**/fixtures/**',
@@ -266,7 +267,10 @@ export default defineConfig(({mode}) => {
     // environment; the craftcms-ui package has its own vitest projects.
     test: {
       environment: 'happy-dom',
-      include: ['resources/js/**/*.test.ts'],
+      include: [
+        'resources/js/**/*.test.ts',
+        'yii2-adapter/resources/js/**/*.test.ts',
+      ],
     },
 
     build: {
@@ -318,24 +322,35 @@ export default defineConfig(({mode}) => {
           },
         },
       }),
-      laravel({
-        input: [
-          'resources/js/cp.ts',
-          'resources/js/legacy.ts',
-          'resources/css/cp.css',
-        ],
-        publicDirectory,
-        hotFile: `${publicDirectory}/hot`,
-        refresh: [
-          // The defaults
-          'resources/lang/**',
-          'resources/views/**',
-          'routes/**',
-          // Plus ours
-          'resources/templates/**',
-        ],
-        detectTls: env.VITE_DETECT_TLS ?? undefined,
-      }),
+      // Skipped under Vitest, which builds its own Vite server from this same
+      // config. The Laravel plugin owns the hot file — writing it when a server
+      // starts and deleting it when one closes — so leaving it in means every
+      // test run deletes the hot file out from under a running `npm run dev`.
+      // The CP then silently falls back to stale built assets, which looks like
+      // "my changes aren't showing up" rather than anything to do with tests.
+      ...(process.env.VITEST
+        ? []
+        : [
+            laravel({
+              input: [
+                'resources/js/cp.ts',
+                'resources/js/legacy.ts',
+                'resources/css/cp.css',
+                'workbench/resources/js/cp.ts',
+              ],
+              publicDirectory,
+              hotFile: `${publicDirectory}/hot`,
+              refresh: [
+                // The defaults
+                'resources/lang/**',
+                'resources/views/**',
+                'routes/**',
+                // Plus ours
+                'resources/templates/**',
+              ],
+              detectTls: env.VITE_DETECT_TLS ?? undefined,
+            }),
+          ]),
       inertia({
         ssr: false,
       }),

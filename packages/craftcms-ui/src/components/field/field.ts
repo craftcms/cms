@@ -10,6 +10,17 @@ import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {t} from '@src/utilities/translate';
 
+type FormControlTarget = HTMLElement & {
+  addToAriaLabelledBy(
+    element: HTMLElement,
+    config?: {idPrefix?: string; reorder?: boolean}
+  ): void;
+  addToAriaDescribedBy(
+    element: HTMLElement,
+    config?: {idPrefix?: string; reorder?: boolean}
+  ): void;
+};
+
 /**
  * A generic form-field shell that renders the standard CP field chrome
  * (label, instructions, tip/warning notices, errors and status badge) around
@@ -27,8 +38,10 @@ import {t} from '@src/utilities/translate';
  * @slot feedback - Validation errors (e.g. an error list).
  * @slot tip - Tip notice content, rendered inside an info callout.
  * @slot warning - Warning notice content, rendered inside a warning callout.
- * @slot label-extra - Extra heading content (handle-copy buttons, action
- *   menus), rendered after a flex-grow spacer.
+ * @slot label-extra - Extra heading content, rendered after a flex-grow spacer.
+ *   @deprecated Use `actions` instead.
+ * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
+ *   field settings menus), rendered as a group at the end of the heading.
  */
 export default class CraftField extends FormControlMixin(LitElement) {
   static override get styles() {
@@ -188,6 +201,11 @@ export default class CraftField extends FormControlMixin(LitElement) {
   protected override _enhanceLightDomA11y(): void {
     super._enhanceLightDomA11y();
     this.__wireDescribedBy();
+    this.__syncFieldsetSemantics();
+  }
+
+  protected _onLabelClick(): void {
+    this.__formControlTarget()?.focus();
   }
 
   /**
@@ -201,6 +219,20 @@ export default class CraftField extends FormControlMixin(LitElement) {
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}
   ): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.addToAriaLabelledBy(element, {
+        ...customConfig,
+        idPrefix: `field-${customConfig.idPrefix ?? 'label'}`,
+      });
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__addGroupAriaReference('aria-labelledby', element, 'label');
+      return;
+    }
+
     super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
   }
 
@@ -208,6 +240,24 @@ export default class CraftField extends FormControlMixin(LitElement) {
     element: HTMLElement,
     customConfig: {idPrefix?: string; reorder?: boolean} = {}
   ): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.addToAriaDescribedBy(element, {
+        ...customConfig,
+        idPrefix: `field-${customConfig.idPrefix ?? 'description'}`,
+      });
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__addGroupAriaReference(
+        'aria-describedby',
+        element,
+        customConfig.idPrefix ?? 'description'
+      );
+      return;
+    }
+
     super.addToAriaDescribedBy(element, {...customConfig, reorder: false});
   }
 
@@ -216,9 +266,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   override render() {
     return html`
-      ${this._statusBadgeTemplate()}
-      <div class="form-field__group-one">${this._groupOneTemplate()}</div>
-      <div class="form-field__group-two">${this._groupTwoTemplate()}</div>
+      <div
+        class="${classMap({
+          'form-field': true,
+          [`form-field--${this.status}`]: !!this.status,
+        })}"
+      >
+        ${this._statusBadgeTemplate()}
+        <div class="form-field__group-one">${this._groupOneTemplate()}</div>
+        <div class="form-field__group-two">${this._groupTwoTemplate()}</div>
+      </div>
     `;
   }
 
@@ -243,21 +300,35 @@ export default class CraftField extends FormControlMixin(LitElement) {
   }
 
   /**
-   * The field heading: label, read-only badge, flex-grow spacer and label
-   * extras, mirroring `.field > .heading` in the Blade wrapper.
+   * The field heading: label, read-only badge, flex-grow spacer, label extras
+   * and actions, mirroring `.field > .heading` in the Blade wrapper.
    */
   protected override _labelTemplate() {
+    const hasActions = this.__hasLightChild('actions');
+
     return html`
-      <div class="heading form-field__label">
+      <div class="form-field__label">
         <slot name="heading-prefix"></slot>
         <slot name="label"></slot>
         ${this.readOnly
           ? html`<span class="read-only-badge">${t('Read Only')}</span>`
           : nothing}
-        ${this.__hasLightChild('label-extra')
+        ${this.__hasLightChild('label-extra') || hasActions
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
+        ${hasActions
+          ? html`
+              <div
+                class="field-actions"
+                part="actions"
+                role="group"
+                aria-label=${t('Field actions')}
+              >
+                <slot name="actions"></slot>
+              </div>
+            `
+          : html`<slot name="actions"></slot>`}
         <slot name="heading-suffix"></slot>
       </div>
     `;
@@ -294,7 +365,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     }
     return html`
       <div
-        class="status-badge ${this.status}"
+        class="form-field__status-indicator"
         title=${ifDefined(this.statusLabel)}
         aria-hidden="true"
       >
@@ -341,12 +412,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   private __onLightDomChanged(): void {
     this.__wireDescribedBy();
+    this.__syncFieldsetSemantics();
     this.__syncHasErrors();
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (tip/warning callouts, label-extra spacer) depend
-    // on light DOM children.
+    // Conditional templates (tip/warning callouts, heading spacer, action
+    // group) depend on light DOM children.
     this.requestUpdate();
   }
 
@@ -358,6 +430,37 @@ export default class CraftField extends FormControlMixin(LitElement) {
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
       }
     }
+  }
+
+  private __formControlTarget(): FormControlTarget | undefined {
+    const input = this._inputNode;
+
+    return input &&
+      'addToAriaLabelledBy' in input &&
+      'addToAriaDescribedBy' in input
+      ? (input as FormControlTarget)
+      : undefined;
+  }
+
+  private __hasNativeLabelTarget(): boolean {
+    return Boolean(
+      this._inputNode?.matches(
+        'button, input, meter, output, progress, select, textarea'
+      )
+    );
+  }
+
+  private __addGroupAriaReference(
+    attribute: 'aria-labelledby' | 'aria-describedby',
+    element: HTMLElement,
+    idPrefix: string
+  ): void {
+    element.id ||= `${idPrefix}-${this._inputId}`;
+    const ids = new Set(
+      (this.getAttribute(attribute) ?? '').split(/\s+/).filter(Boolean)
+    );
+    ids.add(element.id);
+    this.setAttribute(attribute, [...ids].join(' '));
   }
 
   private __syncHasErrors(): void {
@@ -373,7 +476,8 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   private __syncFieldsetSemantics(): void {
     const labelNode = this._labelNode;
-    if (this.fieldset) {
+    const control = this.__formControlTarget();
+    if (this.fieldset || (!control && !this.__hasNativeLabelTarget())) {
       this.setAttribute('role', 'group');
       if (labelNode) {
         if (!labelNode.id) {
@@ -387,7 +491,9 @@ export default class CraftField extends FormControlMixin(LitElement) {
         this.removeAttribute('role');
       }
       this.removeAttribute('aria-labelledby');
-      if (labelNode && this._inputNode) {
+      if (labelNode && control) {
+        labelNode.removeAttribute('for');
+      } else if (labelNode && this._inputNode) {
         labelNode.setAttribute('for', this._inputNode.id || this._inputId);
       }
     }
@@ -421,10 +527,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
       srLabel.textContent = t('Required');
       srLabel.setAttribute('data-craft-field-decoration', '');
 
-      const indicator = document.createElement('span');
-      indicator.className = 'required';
-      indicator.setAttribute('aria-hidden', 'true');
+      // The asterisk is purely decorative — the visually hidden "Required"
+      // above it is what assistive tech announces. craft-icon hides itself
+      // when it has no `label`, but it only does so once it upgrades, so set
+      // the attribute here too: the decoration is rendered into the light DOM
+      // and may be read before then.
+      const indicator = document.createElement('craft-icon');
+      indicator.setAttribute('name', 'asterisk');
       indicator.setAttribute('data-craft-field-decoration', '');
+      indicator.setAttribute('data-color', 'danger');
+      indicator.setAttribute('aria-hidden', 'true');
 
       labelNode.append(srLabel, indicator);
     }

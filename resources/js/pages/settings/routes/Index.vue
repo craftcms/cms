@@ -12,7 +12,6 @@
     import {ButtonVariant, t} from '@craftcms/ui';
     import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
     import Empty from '@/common/components/Empty.vue';
-    import Pane from '@/common/components/Pane.vue';
     import {useAppLayout} from '@/common/composables/useAppLayout';
     import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
@@ -100,9 +99,9 @@
     </LayoutSlot>
 
     <div v-if="routes.length === 0" class="empty-routes">
-        <Pane appearance="raised">
+        <craft-pane appearance="raised">
             <Empty :label="t('No routes exist yet.')" />
-        </Pane>
+        </craft-pane>
     </div>
 
     <div v-else class="routes-list">

@@ -105,7 +105,9 @@ jobs:
 
           Finish by summarizing, in a few sentences, which conflicts you found and how you
           resolved each one, highlighting any ambiguous conflicts that need extra attention —
-          this summary is posted to the PR for human review.
+          this summary is posted to the PR for human review. When referencing GitHub issue/PR
+          IDs and git commit SHAs, just output the ID/SHA plainly without backticks or a
+          summary of the issue/PR/commit (e.g. “#1234” or “64d8d14840”).  
           PROMPT_EOF
 
           claude -p \

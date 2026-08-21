@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import {t} from '@craftcms/ui';
-    import LoginController from '@actions/Auth/LoginController';
+    import {logout} from '@routes/cp';
     import PermissionsController from '@actions/Users/PermissionsController';
     import PreferencesController from '@actions/Users/PreferencesController';
     import UsersController from '@actions/Users/UsersController';
@@ -52,7 +52,7 @@
 </script>
 
 <template>
-    <form :action="LoginController.logout().url" method="post" ref="logoutForm">
+    <form :action="logout().url" method="post" ref="logoutForm">
         <input
             v-if="csrfTokenName && csrfTokenValue"
             type="hidden"

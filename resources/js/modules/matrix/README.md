@@ -10,7 +10,8 @@ the shared module pattern (see `../listbox/README.md`):
 - `matrix-entry.ts` — the per-`.matrixblock` `MatrixEntry` controller:
   collapse/expand with preview text and localStorage persistence, the block
   action menu, enable/disable/move/duplicate/copy/delete, and conditional
-  field-layout updates (`elements/update-field-layout`).
+  field-layout updates (`elements/update-field-layout`). Form tabs are owned by
+  `FormRenderer`.
 - `matrix-input.ce.ts` — the `<craft-matrix-input>` custom element, for
   markup-driven boots (config via `entry-types` / `input-name-prefix` /
   `settings` attributes).
@@ -26,8 +27,8 @@ Matrix fields render on legacy-stack pages and cooperate with widgets that
 have no jQuery-free ports yet. All of those seams are typed and centralized in
 `interop.ts`; each should disappear as its widget gets its own port:
 
-- `Garnish.Select` (block multi-select) and `Craft.Tabs`,
-  `Craft.FormObserver`, `Craft.ElementEditor` — reached through the page
+- `Garnish.Select` (block multi-select), `Craft.FormObserver`, and
+  `Craft.ElementEditor` — reached through the page
   globals.
 - Server-initialized `Garnish.DisclosureMenu` instances (action menus, the
   add-entry menu button) — read from jQuery data.

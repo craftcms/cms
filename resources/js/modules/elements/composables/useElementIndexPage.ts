@@ -135,15 +135,26 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     // element id → selected) or via `elementTable.getSelectedRowModel()`.
     const rowSelection = ref<RowSelectionState>({});
 
-    // After a bulk action succeeds, refresh the server-rendered list + counts the
-    // same way the view-mode/filter composables do (a partial Inertia reload that
-    // only re-pulls the index props), then clear any lingering selection. The
-    // table also clears its own selection optimistically when the action fires.
-    function onActionPerformed() {
-        rowSelection.value = {};
+    /**
+     * Re-pull the server-rendered list and counts, the same way the
+     * view-mode/filter composables do — a partial Inertia reload of just the
+     * index props.
+     *
+     * Everything else stays put: the shell, the sources sidebar, scroll position,
+     * and the selection (`rowSelection` lives out here, keyed by element id).
+     */
+    function refreshResults() {
         router.reload({
             only: ['data', 'pagination', 'badgeCounts'],
         });
+    }
+
+    // After a bulk action succeeds, refresh and clear any lingering selection —
+    // the rows it applied to may not even be in the list any more. The table also
+    // clears its own selection optimistically when the action fires.
+    function onActionPerformed() {
+        rowSelection.value = {};
+        refreshResults();
     }
 
     function createCustomizeSourcesModal() {
@@ -218,7 +229,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     // Clear it on teardown, but only if it's still the current one — during an SPA
     // page swap the next page may register before this one unmounts.
     const {table: activeTable, register} = useElementIndexTable();
-    register({table: elementTable, onActionPerformed});
+    register({table: elementTable, onActionPerformed, refreshResults});
     onScopeDispose(() => {
         if (activeTable.value === elementTable) {
             register(null);
@@ -240,6 +251,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
         loading,
         visibleViewModes,
         rowSelection,
+        refreshResults,
         onActionPerformed,
         createCustomizeSourcesModal,
     };

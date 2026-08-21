@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
@@ -23,8 +24,8 @@ trait ElementCrumbs
                     'showDraftName' => ! $current,
                     'class' => 'chromeless',
                     'hyperlink' => true,
+                    'appearance' => Appearance::Plain->value,
                 ]),
-                'current' => $current,
             ],
         ];
     }

@@ -44,6 +44,11 @@ it('can store a widget with settings', function () {
     ])->assertOk();
 
     expect($response->json('info'))->not()->toBeEmpty();
+    expect($response->json('info.settingsForm.scope'))->toBe([sprintf(
+        'widget%s-settings',
+        $response->json('info.id'),
+    )]);
+    expect($response->json('info.settingsHtml'))->toBeNull();
     expect($response->json('headHtml'))->not()->toBeEmpty();
     expect($response->json('bodyHtml'))->not()->toBeEmpty();
 
@@ -51,6 +56,22 @@ it('can store a widget with settings', function () {
     tap(WidgetModel::query()->firstOrFail(), function (WidgetModel $widget) {
         expect(Widget::fromConfig($widget)->url)->toBe('https://craftcms.com/news.rss');
     });
+});
+
+it('can refresh native widget settings without saving', function () {
+    postJson(action([WidgetsController::class, 'refreshSettings']), [
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+            'limit' => 25,
+        ],
+        'namespace' => 'new-widget-settings',
+    ])->assertOk()
+        ->assertJsonPath('form.scope', ['new-widget-settings'])
+        ->assertJsonPath('form.values.new-widget-settings.limit', 25);
+
+    expect(WidgetModel::count())->toBe(0);
 });
 
 test('store needs a valid type', function () {

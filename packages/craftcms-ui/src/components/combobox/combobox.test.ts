@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
@@ -44,6 +44,16 @@ beforeEach(() => {
 });
 
 describe('craft-combobox', () => {
+  it('forwards its placeholder to the textbox', async () => {
+    const combobox = await createFixture((c) => {
+      c.placeholder = 'Choose an option';
+    });
+
+    expect((combobox._inputNode as HTMLInputElement).placeholder).toBe(
+      'Choose an option'
+    );
+  });
+
   it('renders options from the array property', async () => {
     const combobox = await createFixture((c) => {
       c.options = makeOptions(5);
@@ -186,6 +196,39 @@ describe('craft-combobox', () => {
     expect(combobox.modelValue).toBe('en-US');
   });
 
+  it('displays the matching option label for an initial value', async () => {
+    const combobox = await createFixture();
+    combobox.options = [
+      {label: 'Online', value: '1'},
+      {label: 'Offline', value: '0'},
+    ];
+    combobox.modelValue = '1';
+
+    await vi.waitFor(() => {
+      expect(combobox.modelValue).toBe('1');
+      expect(combobox.querySelector('input')?.value).toBe('Online');
+    });
+  });
+
+  it('includes the matching option hint when selected hints are enabled', async () => {
+    const combobox = await createFixture();
+    combobox.options = [
+      {
+        label: 'Uploads',
+        value: 'uploads',
+        data: {hint: 's3://uploads'},
+      },
+    ];
+    combobox.showSelectedHint = true;
+    combobox.modelValue = 'uploads';
+
+    await vi.waitFor(() => {
+      expect(combobox.querySelector('input')?.value).toBe(
+        'Uploads – s3://uploads'
+      );
+    });
+  });
+
   it('preserves a custom value on mount', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
@@ -265,6 +308,66 @@ describe('craft-combobox', () => {
 
     expect(combobox.opened).toBe(true);
     expect(optionEls(combobox).length).toBe(2);
+  });
+
+  it('does not filter by an empty option label', async () => {
+    const combobox = await createFixture((c) => {
+      c.showAllOnEmpty = true;
+      c.options = [
+        {label: 'Select a filesystem', value: ''},
+        {label: 'Create a new filesystem…', value: '__add__'},
+      ];
+      c.modelValue = '';
+    });
+
+    await vi.waitFor(() => {
+      expect(combobox.querySelector('input')?.value).toBe(
+        'Select a filesystem'
+      );
+    });
+    (combobox._inputNode as HTMLInputElement).click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+
+    expect(
+      optionEls(combobox).map((option) => option.textContent?.trim())
+    ).toEqual(['Select a filesystem', 'Create a new filesystem…']);
+  });
+
+  it('shows all options when reopening with a selected value', async () => {
+    const combobox = await createFixture((c) => {
+      c.options = [
+        {label: 'Local', value: 'local'},
+        {label: 'S3', value: 'disk:s3', data: {hint: 'disk:s3'}},
+        {label: 'Create a new filesystem…', value: '__add__'},
+      ];
+      c.showSelectedHint = true;
+      c.modelValue = 'disk:s3';
+    });
+
+    const input = combobox._inputNode as HTMLInputElement;
+    input.click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+
+    expect(
+      optionEls(combobox).map((option) => option.textContent?.trim())
+    ).toEqual(['Local', 'S3', 'Create a new filesystem…']);
+
+    await typeQuery(combobox, 'local');
+
+    expect(
+      optionEls(combobox).map((option) => option.textContent?.trim())
+    ).toEqual(['Local']);
+
+    optionEls(combobox)[0].click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(false));
+    await combobox.updateComplete;
+
+    input.click();
+    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+
+    expect(
+      optionEls(combobox).map((option) => option.textContent?.trim())
+    ).toEqual(['Local', 'S3', 'Create a new filesystem…']);
   });
 
   it('shows a footer when matches exceed the limit', async () => {

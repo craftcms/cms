@@ -36,7 +36,19 @@ it('requires authentication', function () {
 
 it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/General'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Form')
+            ->where('form.values.name', ProjectConfig::get('system.name'))
+            ->where('form.nodes', function ($nodes): bool {
+                $retryDuration = collect($nodes)
+                    ->first(fn (array $node): bool => $node['control']['path'] === ['retryDuration']);
+
+                return $retryDuration['control']['component'] === 'craft:number';
+            })
+            ->where('submit', [
+                'method' => 'post',
+                'url' => action([GeneralSettingsController::class, 'store']),
+            ]))
         ->assertOk();
 });
 
@@ -44,15 +56,42 @@ it('shows a readonly settings screen when admin changes is disabled', function (
     Cms::config()->allowAdminChanges = false;
 
     get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.readOnly', true))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.readOnly', true)
+            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+                ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')))
         ->assertOk();
 });
 
-it('exposes timezone options on the settings screen', function () {
+it('attaches settings notices to their fields', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('timezoneOptions')
-            ->where('timezoneOptions', fn ($options) => collect($options)->pluck('value')->contains('America/New_York')))
+            ->where('form.nodes', function ($nodes): bool {
+                $nodes = collect($nodes);
+                $notices = $nodes->filter(fn (array $node): bool => in_array(
+                    $node['control']['path'],
+                    [['name'], ['live'], ['timeZone']],
+                    strict: true,
+                ));
+
+                return $notices->count() === 3
+                    && $nodes->every(fn (array $node): bool => $node['component'] === 'craft:field')
+                    && $notices->every(fn (array $node): bool => isset($node['props']['tipHtml']));
+            }))
+        ->assertOk();
+});
+
+it('exposes timezone options through the settings form', function () {
+    get(action([GeneralSettingsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('form.nodes', function ($nodes): bool {
+                $timeZone = collect($nodes)
+                    ->first(fn (array $node): bool => $node['control']['path'] === ['timeZone']);
+
+                return collect($timeZone['control']['props']['options'])
+                    ->pluck('value')
+                    ->contains('America/New_York');
+            }))
         ->assertOk();
 });
 

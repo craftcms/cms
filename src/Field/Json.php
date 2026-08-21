@@ -9,6 +9,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\JsonData;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -86,15 +88,22 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
     }
 
     #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->_inputHtml($value, false);
+        $value = $context->value instanceof JsonData
+            ? $context->value->getJson(true)
+            : $context->value;
+
+        return Textarea::make($context->path)
+            ->rows(12)
+            ->monospace()
+            ->value($value);
     }
 
     #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return $this->_inputHtml($value, true);
+        return $this->_inputHtml($value, false);
     }
 
     private function _inputHtml(?JsonData $value, bool $static): string

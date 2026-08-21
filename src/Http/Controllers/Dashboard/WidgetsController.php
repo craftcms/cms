@@ -8,7 +8,10 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\CustomWidgets;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -93,6 +96,39 @@ readonly class WidgetsController
         ]);
 
         return $this->saveAndReturnWidget($widget);
+    }
+
+    public function refreshSettings(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'string'],
+            'settings' => ['nullable', 'array'],
+            'namespace' => ['required', 'string'],
+        ]);
+        $type = (string) $data['type'];
+
+        $widgetType = $this->widgetTypes->types()->first(fn (string $widgetType): bool => $widgetType === $type);
+
+        if ($widgetType === null) {
+            throw ValidationException::withMessages([
+                'type' => 'Invalid widget type.',
+            ]);
+        }
+
+        $widget = $this->dashboard->createWidget([
+            'type' => $widgetType,
+            'settings' => $data['settings'] ?? [],
+        ]);
+        $context = new FormContext(
+            namespace: $data['namespace'],
+            values: [$data['namespace'] => $widget->getSettings()],
+            refreshable: true,
+        );
+        $form = $widget->settingsForm($context);
+
+        return new JsonResponse([
+            'form' => $form === null ? null : app(FormResolver::class)->resolve($form, $context),
+        ]);
     }
 
     public function updateColspan(Request $request): JsonResponse

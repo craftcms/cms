@@ -3,8 +3,8 @@
  * with. Matrix fields render on legacy-stack pages, where the webpack bundles
  * own several widgets this module must reuse rather than re-implement:
  *
- * - `Garnish.Select` (multi-select) and `Craft.Tabs` / `Craft.FormObserver` /
- *   `Craft.ElementEditor` have no jQuery-free ports yet, so instances are
+ * - `Garnish.Select` (multi-select), `Craft.Tabs`, and `Craft.ElementEditor`
+ *   have no jQuery-free ports yet, so instances are
  *   created/read through the page globals.
  * - Server-rendered action menus are initialized by the legacy bundle, which
  *   stores the `Garnish.DisclosureMenu` instance in jQuery data.
@@ -16,14 +16,14 @@
 import {jq as jqGlobal} from '@/common/utils/jquery';
 
 /** The page's jQuery, when the legacy bundle has loaded. */
-type JQueryLike = ((input: unknown) => {
-  data(key: string): unknown;
-  data(key: string, value: unknown): unknown;
-}) & {param(data: Record<string, unknown>): string};
+type JQueryLike = (input: unknown) => {
+    data(key: string): unknown;
+    data(key: string, value: unknown): unknown;
+};
 
 function jq(): JQueryLike | null {
-  // Centralized jQuery seam; narrowed to the members Matrix interop uses.
-  return jqGlobal() as JQueryLike | null;
+    // Centralized jQuery seam; narrowed to the members Matrix interop uses.
+    return jqGlobal() as JQueryLike | null;
 }
 
 /**
@@ -31,7 +31,7 @@ function jq(): JQueryLike | null {
  * the legacy bundle stores widget instances.
  */
 export function jqData(el: Element, key: string): unknown {
-  return jq()?.(el).data(key);
+    return jq()?.(el).data(key);
 }
 
 /**
@@ -39,72 +39,42 @@ export function jqData(el: Element, key: string): unknown {
  * and legacy code that read `$(el).data(key)` keep working.
  */
 export function setJqData(el: Element, key: string, value: unknown): void {
-  jq()?.(el).data(key, value);
-}
-
-/** URL-encodes params with the legacy `$.param` (used for form-data suffixes). */
-export function jqParam(data: Record<string, unknown>): string {
-  const $ = jq();
-  if ($) {
-    return $.param(data);
-  }
-  return new URLSearchParams(
-    Object.entries(data).map(([k, v]) => [k, String(v)])
-  ).toString();
+    jq()?.(el).data(key, value);
 }
 
 /** The legacy `Garnish.Select` surface used by {@link MatrixInput}. */
 export interface LegacySelect {
-  totalSelected: number;
-  $selectedItems: {length: number; eq(i: number): unknown};
-  getSelectedItems(): ArrayLike<HTMLElement>;
-  isSelected(item: unknown): boolean;
-  addItems(items: unknown): void;
-  resetItemOrder(): void;
-  destroy(): void;
+    totalSelected: number;
+    $selectedItems: {length: number; eq(i: number): unknown};
+    getSelectedItems(): ArrayLike<HTMLElement>;
+    isSelected(item: unknown): boolean;
+    addItems(items: unknown): void;
+    resetItemOrder(): void;
+    destroy(): void;
 }
 
 /** The legacy `Garnish.DisclosureMenu` surface used by {@link MatrixEntry}. */
 export interface LegacyDisclosureMenu {
-  $container: unknown;
-  on(events: string, handler: () => void): void;
-  show(): void;
-  hide(): void;
-  showItem(item: HTMLElement): void;
-  hideItem(item: HTMLElement): void;
-  destroy(): void;
-}
-
-/** The legacy `Craft.Tabs` surface used by {@link MatrixEntry}. */
-export interface LegacyTabs {
-  $tabs: unknown;
-  $menuBtn: {data(key: string): unknown};
-  on(events: string, handler: (ev: {$tab: LegacyJqTab}) => void): void;
-  selectTab(tab: unknown): void;
-  destroy(): void;
-}
-
-/** A jQuery-wrapped tab link inside {@link LegacyTabs} events. */
-export interface LegacyJqTab {
-  attr(name: string): string | undefined;
+    $container: unknown;
+    on(events: string, handler: () => void): void;
+    show(): void;
+    hide(): void;
+    showItem(item: HTMLElement): void;
+    hideItem(item: HTMLElement): void;
+    destroy(): void;
 }
 
 /** The legacy `Craft.ElementEditor` surface used by this module. */
 export interface LegacyElementEditor {
-  queue?: {push(job: () => Promise<void>): Promise<void>};
-  submittingForm?: boolean;
-  on(events: string, handler: () => void): void;
-  getDraftElementId(id: unknown): unknown;
-  getDraftElementUid(uid: unknown): unknown;
-  setFormValue(name: string, value: string): Promise<void>;
-  pause(): Promise<void>;
-  resume(): void | Promise<void>;
-  handleDismissibleTips?(): void;
-}
-
-/** The legacy `Craft.FormObserver` surface used by {@link MatrixEntry}. */
-export interface LegacyFormObserver {
-  destroy(): void;
+    queue?: {push(job: () => Promise<void>): Promise<void>};
+    submittingForm?: boolean;
+    on(events: string, handler: () => void): void;
+    getDraftElementId(id: unknown): unknown;
+    getDraftElementUid(uid: unknown): unknown;
+    setFormValue(name: string, value: string): Promise<void>;
+    pause(): Promise<void>;
+    resume(): void | Promise<void>;
+    handleDismissibleTips?(): void;
 }
 
 /**
@@ -113,61 +83,59 @@ export interface LegacyFormObserver {
  * them here instead of sprinkling casts around the module.
  */
 export interface LegacyCraftRuntime {
-  queue: {push(job: () => Promise<void>): Promise<void>};
-  cp: {
-    announce(message: string): void;
-    displayError(message?: string): void;
-    copyElements(elementInfo: unknown[]): void;
-    getCopiedElements(): CopiedElementInfo[];
-    onCopyElements(
-      callback: (elementInfo: CopiedElementInfo[], buttonLabel?: string) => void
-    ): void;
-    pasteElements(params: Record<string, unknown>): Promise<{id: number}[]>;
-  };
-  Tabs: new (tabs: unknown) => LegacyTabs;
-  FormObserver: new (
-    container: unknown,
-    callback: (data: string) => void
-  ) => LegacyFormObserver;
-  elementTypeNames: Record<string, string[]>;
-  getText(value: unknown): unknown;
-  filterArray(arr: unknown[]): string[];
-  hasMousePointerEvents(): boolean;
-  appendHeadHtml(html: string): Promise<void>;
-  appendBodyHtml(html: string): Promise<void>;
-  formatInputId(name: string): string;
-  namespaceInputName(name: string, namespace?: string): string;
-  namespaceId(id: string, namespace?: string): string;
-  systemUid: string;
+    queue: {push(job: () => Promise<void>): Promise<void>};
+    cp: {
+        announce(message: string): void;
+        displayError(message?: string): void;
+        copyElements(elementInfo: unknown[]): void;
+        getCopiedElements(): CopiedElementInfo[];
+        onCopyElements(
+            callback: (
+                elementInfo: CopiedElementInfo[],
+                buttonLabel?: string
+            ) => void
+        ): void;
+        pasteElements(params: Record<string, unknown>): Promise<{id: number}[]>;
+    };
+    elementTypeNames: Record<string, string[]>;
+    getText(value: unknown): unknown;
+    filterArray(arr: unknown[]): string[];
+    hasMousePointerEvents(): boolean;
+    appendHeadHtml(html: string): Promise<void>;
+    appendBodyHtml(html: string): Promise<void>;
+    formatInputId(name: string): string;
+    namespaceInputName(name: string, namespace?: string): string;
+    namespaceId(id: string, namespace?: string): string;
+    systemUid: string;
 }
 
 /** Element info entries produced by the copy/paste clipboard. */
 export interface CopiedElementInfo {
-  type: string;
-  id: unknown;
-  draftId?: unknown;
-  revisionId?: unknown;
-  fieldId?: unknown;
-  ownerId?: unknown;
-  siteId?: unknown;
-  data?: {entryTypeId?: number};
+    type: string;
+    id: unknown;
+    draftId?: unknown;
+    revisionId?: unknown;
+    fieldId?: unknown;
+    ownerId?: unknown;
+    siteId?: unknown;
+    data?: {entryTypeId?: number};
 }
 
 /** The ambient `Craft` global, widened with the legacy runtime members. */
 export function craft(): typeof Craft & LegacyCraftRuntime {
-  return Craft as typeof Craft & LegacyCraftRuntime;
+    return Craft as typeof Craft & LegacyCraftRuntime;
 }
 
 /** The legacy `Garnish` global (for widgets without modern ports). */
 export function legacyGarnish(): {
-  Select: new (
-    container: unknown,
-    items: unknown,
-    settings: Record<string, unknown>
-  ) => LegacySelect;
-  DisclosureMenu: new (trigger: unknown) => LegacyDisclosureMenu;
+    Select: new (
+        container: unknown,
+        items: unknown,
+        settings: Record<string, unknown>
+    ) => LegacySelect;
+    DisclosureMenu: new (trigger: unknown) => LegacyDisclosureMenu;
 } {
-  return (window as unknown as Record<string, unknown>).Garnish as ReturnType<
-    typeof legacyGarnish
-  >;
+    return (window as unknown as Record<string, unknown>).Garnish as ReturnType<
+        typeof legacyGarnish
+    >;
 }

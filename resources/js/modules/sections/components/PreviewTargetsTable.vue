@@ -1,7 +1,6 @@
 <script setup lang="ts">
     import {t} from '@craftcms/ui/utilities/translate';
     import {h} from 'vue';
-    import Pane from '@/common/components/Pane.vue';
     import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
     import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
     import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
@@ -79,9 +78,9 @@
 </script>
 
 <template>
-    <Pane :padding="0" appearance="raised">
+    <craft-pane padding="0" appearance="raised">
         <AdminTable :table="table" :reorderable="false" />
-    </Pane>
+    </craft-pane>
     <div
         v-if="!disabled"
         class="border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"

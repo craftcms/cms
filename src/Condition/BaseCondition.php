@@ -377,6 +377,10 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
             $rulesJs = HtmlStack::clearJsBuffer(false);
 
+            if ($rulesJs) {
+                HtmlStack::js($rulesJs);
+            }
+
             // Sortable rules div
             $html .= Html::tag('div', $allRulesHtml, [
                 'class' => array_filter([
@@ -409,14 +413,6 @@ JS, [InputNamespace::namespaceId($this->id)]);
                     'class' => ['spinner'],
                 ]).
                 Html::endTag('div'); // flex-nowrap
-
-            if ($rulesJs) {
-                if ($isHtmxRequest) {
-                    $html .= Html::tag('script', $rulesJs, ['type' => 'text/javascript']);
-                } else {
-                    HtmlStack::js($rulesJs);
-                }
-            }
 
             // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.

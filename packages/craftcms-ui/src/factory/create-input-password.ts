@@ -1,5 +1,4 @@
 import type CraftInputPassword from '../components/input-password/input-password.js';
-import '../components/input-password/input-password.js';
 import {createSlottedInput} from './internal/slotted-input.js';
 
 export interface InputPasswordConfig {

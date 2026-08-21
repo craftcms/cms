@@ -22,6 +22,7 @@ export interface ComboboxOptionData {
 export interface ComboboxOption {
   label: string;
   value: string;
+  disabled?: boolean;
   type?: 'option';
   data?: ComboboxOptionData | null;
 }
@@ -72,6 +73,24 @@ export default class CraftCombobox extends LionCombobox {
   /** Shows a clear button when a value is present. */
   @property({type: Boolean, reflect: true}) clearable = false;
 
+  /** Placeholder shown when the textbox is empty. */
+  @property({type: String, reflect: true}) placeholder = '';
+
+  /** Includes the selected option's hint in the textbox. */
+  @property({type: Boolean, reflect: true, attribute: 'show-selected-hint'})
+  showSelectedHint = false;
+
+  declare private pendingModelValue: string;
+
+  override get modelValue(): string {
+    return super.modelValue;
+  }
+
+  override set modelValue(value: string) {
+    this.pendingModelValue = value;
+    super.modelValue = value;
+  }
+
   constructor() {
     super();
     // Configure validators on construction.
@@ -83,6 +102,8 @@ export default class CraftCombobox extends LionCombobox {
 
   /** Last model value we've announced via `model-value-changed`. */
   #lastNotifiedValue: unknown = undefined;
+
+  #filtering = false;
 
   override firstUpdated(changed: Map<PropertyKey, unknown>) {
     super.firstUpdated(changed);
@@ -99,17 +120,37 @@ export default class CraftCombobox extends LionCombobox {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    if (changed.has('opened') && !this.opened) {
+      this.#filtering = false;
+    }
+    if (changed.has('placeholder')) {
+      this._inputNode.placeholder = this.placeholder;
+    }
     if (
       changed.has('options') ||
       changed.has('limit') ||
       changed.has('opened') ||
-      changed.has('modelValue')
+      changed.has('modelValue') ||
+      changed.has('showSelectedHint')
     ) {
       this.#renderOptions();
     }
   }
 
+  override addFormElement(option: CraftOption, indexToInsertAt: number) {
+    super.addFormElement(option, indexToInsertAt);
+    option.updateComplete.then(() => {
+      if (String(option.choiceValue) !== String(this.pendingModelValue)) {
+        return;
+      }
+
+      super.modelValue = this.pendingModelValue;
+      this._setTextboxValue(this._getTextboxValueFromOption(option));
+    });
+  }
+
   #onInput = () => {
+    this.#filtering = true;
     this.#renderOptions();
     this.#syncModelFromInput();
   };
@@ -136,6 +177,11 @@ export default class CraftCombobox extends LionCombobox {
     if (parsed !== this.modelValue) {
       this.modelValue = parsed;
     }
+
+    this._notifyModelValueChanged();
+  }
+
+  protected _notifyModelValueChanged(): void {
     if (this.modelValue !== this.#lastNotifiedValue) {
       this.#lastNotifiedValue = this.modelValue;
       this.dispatchEvent(
@@ -227,7 +273,7 @@ export default class CraftCombobox extends LionCombobox {
       return;
     }
 
-    const query = this._inputNode?.value ?? '';
+    const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
     const matched = this.#matchedOptions(query);
     const visible = matched.slice(0, this.limit);
 
@@ -265,6 +311,7 @@ export default class CraftCombobox extends LionCombobox {
       <craft-option
         .choiceValue=${String(option.value)}
         .hint=${data.hint ?? null}
+        ?disabled=${option.disabled ?? false}
       >
         <span class="combobox__option">
           ${data.indicator
@@ -340,11 +387,13 @@ export default class CraftCombobox extends LionCombobox {
 
     for (const item of this.options) {
       if (this.#isGroup(item)) {
-        const found = item.options.find((option) => option.label === target);
+        const found = item.options.find(
+          (option) => this.#displayLabel(option) === target
+        );
         if (found) {
           return found;
         }
-      } else if (item.label === target) {
+      } else if (this.#displayLabel(item) === target) {
         return item;
       }
     }
@@ -378,12 +427,21 @@ export default class CraftCombobox extends LionCombobox {
    */
   override _getTextboxValueFromOption(option: CraftOption) {
     if (option) {
-      // Return the option's text content instead of choiceValue
-      return option.textContent?.trim() || '';
+      const label = option.textContent?.trim() || '';
+
+      return this.showSelectedHint && option.hint
+        ? `${label} – ${option.hint}`
+        : label;
     }
 
     // @ts-expect-error Lion handles `null` but the types don't account for it
     return super._getTextboxValueFromOption(option);
+  }
+
+  #displayLabel(option: ComboboxOption): string {
+    return this.showSelectedHint && option.data?.hint
+      ? `${option.label} – ${option.data.hint}`
+      : option.label;
   }
 }
 

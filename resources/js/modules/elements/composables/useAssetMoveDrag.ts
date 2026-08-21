@@ -197,9 +197,7 @@ export function useAssetMoveDrag() {
             // Snapshot the pre-grab selection first so onDragStop can undo a force
             // select of a row that wasn't already part of a selected group.
             filter: () => {
-                preDragSelection = {
-                    ...table.value?.getState().rowSelection,
-                };
+                preDragSelection = {...table.value?.getState().rowSelection};
                 const grabbed = dragDrop?.$targetItem;
                 if (grabbed?.dataset.id) {
                     const rowId = grabbed.dataset.id;

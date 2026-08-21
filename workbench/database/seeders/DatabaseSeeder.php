@@ -6,6 +6,7 @@ namespace Workbench\Database\Seeders;
 
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
@@ -71,7 +73,11 @@ class DatabaseSeeder extends Seeder
             site: $site,
         )->up();
 
+        Edition::set(Edition::Pro);
+
         app(LaravelMigrations::class)->ensureSessionsTable();
+
+        $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
 
         $site = Sites::getCurrentSite();
 

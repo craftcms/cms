@@ -1,5 +1,6 @@
 <script setup lang="ts">
     import type {Site} from '@/common/types';
+    import {t} from '@craftcms/ui';
     import {ref} from 'vue';
     import DeleteSiteModal from '@/modules/sites/components/DeleteSiteModal.vue';
 
@@ -23,7 +24,7 @@
             :disabled="site.primary"
             @click="modalActive = true"
         >
-            <craft-icon name="x" label="t('Delete site'"></craft-icon>
+            <craft-icon name="x" :label="t('Delete site')"></craft-icon>
         </craft-button>
 
         <DeleteSiteModal

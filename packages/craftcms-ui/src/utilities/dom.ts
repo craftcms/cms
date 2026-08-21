@@ -1,5 +1,16 @@
-let existingCss: string[] | null = null;
-let existingJs: string[] | null = null;
+type OwnedAsset = {
+  node: HTMLLinkElement | HTMLScriptElement;
+  loaded: Promise<void> | null;
+  references: number;
+};
+
+type AssetDetails = {
+  key: string;
+  selector: 'link[href]' | 'script[src]';
+  value: string;
+};
+
+const ownedAssets = new Map<string, OwnedAsset>();
 
 /**
  * Disposer returned from {@link appendHeadHtml} / {@link appendBodyHtml}.
@@ -8,119 +19,162 @@ let existingJs: string[] | null = null;
  */
 export type AppendHtmlDisposer = () => void;
 
-function waitForScript(script: HTMLScriptElement): Promise<void> {
-  return new Promise((resolve) => {
-    script.addEventListener('load', () => resolve(), {once: true});
-    script.addEventListener('error', () => resolve(), {once: true});
-  });
-}
-
 export async function appendElementHtml(
   html: string,
-  parent: HTMLElement
+  parent: HTMLElement,
+  rejectOnError = false
 ): Promise<AppendHtmlDisposer> {
   const appended: Node[] = [];
-  const cssAdded: string[] = [];
-  const jsAdded: string[] = [];
+  const releases: Array<() => void> = [];
 
   const dispose: AppendHtmlDisposer = () => {
     for (const node of appended) {
-      node.parentNode?.removeChild(node);
+      node.remove();
     }
-    if (existingCss) {
-      for (const href of cssAdded) {
-        const idx = existingCss.indexOf(href);
-        if (idx !== -1) {
-          existingCss.splice(idx, 1);
-        }
-      }
-    }
-    if (existingJs) {
-      for (const src of jsAdded) {
-        const idx = existingJs.indexOf(src);
-        if (idx !== -1) {
-          existingJs.splice(idx, 1);
-        }
-      }
-    }
+    releases.forEach((release) => release());
   };
 
   if (!html) {
     return dispose;
   }
 
-  const div = document.createElement('div');
-  div.innerHTML = html.trim();
-  const nodes = Array.from(div.childNodes);
+  const template = document.createElement('template');
+  template.innerHTML = html.trim();
 
-  for (const node of nodes) {
-    if (node instanceof HTMLLinkElement && node.href) {
-      if (!existingCss) {
-        existingCss = Array.from(document.querySelectorAll('link[href]')).map(
-          (n) => (n as HTMLLinkElement).href.replace(/&/g, '&amp;')
-        );
-      }
+  try {
+    for (const source of template.content.childNodes) {
+      const asset = assetDetails(source);
 
-      const href = node.href.replace(/&/g, '&amp;');
-      if (existingCss.includes(href)) {
-        continue;
-      }
+      if (asset) {
+        const ownedAsset = ownedAssets.get(asset.key);
 
-      existingCss.push(href);
-      cssAdded.push(href);
-      const link = document.createElement('link');
-      Array.from(node.attributes).forEach((attr) => {
-        link.setAttribute(attr.name, attr.value);
-      });
-      parent.appendChild(link);
-      appended.push(link);
-      continue;
-    }
+        if (ownedAsset) {
+          ownedAsset.references++;
+          releases.push(() => releaseAsset(asset.key, ownedAsset));
+          if (ownedAsset.loaded) {
+            await awaitAsset(ownedAsset.loaded, rejectOnError);
+          }
 
-    if (node instanceof HTMLScriptElement) {
-      const script = document.createElement('script');
-      let scriptLoaded: Promise<void> | null = null;
-
-      Array.from(node.attributes).forEach((attr) => {
-        script.setAttribute(attr.name, attr.value);
-      });
-
-      if (node.src) {
-        if (!existingJs) {
-          existingJs = Array.from(document.querySelectorAll('script[src]')).map(
-            (n) => (n as HTMLScriptElement).src.replace(/&/g, '&amp;')
-          );
-        }
-
-        const src = node.src.replace(/&/g, '&amp;');
-        if (existingJs.includes(src)) {
           continue;
         }
 
-        existingJs.push(src);
-        jsAdded.push(src);
-        script.async = false;
-        scriptLoaded = waitForScript(script);
+        if (hasAsset(asset)) {
+          continue;
+        }
+      }
+
+      const node = cloneNode(source);
+      const loaded =
+        asset && node instanceof HTMLScriptElement
+          ? waitForScript(node, asset.value)
+          : null;
+
+      parent.appendChild(node);
+
+      if (
+        asset &&
+        (node instanceof HTMLLinkElement || node instanceof HTMLScriptElement)
+      ) {
+        const ownedAsset = {node, loaded, references: 1};
+
+        ownedAssets.set(asset.key, ownedAsset);
+        releases.push(() => releaseAsset(asset.key, ownedAsset));
       } else {
-        script.textContent = node.textContent;
+        appended.push(node);
       }
 
-      parent.appendChild(script);
-      appended.push(script);
-
-      if (scriptLoaded) {
-        await scriptLoaded;
+      if (loaded) {
+        await awaitAsset(loaded, rejectOnError);
       }
-
-      continue;
     }
 
-    const cloned = node.cloneNode(true);
-    parent.appendChild(cloned);
-    appended.push(cloned);
+    return dispose;
+  } catch (error) {
+    dispose();
+
+    throw error;
+  }
+}
+
+function cloneNode(source: Node): Node {
+  if (!(source instanceof HTMLScriptElement)) {
+    return source.cloneNode(true);
   }
 
-  return dispose;
+  const script = document.createElement('script');
+
+  for (const attribute of source.attributes) {
+    script.setAttribute(attribute.name, attribute.value);
+  }
+
+  script.textContent = source.textContent;
+  script.async = false;
+
+  return script;
+}
+
+function assetDetails(node: Node): AssetDetails | null {
+  if (node instanceof HTMLLinkElement && node.href) {
+    return {
+      key: `link:${node.href}`,
+      selector: 'link[href]',
+      value: node.href,
+    };
+  }
+
+  if (node instanceof HTMLScriptElement && node.src) {
+    return {
+      key: `script:${node.src}`,
+      selector: 'script[src]',
+      value: node.src,
+    };
+  }
+
+  return null;
+}
+
+function hasAsset(asset: AssetDetails): boolean {
+  return Array.from(document.querySelectorAll(asset.selector)).some(
+    (element) =>
+      (element instanceof HTMLLinkElement
+        ? element.href
+        : (element as HTMLScriptElement).src) === asset.value
+  );
+}
+
+function waitForScript(script: HTMLScriptElement, url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    script.addEventListener('load', () => resolve(), {once: true});
+    script.addEventListener(
+      'error',
+      () => reject(new Error(`Failed to load asset [${url}].`)),
+      {once: true}
+    );
+  });
+}
+
+async function awaitAsset(
+  loaded: Promise<void>,
+  rejectOnError: boolean
+): Promise<void> {
+  try {
+    await loaded;
+  } catch (error) {
+    if (rejectOnError) {
+      throw error;
+    }
+  }
+}
+
+function releaseAsset(key: string, asset: OwnedAsset): void {
+  asset.references--;
+
+  if (asset.references > 0) {
+    return;
+  }
+
+  asset.node.remove();
+  ownedAssets.delete(key);
 }
 
 /**

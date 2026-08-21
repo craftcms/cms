@@ -24,7 +24,16 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ContentBlock as ContentBlockControl;
+use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
@@ -32,14 +41,9 @@ use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -48,9 +52,7 @@ use InvalidArgumentException;
 use Override;
 use RuntimeException;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Content Block field type
@@ -60,8 +62,6 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     use ImportableElementContainerField;
 
     private const string VIEW_MODE_GROUPED = 'grouped';
-
-    private const string VIEW_MODE_PANE = 'pane';
 
     private const string VIEW_MODE_INLINE = 'inline';
 
@@ -143,6 +143,33 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                 $fieldLayout->uid => $fieldLayout->getConfig(),
             ],
         ];
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        $layout = $this->getFieldLayout();
+
+        return Form::make([
+            FormField::make(t('Field Layout'))
+                ->control(FieldLayoutDesigner::make('fieldLayout')
+                    ->elementType(ContentBlockElement::class)
+                    ->customizableTabs(false)
+                    ->value([
+                        'uid' => $layout->uid,
+                        'type' => $layout->type,
+                        ...($layout->getConfig() ?? []),
+                    ])),
+            FormField::make(t('View Mode'))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
+                        ['label' => t('In a pane'), 'value' => 'pane'],
+                        ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
+                    ])
+                    ->value($this->viewMode)),
+        ]);
     }
 
     public function afterValidate(?Validator $validator = null): void
@@ -364,26 +391,22 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         return false;
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $control = ContentBlockControl::make($context->path);
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        if (! $context->value instanceof ContentBlockElement) {
+            return $control;
+        }
 
-        return template('_components/fieldtypes/ContentBlock/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/content-block'),
-        ]);
+        return $control
+            ->form(app(FieldLayoutCompiler::class)->form(
+                $context->value->getFieldLayout(),
+                $context->value,
+                new FormContext,
+            ))
+            ->value([]);
     }
 
     #[Override]
@@ -617,82 +640,6 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        if (! $element?->id) {
-            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
-                'nestedType' => ContentBlockElement::pluralDisplayName(),
-                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
-            ]);
-
-            return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
-        }
-
-        return $this->inputHtmlInternal($value, $element, false);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($value, $element, true);
-    }
-
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        // Make sure the content block is fully saved
-        /** @var ContentBlockElement $value */
-        if (! $value->id) {
-            Elements::saveElement($value);
-        }
-
-        $id = $this->getInputId();
-
-        $form = InputNamespace::with(
-            namespace: $namespace = InputNamespace::namespaceInputName($this->handle),
-            callback: fn () => $this->getFieldLayout()->createForm($value, $static),
-        );
-
-        $formHtml = InputNamespace::namespaceInputs(fn () => $form->render(), $this->handle);
-
-        $settings = [
-            'baseInputName' => $namespace,
-            'ownerElementType' => $element::class,
-            'ownerId' => $element->id,
-            'fieldId' => $this->id,
-            'siteId' => $element->siteId,
-            'elementId' => $value->id,
-            'visibleLayoutElements' => $form->getVisibleElements(),
-        ];
-
-        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
-(() => {
-  new Craft.ContentBlockEditor($('#' + $id), $settings)
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            $settings,
-        ]);
-
-        return Html::tag('div', $formHtml, [
-            'id' => $id,
-            'class' => match ($this->viewMode) {
-                self::VIEW_MODE_GROUPED => ['pane', 'hairline'],
-                self::VIEW_MODE_PANE => ['pane'],
-                default => null,
-            },
-            'style' => match ($this->viewMode) {
-                self::VIEW_MODE_GROUPED, self::VIEW_MODE_PANE => [
-                    '--pane-padding' => 'var(--m)',
-                    '--padding' => 'var(--m)',
-                    '--neg-padding' => 'calc(var(--m) * -1)',
-                    '--row-gap' => 'var(--m)',
-                ],
-                default => null,
-            },
-        ]);
     }
 
     /** @return list<\Closure> */

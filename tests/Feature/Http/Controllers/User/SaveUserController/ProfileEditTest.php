@@ -221,7 +221,7 @@ it('shares the success flash with the profile screen after a CP save', function 
     get(cp_url('myaccount'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('users/Profile')
+            ->component('users/Edit')
             ->where('flash.success', t('{type} saved.', ['type' => User::displayName()])));
 });
 

@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -25,6 +26,15 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
+use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
@@ -40,8 +50,6 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -52,10 +60,8 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
@@ -184,6 +190,28 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         if ($this->maxAddresses === 0) {
             $this->maxAddresses = null;
         }
+    }
+
+    #[Override]
+    public function settingsForm(FormContext $context = new FormContext): Form
+    {
+        return Form::make([
+            FormField::make(t('Min {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The minimum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('minAddresses')->min(0)->value($this->minAddresses)),
+            FormField::make(t('Max {type}', ['type' => t('Addresses')]))
+                ->instructions(t('The maximum number of {type} the field is allowed to have.', ['type' => t('addresses')]))
+                ->control(Number::make('maxAddresses')->min(0)->value($this->maxAddresses)),
+            FormField::make(t('View Mode'))
+                ->instructions(t('Choose how nested {type} should be presented to authors.', ['type' => t('addresses')]))
+                ->control(Choice::make('viewMode')
+                    ->presentation(ChoicePresentation::Radios)
+                    ->options([
+                        ['label' => t('Cards'), 'value' => self::VIEW_MODE_CARDS],
+                        ['label' => t('Index'), 'value' => self::VIEW_MODE_INDEX],
+                    ])
+                    ->value($this->viewMode)),
+        ]);
     }
 
     #[Override]
@@ -325,26 +353,34 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $value->count();
     }
 
-    public function getSettingsHtml(): string
-    {
-        return $this->settingsHtml(false);
-    }
-
     #[Override]
-    public function getReadOnlySettingsHtml(): string
+    public function formControl(FieldContext $context): Control
     {
-        return $this->settingsHtml(true);
-    }
+        $addresses = array_values(match (true) {
+            $context->value instanceof ElementCollection => $context->value->all(),
+            $context->value instanceof AddressQuery => $context->value->all(),
+            default => [],
+        });
+        $values = $forms = $sortOrder = [];
+        $identities = ElementHelper::nestedElementIdentities($addresses);
 
-    private function settingsHtml(bool $readOnly): string
-    {
-        app(InternalAssetRegistry::class)->register(CpAsset::class);
+        foreach ($addresses as $index => $address) {
+            $uid = $identities[$index];
+            $values[$uid] = ['type' => 'address'];
+            $forms[$uid] = app(FieldLayoutCompiler::class)->form(
+                $address->getFieldLayout(),
+                $address,
+                new FormContext,
+            );
+            $sortOrder[] = $uid;
+        }
 
-        return template('_components/fieldtypes/Addresses/settings', [
-            'field' => $this,
-            'readOnly' => $readOnly,
-            'baseIconsUrl' => craftAsset('legacy/cp/dist/images/view-modes'),
-        ]);
+        return MatrixControl::make($context->path)
+            ->entryTypes(['address' => Address::displayName()])
+            ->forms($forms)
+            ->minEntries($this->minAddresses)
+            ->maxEntries($this->maxAddresses)
+            ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
     #[Override]
@@ -369,7 +405,11 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
-        if ($value === '') {
+        // An empty POST value means every address was removed. It arrives as
+        // null rather than '' because of Laravel's ConvertEmptyStringsToNull
+        // middleware — and delta ensures the value is only applied from the
+        // request when the field was actually modified.
+        if ($value === '' || ($fromRequest && $value === null)) {
             $query->setResultOverride([]);
         } elseif ($value === '*') {
             // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
@@ -390,6 +430,37 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      */
     private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
+        // Was the value posted in the new (delta) format?
+        $delta = isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder']);
+
+        if ($delta) {
+            $newAddressData = $value['entries'] ?? $value['blocks'] ?? [];
+            $newSortOrder = $value['sortOrder'] ?? null;
+
+            // Were the addresses posted by UUID or ID?
+            $firstKey = (string) array_key_first($newAddressData);
+            $firstSortOrder = $newSortOrder !== null ? (string) reset($newSortOrder) : '';
+            $uids = (
+                str_starts_with($firstKey, 'uid:') ||
+                str_starts_with($firstSortOrder, 'uid:') ||
+                Str::isUuid($firstKey) ||
+                Str::isUuid($firstSortOrder)
+            );
+
+            if ($uids) {
+                // Strip out the `uid:` key prefixes. New addresses are posted with them; addresses
+                // that were already on the element aren't, so both need to be normalized.
+                $newAddressData = array_combine(
+                    array_map(fn (string $key) => Str::chopStart($key, 'uid:'), array_keys($newAddressData)),
+                    array_values($newAddressData),
+                );
+            }
+        } else {
+            $uids = false;
+            $newAddressData = $value;
+            $newSortOrder = array_keys($value);
+        }
+
         // Get the old addresses
         if ($element->id) {
             /** @var Address[] $oldAddressesById */
@@ -399,10 +470,38 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 ->drafts(null)
                 ->revisions(null)
                 ->status(null)
-                ->indexBy('id')
+                ->get()
+                ->keyBy($uids ? 'uid' : 'id')
                 ->all();
         } else {
             $oldAddressesById = [];
+        }
+
+        // Fall back to the addresses' current order if only their data was posted
+        $newSortOrder ??= array_keys($oldAddressesById);
+
+        // Map the canonical addresses' UUIDs to the derivatives', in case the data was posted
+        // with them (which is the case for the first save after a draft was created)
+        $canonicalUidMap = [];
+
+        if ($uids) {
+            $derivativeIds = [];
+
+            foreach ($oldAddressesById as $uid => $address) {
+                if ($address->getIsDerivative()) {
+                    $derivativeIds[$address->getCanonicalId()] = $uid;
+                }
+            }
+
+            if ($derivativeIds !== []) {
+                $canonicalUids = DB::table(DbTable::ELEMENTS)
+                    ->whereIn('id', array_keys($derivativeIds))
+                    ->pluck('uid', 'id');
+
+                foreach ($canonicalUids as $canonicalId => $canonicalUid) {
+                    $canonicalUidMap[$canonicalUid] = $derivativeIds[$canonicalId];
+                }
+            }
         }
 
         $addresses = [];
@@ -410,6 +509,10 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseAddressFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
+
+        if ($delta && $baseAddressFieldNamespace) {
+            $baseAddressFieldNamespace .= '.entries';
+        }
 
         $nativeFields = [
             'title',
@@ -431,7 +534,18 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             'longitude',
         ];
 
-        foreach ($value as $addressId => $addressData) {
+        foreach ($newSortOrder as $postedAddressId) {
+            // New addresses are posted with a `uid:` key prefix; addresses that were already
+            // on the element aren't
+            $addressId = $uids ? Str::chopStart((string) $postedAddressId, 'uid:') : $postedAddressId;
+            $addressData = $newAddressData[$addressId] ?? [];
+
+            // If this is a preexisting address but we don't have a record of it,
+            // check to see if it was recently duplicated for a draft.
+            if (! isset($oldAddressesById[$addressId]) && isset($canonicalUidMap[$addressId])) {
+                $addressId = $canonicalUidMap[$addressId];
+            }
+
             // Existing address?
             if (isset($oldAddressesById[$addressId])) {
                 /** @var Address $address */
@@ -457,10 +571,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->setPrimaryOwner($element);
                 $address->setOwner($element);
                 $address->siteId = $element->siteId;
+
+                // Use the provided UUID, so the address can persist across future autosaves
+                if ($uids) {
+                    $address->uid = $addressId;
+                }
             }
 
             if (isset($addressData['enabled'])) {
                 $address->enabled = (bool) $addressData['enabled'];
+            }
+
+            // The Address form control nests the address format fields under an `address` key
+            if (isset($addressData['address']) && is_array($addressData['address'])) {
+                $addressData += $addressData['address'];
             }
 
             foreach ($nativeFields as $field) {
@@ -473,7 +597,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
             // Set the content post location on the entry if we can
             if ($baseAddressFieldNamespace) {
-                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$addressId.fields");
+                $address->setFieldParamNamespace("$baseAddressFieldNamespace.$postedAddressId.fields");
             }
 
             if (isset($addressData['fields'])) {
@@ -674,12 +798,6 @@ JS, [
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($element);
-    }
-
-    #[Override]
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        return $this->inputHtmlInternal($element, true);
     }
 
     private function inputHtmlInternal(?ElementInterface $owner, bool $static = false): string

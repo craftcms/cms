@@ -14,6 +14,9 @@ CP Styles
 
 :root {
     --global-sidebar-width: calc(226rem / 16);
+    --global-sidebar-collapsed-width: calc(
+        var(--c-size-touch-target) + var(--c-spacing-md)
+    );
     --global-content-width: calc(1440rem / 16);
     --header-height: calc(44rem / 16);
 
@@ -96,15 +99,32 @@ Sidebar metadata
 .cp-metadata-list {
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: minmax(max-content, 25%) 1fr;
     margin: 0;
     padding: 0;
 }
 
+.cp-metadata-list dt {
+    font-weight: bold;
+}
+
 .cp-metadata-list__item {
-    grid-column: span 2;
     display: grid;
-    grid-template-columns: subgrid;
+    gap: var(--c-spacing-xs);
+    align-items: baseline;
+}
+
+/* Roughly 250px */
+@container (width > 16.25rem) {
+    .cp-metadata-list {
+        grid-template-columns: minmax(max-content, 25%) 1fr;
+    }
+
+    .cp-metadata-list__item {
+        grid-column: span 2;
+        display: grid;
+        gap: unset;
+        grid-template-columns: subgrid;
+    }
 }
 
 /**
@@ -183,4 +203,17 @@ target — folder rows, sidebar sources, and breadcrumb crumbs alike. Garnish ad
     outline-offset: -2px;
     border-radius: var(--c-radius-sm);
     background-color: var(--c-color-accent-fill-quiet);
+}
+
+/**
+Column resizing
+
+`useResizable` puts this on <html> for the duration of a pointer drag, so the
+resize cursor sticks even when the pointer outruns the handle, and the drag
+doesn't leave a trail of selected text behind it.
+ */
+.is-resizing-inline,
+.is-resizing-inline * {
+    cursor: col-resize !important;
+    user-select: none !important;
 }

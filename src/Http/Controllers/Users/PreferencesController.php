@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Requests\UserPreferencesRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
+use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +28,7 @@ readonly class PreferencesController
 
         $user = $currentUser->asElement();
 
-        return $this->asEditUserScreen($user, self::SCREEN_PREFERENCES)
+        return $this->asEditUserScreen($user, EditUserScreens::PREFERENCES)
             ->inertiaPage('users/Preferences', new UserPreferencesViewModel($user));
     }
 

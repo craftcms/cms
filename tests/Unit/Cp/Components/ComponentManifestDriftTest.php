@@ -182,7 +182,10 @@ function cpDriftInvokeProtected(ViewComponent $component, string $method): mixed
 function cpDriftWcOnlyAllowlist(): array
 {
     return [
-        // e.g. 'craft-foo' => ['open'],  // reflected disclosure state, set by the WC itself
+        // <craft-tabs> writes `collapsed` itself in updated(), derived from
+        // selectedIndex, so a surrounding layout can style on it. Readable
+        // state, not a knob — Tabs::collapsible() is what a caller sets.
+        'craft-tabs' => ['collapsed'],
     ];
 }
 
@@ -221,6 +224,8 @@ function cpDriftExpectedPhpOnly(): array
         // craft-input-copy extends craft-input, inheriting the same
         // Lion-pushed control properties.
         'craft-input-copy' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        'craft-input-money' => ['type', 'placeholder', 'name', 'disabled', 'readonly'],
+        'craft-select' => ['label', 'label-sr-only', 'name', 'disabled', 'required'],
         // craft-input-password / craft-input-color extend LionInput directly (no
         // craft-input host props), so they only carry the Lion-pushed control
         // props; `type` is owned by the component (password reveal / color
@@ -232,6 +237,11 @@ function cpDriftExpectedPhpOnly(): array
         // craft-icon: `data-color` is the global palette-scoping attribute
         // (colorable.css), not a declared component property.
         'craft-icon' => ['data-color'],
+
+        // craft-tabs: `selected-index` is declared by LionTabs, so it is a real
+        // public input but absent from the manifest, which only lists own
+        // declarations.
+        'craft-tabs' => ['selected-index'],
     ];
 }
 

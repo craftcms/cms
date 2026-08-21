@@ -2,7 +2,6 @@
     import {computed, nextTick, ref} from 'vue';
     import {t} from '@craftcms/ui';
     import LayoutSlot from '@/common/components/LayoutSlot.vue';
-    import Pane from '@/common/components/Pane.vue';
     import Select from '@/common/form/Select.vue';
     import type {BaseOption} from '@/common/types';
     import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -91,7 +90,7 @@
 </script>
 
 <template>
-    <Pane appearance="raised">
+    <craft-pane appearance="raised">
         <div class="grid gap-3">
             <CraftInput
                 :label="t('Name')"
@@ -177,7 +176,7 @@
                 </craft-button>
             </div>
         </div>
-    </Pane>
+    </craft-pane>
 
     <LayoutSlot name="details">
         <CraftSwitch

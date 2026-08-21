@@ -6,9 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
-use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -19,10 +20,8 @@ use Override;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
-class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayoutElementInterface
+class AffiliatedSiteField extends BaseNativeField
 {
-    use ImportableFieldLayoutElement;
-
     #[Override]
     public string $attribute = 'affiliatedSiteId';
 
@@ -59,6 +58,28 @@ class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayo
     protected function instructionsText(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Determines which site the user will receive emails from, when sent via the control panel.');
+    }
+
+    #[Override]
+    protected function formControl(FieldLayoutElementContext $context): ?Control
+    {
+        if ($context->element && ! $context->element instanceof User) {
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
+        }
+
+        if (! Sites::isMultiSite()) {
+            return null;
+        }
+
+        return Choice::make($this->attribute())
+            ->options([
+                ['label' => t('None'), 'value' => ''],
+                ...Sites::getAllSites()->map(fn (Site $site) => [
+                    'label' => $site->getUiLabel(),
+                    'value' => $site->id,
+                ])->all(),
+            ])
+            ->value($context->element?->affiliatedSiteId);
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string

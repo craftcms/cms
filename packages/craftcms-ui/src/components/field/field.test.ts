@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
+import '../input/input.js';
 
 async function createField(
   attrs: Record<string, string> = {},
@@ -23,7 +24,7 @@ function input(element: CraftField): HTMLElement | null {
 }
 
 function labelNode(element: CraftField): HTMLElement | null {
-  return element.querySelector('[slot="label"]');
+  return element.querySelector(':scope > [slot="label"]');
 }
 
 function describedBy(element: CraftField): string[] {
@@ -64,6 +65,35 @@ describe('craft-field label association', () => {
 
     expect(labelNode(element)!.getAttribute('for')).toBe(input(element)!.id);
   });
+
+  it('labels a nested form control instead of its wrapper', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<craft-input slot="input"></craft-input>'
+    );
+    const nestedControl = element.querySelector('craft-input')!;
+    await nestedControl.updateComplete;
+
+    const nativeInput = nestedControl.querySelector('input')!;
+    expect(nativeInput.getAttribute('aria-labelledby')?.split(/\s+/)).toContain(
+      labelNode(element)!.id
+    );
+    expect(input(element)!.getAttribute('aria-labelledby') ?? '').toBe('');
+    expect(labelNode(element)!.hasAttribute('for')).toBe(false);
+  });
+
+  it('uses group semantics for a composite control wrapper', async () => {
+    const element = await createField(
+      {label: 'My group'},
+      '<div slot="input"><button type="button">Add</button></div>'
+    );
+
+    expect(element.getAttribute('role')).toBe('group');
+    expect(element.getAttribute('aria-labelledby')).toBe(
+      labelNode(element)!.id
+    );
+    expect(labelNode(element)!.hasAttribute('for')).toBe(false);
+  });
 });
 
 describe('craft-field required indicator', () => {
@@ -72,9 +102,10 @@ describe('craft-field required indicator', () => {
 
     const label = labelNode(element)!;
     const srOnly = label.querySelector('span.visually-hidden');
-    const indicator = label.querySelector('span.required');
+    const indicator = label.querySelector('craft-icon[name="asterisk"]');
     expect(srOnly?.textContent).toBe('Required');
     expect(indicator).not.toBeNull();
+    // The asterisk is decorative; the visually hidden text carries the meaning.
     expect(indicator!.getAttribute('aria-hidden')).toBe('true');
   });
 
@@ -84,13 +115,18 @@ describe('craft-field required indicator', () => {
     element.required = false;
     await element.updateComplete;
 
-    expect(labelNode(element)!.querySelector('span.required')).toBeNull();
+    expect(
+      labelNode(element)!.querySelector('craft-icon[name="asterisk"]')
+    ).toBeNull();
+    expect(
+      labelNode(element)!.querySelector('span.visually-hidden')
+    ).toBeNull();
   });
 
   it('does not render an indicator without a label', async () => {
     const element = await createField({required: ''});
 
-    expect(element.querySelector('span.required')).toBeNull();
+    expect(element.querySelector('craft-icon[name="asterisk"]')).toBeNull();
   });
 });
 
@@ -203,9 +239,13 @@ describe('craft-field status badge', () => {
       'status-label': 'This field has been modified.',
     });
 
-    const badge = element.shadowRoot!.querySelector('.status-badge');
+    const badge = element.shadowRoot!.querySelector(
+      '.form-field__status-indicator'
+    );
     expect(badge).not.toBeNull();
-    expect(badge!.classList.contains('modified')).toBe(true);
+    // The status name is reflected on the host and drives the wrapper's
+    // `form-field--*` class, rather than being repeated on the indicator.
+    expect(element.getAttribute('status')).toBe('modified');
     expect(badge!.getAttribute('title')).toBe('This field has been modified.');
     expect(badge!.getAttribute('aria-hidden')).toBe('true');
     expect(badge!.querySelector('.cp-visually-hidden')?.textContent).toBe(
@@ -215,7 +255,9 @@ describe('craft-field status badge', () => {
 
   it('renders no badge without a status', async () => {
     const element = await createField({label: 'My field'});
-    expect(element.shadowRoot!.querySelector('.status-badge')).toBeNull();
+    expect(
+      element.shadowRoot!.querySelector('.form-field__status-indicator')
+    ).toBeNull();
   });
 });
 
@@ -296,7 +338,7 @@ describe('craft-field read-only badge', () => {
     const element = await createField({label: 'My field', readonly: ''});
 
     const badge = element.shadowRoot!.querySelector(
-      '.heading .read-only-badge'
+      '.form-field__label .read-only-badge'
     );
     expect(badge?.textContent).toBe('Read Only');
   });
@@ -314,7 +356,7 @@ describe('craft-field label extras', () => {
       '<input slot="input" type="text"><code slot="label-extra">handle</code>'
     );
 
-    const heading = element.shadowRoot!.querySelector('.heading')!;
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
     const spacer = heading.querySelector('.flex-grow');
     const slot = heading.querySelector('slot[name="label-extra"]');
     expect(spacer).not.toBeNull();
@@ -327,6 +369,56 @@ describe('craft-field label extras', () => {
   it('renders no spacer without label extras', async () => {
     const element = await createField({label: 'My field'});
     expect(element.shadowRoot!.querySelector('.flex-grow')).toBeNull();
+  });
+});
+
+describe('craft-field actions', () => {
+  it('renders a flex-grow spacer before slotted actions', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    const spacer = heading.querySelector('.flex-grow');
+    const slot = heading.querySelector('slot[name="actions"]');
+    expect(spacer).not.toBeNull();
+    expect(slot).not.toBeNull();
+    expect(
+      spacer!.compareDocumentPosition(slot!) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('groups slotted actions', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const group = element.shadowRoot!.querySelector('.field-actions')!;
+    expect(group).not.toBeNull();
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.querySelector('slot[name="actions"]')).not.toBeNull();
+  });
+
+  it('renders actions after label extras', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<input slot="input" type="text"><code slot="label-extra">handle</code><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    const labelExtra = heading.querySelector('slot[name="label-extra"]')!;
+    const actions = heading.querySelector('slot[name="actions"]')!;
+    expect(
+      labelExtra.compareDocumentPosition(actions) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('renders no action group without actions', async () => {
+    const element = await createField({label: 'My field'});
+    expect(element.shadowRoot!.querySelector('.field-actions')).toBeNull();
   });
 });
 
@@ -392,7 +484,7 @@ describe('craft-field heading prefix/suffix', () => {
     await element.updateComplete;
     await element.updateComplete;
 
-    const heading = element.shadowRoot!.querySelector('.heading')!;
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
     const slotNames = Array.from(heading.querySelectorAll('slot')).map((s) =>
       s.getAttribute('name')
     );

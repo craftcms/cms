@@ -5,6 +5,7 @@ import {
     type CraftButton,
     type CreateButtonConfig,
 } from '@craftcms/ui';
+import {createTextInput} from '@craftcms/ui/factory';
 
 // jQuery remains a page global — the patched `Craft.ui.create*` methods keep
 // returning jQuery collections, since that's the legacy call-site contract.
@@ -101,6 +102,7 @@ function patchUi(
         $(bridgeLegacyClasses(createSubmitButton(config)));
     ui.createPasteButton = (config = {}) =>
         $(bridgeLegacyClasses(createPasteButton(config)));
+    (ui as any).createTextInput = (config = {}) => $(createTextInput(config));
 }
 
 declare global {

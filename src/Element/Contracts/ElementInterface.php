@@ -21,11 +21,15 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Form\Form;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Contracts\Validatable;
+use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
 use IteratorAggregate;
@@ -46,7 +50,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @extends ArrayAccess<array-key,mixed>
  * @extends IteratorAggregate<array-key,mixed>
  */
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -924,6 +928,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function hasRevisions(): bool;
 
     /**
+     * Returns the view model that builds this element type’s edit screen
+     * payload, or null if its editor hasn’t been ported off the legacy screen.
+     *
+     * @return class-string<ElementEditViewModel>|null
+     */
+    public static function editViewModelClass(): ?string;
+
+    /**
      * Prepares the response for the element’s Edit screen.
      *
      * @param  Response  $response  The response being prepared
@@ -1597,6 +1609,30 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @param  bool  $static  Whether any fields within the sidebar should be static (non-interactive)
      */
     public function getSidebarHtml(bool $static): string|Stringable;
+
+    /**
+     * Returns the editor sidebar's meta fields as a Form.
+     *
+     * This is the Form-system replacement for {@see getSidebarHtml()}; the
+     * Inertia editor renders it through the Vue Form renderer, so the fields
+     * submit as ordinary nested inputs rather than scraped DOM values. The
+     * legacy editor and slideouts keep using `getSidebarHtml()`.
+     *
+     * Returns `null` when the element has no sidebar fields.
+     */
+    public function sidebarForm(FormContext $context = new FormContext): ?Form;
+
+    /**
+     * Returns the element's validation errors keyed the way the editor's Forms
+     * address them.
+     *
+     * A Form matches errors to Controls by path, so an attribute validated
+     * under one name but posted under another needs remapping here, or its
+     * messages never reach the field that produced them.
+     *
+     * @return array<string, list<string>>
+     */
+    public function formErrors(): array;
 
     /**
      * Returns element metadata that should be shown within the editor sidebar.

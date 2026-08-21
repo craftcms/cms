@@ -116,17 +116,21 @@
         "unplugin-dts": "^1.0.0",
         "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
         "vite-plugin-dts": "^5.0.0",
+        "vite-plus": "0.2.6",
         "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "4.1.10",
-        "vite-plus": "0.2.6"
+        "vitest": "4.1.10"
     },
     "dependencies": {
         "@chromatic-com/storybook": "^5.1.2",
         "@formatjs/intl-durationformat": "^0.10.8",
+        "@github/combobox-nav": "^3.0.2",
         "@github/relative-time-element": "^5.0.0",
+        "@popperjs/core": "^2.11.8",
         "@simplewebauthn/browser": "^13.3.0",
         "@vitest/browser-playwright": "4.1.10",
-        "axios": "^1.17.0"
+        "axios": "^1.17.0",
+        "dom-input-range": "^2.0.1",
+        "inputmask": "^5.0.10"
     },
     "customElements": "dist/custom-elements.json"
 }

@@ -7,6 +7,11 @@ namespace Workbench\App\Providers;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
+use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\ChoicePresentation;
+use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
@@ -19,7 +24,6 @@ use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPermissionsViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
-use CraftCms\Cms\Http\ViewModels\UserProfileViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Route\Data\Route;
@@ -53,6 +57,11 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ImageTransform::class,
                     EntryType::class,
                     EntryTypeIndexData::class,
+                    ChoicePresentation::class,
+                    ControlMode::class,
+                    ControlPayload::class,
+                    FormPayload::class,
+                    NodePayload::class,
                     FilesystemsEditViewModel::class,
                     NavItem::class,
                     Permission::class,
@@ -70,7 +79,6 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     UserPasskeysViewModel::class,
                     UserPermissionsViewModel::class,
                     UserPreferencesViewModel::class,
-                    UserProfileViewModel::class,
                     UserSettings::class,
                     UserSignInProvidersViewModel::class,
                 ],

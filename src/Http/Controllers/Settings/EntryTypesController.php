@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
-use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -16,21 +14,20 @@ use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\EntryTypeEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,7 +48,6 @@ class EntryTypesController
         Fields $fields,
         GeneralConfig $generalConfig,
         private readonly EntryTypes $entryTypes,
-        private readonly FieldLayoutDesigner $fieldLayoutDesigner,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
@@ -73,7 +69,7 @@ class EntryTypesController
 
         return Inertia::render('settings/entry-types/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Entry Types')],
             ],
             'title' => t('Entry Types'),
@@ -97,7 +93,11 @@ class EntryTypesController
                 'action' => Url::cpUrl('settings/entry-types'),
             ])
             ->redirectUrl('settings/entry-types')
-            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryType, brandNew: true));
+            ->inertiaPage('settings/entry-types/Edit', new EntryTypeEditViewModel(
+                $entryType,
+                brandNew: true,
+                readOnly: $this->readOnly,
+            ));
     }
 
     public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
@@ -116,8 +116,11 @@ class EntryTypesController
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->redirectUrl('settings/entry-types')
-            ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml($entryTypeData->getMetadata()))
-            ->inertiaPage('settings/entry-types/Edit', $this->entryTypeProps($entryTypeData, brandNew: false));
+            ->inertiaPage('settings/entry-types/Edit', new EntryTypeEditViewModel(
+                $entryTypeData,
+                brandNew: false,
+                readOnly: $this->readOnly,
+            ));
 
         if (! $this->readOnly) {
             $response->formAttributes([
@@ -142,67 +145,36 @@ class EntryTypesController
         return $response;
     }
 
-    /**
-     * Builds the Inertia props for the entry type edit/new screen.
-     */
-    /** @return array<string, mixed> */
-    private function entryTypeProps(EntryType $entryType, bool $brandNew): array
+    public function renderForm(Request $request): JsonResponse
     {
-        $fieldLayout = $entryType->getFieldLayout();
+        $data = $request->validate([
+            'values' => ['required', 'array'],
+            'values.entryTypeId' => ['nullable', 'integer'],
+            'values.name' => ['nullable', 'string'],
+            'values.handle' => ['nullable', 'string'],
+            'values.description' => ['nullable', 'string'],
+            'values.icon' => ['nullable', 'string'],
+            'values.color' => ['nullable', Rule::enum(Color::class)],
+            'values.uiLabelFormat' => ['nullable', 'string'],
+            'values.titleTranslationMethod' => ['nullable', Rule::enum(TranslationMethod::class)],
+            'values.titleTranslationKeyFormat' => ['nullable', 'string'],
+            'values.titleFormat' => ['nullable', 'string'],
+            'values.allowLineBreaksInTitles' => ['required', 'boolean'],
+            'values.showSlugField' => ['required', 'boolean'],
+            'values.slugTranslationMethod' => ['nullable', Rule::enum(TranslationMethod::class)],
+            'values.slugTranslationKeyFormat' => ['nullable', 'string'],
+            'values.showStatusField' => ['required', 'boolean'],
+            'values.fieldLayout' => ['present', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
 
-        // Normalize the Title field's presence so the round-tripped config matches what gets saved back.
-        if ($entryType->hasTitleField) {
-            if (! $fieldLayout->isFieldIncluded('title')) {
-                $fieldLayout->prependElements([new EntryTitleField]);
-            }
-        } else {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                $elements = array_filter(
-                    $tab->getElements(),
-                    fn (FieldLayoutElement $element) => ! $element instanceof EntryTitleField,
-                );
-                $tab->setElements($elements);
-            }
-        }
-
-        // Render just the designer markup (with `autoBoot: false`, so it doesn't queue its
-        // own boot JS).
-        $fieldLayoutDesigner = [
-            'html' => $this->fieldLayoutDesigner->fieldHtml($fieldLayout, [
-                'disabled' => $this->readOnly,
-                'withGeneratedFields' => true,
-                'withCardViewDesigner' => true,
-                'autoBoot' => false,
-            ]),
-        ];
-
-        return [
-            'brandNew' => $brandNew,
-            'entryType' => [
-                'id' => $entryType->id,
-                'color' => $entryType->color?->value,
-                'icon' => $entryType->icon,
-                'name' => $entryType->name,
-                'handle' => $entryType->handle,
-                'description' => $entryType->description,
-                'uiLabelFormat' => $entryType->uiLabelFormat,
-                'titleTranslationMethod' => $entryType->titleTranslationMethod->value,
-                'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
-                'titleFormat' => $entryType->titleFormat,
-                'allowLineBreaksInTitles' => (bool) $entryType->allowLineBreaksInTitles,
-                'showSlugField' => (bool) $entryType->showSlugField,
-                'slugTranslationMethod' => $entryType->slugTranslationMethod->value,
-                'slugTranslationKeyFormat' => $entryType->slugTranslationKeyFormat,
-                'showStatusField' => (bool) $entryType->showStatusField,
-            ],
-            'metadataHtml' => app(ContentHtml::class)->metadataHtml($entryType->getMetadata()),
-            'fieldLayoutDesigner' => $fieldLayoutDesigner,
-            'translationMethodOptions' => TranslationMethod::asOptions(),
-            'typeName' => Entry::displayName(),
-            'lowerTypeName' => Entry::lowerDisplayName(),
-            'isMultiSite' => Sites::isMultiSite(),
-            'readOnly' => $this->readOnly,
-        ];
+        return new JsonResponse([
+            'form' => new EntryTypeEditViewModel(
+                new EntryType,
+                brandNew: ! isset($data['values']['entryTypeId']),
+                values: $data['values'],
+            )->form(),
+        ]);
     }
 
     public function store(Request $request): Response

@@ -1,0 +1,39 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set groups = entryTypes.groupBy(et => et.group ?? 'General'|t('app')) %}
+{% if not groups.count() %}
+  {% set groups = {('General'|t('app')): []} %}
+{% endif %}
+{% set entryTypeSelectConfig = entryTypeSelectConfig ?? {
+  name: 'entryTypes[]',
+  renderDefaultInput: false,
+  allowOverrides: true,
+  create: true,
+  jsClass: false,
+} %}
+{% set groupedManagerAttributes = {
+  class: 'entry-type-manager',
+  namespace: InputNamespace.get() ?: false,
+  'allow-overrides': true,
+  disabled: disabled ?: false,
+}|merge(groupedManagerAttributes ?? {}) %}
+
+{{ hiddenInput('entryTypes', '') }}
+{% tag 'craft-entry-type-manager' with groupedManagerAttributes %}
+  <ul class="entry-type-groups mb-s">
+    {% for groupName, groupEntryTypes in groups %}
+      <li class="entry-type-group" data-name="{{ groupName }}">
+        <div class="entry-type-group--titlebar"><span>{{ groupName }}</span></div>
+        {{ forms.entryTypeSelect(entryTypeSelectConfig|merge({
+          id: "entry-type-select-#{random()}",
+          values: groupEntryTypes,
+          includeGroupInValues: true,
+          disabled,
+        })) }}
+      </li>
+    {% endfor %}
+  </ul>
+  {% if not disabled and entryTypeSelectHtml %}
+    <template data-entry-type-select>{{ entryTypeSelectHtml|raw }}</template>
+  {% endif %}
+{% endtag %}

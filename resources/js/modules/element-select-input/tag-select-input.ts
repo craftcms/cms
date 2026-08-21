@@ -23,6 +23,8 @@ const DEFAULTS = {
  *   remain consistent with the legacy code and to rely on the compat alias.
  */
 export class TagSelectInput extends BaseElementSelectInput {
+    static override defaults: Record<string, any> = DEFAULTS;
+
     override searchTimeout: ReturnType<typeof setTimeout> | null = null;
     override searchMenu: any = null;
 
@@ -32,7 +34,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     $addTagInput: any = null;
     override $spinner: any = null;
 
-    #ignoreBlur = false;
+    _ignoreBlur = false;
 
     constructor(...restArgs: any[]) {
         let settings = restArgs[0];
@@ -50,7 +52,7 @@ export class TagSelectInput extends BaseElementSelectInput {
             settings = normalized;
         }
 
-        settings = Object.assign({}, DEFAULTS, settings);
+        settings = Object.assign({}, TagSelectInput.defaults, settings);
 
         super(settings);
         if (new.target === TagSelectInput) {
@@ -66,10 +68,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
         this.addListener(this.$addTagInput[0], 'input', () => {
             if (this.searchTimeout) clearTimeout(this.searchTimeout);
-            this.searchTimeout = setTimeout(
-                this.searchForTagsTag.bind(this),
-                500
-            );
+            this.searchTimeout = setTimeout(this.searchForTags.bind(this), 500);
         });
 
         this.addListener(this.$addTagInput[0], 'keydown', ((
@@ -100,11 +99,9 @@ export class TagSelectInput extends BaseElementSelectInput {
                                 .nextAll()
                                 .find('.menu-item:not(.disabled)')
                                 .first();
-                            if ($next.length) this.#focusTagOption($next);
+                            if ($next.length) this.focusOption($next);
                         } else {
-                            this.#focusTagOption(
-                                this.searchMenu.$options.eq(0)
-                            );
+                            this.focusOption(this.searchMenu.$options.eq(0));
                         }
                     }
                     return;
@@ -120,9 +117,9 @@ export class TagSelectInput extends BaseElementSelectInput {
                                 .prevAll()
                                 .find('.menu-item:not(.disabled)')
                                 .last();
-                            if ($prev.length) this.#focusTagOption($prev);
+                            if ($prev.length) this.focusOption($prev);
                         } else {
-                            this.#focusTagOption(
+                            this.focusOption(
                                 this.searchMenu.$options.eq(
                                     this.searchMenu.$options.length - 1
                                 )
@@ -139,8 +136,8 @@ export class TagSelectInput extends BaseElementSelectInput {
         });
 
         this.addListener(this.$addTagInput[0], 'blur', () => {
-            if (this.#ignoreBlur) {
-                this.#ignoreBlur = false;
+            if (this._ignoreBlur) {
+                this._ignoreBlur = false;
                 return;
             }
             setTimeout(() => {
@@ -149,13 +146,13 @@ export class TagSelectInput extends BaseElementSelectInput {
         });
     }
 
-    get #fieldName(): string | null {
+    get fieldName(): string | null {
         const $legend = this.$container.closest('fieldset').find('legend');
         if ($legend.length === 0) return null;
         return $legend[0].innerText;
     }
 
-    #focusTagOption($option: any): void {
+    override focusOption($option: any): void {
         this.searchMenu.$options.removeClass('hover');
         this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
         $option.addClass('hover');
@@ -178,8 +175,8 @@ export class TagSelectInput extends BaseElementSelectInput {
     }
 
     /** Tag-specific search that queries tags rather than generic elements. */
-    async searchForTagsTag(): Promise<void> {
-        if (this.searchMenu) this.#killTagSearchMenu();
+    override async searchForTags(): Promise<void> {
+        if (this.searchMenu) this.killSearchMenu();
 
         const val = this.$addTagInput.val();
 
@@ -217,11 +214,11 @@ export class TagSelectInput extends BaseElementSelectInput {
                 }
             );
 
-            if (this.searchMenu) this.#killTagSearchMenu();
+            if (this.searchMenu) this.killSearchMenu();
             this.$spinner.addClass('hidden');
             Craft.cp.announce(Craft.t('app', 'Loading complete'));
 
-            const fieldName = this.#fieldName;
+            const fieldName = this.fieldName;
             const $menu = $('<div class="menu tagmenu"/>');
             if (fieldName !== null) $menu.attr('aria-label', fieldName);
             $menu.appendTo($(bod));
@@ -261,7 +258,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
             this.searchMenu.on('show', () => {
                 this.$addTagInput.attr('aria-expanded', 'true');
-                this.#focusSelectedTagOption();
+                this.focusSelectedOption();
             });
 
             this.searchMenu.on('hide', () => {
@@ -270,25 +267,28 @@ export class TagSelectInput extends BaseElementSelectInput {
             });
 
             this.addListener($menu[0], 'mousedown', () => {
-                this.#ignoreBlur = true;
+                this._ignoreBlur = true;
             });
 
             this.searchMenu.show();
         } catch {
-            if (this.searchMenu) this.#killTagSearchMenu();
+            if (this.searchMenu) this.killSearchMenu();
             this.$spinner.addClass('hidden');
             Craft.cp.announce(Craft.t('app', 'Loading complete'));
         }
     }
 
-    #focusSelectedTagOption(): void {
+    override focusSelectedOption(): void {
         const $option = this.searchMenu.$options.filter('.hover:first');
         if ($option.length) {
-            this.#focusTagOption($option);
+            this.focusOption($option);
         } else {
-            const $first = this.searchMenu.$options.first();
-            this.#focusTagOption($first);
+            this.focusFirstOption();
         }
+    }
+
+    override focusFirstOption(): void {
+        this.focusOption(this.searchMenu.$options.first());
     }
 
     selectTag(option: any): void {
@@ -334,7 +334,7 @@ export class TagSelectInput extends BaseElementSelectInput {
         this.$elements = this.$elements.add($element);
         this.addElements($element);
 
-        this.#killTagSearchMenu();
+        this.killSearchMenu();
         this.$addTagInput.val('');
         this.$addTagInput.focus();
 
@@ -356,7 +356,7 @@ export class TagSelectInput extends BaseElementSelectInput {
         }
     }
 
-    #killTagSearchMenu(): void {
+    override killSearchMenu(): void {
         this.searchMenu.hide();
         this.searchMenu.destroy();
         this.searchMenu = null;
