@@ -89,6 +89,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var int|null The element's ID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('id', 'ID', canBeCleared: false)]
     public ?int $id = null;
 
     /**
@@ -100,6 +101,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s UID
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('uid', 'UID', canBeCleared: false)]
     public ?string $uid = null;
 
     /**
@@ -798,6 +800,9 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     #[Override]
     public function setAttributesForImport(array $attributes): void
     {
+        // the ID and UID can only be used to match on, we cannot have them be set via the import
+        unset($attributes['id'], $attributes['uid']);
+
         // by default, simply set the attributes
         $this->setAttributesFromRequest($attributes);
     }

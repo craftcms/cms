@@ -3739,6 +3739,12 @@ JS;
         // ensure we're not changing volume ID compared to what we chose in the field layout provider step
         unset($attributes['volumeId']);
 
+        // if this is a new asset and we don't have tempFilePath - throw an error and don't bother going further
+        if ($this->id === null && ! isset($attributes['tempFilePath'])) {
+            // throw new Exception('Cannot import an asset without a tempFilePath');
+            throw new AssetException(t('Cannot create a new asset without a file. Please check your mapping and incoming data.'));
+        }
+
         // if folderId was not provided, ensure we have one:
         if (empty($attributes['folderId'])) {
             $folder = Folders::getRootFolderByVolumeId($this->volumeId);
