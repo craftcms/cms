@@ -53,6 +53,20 @@ it('resolves the core site templates path through the legacy alias', function() 
     }
 });
 
+it('resolves the core vendor path through the legacy alias', function() {
+    $original = Aliases::get('@vendor', false);
+    $vendorPath = File::normalizePath(__DIR__ . '/../Fixtures');
+    Aliases::set('@vendor', $vendorPath);
+
+    try {
+        expect(app(CorePath::class)->vendor())->toBe($vendorPath);
+    } finally {
+        $original === false
+            ? Aliases::remove('@vendor')
+            : Aliases::set('@vendor', $original);
+    }
+});
+
 it('keeps the bundled Composer fallback in the adapter', function() {
     expect(app(CoreComposer::class))->toBeInstanceOf(Composer::class);
 });
