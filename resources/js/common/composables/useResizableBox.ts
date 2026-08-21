@@ -1,14 +1,17 @@
 import {
+  computed,
   onScopeDispose,
   ref,
   shallowRef,
   toValue,
   watch,
+  type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from 'vue';
 import {useElementSize, useEventListener} from '@vueuse/core';
 import {BaseDrag} from '@craftcms/garnish';
+import type {ResizeHandleControls} from '@/common/composables/resizeHandle';
 
 /**
  * Two-axis resizing for a centered box — a modal — from a corner handle.
@@ -28,6 +31,11 @@ export interface UseResizableBoxOptions {
   target: MaybeRefOrGetter<HTMLElement | null | undefined>;
   /** Whether the box is on screen. The floor resets when it isn't. */
   active?: MaybeRefOrGetter<boolean>;
+  /**
+   * Set when the consumer fixes the height itself. The floor stands down: it
+   * only means anything while the height is content-driven.
+   */
+  fixedHeight?: MaybeRefOrGetter<boolean>;
   /** Smallest size a drag can leave it at, in px. Default `200`. */
   minSize?: number;
   /** Arrow-key increment, in px. Default `16`. */
@@ -36,24 +44,21 @@ export interface UseResizableBoxOptions {
   largeStep?: number;
 }
 
-export interface UseResizableBoxReturn {
+export interface UseResizableBoxReturn extends ResizeHandleControls {
   /** Dragged width in px, or `null` while the width is CSS-driven. */
   width: Ref<number | null>;
   /** Dragged height in px, or `null` while the height is CSS-driven. */
   height: Ref<number | null>;
   /** Tallest the box has been while active, in px. Only ever rises. */
   floor: Ref<number | null>;
-  /** Template ref callback for the corner handle. */
-  setHandle: (el: HTMLElement | null) => void;
-  /** Keydown handler implementing arrow-key resizing, and Enter to reset. */
-  onKeydown: (ev: KeyboardEvent) => void;
-  /** Hands the size back to CSS. Wire to the handle's double-click. */
-  reset: () => void;
+  /** The CSS the values above imply, or `{}` when the size is CSS-driven. */
+  style: ComputedRef<Record<string, string>>;
 }
 
 export function useResizableBox({
   target,
   active,
+  fixedHeight,
   minSize = 200,
   step = 16,
   largeStep = 64,
@@ -105,6 +110,30 @@ export function useResizableBox({
     width.value = null;
     height.value = null;
   }
+
+  const style = computed<Record<string, string>>(() => {
+    const style: Record<string, string> = {};
+
+    if (width.value !== null) {
+      style.width = `${width.value}px`;
+    }
+
+    if (height.value !== null) {
+      style.height = `${height.value}px`;
+    }
+
+    // A floor under a fixed height is either redundant or, since min-height
+    // beats max-height, actively wrong.
+    if (
+      floor.value !== null &&
+      height.value === null &&
+      !toValue(fixedHeight ?? false)
+    ) {
+      style.minHeight = `${floor.value}px`;
+    }
+
+    return style;
+  });
 
   // --- Height floor ---------------------------------------------------------
   //
@@ -251,5 +280,5 @@ export function useResizableBox({
     dragger = null;
   });
 
-  return {width, height, floor, setHandle, onKeydown, reset};
+  return {width, height, floor, style, setHandle, onKeydown, reset};
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {onKeyStroke} from '@vueuse/core';
   import {computed, shallowRef} from 'vue';
-  import {ResizeHandle} from '@craftcms/garnish';
   import {t} from '@craftcms/ui';
+  import CornerResizeHandle from '@/common/components/CornerResizeHandle.vue';
   import {useBodyScrollLock} from '@/common/composables/useBodyScrollLock';
   import {useResizableBox} from '@/common/composables/useResizableBox';
 
@@ -36,19 +36,21 @@
   useBodyScrollLock(() => props.isActive);
 
   const content = shallowRef<HTMLElement | null>(null);
-  const {
-    width: resizedWidth,
-    height: resizedHeight,
-    floor: floorHeight,
-    setHandle,
-    onKeydown: onHandleKeydown,
-    reset,
-  } = useResizableBox({target: content, active: () => props.isActive});
+  const resizer = useResizableBox({
+    target: content,
+    active: () => props.isActive,
+    fixedHeight: () => Boolean(props.height),
+  });
 
   const widthClass = computed(() => {
     return `w-${props.width}`;
   });
 
+  /**
+   * This modal's own contribution to the box. The resizer's styles are bound
+   * after it, and later entries in a `:style` array win — that is what lets a
+   * dragged size beat the width class and the height prop.
+   */
   const contentStyle = computed(() => {
     const viewportCap = 'calc(100vh - (var(--c-spacing-lg) * 2))';
     const style: Record<string, string> = {};
@@ -58,18 +60,7 @@
     if (props.maxHeight) {
       style.maxHeight = `min(${props.maxHeight}, ${viewportCap})`;
     }
-    // A dragged size wins over the width class and the height prop.
-    if (resizedWidth.value !== null) {
-      style.width = `${resizedWidth.value}px`;
-    }
-    if (resizedHeight.value !== null) {
-      style.height = `${resizedHeight.value}px`;
-    }
-    // Only meaningful while the height is content-driven — an explicit one
-    // already fixes the box.
-    if (floorHeight.value !== null && !style.height) {
-      style.minHeight = `${floorHeight.value}px`;
-    }
+
     return Object.keys(style).length ? style : undefined;
   });
 </script>
@@ -83,20 +74,11 @@
           content: true,
           [widthClass]: true,
         }"
-        :style="contentStyle"
+        :style="[contentStyle, resizer.style.value]"
       >
         <slot></slot>
       </div>
-      <button
-        v-if="resizable"
-        :ref="(el) => setHandle(el as HTMLElement | null)"
-        type="button"
-        class="resizehandle"
-        :aria-label="t('Resize')"
-        @keydown="onHandleKeydown"
-        @dblclick="reset"
-        v-html="ResizeHandle"
-      ></button>
+      <CornerResizeHandle v-if="resizable" :resizer="resizer" />
     </div>
   </Transition>
 
@@ -154,37 +136,16 @@
     grid-area: 1 / 1;
   }
 
-  .resizehandle {
+  /* Where the handle sits is this modal's business; how it looks is its own. */
+  .corner-resize-handle {
     align-self: end;
     justify-self: end;
     /* Positioned so the z-index reliably lifts it above `.content`, which is
      itself positioned and would otherwise paint over the corner. */
     position: relative;
     z-index: 1;
-    width: 24px;
-    height: 24px;
-    padding: var(--c-spacing-xs);
-    border: none;
-    background: none;
-    cursor: nwse-resize;
-    touch-action: none;
+    /* `.cp-modal` turns pointer events off; the handle is the exception. */
     pointer-events: auto;
-  }
-
-  .resizehandle :deep(path) {
-    fill: var(--c-text-quiet);
-  }
-
-  .resizehandle :deep(svg.rtl) {
-    display: none;
-  }
-
-  [dir='rtl'] .resizehandle :deep(svg.ltr) {
-    display: none;
-  }
-
-  [dir='rtl'] .resizehandle :deep(svg.rtl) {
-    display: block;
   }
 
   .cp-overlay {
