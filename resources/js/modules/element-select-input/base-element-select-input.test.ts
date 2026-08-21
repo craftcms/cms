@@ -126,3 +126,91 @@ it('routes its injected chip actions through those methods', () => {
   actions[1].callback();
   expect(removeElement).toHaveBeenCalledWith($chip);
 });
+
+/**
+ * An instance with just enough stubbed to observe the order of
+ * `onModalSelect()`'s side effects — the real method wants jQuery, garnish and
+ * a live modal, none of which bear on when the replaced chip is dropped.
+ */
+function replaceFlowInput() {
+  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+
+  const log: string[] = [];
+  const input = new UninitializedElementSelectInput();
+
+  input.settings = {
+    viewMode: 'list',
+    elementType: 'entry',
+    limit: null,
+    maintainHierarchy: false,
+    showActionMenu: false,
+    criteria: {},
+  };
+  input.$elements = {length: 1};
+
+  const removeElement = vi.fn(() => {
+    log.push('removeElement');
+    input.$elements = {length: 0};
+    // Stands in for the host reacting to the value change. Vue schedules its
+    // re-render as a microtask, so anything that lands after this marker is
+    // too late to be part of the same combined update.
+    void Promise.resolve().then(() => log.push('host re-render'));
+  });
+  const selectElements = vi.fn(() => {
+    log.push('selectElements');
+  });
+
+  input.removeElement = removeElement;
+  input.selectElements = selectElements as never;
+  input.updateDisabledElementsInModal = vi.fn();
+
+  vi.stubGlobal('$', (value: unknown) => ({rendered: value}));
+  vi.stubGlobal('Craft', {
+    sendActionRequest: vi.fn(async () => {
+      log.push('render-elements');
+      return {data: {elements: {7: ['<div/>']}, headHtml: '', bodyHtml: ''}};
+    }),
+    appendHeadHtml: vi.fn(),
+    appendBodyHtml: vi.fn(),
+    setElementSize: vi.fn(),
+  });
+
+  return {input, log, removeElement, selectElements};
+}
+
+it('drops the replaced chip only once the replacement has rendered', async () => {
+  const {input, log, removeElement} = replaceFlowInput();
+  const $chip = {chip: true};
+  input._$replaceElement = $chip;
+
+  await input.onModalSelect([{id: 7, siteId: 1}]);
+
+  expect(removeElement).toHaveBeenCalledWith($chip);
+  expect(input._$replaceElement).toBeNull();
+
+  // Removing before the request tore down hosts that key on this input's
+  // value, leaving the resumed flow writing into a detached DOM — Replace
+  // opened its modal but never completed. The removal and the insertion also
+  // have to share one synchronous stretch, so those hosts see a single
+  // combined change rather than an empty intermediate one.
+  expect(log).toEqual([
+    'render-elements',
+    'removeElement',
+    'selectElements',
+    'host re-render',
+  ]);
+});
+
+it('frees the replaced chip’s slot before applying the limit', async () => {
+  const {input, selectElements} = replaceFlowInput();
+  input.settings.limit = 1;
+  input._$replaceElement = {chip: true};
+
+  await input.onModalSelect([{id: 7, siteId: 1}]);
+
+  // The outgoing chip still occupied the field's only slot when the limit was
+  // applied, the replacement would be sliced away and nothing would be added.
+  expect(selectElements).toHaveBeenCalledWith([
+    expect.objectContaining({id: 7}),
+  ]);
+});

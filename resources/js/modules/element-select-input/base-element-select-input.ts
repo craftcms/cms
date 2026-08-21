@@ -1032,11 +1032,6 @@ export class BaseElementSelectInput extends Base {
 
     this.elementEditor?.pause();
 
-    if (this._$replaceElement) {
-      this.removeElement(this._$replaceElement);
-      this._$replaceElement = null;
-    }
-
     const [inputUiType, inputUiSize] = (() => {
       switch (this.settings.viewMode) {
         case 'thumbs':
@@ -1079,6 +1074,27 @@ export class BaseElementSelectInput extends Base {
         elements[i].$modalElement = elements[i].$element;
         elements[i].$element = $(data.elements[elements[i].id][0]);
       }
+    }
+
+    // Drop the chip being replaced only now that the replacement markup is in
+    // hand, and never before an await.
+    //
+    // Removing it earlier publishes an intermediate value — one element short
+    // and with no replacement yet — to hosts that re-render this input from
+    // it. `ElementSelectControl.vue` keys `<craft-element-select-input>` on its
+    // value, so that intermediate state tore the custom element down mid-flight
+    // and left the rest of this method, including the `selectElements()` that
+    // actually inserts the replacement, writing into a detached DOM. Replace
+    // could open its modal but never complete.
+    //
+    // Removing here keeps the removal and the insertion in the same
+    // synchronous stretch, so such hosts observe a single combined change and
+    // re-render once, with the replacement already in place. It still lands
+    // ahead of the limit math below, which needs the outgoing chip gone to
+    // free up its slot.
+    if (this._$replaceElement) {
+      this.removeElement(this._$replaceElement);
+      this._$replaceElement = null;
     }
 
     if (this.settings.maintainHierarchy) {
