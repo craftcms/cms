@@ -35,6 +35,10 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 // Get the Laravel application instance
 $app = Application::getInstance();
 
+if (defined('CRAFT_STORAGE_PATH')) {
+    $app->useStoragePath(CRAFT_STORAGE_PATH);
+}
+
 // Load the general config
 // -----------------------------------------------------------------------------
 
