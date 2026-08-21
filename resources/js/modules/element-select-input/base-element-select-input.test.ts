@@ -1,5 +1,8 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {BaseElementSelectInput} from './base-element-select-input';
+import {
+  BaseElementSelectInput,
+  type BaseElementSelectInputSettings,
+} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {TagSelectInput} from './tag-select-input';
 
@@ -70,7 +73,11 @@ function chipActionInput(elementSelect: any = null) {
   const showModal = vi.fn();
   const removeElement = vi.fn();
   const input = new UninitializedElementSelectInput();
-  input.settings = {allowRemove: true, elementType: 'entry', sortable: false};
+  input.settings = {
+    allowRemove: true,
+    elementType: 'entry',
+    sortable: false,
+  } as BaseElementSelectInputSettings;
   input.elementSelect = elementSelect;
   input.showModal = showModal;
   input.removeElement = removeElement;
@@ -139,7 +146,7 @@ function replaceFlowInput() {
     maintainHierarchy: false,
     showActionMenu: false,
     criteria: {},
-  };
+  } as BaseElementSelectInputSettings;
   input.$elements = {length: 1};
 
   const removeElement = vi.fn(() => {
