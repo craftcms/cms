@@ -428,7 +428,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      * @param  array<array-key, array<string, mixed>>  $value
      * @return list<Address>
      */
-    private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
+    public function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Was the value posted in the new (delta) format?
         $delta = isset($value['entries']) || isset($value['blocks']) || isset($value['sortOrder']);
