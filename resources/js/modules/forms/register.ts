@@ -21,6 +21,7 @@ import ElementSelectControl from './ElementSelectControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
+import FilesystemSelectControl from './FilesystemSelectControl.vue';
 import MatrixControl from './MatrixControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
@@ -77,6 +78,7 @@ export function registerFormComponents(
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
   components.register('craft:field-select', FieldSelectControl);
+  components.register('craft:filesystem-select', FilesystemSelectControl);
   components.register(
     'craft:grouped-entry-type-manager',
     GroupedEntryTypeManagerControl
