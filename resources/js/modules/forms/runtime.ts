@@ -1,5 +1,5 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey, Slots} from 'vue';
+import type {InjectionKey, Ref, Slots} from 'vue';
 import type {FormChange} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
@@ -8,6 +8,10 @@ export const FormFailure: InjectionKey<(message: string) => void> =
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
   'FormControlOverrides'
 );
+
+/** Modified delta groups as dotted paths, provided to every field beneath. */
+export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormModifiedGroups');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';

@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Improved environment variable settings fields to show suggestions after typing `$`, automatically bracing embedded environment variables.
+- Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
+- Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
+- Element edit screens now indicate which fields a draft has unapplied changes to.
 - Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
 

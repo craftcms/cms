@@ -1,6 +1,21 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
-  import {type Component, computed} from 'vue';
+  import {type Component, computed, defineComponent, h} from 'vue';
+
+  defineOptions({inheritAttrs: false});
+
+  const CustomElementLink = defineComponent({
+    inheritAttrs: false,
+    props: {
+      tag: {
+        type: String,
+        required: true,
+      },
+    },
+    setup(props, {attrs, slots}) {
+      return () => h(props.tag, attrs, slots.default?.());
+    },
+  });
 
   const props = withDefaults(
     defineProps<
@@ -47,31 +62,59 @@
 
     return props.href?.url;
   });
+
+  const customElement = computed(() =>
+    typeof props.as === 'string' && props.as.includes('-')
+      ? props.as
+      : undefined
+  );
+
+  const linkComponent = computed(() =>
+    customElement.value ? CustomElementLink : props.as
+  );
+
+  const customElementAttributes = computed(() =>
+    customElement.value
+      ? {
+          block: props.block || undefined,
+          icon: props.icon,
+        }
+      : {}
+  );
 </script>
 
 <template>
   <template v-if="inertia">
     <Link
-      :as="as"
+      v-bind="{...$attrs, ...customElementAttributes}"
+      :as="linkComponent"
+      :tag="customElement"
       :href="href"
-      :class="classes"
+      :class="customElement ? undefined : classes"
       :variant="variant"
       :size="size"
       prefetch="click"
     >
-      <div class="flex gap-1 items-center">
+      <slot v-if="customElement"></slot>
+      <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
       </div>
     </Link>
   </template>
   <template v-else>
-    <a :href="hrefString" :class="classes">
-      <div class="flex gap-1 items-center">
+    <component
+      v-bind="{...$attrs, ...customElementAttributes}"
+      :is="as || 'a'"
+      :href="hrefString"
+      :class="customElement ? undefined : classes"
+    >
+      <slot v-if="customElement"></slot>
+      <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
       </div>
-    </a>
+    </component>
   </template>
 </template>
 
