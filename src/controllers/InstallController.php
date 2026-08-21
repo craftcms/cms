@@ -220,6 +220,7 @@ class InstallController extends Controller
 
         $data = [
             'model' => [
+                ...$site->toArray(),
                 'name' => $site->getName(false),
                 'baseUrl' => $site->getBaseUrl(false),
                 'language' => $site->getLanguage(false),

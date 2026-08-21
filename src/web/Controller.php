@@ -13,7 +13,6 @@ use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -397,11 +396,11 @@ abstract class Controller extends \yii\web\Controller
         $modelName ??= 'model';
         $routeParams += [$modelName => $model];
 
-        $data = ArrayHelper::merge([
+        $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
             'errors' => $model->getErrors(),
-        ], $data);
+        ];
 
         return $this->asFailure(
             $message,
@@ -436,11 +435,11 @@ abstract class Controller extends \yii\web\Controller
             unset($modelData['cpEditUrl']);
         }
 
-        $data = ArrayHelper::merge(array_filter([
+        $data += [
             'modelName' => $modelName,
             'modelClass' => get_class($model),
             ($modelName ?? 'model') => $modelData,
-        ]), $data);
+        ];
 
         if ($model instanceof Identifiable) {
             $data['modelId'] = $model->getId();
