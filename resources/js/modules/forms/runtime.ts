@@ -45,7 +45,21 @@ export function formChangeFromEvent(
     return change;
   }
 
-  return change instanceof CustomEvent ? (change.detail ?? null) : null;
+  const detail = change instanceof CustomEvent ? change.detail : null;
+
+  // Only a Control's own CustomEvent carries a FormChange. Plenty of other
+  // CustomEvents bubble through a form — htmx's request lifecycle puts
+  // `{elt, xhr, …}` in `detail` — and forwarding one as a change hands
+  // listeners an object with no `path`.
+  return isFormChange(detail) ? detail : null;
+}
+
+function isFormChange(value: unknown): value is FormChange {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as FormChange).path)
+  );
 }
 
 export function inputName(path: string[]): string {
