@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
+- Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 
 ## 5.10.14 - 2026-08-18
 
