@@ -56,6 +56,28 @@ it('waits for the jQuery seam before initializing', async () => {
   expect(designer.$fieldSearch).toBe(search);
 });
 
+it('announces config changes so wrappers can read the new layout', () => {
+  const designer = Object.create(
+    FieldLayoutDesigner.prototype
+  ) as FieldLayoutDesigner;
+  const host = document.createElement('div');
+  const input = document.createElement('input');
+  input.dataset.configInput = '';
+  input.value = '{"tabs":[]}';
+  host.append(input);
+  designer.$configInput = input;
+
+  const changes: Event[] = [];
+  host.addEventListener('change', (event) => changes.push(event));
+
+  designer.config = {tabs: [{name: 'Content', elements: []}]} as never;
+
+  expect(input.value).toBe('{"tabs":[{"name":"Content","elements":[]}]}');
+  // Must bubble: wrappers listen on an ancestor.
+  expect(changes).toHaveLength(1);
+  expect(changes[0]!.bubbles).toBe(true);
+});
+
 it('adds a field returned by the field editor slideout', () => {
   const designer = Object.create(
     FieldLayoutDesigner.prototype

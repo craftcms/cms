@@ -56,6 +56,8 @@ export interface ElementEditPayload {
   form: FormPayload | null;
   sidebarForm: FormPayload | null;
   metadataHtml: string | null;
+  /** The element's status badge. `null` for element types without statuses. */
+  statusLabelHtml: string | null;
   saveUrl: string;
   applyDraftUrl: string;
   formActions: Array<ElementFormAction>;
@@ -98,25 +100,37 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditPage({saveData}: Options = {}) {
+export function useElementEditor({saveData}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
   const pageProps = useScreenPageProps();
   const slideout = useSlideout();
 
+  // Autosave answers with the edit screen as the server now sees it, and page
+  // props are only replaced by a visit — so what it returns is held here and
+  // read over the top of them. The first autosave of a canonical element
+  // creates a provisional draft, and the notice, the Discard changes button and
+  // the drafts menu all belong to the draft rather than to the page that
+  // loaded. Dropped again as soon as a visit brings a newer payload.
+  const savedScreen = shallowRef<Partial<ElementEditPayload> | null>(null);
+
   // Read through a computed rather than capturing the props object: it's
   // replaced wholesale on each visit, and saving in place — the normal path for
   // an element with no drafts — does that without remounting this component, so
   // the title, notices, and timestamps below have to track the live payload.
   const props = toReactive(
-    computed(() => pageProps() as unknown as ElementEditPayload)
+    computed(() => ({
+      ...(pageProps() as unknown as ElementEditPayload),
+      ...(savedScreen.value ?? {}),
+    }))
   );
 
-  // Autosave answers with the field layout as the server now sees it, and
-  // applying it is the only way a nested element the save just created — a new
-  // Matrix entry or address — receives its own Form payload. Until it does, the
-  // block has nothing to render but a spinner.
+  // The field layout comes back on the response separately from the screen
+  // payload — scoped to whatever the request asked for — and applying it is the
+  // only way a nested element the save just created (a new Matrix entry or
+  // address) receives its own Form payload. Until it does, the block has
+  // nothing to render but a spinner.
   const savedForm = shallowRef<FormPayload | null>(null);
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
@@ -130,6 +144,7 @@ export function useElementEditPage({saveData}: Options = {}) {
     errors,
     onMutation: onLayoutMutation,
     renderer,
+    resetValues,
     values,
   } = useInertiaFormRenderer(form, formPayload);
 
@@ -138,6 +153,7 @@ export function useElementEditPage({saveData}: Options = {}) {
     errors: sidebarErrors,
     onMutation: onSidebarFormMutation,
     renderer: sidebarRenderer,
+    resetValues: resetSidebarValues,
   } = useInertiaFormRenderer(form, sidebarPayload);
 
   useSiteStatuses(form);
@@ -150,28 +166,39 @@ export function useElementEditPage({saveData}: Options = {}) {
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
     enabled: props.canAutosave,
-  });
-
-  const activity = useElementActivity({
-    url: props.activityUrl,
-    elementType: props.elementType,
-    elementId: props.canonicalId,
-    draftId: props.draftId,
-    siteId: props.siteId,
-    isProvisionalDraft: props.isProvisionalDraft,
-    updatedTimestamps: props.updatedTimestamps,
+    // Autosave moves the draft's `dateUpdated` without a visit, so the poller
+    // has to re-baseline against what the save just wrote — otherwise it reads
+    // our own keystrokes back as an edit from elsewhere. `activity` is
+    // initialized just below; this only ever runs after a save settles.
+    onSaved: (timestamps) => activity.rebase(timestamps),
   });
 
   /**
    * Whether the draft the screen is working against is provisional — either it
    * loaded that way, or autosave created one on a canonical element (autosave
    * only ever creates provisional drafts).
+   *
+   * Declared above the poller because its first poll runs during setup.
    */
   const draftIsProvisional = computed(
     () =>
       props.isProvisionalDraft ||
       (props.draftId === null && autosave.draftId.value !== null)
   );
+
+  const activity = useElementActivity({
+    url: props.activityUrl,
+    elementType: props.elementType,
+    elementId: props.canonicalId,
+    // Autosave can create a provisional draft mid-session, and from then on
+    // that's the element the screen is editing — so the poll has to ask about
+    // it, not the canonical, or its timestamps won't be the ones the autosave
+    // response re-baselined against.
+    draftId: () => autosave.draftId.value ?? props.draftId,
+    siteId: props.siteId,
+    isProvisionalDraft: () => draftIsProvisional.value,
+    updatedTimestamps: props.updatedTimestamps,
+  });
 
   // Applying a draft consumes it, and Inertia preserves this component across
   // the visit, so the server's view of the draft is authoritative afterwards.
@@ -181,36 +208,59 @@ export function useElementEditPage({saveData}: Options = {}) {
   );
 
   /**
-   * Whether the layout autosave just returned is being handed to the renderer.
-   * Reconciling it emits a mutation of its own, but that's the server echoing
-   * what it already saved rather than a fresh edit, so it must not re-arm
-   * autosave — which would save again, and never settle.
+   * Whether what autosave just returned is being handed to the renderers.
+   * Reconciling a layout emits a mutation of its own, but that's the server
+   * echoing what it already saved rather than a fresh edit, so it must not
+   * re-arm autosave — which would save again, and never settle.
    */
-  let applyingSavedForm = false;
+  let applyingSavedPayload = false;
+
+  /**
+   * How many reverts are in progress. Discarding a draft replaces the values
+   * the renderers are holding, which emits mutations like any other write —
+   * but they describe values the user has just thrown away, so they must not
+   * arm autosave and recreate the draft the discard deleted.
+   *
+   * A count rather than a flag: a discard reverts once against the payload the
+   * page already has and again when the reload lands, and the two overlap.
+   */
+  let reverting = 0;
 
   watch(
-    () => autosave.form.value,
-    (payload) => {
-      if (!payload) {
+    [() => autosave.form.value, () => autosave.screen.value],
+    ([form, screen]) => {
+      if (!form && !screen) {
         return;
       }
 
-      applyingSavedForm = true;
-      savedForm.value = payload;
-      // Released after the flush, so the renderer's pre-flush reconcile — and
-      // the mutation it emits — is covered.
-      void nextTick(() => (applyingSavedForm = false));
+      applyingSavedPayload = true;
+
+      if (form) {
+        savedForm.value = form;
+      }
+
+      if (screen) {
+        savedScreen.value = screen as Partial<ElementEditPayload>;
+      }
+
+      // Released after the flush, so the renderers' pre-flush reconcile — and
+      // the mutations it emits — are covered.
+      void nextTick(() => (applyingSavedPayload = false));
     },
     {flush: 'sync'}
   );
 
   // A payload arriving by Inertia visit is the newer of the two; drop what
-  // autosave stashed so it stops shadowing it.
+  // autosave stashed so it stops shadowing it. Keyed on the props object
+  // itself, which Inertia replaces on every visit and the slideout store
+  // reassigns on every panel load — `props` here is the merged view, so
+  // watching that would see the overlay's own writes.
   watch(
-    () => props.form,
+    () => pageProps(),
     () => {
       savedForm.value = null;
-      autosave.clearForm();
+      savedScreen.value = null;
+      autosave.clearSaved();
     }
   );
 
@@ -224,7 +274,7 @@ export function useElementEditPage({saveData}: Options = {}) {
   ): void {
     const changed = onLayoutMutation(mutation);
 
-    if (!applyingSavedForm && changed) {
+    if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule(kind);
     }
   }
@@ -233,7 +283,11 @@ export function useElementEditPage({saveData}: Options = {}) {
     mutation: FormPayload['values'],
     kind: FormChangeKind = 'discrete'
   ): void {
-    if (onSidebarFormMutation(mutation)) {
+    const changed = onSidebarFormMutation(mutation);
+
+    // The screen payload carries the sidebar form too, so reconciling it emits
+    // mutations here for the same reason the field layout does.
+    if (!applyingSavedPayload && !reverting && changed) {
       autosave.schedule(kind);
     }
   }
@@ -256,8 +310,11 @@ export function useElementEditPage({saveData}: Options = {}) {
     }),
     {
       transform: (data) => ({
-        ...data,
+        // Identity first, so the form wins where they overlap: the entry type
+        // can be changed in the sidebar, and `saveData()` only knows the one
+        // the page was rendered with.
         ...saveData?.(),
+        ...data,
         // Once autosave has created a provisional draft, the submission has to
         // target it — otherwise applying would save the canonical element and
         // strand the draft holding the newer values.
@@ -288,6 +345,11 @@ export function useElementEditPage({saveData}: Options = {}) {
           advanceSidebarBaseline();
         });
 
+        // Anything armed before the submission went out — the keystroke that
+        // prompted it — describes values this save has just written, and
+        // applying a provisional draft deletes the draft it would write them to.
+        autosave.cancel();
+
         // The save itself moved the element's `dateUpdated`; without this the
         // next poll would report our own write as someone else's change.
         activity.rebase(props.updatedTimestamps);
@@ -310,27 +372,87 @@ export function useElementEditPage({saveData}: Options = {}) {
     void nextTick(() => (pendingAction.value = null));
   }
 
+  /**
+   * Re-seeds both renderers from the payload the screen currently holds,
+   * dropping the unsaved values on top of it and re-baselining the form.
+   *
+   * A refresh deliberately merges a server payload *under* the client's
+   * unsaved values — the client owns those — so nothing a reload brings can
+   * clear them. Only the host knows the user has abandoned them, so it says so
+   * explicitly.
+   */
+  async function revertToLoadedPayload(): Promise<void> {
+    reverting++;
+
+    try {
+      // A payload that has just arrived has a reconcile queued behind it; let
+      // that land first so the reset is the last word on the values.
+      await nextTick();
+      resetValues();
+      resetSidebarValues();
+      // …and cover the mutations the reset emits in turn.
+      await nextTick();
+    } finally {
+      reverting--;
+      // Anything already on the autosave debounce — the keystroke that
+      // triggered all this — describes values that no longer exist.
+      autosave.cancel();
+    }
+  }
+
   /** Throws away the provisional draft, reverting to the canonical element. */
   async function discardDraft(): Promise<void> {
     if (autosave.draftId.value === null) {
       return;
     }
 
-    await actionClient.post(props.discardDraftUrl, {
-      elementType: props.elementType,
-      elementId: props.canonicalId,
-      siteId: props.siteId,
-      draftId: autosave.draftId.value,
-      provisional: 1,
-    });
+    // Held for the whole discard, so a mutation emitted while the screen is
+    // being torn back down can't schedule a save against the deleted draft.
+    reverting++;
+    autosave.cancel();
 
-    // Re-render from the canonical element rather than patching state here.
-    // In a panel that's the panel's own request: an Inertia visit would reload
-    // the page behind it and leave the discarded draft on screen.
-    if (slideout) {
-      await slideout.reload();
-    } else {
-      router.reload();
+    try {
+      await actionClient.post(props.discardDraftUrl, {
+        elementType: props.elementType,
+        elementId: props.canonicalId,
+        siteId: props.siteId,
+        draftId: autosave.draftId.value,
+        provisional: 1,
+      });
+
+      // The draft is gone, so anything autosave stashed about it now describes
+      // something that no longer exists — drop it before the reload rather than
+      // waiting for the response, or the "unsaved changes" notice it carries
+      // goes on shadowing the page props for the length of the round trip.
+      savedForm.value = null;
+      savedScreen.value = null;
+      autosave.clearSaved();
+      // The draft the autosave pointer names has just been deleted; leaving it
+      // set would send the next save at it, and `draftIsProvisional` reads it to
+      // decide whether the screen is showing provisional changes.
+      autosave.setDraftId(null);
+
+      // Revert against the payload the page already holds, so the fields go
+      // back the moment the draft is deleted rather than a round trip later —
+      // and so the form is clean before the reload, which is what keeps the
+      // unsaved-changes guard from prompting on the way out.
+      await revertToLoadedPayload();
+
+      // Then re-render from the canonical element rather than patching state
+      // here — a screen that *loaded* as a provisional draft only gets the
+      // canonical values from the server. In a panel that's the panel's own
+      // request: an Inertia visit would reload the page behind it and leave the
+      // discarded draft on screen.
+      if (slideout) {
+        await slideout.reload();
+        await revertToLoadedPayload();
+      } else {
+        // Not awaited: `router.reload()` doesn't resolve, and the visit's own
+        // callbacks are the only way to know the payload has landed.
+        router.reload({onFinish: () => void revertToLoadedPayload()});
+      }
+    } finally {
+      reverting--;
     }
   }
 

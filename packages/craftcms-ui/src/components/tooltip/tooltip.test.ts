@@ -36,6 +36,15 @@ describe('craft-tooltip', () => {
     expect(content!.textContent).toContain('Tooltip content');
   });
 
+  // The matching `hidden` case isn't asserted here: happy-dom resolves shadow
+  // styles by source order rather than specificity, so Lion's more specific
+  // `:host([hidden])` loses to this rule in the test environment even though it
+  // wins in a browser (verified in Chromium).
+  it('takes up no space in its parent layout', async () => {
+    const {tooltip} = await createFixture();
+    expect(getComputedStyle(tooltip).display).toBe('contents');
+  });
+
   it('resolves the invoker from the for attribute', async () => {
     const {tooltip, button} = await createFixture();
     expect(tooltip._overlayInvokerNode).toBe(button);

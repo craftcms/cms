@@ -416,6 +416,9 @@ abstract class BaseField extends FieldLayoutElement
             $control->mode($context->mode);
         }
 
+        $static = $context->mode !== ControlMode::Editable;
+        $status = $this->showStatus() ? $this->statusClass($context->element, $static) : null;
+
         return Field::make(
             $this->showLabel() ? $this->label() : null,
             $control,
@@ -425,6 +428,12 @@ abstract class BaseField extends FieldLayoutElement
             ->tip($this->tipText($context->element))
             ->warning($this->warningText($context->element))
             ->required($this->required)
+            ->status(
+                $status,
+                $status !== null
+                    ? ($this->statusLabel($context->element, $static) ?? ucfirst($status))
+                    : null,
+            )
             ->layoutUid($this->uid)
             ->width($this->width);
     }

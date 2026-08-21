@@ -961,7 +961,11 @@ it('restores a nested entry when reverting to an old revision without an integri
 
     createMatrixNestedEntry($owner, $field, $entryType, 1, 'Revision 1 content');
 
-    $revisionId = app(Revisions::class)->createRevision($owner);
+    // The nested entry is added straight to the database, so the owner’s dateUpdated is untouched.
+    // If the section has versioning enabled it already has a revision from its initial save — taken
+    // before the nested entry existed — and createRevision() would hand that one back rather than
+    // snapshot the current state. Force a revision so the snapshot always contains the nested entry.
+    $revisionId = app(Revisions::class)->createRevision($owner, force: true);
     $v1 = EntryElement::find()->id($revisionId)->revisions()->status(null)->one();
     expect($v1)->not->toBeNull();
 

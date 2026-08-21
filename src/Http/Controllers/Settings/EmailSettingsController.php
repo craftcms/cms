@@ -50,7 +50,7 @@ readonly class EmailSettingsController
         return new CpScreenResponse()
             ->title(t('Email Settings'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Email')],
             ])
             ->redirectUrl('settings')

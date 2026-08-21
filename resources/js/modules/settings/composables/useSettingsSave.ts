@@ -173,12 +173,22 @@ export function useSettingsSave<T extends Record<string, any>>(
         .transform((data: T) => {
           const transformedData = options.transform?.(data) ?? data;
 
-          return {
+          const payload: Record<string, any> = {
             ...transformedData,
             ...extraData,
-            redirect:
-              redirect && redirectUrl.value ? redirectUrl.value : undefined,
           };
+
+          // Only layer the screen's own redirect on when this save asked for
+          // one. Setting the key unconditionally would overwrite a redirect the
+          // caller's `transform` contributed — which is precisely what
+          // `save({redirect: false})` means for an action that carries its own
+          // target (e.g. the element editor's "Create a draft", which redirects
+          // to the draft it just created).
+          if (redirect && redirectUrl.value) {
+            payload.redirect = redirectUrl.value;
+          }
+
+          return payload;
         })
         .submit(action(), {
           ...submitOptions,

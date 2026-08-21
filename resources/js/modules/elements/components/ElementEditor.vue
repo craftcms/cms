@@ -1,4 +1,10 @@
 <script setup lang="ts">
+  /**
+   * The element editor without page chrome: it configures the surrounding
+   * layout through `useAppLayout()` and `LayoutSlot` rather than rendering one,
+   * so a host owns the header, form and footer. `ElementEditScreen` is the
+   * full-page counterpart.
+   */
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
@@ -7,7 +13,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
 
   const props = defineProps<{
@@ -34,7 +40,7 @@
     sidebarPayload,
     sidebarRenderer,
     submitAction,
-  } = useElementEditPage({saveData: props.saveData});
+  } = useElementEditor({saveData: props.saveData});
 
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>
@@ -188,70 +194,71 @@
     </div>
   </LayoutSlot>
 
-  <craft-pane appearance="raised">
-    <craft-callout
-      v-if="activity.isStale.value"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
+  <craft-callout
+    v-if="activity.isStale.value"
+    variant="warning"
+    icon="triangle-exclamation"
+    class="mb-4"
+    appearance="fill"
+    rounded="none"
+  >
+    {{ staleMessage }}
+
+    <craft-button
+      slot="action"
+      type="button"
+      variant="outline"
+      size="small"
+      @click="reload"
+      inherit
     >
-      {{ staleMessage }}
+      {{ t('Reload') }}
+    </craft-button>
+  </craft-callout>
 
-      <craft-button
-        slot="action"
-        type="button"
-        appearance="outline"
-        size="small"
-        @click="reload"
-      >
-        {{ t('Reload') }}
-      </craft-button>
-    </craft-callout>
+  <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+    {{ t('This is a read-only view.') }}
+  </craft-callout>
 
-    <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-      {{ t('This is a read-only view.') }}
-    </craft-callout>
+  <craft-callout
+    v-if="payload.notice"
+    variant="neutral"
+    icon="edit"
+    class="mb-4"
+  >
+    {{ payload.notice }}
 
-    <craft-callout
-      v-if="payload.notice"
-      variant="neutral"
-      icon="edit"
-      class="mb-4"
+    <craft-button
+      v-if="payload.canDiscardDraft"
+      slot="action"
+      type="button"
+      appearance="outline"
+      size="small"
+      @click="discardDraft"
     >
-      {{ payload.notice }}
+      {{ t('Discard changes') }}
+    </craft-button>
+  </craft-callout>
 
-      <craft-button
-        v-if="payload.canDiscardDraft"
-        slot="action"
-        type="button"
-        appearance="outline"
-        size="small"
-        @click="discardDraft"
-      >
-        {{ t('Discard changes') }}
-      </craft-button>
-    </craft-callout>
+  <craft-callout
+    v-if="payload.mergeNotice"
+    variant="warning"
+    icon="triangle-exclamation"
+    class="mb-4"
+  >
+    {{ payload.mergeNotice }}
+  </craft-callout>
 
-    <craft-callout
-      v-if="payload.mergeNotice"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
-    >
-      {{ payload.mergeNotice }}
-    </craft-callout>
+  <FormRenderer
+    v-if="formPayload"
+    ref="renderer"
+    :payload="formPayload"
+    :errors="errors"
+    :modified="autosave.modified.value"
+    @update:mutation="onMutation"
+  />
 
-    <FormRenderer
-      v-if="formPayload"
-      ref="renderer"
-      :payload="formPayload"
-      :errors="errors"
-      :modified="autosave.modified.value"
-      @update:mutation="onMutation"
-    />
-
-    <slot :payload="payload" />
-  </craft-pane>
+  <slot :payload="payload" />
 
   <LayoutSlot
     v-if="sidebarPayload || payload.metadataHtml || $slots['details-header']"

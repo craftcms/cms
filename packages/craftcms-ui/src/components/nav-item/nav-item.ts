@@ -4,6 +4,7 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import '../badge-indicator/badge-indicator';
+import '../popover/popover.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -65,6 +66,23 @@ export default class CraftNavItem extends LitElement {
   @state()
   subnavState: string = 'closed';
 
+  /**
+   * Whether the icon-only flyout is showing. Collapsed to an icon, an item has
+   * nowhere to put its subnav, so it moves into a popover on hover or focus.
+   */
+  @state()
+  flyoutOpen: boolean = false;
+
+  /**
+   * Long enough to cross the gap between the icon and the flyout without the
+   * flyout closing underneath the pointer.
+   */
+  static flyoutCloseDelay = 150;
+
+  #flyoutCloseTimer?: ReturnType<typeof setTimeout>;
+
+  #hoverListeners?: AbortController;
+
   /** Whether the default slot (the item's label) has any content. */
   private get hasLabel(): boolean {
     return Array.from(this.childNodes).some((node) => {
@@ -89,7 +107,40 @@ export default class CraftNavItem extends LitElement {
     // Default to open when the item is active, or when explicitly requested.
     this.subnavState =
       this.active || this.initialState === 'open' ? 'open' : 'closed';
+
+    // Bound to the host rather than the link, so travelling into the flyout
+    // counts as staying inside: its content is a descendant of this element,
+    // wherever the overlay paints it.
+    const {signal} = (this.#hoverListeners = new AbortController());
+    this.addEventListener('mouseenter', this.#openFlyout, {signal});
+    this.addEventListener('mouseleave', this.#scheduleFlyoutClose, {signal});
+    this.addEventListener('focusin', this.#openFlyout, {signal});
+    this.addEventListener('focusout', this.#scheduleFlyoutClose, {signal});
   }
+
+  override disconnectedCallback() {
+    this.#hoverListeners?.abort();
+    clearTimeout(this.#flyoutCloseTimer);
+    super.disconnectedCallback();
+  }
+
+  #openFlyout = () => {
+    clearTimeout(this.#flyoutCloseTimer);
+    this.flyoutOpen = true;
+  };
+
+  #scheduleFlyoutClose = () => {
+    clearTimeout(this.#flyoutCloseTimer);
+    this.#flyoutCloseTimer = setTimeout(() => {
+      this.flyoutOpen = false;
+    }, CraftNavItem.flyoutCloseDelay);
+  };
+
+  // The overlay closes itself on Escape and outside clicks; follow it, or the
+  // state would say open and the next hover wouldn't reopen it.
+  #onFlyoutOpenedChanged = (event: Event) => {
+    this.flyoutOpen = (event.target as {opened?: boolean}).opened === true;
+  };
 
   toggleSubnav(event: Event) {
     event.preventDefault();
@@ -97,7 +148,7 @@ export default class CraftNavItem extends LitElement {
     this.subnavState = this.subnavState === 'open' ? 'closed' : 'open';
   }
 
-  renderIconItem(showToggle: boolean) {
+  renderIconItem(hasSubnav: boolean) {
     const itemId = `item-${this.id}`;
     // Without an href there's nothing to link to, so render a plain span.
     const tag = this.href ? literal`a` : literal`span`;
@@ -112,12 +163,29 @@ export default class CraftNavItem extends LitElement {
         id="${itemId}"
         href="${ifDefined(this.href || undefined)}"
         aria-current="${this.href ? (this.active ? 'page' : 'false') : nothing}"
+        aria-expanded="${hasSubnav ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
       >
-        ${this.renderPrefix()} ${this.renderSuffix(showToggle)}
+        ${this.renderPrefix()} ${this.renderSuffix(false)}
       </${tag}>
-      <craft-tooltip for="${itemId}" placement="right-start"
-        ><slot></slot
-      ></craft-tooltip>
+      ${
+        hasSubnav
+          ? html`
+              <craft-popover
+                for="${itemId}"
+                placement="right-start"
+                .opened="${this.flyoutOpen}"
+                @opened-changed="${this.#onFlyoutOpenedChanged}"
+              >
+                <div class="flyout">
+                  <div class="flyout__label"><slot></slot></div>
+                  <slot name="subnav"></slot>
+                </div>
+              </craft-popover>
+            `
+          : html`<craft-tooltip for="${itemId}" placement="right-start"
+              ><slot></slot
+            ></craft-tooltip>`
+      }
     `;
   }
 
@@ -222,13 +290,17 @@ export default class CraftNavItem extends LitElement {
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
+    // A `slot` can only project its content in one place. Collapsed to a rail
+    // there's no room to indent a subnav, so it renders inside the flyout
+    // instead of here.
+    const inlineSubnav = hasSubnav && !this.iconOnly;
 
     return html`
       <li>
         ${this.iconOnly
-          ? this.renderIconItem(showToggle)
+          ? this.renderIconItem(hasSubnav)
           : this.renderItem(showToggle, hasPrefix)}
-        ${hasSubnav
+        ${inlineSubnav
           ? html`
               <div
                 class="subnav"

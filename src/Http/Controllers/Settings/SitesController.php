@@ -66,8 +66,8 @@ readonly class SitesController
         $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
         $crumbs = array_filter([
-            ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-            ['label' => t('Sites'), 'url' => isset($group) ? Url::cpUrl('settings/sites') : null],
+            ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+            ['label' => t('Sites'), 'href' => isset($group) ? Url::cpUrl('settings/sites') : null],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
@@ -117,16 +117,15 @@ readonly class SitesController
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => t('Create site'),
-                    'url' => Url::url('settings/sites/new'),
-                    'active' => true,
+                    'href' => Url::url('settings/sites/new'),
                 ],
             ])
             ->inertiaPage('settings/sites/Edit', [
@@ -150,15 +149,15 @@ readonly class SitesController
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => $siteData->getGroup()->getName(),
-                    'url' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
+                    'href' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
                 ],
                 [
                     'label' => $siteData->getName(),

@@ -1,7 +1,7 @@
 import {actionClient} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
-import {readonly, ref, type Ref} from 'vue';
+import {computed, readonly, ref, shallowRef, type Ref} from 'vue';
 import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
@@ -27,6 +27,16 @@ interface Options {
   enabled: boolean;
   /** How long to wait after the last edit before saving, per change kind. */
   debounceMs?: Partial<Record<FormChangeKind, number>>;
+  /**
+   * Called after each successful save with the element's new last-modified
+   * stamps. An autosave moves `dateUpdated`, so whoever is watching for
+   * upstream edits has to re-baseline against these or it will report this
+   * write as someone else's.
+   */
+  onSaved?: (timestamps: {
+    element: number | null;
+    canonical: number | null;
+  }) => void;
 }
 
 /**
@@ -53,20 +63,36 @@ export function useElementAutosave(
   httpStatus: Readonly<Ref<number | null>>;
   modified: Readonly<Ref<string[]>>;
   form: Readonly<Ref<FormPayload | null>>;
+  screen: Readonly<Ref<Record<string, unknown> | null>>;
   save: () => Promise<void>;
   schedule: (kind?: FormChangeKind) => void;
   cancel: () => void;
   suspend: (during: () => void) => void;
   setDraftId: (value: number | null) => void;
-  clearForm: () => void;
+  clearSaved: () => void;
 } {
   const status = ref<AutosaveStatus>('idle');
   const draftId = ref<number | null>(options.draftId);
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
   const httpStatus = ref<number | null>(null);
-  const modified = ref<string[]>([]);
-  const formPayload = ref<FormPayload | null>(null);
+
+  // The three pieces of what a save returned are held in one ref rather than
+  // separately, so they can only ever be read as a matched set. The host
+  // watches them together and reads them over its page props; updating them
+  // one at a time would publish a half-written state — a fresh form beside
+  // the previous screen, or worse, `clearSaved()` dropping the form and
+  // leaving the screen standing long enough for the host to re-apply the
+  // screen it had just dropped.
+  const saved = shallowRef<{
+    form: FormPayload | null;
+    screen: Record<string, unknown> | null;
+    modified: string[];
+  }>({form: null, screen: null, modified: []});
+
+  const formPayload = computed(() => saved.value.form);
+  const screenPayload = computed(() => saved.value.screen);
+  const modified = computed(() => saved.value.modified);
 
   let inFlight: Promise<void> | null = null;
   let pending = false;
@@ -104,13 +130,26 @@ export function useElementAutosave(
 
       draftId.value = data.draftId ?? draftId.value;
       savedAt.value = data.timestamp ?? null;
-      // The response carries the field layout as the server now sees it, which
-      // is the only place a nested element created by this save (a new Matrix
-      // entry or address) can get its own Form payload from.
-      formPayload.value = data.form ?? formPayload.value;
-      // The element's whole modified set, not just this request's changes.
-      modified.value = data.modifiedAttributes ?? [];
+      saved.value = {
+        // The response carries the field layout as the server now sees it,
+        // which is the only place a nested element created by this save (a new
+        // Matrix entry or address) can get its own Form payload from.
+        form: data.form ?? saved.value.form,
+        // …and the rest of the edit screen as a fresh page load would render
+        // it. The first save of a canonical element creates a provisional
+        // draft, and from that moment the screen around the form is a draft's —
+        // the unsaved changes notice, the Discard changes button, the drafts
+        // menu.
+        screen: data.screen ?? saved.value.screen,
+        // The element's whole modified set, not just this request's changes.
+        modified: data.modifiedAttributes ?? [],
+      };
       status.value = 'saved';
+
+      options.onSaved?.({
+        element: data.updatedTimestamp ?? null,
+        canonical: data.canonicalUpdatedTimestamp ?? null,
+      });
     } catch (e: any) {
       // Our own abort, not a failure.
       if (cancelled) {
@@ -167,7 +206,13 @@ export function useElementAutosave(
   let suspended = false;
 
   function schedule(kind: FormChangeKind = 'discrete'): void {
-    if (suspended) {
+    // A submission in flight is authoritative, and its response re-seeds the
+    // renderers with what it saved — the mutations that reconcile emits are the
+    // server echoing the save back, not a fresh edit, and they arrive before
+    // the visit's own callbacks get a chance to say so. Arming for them would
+    // rebuild the very draft an applied save just consumed. Same rule as
+    // {@link save}, one step earlier.
+    if (suspended || form.processing) {
       return;
     }
 
@@ -196,11 +241,15 @@ export function useElementAutosave(
   }
 
   /**
-   * Drops the saved layout, so a payload arriving from the server by another
-   * route — an Inertia visit — takes over again.
+   * Drops what the last save returned, so a payload arriving from the server by
+   * another route — an Inertia visit — takes over again.
+   *
+   * One write, so nothing can observe the form gone while the screen is still
+   * standing. `draftId` deliberately survives: it's the live pointer, not a
+   * stashed payload.
    */
-  function clearForm(): void {
-    formPayload.value = null;
+  function clearSaved(): void {
+    saved.value = {form: null, screen: null, modified: []};
   }
 
   /**
@@ -223,13 +272,14 @@ export function useElementAutosave(
     savedAt: readonly(savedAt),
     error: readonly(error),
     httpStatus: readonly(httpStatus),
-    modified: readonly(modified) as Readonly<Ref<string[]>>,
-    form: readonly(formPayload) as Readonly<Ref<FormPayload | null>>,
+    modified,
+    form: formPayload,
+    screen: screenPayload,
     save,
     schedule,
     cancel,
     suspend,
     setDraftId,
-    clearForm,
+    clearSaved,
   };
 }

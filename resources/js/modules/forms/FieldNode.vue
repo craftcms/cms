@@ -31,6 +31,8 @@
     warningHtml?: string;
     layoutUid?: string;
     width?: number;
+    status?: string;
+    statusLabel?: string;
     hasActions?: boolean;
   };
 
@@ -131,8 +133,10 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
-    :status="modified ? 'modified' : undefined"
-    :status-label="modified ? t('This field has been modified.') : undefined"
+    :status="modified ? 'modified' : node.props.status"
+    :status-label="
+      modified ? t('This field has been modified.') : node.props.statusLabel
+    "
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >

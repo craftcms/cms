@@ -1,14 +1,16 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftTab from '../tab/tab.js';
 import type CraftTabs from './tabs.js';
+import {tabsPlacements} from './tabs.js';
 import styles from './tabs.styles.js';
 import '../tab/tab.js';
 import './tabs.js';
 
 /*
  * SCOPE: this covers what `CraftTabs` adds on top of `LionTabs` — the wrapper
- * and parts, the `layout` axis, the tab's own state, and external-panel mode
- * (which this component implements itself, so it is fully covered here).
+ * and parts, `placement`, `collapsible`, the tab's own state, and
+ * external-panel mode (which this component implements itself, so it is fully
+ * covered here).
  *
  * Lion's *slotted* selection machinery is NOT exercised here, and can't be: it
  * bootstraps from a `slotchange` on the shadow tab slot, and happy-dom never
@@ -66,6 +68,18 @@ function rules(): Map<string, string> {
   return map;
 }
 
+/**
+ * The declarations of every rule whose selector mentions `fragment`, joined —
+ * a placement's styling is spread over a handful of rules, some of them shared
+ * between the two placements on an axis.
+ */
+function declarations(fragment: string): string {
+  return [...rules()]
+    .filter(([selector]) => selector.includes(fragment))
+    .map(([, body]) => body)
+    .join('\n');
+}
+
 beforeEach(() => {
   document.body.innerHTML = '';
 });
@@ -111,32 +125,162 @@ describe('structure', () => {
   });
 });
 
-describe('layout', () => {
-  it('defaults to horizontal and reflects the attribute', async () => {
+describe('placement', () => {
+  it('defaults to block-start and reflects the attribute', async () => {
     const element = await createTabs();
 
-    expect(element.layout).toBe('horizontal');
-    expect(element.getAttribute('layout')).toBe('horizontal');
+    expect(element.placement).toBe('block-start');
+    expect(element.getAttribute('placement')).toBe('block-start');
   });
 
-  it('marks the tablist orientation', async () => {
+  it('reflects every placement', async () => {
+    const element = await createTabs();
+
+    for (const placement of tabsPlacements) {
+      element.placement = placement;
+      await element.updateComplete;
+
+      expect(element.getAttribute('placement')).toBe(placement);
+    }
+  });
+
+  it('derives the tablist orientation from the axis', async () => {
+    const element = await createTabs();
+    const orientation = () =>
+      shadow(element, '[part="tab-group"]')!.getAttribute('aria-orientation');
+
+    for (const [placement, expected] of [
+      ['block-start', 'horizontal'],
+      ['block-end', 'horizontal'],
+      ['inline-start', 'vertical'],
+      ['inline-end', 'vertical'],
+    ] as const) {
+      element.placement = placement;
+      await element.updateComplete;
+
+      expect(orientation()).toBe(expected);
+    }
+  });
+
+  it('hands the indicator geometry down to the tabs', () => {
+    // The tabs can't see the strip's placement, so every placement that isn't
+    // <craft-tab>'s own default has to publish the indicator vars they inherit.
+    // Asserted against the stylesheet because there's no cascade in this
+    // environment.
+    const inlineStart = declarations("[placement='inline-start']");
+
+    expect(inlineStart).toContain('--c-tab-indicator-inset-inline-end: -1px');
+    expect(inlineStart).toContain('--c-tab-indicator-inset-block-end: 0');
+    expect(inlineStart).toContain(
+      '--c-tab-indicator-inline-size: calc(2rem / 16)'
+    );
+
+    const inlineEnd = declarations("[placement='inline-end']");
+
+    expect(inlineEnd).toContain('--c-tab-indicator-inset-inline-start: -1px');
+    expect(inlineEnd).toContain('--c-tab-indicator-inset-block-end: 0');
+
+    // A strip below the panels flips the indicator to the tab's block start.
+    expect(declarations("[placement='block-end']")).toContain(
+      '--c-tab-indicator-inset-block-start: -1px'
+    );
+  });
+
+  it('moves the rule to the edge facing the panels', () => {
+    expect(rules().get('.tabs__strip')).toContain(
+      'border-block-end-width: 1px'
+    );
+    expect(declarations("[placement='block-end']")).toContain(
+      'border-block-start-width: 1px'
+    );
+    expect(declarations("[placement='inline-start']")).toContain(
+      'border-inline-end-width: 1px'
+    );
+    expect(declarations("[placement='inline-end']")).toContain(
+      'border-inline-start-width: 1px'
+    );
+  });
+
+  it('is written logically, so RTL needs no rules of its own', () => {
+    // The strip is placed by flex direction and the rule and indicator by
+    // logical properties, which is what makes inline-start land on the right
+    // in RTL for free. The RightToLeft story checks that it actually does, in
+    // an environment with a layout engine.
+    const css = styles.cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+
+    expect(css).not.toMatch(/\b(left|right)\s*:/);
+    expect(css).not.toMatch(/border-(left|right|top|bottom)/);
+    expect(css).not.toMatch(/\[dir=/);
+  });
+});
+
+describe('layout (deprecated)', () => {
+  it('maps the axis onto a placement', async () => {
     const element = await createTabs({attrs: {layout: 'vertical'}});
 
-    expect(element.layout).toBe('vertical');
+    expect(element.placement).toBe('inline-start');
+    expect(element.getAttribute('placement')).toBe('inline-start');
     expect(
       shadow(element, '[part="tab-group"]')!.getAttribute('aria-orientation')
     ).toBe('vertical');
+
+    element.layout = 'horizontal';
+    await element.updateComplete;
+
+    expect(element.placement).toBe('block-start');
   });
 
-  it('hands the vertical indicator geometry down to the tabs', async () => {
-    // The tabs can't see the strip's layout, so the vertical variant has to
-    // publish the indicator vars they inherit. Asserted against the stylesheet
-    // because there's no cascade in this environment.
-    const vertical = rules().get(":host([layout='vertical'])");
+  it('reports the axis of whatever placement is set', async () => {
+    const element = await createTabs();
 
-    expect(vertical).toBeDefined();
-    expect(vertical).toContain('--c-tab-indicator-inset-inline-end: -1px');
-    expect(vertical).toContain('--c-tab-indicator-inset-block-end: 0');
+    expect(element.layout).toBe('horizontal');
+    // Still reflected, so an existing consumer keying off the attribute reads
+    // the same thing it always did.
+    expect(element.getAttribute('layout')).toBe('horizontal');
+
+    element.placement = 'inline-end';
+    await element.updateComplete;
+
+    expect(element.layout).toBe('vertical');
+
+    element.placement = 'block-end';
+    await element.updateComplete;
+
+    expect(element.layout).toBe('horizontal');
+  });
+});
+
+describe('size', () => {
+  it('defaults to medium and reflects the attribute', async () => {
+    const element = await createTabs();
+
+    expect(element.size).toBe('medium');
+    expect(element.getAttribute('size')).toBe('medium');
+
+    element.size = 'small';
+    await element.updateComplete;
+    expect(element.getAttribute('size')).toBe('small');
+  });
+
+  it('scales the strip by font size alone', async () => {
+    // The tabs are slotted, so they inherit the strip's font size through the
+    // flattened tree; their padding is em-based and follows. Asserted against
+    // the stylesheet because there's no cascade in this environment.
+    const map = rules();
+
+    expect(map.get('.tabs__strip')).toContain(
+      'font-size: var(--c-tabs-font-size, var(--c-text-base))'
+    );
+    expect(map.get(":host([size='small'])")).toContain(
+      '--c-tabs-font-size: var(--c-text-sm)'
+    );
+    expect(map.get(":host([size='large'])")).toContain(
+      '--c-tabs-font-size: var(--c-text-lg)'
+    );
+
+    // Medium is the bare fallback above, so there is no per-tab padding rule
+    // to keep in sync with it.
+    expect(map.has(":host([size='medium'])")).toBe(false);
   });
 });
 
@@ -174,6 +318,7 @@ async function createExternalTabs({
   count = 3,
   disabled = [] as number[],
   panels = true,
+  attrs = {} as Record<string, string>,
 } = {}): Promise<{
   element: CraftTabs;
   tabs: CraftTab[];
@@ -181,6 +326,10 @@ async function createExternalTabs({
 }> {
   const element = document.createElement('craft-tabs') as CraftTabs;
   const sections: HTMLElement[] = [];
+
+  for (const [name, value] of Object.entries(attrs)) {
+    element.setAttribute(name, value);
+  }
 
   for (let i = 0; i < count; i++) {
     const tab = document.createElement('craft-tab') as CraftTab;
@@ -415,5 +564,190 @@ describe('external-panel mode', () => {
     await element.updateComplete;
 
     expect(element.selectedIndex).toBe(0);
+  });
+});
+
+/*
+ * Collapsing is covered here in external-panel mode, where this component owns
+ * the selection outright. The slotted half of it — Lion's own store, which
+ * skips a selection it can't find in it — needs a `slotchange` happy-dom never
+ * fires, so it's covered by the IconToolbar story.
+ */
+describe('collapsible', () => {
+  /** Escape, as it arrives from a focused tab. */
+  function escape(tab: CraftTab) {
+    tab.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
+    );
+  }
+
+  it('collapses the panel region to nothing when nothing is selected', async () => {
+    const element = await createTabs({attrs: {'selected-index': '-1'}});
+    const panels = shadow(element, '[part="panels"]')!;
+
+    expect(element.selectedIndex).toBe(-1);
+    expect(panels.hidden).toBe(true);
+    // Hidden rather than emptied: dropping the slot would unassign the panels.
+    expect(shadow(element, '.tabs__panels slot[name="panel"]')).not.toBeNull();
+    // And [hidden] has to be spelled out, since LionTabs gives the region an
+    // author `display: block` that beats the UA rule.
+    expect(rules().get('.tabs__panels[hidden]')).toContain('display: none');
+
+    element.selectedIndex = 0;
+    await element.updateComplete;
+
+    expect(panels.hidden).toBe(false);
+  });
+
+  /**
+   * A surrounding layout gives the panel's grid track its space back with
+   * `:has(craft-tabs[collapsed])`, so the attribute is API, not bookkeeping.
+   */
+  it('reflects a collapsed attribute for a surrounding layout to select on', async () => {
+    const {element, tabs} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    expect(element.hasAttribute('collapsed')).toBe(false);
+
+    tabs[0]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+    expect(element.hasAttribute('collapsed')).toBe(true);
+
+    tabs[1]!.click();
+    await element.updateComplete;
+
+    expect(element.hasAttribute('collapsed')).toBe(false);
+  });
+
+  it('deselects the selected tab when it is clicked again', async () => {
+    const {element, tabs, sections} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    let reported: number | undefined;
+    element.addEventListener('selected-changed', (event) => {
+      reported = (event.target as CraftTabs).selectedIndex;
+    });
+
+    tabs[0]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+    expect(reported).toBe(-1);
+    expect(sections.every((s) => s.classList.contains('hidden'))).toBe(true);
+    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'false',
+      'false',
+      'false',
+    ]);
+  });
+
+  it('keeps exactly one tab in the tab order while collapsed', async () => {
+    const {element, tabs} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+    // The tab the selection was last on, so the strip doesn't snap the tab
+    // order back to the front while it's closed.
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '-1',
+      '-1',
+      '0',
+    ]);
+  });
+
+  it('starts collapsed from selected-index="-1"', async () => {
+    const {element, tabs, sections} = await createExternalTabs({
+      attrs: {collapsible: '', 'selected-index': '-1'},
+    });
+
+    expect(element.selectedIndex).toBe(-1);
+    expect(sections.every((s) => s.classList.contains('hidden'))).toBe(true);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+    ]);
+  });
+
+  it('reopens on the next click, wherever it lands', async () => {
+    const {element, tabs, sections} = await createExternalTabs({
+      attrs: {collapsible: '', 'selected-index': '-1'},
+    });
+
+    tabs[1]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(1);
+    expect(sections[1]!.classList.contains('hidden')).toBe(false);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '-1',
+      '0',
+      '-1',
+    ]);
+
+    // A different tab still just selects, rather than toggling anything.
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
+  });
+
+  it('closes on Escape from a tab', async () => {
+    const {element, tabs} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    escape(tabs[0]!);
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+  });
+
+  it('opens at the end you arrow out of', async () => {
+    const {element, tabs} = await createExternalTabs({
+      attrs: {collapsible: '', 'selected-index': '-1'},
+    });
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
+
+    tabs[0]!.click();
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(-1);
+
+    arrow(tabs[0]!, 'ArrowLeft');
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
+  });
+
+  it('leaves a strip that isn’t collapsible alone', async () => {
+    const {element, tabs, sections} = await createExternalTabs();
+    let fired = 0;
+    element.addEventListener('selected-changed', () => {
+      fired++;
+    });
+
+    tabs[0]!.click();
+    escape(tabs[0]!);
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
+    expect(fired).toBe(0);
+    expect(sections[0]!.classList.contains('hidden')).toBe(false);
+    expect(shadow(element, '[part="panels"]')!.hidden).toBe(false);
   });
 });

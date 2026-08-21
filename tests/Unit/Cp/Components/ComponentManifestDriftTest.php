@@ -182,7 +182,10 @@ function cpDriftInvokeProtected(ViewComponent $component, string $method): mixed
 function cpDriftWcOnlyAllowlist(): array
 {
     return [
-        // e.g. 'craft-foo' => ['open'],  // reflected disclosure state, set by the WC itself
+        // <craft-tabs> writes `collapsed` itself in updated(), derived from
+        // selectedIndex, so a surrounding layout can style on it. Readable
+        // state, not a knob — Tabs::collapsible() is what a caller sets.
+        'craft-tabs' => ['collapsed'],
     ];
 }
 

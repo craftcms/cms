@@ -5,6 +5,13 @@ export default css`
     display: block;
   }
 
+  /*
+   * The base layout is the block-start placement; each other placement below
+   * flips the flex direction and moves the rule and the selected indicator to
+   * match. Everything is written logically — row/column follow the writing
+   * mode, and the borders and indicator insets are logical properties — so the
+   * inline placements swap sides in RTL without a rule of their own.
+   */
   .tabs {
     display: flex;
     flex-direction: column;
@@ -14,13 +21,31 @@ export default css`
   /*
    * The rule lives on the strip rather than the tablist so it runs under the
    * overflow menu too, which sits beside the tablist rather than inside it.
+   * It's declared as four zero-width edges so a placement only has to move the
+   * width from one edge to another.
+   *
+   * The font size here is the whole of the size variant. Inheritance follows
+   * the flattened tree, so the slotted <craft-tab>s take it from the slot's
+   * ancestors rather than from where they're written — and since their padding
+   * is em-based, and the overflow invoker's icon scales with its own text, one
+   * declaration sizes everything in the strip. The panels sit outside it and
+   * keep the document's text size.
    */
   .tabs__strip {
     display: flex;
     align-items: center;
     min-width: 0;
-    border-block-end: 1px solid
-      var(--c-tabs-border, var(--c-color-neutral-border-quiet));
+    font-size: var(--c-tabs-font-size, var(--c-text-base));
+    border: 0 solid var(--c-tabs-border, var(--c-color-neutral-border-quiet));
+    border-block-end-width: 1px;
+  }
+
+  :host([size='small']) {
+    --c-tabs-font-size: var(--c-text-sm);
+  }
+
+  :host([size='large']) {
+    --c-tabs-font-size: var(--c-text-lg);
   }
 
   .tabs__tab-group {
@@ -63,36 +88,89 @@ export default css`
   }
 
   /*
-   * Custom properties set here inherit into the slotted <craft-tab>s (they're
-   * light-DOM children), which is how the tabs move their selected indicator
-   * from the block end to the inline end without reading the layout
-   * themselves.
+   * Nothing is selected, so the region goes away entirely rather than holding
+   * an empty box open: a collapsed strip is just the strip. LionTabs gives
+   * .tabs__panels an author display: block, which would otherwise beat the
+   * UA's [hidden] rule. The flex gap goes with it, gaps being drawn only
+   * between the items that are laid out.
    */
-  :host([layout='vertical']) {
+  .tabs__panels[hidden] {
+    display: none;
+  }
+
+  /*
+   * The strip below the panels. The indicator moves to the tab's block start,
+   * pulled 1px up to sit on top of the strip's rule.
+   *
+   * Custom properties set on the host inherit into the slotted <craft-tab>s
+   * (they're light-DOM children), which is how the tabs move their indicator
+   * without reading the placement themselves.
+   */
+  :host([placement='block-end']) {
+    --c-tab-indicator-inset-block-start: -1px;
+    --c-tab-indicator-inset-block-end: auto;
+  }
+
+  :host([placement='block-end']) .tabs {
+    flex-direction: column-reverse;
+  }
+
+  :host([placement='block-end']) .tabs__strip {
+    border-block-end-width: 0;
+    border-block-start-width: 1px;
+  }
+
+  /* The strip beside the panels, running down the block axis. */
+  :host(:is([placement='inline-start'], [placement='inline-end'])) {
     --c-tab-indicator-inset-block-start: 0;
     --c-tab-indicator-inset-block-end: 0;
-    --c-tab-indicator-inset-inline-start: auto;
-    --c-tab-indicator-inset-inline-end: -1px;
     --c-tab-indicator-block-size: auto;
     --c-tab-indicator-inline-size: calc(2rem / 16);
   }
 
-  :host([layout='vertical']) .tabs {
+  :host(:is([placement='inline-start'], [placement='inline-end'])) .tabs {
     flex-direction: row;
   }
 
-  :host([layout='vertical']) .tabs__strip {
+  :host(:is([placement='inline-start'], [placement='inline-end']))
+    .tabs__strip {
     align-items: stretch;
-    border-block-end: none;
-    border-inline-end: 1px solid
-      var(--c-tabs-border, var(--c-color-neutral-border-quiet));
+    border-block-end-width: 0;
   }
 
-  :host([layout='vertical']) .tabs__tab-group {
+  :host(:is([placement='inline-start'], [placement='inline-end']))
+    .tabs__tab-group {
     flex-direction: column;
   }
 
-  :host([layout='vertical']) .tabs__panels {
+  :host(:is([placement='inline-start'], [placement='inline-end']))
+    .tabs__panels {
     flex: 1;
+  }
+
+  :host([placement='inline-start']) {
+    --c-tab-indicator-inset-inline-start: auto;
+    --c-tab-indicator-inset-inline-end: -1px;
+  }
+
+  :host([placement='inline-start']) .tabs__strip {
+    border-inline-end-width: 1px;
+  }
+
+  /*
+   * Reversed rather than reordered: the tabs stay first in the DOM, which is
+   * the order the tab/tabpanel pattern wants them read in.
+   */
+  :host([placement='inline-end']) .tabs {
+    flex-direction: row-reverse;
+  }
+
+  :host([placement='inline-end']) {
+    --c-tab-indicator-inset-inline-start: -1px;
+    --c-tab-indicator-inset-inline-end: auto;
+  }
+
+  :host([placement='inline-end']) .tabs__strip {
+    border-inline-start-width: 1px;
   }
 `;

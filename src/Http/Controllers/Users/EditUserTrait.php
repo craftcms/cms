@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -60,7 +61,7 @@ trait EditUserTrait
             ->when(
                 $user->getIsCurrent(),
                 fn (CpScreenResponse $response) => $response
-                    ->title(t('My Account'))
+                    ->title($pageName)
                     ->docTitle($pageName),
                 function (CpScreenResponse $response) use ($user, $pageName) {
                     $username = $user->getUiLabel();
@@ -77,15 +78,22 @@ trait EditUserTrait
             'items' => $screensService->sidebarItems($user, $screen, $screens),
         ])->subnav($screensService->subnav($user, $screen, $screens));
 
+        // Users / {user chip} / {screen}. The chip is no longer the last crumb,
+        // so hyperlink it back to the user — `craft-breadcrumbs` derives
+        // `aria-current="page"` from position, and that now belongs to the screen.
         $response->crumbs([
             ...$user->getCrumbs(),
             [
                 'html' => app(ElementHtml::class)->elementChipHtml($user, [
                     'showDraftName' => false,
                     'class' => 'chromeless',
+                    'hyperlink' => true,
+                    'attributes' => [
+                        'appearance' => Appearance::Plain->value,
+                    ],
                 ]),
-                'current' => true,
             ],
+            ['label' => $pageName],
         ]);
 
         if ($screen !== EditUserScreens::PROFILE) {
