@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use craft\services\Path;
+use craft\services\Path as LegacyPath;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Composer as CoreComposer;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Path as CorePath;
 use CraftCms\Yii2Adapter\Support\Composer;
 use CraftCms\Yii2Adapter\Support\Env;
 use CraftCms\Yii2Adapter\Twig\AliasesExtension;
@@ -30,11 +31,25 @@ it('resolves legacy path service paths through aliases', function() {
     Aliases::set('@tests', $testsPath);
 
     try {
-        expect(new Path()->getTestsPath())->toBe($testsPath);
+        expect(new LegacyPath()->getTestsPath())->toBe($testsPath);
     } finally {
         $original === false
             ? Aliases::remove('@tests')
             : Aliases::set('@tests', $original);
+    }
+});
+
+it('resolves the core site templates path through the legacy alias', function() {
+    $original = Aliases::get('@templates', false);
+    $templatesPath = File::normalizePath(__DIR__ . '/../Fixtures');
+    Aliases::set('@templates', $templatesPath);
+
+    try {
+        expect(app(CorePath::class)->siteTemplates())->toBe($templatesPath);
+    } finally {
+        $original === false
+            ? Aliases::remove('@templates')
+            : Aliases::set('@templates', $original);
     }
 });
 

@@ -31,6 +31,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Composer as CoreComposer;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Path as CorePath;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
@@ -72,6 +73,7 @@ use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use CraftCms\Yii2Adapter\Plugin\Plugins as LegacyPlugins;
 use CraftCms\Yii2Adapter\Support\Composer;
+use CraftCms\Yii2Adapter\Support\Path as LegacyPath;
 use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
 use CraftCms\Yii2Adapter\Twig\AliasesExtension;
 use CraftCms\Yii2Adapter\User\LegacyUserPermissions;
@@ -134,6 +136,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
         $this->app->singleton(Plugins::class, LegacyPlugins::class);
         $this->app->singleton(CoreComposer::class, Composer::class);
+        $this->app->singleton(CorePath::class, LegacyPath::class);
         $this->callAfterResolving(FormNodeTypes::class, fn(FormNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(FormControlTypes::class, fn(FormControlTypes $types) => $types->register(LegacyHtmlControl::class));
         /**
