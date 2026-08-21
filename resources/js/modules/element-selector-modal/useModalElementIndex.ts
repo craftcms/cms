@@ -1,4 +1,4 @@
-import {actionClient} from '@craftcms/ui';
+import {actionClient, type ElementInfo} from '@craftcms/ui';
 import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
 import type {RowSelectionState} from '@tanstack/table-core';
 import {computed, ref, watch} from 'vue';
@@ -16,19 +16,48 @@ import {createModalIndexVisitor} from './modal-index-visitor';
 
 type Row = Record<string, any>;
 
-/** What the modal hands back for each selected row. */
-export interface SelectedElement {
-  id: number;
-  siteId: number | null;
-  label: string;
-  status: string | null;
-  url: string | null;
-  hasThumb: boolean;
+/**
+ * What the modal hands back for each selected row.
+ *
+ * An alias of the core's `ElementInfo` rather than a second declaration of the
+ * same shape — the controller, the web component and this composable all have to
+ * agree on it, and two copies would drift.
+ */
+export type SelectedElement = ElementInfo;
+
+/**
+ * Row keys carried through to the selection payload.
+ *
+ * Not a blind spread of the row: a row is mostly rendered column HTML keyed by
+ * attribute, and forwarding that would put kilobytes of markup into every
+ * `onSelect` payload. These are the keys `ModalIndexViewModel::extraRowData()`
+ * adds on purpose — `kind`/`alt` for the Markdown field, the folder keys for the
+ * asset-move picker.
+ */
+const EXTRA_ROW_KEYS = [
+  'kind',
+  'alt',
+  'isFolder',
+  'folderId',
+  'folderUrl',
+  'canMoveTo',
+] as const;
+
+function extraRowData(row: Row): Record<string, unknown> {
+  const extras: Record<string, unknown> = {};
+
+  for (const key of EXTRA_ROW_KEYS) {
+    if (row[key] !== undefined) {
+      extras[key] = row[key];
+    }
+  }
+
+  return extras;
 }
 
 interface Options {
-  /** The `element-selector-modals/body` endpoint. */
-  url: string;
+  /** The `element-selector-modals/body` action path. */
+  action: string;
   /** The payload the modal opened with, so the first render needs no request. */
   initial: ContentIndexData;
   /** Params identifying the index — element type, sources, criteria, condition. */
@@ -58,7 +87,7 @@ export function useModalElementIndex(options: Options) {
     loading.value = true;
 
     try {
-      const {data} = await actionClient.post(options.url, {
+      const {data} = await actionClient.post(options.action, {
         ...options.params,
         ...query,
       });
@@ -72,7 +101,7 @@ export function useModalElementIndex(options: Options) {
   const visitor = createModalIndexVisitor(load);
   // The composables still want a route, but nothing navigates to it — every
   // request goes through the visitor above.
-  const route = {url: () => options.url};
+  const route = {url: () => options.action};
 
   const elementIndex = useContentIndexData(undefined, payload);
   const viewState = useElementIndexViewState(elementIndex);
@@ -166,6 +195,7 @@ export function useModalElementIndex(options: Options) {
    */
   const selectedElements = computed<SelectedElement[]>(() =>
     table.getSelectedRowModel().rows.map(({original}) => ({
+      ...extraRowData(original),
       id: Number(original.id),
       siteId: original.siteId != null ? Number(original.siteId) : null,
       label: String(original.label ?? original.title ?? original.id),

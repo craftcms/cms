@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -53,7 +54,31 @@ class ModalIndexViewModel extends ContentIndexViewModel
             // Per element, not per type: an asset with no preview renders no thumb
             // even though its element type has them.
             'hasThumb' => $element->getThumbHtml(30) !== null,
+            ...$this->typeSpecificRowData($element),
         ];
+    }
+
+    /**
+     * Metadata only some element types carry.
+     *
+     * The modal renders every element type through this one view model, so
+     * element-type view models (and their own `extraRowData()`) never run here.
+     * Callers that need more than the common keys — the Markdown field, which
+     * decides between an image embed and a link — would otherwise have no way to
+     * get it.
+     *
+     * @return array<string, mixed>
+     */
+    protected function typeSpecificRowData(ElementInterface $element): array
+    {
+        if ($element instanceof Asset) {
+            return [
+                'kind' => $element->kind,
+                'alt' => $element->alt,
+            ];
+        }
+
+        return [];
     }
 
     /**

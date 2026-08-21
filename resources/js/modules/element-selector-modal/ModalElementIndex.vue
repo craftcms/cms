@@ -15,7 +15,8 @@
   } from './useModalElementIndex';
 
   const props = defineProps<{
-    url: string;
+    /** Bare action path; `actionClient` expands it against the CP trigger. */
+    action: string;
     initial: ContentIndexData;
     params: Record<string, unknown>;
     disabledElementIds?: number[];
@@ -27,7 +28,7 @@
   }>();
 
   const index = useModalElementIndex({
-    url: props.url,
+    action: props.action,
     initial: props.initial,
     params: props.params,
     disabledElementIds: () => props.disabledElementIds ?? [],
