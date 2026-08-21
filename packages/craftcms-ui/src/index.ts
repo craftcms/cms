@@ -26,6 +26,8 @@ export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftCopyAttribute} from './components/copy-attribute/copy-attribute.js';
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
+export {default as CraftElementSelectorModal} from './components/element-selector-modal/element-selector-modal.js';
+export {ElementSelectorHostController} from './components/element-selector-modal/controller-host.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftEmpty} from './components/empty/empty.js';
 export {default as CraftField} from './components/field/field.js';

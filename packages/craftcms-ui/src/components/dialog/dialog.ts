@@ -144,6 +144,7 @@ export default class CraftDialog extends LitElement {
       <dialog
         part="dialog"
         aria-labelledby=${this.titleId}
+        @cancel=${this.#onNativeCancel}
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
       >
@@ -163,7 +164,7 @@ export default class CraftDialog extends LitElement {
           class="close"
           part="close"
           aria-label=${t('Close')}
-          @click=${this.#close}
+          @click=${() => this.requestClose()}
         >
           <craft-icon name="xmark"></craft-icon>
         </button>
@@ -242,8 +243,26 @@ export default class CraftDialog extends LitElement {
     this.dispatchEvent(new CustomEvent(name, {bubbles: true, composed: true}));
   }
 
-  #close = (): void => {
+  /**
+   * A request to dismiss — Escape, the close button, a `data-dialog="close"`
+   * click, or the backdrop.
+   *
+   * Every dismissal path funnels through here so a subclass can route the
+   * intent somewhere else (a controller that may refuse it, say) instead of
+   * intercepting four listeners and the platform's own Escape handling.
+   */
+  protected requestClose(): void {
     this.opened = false;
+  }
+
+  /**
+   * The platform's Escape handling for a modal dialog. Prevented so the close
+   * goes through {@link requestClose} like every other dismissal; the base
+   * implementation then closes it anyway.
+   */
+  #onNativeCancel = (event: Event): void => {
+    event.preventDefault();
+    this.requestClose();
   };
 
   /**
@@ -258,7 +277,7 @@ export default class CraftDialog extends LitElement {
   #onHostKeydown = (event: KeyboardEvent): void => {
     if (this.nonModal && this.opened && event.key === 'Escape') {
       event.preventDefault();
-      this.#close();
+      this.requestClose();
     }
   };
 
@@ -271,20 +290,20 @@ export default class CraftDialog extends LitElement {
     const target = event.target as HTMLElement | null;
 
     if (target?.closest?.('[data-dialog="close"]')) {
-      this.#close();
+      this.requestClose();
     }
   };
 
   /** A click on the backdrop of a modal dialog targets the dialog itself. */
   #onDialogClick = (event: MouseEvent): void => {
     if (this.closeOnOutsideClick && event.target === this.dialogElement) {
-      this.#close();
+      this.requestClose();
     }
   };
 
   #onBackdropClick = (): void => {
     if (this.closeOnOutsideClick) {
-      this.#close();
+      this.requestClose();
     }
   };
 }
