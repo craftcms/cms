@@ -125,6 +125,8 @@ readonly class Icons
 
     public static function resolveIconPath(string $icon): string
     {
+        $icon = self::resolveIconName($icon);
+
         return CmsAssets::resourcesPath(sprintf('icons/%s/%s.svg', self::resolveIconFamily($icon), $icon));
     }
 

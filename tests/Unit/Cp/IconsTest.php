@@ -50,6 +50,11 @@ describe('resolveIconPath', function () {
         expect($path)->toBe(CmsAssets::resourcesPath('icons/custom-icons/graphql.svg'));
     });
 
+    it('resolves legacy icon names', function () {
+        expect(Icons::resolveIconPath('move'))
+            ->toBe(CmsAssets::resourcesPath('icons/custom-icons/grip-dots.svg'));
+    });
+
     it('returns a path ending in .svg for a system icon', function () {
         $path = Icons::resolveIconPath('gear');
 
