@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Path as LaravelPath;
 use CraftCms\Yii2Adapter\Support\Env;
@@ -60,7 +61,7 @@ class Path extends Component
      */
     public function getTestsPath(): string
     {
-        return $this->service()->tests();
+        return File::normalizePath(Aliases::get('@tests'));
     }
 
     /**

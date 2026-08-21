@@ -102,7 +102,7 @@ Aliases::set('@templates', defined('CRAFT_TEMPLATES_PATH')
     ? CRAFT_TEMPLATES_PATH
     : Aliases::get('@templates', is_dir($app->resourcePath('views')) ? $app->resourcePath('views') : $app->basePath('templates')));
 Aliases::set('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
-Aliases::set('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
+Aliases::set('@tests', defined('CRAFT_TESTS_PATH') ? CRAFT_TESTS_PATH : Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
 
 // Load the config
 $config = Arr::merge(
