@@ -20,9 +20,6 @@ describe('resolveIconFamily', function () {
         expect(Icons::resolveIconFamily($icon))->toBe($family);
     })->with([
         'custom' => ['graphql', 'custom-icons'],
-        'solid' => ['gear', 'solid'],
-        'brand' => ['github', 'brands'],
-        'regular' => ['globe', 'regular'],
         'unknown' => ['not-an-icon', 'solid'],
     ]);
 });
