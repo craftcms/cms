@@ -234,17 +234,17 @@ class EagerLoadedElementConsistencyTest extends TestCase
         // Check it has been initialized with the eager-loaded addresses
         self::assertTrue($property->isInitialized($user));
 
-        $eagerLoaded = $user->getEagerLoadedElements('addresses');
-        $propertyGetValue = $property->getValue($user);
-        $userAddresses = $user->getAddresses();
-        self::assertNotNull($eagerLoaded);
-        self::assertNotNull($propertyGetValue);
-        self::assertNotNull($userAddresses);
+        $eagerLoaded = $user->getEagerLoadedElements('addresses')->all();
+        $propertyGetValue = $property->getValue($user)->all();
+        $userAddresses = $user->getAddresses()->all();
+        self::assertNotEmpty($eagerLoaded);
+        self::assertNotEmpty($propertyGetValue);
+        self::assertNotEmpty($userAddresses);
         self::assertCount(2, $eagerLoaded);
         self::assertCount(2, $propertyGetValue);
         self::assertCount(2, $userAddresses);
 
-        foreach ([$eagerLoaded->all(), $propertyGetValue->all(), $userAddresses->all()] as $a) {
+        foreach ([$eagerLoaded, $propertyGetValue, $userAddresses] as $a) {
             // Check each address has data matching original `$addressData`
             foreach ($a as $index => $address) {
                 foreach ($addressData[$index] as $key => $value) {

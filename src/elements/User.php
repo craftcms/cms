@@ -2382,6 +2382,7 @@ JS, [
                 $this->setPhoto($photo);
                 break;
             case 'addresses':
+                /** @var Address[] $elements */
                 $this->_addresses = ElementCollection::make($elements);
                 break;
         }
