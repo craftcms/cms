@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
-use CraftCms\Cms\Import\Import as ImportService;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Facades\Import as ImportFacade;
+use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use Illuminate\Bus\Batchable;
 use Override;
@@ -48,11 +49,10 @@ class Import extends Job
             return;
         }
 
-        $importService = app(ImportService::class);
-        $config = $importService->getConfigByUid($this->step['config']) ?? $importService->getConfigByHandle($this->step['config']);
+        $config = ImportConfig::getConfigByUid($this->step['config']) ?? ImportConfig::getConfigByHandle($this->step['config']);
 
         // get all the data
-        $allData = $importService->getFormattedData($this->filePath);
+        $allData = ImportFacade::getFormattedData($this->filePath);
         // discard the part at the start that was already processed
         $data = array_slice($allData, $this->start);
         // count how many items we have to process
@@ -74,7 +74,7 @@ class Import extends Job
 
             // import data
             try {
-                $importService->importItem($config, $data[$i]);
+                ImportFacade::importItem($config, $data[$i]);
             } catch (\Exception $e) {
                 // log and proceed further
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), ['config' => $config->name, 'data' => $data[$i]]);

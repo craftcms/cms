@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Http\File;
@@ -149,7 +150,7 @@ abstract class BaseImporter
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
                 function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $found = Import::getConfigByHandle($value, true);
+                    $found = ImportConfig::getConfigByHandle($value, true);
                     if ($found !== null && $found->uid !== $validator->getValue('uid')) {
                         $fail(t('{attribute} "{value}" has already been taken.', [
                             'attribute' => $attribute,

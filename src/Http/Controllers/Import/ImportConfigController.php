@@ -8,13 +8,14 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportConfig;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
@@ -42,6 +43,8 @@ class ImportConfigController
         private GeneralConfig $generalConfig,
         private HtmlStack $HtmlStack,
         private readonly Import $importService,
+        private readonly ImportConfig $importConfigService,
+        private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -50,8 +53,8 @@ class ImportConfigController
     {
         return view('craftcms::import.configs.index', [
             'readOnly' => $this->readOnly,
-            'editableImportConfigs' => $this->importService->getEditableConfigs(),
-            'nonEditableImportConfigs' => $this->importService->getNonEditableConfigs(),
+            'editableImportConfigs' => $this->importConfigService->getEditableConfigs(),
+            'nonEditableImportConfigs' => $this->importConfigService->getNonEditableConfigs(),
         ]);
     }
 
@@ -107,7 +110,7 @@ class ImportConfigController
             return $this->create();
         }
 
-        abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
+        abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
         if ($importer === null) {
@@ -132,7 +135,7 @@ class ImportConfigController
         ]);
 
         if ($importConfigUid) {
-            abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+            abort_if(is_null($import = $this->importConfigService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
         } else {
             $import = new ($this->request->input('type'));
         }
@@ -151,7 +154,7 @@ class ImportConfigController
         $import->map($this->request->input('settings.map', $import->map));
         $import->matchCriteria($this->request->input('settings.matchCriteria', $import->matchCriteria));
 
-        if (! $this->importService->saveConfig($import)) {
+        if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
             return $this->asModelFailure($import, t('Couldn’t save import config.'), 'import');
         }
@@ -168,7 +171,7 @@ class ImportConfigController
         $handle ??= $importer->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
-        abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
+        abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
         if ($importer === null) {
@@ -225,7 +228,7 @@ class ImportConfigController
             'uid' => ['string', 'max:36'],
         ]);
 
-        abort_if(is_null($importer = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+        abort_if(is_null($importer = $this->importConfigService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $this->request->validate([
             'fieldLayout' => ['nullable', 'string', 'max:255'],
@@ -236,7 +239,7 @@ class ImportConfigController
             $importer->fieldLayout($this->request->input('fieldLayout', $importer->fieldLayout));
         }
 
-        if (! $this->importService->saveConfig($importer)) {
+        if (! $this->importConfigService->saveConfig($importer)) {
             return $this->asModelFailure($importer, t('Couldn’t save import config.'), 'import');
         }
 
@@ -252,7 +255,7 @@ class ImportConfigController
         $handle ??= $importer->handle ?? $this->request->input('handle');
 
         abort_if(is_null($handle), 404, 'Import config not found');
-        abort_if(is_null($found = $this->importService->getConfigByHandle($handle)), 404, 'Import config not found');
+        abort_if(is_null($found = $this->importConfigService->getConfigByHandle($handle)), 404, 'Import config not found');
         abort_if(! $found->isEditable(), 400, "This import config is not editable: $found->handle");
 
         if ($importer === null) {
@@ -310,7 +313,7 @@ class ImportConfigController
             'importUid' => ['string', 'max:36'],
         ]);
 
-        abort_if(is_null($import = $this->importService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
+        abort_if(is_null($import = $this->importConfigService->getConfigByUid($importConfigUid)), 400, "Invalid import config UID: $importConfigUid");
 
         $this->request->validate([
             'fieldLayoutId' => ['nullable', 'integer'],
@@ -342,7 +345,7 @@ class ImportConfigController
         $import->matchCriteria($this->request->input('matchCriteria', $import->matchCriteria));
         $import->clearableItems($this->request->input('clearableItems', $import->clearableItems ?? []));
 
-        if (! $this->importService->saveConfig($import)) {
+        if (! $this->importConfigService->saveConfig($import)) {
             // Flash::fail(t('Couldn’t save import config.'));
             return $this->asModelFailure($import, t('Couldn’t save import config.'), 'import');
         }
@@ -510,13 +513,13 @@ class ImportConfigController
 
         $field = null;
         if (! empty($fieldUid)) {
-            $field = Fields::getFieldByUid($fieldUid);
+            $field = $this->fieldsService->getFieldByUid($fieldUid);
         }
 
         $importUid = $this->request->input('importUid');
         abort_if(empty($importUid), 400, 'No import UID provided');
 
-        $import = $this->importService->getConfigByUid($importUid);
+        $import = $this->importConfigService->getConfigByUid($importUid);
         abort_if(is_null($import), 400, 'Invalid import UID.');
 
         return [$fieldUid, $field, $importUid, $import];
@@ -532,12 +535,12 @@ class ImportConfigController
             ]);
         }
 
-        $config = $this->importService->getConfigByUid($uid);
+        $config = $this->importConfigService->getConfigByUid($uid);
 
         abort_if(is_null($config), 404, "Invalid import config UID: $uid");
         abort_if(! $config->isEditable(), 400, "This import config is not editable, so it can’t be duplicated via the Control Panel: $uid");
 
-        $this->importService->duplicateConfig($config);
+        $this->importConfigService->duplicateConfig($config);
 
         return $this->asSuccess(t('“{name}” duplicated.', [
             'name' => $config->name,
@@ -554,12 +557,12 @@ class ImportConfigController
             ]);
         }
 
-        $config = $this->importService->getConfigByUid($uid);
+        $config = $this->importConfigService->getConfigByUid($uid);
 
         abort_if(is_null($config), 404, "Invalid import config UID: $uid");
         abort_if(! $config->isEditable(), 400, "This import config is not editable, so it can’t be deleted via the Control Panel: $uid");
 
-        $this->importService->deleteConfig($config);
+        $this->importConfigService->deleteConfig($config);
 
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $config->name,
@@ -631,7 +634,7 @@ class ImportConfigController
         $handle = $this->request->input('handle');
 
         abort_if(is_null($handle), 400, 'Import config handle is required.');
-        abort_if(is_null($config = $this->importService->getConfigByHandle($handle)), 400, 'Import config not found.');
+        abort_if(is_null($config = $this->importConfigService->getConfigByHandle($handle)), 400, 'Import config not found.');
 
         try {
             $this->importService->import($config);

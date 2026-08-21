@@ -8,7 +8,8 @@ use Closure;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Support\Facades\Import;
+use CraftCms\Cms\Support\Facades\ImportConfig;
+use CraftCms\Cms\Support\Facades\ImportRun as ImportRunFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -34,7 +35,7 @@ class ImportRun extends Component implements CpEditable, Validatable
     /**
      * Normalizes an object/array config, JSON-decodes `steps` if it's a string, then delegates to the parent constructor.
      *
-     * @param object|array $config The import run config.
+     * @param  object|array  $config  The import run config.
      */
     public function __construct(object|array $config = [])
     {
@@ -51,8 +52,6 @@ class ImportRun extends Component implements CpEditable, Validatable
 
     /**
      * Defines validation rules for name/handle/description/steps (uniqueness of handle, file requiredness per step, batch size bounds).
-     *
-     * @return array
      */
     #[\Override]
     public function getRules(): array
@@ -69,7 +68,7 @@ class ImportRun extends Component implements CpEditable, Validatable
                 'max:255',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
                 function ($attribute, $value, Closure $fail, Validator $validator) {
-                    $found = Import::getImportRunByHandle($value);
+                    $found = ImportRunFacade::getImportRunByHandle($value);
                     if ($found !== null && $found->uid !== $validator->getValue('uid')) {
                         $fail(t('{attribute} "{value}" has already been taken.', [
                             'attribute' => $attribute,
@@ -86,12 +85,12 @@ class ImportRun extends Component implements CpEditable, Validatable
                 'required',
             ],
             'steps.*.config' => [
-                Rule::in(array_merge(Import::getEditableConfigs()->pluck('uid')->toArray(), Import::getNonEditableConfigs()->keys()->all())),
+                Rule::in(array_merge(ImportConfig::getEditableConfigs()->pluck('uid')->toArray(), ImportConfig::getNonEditableConfigs()->keys()->all())),
             ],
             'steps.*.file' => [
                 function ($attribute, $value, Closure $fail, Validator $validator) {
                     $key = preg_match('/\d+/', $attribute, $matches) ? (int) $matches[0] : null;
-                    $config = Import::getConfigByHandle($this->steps[$key]['config']) ?? Import::getConfigByUid($this->steps[$key]['config']);
+                    $config = ImportConfig::getConfigByHandle($this->steps[$key]['config']) ?? ImportConfig::getConfigByUid($this->steps[$key]['config']);
                     if ($config && ! $config->isEditable()) {
                         // if the config is not editable (file-based),
                         // then the file is required and has to be valid
@@ -117,8 +116,6 @@ class ImportRun extends Component implements CpEditable, Validatable
 
     /**
      * Moves nested `steps.*` validation error messages up to a top-level `steps` key.
-     *
-     * @param Validator|null $validator
      */
     public function afterValidate(?Validator $validator = null): void
     {
@@ -140,11 +137,8 @@ class ImportRun extends Component implements CpEditable, Validatable
     //            //'steps.*.file.closure_validation_rule' => 'test567', // works
     //        ];
     //    }
-
     /**
      * Returns a plain array snapshot of the run's properties.
-     *
-     * @return array
      */
     public function getConfig(): array
     {

@@ -21,7 +21,6 @@ use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
 use Exception;
@@ -36,6 +35,10 @@ use Throwable;
 #[Singleton]
 class Import
 {
+    public function __construct(
+        private readonly ImportConfig $importConfig,
+    ) {}
+
     /**
      * Returns the available data type classes, keyed by extension.
      * The list includes built-in json/csv/xml data type map, extended via `RegisterDataTypes` event listeners.
@@ -90,7 +93,7 @@ class Import
 
         // for each step in the $run
         foreach ($run->steps as $key => $step) {
-            $config = ImportConfig::getConfigByUid($step['config']) ?? ImportConfig::getConfigByHandle($step['config']);
+            $config = $this->importConfig->getConfigByUid($step['config']) ?? $this->importConfig->getConfigByHandle($step['config']);
             if (! $config) {
                 throw new InvalidConfigException($step['config']);
             }
