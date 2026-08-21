@@ -35,8 +35,20 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 // Get the Laravel application instance
 $app = Application::getInstance();
 
+if (defined('CRAFT_CONFIG_PATH')) {
+    $app->useConfigPath(CRAFT_CONFIG_PATH);
+}
+
 if (defined('CRAFT_STORAGE_PATH')) {
     $app->useStoragePath(CRAFT_STORAGE_PATH);
+}
+
+if (defined('CRAFT_TEMPLATES_PATH')) {
+    $app->get('config')->set('view.paths', [CRAFT_TEMPLATES_PATH]);
+}
+
+if (defined('CRAFT_TRANSLATIONS_PATH')) {
+    $app->useLangPath(CRAFT_TRANSLATIONS_PATH);
 }
 
 // Load the general config
