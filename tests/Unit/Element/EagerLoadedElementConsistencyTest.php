@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\ElementCollection;
@@ -145,4 +146,37 @@ test('authors eager-loading with no authors stays in sync with getAuthor() and g
         ->and($entry->getEagerLoadedElements('authors'))->toBeEmpty()
         ->and($entry->getAuthor())->toBeNull()
         ->and($entry->getAuthors())->toBe([]);
+});
+
+test('addresses eager-loading stays in sync with getAddresses()', function () {
+    $user = new User(['id' => 401]);
+    $addressData = [
+        [
+            'id' => 9004,
+            'countryCode' => 'US',
+            'addressLine1' => '123 Main St',
+            'administrativeArea' => 'CA',
+            'locality' => 'Los Angeles',
+            'postalCode' => '90001',
+        ],
+        [
+            'id' => 9005,
+            'countryCode' => 'US',
+            'addressLine1' => '456 Elm St',
+            'administrativeArea' => 'CA',
+            'locality' => 'Los Angeles',
+            'postalCode' => '90002',
+        ],
+    ];
+    $addresses = array_map(fn (array $data) => new Address($data), $addressData);
+    $plan = new EagerLoadPlan(handle: 'addresses');
+
+    $user->setEagerLoadedElements('addresses', $addresses, $plan);
+
+    expect($user->hasEagerLoadedElements('addresses'))->toBeTrue();
+
+    $eagerLoaded = $user->getEagerLoadedElements('addresses');
+    expect($eagerLoaded)->toBeInstanceOf(ElementCollection::class)
+        ->and($eagerLoaded->all())->toBe($addresses)
+        ->and($user->getAddresses()->all())->toBe($addresses);
 });
