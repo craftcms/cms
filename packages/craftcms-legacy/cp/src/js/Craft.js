@@ -2529,6 +2529,14 @@ $.extend(Craft, {
 
       // No container at all — very old/custom markup. Build the legacy
       // button + disclosure menu from scratch.
+      console.warn(
+        'A chip was given actions without an action container, so a deprecated ' +
+          'disclosure menu was built for it. Render the chip with a ' +
+          '`<div slot="suffix">` (as `craft-chip` and ' +
+          '`ElementHtml::chipHtml()` do) to get a `craft-action-menu` instead.',
+        chip
+      );
+
       const menuId = `actions-${Math.floor(Math.random() * 1000000)}`;
       const labelId = `${menuId}-label`;
       const $label = $('<label/>', {

@@ -27,14 +27,11 @@ use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Utils\AST;
 use InvalidArgumentException;
 
 class ElementQueryConditionBuilder extends Component
@@ -130,56 +127,10 @@ class ElementQueryConditionBuilder extends Component
         $arguments = [];
 
         foreach ($argumentNodes as $argumentNode) {
-            $arguments[$argumentNode->name->value] = $this->_extractArgumentValue($argumentNode);
+            $arguments[$argumentNode->name->value] = AST::valueFromASTUntyped($argumentNode->value, $this->_resolveInfo->variableValues);
         }
 
         return $arguments;
-    }
-
-    private function _extractArgumentValue(Node $argumentNode): mixed
-    {
-        // Deal with a raw object value.
-        if ($argumentNode->kind === 'ObjectValue') {
-            /** @var ObjectValueNode $argumentNode */
-            $extractedValue = [];
-            foreach ($argumentNode->fields as $fieldNode) {
-                $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
-            }
-
-            return $extractedValue;
-        }
-
-        if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
-            /** @var ArgumentNode|VariableNode|ListValueNode|ObjectFieldNode $argumentNode */
-            $argumentNodeValue = $argumentNode->value;
-
-            switch ($argumentNodeValue->kind) {
-                case 'Variable':
-                    return $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
-                case 'ListValue':
-                    $extractedValue = [];
-                    foreach ($argumentNodeValue->values as $value) {
-                        $extractedValue[] = $this->_extractArgumentValue($value);
-                    }
-
-                    return $extractedValue;
-                case 'ObjectValue':
-                    $extractedValue = [];
-                    foreach ($argumentNodeValue->fields as $fieldNode) {
-                        $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
-                    }
-
-                    return $extractedValue;
-                case 'NullValue':
-                    return null;
-                default:
-                    return $argumentNodeValue->value;
-            }
-        }
-
-        $value = $argumentNode->value ?? null;
-
-        return $argumentNode->kind === 'IntValue' ? (int) $value : $value;
     }
 
     private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use InvalidArgumentException;
+use JsonException;
 use Throwable;
 
 /**
@@ -40,11 +41,15 @@ class Json
             return null;
         }
 
-        if (! Str::isJson($json)) {
+        if (! is_string($json)) {
             throw new InvalidArgumentException('Invalid JSON data.');
         }
 
-        return json_decode($json, $asArray);
+        try {
+            return json_decode($json, $asArray, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            throw new InvalidArgumentException('Invalid JSON data.');
+        }
     }
 
     /**

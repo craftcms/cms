@@ -116,7 +116,7 @@ class Site extends Component implements Chippable, Stringable
     /**
      * Returns the site’s base URL.
      *
-     * @param  bool  $parse  Whether to parse the name for an alias or environment variable
+     * @param  bool  $parse  Whether to parse the URL for an environment variable
      */
     #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string

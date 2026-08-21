@@ -12,6 +12,23 @@
 - Removed support for the Debug Toolbar. [Laravel Debugbar](https://laraveldebugbar.com) can be used instead. ([#18812](https://github.com/craftcms/cms/pull/18812))
 
 ### Extensibility
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsForm()`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsNodes()`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.
+- Added `CraftCms\Cms\Form\Nodes\Action`.
+- Added `CraftCms\Cms\Form\Nodes\Field::actions()`.
+- Added `CraftCms\Cms\Form\Controls\Checkbox`.
+- Added `CraftCms\Cms\Form\Controls\FieldSelect`.
+- Added `CraftCms\Cms\Form\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Cp\Components\Field::actions()`.
+- Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
+- Added the `actions` slot to `<craft-field>`.
+- Deprecated `CraftCms\Cms\Cp\Components\Field::labelExtra()`. `actions()` should be used instead.
+- Deprecated the `labelExtra` field config option. `actions` should be used instead.
+- Deprecated `<craft-field>`’s `label-extra` slot. The `actions` slot should be used instead.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsHtml()`.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::renderSettingsHtml()`.
+- Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsHtml()`.
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\DateTimeHelper`.
 - Added `CraftCms\Cms\Support\File`.
@@ -209,8 +226,8 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `\craft\records\VolumeFolder`. `\CraftCms\Cms\Asset\Models\VolumeFolder` should be used instead.
 - Deprecated `\craft\controllers\AssetIndexesController`. `\CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController` should be used instead.
 - Deprecated `craft\services\AssetIndexer`. `CraftCms\Cms\Asset\AssetIndexer` should be used instead.
-- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Data\AssetIndexEntry` should be used instead.
-- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Data\IndexingSession` should be used instead.
+- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Models\AssetIndexData` should be used instead.
+- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
 - Deprecated `craft\errors\AssetException`. `CraftCms\Cms\Asset\Exceptions\AssetException` should be used instead.
 - Deprecated `craft\errors\AssetDisallowedExtensionException`. `CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException` should be used instead.
 - Deprecated `craft\errors\AssetNotIndexableException`. `CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException` should be used instead.
@@ -429,6 +446,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 ### Elements
 
+- Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
 - Added `CraftCms\Cms\Element\ElementCaches` and `CraftCms\Cms\Support\Facades\ElementCaches`.
   - Deprecated `craft\services\Elements::getIsCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::isCollectingCacheInfo()` should be used instead.
   - Deprecated `craft\services\Elements::startCollectingCacheInfo()`. `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()` should be used instead.

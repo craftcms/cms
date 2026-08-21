@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
@@ -81,18 +84,16 @@ class Template extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    protected function settingsNodes(FormContext $context): array
     {
-        return FormFields::autosuggestFieldHtml([
-            'label' => t('Template'),
-            'instructions' => t('The path to a template file within your `templates/` folder.'),
-            'tip' => t('The template will be rendered with an `element` variable.'),
-            'class' => 'code',
-            'id' => 'template',
-            'name' => 'template',
-            'suggestTemplates' => true,
-            'value' => $this->template,
-        ]);
+        return [
+            Field::make(t('Template'), Combobox::make('template')
+                ->options(SelectOptions::getTemplateSuggestions())
+                ->showAllOnEmpty()
+                ->value($this->template))
+                ->instructions(t('The path to a template file within your `templates/` folder.'))
+                ->tip(t('The template will be rendered with an `element` variable.')),
+        ];
     }
 
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string

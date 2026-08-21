@@ -391,7 +391,6 @@ export default css`
   .button-content {
     display: flex;
     align-items: center;
-    gap: 0.25em;
     width: 100%;
   }
 

@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field;
@@ -127,21 +127,23 @@ class Local extends Filesystem
 
         if ($this->hasUrls && $this->getShowUrlSetting()) {
             $form->add(Field::make(t('Base URL'))
-                ->instructions(t('The base URL to the files in this filesystem. This can begin with an environment variable.'))
+                ->instructions(t('The base URL to the files in this filesystem.'))
                 ->required()
-                ->control(Combobox::make('url')
+                ->control(Text::make('url')
                     ->value($this->url)
-                    ->options(SelectOptions::getEnvSuggestions(fn ($value): bool => Str::isUrl($value)))
-                    ->placeholder('//example.com/path/to/folder')));
+                    ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(fn ($value): bool => Str::isUrl($value)))
+                    ->placeholder('//example.com/path/to/folder'))
+                ->tip(t('Type `$` to choose an environment variable.')));
         }
 
         return $form->add(Field::make(t('Base Path'))
-            ->instructions(t('The base folder path that should be used as the root of the filesystem. This can begin with an environment variable.'))
+            ->instructions(t('The base folder path that should be used as the root of the filesystem.'))
             ->required()
-            ->control(Combobox::make('path')
+            ->control(Text::make('path')
                 ->value($this->path)
-                ->options(SelectOptions::getEnvSuggestions())
-                ->placeholder('/path/to/folder')));
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers())
+                ->placeholder('/path/to/folder'))
+            ->tip(t('Type `$` to choose an environment variable.')));
     }
 
     #[Override]

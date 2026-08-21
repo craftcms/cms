@@ -23,16 +23,18 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Controls\ConditionBuilder as ConditionBuilderControl;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
+use CraftCms\Cms\Form\Controls\FieldSelect as FieldSelectControl;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
+use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormPayload;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
@@ -73,7 +75,7 @@ class FieldsController
 
         return Inertia::render('settings/fields/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Fields')],
             ],
             'title' => t('Fields'),
@@ -269,6 +271,31 @@ class FieldsController
         ]);
     }
 
+    public function renderFieldSelect(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['nullable', 'integer'],
+            'limit' => ['nullable', 'integer'],
+            'create' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        $html = FieldSelectControl::selectHtml(
+            $data['value'] ?? null,
+            $data['limit'] ?? null,
+            $data['create'],
+            $data['name'],
+            $data['disabled'],
+        );
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
+        ]);
+    }
+
     public function renderConditionBuilder(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -283,6 +310,7 @@ class FieldsController
             'forProjectConfig' => ['required', 'boolean'],
             'name' => ['required', 'string'],
             'disabled' => ['required', 'boolean'],
+            'fieldLayouts' => ['nullable', 'array'],
         ]);
 
         $html = ConditionBuilderControl::builderHtml(
@@ -292,6 +320,7 @@ class FieldsController
             $data['forProjectConfig'],
             $data['name'],
             $data['disabled'],
+            $data['fieldLayouts'] ?? [],
         );
 
         return new JsonResponse([
@@ -465,16 +494,45 @@ class FieldsController
 
     public function renderLayoutComponentSettings(Request $request): JsonResponse
     {
-        $element = $this->fieldLayoutComponent($request);
-        $namespace = Str::random(10);
-        $html = InputNamespace::namespaceInputs(fn () => $element->renderSettingsHtml(), $namespace);
+        $component = $this->fieldLayoutComponent($request);
 
         return new JsonResponse([
-            'settingsHtml' => $html,
-            'namespace' => $namespace,
+            'form' => $this->layoutComponentSettingsPayload($component),
             'headHtml' => $this->HtmlStack->headHtml(),
             'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
+    }
+
+    public function refreshLayoutComponentSettings(Request $request): JsonResponse
+    {
+        $request->validate([
+            'scope' => ['present', 'array'],
+            'scope.*' => ['string'],
+        ]);
+
+        $component = $this->fieldLayoutComponent($request, $settings);
+        $payload = $this->layoutComponentSettingsPayload($component, $settings ?? []);
+        $scope = $request->array('scope');
+
+        return new JsonResponse([
+            'form' => $scope === [] ? $payload : $payload->forScope($scope),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
+        ]);
+    }
+
+    /** @param array<string, mixed> $values */
+    private function layoutComponentSettingsPayload(FieldLayoutComponent $component, array $values = []): ?FormPayload
+    {
+        $context = new FormContext(
+            namespace: 'settings',
+            values: $values === [] ? [] : ['settings' => $values],
+            refreshable: true,
+        );
+
+        $form = $component->settingsForm($context);
+
+        return $form === null ? null : app(FormResolver::class)->resolve($form, $context);
     }
 
     public function applyLayoutTabSettings(Request $request): Response
@@ -550,8 +608,7 @@ class FieldsController
             'elementType' => ['required', 'string', new ElementTypeRule],
             'layoutConfig' => ['required', 'array'],
             'config' => ['nullable', 'array'],
-            'settings' => ['nullable', 'string'],
-            'settingsNamespace' => ['nullable', 'string'],
+            'settings' => ['nullable', 'array'],
         ]);
 
         $uid = $request->input('uid');
@@ -564,12 +621,9 @@ class FieldsController
 
         $componentConfig = $request->input('config', []);
         $componentConfig['elementType'] = $elementType;
-        $settingsStr = $request->input('settings');
+        $settings = $request->input('settings');
 
-        if ($settingsStr !== null) {
-            parse_str((string) $settingsStr, $postedSettings);
-            $settingsNamespace = $request->input('settingsNamespace');
-            $settings = Arr::get($postedSettings, $settingsNamespace, []);
+        if (is_array($settings) && $settings !== []) {
             $componentConfig = array_merge($componentConfig, $settings);
         }
 

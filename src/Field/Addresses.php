@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -348,15 +349,16 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function formControl(FieldContext $context): Control
     {
-        $addresses = match (true) {
+        $addresses = array_values(match (true) {
             $context->value instanceof ElementCollection => $context->value->all(),
             $context->value instanceof AddressQuery => $context->value->all(),
             default => [],
-        };
+        });
         $values = $forms = $sortOrder = [];
+        $identities = ElementHelper::nestedElementIdentities($addresses);
 
-        foreach ($addresses as $address) {
-            $uid = $address->uid ?? (string) $address->id;
+        foreach ($addresses as $index => $address) {
+            $uid = $identities[$index];
             $values[$uid] = ['type' => 'address'];
             $forms[$uid] = app(FieldLayoutCompiler::class)->form(
                 $address->getFieldLayout(),

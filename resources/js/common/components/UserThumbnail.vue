@@ -39,6 +39,8 @@
 <style scoped lang="scss">
   .user-thumbnail {
     background-color: var(--c-color-fill-loud);
+    width: 100%;
+    height: 100%;
   }
 
   :deep(svg) {

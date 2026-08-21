@@ -57,7 +57,7 @@ readonly class SectionsController
         return new CpScreenResponse()
             ->title(t('Sections'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
             ])
             ->inertiaPage('settings/sections/Index', [

@@ -5,6 +5,13 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Support\Facades\Filesystems;
 
@@ -63,6 +70,84 @@ describe('getEnvSuggestions', function () {
         }
 
         unset($_SERVER['TEST_FORMAT_ENV_VAR']);
+    });
+});
+
+describe('getEnvTextExpanderTriggers', function () {
+    it('returns position-aware environment triggers', function () {
+        $_SERVER['TEST_TEXT_EXPANDER'] = 'https://example.com';
+
+        try {
+            $triggers = SelectOptions::getEnvTextExpanderTriggers();
+            [$directTrigger, $embeddedTrigger] = $triggers;
+            $direct = collect($directTrigger['options'])->firstWhere('value', '$TEST_TEXT_EXPANDER');
+            $embedded = collect($embeddedTrigger['options'])->firstWhere('value', '${TEST_TEXT_EXPANDER}');
+
+            expect($triggers)->toHaveCount(2)
+                ->and($directTrigger['trigger'])->toBe('$')
+                ->and($directTrigger['boundary'])->toBe('start')
+                ->and($embeddedTrigger['trigger'])->toBe('$')
+                ->and($embeddedTrigger['boundary'])->toBe('anywhere')
+                ->and($direct['data']['hint'])->toBe('https://example.com')
+                ->and($embedded['label'])->toBe('$TEST_TEXT_EXPANDER')
+                ->and($embedded['data']['hint'])->toBe('https://example.com');
+        } finally {
+            unset($_SERVER['TEST_TEXT_EXPANDER']);
+        }
+    });
+
+    it('omits empty triggers', function () {
+        expect(SelectOptions::getEnvTextExpanderTriggers(fn () => false))->toBeEmpty();
+    });
+});
+
+describe('getObjectTemplateTextExpanderTriggers', function () {
+    it('uses the base element suggestions by default', function () {
+        [$trigger] = SelectOptions::getObjectTemplateTextExpanderTriggers();
+        $values = array_column($trigger['options'], 'value');
+
+        expect($values)->toContain('{site.handle}')
+            ->not->toContain('{owner.id}');
+    });
+
+    it('returns built-in, custom field, and nested content block properties', function () {
+        $nestedField = new PlainText([
+            'name' => 'Meta Description',
+            'handle' => 'metaDescription',
+            'uid' => 'meta-description-field',
+        ]);
+        $contentBlockLayout = FieldLayout::make(ContentBlockElement::class)
+            ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab->add(new CustomField($nestedField)));
+        $contentBlock = new ContentBlock([
+            'name' => 'SEO',
+            'handle' => 'seo',
+            'uid' => 'seo-field',
+            'fieldLayout' => $contentBlockLayout,
+        ]);
+        $summary = new PlainText([
+            'name' => 'Summary',
+            'handle' => 'summary',
+            'uid' => 'summary-field',
+        ]);
+        $layout = FieldLayout::make(Entry::class)
+            ->tab(FieldLayout::defaultTabName(), fn (FieldLayoutTab $tab) => $tab
+                ->add(new CustomField($summary))
+                ->add(new CustomField($contentBlock)));
+
+        [$trigger] = SelectOptions::getObjectTemplateTextExpanderTriggers(Entry::class, [$layout]);
+        $options = collect($trigger['options'])->keyBy('value');
+
+        expect($trigger['trigger'])->toBe('{')
+            ->and($trigger['boundary'])->toBe('anywhere')
+            ->and($options)->toHaveKeys([
+                '{site.handle}',
+                '{owner.id}',
+                '{author.username}',
+                '{summary}',
+                '{seo.metaDescription}',
+            ])
+            ->and($options['{seo.metaDescription}']['data']['hint'])->toBe('{seo.metaDescription}')
+            ->and($options['{seo.metaDescription}']['keywords'])->toBe(['seo.metaDescription']);
     });
 });
 

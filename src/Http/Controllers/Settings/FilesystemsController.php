@@ -41,7 +41,7 @@ class FilesystemsController
     {
         return Inertia::render('settings/filesystems/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Filesystems')],
             ],
             'title' => t('Filesystems'),

@@ -54,7 +54,6 @@ it('can be instantiated with site id as array', function () {
 it('can be instantiated with null site id', function () {
     $job = new PropagateElements(
         elementType: EntryElement::class,
-        siteId: null,
     );
 
     expect($job->siteId)->toBeNull();

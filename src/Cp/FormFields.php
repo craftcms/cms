@@ -116,10 +116,14 @@ readonly class FormFields
         );
         $showActionMenu = (
             ! empty($config['actionMenuItems']) &&
-            ($label || $showAttribute || isset($config['labelExtra']))
+            ($label || $showAttribute || isset($config['actions']) || isset($config['labelExtra']))
         );
 
-        $labelExtra = implode('', array_filter([
+        self::deprecateConfig('field', $config, [
+            'labelExtra' => 'has been deprecated. `actions` should be used instead.',
+        ]);
+
+        $actions = implode('', array_filter([
             $showActionMenu
                 ? app(MenuHtml::class)->disclosureMenu($config['actionMenuItems'], [
                     'hiddenLabel' => t('Actions'),
@@ -135,12 +139,12 @@ readonly class FormFields
                     'value' => $config['attribute'],
                 ])
                 : null,
-            isset($config['labelExtra']) ? (string) $config['labelExtra'] : null,
+            isset($config['actions']) ? (string) $config['actions'] : null,
         ]));
 
         $errors = $errors !== null && ! is_iterable($errors) ? [$errors] : $errors;
 
-        return Field::make()
+        $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
             ->required((bool) ($config['required'] ?? false))
@@ -157,7 +161,7 @@ readonly class FormFields
             ->errors($errors !== null ? collect($errors)->map(fn ($error): string => (string) $error)->all() : [])
             ->headingPrefix($config['headingPrefix'] ?? null)
             ->headingSuffix($config['headingSuffix'] ?? null)
-            ->labelExtra($labelExtra !== '' ? $labelExtra : null)
+            ->actions($actions !== '' ? $actions : null)
             ->input($input)
             ->width($config['width'] ?? null)
             ->attributes(Arr::merge(
@@ -178,6 +182,12 @@ readonly class FormFields
                     $config['fieldAttributes'] ?? [],
                 ),
             ));
+
+        if (isset($config['labelExtra'])) {
+            $field->labelExtra((string) $config['labelExtra']);
+        }
+
+        return $field;
     }
 
     /**
@@ -934,6 +944,7 @@ readonly class FormFields
             ->suffix(($config['suffix'] ?? $config['unit'] ?? false) ?: null)
             ->descriptionId($config['descriptionId'] ?? null)
             ->showCharsLeft((bool) ($config['showCharsLeft'] ?? false))
+            ->textExpanderTriggers($config['textExpanderTriggers'] ?? [])
             ->labelledBy(empty($inputAttributes['aria']['label']) ? ($config['labelledBy'] ?? null) : null)
             ->describedBy(($config['describedBy'] ?? false) ?: null)
             ->inputAttributes(Arr::merge(
@@ -1316,6 +1327,12 @@ readonly class FormFields
     public static function entryTypeSelectHtml(array $config): string
     {
         return self::renderTemplate('_includes/forms/entryTypeSelect', $config);
+    }
+
+    /** @param array<string, mixed> $config */
+    public static function fieldSelectHtml(array $config): string
+    {
+        return self::renderTemplate('_includes/forms/fieldSelect', $config);
     }
 
     /** @param array<string, mixed> $config */

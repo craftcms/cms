@@ -58,6 +58,26 @@ it('can set the current edition', function () {
     expect(Edition::get())->toBe(Edition::Solo);
 });
 
+it('reports capabilities from the receiver', function (Edition $edition, Edition $globalEdition, array $expected, bool $installed) {
+    Cms::setIsInstalled($installed);
+    Edition::set($globalEdition);
+
+    expect([
+        $edition->registersFrontendUserRoutes(),
+        $edition->supportsOAuth(),
+        $edition->supportsRequiring2FA(),
+        $edition->supportsPublicRegistration(),
+    ])->toBe($expected);
+})->with([
+    'solo' => [Edition::Solo, Edition::Enterprise, [false, false, false, false]],
+    'team' => [Edition::Team, Edition::Solo, [false, false, true, false]],
+    'pro' => [Edition::Pro, Edition::Solo, [true, true, true, true]],
+    'enterprise' => [Edition::Enterprise, Edition::Solo, [true, true, true, true]],
+])->with([
+    'installed' => true,
+    'uninstalled' => false,
+]);
+
 it('knows when oauth is supported', function () {
     expect(Edition::Solo->supportsOAuth())->toBeFalse()
         ->and(Edition::Team->supportsOAuth())->toBeFalse()

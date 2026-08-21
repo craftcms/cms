@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -417,6 +418,21 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'username' => t('Username'),
+            'email' => t('Email'),
+            'firstName' => t('First Name'),
+            'lastName' => t('Last Name'),
+            'fullName' => t('Full Name'),
+            'preferredLanguage' => t('Preferred Language'),
+            'preferredLocale' => t('Preferred Locale'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');
@@ -437,6 +453,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public static function refHandle(): string
     {
         return 'user';
+    }
+
+    #[Override]
+    public static function editViewModelClass(): string
+    {
+        return UserEditViewModel::class;
     }
 
     #[Override]
@@ -828,7 +850,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return [
             [
                 'label' => t('Users'),
-                'url' => 'users',
+                'href' => Url::cpUrl('users'),
             ],
         ];
     }

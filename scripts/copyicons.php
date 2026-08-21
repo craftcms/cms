@@ -82,6 +82,14 @@ if (! is_dir($iconsDir)) {
 }
 
 $metaPath = "$kitDir/icons/metadata/icons.json";
+
+if (! is_file($metaPath) || ! is_dir($kitSvgsDir)) {
+    fwrite(STDERR, "Font Awesome kit is missing or incomplete at $kitDir.\n".
+        "Expected metadata at $metaPath and SVGs at $kitSvgsDir.\n".
+        "Try re-running \`vp install\` — this can happen if the private kit registry (npm.fontawesome.com) returned an incomplete package.\n");
+    exit(1);
+}
+
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];
 $skipped = 0;

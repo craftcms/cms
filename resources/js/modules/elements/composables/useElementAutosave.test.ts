@@ -147,6 +147,24 @@ describe('useElementAutosave', () => {
     expect(postSpy).toHaveBeenCalledTimes(2);
   });
 
+  /**
+   * A submission re-seeds the renderers with what it saved, and reconciling
+   * emits mutations like any other write — but they land while the visit is
+   * still in flight, and arming for them would rebuild the draft an applied
+   * save just consumed.
+   */
+  it('skips scheduling while a real submission is in flight', async () => {
+    const {autosave, form} = mount({debounceMs: 5});
+
+    form.processing = true;
+    autosave.schedule();
+    form.processing = false;
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
   it('skips scheduling while suspended', async () => {
     const {autosave} = mount();
 
@@ -176,6 +194,48 @@ describe('useElementAutosave', () => {
     expect(postSpy.mock.calls[0]![1]).toMatchObject({draftId: 99});
   });
 
+  // An autosave moves the element's `dateUpdated`. Without handing the new
+  // stamps back, the activity poller reads our own write as an edit from
+  // elsewhere and shows "This entry has been updated."
+  it('reports the new timestamps so the caller can re-baseline', async () => {
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        timestamp: 'at 9:00 AM',
+        updatedTimestamp: 1_700_000_100,
+        canonicalUpdatedTimestamp: 1_700_000_000,
+      },
+    });
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).toHaveBeenCalledWith({
+      element: 1_700_000_100,
+      canonical: 1_700_000_000,
+    });
+  });
+
+  it('reports nulls when the response omits timestamps', async () => {
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).toHaveBeenCalledWith({element: null, canonical: null});
+  });
+
+  it('does not report a save that failed', async () => {
+    postSpy.mockRejectedValue(new Error('nope'));
+    const onSaved = vi.fn();
+    const {autosave} = mount({onSaved});
+
+    await autosave.save();
+
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it('keeps the layout the server saved', async () => {
     const layout = {scope: [], nodes: [], values: {}, errors: []};
     postSpy.mockResolvedValue({data: {draftId: 7, form: layout}});
@@ -195,8 +255,39 @@ describe('useElementAutosave', () => {
 
     expect(autosave.form.value).toEqual(layout);
 
-    autosave.clearForm();
+    autosave.clearSaved();
 
     expect(autosave.form.value).toBeNull();
+  });
+
+  // The screen payload is what tells the client the save turned a canonical
+  // element into a provisional draft.
+  it('keeps the edit screen payload the server returned', async () => {
+    const screen = {
+      notice: 'Showing your unsaved changes.',
+      canDiscardDraft: true,
+      isProvisionalDraft: true,
+      draftId: 7,
+    };
+    postSpy.mockResolvedValue({data: {draftId: 7, screen}});
+
+    const {autosave} = mount();
+
+    expect(autosave.screen.value).toBeNull();
+
+    await autosave.save();
+
+    expect(autosave.screen.value).toEqual(screen);
+
+    // A response without one leaves the last known screen in place, rather
+    // than reverting the chrome to the page that loaded.
+    postSpy.mockResolvedValue({data: {draftId: 7}});
+    await autosave.save();
+
+    expect(autosave.screen.value).toEqual(screen);
+
+    autosave.clearSaved();
+
+    expect(autosave.screen.value).toBeNull();
   });
 });

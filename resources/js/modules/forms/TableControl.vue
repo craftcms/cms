@@ -15,6 +15,7 @@
     minRows?: number;
     maxRows?: number;
     keyed?: boolean;
+    errors?: Record<string, Record<string, true>>;
   };
   type TableRow = Record<string, unknown>;
   type TableValue = TableRow[] | Record<string, TableRow>;
@@ -89,6 +90,14 @@
         props.editable && props.control.props.allowDelete,
         !props.editable
       ).appendTo(bodyElement);
+
+      const rowElement = bodyElement.lastElementChild as HTMLTableRowElement;
+      Object.keys(props.control.props.columns).forEach((column, index) => {
+        rowElement.cells[index]?.classList.toggle(
+          'error',
+          props.control.props.errors?.[rowId]?.[column] === true
+        );
+      });
     });
 
     if (!props.editable) {
@@ -167,10 +176,12 @@
     }
 
     if (['autosuggest', 'template'].includes(type)) {
-      return (
-        cell.querySelector<HTMLElement & {modelValue: string}>('craft-combobox')
-          ?.modelValue ?? ''
+      const combobox = cell.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-combobox'
       );
+      if (combobox) {
+        return combobox.modelValue ?? '';
+      }
     }
 
     if (['checkbox', 'lightswitch'].includes(type)) {

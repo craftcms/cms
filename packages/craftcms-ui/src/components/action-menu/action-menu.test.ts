@@ -421,3 +421,112 @@ describe('keyboard navigation', () => {
     expect(focused).toEqual(['Two']);
   });
 });
+
+describe('groups', () => {
+  async function createWithActions(
+    actions: ActionMenuItem[]
+  ): Promise<CraftActionMenu> {
+    const element = document.createElement(
+      'craft-action-menu'
+    ) as CraftActionMenu;
+    element.actions = actions;
+    document.body.append(element);
+    await element.updateComplete;
+    return element;
+  }
+
+  /** The generated content container, as Lion leaves it. */
+  function contentNode(element: CraftActionMenu): HTMLElement {
+    return (
+      (element.querySelector<HTMLElement>('.action-menu__search')
+        ?.parentElement as HTMLElement) ??
+      element.querySelector<HTMLElement>('[slot="content"]')!
+    );
+  }
+
+  it('renders a heading followed by its members as siblings', async () => {
+    const element = await createWithActions([
+      {label: 'Ungrouped'},
+      {
+        type: 'group',
+        heading: 'Europe',
+        items: [
+          {type: 'link', label: 'France', href: '/fr'},
+          {type: 'link', label: 'Spain', href: '/es'},
+        ],
+      },
+    ]);
+
+    const shape = Array.from(contentNode(element).children).map((child) =>
+      child.classList.contains('action-menu__heading')
+        ? `heading:${child.textContent}`
+        : `${child.tagName.toLowerCase()}:${child.textContent}`
+    );
+
+    expect(shape).toEqual([
+      'craft-action-item:Ungrouped',
+      'heading:Europe',
+      'craft-action-item:France',
+      'craft-action-item:Spain',
+    ]);
+  });
+
+  it('keeps group members reachable as items, with their hrefs intact', async () => {
+    const element = await createWithActions([
+      {
+        type: 'group',
+        heading: 'Europe',
+        items: [{type: 'link', label: 'France', href: '/fr'}],
+      },
+    ]);
+
+    const items = element.querySelectorAll('craft-action-item');
+
+    expect(items.length).toBe(1);
+    expect((items[0] as unknown as CraftActionItem).href).toBe('/fr');
+  });
+
+  it('sorts danger items to the end of their own group, not the menu', async () => {
+    const element = await createWithActions([
+      {
+        type: 'group',
+        heading: 'One',
+        items: [{label: 'Delete', variant: 'danger'}, {label: 'Keep'}],
+      },
+      {type: 'group', heading: 'Two', items: [{label: 'Later'}]},
+    ]);
+
+    const labels = Array.from(
+      element.querySelectorAll('craft-action-item')
+    ).map((item) => item.textContent);
+
+    expect(labels).toEqual(['Keep', 'Delete', 'Later']);
+  });
+
+  it('renders a group with no heading as a bare run of items', async () => {
+    const element = await createWithActions([
+      {type: 'group', items: [{label: 'Solo'}]},
+    ]);
+
+    expect(element.querySelector('.action-menu__heading')).toBeNull();
+    expect(element.querySelectorAll('craft-action-item').length).toBe(1);
+  });
+
+  it('leaves the heading out of the searchable item set', async () => {
+    const element = document.createElement(
+      'craft-action-menu'
+    ) as CraftActionMenu;
+    element.searchable = true;
+    element.actions = [
+      {type: 'group', heading: 'Europe', items: [{label: 'France'}]},
+    ];
+    document.body.append(element);
+    await element.updateComplete;
+
+    typeIntoSearch(element, 'zzz');
+
+    // The heading is presentational, so filtering never hides or matches it.
+    expect(element.querySelector('.action-menu__heading')).not.toBeNull();
+    expect(visibleLabels(element)).toEqual([]);
+  });
+});

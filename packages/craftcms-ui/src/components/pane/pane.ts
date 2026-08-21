@@ -2,6 +2,7 @@ import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
+import {Paddable} from '@src/mixins/Paddable.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import styles from './pane.styles.js';
@@ -27,14 +28,6 @@ export const PaneVariant = {
 export const paneVariants = Object.values(PaneVariant);
 
 export type PaneVariantValue = (typeof PaneVariant)[keyof typeof PaneVariant];
-
-/** Named spacing steps the `padding` property maps onto `--c-spacing-*`. */
-const SPACING_STEPS = ['sm', 'md', 'lg', 'xl'] as const;
-
-/** Whether a value is a plain number (or a numeric string like `"12"`). */
-function isNumeric(value: string | number): boolean {
-  return !isNaN(parseFloat(String(value))) && isFinite(Number(value));
-}
 
 /**
  * Computed `overflow` values a user can't scroll. `hidden` is scrollable from
@@ -94,6 +87,11 @@ const OVERFLOW_TOLERANCE = 1;
  * @slot secondary-action - The footer's secondary action, e.g. a cancel button.
  * @slot primary-action - The footer's primary action, e.g. a submit button.
  *
+ * @attr padding - Spacing applied to the header, body, and footer regions.
+ *   Accepts `sm`/`md`/`lg`/`xl` (mapped to `--c-spacing-*`), `0` or `none`, a
+ *   unitless number (treated as pixels), or any CSS length. Defaults to `lg`.
+ *   Supplied by the `Paddable` mixin, which writes it to `--_pane-spacing`.
+ *
  * @csspart base - The pane's outermost element, which carries the surface
  *   treatment. Style it to override border/shadow/fill for a single pane. It's
  *   also the scroll container, so it takes `tabindex="0"`, `role="region"`, an
@@ -131,7 +129,10 @@ const OVERFLOW_TOLERANCE = 1;
  * @cssproperty --c-pane-title-line-height - Line height of the default title.
  * @cssproperty --c-pane-title-font-weight - Font weight of the default title.
  */
-export default class CraftPane extends LitElement {
+export default class CraftPane extends Paddable(LitElement, {
+  customProperty: '--_pane-spacing',
+  defaultValue: 'lg',
+}) {
   static override styles: CSSResultGroup = [hostStyles, styles];
 
   /**
@@ -157,14 +158,6 @@ export default class CraftPane extends LitElement {
    */
   @property({reflect: true}) variant: 'plain' | 'error' | 'code' =
     PaneVariant.Plain;
-
-  /**
-   * Spacing applied to the header, body, and footer regions.
-   *
-   * Accepts `sm`/`md`/`lg`/`xl` (mapped to `--c-spacing-*`), `0`, a unitless
-   * number (treated as pixels), or any CSS length.
-   */
-  @property() padding: string | number = 'lg';
 
   /**
    * Title shown in the header, rendered as an `<h1>` in the `title` slot.
@@ -371,29 +364,6 @@ export default class CraftPane extends LitElement {
     this._observeScrollable();
   }
 
-  /**
-   * The `padding` property resolved to a CSS length, mirroring the spacing
-   * semantics of the Vue `Pane` component this replaces.
-   */
-  private get _computedPadding(): string {
-    const padding = this.padding;
-
-    if (padding === 0 || padding === '0') {
-      return '0';
-    }
-
-    if (isNumeric(padding)) {
-      return `calc(${padding}rem / 16)`;
-    }
-
-    if (SPACING_STEPS.includes(padding as (typeof SPACING_STEPS)[number])) {
-      return `var(--c-spacing-${padding})`;
-    }
-
-    // Any other string is passed through verbatim.
-    return String(padding);
-  }
-
   protected override render() {
     const showHeader = !!this.label || this._hasSlottedHeader;
 
@@ -401,7 +371,7 @@ export default class CraftPane extends LitElement {
       <div
         class="cp-pane"
         part="base"
-        style="${styleMap({'--_pane-spacing': this._computedPadding})}"
+        style="${styleMap(this.paddingStyles)}"
         tabindex="${this._scrollable ? '0' : nothing}"
         role="${this._scrollable ? 'region' : nothing}"
         aria-label="${this._scrollable ? this._scrollRegionLabel : nothing}"

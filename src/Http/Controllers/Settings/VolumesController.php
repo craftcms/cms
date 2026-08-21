@@ -56,8 +56,8 @@ class VolumesController
 
         return Inertia::render('settings/assets/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets')],
                 ['label' => t('Volumes')],
             ],
             'sort' => $sort,
@@ -133,6 +133,12 @@ class VolumesController
                 'lowerTypeName' => Asset::lowerDisplayName(),
                 'fsOptions' => $fsOptions,
                 'groupedFsOptions' => $groupedFsOptions,
+                'envTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(),
+                'objectTemplateTip' => SelectOptions::getObjectTemplateTip(),
+                'objectTemplateTextExpanderTriggers' => SelectOptions::getObjectTemplateTextExpanderTriggers(
+                    Asset::class,
+                    [$volume->getFieldLayout()],
+                ),
                 'readOnly' => $this->readOnly,
             ])
             ->unless(

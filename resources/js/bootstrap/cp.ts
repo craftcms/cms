@@ -1,10 +1,11 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
 import axios from 'axios';
-import {setTranslations} from '@craftcms/ui/utilities/translate';
+import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
 import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
@@ -118,6 +119,7 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    handleAccessibleRouting();
     ensureLegacyNotificationContainer();
     registerSlideoutGlobals();
 
@@ -126,6 +128,29 @@ const Cp = {
     bootedCallbacks = [];
   },
 };
+
+/**
+ * When navigating to a new page, set keyboard focus on the route focus anchor and
+ * announce route change.
+ */
+function handleAccessibleRouting() {
+  const {announce} = useAnnouncer();
+  let previousPathname: string | null = null;
+  router.on('navigate', (event) => {
+    const {props, url} = event.detail.page;
+    const pathname = new URL(url, window.location.origin).pathname;
+    if (pathname === previousPathname) return;
+    previousPathname = pathname;
+
+    const routeFocusAnchor: HTMLElement | null =
+      document.getElementById('route-focus-anchor');
+    routeFocusAnchor?.focus();
+
+    if (!props.title) return;
+
+    announce(t('Navigated to {title} page', {title: props.title}));
+  });
+}
 
 /**
  * The legacy notifier (`Craft.cp.displayNotification()`, element-copy

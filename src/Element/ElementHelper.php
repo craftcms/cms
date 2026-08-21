@@ -445,6 +445,44 @@ class ElementHelper
     }
 
     /**
+     * Returns the identities that nested elements should be presented to the browser with.
+     *
+     * Saving a derivative owner duplicates the nested elements it still shares with its
+     * canonical, which gives the duplicates brand new element UUIDs. The browser keeps
+     * posting whichever UUIDs it was originally rendered with, and the nested element
+     * fields map those back to the duplicates on the way in — so what gets rendered back
+     * out has to keep speaking canonical UUIDs too. Otherwise the browser can't match a
+     * re-rendered nested Form to the block it belongs to.
+     *
+     * @param  list<ElementInterface>  $elements
+     * @return list<string> The identities, in the same order as `$elements`
+     */
+    public static function nestedElementIdentities(array $elements): array
+    {
+        $canonicalIds = [];
+
+        foreach ($elements as $element) {
+            if ($element->getIsDerivative() && $element->getCanonicalId() !== null) {
+                $canonicalIds[] = $element->getCanonicalId();
+            }
+        }
+
+        // Resolved in one query rather than per element, since this runs while rendering
+        $canonicalUids = $canonicalIds === [] ? [] : DB::table(Table::ELEMENTS)
+            ->whereIn('id', array_unique($canonicalIds))
+            ->pluck('uid', 'id')
+            ->all();
+
+        return array_map(
+            fn (ElementInterface $element): string => ($element->getIsDerivative()
+                ? $canonicalUids[$element->getCanonicalId()] ?? null
+                : null
+            ) ?? $element->uid ?? (string) $element->id,
+            $elements,
+        );
+    }
+
+    /**
      * Returns whether the given element (or its root element if a block element) is a derivative of another element.
      */
     public static function isDerivative(ElementInterface $element): bool

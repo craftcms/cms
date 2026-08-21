@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import {computed} from 'vue';
   import {useFocusField} from '@/common/composables/useFocusField';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';
   import type {BaseOption, SelectItem} from '@/common/types';
@@ -21,7 +21,7 @@
   );
 
   const page = usePage<{
-    baseUrlSuggestions: Array<SelectItem>;
+    baseUrlTextExpanderTriggers: TextExpanderTriggers;
     languageOptions: Array<SelectItem>;
   }>();
 
@@ -48,30 +48,29 @@
     :error="errors?.name"
   />
 
-  <CraftCombobox
+  <CraftInput
     v-model="model.baseUrl"
     :label="t('Base URL')"
     :help-text="t('The base URL for the site.')"
     id="base-url"
     name="baseUrl"
     :error="errors?.baseUrl"
-    :options="page.props.baseUrlSuggestions"
+    :text-expander-triggers="page.props.baseUrlTextExpanderTriggers"
   >
-    <template #after>
-      <craft-callout
-        variant="info"
-        appearance="plain"
-        class="p-0"
-        icon="lightbulb"
+    <craft-callout
+      slot="after"
+      variant="info"
+      appearance="plain"
+      class="p-0"
+      icon="lightbulb"
+    >
+      {{ t('Type `$` to choose an environment variable.') }}
+      <a
+        href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+        >{{ t('Learn more') }}</a
       >
-        {{ t('This can begin with an environment variable.') }}
-        <a
-          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-          >{{ t('Learn more') }}</a
-        >
-      </craft-callout>
-    </template>
-  </CraftCombobox>
+    </craft-callout>
+  </CraftInput>
 
   <Select
     v-model="model.language"

@@ -56,11 +56,33 @@ Fetches `href` as an Inertia page and mounts it in a panel. Returns the `Slideou
 
 Pass `opener` whenever you have it — focus restoration and nesting both depend on it.
 
+### `openSlideoutWith(component, props?, options?)`
+
+Opens a panel around a component you supply, with no fetch. Same `options` as
+`openSlideout`, and returns the `SlideoutInstance` synchronously — or `null` when
+the user declined to discard a panel it would have replaced.
+
+Almost every screen lives at a URL and should use `openSlideout`. This is for the
+ones that don't: the field layout designer builds its component settings by
+POSTing the layout being edited, which is unsaved client state with nothing to
+GET.
+
+```ts
+openSlideoutWith(LayoutComponentSettings, {payload, apply}, {opener: button});
+```
+
+The panel is otherwise ordinary — stacking, the shade, focus, Escape and the
+unsaved-changes prompt all behave the same. `reload()` is a no-op, since there is
+nothing to re-fetch. The component still renders inside `AppLayout`, so it
+configures the shell with `useAppLayout()` like any page; pass a `form` to get a
+Save button and an accurate dirty check.
+
 ### Other exports
 
 ```ts
 import {
   openSlideout,
+  openSlideoutWith,
   closeSlideout,   // (id: string) => void
   closeAllSlideouts,
   useSlideout,
@@ -403,8 +425,15 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 ## Coexisting with the legacy stack
 
 The legacy `Craft.Slideout` (and its `CpScreenSlideout` / `ElementEditorSlideout` subclasses) is
-still very much alive — the field layout designer, matrix, component select and the nested element
-manager all open one. So both kinds can be on screen at once: a Vue panel opened over a legacy
+still very much alive — matrix, component select and the nested element manager all open one, and
+the field layout designer falls back to it.
+
+> The designer's component settings use `openSlideoutWith()` when the Vue stack is available, and
+> the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
+> and the designer is also reachable from legacy-stack screens through the `fieldLayoutDesigner()`
+> Twig function. `canUseVueSlideout()` in
+> `resources/js/modules/field-layout-designer/settings-slideout.ts` decides, keying off whether the
+> shell registered its globals. So both kinds can be on screen at once: a Vue panel opened over a legacy
 slideout, or a legacy element editor opened from inside a Vue panel.
 
 Everything that needs to see *all* open panels rather than one stack's own lives in

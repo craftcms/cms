@@ -1,2 +1,2 @@
 CraftCms\Cms\Twig\Extensions\CoreTwigExtension::arraySome($this->env, // line 1
-($context["items"] ?? null), ($context["callback"] ?? null))
+($context["items"] ?? null), ($context["callback"] ?? null), $this->env->hasExtension(\Twig\Extension\SandboxExtension::class) && $this->env->getExtension(\Twig\Extension\SandboxExtension::class)->isSandboxed($this->source))

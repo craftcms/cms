@@ -7,6 +7,7 @@
 {%- set maxRows = maxRows ?? null %}
 {%- set describedBy = describedBy ?? null %}
 {%- set includeRowId = includeRowId ?? false %}
+{%- set errors = errors ?? [] %}
 
 {%- set totalRows = rows|length %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
@@ -132,7 +133,7 @@
               <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</td>
             {% else %}
               {% set headingId = "#{id}-heading-#{loop.index}" %}
-              {% set hasErrors = cell.errors.isNotEmpty() ?? false %}
+              {% set hasErrors = errors[rowId][colId] ?? (cell.errors.isNotEmpty() ?? false) %}
               {% set cellName = static ? null : name~'['~rowId~']['~colId~']' %}
               {% set isCode = (col.code ?? false) or col.type == 'color' %}
               <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>

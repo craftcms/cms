@@ -94,6 +94,25 @@ describe('input', function () {
         expect($html)->toContain('dir="rtl"')
             ->and($html)->toContain('class="text fullwidth extra"');
     });
+
+    it('renders a configured text expander for the native input', function () {
+        $html = Input::make()
+            ->id('path')
+            ->name('path')
+            ->textExpanderTriggers([
+                [
+                    'trigger' => '$',
+                    'boundary' => 'start',
+                    'options' => [['label' => '$BASE_PATH', 'value' => '$BASE_PATH']],
+                ],
+            ])
+            ->toHtml();
+
+        expect($html)->toContainTag('craft-text-expander', [
+            'for' => 'path',
+            'triggers' => '[{"trigger":"$","boundary":"start","options":[{"label":"$BASE_PATH","value":"$BASE_PATH"}]}]',
+        ]);
+    });
 });
 
 describe('host attributes', function () {
