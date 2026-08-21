@@ -579,8 +579,15 @@ export class BaseElementSelectInput extends Base {
 
     Craft.cp.elementThumbLoader.load($elements);
 
+    // `?.` rather than a bare call, matching `elementSort` below: `destroy()`
+    // nulls both, and a host that re-renders this input mid-selection can
+    // destroy the controller between the modal resolving and the chips landing.
+    // `onModalSelect()` keeps the non-structured path clear of that window, but
+    // `selectStructuredElements()` still awaits after the replaced chip is
+    // dropped, so the window survives there. Skipping is the right outcome
+    // anyway — the replacement element is on its way out.
     if (this.settings.selectable) {
-      this.elementSelect.addItems($elements);
+      this.elementSelect?.addItems($elements);
     }
 
     if (this.settings.sortable) {
