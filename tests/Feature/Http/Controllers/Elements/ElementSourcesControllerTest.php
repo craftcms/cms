@@ -242,6 +242,16 @@ it('returns fully normalized source customization data', function () {
         'type' => ElementSources::TYPE_CUSTOM,
     ])->assertOk()->json('form');
 
+    // Draining HtmlStack here would ship the whole CP asset bootstrap, whose
+    // initializers target elements that only exist on a full page render.
+    postJson(action([ElementSourcesController::class, 'form']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceKey' => 'custom:new',
+        'type' => ElementSources::TYPE_CUSTOM,
+    ])->assertOk()
+        ->assertJsonMissingPath('headHtml')
+        ->assertJsonMissingPath('bodyHtml');
+
     expect($newSource['scope'])->toBe(['sources', 'custom:new'])
         ->and($newSource['values']['sources']['custom:new']['condition'])->toHaveKey('class')
         ->and(array_column(controlProps($newSource, ['sources', 'custom:new', 'tableAttributes'])['options'], 'value'))

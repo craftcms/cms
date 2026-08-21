@@ -37,12 +37,8 @@
 
   type Renderer = {currentValues(): FormPayload['values']};
 
-  // These live on the legacy `Craft` global and aren't described by CraftStatic.
-  const craft = Craft as typeof Craft & {
-    uuid(): string;
-    appendHeadHtml(html: string): Promise<void>;
-    appendBodyHtml(html: string): Promise<void>;
-  };
+  // `uuid` lives on the legacy `Craft` global and isn't described by CraftStatic.
+  const craft = Craft as typeof Craft & {uuid(): string};
 
   const loading = ref(false);
   const saving = ref(false);
@@ -159,9 +155,6 @@
       }
     );
 
-    await craft.appendHeadHtml(data.headHtml);
-    await craft.appendBodyHtml(data.bodyHtml);
-
     return data.form;
   }
 
@@ -208,9 +201,6 @@
     }
 
     // Server-rendered controls register their assets on every render.
-    await craft.appendHeadHtml(data.headHtml);
-    await craft.appendBodyHtml(data.bodyHtml);
-
     return data.form;
   }
 

@@ -11,7 +11,6 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -85,10 +84,12 @@ readonly class ElementSourcesController
 
         $scope = $data['scope'] ?? [];
 
+        // No head/body HTML: this endpoint resolves a Form payload and renders
+        // nothing, so draining HtmlStack would ship the whole CP asset bootstrap
+        // — initializers for elements that only exist on a full page render.
+        // A server-rendered Control fetches its own assets when it renders.
         return new JsonResponse([
             'form' => $scope === [] ? $payload : $payload->forScope($scope),
-            'headHtml' => HtmlStack::headHtml(),
-            'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
     }
 
