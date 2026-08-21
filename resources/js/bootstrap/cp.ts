@@ -108,11 +108,6 @@ const Cp = {
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
       this.$config.get('csrfTokenValue');
 
-    console.groupCollapsed('Craft configuration');
-    console.log(config.all().entries());
-    console.groupEnd();
-
-    console.log('Calling booting callbacks', bootingCallbacks);
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
 
@@ -135,7 +130,6 @@ const Cp = {
     ensureLegacyNotificationContainer();
     registerSlideoutGlobals();
 
-    console.log('Calling booted callbacks', bootedCallbacks);
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
   },

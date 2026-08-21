@@ -1900,9 +1900,15 @@ describe('FormRenderer', () => {
       onMutation: (value) => (mutation = value),
     });
 
+    // The chip's own text nodes only — its `[slot="suffix"]` action menu
+    // contributes the items' labels to `textContent`.
     expect(
       [...container.querySelectorAll('craft-chip')].map((chip) =>
-        chip.textContent?.trim()
+        [...chip.childNodes]
+          .filter((node) => node.nodeType === Node.TEXT_NODE)
+          .map((node) => node.textContent)
+          .join('')
+          .trim()
       )
     ).toEqual(['Second entry', 'First entry']);
     expect(container.textContent).toContain('Choose valid entries.');
