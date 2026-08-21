@@ -1,74 +1,45 @@
-import {css, type PropertyValues} from 'lit';
+import type {PropertyValues, TemplateResult} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
-import {LionDialog} from '@lion/ui/dialog.js';
-import {t} from '../../utilities/translate';
-import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import hostStyles from '@src/styles/host.styles.js';
+import {t} from '@src/utilities/translate.js';
+import {trapFocus} from '@src/utilities/focus-trap.js';
+import styles from './dialog.styles.js';
 import '../icon/icon.js';
 
-/**
- * Styles for the dialog's generated light-DOM content. The content lives in
- * the component's light DOM (Lion slots it into a native <dialog> wrapper),
- * so shadow styles can't reach its descendants; adopt a sheet into the root
- * node instead.
- */
-const contentStyles =
-  typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
-contentStyles?.replaceSync(`
-  .craft-dialog {
-    background-color: var(--c-surface-raised);
-    border-radius: var(--c-radius-md);
-    box-shadow: var(--c-shadow-lg);
-    min-width: min(90vw, 24rem);
-    max-width: min(90vw, 40rem);
-  }
-
-  .craft-dialog__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-lg);
-    padding-block-start: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-md);
-  }
-
-  .craft-dialog__title {
-    font-size: 1.25em;
-    margin: 0;
-  }
-
-  .craft-dialog__close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: inherit;
-    padding: var(--c-spacing-xs);
-    line-height: 1;
-  }
-
-  .craft-dialog__body {
-    padding-inline: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-lg);
-  }
-
-  .craft-dialog__footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-lg);
-  }
-`);
+let nextId = 0;
 
 /**
- * craft-dialog is a modal dialog. Set the `open` attribute to show it;
- * default-slot children render as the body, `slot="footer"` children render
- * in a footer, and any descendant with `data-dialog="close"` closes the
- * dialog when clicked.
+ * craft-dialog is a modal dialog over a native `<dialog>`.
  *
- * Note: Lion's overlay system already defines an `open()` *method*, so there
- * is no `open` boolean property — use the `open` attribute or the `opened`
- * property.
+ * Set the `open` attribute (or the `opened` property) to show it; default-slot
+ * children render as the body, `slot="footer"` children render in a footer, and
+ * any descendant with `data-dialog="close"` closes the dialog when clicked.
+ *
+ * The chrome lives in the shadow root and content is projected through real
+ * `<slot>` elements, so slotted nodes are never moved. That matters for
+ * framework-rendered content: Vue crashes if it re-patches a subtree a web
+ * component has relocated, and any child arriving after `connectedCallback`
+ * would miss a one-shot relocation pass anyway.
+ *
+ * Subclasses override {@link renderHeader}, {@link renderBody} and
+ * {@link renderFooter} rather than `render()`, and resize themselves through the
+ * `--c-dialog-*` custom properties.
+ *
+ * @slot - The dialog body.
+ * @slot footer - Footer content, typically buttons.
+ * @csspart dialog - The native `<dialog>` element.
+ * @csspart surface - The visible panel inside it.
+ * @csspart header - The header row.
+ * @csspart title - The heading.
+ * @csspart close - The header close button.
+ * @csspart body - The scrolling body region.
+ * @csspart footer - The footer row.
+ *
+ * @fires craft-show - The dialog has opened.
+ * @fires craft-hide - The dialog has closed.
+ * @fires craft-after-show - The dialog has opened and finished updating.
+ * @fires craft-after-hide - The dialog has closed and finished updating.
  *
  * @example
  * const dialog = document.createElement('craft-dialog');
@@ -76,152 +47,248 @@ contentStyles?.replaceSync(`
  * dialog.append(message);
  * document.body.appendChild(dialog);
  */
-export default class CraftDialog extends LionDialog {
+export default class CraftDialog extends LitElement {
+  static override styles = [hostStyles, styles];
+
   /**
-   * Backs the `open` attribute (Web Awesome-era API). Named `openAttribute`
-   * because Lion already uses `open` as a method; consumers should use the
-   * attribute form or `opened`.
+   * Whether the dialog is showing.
+   *
+   * Backed by the `open` attribute. Both spellings are public — `opened` is the
+   * property, `open` the attribute — and they stay in sync in both directions.
    */
-  @property({type: Boolean, attribute: 'open', reflect: true})
-  openAttribute = false;
+  @property({type: Boolean, attribute: 'open', reflect: true}) opened = false;
 
   /** Title shown in the dialog header. */
   @property() label = '';
 
-  #contentWrapper: HTMLElement | null = null;
+  /**
+   * Open with `show()` instead of `showModal()`, keeping the dialog out of the
+   * top layer.
+   *
+   * The top layer paints above everything, including menus that append
+   * themselves to `<body>` — which is most of the legacy jQuery CP. A dialog
+   * hosting that kind of content has to stay in the normal stacking context.
+   * The platform stops managing the backdrop, Escape and focus containment in
+   * this mode, so the component supplies all three.
+   */
+  @property({type: Boolean, attribute: 'non-modal', reflect: true})
+  nonModal = false;
 
-  #titleElement: HTMLElement | null = null;
+  /** Fill the viewport. */
+  @property({type: Boolean, reflect: true}) fullscreen = false;
 
-  constructor() {
-    super();
-    wireOverlayLifecycleEvents(this);
-    this.addEventListener('opened-changed', () => {
-      // Lion's JSDoc types `opened` as boxed Boolean; coerce to primitive.
-      const opened = Boolean(this.opened);
-      if (this.openAttribute !== opened) {
-        this.openAttribute = opened;
-      }
-    });
-  }
+  /** Close when the backdrop is clicked. Off by default. */
+  @property({type: Boolean, attribute: 'close-on-outside-click'})
+  closeOnOutsideClick = false;
 
-  static override get styles() {
-    return [
-      css`
-        :host {
-          display: contents;
-        }
-
-        dialog::backdrop {
-          background-color: rgb(0 0 0 / 0.25);
-        }
-      `,
-    ];
-  }
-
-  override connectedCallback() {
-    this.#adoptContentStyles();
-    this.#ensureContentWrapper();
-    super.connectedCallback();
-  }
-
-  #adoptContentStyles() {
-    const root = this.getRootNode();
-    if (
-      contentStyles &&
-      (root instanceof Document || root instanceof ShadowRoot) &&
-      !root.adoptedStyleSheets.includes(contentStyles)
-    ) {
-      root.adoptedStyleSheets = [...root.adoptedStyleSheets, contentStyles];
-    }
-  }
+  protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
   /**
-   * Lion expects dialog content as a light-DOM child with `slot="content"`.
-   * Build it from the consumer's default-slot and footer-slot children.
+   * Mirrors `opened` so lifecycle events fire on a real transition rather than
+   * on the first render, where Lit reports every property as changed.
    */
-  #ensureContentWrapper() {
-    if (this.#contentWrapper?.isConnected) {
+  #lastOpened = false;
+
+  #releaseFocusTrap: (() => void) | null = null;
+
+  /**
+   * Watches light-DOM children so an empty footer collapses.
+   *
+   * Deliberately not `slotchange`: happy-dom assigns slotted nodes but never
+   * dispatches that event, so anything keyed off it is dead under the unit
+   * tests. A childList observer behaves the same in both.
+   */
+  #childObserver: MutationObserver | null = null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+
+    this.addEventListener('click', this.#onHostClick);
+    this.addEventListener('keydown', this.#onHostKeydown);
+
+    this.#childObserver = new MutationObserver(() => this.requestUpdate());
+    this.#childObserver.observe(this, {childList: true});
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    this.removeEventListener('click', this.#onHostClick);
+    this.removeEventListener('keydown', this.#onHostKeydown);
+
+    this.#childObserver?.disconnect();
+    this.#childObserver = null;
+
+    this.#releaseFocusTrap?.();
+    this.#releaseFocusTrap = null;
+  }
+
+  /** The native element, once rendered. */
+  protected get dialogElement(): HTMLDialogElement | null {
+    return this.shadowRoot?.querySelector('dialog') ?? null;
+  }
+
+  protected get hasFooter(): boolean {
+    return this.querySelector(':scope > [slot="footer"]') !== null;
+  }
+
+  override render(): TemplateResult {
+    return html`
+      ${this.nonModal && this.opened
+        ? html`<div
+            class="backdrop"
+            part="backdrop"
+            @click=${this.#onBackdropClick}
+          ></div>`
+        : nothing}
+      <dialog
+        part="dialog"
+        aria-labelledby=${this.titleId}
+        @close=${this.#onNativeClose}
+        @click=${this.#onDialogClick}
+      >
+        <div class="surface" part="surface">
+          ${this.renderHeader()} ${this.renderBody()} ${this.renderFooter()}
+        </div>
+      </dialog>
+    `;
+  }
+
+  protected renderHeader(): TemplateResult {
+    return html`
+      <header class="header" part="header">
+        <h2 class="title" part="title" id=${this.titleId}>${this.label}</h2>
+        <button
+          type="button"
+          class="close"
+          part="close"
+          aria-label=${t('Close')}
+          @click=${this.#close}
+        >
+          <craft-icon name="xmark"></craft-icon>
+        </button>
+      </header>
+    `;
+  }
+
+  protected renderBody(): TemplateResult {
+    return html`<div class="body" part="body"><slot></slot></div>`;
+  }
+
+  protected renderFooter(): TemplateResult {
+    return html`
+      <footer class="footer" part="footer" ?hidden=${!this.hasFooter}>
+        <slot name="footer"></slot>
+      </footer>
+    `;
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+
+    if (this.opened === this.#lastOpened) {
       return;
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.slot = 'content';
-    wrapper.classList.add('craft-dialog');
+    this.#lastOpened = this.opened;
+    this.opened ? this.#showDialog() : this.#hideDialog();
+    this.#emitLifecycle(this.opened);
+  }
 
-    const body = document.createElement('div');
-    body.classList.add('craft-dialog__body');
-    body.append(
-      ...Array.from(this.childNodes).filter(
-        (node) => !(node instanceof Element) || node.slot === ''
-      )
-    );
+  #showDialog(): void {
+    const dialog = this.dialogElement;
 
-    const footerNodes = Array.from(this.children).filter(
-      (child) => child.slot === 'footer'
-    );
-
-    wrapper.append(this.#buildHeader(), body);
-
-    if (footerNodes.length > 0) {
-      const footer = document.createElement('footer');
-      footer.classList.add('craft-dialog__footer');
-      footer.append(...footerNodes);
-      wrapper.append(footer);
+    if (dialog && !dialog.open) {
+      // `showModal()` throws if the dialog is already open, hence the guard.
+      this.nonModal ? dialog.show() : dialog.showModal();
     }
 
-    wrapper.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      if (target.closest?.('[data-dialog="close"]')) {
-        this.opened = false;
+    // `showModal()` contains focus for us; `show()` does not.
+    if (this.nonModal) {
+      this.#releaseFocusTrap?.();
+      this.#releaseFocusTrap = trapFocus(this);
+    }
+  }
+
+  #hideDialog(): void {
+    const dialog = this.dialogElement;
+
+    if (dialog?.open) {
+      dialog.close();
+    }
+
+    this.#releaseFocusTrap?.();
+    this.#releaseFocusTrap = null;
+  }
+
+  /**
+   * `craft-show`/`craft-hide` fire on the transition; the `after` pair fires
+   * once this update has settled. All four bubble and are composed, so
+   * listeners outside the host's shadow root receive them.
+   */
+  #emitLifecycle(opened: boolean): void {
+    this.#dispatch(opened ? 'craft-show' : 'craft-hide');
+
+    void this.updateComplete.then(() => {
+      if (this.opened !== opened) {
+        return;
       }
+
+      this.#dispatch(opened ? 'craft-after-show' : 'craft-after-hide');
     });
-
-    this.append(wrapper);
-    this.#contentWrapper = wrapper;
   }
 
-  #buildHeader(): HTMLElement {
-    const header = document.createElement('header');
-    header.classList.add('craft-dialog__header');
-
-    const title = document.createElement('h2');
-    title.classList.add('craft-dialog__title');
-    title.textContent = this.label;
-    this.#titleElement = title;
-
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.classList.add('craft-dialog__close');
-    close.setAttribute('aria-label', t('Close'));
-    close.setAttribute('data-dialog', 'close');
-
-    const icon = document.createElement('craft-icon');
-    icon.setAttribute('name', 'xmark');
-    close.append(icon);
-
-    header.append(title, close);
-    return header;
+  #dispatch(name: string): void {
+    this.dispatchEvent(new CustomEvent(name, {bubbles: true, composed: true}));
   }
 
-  protected override updated(changed: PropertyValues) {
-    super.updated(changed);
+  #close = (): void => {
+    this.opened = false;
+  };
 
-    if (changed.has('openAttribute') && this.openAttribute !== this.opened) {
-      this.opened = this.openAttribute;
+  /**
+   * The platform closes a modal dialog on Escape by itself and fires `close`;
+   * syncing here covers that as well as any direct `dialogElement.close()`.
+   */
+  #onNativeClose = (): void => {
+    this.opened = false;
+  };
+
+  /** Escape is ours to handle only when the platform isn't managing the dialog. */
+  #onHostKeydown = (event: KeyboardEvent): void => {
+    if (this.nonModal && this.opened && event.key === 'Escape') {
+      event.preventDefault();
+      this.#close();
     }
+  };
 
-    if (changed.has('label') && this.#titleElement) {
-      this.#titleElement.textContent = this.label;
+  /**
+   * Honors the `data-dialog="close"` convention on slotted content. Shadow-tree
+   * clicks retarget to the host and can't be matched with `closest()`, so the
+   * header's own close button is wired directly instead.
+   */
+  #onHostClick = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement | null;
+
+    if (target?.closest?.('[data-dialog="close"]')) {
+      this.#close();
     }
-  }
+  };
+
+  /** A click on the backdrop of a modal dialog targets the dialog itself. */
+  #onDialogClick = (event: MouseEvent): void => {
+    if (this.closeOnOutsideClick && event.target === this.dialogElement) {
+      this.#close();
+    }
+  };
+
+  #onBackdropClick = (): void => {
+    if (this.closeOnOutsideClick) {
+      this.#close();
+    }
+  };
 }
 
 if (!customElements.get('craft-dialog')) {
   customElements.define('craft-dialog', CraftDialog);
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'craft-dialog': CraftDialog;
-  }
 }
