@@ -215,6 +215,12 @@ readonly class Icons
             ];
         }
 
+        // The branch above reads system icons straight off disk rather than
+        // going through Html::svg(), so anything that helper normalizes has to
+        // be repeated here. The XML declaration matters most: several of the
+        // bundled custom icons carry one, and it reaches the CP as unparsable
+        // markup. Harmless for icons that never had one.
+        $svg = preg_replace(Html::XML_DECLARATION_RE, '', $svg);
         $svg = preg_replace(Html::TITLE_TAG_RE, '', $svg);
 
         try {

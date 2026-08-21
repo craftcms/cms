@@ -42,6 +42,15 @@ class Html
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 
     /**
+     * Matches an SVG's leading XML declaration.
+     *
+     * Worth stripping from anything bound for the CP: an XML processing
+     * instruction is not valid HTML, and Vue's runtime template compiler
+     * throws on it in a production build.
+     */
+    public const string XML_DECLARATION_RE = '/<\?xml.*?\?>\s*/';
+
+    /**
      * @var string[] List of tag attributes that should be specially handled when their values are of array type.
      *               In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
      *               will be generated instead of one: `data-name="xyz" data-age="13"`.
@@ -1364,7 +1373,7 @@ class Html
         }
 
         // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
+        $svg = preg_replace(self::XML_DECLARATION_RE, '', $svg);
 
         // Namespace class names and IDs
         if ($namespace) {
