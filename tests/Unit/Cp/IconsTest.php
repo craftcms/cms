@@ -70,4 +70,16 @@ describe('svg', function () {
         expect($html)->toContain('<svg')
             ->and($html)->toContain('Fallback Label');
     });
+
+    // An XML declaration is not valid HTML, and the CP feeds these straight to
+    // Vue's runtime template compiler, which throws on it in a production
+    // build — taking the surrounding subtree down. Several of the bundled
+    // custom icons are authored with one, c-outline (the default system icon)
+    // among them.
+    it('strips the XML declaration from icons that ship with one', function (string $icon) {
+        $svg = Icons::svg($icon);
+
+        expect($svg)->not->toContain('<?xml')
+            ->and($svg)->toStartWith('<svg');
+    })->with(['c-outline', 'c-debug', 'craft-cms', 'craft-partners', 'default-plugin']);
 });
