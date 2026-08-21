@@ -18,6 +18,7 @@ use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\IconPicker;
@@ -56,14 +57,14 @@ use CraftCms\Cms\User\Data\PermissionGroup;
 class FormKitchenSink
 {
     private const array TextExpanderTriggers = [
-        ':' => ['label' => 'Emoji', 'options' => [
+        ['trigger' => ':', 'boundary' => 'whitespace', 'label' => 'Emoji', 'options' => [
             ['label' => '😀', 'value' => '😀', 'keywords' => ['grinning', 'face', 'smile', 'happy']],
             ['label' => '🎉', 'value' => '🎉', 'keywords' => ['party', 'popper', 'celebration', 'confetti']],
             ['label' => '👍', 'value' => '👍', 'keywords' => ['thumbs', 'up', 'approve', 'yes']],
             ['label' => '❤️', 'value' => '❤️', 'keywords' => ['red', 'heart', 'love']],
             ['label' => '🚀', 'value' => '🚀', 'keywords' => ['rocket', 'launch', 'ship']],
         ]],
-        '@' => ['label' => 'Users', 'source' => 'workbench/text-expander-options'],
+        ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'Users', 'source' => 'workbench/text-expander-options'],
     ];
 
     /** @var array<string, array<string, class-string>> */
@@ -79,6 +80,7 @@ class FormKitchenSink
             'date-time' => DateTime::class,
             'element-select' => ElementSelect::class,
             'field-layout-designer' => FieldLayoutDesigner::class,
+            'filesystem-select' => FilesystemSelect::class,
             'grouped-entry-type-manager' => GroupedEntryTypeManager::class,
             'handle' => Handle::class,
             'icon-picker' => IconPicker::class,
@@ -324,6 +326,19 @@ class FormKitchenSink
                         ->elementType(Entry::class)
                         ->customizableTabs(false)
                         ->value($value),
+                ),
+            ];
+        }
+
+        if ($component === FilesystemSelect::class) {
+            return [
+                'Default' => $this->control('Filesystem select', FilesystemSelect::make('filesystem')),
+                'Create and environment variables' => $this->control(
+                    'Filesystem select',
+                    FilesystemSelect::make('filesystem')
+                        ->emptyOption('Select a filesystem')
+                        ->includeEnvVars()
+                        ->create(),
                 ),
             ];
         }

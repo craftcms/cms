@@ -32,9 +32,13 @@ it('applies properties from the Vue Markdown Control', async () => {
         rows: 6,
         toolbarButtons: ['bold'],
         showToolbar: true,
-        textExpanderTriggers: {
-          '@': {options: [{label: 'Ada Lovelace', value: '@ada'}]},
-        },
+        textExpanderTriggers: [
+          {
+            trigger: '@',
+            boundary: 'whitespace',
+            options: [{label: 'Ada Lovelace', value: '@ada'}],
+          },
+        ],
       },
       path: ['body'],
       mode: 'editable',

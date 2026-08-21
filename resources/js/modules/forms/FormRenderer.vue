@@ -17,6 +17,7 @@
   import {
     FormFailure,
     FormControlOverrides,
+    FormModifiedGroups,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -25,6 +26,7 @@
   } from './runtime';
   import type {
     FormChange,
+    FormChangeKind,
     FormControlPayload,
     FormNodePayload,
     FormPayload,
@@ -37,9 +39,15 @@
       scope?: string[]
     ) => Promise<FormPayload>;
     errors?: FormPayload['errors'];
+    /** Delta groups the server reports as modified, as dotted paths. */
+    modified?: string[];
   }>();
   const emit = defineEmits<{
-    (event: 'update:mutation', mutation: FormPayload['values']): void;
+    (
+      event: 'update:mutation',
+      mutation: FormPayload['values'],
+      kind: FormChangeKind
+    ): void;
     (event: 'change', change: FormChange, values: FormPayload['values']): void;
   }>();
   const slots = useSlots();
@@ -63,6 +71,10 @@
   rememberControlPaths(props.payload.nodes);
   provide(FormFailure, invalidate);
   provide(FormControlOverrides, slots);
+  provide(
+    FormModifiedGroups,
+    computed(() => new Set(props.modified ?? []))
+  );
 
   useEventListener(hostForm, 'submit', (event) => {
     if (renderError.value) {
@@ -89,7 +101,7 @@
 
   function recordChange(change: FormChange): void {
     touchedPaths.add(JSON.stringify(change.path));
-    emitMutation();
+    emitMutation(change.kind);
 
     const scope = change.scope ?? payload.value.scope;
     const refreshable = change.refreshable ?? payload.value.refreshable;
@@ -280,8 +292,8 @@
     return result;
   }
 
-  function emitMutation(): void {
-    emit('update:mutation', mutation());
+  function emitMutation(kind: FormChangeKind = 'discrete'): void {
+    emit('update:mutation', mutation(), kind);
   }
 
   function invalidate(message: string): void {

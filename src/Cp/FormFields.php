@@ -944,6 +944,7 @@ readonly class FormFields
             ->suffix(($config['suffix'] ?? $config['unit'] ?? false) ?: null)
             ->descriptionId($config['descriptionId'] ?? null)
             ->showCharsLeft((bool) ($config['showCharsLeft'] ?? false))
+            ->textExpanderTriggers($config['textExpanderTriggers'] ?? [])
             ->labelledBy(empty($inputAttributes['aria']['label']) ? ($config['labelledBy'] ?? null) : null)
             ->describedBy(($config['describedBy'] ?? false) ?: null)
             ->inputAttributes(Arr::merge(

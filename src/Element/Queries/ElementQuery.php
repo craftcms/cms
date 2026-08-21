@@ -52,7 +52,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static addSelect($column)
  * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
  * @method static leftJoin($table, $first, $operator = null, $second = null)
- * @method static orderBy($column)
+ * @method static orderBy($column, $direction = 'asc')
  * @method static orderByDesc($column)
  * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)

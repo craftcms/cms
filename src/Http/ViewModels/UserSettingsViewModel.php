@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Data\UserSettings;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 
 use function CraftCms\Cms\t;
@@ -58,8 +60,13 @@ class UserSettingsViewModel extends ViewModel
             )->width(33),
             Field::make(
                 t('Subpath'),
-                Text::make('photoSubpath')->placeholder(t('path/to/subfolder'))->dir('ltr'),
-            )->width(66),
+                Text::make('photoSubpath')
+                    ->placeholder(t('path/to/subfolder'))
+                    ->dir('ltr')
+                    ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers(User::class)),
+            )
+                ->tip(t('Type `{` to choose a user property.'))
+                ->width(66),
         ]);
 
         if ($this->canRequire2fa) {

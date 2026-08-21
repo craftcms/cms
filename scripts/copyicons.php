@@ -82,25 +82,16 @@ if (! is_dir($iconsDir)) {
 }
 
 $metaPath = "$kitDir/icons/metadata/icons.json";
+
+if (! is_file($metaPath) || ! is_dir($kitSvgsDir)) {
+    fwrite(STDERR, "Font Awesome kit is missing or incomplete at $kitDir.\n".
+        "Expected metadata at $metaPath and SVGs at $kitSvgsDir.\n".
+        "Try re-running \`vp install\` — this can happen if the private kit registry (npm.fontawesome.com) returned an incomplete package.\n");
+    exit(1);
+}
+
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];
-$aliasesPhp = <<<PHP
-<?php
-
-use Yiisoft\Aliases\Aliases;
-
-\$aliases = app(Aliases::class);
-
-/**
- * We use reflection here as calling ->set every
- * time incurs a high performance cost.
- */
-\$reflectionProperty = new ReflectionProperty(\$aliases, 'aliases');
-\$reflectionProperty->setValue(\$aliases, array_merge_recursive(\$reflectionProperty->getValue(\$aliases), [
-    '@appicons' => [
-
-PHP;
-
 $skipped = 0;
 $wrote = 0;
 
@@ -168,18 +159,7 @@ foreach ($meta as $name => $info) {
         ];
     }
 
-    if ($style !== 'solid') {
-        $aliasesPhp .= <<<PHP
-        '@appicons/$name.svg' => "@icons/$dir/$name.svg",
-
-PHP;
-    }
 }
-
-$aliasesPhp .= <<<'PHP'
-    ]
-]));
-PHP;
 
 echo "Finished writing $wrote icons ($skipped skipped).\n";
 
@@ -215,8 +195,4 @@ $indexContents = <<<PHP
 return $arr;
 PHP;
 file_put_contents($indexPath, $indexContents);
-echo "done\n";
-
-echo 'Writing aliases ... ';
-file_put_contents("$iconsDir/aliases.php", $aliasesPhp);
 echo "done\n";

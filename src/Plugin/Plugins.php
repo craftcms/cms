@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -1131,7 +1132,7 @@ class Plugins
         );
 
         if ($iconPath === null) {
-            $iconPath = Aliases::get('@appicons/default-plugin.svg');
+            $iconPath = Icons::resolveIconPath('default-plugin');
         } else {
             $iconPath .= '/icon.svg';
         }

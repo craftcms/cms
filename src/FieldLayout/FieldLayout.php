@@ -362,6 +362,64 @@ class FieldLayout extends Component
         return $this->_tabs;
     }
 
+    /** @return array<string, string> */
+    public function objectTemplateSuggestions(): array
+    {
+        return $this->resolveObjectTemplateSuggestions();
+    }
+
+    /**
+     * @param  list<int>  $contentBlockStack
+     * @return array<string, string>
+     */
+    private function resolveObjectTemplateSuggestions(
+        string $prefix = '',
+        array $contentBlockStack = [],
+    ): array {
+        $suggestions = [];
+
+        foreach ($this->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if (! $layoutElement instanceof CustomField) {
+                    continue;
+                }
+
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+
+                $attribute = $layoutElement->attribute();
+                if ($attribute === '') {
+                    continue;
+                }
+
+                $property = $prefix.$attribute;
+                $suggestions[$property] = t($layoutElement->label() ?? $field->name, category: 'site');
+
+                if (! $field instanceof ContentBlock) {
+                    continue;
+                }
+
+                $fieldId = spl_object_id($field);
+                if (in_array($fieldId, $contentBlockStack, true)) {
+                    continue;
+                }
+
+                $suggestions = array_merge(
+                    $suggestions,
+                    $field->getFieldLayout()->resolveObjectTemplateSuggestions(
+                        "$property.",
+                        [...$contentBlockStack, $fieldId],
+                    ),
+                );
+            }
+        }
+
+        return $suggestions;
+    }
+
     /**
      * Sets the layout’s tabs.
      *

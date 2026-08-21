@@ -4,7 +4,7 @@ import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-import type {FormPayload} from '@/modules/forms/types';
+import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
@@ -122,7 +122,7 @@ export function useElementEditor({saveData}: Options = {}) {
   const props = toReactive(
     computed(() => ({
       ...(pageProps() as unknown as ElementEditPayload),
-      ...(savedScreen.value ?? {}),
+      ...savedScreen.value,
     }))
   );
 
@@ -268,21 +268,27 @@ export function useElementEditor({saveData}: Options = {}) {
   // signal, so autosave hangs off them rather than watching the form — and off
   // whether the values actually differ from the server's, not off having been
   // told a control changed.
-  function onMutation(mutation: FormPayload['values']): void {
+  function onMutation(
+    mutation: FormPayload['values'],
+    kind: FormChangeKind = 'discrete'
+  ): void {
     const changed = onLayoutMutation(mutation);
 
     if (!applyingSavedPayload && !reverting && changed) {
-      autosave.schedule();
+      autosave.schedule(kind);
     }
   }
 
-  function onSidebarMutation(mutation: FormPayload['values']): void {
+  function onSidebarMutation(
+    mutation: FormPayload['values'],
+    kind: FormChangeKind = 'discrete'
+  ): void {
     const changed = onSidebarFormMutation(mutation);
 
     // The screen payload carries the sidebar form too, so reconciling it emits
     // mutations here for the same reason the field layout does.
     if (!applyingSavedPayload && !reverting && changed) {
-      autosave.schedule();
+      autosave.schedule(kind);
     }
   }
 
@@ -331,6 +337,8 @@ export function useElementEditor({saveData}: Options = {}) {
           ? {redirect: pendingAction.value.redirect}
           : {}),
       }),
+      // A submission supersedes any in-flight draft write.
+      onBeforeSave: () => autosave.cancel(),
       onSuccess: () => {
         autosave.suspend(() => {
           advanceBaseline();

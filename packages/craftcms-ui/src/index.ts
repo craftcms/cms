@@ -90,6 +90,7 @@ export {
   type TextExpanderOption,
   type TextExpanderSelectDetail,
   type TextExpanderTrigger,
+  type TextExpanderTriggerBoundary,
   type TextExpanderTriggers,
 } from './components/text-expander/text-expander.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';

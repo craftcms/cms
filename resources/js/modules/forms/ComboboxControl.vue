@@ -11,6 +11,7 @@
     clearable?: boolean;
     requireOptionMatch?: boolean;
     showAllOnEmpty?: boolean;
+    showSelectedHint?: boolean;
     dir?: string;
   };
 
@@ -41,6 +42,7 @@
     :clearable="control.props.clearable"
     :require-option-match="control.props.requireOptionMatch"
     :show-all-on-empty="control.props.showAllOnEmpty"
+    :show-selected-hint="control.props.showSelectedHint"
     :dir="control.props.dir"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"

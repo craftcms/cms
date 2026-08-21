@@ -22,10 +22,15 @@ const variables = [
   {label: 'Site name', value: '#SITE_NAME'},
 ];
 
-const triggers: TextExpanderTriggers = {
-  '@': {label: 'People', options: people},
-  '#': {label: 'Environment', options: variables},
-};
+const triggers: TextExpanderTriggers = [
+  {trigger: '@', boundary: 'whitespace', label: 'People', options: people},
+  {
+    trigger: '#',
+    boundary: 'whitespace',
+    label: 'Environment',
+    options: variables,
+  },
+];
 
 const meta = {
   title: 'Functional/Text Expander',
@@ -44,7 +49,14 @@ export const TextInput: Story = {
     </label>
     <craft-text-expander
       for="mention-input"
-      .triggers=${{'@': {label: 'People', options: people}}}
+      .triggers=${[
+        {
+          trigger: '@',
+          boundary: 'whitespace',
+          label: 'People',
+          options: people,
+        },
+      ]}
     ></craft-text-expander>
   `,
   play: async ({canvas, canvasElement, userEvent}) => {
@@ -106,8 +118,10 @@ export const RichOptions: Story = {
     </label>
     <craft-text-expander
       for="async-input"
-      .triggers=${{
-        '@': {
+      .triggers=${[
+        {
+          trigger: '@',
+          boundary: 'whitespace',
           options: people,
           renderOption(option: Readonly<TextExpanderOption>) {
             const row = document.createElement('span');
@@ -120,7 +134,7 @@ export const RichOptions: Story = {
             return row;
           },
         },
-      }}
+      ]}
     ></craft-text-expander>
   `,
 };
@@ -147,7 +161,7 @@ export const MarkdownInput: Story = {
       ></div>
       <craft-text-expander
         for="markdown-input"
-        .triggers=${{'@': {options: people}}}
+        .triggers=${[{trigger: '@', boundary: 'whitespace', options: people}]}
       ></craft-text-expander>
     </div>
   `,

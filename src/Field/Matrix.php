@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -372,6 +373,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function settingsForm(FormContext $context = new FormContext): Form
     {
+        $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+        $ownerTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers();
+        $entryTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(
+            Entry::class,
+            array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->_entryTypes),
+        );
         $form = Form::make([
             FormField::make(t('Entry Types'))
                 ->instructions(t('Choose the types of entries that can be created in this field.'))
@@ -392,7 +399,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ])->value($this->propagationMethod->value)),
                 FormField::make(t('Propagation Key Format'))
                     ->instructions(t('Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'))
-                    ->control(Text::make('propagationKeyFormat')->monospace()->value($this->propagationKeyFormat)),
+                    ->control(Text::make('propagationKeyFormat')
+                        ->monospace()
+                        ->textExpanderTriggers($ownerTemplateTriggers)
+                        ->value($this->propagationKeyFormat))
+                    ->tip($objectTemplateTip),
             );
         }
 
@@ -413,6 +424,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'type' => 'singleline',
                 'placeholder' => t('Leave blank if entries don’t have URLs'),
                 'code' => true,
+                'info' => $objectTemplateTip,
+                'textExpanderTriggers' => $entryTemplateTriggers,
             ],
         ];
         if (! config('craft.general.headlessMode')) {
