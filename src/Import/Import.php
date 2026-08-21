@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Data\ImportRun;
 use CraftCms\Cms\Import\DataTypes\Csv;
 use CraftCms\Cms\Import\DataTypes\Json;
 use CraftCms\Cms\Import\DataTypes\Xml;
 use CraftCms\Cms\Import\Events\DataImported;
 use CraftCms\Cms\Import\Events\DataImporting;
-use CraftCms\Cms\Import\Events\ImportConfigSaved;
-use CraftCms\Cms\Import\Events\ImportConfigSaving;
 use CraftCms\Cms\Import\Events\ImportRunDispatched;
 use CraftCms\Cms\Import\Events\ImportRunDispatching;
-use CraftCms\Cms\Import\Events\ImportRunSaved;
-use CraftCms\Cms\Import\Events\ImportRunSaving;
 use CraftCms\Cms\Import\Events\RegisterDataTypes;
 use CraftCms\Cms\Import\Events\RegisterImporterTypes;
 use CraftCms\Cms\Import\Exceptions\InvalidConfigException;
@@ -25,20 +20,12 @@ use CraftCms\Cms\Import\Importers\ElementImporter;
 use CraftCms\Cms\Import\Importers\ModelImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
-use CraftCms\Cms\Import\Models\ImportConfig as ImportConfigModel;
-use CraftCms\Cms\Import\Models\ImportRun as ImportRunModel;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ImportConfig;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
-use CraftCms\Cms\Support\Json as JsonSupport;
-use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection as LaravelCollection;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use League\Fractal\Manager;
@@ -49,16 +36,6 @@ use Throwable;
 #[Singleton]
 class Import
 {
-    /**
-     * @param  LaravelCollection|null  $configs  The cached collection of importer configs.
-     * @param  LaravelCollection|null  $runs  The cached collection of import runs.
-     */
-    public function __construct(
-        // private readonly ProjectConfig $projectConfig,
-        private ?LaravelCollection $configs = null,
-        private ?LaravelCollection $runs = null,
-    ) {}
-
     /**
      * Returns the available data type classes, keyed by extension.
      * The list includes built-in json/csv/xml data type map, extended via `RegisterDataTypes` event listeners.
@@ -102,408 +79,6 @@ class Import
         return $importers;
     }
 
-    // //////////// configs //////////////
-    /**
-     * Instantiates an importer from a config array, applying properties and decoded settings via setter methods.
-     *
-     * @param  array  $config  The importer config array.
-     */
-    public function createImporter(array $config): BaseImporter
-    {
-        $importer = new $config['type']($config);
-        $importer->name($config['name']);
-        $importer->handle($config['handle']);
-        $importer->description($config['description']);
-        $settings = JsonSupport::decode($config['settings']);
-        foreach ($settings as $setting => $value) {
-            if (method_exists($importer, $setting)) {
-                $importer->{$setting}($value);
-            }
-        }
-
-        return $importer;
-    }
-
-    /**
-     * Lazily loads/caches all importer configs, merging DB-stored configs with file-based `craft.import` config,
-     * keyed by handle and sorted by name.
-     * Returns the collection of importer configs, keyed by handle.
-     */
-    public function getAllConfigs(): LaravelCollection
-    {
-        if ($this->configs === null) {
-            $dbConfigs = $this->_importConfigQuery()->get()->all();
-            $dbConfigs = array_map(
-                fn ($config) => $this->createImporter((array) $config + ['editable' => true]),
-                $dbConfigs
-            );
-
-            $fileConfigs = Config::get('craft.import') ?? [];
-
-            foreach ($fileConfigs as &$fileConfig) {
-                $fileConfig = $fileConfig();
-
-                // if there's no transformer set, use the default one
-                if ($fileConfig->transformer === null) {
-                    $fileConfig->transformer(null);
-                }
-            }
-
-            $this->configs = new LaravelCollection($dbConfigs + $fileConfigs)
-                ->keyBy(fn (BaseImporter $item, $key) => $item->handle ?? $key)
-                ->sortBy('name');
-        }
-
-        return $this->configs;
-    }
-
-    /**
-     * Filters all configs down to editable (DB-backed) ones.
-     */
-    public function getEditableConfigs(): LaravelCollection
-    {
-        return $this->getAllConfigs()->filter(fn ($config) => $config->isEditable());
-    }
-
-    /**
-     * Filters all configs down to non-editable (file-based) ones.
-     */
-    public function getNonEditableConfigs(): LaravelCollection
-    {
-        return $this->getAllConfigs()->reject(fn ($config) => $config->isEditable());
-    }
-
-    /**
-     * Looks up an importer config by handle, optionally restricted to editable configs.
-     *
-     * @param  string|null  $handle  The importer config handle to look up.
-     * @param  bool  $editableOnly  Whether to restrict the lookup to editable configs.
-     */
-    public function getConfigByHandle(?string $handle, bool $editableOnly = false): ?BaseImporter
-    {
-        if (is_null($handle)) {
-            return null;
-        }
-
-        if ($editableOnly) {
-            $configs = $this->getEditableConfigs();
-        } else {
-            $configs = $this->getAllConfigs();
-        }
-
-        /** @var BaseImporter|null */
-        return $configs->where('handle', $handle)->first();
-    }
-
-    /**
-     * Looks up an importer config by UID, optionally restricted to editable configs.
-     *
-     * @param  string  $uid  The UID of the importer config to look up.
-     * @param  bool  $editableOnly  Whether to restrict the lookup to editable configs.
-     */
-    public function getConfigByUid(string $uid, bool $editableOnly = false): ?BaseImporter
-    {
-        if ($editableOnly) {
-            $configs = $this->getEditableConfigs();
-        } else {
-            $configs = $this->getAllConfigs();
-        }
-
-        /** @var BaseImporter|null */
-        return $configs->where('uid', $uid)->first();
-    }
-
-    /**
-     * Fires a saving event, persists importer settings to the import_configs table inside a transaction, invalidates the configs cache, then fires a saved event.
-     *
-     * @param  BaseImporter  $importer  The importer config to save.
-     */
-    public function saveConfig(BaseImporter $importer): bool
-    {
-        $isNewConfig = ! $importer->uid;
-
-        event($event = new ImportConfigSaving($importer, $isNewConfig));
-
-        if (! $event->isValid) {
-            return false;
-        }
-
-        $importer = $event->importer;
-
-        if ($isNewConfig) {
-            $importer->uid = Str::uuid7()->toString();
-        }
-
-        $configRecord = $this->_getImportConfigModel($importer->uid);
-
-        DB::beginTransaction();
-
-        try {
-            $configRecord->uid = $importer->uid;
-            $configRecord->type = $importer::class;
-            $configRecord->name = $importer->name;
-            $configRecord->handle = $importer->handle;
-            $configRecord->description = $importer->description;
-            $settings = [
-                'file' => $importer->file,
-                'className' => $importer->className,
-                'transformer' => $importer->transformer ? $importer->transformer::class : null,
-                'map' => $importer->map,
-                'matchCriteria' => $importer->matchCriteria,
-                'clearableItems' => $importer->clearableItems,
-            ];
-            if (property_exists($importer, 'site')) {
-                $settings['site'] = $importer->site->uid;
-            }
-            if (property_exists($importer, 'fieldLayout')) {
-                $settings['fieldLayout'] = $importer->fieldLayout;
-            }
-            $configRecord->settings = $settings;
-            $configRecord->save();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            throw $e;
-        }
-
-        // invalidate caches
-        $this->configs = null;
-
-        event(new ImportConfigSaved($importer, $isNewConfig));
-
-        return true;
-    }
-
-    /**
-     * Duplicate editable config.
-     */
-    public function duplicateConfig(BaseImporter $importer): void
-    {
-        $configRecord = $this->_getImportConfigModel($importer->uid);
-
-        // if we couldn't find it - return
-        if (! $configRecord->exists) {
-            return;
-        }
-
-        $newConfig = $configRecord->replicate();
-        $newConfig->uid = Str::uuid7()->toString();
-
-        if (preg_match('/^(.*?)(\d+)$/', (string) $newConfig->handle, $match)) {
-            $baseHandle = $match[1];
-            $i = (int) $match[2];
-        } else {
-            $baseHandle = $newConfig->handle;
-            $i = 1;
-        }
-        do {
-            $testHandle = sprintf('%s%s', $baseHandle, ++$i);
-            if (! $this->getConfigByHandle($testHandle)) {
-                $newConfig->handle = $testHandle;
-                break;
-            }
-        } while (true);
-
-        $newConfig->save();
-
-        // invalidate caches
-        $this->configs = null;
-    }
-
-    /**
-     * Soft-deletes the DB record for an importer config and invalidates the configs cache.
-     *
-     * @param  BaseImporter  $importer  The importer config to delete.
-     */
-    public function deleteConfig(BaseImporter $importer): void
-    {
-        $configRecord = $this->_getImportConfigModel($importer->uid);
-
-        if (! $configRecord->exists) {
-            return;
-        }
-
-        $configRecord->delete();
-
-        // invalidate caches
-        $this->configs = null;
-    }
-
-    /**
-     * Returns an import config model for a given UID
-     */
-    private function _getImportConfigModel(string $uid, bool $withTrashed = false): ImportConfigModel
-    {
-        return ImportConfigModel::withTrashed($withTrashed)
-            ->where('uid', $uid)
-            ->first() ?? new ImportConfigModel;
-    }
-
-    /**
-     * Builds the base query for selecting non-deleted rows from the import_configs table.
-     */
-    private function _importConfigQuery(): Builder
-    {
-        return DB::table(Table::IMPORT_CONFIGS)
-            ->select([
-                'import_configs.type',
-                'import_configs.name',
-                'import_configs.handle',
-                'import_configs.description',
-                'import_configs.settings',
-                'import_configs.uid',
-            ])
-            ->orderBy('import_configs.name')
-            ->orderBy('import_configs.handle')
-            ->whereNull('import_configs.dateDeleted');
-    }
-
-    // //////////// runs //////////////
-    /**
-     * Lazily loads/caches all ImportRun records, keyed by handle and sorted by name.
-     * Returns the collection of import runs, keyed by handle.
-     */
-    public function getImportRuns(): LaravelCollection
-    {
-        if ($this->runs === null) {
-            $runs = $this->_importRunQuery()->get()->all();
-            $runs = array_map(fn ($run) => new ImportRun($run), $runs);
-
-            $this->runs = new LaravelCollection($runs)->keyBy('handle')->sortBy('name');
-        }
-
-        return $this->runs;
-    }
-
-    /**
-     * Looks up an import run by handle.
-     *
-     * @param  string|null  $handle  The handle of the import run to look up.
-     */
-    public function getImportRunByHandle(?string $handle): ?ImportRun
-    {
-        if (is_null($handle)) {
-            return null;
-        }
-
-        /** @var ImportRun|null */
-        return $this->getImportRuns()->where('handle', $handle)->first();
-    }
-
-    /**
-     * Looks up an import run by UID.
-     *
-     * @param  string  $uid  The UID of the import run to look up.
-     */
-    public function getImportRunByUid(string $uid): ?ImportRun
-    {
-        /** @var ImportRun|null */
-        return $this->getImportRuns()->where('uid', $uid)->first();
-    }
-
-    /**
-     * Fires a saving event, validates the run, persists it to import_runs in a transaction, invalidates the runs cache, then fires a saved event.
-     *
-     * @param  ImportRun  $run  The import run to save.
-     */
-    public function saveRun(ImportRun $run): bool
-    {
-        $isNewRun = ! $run->uid;
-
-        event($event = new ImportRunSaving($run, $isNewRun));
-
-        if (! $event->isValid) {
-            return false;
-        }
-
-        $run = $event->run;
-
-        if (! $run->validate()) {
-            return false;
-        }
-
-        if ($isNewRun) {
-            $run->uid = Str::uuid7()->toString();
-        }
-
-        $runRecord = $this->_getImportRunModel($run->uid);
-
-        DB::beginTransaction();
-
-        try {
-            $runRecord->uid = $run->uid;
-            $runRecord->name = $run->name;
-            $runRecord->handle = $run->handle;
-            $runRecord->description = $run->description;
-            $runRecord->steps = $run->steps;
-
-            $runRecord->save();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            throw $e;
-        }
-
-        // invalidate caches
-        $this->runs = null;
-
-        event(new ImportRunSaved($run, $isNewRun));
-
-        return true;
-    }
-
-    /**
-     * Soft-deletes the DB record for an import run and invalidates the runs cache.
-     *
-     * @param  ImportRun  $run  The import run to delete.
-     */
-    public function deleteRun(ImportRun $run): void
-    {
-        $runRecord = $this->_getImportRunModel($run->uid);
-
-        if (! $runRecord->exists) {
-            return;
-        }
-
-        $runRecord->delete();
-
-        // invalidate caches
-        $this->runs = null;
-    }
-
-    /**
-     * Returns an import config model for a given UID
-     */
-    private function _getImportRunModel(string $uid, bool $withTrashed = false): ImportRunModel
-    {
-        return ImportRunModel::withTrashed($withTrashed)
-            ->where('uid', $uid)
-            ->first() ?? new ImportRunModel;
-    }
-
-    /**
-     * Builds the base query for selecting non-deleted rows from the import_runs table.
-     */
-    private function _importRunQuery(): Builder
-    {
-        return DB::table(Table::IMPORT_RUNS)
-            ->select([
-                'import_runs.name',
-                'import_runs.handle',
-                'import_runs.description',
-                'import_runs.steps',
-                'import_runs.uid',
-            ])
-            ->orderBy('import_runs.name')
-            ->orderBy('import_runs.handle')
-            ->whereNull('import_runs.dateDeleted');
-    }
-
-    // //////////// import //////////////
     /**
      * Resolves each step's config/file into a queued Import job, fires dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
@@ -515,7 +90,7 @@ class Import
 
         // for each step in the $run
         foreach ($run->steps as $key => $step) {
-            $config = $this->getConfigByUid($step['config']) ?? $this->getConfigByHandle($step['config']);
+            $config = ImportConfig::getConfigByUid($step['config']) ?? ImportConfig::getConfigByHandle($step['config']);
             if (! $config) {
                 throw new InvalidConfigException($step['config']);
             }
