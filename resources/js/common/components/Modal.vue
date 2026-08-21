@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import {onKeyStroke, useElementSize, useEventListener} from '@vueuse/core';
-  import {computed, onScopeDispose, ref, shallowRef, watch} from 'vue';
-  import {BaseDrag, ResizeHandle} from '@craftcms/garnish';
+  import {onKeyStroke} from '@vueuse/core';
+  import {computed, shallowRef} from 'vue';
+  import {ResizeHandle} from '@craftcms/garnish';
   import {t} from '@craftcms/ui';
   import {useBodyScrollLock} from '@/common/composables/useBodyScrollLock';
+  import {useResizableBox} from '@/common/composables/useResizableBox';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -34,6 +35,16 @@
   // The page behind the overlay shouldn't scroll out from under it.
   useBodyScrollLock(() => props.isActive);
 
+  const content = shallowRef<HTMLElement | null>(null);
+  const {
+    width: resizedWidth,
+    height: resizedHeight,
+    floor: floorHeight,
+    setHandle,
+    onKeydown: onHandleKeydown,
+    reset,
+  } = useResizableBox({target: content, active: () => props.isActive});
+
   const widthClass = computed(() => {
     return `w-${props.width}`;
   });
@@ -61,204 +72,6 @@
     }
     return Object.keys(style).length ? style : undefined;
   });
-
-  // --- Resizing -------------------------------------------------------------
-  //
-  // Mirrors Garnish's resizable Modal: a BaseDrag on a corner handle, growing
-  // the modal by twice the pointer delta because it stays centered, so both
-  // edges move. The upper bound comes from the CSS max-width/max-height rather
-  // than a hard-coded gutter — clamping against it keeps a drag back from the
-  // edge responsive instead of unwinding invisible overshoot first.
-
-  /** Smallest size a drag can leave the modal at, in px. Garnish parity. */
-  const MIN_SIZE = 200;
-  /** Arrow-key increment, in px. */
-  const STEP = 16;
-  const LARGE_STEP = 64;
-
-  const content = shallowRef<HTMLElement | null>(null);
-  const handle = shallowRef<HTMLElement | null>(null);
-  const resizedWidth = ref<number | null>(null);
-  const resizedHeight = ref<number | null>(null);
-
-  function bounds(el: HTMLElement): {width: number; height: number} {
-    const styles = getComputedStyle(el);
-
-    // max-width/max-height compute to px even when authored as calc(), which
-    // the custom properties they're built from do not.
-    return {
-      width: parseFloat(styles.maxWidth) || window.innerWidth,
-      height: parseFloat(styles.maxHeight) || window.innerHeight,
-    };
-  }
-
-  // --- Height floor ---------------------------------------------------------
-  //
-  // A modal whose content shrinks — swapping a source's settings for a new
-  // heading's single field — would otherwise collapse under whoever is reading
-  // it. Remember the tallest it has been while open and refuse to go below it.
-  // It only ever grows, and resets when the modal closes, so reopening starts
-  // from the new content again.
-
-  const floorHeight = ref<number | null>(null);
-  // Border-box, so the floor matches the rendered box the cap is measured
-  // against — a content-box floor sits a border short and lets it creep down.
-  const {height: contentHeight} = useElementSize(content, undefined, {
-    box: 'border-box',
-  });
-
-  watch(contentHeight, (height) => {
-    if (!props.isActive || !height) return;
-
-    raiseFloor(Math.round(height));
-  });
-
-  watch(
-    () => props.isActive,
-    (active) => {
-      if (!active) floorHeight.value = null;
-    }
-  );
-
-  function raiseFloor(height: number): void {
-    const cap = content.value ? bounds(content.value).height : Infinity;
-    // min-height beats max-height, so the floor has to respect the cap itself
-    // or a shrinking viewport would leave the modal taller than the screen.
-    const next = Math.min(height, cap);
-
-    if (floorHeight.value === null || next > floorHeight.value) {
-      floorHeight.value = next;
-    }
-  }
-
-  function resize(width: number, height: number): void {
-    const el = content.value;
-    if (!el) return;
-
-    const max = bounds(el);
-    resizedWidth.value = Math.round(
-      Math.min(Math.max(width, MIN_SIZE), max.width)
-    );
-    resizedHeight.value = Math.round(
-      Math.min(Math.max(height, MIN_SIZE), max.height)
-    );
-  }
-
-  function measured(): {width: number; height: number} {
-    const rect = content.value?.getBoundingClientRect();
-
-    return {
-      width: Math.round(rect?.width ?? 0),
-      height: Math.round(rect?.height ?? 0),
-    };
-  }
-
-  function nudge(deltaX: number, deltaY: number): void {
-    // Build on the last size we asked for, not the rendered one: key repeats
-    // outrun Vue's DOM updates, so measuring every time would have them all read
-    // the same stale box and overwrite each other.
-    const size = measured();
-    const width = resizedWidth.value ?? size.width;
-    const height = resizedHeight.value ?? size.height;
-    const rtl = content.value
-      ? getComputedStyle(content.value).direction === 'rtl'
-      : false;
-
-    resize(width + (rtl ? -deltaX : deltaX), height + deltaY);
-  }
-
-  function onHandleKeydown(ev: KeyboardEvent): void {
-    const step = ev.shiftKey ? LARGE_STEP : STEP;
-
-    switch (ev.key) {
-      case 'ArrowLeft':
-        nudge(-step, 0);
-        break;
-      case 'ArrowRight':
-        nudge(step, 0);
-        break;
-      case 'ArrowUp':
-        nudge(0, -step);
-        break;
-      case 'ArrowDown':
-        nudge(0, step);
-        break;
-      case 'Enter':
-        reset();
-        break;
-      default:
-        return;
-    }
-
-    ev.preventDefault();
-  }
-
-  /** Hands the size back to CSS. Wired to double-click and Enter. */
-  function reset(): void {
-    resizedWidth.value = null;
-    resizedHeight.value = null;
-  }
-
-  let dragger: BaseDrag | null = null;
-  let startWidth = 0;
-  let startHeight = 0;
-  let startDistX = 0;
-  let startDistY = 0;
-  let sign = 1;
-
-  watch(handle, (el) => {
-    dragger?.destroy();
-    dragger = null;
-
-    if (!el) return;
-
-    dragger = new BaseDrag(el, {
-      // The default selector list would swallow pointer-downs on the handle's
-      // own SVG; the handle *is* the control here.
-      ignoreHandleSelector: null,
-      onBeforeDragStart: () => {
-        // Sync, unlike onDragStart, so we measure what was on screen when the
-        // drag threshold was crossed, and discount the distance already
-        // travelled so the modal doesn't jump by it.
-        const size = measured();
-        startWidth = size.width;
-        startHeight = size.height;
-        startDistX = dragger?.mouseDistX ?? 0;
-        startDistY = dragger?.mouseDistY ?? 0;
-        sign =
-          content.value && getComputedStyle(content.value).direction === 'rtl'
-            ? -1
-            : 1;
-      },
-      onDrag: () => {
-        const dx = ((dragger?.mouseDistX ?? 0) - startDistX) * sign;
-        const dy = (dragger?.mouseDistY ?? 0) - startDistY;
-
-        // Centered, so each edge moves by the pointer delta.
-        resize(startWidth + dx * 2, startHeight + dy * 2);
-      },
-    });
-  });
-
-  // A smaller viewport lowers the cap; re-clamp so dragging back responds at
-  // once rather than after the overshoot unwinds.
-  useEventListener(window, 'resize', () => {
-    if (resizedWidth.value !== null && resizedHeight.value !== null) {
-      resize(resizedWidth.value, resizedHeight.value);
-    }
-
-    if (floorHeight.value !== null && content.value) {
-      floorHeight.value = Math.min(
-        floorHeight.value,
-        bounds(content.value).height
-      );
-    }
-  });
-
-  onScopeDispose(() => {
-    dragger?.destroy();
-    dragger = null;
-  });
 </script>
 
 <template>
@@ -276,7 +89,7 @@
       </div>
       <button
         v-if="resizable"
-        ref="handle"
+        :ref="(el) => setHandle(el as HTMLElement | null)"
         type="button"
         class="resizehandle"
         :aria-label="t('Resize')"
