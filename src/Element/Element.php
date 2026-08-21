@@ -8,14 +8,19 @@ use ArrayIterator;
 use BadMethodCallException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Contracts\Importable;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Concerns\LegacyConstants;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Transformers\ElementTransformer;
+use CraftCms\Cms\Support\Attributes\Importable as ImportableAttribute;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -40,7 +45,7 @@ use function CraftCms\Cms\t;
  * @property ElementRules<static> $ruleset
  */
 #[Ruleset(ElementRules::class)]
-abstract class Element extends Component implements AllowableInSandbox, ElementInterface
+abstract class Element extends Component implements AllowableInSandbox, ElementInterface, Importable
 {
     use ArrayableTrait {
         toArray as traitToArray;
@@ -108,12 +113,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      * @var string|null The element’s title
      */
     #[AllowedInSandbox]
+    // importing is handled via native field
     public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
     #[AllowedInSandbox]
+    #[ImportableAttribute('slug', 'Slug')]
     public ?string $slug = null;
 
     /**
@@ -758,5 +765,40 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->validationData());
+    }
+
+    #[Override]
+    public static function isImportable(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public static function getDefaultTransformer(): ?string
+    {
+        return ElementTransformer::class;
+    }
+
+    #[Override]
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
+    {
+        // ensure site is set
+        $this->siteId = $importer->site->id;
+
+        return $this;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
+    {
+        // by default, we don't need to adjust the element query
+        return $query;
+    }
+
+    #[Override]
+    public function setAttributesForImport(array $attributes): void
+    {
+        // by default, simply set the attributes
+        $this->setAttributesFromRequest($attributes);
     }
 }

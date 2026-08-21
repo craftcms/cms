@@ -6,6 +6,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Text;
@@ -19,8 +21,10 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-class FullNameField extends TextField
+class FullNameField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'fullName';
 

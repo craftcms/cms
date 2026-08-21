@@ -9,14 +9,18 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\FieldSelect;
@@ -29,6 +33,7 @@ use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
@@ -50,7 +55,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-consistent-constructor
  */
-class CustomField extends BaseField
+class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     private static UserCondition $defaultEditCondition;
 
@@ -950,5 +955,92 @@ class CustomField extends BaseField
         }
 
         return $items;
+    }
+
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return [];
+        }
+
+        if (method_exists($field, 'getFieldsForImportMapping')) {
+            return $field->getFieldsForImportMapping();
+        }
+
+        $attribute = $this->attribute();
+        [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix);
+
+        $content = [
+            'handle' => $attribute,
+            'label' => $this->label(),
+            'prefixedHandleForMap' => $prefixedHandleForMap,
+            'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+            'prefixedHandleForClear' => $prefixedHandleForClear,
+            'prefixedHandle' => $prefixedHandle,
+            'prefixedHandleAsArray' => $prefixedHandleAsArray,
+            'isContainer' => $field instanceof ImportableElementContainerFieldInterface,
+            'canBeMatchCriteria' => $this->canBeMatchCriteria() ?? false,
+            'canBeCleared' => $this->canBeCleared(),
+        ];
+
+        if ($content['isContainer']) {
+            $content['fieldUid'] = $field->uid;
+        }
+
+        return $content;
+    }
+
+    public function canBeMatchCriteria(): bool
+    {
+        if ($this instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof BaseRelationField) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportMatchCriteria')) {
+            return $field->canBeImportMatchCriteria();
+        }
+
+        return true;
+    }
+
+    public function canBeCleared(): bool
+    {
+        if ($this instanceof ImportableElementContainerFieldInterface) {
+            return false;
+        }
+
+        try {
+            // getField() needs to be called before label() or we won't always get the label.
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            // skip silently
+            return false;
+        }
+
+        if ($field instanceof BaseRelationField) {
+            return false;
+        }
+
+        if (method_exists($field, 'canBeImportCleared')) {
+            return $field->canBeImportCleared();
+        }
+
+        return true;
     }
 }

@@ -7,11 +7,15 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Addresses;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Address as AddressControl;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\ImportHelper;
 use InvalidArgumentException;
 use Override;
 
@@ -20,7 +24,7 @@ use function CraftCms\Cms\t;
 /**
  * AddressField represents an Address field that can be included within an Address field layout designer.
  */
-class AddressField extends BaseField
+class AddressField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     public function attribute(): string
     {
@@ -110,5 +114,64 @@ class AddressField extends BaseField
         return Html::tag('div', app(Addresses::class)->formatAddress($address), [
             'class' => 'no-truncate',
         ]);
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): array
+    {
+        $cols = [
+            'multiple' => true,
+            'heading' => $this->label(),
+        ];
+
+        $subfields = [];
+
+        // we have to show all the possible address fields as at this stage we have no idea which country we're importing for
+        // and each row could be a different country anyway
+        $parts = [
+            ['attribute' => 'addressLine1', 'label' => t('Address Line 1')],
+            ['attribute' => 'addressLine2', 'label' => t('Address Line 2')],
+            ['attribute' => 'addressLine3', 'label' => t('Address Line 3')],
+            ['attribute' => 'administrativeArea', 'label' => t('Administrative Area')],
+            ['attribute' => 'locality', 'label' => t('Locality')],
+            ['attribute' => 'dependentLocality', 'label' => t('Dependent Locality')],
+            ['attribute' => 'postalCode', 'label' => t('Postal Code')],
+            ['attribute' => 'sortingCode', 'label' => t('Sorting Code')],
+        ];
+
+        foreach ($parts as $part) {
+            [$prefixedHandleForMap, $prefixedHandleForMatchCriteria, $prefixedHandleForClear, $prefixedHandle, $prefixedHandleAsArray] = ImportHelper::getPrefixedHandlesForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix);
+
+            $subfields[] = [
+                'handle' => $part['attribute'],
+                'label' => $part['label'],
+                'prefixedHandleForMap' => $prefixedHandleForMap,
+                'prefixedHandleForMatchCriteria' => $prefixedHandleForMatchCriteria,
+                'prefixedHandleForClear' => $prefixedHandleForClear,
+                'prefixedHandle' => $prefixedHandle,
+                'prefixedHandleAsArray' => $prefixedHandleAsArray,
+                'isContainer' => false,
+                'canBeMatchCriteria' => $part['canBeMatchCriteria'] ?? false,
+                'canBeCleared' => $part['canBeCleared'] ?? true,
+            ];
+        }
+
+        $cols['subfields'] = $subfields;
+
+        return $cols;
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        // this is taken care of by the getFieldsForMapping() method
+        return false;
     }
 }

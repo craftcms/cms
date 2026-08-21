@@ -6,6 +6,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\Users;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -20,8 +22,10 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-class EmailField extends TextField
+class EmailField extends TextField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public bool $mandatory = true;
 
@@ -147,5 +151,11 @@ JS, [
         }
 
         return array_merge($element->errors()->get('email'), $element->errors()->get('unverifiedEmail'));
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        return true;
     }
 }

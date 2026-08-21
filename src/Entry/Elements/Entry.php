@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -64,6 +65,8 @@ use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Transformers\EntryTransformer;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -72,6 +75,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -144,6 +148,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *               ```
      */
     #[AllowedInSandbox]
+    #[Importable('sectionId', 'Section ID', canBeCleared: false)]
     public ?int $sectionId = null;
 
     /**
@@ -162,6 +167,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
+    #[Importable('postDate', 'Post Date')]
     public ?DateTimeInterface $postDate = null;
 
     /**
@@ -179,6 +185,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ```
      */
     #[AllowedInSandbox]
+    #[Importable('expiryDate', 'Expiry Date')]
     public ?DateTimeInterface $expiryDate = null;
 
     /**
@@ -189,6 +196,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
+    #[Importable('status', 'Status')]
     private string $status;
 
     /**
@@ -220,6 +228,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @see getAuthorIds()
      * @see setAuthorIds()
      */
+    #[Importable('authorIds', 'Author IDs')]
     private array $_authorIds;
 
     /**
@@ -243,6 +252,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *
      * @see getType()
      */
+    #[Importable('typeId', 'Type ID', true)]
     private ?int $_typeId = null;
 
     private ?int $_oldTypeId = null;
@@ -3003,5 +3013,61 @@ JS;
         }
 
         return $templates;
+    }
+
+    #[Override]
+    public static function getDefaultTransformer(): ?string
+    {
+        return EntryTransformer::class;
+    }
+
+    #[Override]
+    public function prepareNewElementForImport(BaseImporter $importer, array &$data): self
+    {
+        parent::prepareNewElementForImport($importer, $data);
+
+        // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
+        // we need to ensure the typeId is set
+        if ($importer->fieldLayout) {
+            $allEntryTypes = app(\CraftCms\Cms\Entry\EntryTypes::class)->getAllEntryTypes();
+            $allFieldLayouts = $allEntryTypes->mapWithKeys(function ($entryType) {
+                $fieldLayout = $entryType->getFieldLayout();
+
+                return [$fieldLayout->id => $fieldLayout];
+            });
+            $entryType = $allFieldLayouts->firstWhere('uid', $importer->fieldLayout)?->provider;
+            if ($entryType) {
+                $this->_typeId = $entryType->id;
+                $this->_type = $entryType;
+                $this->fieldLayoutId = $entryType->getFieldLayoutId();
+
+                if (isset($data['matchCriteria']['typeId'])) {
+                    unset($data['matchCriteria']['typeId']);
+                }
+            }
+        }
+        // todo (iwona): otherwise we also have to ensure this; think whether we need to do anything about it here
+
+        return $this;
+    }
+
+    #[Override]
+    public function prepareRootElementImportQuery(ElementQuery $query): ElementQuery
+    {
+        if ($this->_typeId !== null) {
+            /** @var $query EntryQuery */
+            return $query->typeId($this->_typeId);
+        }
+
+        return $query;
+    }
+
+    #[Override]
+    public function setAttributesForImport(array $attributes): void
+    {
+        // ensure we're not changing type ID compared to what we chose in the field layout provider step
+        unset($attributes['typeId']);
+
+        parent::setAttributesForImport($attributes);
     }
 }
