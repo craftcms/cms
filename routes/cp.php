@@ -403,8 +403,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
                 Route::get('{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
 
                 Route::middleware(RequireAdminChanges::class)->group(function () {
+                    Route::post('form', [VolumesController::class, 'renderForm']);
                     Route::delete('{volumeId}', [VolumesController::class, 'destroy'])->whereNumber('volumeId');
-                    Route::post('/', [VolumesController::class, 'save']);
+                    Route::post('/', [VolumesController::class, 'store']);
                 });
             });
         });
