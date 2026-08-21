@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\CmsAssets;
 
 describe('resolveIconName', function () {
     it('maps legacy aliases', function () {
@@ -16,14 +17,12 @@ describe('resolveIconName', function () {
 });
 
 describe('resolveIconFamily', function () {
-    it('returns custom-icons for a custom icon', function () {
-        expect(Icons::resolveIconFamily('graphql'))->toBe('custom-icons');
-    });
-
-    it('returns a font-awesome family for a system icon', function () {
-        expect(Icons::resolveIconFamily('gear'))->not->toBe('custom-icons')
-            ->and(Icons::resolveIconFamily('gear'))->not->toBeEmpty();
-    });
+    it('returns the physical icon family', function (string $icon, string $family) {
+        expect(Icons::resolveIconFamily($icon))->toBe($family);
+    })->with([
+        'custom' => ['graphql', 'custom-icons'],
+        'unknown' => ['not-an-icon', 'solid'],
+    ]);
 });
 
 describe('resolveIconData', function () {
@@ -48,7 +47,12 @@ describe('resolveIconPath', function () {
     it('returns a custom-icons path for a custom icon', function () {
         $path = Icons::resolveIconPath('graphql');
 
-        expect($path)->toContain('custom-icons/graphql.svg');
+        expect($path)->toBe(CmsAssets::resourcesPath('icons/custom-icons/graphql.svg'));
+    });
+
+    it('resolves legacy icon names', function () {
+        expect(Icons::resolveIconPath('move'))
+            ->toBe(CmsAssets::resourcesPath('icons/custom-icons/grip-dots.svg'));
     });
 
     it('returns a path ending in .svg for a system icon', function () {

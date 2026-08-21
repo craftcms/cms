@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -139,7 +139,7 @@ readonly class TransformController
     {
         $statusCode = $e instanceof HttpException && $e->getStatusCode() ? $e->getStatusCode() : 500;
 
-        return response()->file(Aliases::get('@appicons/broken-image.svg'), [
+        return response()->file(Icons::resolveIconPath('image-slash'), [
             'Content-Type' => 'image/svg+xml',
         ])->setStatusCode($statusCode);
     }

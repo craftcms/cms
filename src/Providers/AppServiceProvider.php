@@ -122,6 +122,12 @@ class AppServiceProvider extends ServiceProvider
             CmsAssets::resourcesPath('build') => public_path('vendor/craft/build'),
             CmsAssets::resourcesPath('legacy') => public_path('vendor/craft/legacy'),
         ], ['craftcms', 'craftcms-assets']);
+
+        foreach (glob(CmsAssets::resourcesPath('icons/*'), GLOB_ONLYDIR) ?: [] as $path) {
+            $this->publishes([
+                $path => public_path('vendor/craft/icons/'.basename($path)),
+            ], ['craftcms', 'craftcms-assets', 'craftcms-icons']);
+        }
     }
 
     private function registerMacros(): void

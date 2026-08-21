@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Announcement;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Jobs\SendAnnouncement;
 use CraftCms\Cms\Announcement\Models\Announcement;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -87,7 +87,7 @@ readonly class Announcements
                 $icon = $this->plugins->getPluginIconSvg($plugin->handle);
                 $label = $plugin->name;
             } else {
-                $icon = @file_get_contents(Aliases::get('@appicons/craft-cms.svg'));
+                $icon = @file_get_contents(Icons::resolveIconPath('craft-cms'));
                 $label = 'Craft CMS';
             }
 
