@@ -115,6 +115,13 @@
     }
   });
 
+  const autosaveErrorCode = computed(() =>
+    autosave.status.value === 'failed' ? autosave.httpStatus.value : null
+  );
+
+  // 400 from a draft save means the session expired; reloading restores it.
+  const autosaveExpired = computed(() => autosaveErrorCode.value === 400);
+
   useAppLayout(() => ({
     title: payload.title,
     form,
@@ -154,7 +161,20 @@
       :class="{'text-danger-text': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
+      <code v-if="autosaveErrorCode" class="text-xs">{{
+        autosaveErrorCode
+      }}</code>
     </span>
+
+    <craft-button
+      v-if="autosaveExpired"
+      type="button"
+      appearance="outline"
+      size="small"
+      @click="reload"
+    >
+      {{ t('Refresh') }}
+    </craft-button>
   </LayoutSlot>
 
   <!-- Who else is working on this element, beside the save controls. -->
@@ -235,6 +255,7 @@
     ref="renderer"
     :payload="formPayload"
     :errors="errors"
+    :modified="autosave.modified.value"
     @update:mutation="onMutation"
   />
 
@@ -257,6 +278,7 @@
       ref="sidebarRenderer"
       :payload="sidebarPayload"
       :errors="sidebarErrors"
+      :modified="autosave.modified.value"
       @update:mutation="onSidebarMutation"
     />
 

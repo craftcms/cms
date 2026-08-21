@@ -171,7 +171,7 @@ describe('useElementAutosave', () => {
    * save just consumed.
    */
   it('skips scheduling while a real submission is in flight', async () => {
-    const {autosave, form} = mount({debounceMs: 5});
+    const {autosave, form} = mount({debounceMs: {discrete: 5}});
 
     form.processing = true;
     autosave.schedule();

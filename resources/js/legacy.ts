@@ -1,6 +1,18 @@
 import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
-import '@craftcms/ui/components/missing-component/missing-component';
-import '@craftcms/ui/components/truncate/truncate';
+
+/**
+ * Register the full `craft-*` element set, same as `cp.ts` does.
+ *
+ * Legacy-rendered pages emit components that aren't imported anywhere in this
+ * entrypoint's module graph (`craft-callout`, `craft-pane`, `craft-action-menu`,
+ * `craft-info-icon`, …) — both from `resources/templates/**` directly and from
+ * the PHP `src/Cp/Components/*` builders. Until now those only got defined
+ * because the cpcompat webpack bundle happened to inline the whole
+ * `@craftcms/ui` barrel, which also gave the page a second copy of Lit. The
+ * barrel belongs here instead, so there is one Lit instance and one set of
+ * element definitions on every CP page.
+ */
+import '@craftcms/ui';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere

@@ -445,6 +445,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   set config(config: FieldLayoutConfig) {
     this._config = config;
     this.$configInput.value = JSON.stringify(config);
+
+    // Assigning `.value` fires nothing, and the designer's edits are drags and
+    // menu actions, so wrappers have no other signal that the config changed.
+    this.$configInput.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   updateConfig(
