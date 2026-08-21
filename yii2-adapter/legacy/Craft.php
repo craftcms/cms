@@ -7,11 +7,12 @@
  * @license https://craftcms.github.io/license/
  */
 use craft\behaviors\CustomFieldBehavior;
-use craft\helpers\App;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Typecast;
@@ -43,6 +44,34 @@ class Craft extends Yii
     /** @deprecated in 5.0.0. [[\craft\enums\Edition::Pro]] should be used instead. */
     public const Pro = 2;
 
+    private const array LEGACY_ICON_PATHS = [
+        'alert.svg' => 'solid/triangle-exclamation.svg',
+        'broken-image' => 'solid/image-slash.svg',
+        'buoey.svg' => 'solid/life-ring.svg',
+        'draft.svg' => 'solid/scribble.svg',
+        'entry-types' => 'solid/files.svg',
+        'excite.svg' => 'solid/certificate.svg',
+        'feed.svg' => 'solid/rss.svg',
+        'field.svg' => 'solid/pen-to-square.svg',
+        'hash.svg' => 'solid/hashtag.svg',
+        'info-circle' => 'solid/circle-info.svg',
+        'info-circle.svg' => 'solid/circle-info.svg',
+        'info.svg' => 'solid/circle-info.svg',
+        'location.svg' => 'solid/location-dot.svg',
+        'photo.svg' => 'solid/image.svg',
+        'plugin.svg' => 'solid/plug.svg',
+        'routes.svg' => 'solid/signs-post.svg',
+        'search.svg' => 'solid/magnifying-glass.svg',
+        'shopping-cart' => 'solid/cart-shopping.svg',
+        'template.svg' => 'solid/file-code.svg',
+        'tip.svg' => 'solid/lightbulb.svg',
+        'tools.svg' => 'solid/screwdriver-wrench.svg',
+        'tree.svg' => 'solid/sitemap.svg',
+        'upgrade.svg' => 'solid/square-arrow-up.svg',
+        'wand.svg' => 'solid/wand-magic-sparkles.svg',
+        'world.svg' => 'solid/earth-americas.svg',
+    ];
+
     /**
      * @var array The default cookie configuration.
      */
@@ -55,9 +84,34 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
-        // @app/icons/file.svg => @appicons/file.svg
-        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
-            $alias = "@appicons/$match[1]";
+        if ($alias === '@icons') {
+            return CmsAssets::resourcesPath('icons');
+        }
+
+        if (str_starts_with($alias, '@icons/')) {
+            return CmsAssets::resourcesPath('icons/' . substr($alias, 7));
+        }
+
+        if ($alias === '@app/icons' || str_starts_with($alias, '@app/icons/')) {
+            $alias = '@appicons' . substr($alias, 10);
+        }
+
+        if ($alias === '@appicons') {
+            return CmsAssets::resourcesPath('icons/solid');
+        }
+
+        if (str_starts_with($alias, '@appicons/')) {
+            $icon = substr($alias, 10);
+
+            if (isset(self::LEGACY_ICON_PATHS[$icon])) {
+                return CmsAssets::resourcesPath('icons/' . self::LEGACY_ICON_PATHS[$icon]);
+            }
+
+            if (preg_match('/^([\w\-]+)\.svg$/', $icon, $match)) {
+                return Icons::resolveIconPath($match[1]);
+            }
+
+            return CmsAssets::resourcesPath("icons/solid/$icon");
         }
 
         return Aliases::get($alias, $throwException);

@@ -16,14 +16,15 @@ describe('resolveIconName', function () {
 });
 
 describe('resolveIconFamily', function () {
-    it('returns custom-icons for a custom icon', function () {
-        expect(Icons::resolveIconFamily('graphql'))->toBe('custom-icons');
-    });
-
-    it('returns a font-awesome family for a system icon', function () {
-        expect(Icons::resolveIconFamily('gear'))->not->toBe('custom-icons')
-            ->and(Icons::resolveIconFamily('gear'))->not->toBeEmpty();
-    });
+    it('returns the physical icon family', function (string $icon, string $family) {
+        expect(Icons::resolveIconFamily($icon))->toBe($family);
+    })->with([
+        'custom' => ['graphql', 'custom-icons'],
+        'solid' => ['gear', 'solid'],
+        'brand' => ['github', 'brands'],
+        'regular' => ['globe', 'regular'],
+        'unknown' => ['not-an-icon', 'solid'],
+    ]);
 });
 
 describe('resolveIconData', function () {
