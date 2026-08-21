@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {ButtonVariant, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import CustomSourceList from './CustomSourceList.vue';
-  import type {PageRow, SourceRow} from './types';
+  import type {PageRow, SourceRow, SourceType} from './types';
 
   const props = defineProps<{
     sources: SourceRow[];
@@ -49,6 +49,11 @@
     return !source.key;
   }
 
+  /** Headings separate the sources around them, so they're styled apart. */
+  function itemType(source: SourceRow): SourceType {
+    return source.type;
+  }
+
   function label(source: SourceRow): string {
     return source.label;
   }
@@ -80,23 +85,31 @@
 </script>
 
 <template>
-  <CustomSourceList
-    :items="visible"
-    :item-id="itemId"
-    :label="label"
-    :selected="selectedKey"
-    :disabled="unkeyed"
-    :actions="actions"
-    @select="(key) => emit('select', key)"
-    @reorder="onReorder"
-  />
+  <div class="grid gap-3">
+    <CustomSourceList
+      :items="visible"
+      :item-id="itemId"
+      :label="label"
+      :item-type="itemType"
+      :selected="selectedKey"
+      :disabled="unkeyed"
+      :actions="actions"
+      @select="(key) => emit('select', key)"
+      @reorder="onReorder"
+    />
 
-  <ActionMenu
-    class="cs-add"
-    :label="t('Source actions')"
-    :actions="[
-      {label: t('New heading'), onClick: () => emit('add', 'heading')},
-      {label: t('New custom source'), onClick: () => emit('add', 'custom')},
-    ]"
-  />
+    <ActionMenu
+      :label="t('Source actions')"
+      :actions="[
+        {label: t('New heading'), onClick: () => emit('add', 'heading')},
+        {label: t('New custom source'), onClick: () => emit('add', 'custom')},
+      ]"
+    >
+      <template #invoker>
+        <craft-button type="button" icon="plus" variant="dashed">
+          {{ t('Add source') }}
+        </craft-button>
+      </template>
+    </ActionMenu>
+  </div>
 </template>

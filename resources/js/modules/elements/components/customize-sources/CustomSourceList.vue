@@ -6,11 +6,12 @@
    * through the callbacks below.
    */
   import {computed} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {CraftActionItem, t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import PageIcon from './PageIcon.vue';
+  import VarDump from '@/common/components/VarDump.vue';
 
   const props = defineProps<{
     items: T[];
@@ -20,6 +21,12 @@
     label: (item: T) => string;
     /** An icon to lead the row with, if any. */
     icon?: (item: T) => string | null;
+    /**
+     * The row's kind, surfaced as `cs-item--<kind>` alongside `cs-item`. Kept
+     * opaque so this list can mark a heading apart without knowing what a
+     * source is.
+     */
+    itemType?: (item: T) => string | null;
     /** Id of the selected row, if any. */
     selected?: string | null;
     /** Rows this returns true for can't be selected. */
@@ -42,6 +49,7 @@
       id: props.itemId(item, index),
       label: props.label(item).trim(),
       icon: props.icon?.(item) ?? null,
+      type: props.itemType?.(item) ?? null,
       actions: props.actions?.(item, index) ?? [],
     }))
   );
@@ -68,48 +76,70 @@
 
 <template>
   <ol class="cs-list">
-    <li
+    <craft-action-item
       v-for="row in rows"
       :key="row.id"
-      :ref="(el) => setItemRef(el as HTMLElement, row.id)"
-      class="cs-item"
+      @click="select(row.item, row.id)"
+      :ref="(el: HTMLElement) => setItemRef(el, row.id)"
+      :active="row.id === selected"
       :class="{
-        'cs-item--selected': row.id === selected,
+        'cs-item': true,
+        'cs-item--heading': row.type === 'heading',
         'cs-item--dragging': getDragState(row.id).type === 'is-dragging',
       }"
-      :data-drop="getDropState(row.id).type"
     >
-      <span
-        v-if="rows.length > 1"
-        :ref="(el) => setHandleRef(el as HTMLElement, row.id)"
-        class="cs-item__handle"
-      >
-        <craft-reorder-button
-          :position="getRowPosition(row.index)"
-          @reorder="
-            (e: CustomEvent<{direction: 'up' | 'down'}>) =>
-              reorder(
-                row.index,
-                e.detail.direction === 'up' ? row.index - 1 : row.index + 1
-              )
-          "
-        />
-      </span>
+      <craft-reorder-button
+        slot="prefix"
+        :position="getRowPosition(row.index)"
+        :ref="(el: HTMLElement) => setHandleRef(el, row.id)"
+        @reorder="
+          (e: CustomEvent<{direction: 'up' | 'down'}>) =>
+            reorder(
+              row.index,
+              e.detail.direction === 'up' ? row.index - 1 : row.index + 1
+            )
+        "
+      />
+      <craft-icon v-if="row.icon" :name="row.icon" slot="icon" />
+      <span v-if="row.label" class="cs-item__label">{{ row.label }}</span>
+      <strong v-else class="font-bold cs-item__label">{{
+        t('(blank)')
+      }}</strong>
 
-      <button
-        type="button"
-        class="cs-item__btn"
-        :aria-pressed="row.id === selected"
-        :disabled="disabled?.(row.item)"
-        @click="select(row.item, row.id)"
-      >
-        <PageIcon v-if="row.icon" :icon="row.icon" />
-        <span v-if="row.label" class="cs-item__label">{{ row.label }}</span>
-        <em v-else class="cs-item__label">{{ t('(blank)') }}</em>
-      </button>
+      <ActionMenu
+        v-if="row.actions.length"
+        :actions="row.actions"
+        slot="suffix"
+      />
+    </craft-action-item>
+    <!--      <span-->
+    <!--        v-if="rows.length > 1"-->
+    <!--        :ref="(el) => setHandleRef(el as HTMLElement, row.id)"-->
+    <!--        class="cs-item__handle"-->
+    <!--      >-->
+    <!--        <craft-reorder-button-->
+    <!--          :position="getRowPosition(row.index)"-->
+    <!--          @reorder="-->
+    <!--            (e: CustomEvent<{direction: 'up' | 'down'}>) =>-->
+    <!--              reorder(-->
+    <!--                row.index,-->
+    <!--                e.detail.direction === 'up' ? row.index - 1 : row.index + 1-->
+    <!--              )-->
+    <!--          "-->
+    <!--        />-->
+    <!--      </span>-->
 
-      <ActionMenu v-if="row.actions.length" :actions="row.actions" />
-    </li>
+    <!--      <button-->
+    <!--        type="button"-->
+    <!--        class="cs-item__btn"-->
+    <!--        :aria-pressed="row.id === selected"-->
+    <!--        :disabled="disabled?.(row.item)"-->
+    <!--        @click="select("row.item, row.id)"-->
+    <!--      >-->
+    <!--        <PageIcon v-if="row.icon" :icon="row.icon" />-->
+    <!--        <span v-if="row.label" class="cs-item__label">{{ row.label }}</span>-->
+    <!--        <strong v-else class="font-bold cs-item__label">{{ t('(blank)') }}</strong>-->
+    <!--      </button>-->
   </ol>
 </template>
 
@@ -125,24 +155,15 @@
 
   .cs-item {
     display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding-inline-end: var(--c-spacing-xs);
-    border-radius: var(--c-radius-md);
-    // Set explicitly: the retired legacy stylesheet still ships an unscoped
-    // `.cs-item` rule, and this shouldn't depend on which one wins.
-    background-color: var(--c-surface-default);
   }
 
-  .cs-item--selected {
-    background-color: var(--c-color-static-accent-fill);
-    color: var(--c-color-static-accent-on);
-  }
+  .cs-item--heading {
+    margin-block-start: var(--c-spacing-md);
 
-  // Against the accent fill, the handle and menu need the same contrast the
-  // label gets.
-  .cs-item--selected .cs-item__handle {
-    color: inherit;
+    .cs-item__label {
+      font-size: var(--c-text-sm);
+      font-weight: bold;
+    }
   }
 
   .cs-item--dragging {

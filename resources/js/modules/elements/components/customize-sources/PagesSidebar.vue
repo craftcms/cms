@@ -77,20 +77,30 @@
 </script>
 
 <template>
-  <CustomSourceList
-    :items="pages"
-    :item-id="itemId"
-    :label="itemId"
-    :icon="icon"
-    :selected="selected"
-    :actions="actions"
-    @select="(name) => emit('select', name)"
-    @reorder="(from, to) => emit('reorder', from, to)"
-  />
+  <div class="grid gap-3">
+    <CustomSourceList
+      :items="pages"
+      :item-id="itemId"
+      :label="itemId"
+      :icon="icon"
+      :selected="selected"
+      :actions="actions"
+      @select="(name) => emit('select', name)"
+      @reorder="(from, to) => emit('reorder', from, to)"
+    />
 
-  <craft-button type="button" class="cs-add" @click="open(null)">
-    {{ t('New page') }}
-  </craft-button>
+    <div>
+      <craft-button
+        type="button"
+        class="cs-add"
+        @click="open(null)"
+        icon="plus"
+        variant="dashed"
+      >
+        {{ t('New page') }}
+      </craft-button>
+    </div>
+  </div>
 
   <PageSettingsModal
     :is-active="modalActive"

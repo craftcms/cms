@@ -439,22 +439,27 @@
 
       <div ref="settingsPane" class="cs-settings">
         <template v-for="source in sources" :key="source.key">
-          <craft-field-group
+          <div
             v-if="source.mounted && source.form && source.key"
             v-show="source.key === selectedKey"
           >
-            <FormRenderer
-              :ref="(el) => setRenderer(source.key!, el)"
-              :payload="source.form"
-              :errors="errors[source.key!] ?? []"
-              :refresh="
-                source.form.refreshable
-                  ? (values, scope) => refresh(source, values, scope)
-                  : undefined
-              "
-              @change="(change, values) => onChange(source, change, values)"
-            />
-          </craft-field-group>
+            <div class="px-4">
+              <h2 class="cs-sidebar__heading">{{ source.label }}</h2>
+            </div>
+            <craft-field-group>
+              <FormRenderer
+                :ref="(el) => setRenderer(source.key!, el)"
+                :payload="source.form"
+                :errors="errors[source.key!] ?? []"
+                :refresh="
+                  source.form.refreshable
+                    ? (values, scope) => refresh(source, values, scope)
+                    : undefined
+                "
+                @change="(change, values) => onChange(source, change, values)"
+              />
+            </craft-field-group>
+          </div>
         </template>
 
         <craft-spinner v-if="selected && !selected.form" />
@@ -469,8 +474,9 @@
     // Wrapping is what the narrow layout below uses to stack the panes.
     flex-flow: row wrap;
     align-items: stretch;
-    gap: var(--c-spacing-lg);
+    gap: var(--c-spacing-sm);
     container-type: inline-size;
+    min-height: calc(400rem / 16);
   }
 
   .cs-sidebar {
@@ -478,8 +484,9 @@
   }
 
   .cs-sidebar__heading {
-    margin-block: 0 var(--c-spacing-sm);
+    margin-block: 0 var(--c-spacing-md);
     font-size: var(--c-text-sm);
+    font-weight: bold;
   }
 
   .cs-settings {
