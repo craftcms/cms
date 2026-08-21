@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\CmsAssets;
 
 describe('resolveIconName', function () {
     it('maps legacy aliases', function () {
@@ -46,7 +47,7 @@ describe('resolveIconPath', function () {
     it('returns a custom-icons path for a custom icon', function () {
         $path = Icons::resolveIconPath('graphql');
 
-        expect($path)->toContain('custom-icons/graphql.svg');
+        expect($path)->toBe(CmsAssets::resourcesPath('icons/custom-icons/graphql.svg'));
     });
 
     it('returns a path ending in .svg for a system icon', function () {
