@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\elements;
 
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\Entry;
@@ -195,5 +196,61 @@ class EagerLoadedElementConsistencyTest extends TestCase
 
         self::assertNull($entry->getAuthor());
         self::assertSame([], $entry->getAuthors());
+    }
+
+    public function testAddressesEagerLoading(): void
+    {
+        $user = new User(['id' => 401]);
+        $addressData = [
+            [
+                'id' => 9004,
+                'countryCode' => 'US',
+                'addressLine1' => '123 Main St',
+                'administrativeArea' => 'CA',
+                'locality' => 'Los Angeles',
+                'postalCode' => '90001',
+            ],
+            [
+                'id' => 9005,
+                'countryCode' => 'US',
+                'addressLine1' => '456 Elm St',
+                'administrativeArea' => 'CA',
+                'locality' => 'Los Angeles',
+                'postalCode' => '90002',
+            ],
+        ];
+        $addresses = array_map(fn($data) => new Address($data), $addressData);
+
+        $plan = new EagerLoadPlan(['handle' => 'addresses']);
+
+        $user->setEagerLoadedElements('addresses', $addresses, $plan);
+
+        self::assertTrue($user->hasEagerLoadedElements('addresses'));
+
+        // Check the `User::_addresses` property is set correctly
+        $reflection = new \ReflectionClass($user);
+        $property = $reflection->getProperty('_addresses');
+        $property->setAccessible(true);
+        // Check it has been initialized with the eager-loaded addresses
+        self::assertTrue($property->isInitialized($user));
+
+        $eagerLoaded = $user->getEagerLoadedElements('addresses')->all();
+        $propertyGetValue = $property->getValue($user)->all();
+        $userAddresses = $user->getAddresses()->all();
+        self::assertNotEmpty($eagerLoaded);
+        self::assertNotEmpty($propertyGetValue);
+        self::assertNotEmpty($userAddresses);
+        self::assertCount(2, $eagerLoaded);
+        self::assertCount(2, $propertyGetValue);
+        self::assertCount(2, $userAddresses);
+
+        foreach ([$eagerLoaded, $propertyGetValue, $userAddresses] as $a) {
+            // Check each address has data matching original `$addressData`
+            foreach ($a as $index => $address) {
+                foreach ($addressData[$index] as $key => $value) {
+                    self::assertSame($value, $address->$key);
+                }
+            }
+        }
     }
 }

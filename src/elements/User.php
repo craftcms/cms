@@ -2381,6 +2381,10 @@ JS, [
                 $photo = $elements[0] ?? null;
                 $this->setPhoto($photo);
                 break;
+            case 'addresses':
+                /** @var Address[] $elements */
+                $this->_addresses = ElementCollection::make($elements);
+                break;
         }
 
         parent::setEagerLoadedElements($handle, $elements, $plan);

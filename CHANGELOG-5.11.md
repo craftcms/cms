@@ -21,3 +21,4 @@
 - Updated Twig to 3.28.
 - Updated yii2-debug to 2.1.28.
 - Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
+- Fixed a bug where `getEagerLoadedElements()` wasn’t returning results for eager-loaded native fields, such as `authors`. ([#19471](https://github.com/craftcms/cms/pull/19471))
