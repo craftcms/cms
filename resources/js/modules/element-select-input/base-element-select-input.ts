@@ -55,6 +55,11 @@ const DEFAULTS = {
   onRemoveElements: noop,
   sortable: true,
   selectable: true,
+  // Whether chips get an action menu at all: it's forwarded to
+  // `app/render-elements` for the chips fetched after a selection, and gates
+  // the client-side `Craft.addActionsToChip()` injection in `addElements()`.
+  // Set it to `false` when the host renders the chips' menus itself (e.g.
+  // `ElementSelectControl.vue`).
   showActionMenu: true,
   editable: true,
   prevalidate: false,
@@ -473,7 +478,9 @@ export class BaseElementSelectInput extends Base {
   addElements($elements: any): void {
     for (let i = 0; i < $elements.length; i++) {
       const $element = $elements.eq(i);
-      const actions = this.defineElementActions($element);
+      const actions = this.settings.showActionMenu
+        ? this.defineElementActions($element)
+        : [];
 
       if (actions.length) {
         Craft.addActionsToChip($element, actions);
@@ -572,8 +579,15 @@ export class BaseElementSelectInput extends Base {
 
     Craft.cp.elementThumbLoader.load($elements);
 
+    // `?.` rather than a bare call, matching `elementSort` below: `destroy()`
+    // nulls both, and a host that re-renders this input mid-selection can
+    // destroy the controller between the modal resolving and the chips landing.
+    // `onModalSelect()` keeps the non-structured path clear of that window, but
+    // `selectStructuredElements()` still awaits after the replaced chip is
+    // dropped, so the window survives there. Skipping is the right outcome
+    // anyway — the replacement element is on its way out.
     if (this.settings.selectable) {
-      this.elementSelect.addItems($elements);
+      this.elementSelect?.addItems($elements);
     }
 
     if (this.settings.sortable) {
@@ -677,8 +691,7 @@ export class BaseElementSelectInput extends Base {
           icon: async () => await Craft.ui.icon('arrows-rotate'),
           label: Craft.t('app', 'Replace'),
           callback: () => {
-            this._$replaceElement = $element;
-            this.showModal();
+            this.showReplaceModal($element);
           },
         });
       }
@@ -687,16 +700,41 @@ export class BaseElementSelectInput extends Base {
         icon: async () => await Craft.ui.icon('remove'),
         label: Craft.t('app', 'Remove'),
         callback: () => {
-          if (this.elementSelect?.isSelected($element)) {
-            this.removeElement(this.elementSelect.getSelectedItems());
-          } else {
-            this.removeElement($element);
-          }
+          this.removeElementOrSelection($element);
         },
       });
     }
 
     return actions;
+  }
+
+  /**
+   * Opens the element selector modal with `$element` staged as the chip the
+   * next selection should replace.
+   *
+   * The Replace behavior lives here rather than inline in
+   * {@link defineElementActions} so consumers that render the chip's action
+   * menu themselves — `ElementSelectControl.vue` via
+   * `<craft-element-select-input>.replaceElement()` — trigger the same flow as the
+   * client-injected menu the Twig stack still gets.
+   */
+  showReplaceModal($element: any): void {
+    this._$replaceElement = $element;
+    this.showModal();
+  }
+
+  /**
+   * Removes `$element`, or — when it's part of the current multi-selection —
+   * the whole selection, matching the Remove action's long-standing behavior.
+   * Shared with consumers that render the menu themselves; see
+   * {@link showReplaceModal}.
+   */
+  removeElementOrSelection($element: any): void {
+    if (this.elementSelect?.isSelected($element)) {
+      this.removeElement(this.elementSelect.getSelectedItems());
+    } else {
+      this.removeElement($element);
+    }
   }
 
   createElementEditor($element: any, settings?: any): any {
@@ -1001,11 +1039,6 @@ export class BaseElementSelectInput extends Base {
 
     this.elementEditor?.pause();
 
-    if (this._$replaceElement) {
-      this.removeElement(this._$replaceElement);
-      this._$replaceElement = null;
-    }
-
     const [inputUiType, inputUiSize] = (() => {
       switch (this.settings.viewMode) {
         case 'thumbs':
@@ -1048,6 +1081,27 @@ export class BaseElementSelectInput extends Base {
         elements[i].$modalElement = elements[i].$element;
         elements[i].$element = $(data.elements[elements[i].id][0]);
       }
+    }
+
+    // Drop the chip being replaced only now that the replacement markup is in
+    // hand, and never before an await.
+    //
+    // Removing it earlier publishes an intermediate value — one element short
+    // and with no replacement yet — to hosts that re-render this input from
+    // it. `ElementSelectControl.vue` keys `<craft-element-select-input>` on its
+    // value, so that intermediate state tore the custom element down mid-flight
+    // and left the rest of this method, including the `selectElements()` that
+    // actually inserts the replacement, writing into a detached DOM. Replace
+    // could open its modal but never complete.
+    //
+    // Removing here keeps the removal and the insertion in the same
+    // synchronous stretch, so such hosts observe a single combined change and
+    // re-render once, with the replacement already in place. It still lands
+    // ahead of the limit math below, which needs the outgoing chip gone to
+    // free up its slot.
+    if (this._$replaceElement) {
+      this.removeElement(this._$replaceElement);
+      this._$replaceElement = null;
     }
 
     if (this.settings.maintainHierarchy) {

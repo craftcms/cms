@@ -71,6 +71,24 @@ export interface ActionMenuItemLink extends ActionMenuItemInteractiveBase {
 }
 
 /**
+ * A labelled group of items, rendered as a heading followed by its members.
+ *
+ * Groups are one level deep: `items` may not contain further groups. The
+ * members render as siblings of ungrouped items so keyboard navigation and the
+ * `searchable` filter treat every item alike — the heading is presentational.
+ */
+export interface ActionMenuItemGroup {
+  type: 'group';
+  heading?: string;
+  items: Array<
+    | ActionMenuItemHr
+    | ActionMenuItemDisplay
+    | ActionMenuItemButton
+    | ActionMenuItemLink
+  >;
+}
+
+/**
  * The union of every item descriptor accepted by the `actions` property of
  * `craft-action-menu`.
  */
@@ -78,7 +96,8 @@ export type ActionMenuItem =
   | ActionMenuItemHr
   | ActionMenuItemDisplay
   | ActionMenuItemButton
-  | ActionMenuItemLink;
+  | ActionMenuItemLink
+  | ActionMenuItemGroup;
 
 /**
  * The value accepted by `craft-action-menu`'s `actions` property. Either a

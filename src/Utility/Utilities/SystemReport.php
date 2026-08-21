@@ -49,18 +49,7 @@ class SystemReport extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $aliases = [];
-        foreach (Aliases::getAll() as $alias => $value) {
-            if (is_array($value)) {
-                foreach ($value as $a => $v) {
-                    if (! str_starts_with((string) $a, '@appicons/')) {
-                        $aliases[$a] = $v;
-                    }
-                }
-            } elseif (! str_starts_with((string) $alias, '@appicons/')) {
-                $aliases[$alias] = $value;
-            }
-        }
+        $aliases = Aliases::getAll();
         ksort($aliases);
 
         return template('_components/utilities/SystemReport', [

@@ -1,10 +1,13 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
+  // Leaf module, not the barrel — the barrel registers every `craft-*` element.
+  import {t} from '@craftcms/ui/utilities/translate';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {
     FormControlOverrides,
     FormFailure,
+    FormModifiedGroups,
     formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
@@ -28,6 +31,8 @@
     warningHtml?: string;
     layoutUid?: string;
     width?: number;
+    status?: string;
+    statusLabel?: string;
     hasActions?: boolean;
   };
 
@@ -79,6 +84,13 @@
   );
   const value = computed(() => valueAt(props.values, control.value.path));
 
+  // Matched on the delta group, so a field split across several controls badges
+  // as one unit.
+  const modifiedGroups = inject(FormModifiedGroups, undefined);
+  const modified = computed(
+    () => modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
+  );
+
   function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
 
@@ -121,6 +133,10 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
+    :status="modified ? 'modified' : node.props.status"
+    :status-label="
+      modified ? t('This field has been modified.') : node.props.statusLabel
+    "
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >

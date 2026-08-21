@@ -253,6 +253,10 @@ Refreshable scopes send the complete current scoped value snapshot without persi
 dirty and touched state, focus, and selected tabs. Hidden paths retain transient values but are omitted from mutations.
 Changed delta groups submit complete canonical group values, including explicit empty values.
 
+Because the client owns them, no payload arriving from the server clears unsaved values — only the host can, by calling
+the renderer's `resetValues()`. Reserve it for the case where the user has abandoned their edits outright, such as
+discarding a provisional draft; it seeds the Form again from the payload and leaves it untouched and undirty.
+
 ## Missing providers
 
 Persisted FieldLayout types supplied by an unavailable plugin resolve to visible missing-provider placeholders. They submit

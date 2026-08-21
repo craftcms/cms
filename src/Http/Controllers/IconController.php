@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Search;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
@@ -51,12 +51,14 @@ readonly class IconController
             $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
-        $indexPath = '@cmsAssets/resources/icons/index.php';
-        $icons = require Aliases::get($indexPath);
+        $indexPath = CmsAssets::resourcesPath('icons/index.php');
+        $icons = require $indexPath;
         $output = [];
         $scores = [];
 
         foreach ($icons as $name => $icon) {
+            $name = (string) $name;
+
             if ($freeOnly && $icon['pro']) {
                 continue;
             }
@@ -69,7 +71,7 @@ readonly class IconController
                 $scores[] = $score;
             }
 
-            $file = Aliases::get("@appicons/$name.svg");
+            $file = Icons::resolveIconPath($name);
             $output[] = Html::beginTag('li').
                 Html::button(file_get_contents($file), [
                     'class' => 'icon-picker--icon',

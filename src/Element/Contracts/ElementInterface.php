@@ -24,6 +24,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
@@ -925,6 +926,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns whether revisions should be created when this element is saved.
      */
     public function hasRevisions(): bool;
+
+    /**
+     * Returns the view model that builds this element type’s edit screen
+     * payload, or null if its editor hasn’t been ported off the legacy screen.
+     *
+     * @return class-string<ElementEditViewModel>|null
+     */
+    public static function editViewModelClass(): ?string;
 
     /**
      * Prepares the response for the element’s Edit screen.

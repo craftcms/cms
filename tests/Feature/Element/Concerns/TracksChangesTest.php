@@ -128,18 +128,29 @@ describe('Change Tracking', function () {
         $element->setCanonicalId(99); // Make it a derivative
 
         DB::table(Table::ELEMENTS)->insert([
-            'id' => 100,
-            'type' => TestTracksChangesEnabledElement::class,
-            'enabled' => true,
-            'archived' => false,
-            'dateCreated' => now(),
-            'dateUpdated' => now(),
-            'uid' => Str::uuid(),
+            [
+                'id' => 99,
+                'type' => TestTracksChangesEnabledElement::class,
+                'enabled' => true,
+                'archived' => false,
+                'dateCreated' => now(),
+                'dateUpdated' => now(),
+                'uid' => Str::uuid(),
+            ],
+            [
+                'id' => 100,
+                'type' => TestTracksChangesEnabledElement::class,
+                'enabled' => true,
+                'archived' => false,
+                'dateCreated' => now(),
+                'dateUpdated' => now(),
+                'uid' => Str::uuid(),
+            ],
         ]);
 
-        // Insert changed attribute for the element
+        // Insert changed attribute for the *canonical* element
         DB::table(Table::CHANGEDATTRIBUTES)->insert([
-            'elementId' => 100,
+            'elementId' => 99,
             'siteId' => 1,
             'attribute' => 'title',
             'dateUpdated' => now()->subDay(),
@@ -147,8 +158,21 @@ describe('Change Tracking', function () {
             'propagated' => true,
         ]);
 
+        // The derivative’s own changes are “modified”, never “outdated”
+        DB::table(Table::CHANGEDATTRIBUTES)->insert([
+            'elementId' => 100,
+            'siteId' => 1,
+            'attribute' => 'slug',
+            'dateUpdated' => now()->subDay(),
+            'userId' => 1,
+            'propagated' => false,
+        ]);
+
         expect($element->getOutdatedAttributes())->toContain('title')
-            ->and($element->isAttributeOutdated('title'))->toBeTrue();
+            ->and($element->isAttributeOutdated('title'))->toBeTrue()
+            ->and($element->isAttributeOutdated('slug'))->toBeFalse()
+            ->and($element->isAttributeModified('slug'))->toBeTrue()
+            ->and($element->isAttributeModified('title'))->toBeFalse();
     });
 
     test('filters outdated attributes by dateLastMerged', function () {
@@ -160,18 +184,29 @@ describe('Change Tracking', function () {
         $element->setCanonicalId(199);
 
         DB::table(Table::ELEMENTS)->insert([
-            'id' => 200,
-            'type' => TestTracksChangesEnabledElement::class,
-            'enabled' => true,
-            'archived' => false,
-            'dateCreated' => now(),
-            'dateUpdated' => now(),
-            'uid' => Str::uuid(),
+            [
+                'id' => 199,
+                'type' => TestTracksChangesEnabledElement::class,
+                'enabled' => true,
+                'archived' => false,
+                'dateCreated' => now(),
+                'dateUpdated' => now(),
+                'uid' => Str::uuid(),
+            ],
+            [
+                'id' => 200,
+                'type' => TestTracksChangesEnabledElement::class,
+                'enabled' => true,
+                'archived' => false,
+                'dateCreated' => now(),
+                'dateUpdated' => now(),
+                'uid' => Str::uuid(),
+            ],
         ]);
 
         // Changed yesterday
         DB::table(Table::CHANGEDATTRIBUTES)->insert([
-            'elementId' => 200,
+            'elementId' => 199,
             'siteId' => 1,
             'attribute' => 'title',
             'dateUpdated' => now()->subDay(),

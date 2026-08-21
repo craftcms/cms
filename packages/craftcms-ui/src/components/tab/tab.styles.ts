@@ -20,9 +20,10 @@ export default css`
 
   /*
    * The selected indicator. Its geometry comes from custom properties so the
-   * strip can move it without knowing anything about this shadow root:
-   * horizontal tabs get a rule underneath (pulled 1px down to sit on top of
-   * the strip's border), vertical tabs get one along the inline end.
+   * strip can move it without knowing anything about this shadow root: the
+   * defaults below are the block-start placement (a rule underneath, pulled
+   * 1px down to sit on top of the strip's border), and the other placements
+   * publish the vars that move it to the edge facing the panels.
    */
   :host::after {
     content: '';

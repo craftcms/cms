@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -455,6 +456,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function editViewModelClass(): string
+    {
+        return UserEditViewModel::class;
+    }
+
+    #[Override]
     public static function trackChanges(): bool
     {
         return true;
@@ -843,7 +850,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return [
             [
                 'label' => t('Users'),
-                'url' => 'users',
+                'href' => Url::cpUrl('users'),
             ],
         ];
     }

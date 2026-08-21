@@ -204,7 +204,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncFieldsetSemantics();
   }
 
-  protected override _onLabelClick(): void {
+  protected _onLabelClick(): void {
     this.__formControlTarget()?.focus();
   }
 
@@ -266,9 +266,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   override render() {
     return html`
-      ${this._statusBadgeTemplate()}
-      <div class="form-field__group-one">${this._groupOneTemplate()}</div>
-      <div class="form-field__group-two">${this._groupTwoTemplate()}</div>
+      <div
+        class="${classMap({
+          'form-field': true,
+          [`form-field--${this.status}`]: !!this.status,
+        })}"
+      >
+        ${this._statusBadgeTemplate()}
+        <div class="form-field__group-one">${this._groupOneTemplate()}</div>
+        <div class="form-field__group-two">${this._groupTwoTemplate()}</div>
+      </div>
     `;
   }
 
@@ -300,7 +307,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     const hasActions = this.__hasLightChild('actions');
 
     return html`
-      <div class="heading form-field__label">
+      <div class="form-field__label">
         <slot name="heading-prefix"></slot>
         <slot name="label"></slot>
         ${this.readOnly
@@ -358,7 +365,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     }
     return html`
       <div
-        class="status-badge ${this.status}"
+        class="form-field__status-indicator"
         title=${ifDefined(this.statusLabel)}
         aria-hidden="true"
       >
@@ -520,10 +527,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
       srLabel.textContent = t('Required');
       srLabel.setAttribute('data-craft-field-decoration', '');
 
-      const indicator = document.createElement('span');
-      indicator.className = 'required';
-      indicator.setAttribute('aria-hidden', 'true');
+      // The asterisk is purely decorative — the visually hidden "Required"
+      // above it is what assistive tech announces. craft-icon hides itself
+      // when it has no `label`, but it only does so once it upgrades, so set
+      // the attribute here too: the decoration is rendered into the light DOM
+      // and may be read before then.
+      const indicator = document.createElement('craft-icon');
+      indicator.setAttribute('name', 'asterisk');
       indicator.setAttribute('data-craft-field-decoration', '');
+      indicator.setAttribute('data-color', 'danger');
+      indicator.setAttribute('aria-hidden', 'true');
 
       labelNode.append(srLabel, indicator);
     }

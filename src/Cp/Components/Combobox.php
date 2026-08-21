@@ -36,6 +36,8 @@ class Combobox extends ViewComponent
 
     protected bool $showAllOnEmpty = false;
 
+    protected bool $showSelectedHint = false;
+
     protected ?string $orientation = null;
 
     protected ?string $describedBy = null;
@@ -120,6 +122,13 @@ class Combobox extends ViewComponent
         return $this;
     }
 
+    public function showSelectedHint(bool $showSelectedHint = true): static
+    {
+        $this->showSelectedHint = $showSelectedHint;
+
+        return $this;
+    }
+
     public function orientation(?string $orientation): static
     {
         $this->orientation = $orientation;
@@ -150,6 +159,7 @@ class Combobox extends ViewComponent
             'clearable' => $this->clearable,
             'requireoptionmatch' => $this->requireOptionMatch,
             'show-all-on-empty' => $this->showAllOnEmpty,
+            'show-selected-hint' => $this->showSelectedHint,
             'dir' => $this->orientation,
             'aria' => ['describedby' => $this->describedBy],
         ];
