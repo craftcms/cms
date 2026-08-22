@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -13,13 +15,20 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Directives\Transform;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ResolveInfo;
 
 beforeEach(function () {
     $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
-    app(AssetTransforms::class)->extend('gql', fn () => $driver);
-    Cms::config()->defaultAssetTransformDriver('gql');
+    app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
+    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'GraphQL',
+        'handle' => 'gql',
+        'driver' => 'gql',
+    ]));
+    Cms::config()->defaultAssetTransformer('gql');
 });
 
 it('keeps directive transforms local to their resolved Assets', function () {
@@ -52,13 +61,13 @@ it('resolves rendition fields for a capable non-image driver', function () {
         {
             asset(id: {$asset->id}) {
                 url(width: 320)
-                custom: url(ratio: 1.5)
+                custom: url(transformer: "gql", width: 640)
                 width(width: 320)
                 height(height: 180)
                 format(format: "webp")
                 mimeType @transform(width: 320)
             }
-            transformed: asset(id: {$asset->id}) @transform(ratio: 1.5) {
+            transformed: asset(id: {$asset->id}) @transform(width: 200) {
                 url
             }
         }
@@ -113,7 +122,7 @@ it('preloads GraphQL list transforms through the selected driver', function () {
         ->and($this->driver->preloaded[0]->operations)->toBe(['width' => 320]);
 });
 
-it('rejects unsupported non-null immediately arguments', function () {
+it('passes non-null immediately arguments to the selected driver', function () {
     $asset = Asset::factory()->createElement();
     gqlActivateFullAccessSchema();
     graphQL(<<<GQL
@@ -124,16 +133,17 @@ it('rejects unsupported non-null immediately arguments', function () {
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', null)
-        ->assertJsonStructure(['errors' => [['message']]]);
+        ->assertJsonPath('data.asset.url', '/gql-rendition.webp');
 
-    expect(fn () => GqlHelper::prepareTransformArguments(['immediately' => false]))
-        ->toThrow(InvalidArgumentException::class, 'is not supported');
+    expect(GqlHelper::prepareTransformArguments(['immediately' => false]))->toBe([])
+        ->and($this->driver->request?->immediately)->toBeFalse();
 });
 
 class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public array $preloaded = [];
+
+    public ?AssetTransformRequest $request = null;
 
     public function definition(): AssetTransformDriverDefinition
     {
@@ -144,6 +154,8 @@ class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTran
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
+        $this->request = $request;
+
         return new AssetTransformResult(
             url: '/gql-rendition.webp',
             mimeType: 'image/webp',

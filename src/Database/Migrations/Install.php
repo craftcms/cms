@@ -326,7 +326,6 @@ class Install extends Migration
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
-            $table->string('driver')->nullable();
             $table->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->default('crop');
             $table->enum('position', ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'])->default('center-center');
             $table->unsignedInteger('width')->nullable();
@@ -977,6 +976,7 @@ class Install extends Migration
             $table->string('handle');
             $table->string('fs');
             $table->string('subpath')->nullable();
+            $table->string('assetTransformer')->nullable();
             $table->string('transformFs')->nullable();
             $table->string('transformSubpath')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);

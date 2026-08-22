@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -20,6 +20,7 @@ use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
@@ -76,13 +77,13 @@ it('runs the configured Craft driver without changing rendition identity', funct
         'mode' => 'crop',
     ]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
     Cms::config()->revAssetUrls(true);
 
-    $result = app(AssetTransforms::class)->transform($asset, [
+    $result = app(AssetTransformers::class)->transform($asset, [
         'width' => 100,
         'height' => 100,
         'mode' => 'crop',
@@ -102,14 +103,6 @@ it('uses current filesystem settings without changing transform index identity',
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/explicit-default-source'),
         'url' => 'https://source.example.test',
-        'asset_transform' => [
-            'driver' => 'craft',
-            'settings' => [
-                'filesystem' => null,
-                'subpath' => '',
-                'generateBeforePageLoad' => true,
-            ],
-        ],
     ]);
     config()->set('filesystems.disks.legacy-transform-target', [
         'driver' => 'local',
@@ -136,8 +129,9 @@ it('uses current filesystem settings without changing transform index identity',
     );
     $transform = new ImageTransform(['width' => 100]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
+    Cms::config()->generateTransformsBeforePageLoad();
 
-    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
     expect($result->url)->toStartWith('https://source.example.test/')
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->pluck('id')->all())
@@ -148,7 +142,7 @@ it('preserves lazy generation and queued recovery', function () {
     Queue::fake();
     $asset = ($this->createImageAsset)();
 
-    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
     expect($result->url)->toContain('transformId=');
     Queue::assertPushed(GenerateImageTransform::class);
@@ -158,7 +152,7 @@ it('honors disabled source-format transformations', function (string $filename, 
     Cms::config()->{$setting} = false;
     $asset = ($this->createImageAsset)(['filename' => $filename]);
 
-    expect(fn () => app(AssetTransforms::class)->transform($asset, ['width' => 100]))
+    expect(fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]))
         ->toThrow(NotSupportedException::class);
 })->with([
     'GIF' => ['transform-test.gif', 'transformGifs'],
@@ -180,14 +174,14 @@ it('recreates the transform index when the asset has been modified since indexin
         'mode' => 'crop',
     ]);
 
-    app(AssetTransforms::class)->transform($asset, [
+    app(AssetTransformers::class)->transform($asset, [
         'width' => 100,
         'height' => 100,
         'mode' => 'crop',
     ]);
     $firstIndex = $this->transformer->getTransformIndex($asset, $transform);
     $asset->dateModified = now()->addMinute();
-    app(AssetTransforms::class)->transform($asset, [
+    app(AssetTransformers::class)->transform($asset, [
         'width' => 100,
         'height' => 100,
         'mode' => 'crop',
@@ -300,13 +294,13 @@ it('ignores deprecated Volume transform destinations', function () {
         'mode' => 'crop',
     ]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
 
     $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
 
-    expect(app(AssetTransforms::class)->transform($asset, [
+    expect(app(AssetTransformers::class)->transform($asset, [
         'width' => 100,
         'height' => 100,
         'mode' => 'crop',
@@ -319,21 +313,26 @@ it('uses Craft driver output settings from the source filesystem', function () {
     config()->set('filesystems.disks.configured-transform-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-source'),
-        'asset_transform' => [
-            'driver' => 'craft',
-            'settings' => [
-                'filesystem' => 'disk:configured-transform-target',
-                'subpath' => 'renditions',
-                'generateBeforePageLoad' => false,
-            ],
-        ],
     ]);
     config()->set('filesystems.disks.configured-transform-target', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-target'),
         'url' => 'https://renditions.example.test',
     ]);
-    $volume = Volume::factory()->create(['fs' => 'disk:configured-transform-source']);
+    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Configured transform',
+        'handle' => 'configured-transform',
+        'driver' => 'craft',
+        'settings' => [
+            'filesystem' => 'disk:configured-transform-target',
+            'subpath' => 'renditions',
+        ],
+    ]));
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:configured-transform-source',
+        'assetTransformer' => 'configured-transform',
+    ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -348,29 +347,78 @@ it('uses Craft driver output settings from the source filesystem', function () {
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
 
-    app(AssetTransforms::class)->transform($asset, ['width' => 100]);
-    $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
+    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    $index = $this->transformer->getTransformIndex(
+        $asset,
+        new ImageTransform(['width' => 100]),
+        app(AssetTransformers::class)->resolve('configured-transform'),
+    );
     new GenerateImageTransform($index->id)->handle($this->transformer);
-    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
-    $path = 'renditions/'.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    $path = 'renditions/'.$asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
 
     expect($result->url)->toStartWith('https://renditions.example.test/renditions/')
         ->and(Storage::disk('configured-transform-target')->exists($path))->toBeTrue();
+});
+
+it('does not reuse similar renditions across Craft transformer profiles', function () {
+    foreach (['first-transform-target', 'second-transform-target'] as $disk) {
+        config()->set("filesystems.disks.{$disk}", [
+            'driver' => 'local',
+            'root' => storage_path("framework/testing/image-transformer-test/{$disk}"),
+        ]);
+        Storage::disk($disk)->deleteDirectory('');
+    }
+
+    $profiles = collect(['first', 'second'])->mapWithKeys(function (string $handle): array {
+        $profile = new AssetTransformer([
+            'uid' => Str::uuid()->toString(),
+            'name' => ucfirst($handle),
+            'handle' => $handle,
+            'driver' => 'craft',
+            'settings' => ['filesystem' => "disk:{$handle}-transform-target"],
+        ]);
+        app(AssetTransformers::class)->registerTransient($profile);
+
+        return [$handle => $profile];
+    });
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    $transform = new ImageTransform(['width' => 100]);
+    $firstIndex = $this->transformer->getTransformIndex($asset, $transform, $profiles['first']);
+    $secondIndex = $this->transformer->getTransformIndex($asset, $transform, $profiles['second']);
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$firstIndex->transformString.DIRECTORY_SEPARATOR.$firstIndex->filename;
+    Storage::disk('first-transform-target')->put($path, 'first-profile');
+    $firstIndex->fileExists = true;
+    $this->transformer->storeTransformIndexData($firstIndex);
+
+    new GenerateImageTransform($secondIndex->id)->handle($this->transformer);
+
+    expect(Storage::disk('second-transform-target')->exists($path))->toBeTrue();
 });
 
 it('fails when the configured Craft driver output filesystem is missing', function () {
     config()->set('filesystems.disks.missing-transform-target-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/missing-target-source'),
-        'asset_transform' => [
-            'driver' => 'craft',
-            'settings' => ['filesystem' => 'disk:missing-transform-target'],
-        ],
     ]);
-    $volume = Volume::factory()->create(['fs' => 'disk:missing-transform-target-source']);
+    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Missing transform target',
+        'handle' => 'missing-transform-target',
+        'driver' => 'craft',
+        'settings' => ['filesystem' => 'disk:missing-transform-target'],
+    ]));
+    $volume = Volume::factory()->create([
+        'fs' => 'disk:missing-transform-target-source',
+        'assetTransformer' => 'missing-transform-target',
+    ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
 
-    app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 })->throws(FilesystemException::class);
 
 it('ignores deprecated Volume transform subpaths when deleting', function () {
@@ -390,7 +438,7 @@ it('ignores deprecated Volume transform subpaths when deleting', function () {
         'filename' => $asset->getFilename(),
         'transformString' => '_100x100_crop_center-center_none',
     ]);
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     Storage::disk('test-disk')->deleteDirectory('transforms');
     $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
     Event::fake([DeletingTransformedImage::class]);
@@ -405,7 +453,7 @@ it('ignores deprecated Volume transform subpaths when deleting', function () {
 it('cleans the Craft transform index when an Asset is invalidated', function () {
     $asset = ($this->createImageAsset)();
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
 
     event(new AssetTransformsInvalidating($asset));
@@ -433,13 +481,13 @@ it('does not reuse a rendition older than the source Asset', function () {
     $transform = new ImageTransform(['width' => 100]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $asset->dateModified = now();
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($path, 'stale-transform');
     touch($disk->path($path), now()->subMinute()->getTimestamp());
     Queue::fake();
 
-    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
     expect($result->url)->toContain('transformId=')
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->value('fileExists'))->toBeFalsy();
@@ -451,13 +499,13 @@ it('includes the source revision in rendition URL identity', function () {
     $asset->dateUpdated = now();
     $transform = new ImageTransform(['width' => 100]);
     $index = $this->transformer->getTransformIndex($asset, $transform);
-    $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+    $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
     $asset->getVolume()->sourceDisk()->put($path, 'transform');
     $index->fileExists = true;
     $this->transformer->storeTransformIndexData($index);
     Cms::config()->revAssetUrls(false);
 
-    $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
     expect($result->url)->toContain('?v='.$asset->dateUpdated->getTimestamp());
 });
@@ -473,23 +521,30 @@ it('rejects unsupported source kinds before generating transforms', function () 
 
     expect(fn () => $this->transformer->transform(new AssetTransformRequest(
         $asset,
-        'craft',
+        app(AssetTransformers::class)->resolve('craft'),
         [
             'width' => 100,
             'height' => 100,
             'mode' => 'crop',
         ],
-        ['generateBeforePageLoad' => true],
+        true,
     )))->toThrow(NotSupportedException::class);
 });
 
-it('rejects untyped Craft driver settings', function () {
+it('rejects invalid Craft driver settings', function () {
     $asset = ($this->createImageAsset)();
+    $assetTransformer = new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Invalid',
+        'handle' => 'invalid',
+        'driver' => 'craft',
+        'settings' => ['filesystem' => []],
+    ]);
 
     expect(fn () => $this->transformer->transform(new AssetTransformRequest(
         $asset,
-        'craft',
+        $assetTransformer,
         ['width' => 100],
-        ['generateBeforePageLoad' => 'yes'],
-    )))->toThrow(AssetTransformFailedException::class);
+        false,
+    )))->toThrow(FilesystemException::class);
 });

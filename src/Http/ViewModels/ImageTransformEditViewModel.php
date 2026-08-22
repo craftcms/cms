@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -18,7 +19,9 @@ use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -38,7 +41,8 @@ class ImageTransformEditViewModel extends ViewModel
         private readonly ImageTransform $transform,
         private readonly Images $images,
         private readonly FormResolver $formResolver,
-        private readonly AssetTransforms $assetTransforms,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -57,7 +61,6 @@ class ImageTransformEditViewModel extends ViewModel
             HiddenField::make('transformId'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
-            Field::make(t('Asset Transform Driver'), Choice::make('driver')->options($this->driverOptions())),
             Field::make(
                 t('Mode'),
                 Choice::make('mode')
@@ -103,7 +106,33 @@ class ImageTransformEditViewModel extends ViewModel
             )->instructions(t('The image format that transformed images should use.')),
         );
 
-        $form->add(...array_values($this->assetTransforms->getOperationFields()));
+        foreach ($this->assetTransformers->getAllAssetTransformers(includeTransient: false) as $transformer) {
+            if (! $this->assetTransformDrivers->has($transformer->driver)) {
+                $form->add(Group::make("asset-transformer-{$transformer->uid}", [
+                    Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This Asset Transformer’s driver is unavailable.')),
+                ])->label((string) $transformer->name));
+
+                continue;
+            }
+
+            $fields = array_map(function (Field $field) use ($transformer): Field {
+                $field = clone $field;
+                $control = $field->getControl();
+
+                if ($control !== null) {
+                    $handle = $control->path();
+                    $handle = is_array($handle) ? $handle[0] : $handle;
+                    $field->control($control->withPath(['operations', $transformer->uid, $handle]));
+                }
+
+                return $field;
+            }, array_values($this->assetTransformers->operationFields($transformer)));
+
+            if ($fields !== []) {
+                $form->add(Group::make("asset-transformer-{$transformer->uid}", $fields)
+                    ->label((string) $transformer->name));
+            }
+        }
 
         return $this->formResolver->resolve($form, new FormContext(
             values: $values,
@@ -136,7 +165,6 @@ class ImageTransformEditViewModel extends ViewModel
             'transformId' => $this->transform->id,
             'name' => $this->transform->name ?? '',
             'handle' => $this->transform->handle ?? '',
-            'driver' => $this->transform->driver ?? '',
             'width' => $this->transform->width ?? '',
             'height' => $this->transform->height ?? '',
             'mode' => $this->transform->mode,
@@ -148,33 +176,8 @@ class ImageTransformEditViewModel extends ViewModel
                 ? ltrim($this->transform->fill, '#')
                 : '',
             'upscale' => $this->transform->upscale,
-            ...$this->transform->getCustomOperations(),
+            'operations' => $this->transform->getCustomOperations(),
         ];
-    }
-
-    /** @return list<array{label: string, value: string}> */
-    private function driverOptions(): array
-    {
-        $options = collect($this->assetTransforms->getDriverDefinitions())
-            ->map(fn ($definition, string $handle): array => [
-                'label' => $definition->name,
-                'value' => $handle,
-            ]);
-
-        if ($this->transform->driver !== null && $options->doesntContain('value', $this->transform->driver)) {
-            $options->put($this->transform->driver, [
-                'label' => t('{handle} (Unavailable)', ['handle' => $this->transform->driver]),
-                'value' => $this->transform->driver,
-            ]);
-        }
-
-        return $options
-            ->prepend([
-                'label' => t('Default (Asset filesystem driver)'),
-                'value' => '',
-            ])
-            ->values()
-            ->all();
     }
 
     /** @return list<array{label: string, value: string}> */

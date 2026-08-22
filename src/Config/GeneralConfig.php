@@ -631,20 +631,20 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The Asset Transform driver to use when no driver is selected explicitly.
+     * @var string The Asset Transformer to use when none is selected explicitly.
      *
      * ::: code
      * ```php Static Config
-     * ->defaultAssetTransformDriver('craft')
+     * ->defaultAssetTransformer('craft')
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_ASSET_TRANSFORM_DRIVER=craft
+     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
      * ```
      * :::
      *
      * @group Assets
      */
-    public string $defaultAssetTransformDriver = 'craft';
+    public string $defaultAssetTransformer = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -1218,6 +1218,22 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public string|false $filenameWordSeparator = '-';
+
+    /**
+     * @var bool Whether asset transforms should be generated before page load by drivers that support deferred generation.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->generateTransformsBeforePageLoad(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
+     * ```
+     * :::
+     *
+     * @group Image Handling
+     */
+    public bool $generateTransformsBeforePageLoad = false;
 
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
@@ -3710,19 +3726,19 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Asset Transform driver to use when no driver is selected explicitly.
+     * The Asset Transformer to use when none is selected explicitly.
      *
      * @group Assets
      *
-     * @see $defaultAssetTransformDriver
+     * @see $defaultAssetTransformer
      */
-    public function defaultAssetTransformDriver(string $value): self
+    public function defaultAssetTransformer(string $value): self
     {
         if ($value === '') {
-            throw new RuntimeException('`defaultAssetTransformDriver` cannot be empty.');
+            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
         }
 
-        $this->defaultAssetTransformDriver = $value;
+        $this->defaultAssetTransformer = $value;
 
         return $this;
     }
@@ -4382,6 +4398,20 @@ class GeneralConfig extends BaseConfig
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether asset transforms should be generated before page load by drivers that support deferred generation.
+     *
+     * @group Image Handling
+     *
+     * @see $generateTransformsBeforePageLoad
+     */
+    public function generateTransformsBeforePageLoad(bool $value = true): self
+    {
+        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }

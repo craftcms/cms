@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
@@ -73,6 +75,34 @@ function validTransformData(array $overrides = []): array
     ], $overrides);
 }
 
+function registerControllerAssetTransformer(string $driver = 'custom'): AssetTransformer
+{
+    app(AssetTransformDrivers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
+    $transformer = new AssetTransformer([
+        'name' => 'Custom',
+        'handle' => $driver,
+        'driver' => $driver,
+    ]);
+    app(AssetTransformers::class)->saveAssetTransformer($transformer);
+
+    return $transformer;
+}
+
+function imageTransformFormControls(array $nodes): array
+{
+    $controls = [];
+
+    foreach ($nodes as $node) {
+        if (isset($node['control'])) {
+            $controls[] = $node['control'];
+        }
+
+        array_push($controls, ...imageTransformFormControls($node['children'] ?? []));
+    }
+
+    return $controls;
+}
+
 it('requires authentication', function () {
     $transform = createTestTransform();
     Auth::logout();
@@ -121,18 +151,14 @@ it('renders a functional create form', function () {
                 ->contains(['mode'])));
 });
 
-it('renders registered drivers and their declared operation controls', function () {
-    app(AssetTransforms::class)->extend('custom', fn () => new ControllerAssetTransformDriver);
+it('groups declared operation controls by Asset Transformer', function () {
+    $transformer = registerControllerAssetTransformer();
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes): bool {
-                $fields = collect($nodes)->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
-
-                return $fields->has('driver')
-                    && collect($fields['driver']['control']['props']['options'])->contains('value', 'custom')
-                    && $fields->has('blur');
-            }));
+            ->where('form.nodes', fn ($nodes): bool => collect(imageTransformFormControls(collect($nodes)->all()))
+                ->pluck('path')
+                ->contains(['operations', $transformer->uid, 'blur'])));
 });
 
 it('renders edit for an existing transform', function () {
@@ -262,18 +288,10 @@ it('rejects save when both width and height are missing', function () {
         ->assertSessionHasErrors('width');
 });
 
-it('rejects an unavailable driver on interactive save', function () {
-    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
-        'driver' => 'missing',
-    ]))->assertUnprocessable()
-        ->assertJsonValidationErrors('driver');
-});
-
-it('saves catalogue-backed custom operations', function () {
-    app(AssetTransforms::class)->extend('custom', fn () => new ControllerAssetTransformDriver);
+it('saves custom operations under the Asset Transformer UUID', function () {
+    $transformer = registerControllerAssetTransformer();
     $payload = validTransformData([
-        'driver' => 'custom',
-        'blur' => '5',
+        'operations' => [$transformer->uid => ['blur' => '5']],
     ]);
 
     postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
@@ -281,30 +299,35 @@ it('saves catalogue-backed custom operations', function () {
     app(ImageTransforms::class)->reset();
     $transform = app(ImageTransforms::class)->getTransformByHandle($payload['handle']);
 
-    expect($transform->driver)->toBe('custom')
-        ->and($transform->getCustomOperations())->toBe(['blur' => '5']);
+    expect($transform->getCustomOperations())->toBe([
+        $transformer->uid => ['blur' => '5'],
+    ]);
 });
 
-it('presents a deployed unavailable driver without replacing it', function () {
-    $transform = new ImageTransformData([
+it('preserves operations for a configured unavailable driver', function () {
+    $assetTransformer = new AssetTransformer([
         'name' => 'Unavailable',
         'handle' => 'unavailable',
         'driver' => 'missing',
+    ]);
+    app(AssetTransformers::class)->saveAssetTransformer($assetTransformer, runValidation: false);
+    $transform = new ImageTransformData([
+        'name' => 'Unavailable',
+        'handle' => 'unavailable',
         'width' => 100,
+        'operations' => [$assetTransformer->uid => ['blur' => 5]],
     ]);
     app(ImageTransforms::class)->saveTransform($transform, runValidation: false);
 
-    get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => 'unavailable']))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.driver', 'missing')
-            ->where('form.nodes', function ($nodes): bool {
-                $driver = collect($nodes)->first(fn (array $node): bool => ($node['control']['path'] ?? null) === ['driver']);
+    postJson(action([ImageTransformsController::class, 'store']), validTransformData([
+        'transformId' => $transform->id,
+        'handle' => 'unavailable',
+    ]))->assertOk();
 
-                return collect($driver['control']['props']['options'])->contains([
-                    'label' => 'missing (Unavailable)',
-                    'value' => 'missing',
-                ]);
-            }));
+    app(ImageTransforms::class)->reset();
+
+    expect(app(ImageTransforms::class)->getTransformByHandle('unavailable')
+        ?->getOperationsForTransformer($assetTransformer->uid))->toBe(['blur' => 5]);
 });
 
 it('normalizes letterbox fill color on save', function () {

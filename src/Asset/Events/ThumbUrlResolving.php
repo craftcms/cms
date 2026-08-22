@@ -16,8 +16,7 @@ class ThumbUrlResolving
 
     public ?string $url = null;
 
-    /** @var array<string,mixed> */
-    public array $transformSettings = [];
+    public ?bool $immediately = null;
 
     public function __construct(
         public Asset $asset,

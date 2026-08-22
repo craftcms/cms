@@ -10,7 +10,7 @@ use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
@@ -159,10 +159,10 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             try {
-                $event->url = $this->app->make(AssetTransforms::class)->transform(
+                $event->url = $this->app->make(AssetTransformers::class)->transform(
                     $event->asset,
                     $event->transform,
-                    ['generateBeforePageLoad' => $immediately],
+                    $immediately,
                 )->url;
             } catch (AssetTransformException|NotSupportedException $exception) {
                 report($exception);
@@ -301,7 +301,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
 
             if ($immediately !== null) {
-                $event->transformSettings['generateBeforePageLoad'] = $immediately;
+                $event->immediately = $immediately;
             }
         });
 

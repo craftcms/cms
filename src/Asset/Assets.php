@@ -57,7 +57,7 @@ class Assets
     public function __construct(
         private readonly Folders $folders,
         private readonly Elements $elements,
-        private readonly AssetTransforms $assetTransforms,
+        private readonly AssetTransformers $assetTransformers,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
@@ -144,11 +144,11 @@ class Assets
         $extension = $asset->getExtension();
 
         try {
-            $url = $this->assetTransforms->transform($asset, [
+            $url = $this->assetTransformers->transform($asset, [
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
-            ], $event->transformSettings)->url;
+            ], $event->immediately)->url;
         } catch (NotSupportedException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [
                 'extension' => $extension,
@@ -185,7 +185,7 @@ class Assets
 
         try {
             $url = $transform !== null
-                ? $this->assetTransforms->transform($asset, $transform, ['generateBeforePageLoad' => true])->url
+                ? $this->assetTransformers->transform($asset, $transform, true)->url
                 : $asset->getUrl();
         } catch (NotSupportedException) {
             return Url::actionUrl('assets/icon', [

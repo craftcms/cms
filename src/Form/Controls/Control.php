@@ -54,6 +54,15 @@ abstract class Control implements ControlContract
     }
 
     /** @param string|list<string> $path */
+    final public function withPath(string|array $path): static
+    {
+        $control = clone $this;
+        $control->path = $path;
+
+        return $control;
+    }
+
+    /** @param string|list<string> $path */
     final public function deltaGroup(string|array $path): static
     {
         $this->deltaGroup = $path;

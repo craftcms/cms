@@ -10,22 +10,11 @@ readonly class AssetTransformRequest
 {
     /**
      * @param  array<string, mixed>  $operations
-     * @param  array<string, mixed>  $settings
      */
     public function __construct(
         public Asset $asset,
-        public string $driver,
+        public AssetTransformer $transformer,
         public array $operations,
-        public array $settings,
+        public bool $immediately,
     ) {}
-
-    public function __debugInfo(): array
-    {
-        return [
-            'asset' => $this->asset,
-            'driver' => $this->driver,
-            'operations' => $this->operations,
-            'settings' => '[redacted]',
-        ];
-    }
 }

@@ -17,7 +17,7 @@ use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
@@ -1976,15 +1976,15 @@ JS, [
     }
 
     #[AllowedInSandbox]
-    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
+    public function transform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
     {
-        return app(AssetTransforms::class)->transform($this, $definition);
+        return app(AssetTransformers::class)->transform($this, $definition, $immediately);
     }
 
-    protected function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
+    protected function _tryTransform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): ?AssetTransformResult
     {
         try {
-            return $this->transform($definition);
+            return $this->transform($definition, $immediately);
         } catch (AssetTransformException|NotSupportedException $exception) {
             report($exception);
 
@@ -2032,7 +2032,7 @@ JS, [
 
         // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
-            $url = $this->_url($transform);
+            $url = $this->_url($transform, $immediately);
         }
 
         event($event = new AssetUrlDefined($this, $transform, $url));
@@ -2045,10 +2045,10 @@ JS, [
         return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
-    private function _url(mixed $transform = null): ?string
+    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
     {
         if ($transform !== null) {
-            return $this->_tryTransform($transform)?->url;
+            return $this->_tryTransform($transform, $immediately)?->url;
         }
 
         if (! $this->folderId) {
@@ -3455,7 +3455,7 @@ JS;
 
     private function deleteTransformData(): void
     {
-        app(AssetTransforms::class)->invalidate($this);
+        app(AssetTransformers::class)->invalidate($this);
 
         $dir = Path::imageEditorSources((string) $this->id);
 

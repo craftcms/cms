@@ -32,6 +32,7 @@ use function CraftCms\Cms\t;
 /**
  * @property FsInterface $fs
  * @property string $fsHandle
+ * @property string|null $assetTransformer
  * @property string $subpath
  */
 #[Ruleset(VolumeRules::class)]
@@ -75,6 +76,8 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         }
     }
 
+    public ?string $assetTransformer = null;
+
     private string $_subpath = '';
 
     private ?FsInterface $_fs = null;
@@ -116,6 +119,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'fsHandle' => $this->getFsHandle(false),
+            'assetTransformer' => $this->getAssetTransformerHandle(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
         ]);
     }
@@ -127,6 +131,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => t('Handle'),
             'name' => t('Name'),
             'fsHandle' => t('Asset Filesystem'),
+            'assetTransformer' => t('Asset Transformer'),
             'subpath' => t('Subpath'),
         ];
     }
@@ -308,6 +313,13 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
     }
 
+    public function getAssetTransformerHandle(bool $parse = true): ?string
+    {
+        $handle = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
+
+        return is_string($handle) && $handle !== '' ? $handle : null;
+    }
+
     /** @return array<string, array<string, array<string, list<array<string, mixed>|string>|string|null>>|int|string|null> */
     public function getConfig(): array
     {
@@ -316,6 +328,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
             'subpath' => $this->_subpath,
+            'assetTransformer' => $this->assetTransformer ?: null,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,

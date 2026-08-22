@@ -99,12 +99,11 @@ class ImageTransforms
         [$transformModel, $isNewTransform] = DB::transaction(function () use ($transformUid, $data) {
             $transformModel = $this->getImageTransformModel($transformUid);
             $isNewTransform = ! $transformModel->exists;
-            $operations = $data['operations'];
-            $customOperations = Arr::except($operations, ImageTransform::CORE_OPERATIONS);
+            $operations = Arr::only($data, ImageTransform::CORE_OPERATIONS);
+            $customOperations = $data['operations'];
 
             $transformModel->name = $data['name'];
             $transformModel->handle = $data['handle'];
-            $driverChanged = $transformModel->driver !== $data['driver'];
             $storedCustomOperations = $transformModel->getAttribute('operations');
             $customOperationsChanged = (is_array($storedCustomOperations) ? $storedCustomOperations : []) !== $customOperations;
 
@@ -115,11 +114,10 @@ class ImageTransforms
             $fillChanged = $transformModel->fill !== $operations['fill'];
             $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== $operations['upscale'];
 
-            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged || $driverChanged || $customOperationsChanged) {
+            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged || $customOperationsChanged) {
                 $transformModel->parameterChangeTime = Query::prepareDateForDb(now());
             }
 
-            $transformModel->driver = $data['driver'];
             $transformModel->mode = $operations['mode'];
             $transformModel->position = $operations['position'];
             $transformModel->width = $operations['width'];
@@ -204,7 +202,6 @@ class ImageTransforms
                 'id',
                 'name',
                 'handle',
-                'driver',
                 'mode',
                 'position',
                 'height',

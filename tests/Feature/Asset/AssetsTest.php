@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -13,7 +15,7 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -26,6 +28,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Event;
 
@@ -113,8 +116,8 @@ it('uses ThumbUrlResolving event url when set', function () {
 
 it('renders non-image thumbnails and previews through the selected driver', function () {
     $driver = new ControlPanelAssetTransformDriver;
-    app(AssetTransforms::class)->extend('test', fn () => $driver);
-    Cms::config()->defaultAssetTransformDriver('test');
+    registerControlPanelTransformer($driver);
+    Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -132,17 +135,14 @@ it('renders non-image thumbnails and previews through the selected driver', func
             ['height' => 80, 'mode' => 'crop', 'width' => 120],
             ['height' => 1000, 'mode' => 'crop', 'width' => 1000],
         ])
-        ->and(array_column($driver->requests, 'settings'))->toBe([
-            [],
-            ['generateBeforePageLoad' => true],
-        ]);
+        ->and(array_map(fn (AssetTransformRequest $request): bool => $request->immediately, $driver->requests))->toBe([false, true]);
 });
 
 it('uses file-kind images only when the selected driver does not support the source', function () {
-    app(AssetTransforms::class)->extend('test', fn () => new ControlPanelAssetTransformDriver(
+    registerControlPanelTransformer(new ControlPanelAssetTransformDriver(
         new NotSupportedException('unsupported'),
     ));
-    Cms::config()->defaultAssetTransformDriver('test');
+    Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -159,7 +159,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 });
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
-    Cms::config()->defaultAssetTransformDriver('missing');
+    Cms::config()->defaultAssetTransformer('missing');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -170,9 +170,9 @@ it('does not disguise control-panel transform configuration failures as file-kin
     ]);
 
     expect(fn () => $this->assets->getThumbUrl($asset, 100))
-        ->toThrow(AssetTransformDriverNotFoundException::class)
+        ->toThrow(AssetTransformerNotFoundException::class)
         ->and(fn () => $this->assets->getImagePreviewUrl($asset, 1000, 1000))
-        ->toThrow(AssetTransformDriverNotFoundException::class);
+        ->toThrow(AssetTransformerNotFoundException::class);
 });
 
 it('dispatches PreviewHandlerResolving event', function () {
@@ -323,6 +323,17 @@ it('resets caches', function () {
     // No error means the reset worked
     expect(true)->toBeTrue();
 });
+
+function registerControlPanelTransformer(ControlPanelAssetTransformDriver $driver): void
+{
+    app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
+    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Test',
+        'handle' => 'test',
+        'driver' => 'test',
+    ]));
+}
 
 class ControlPanelAssetTransformDriver implements AssetTransformDriver
 {

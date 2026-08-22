@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Icons;
@@ -25,7 +25,7 @@ readonly class TransformController
 
     public function __construct(
         private ImageTransformer $imageTransformer,
-        private AssetTransforms $assetTransforms,
+        private AssetTransformers $assetTransformers,
     ) {}
 
     public function generate(Request $request): Response
@@ -84,7 +84,7 @@ readonly class TransformController
         try {
             $url = isset($transformIndexModel)
                 ? $transformer->getTransformUrlForIndex($asset, $transformIndexModel, true)
-                : $this->assetTransforms->transform($asset, $handle, ['generateBeforePageLoad' => true])->url;
+                : $this->assetTransformers->transform($asset, $handle, true)->url;
         } catch (Throwable $e) {
             return $this->asBrokenImage($e);
         }

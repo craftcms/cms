@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
@@ -29,7 +29,7 @@ readonly class ImageEditorController
 
     public function __construct(
         private Assets $assets,
-        private AssetTransforms $assetTransforms,
+        private AssetTransformers $assetTransformers,
     ) {}
 
     public function show(Request $request): Response
@@ -222,7 +222,7 @@ readonly class ImageEditorController
             $asset->setFocalPoint($focal);
 
             if ($focalChanged) {
-                $this->assetTransforms->invalidate($asset);
+                $this->assetTransformers->invalidate($asset);
             }
 
             // Only replace file if it changed, otherwise just save changed focal points
@@ -279,7 +279,7 @@ readonly class ImageEditorController
 
         $asset->setFocalPoint($focalData);
         $elements->saveElement($asset);
-        $this->assetTransforms->invalidate($asset);
+        $this->assetTransformers->invalidate($asset);
 
         return $this->asSuccess();
     }

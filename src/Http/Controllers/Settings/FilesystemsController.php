@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransforms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -19,7 +18,6 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -35,7 +33,6 @@ class FilesystemsController
         GeneralConfig $generalConfig,
         private readonly Filesystems $filesystems,
         private readonly FormResolver $formResolver,
-        private readonly AssetTransforms $assetTransforms,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -102,11 +99,6 @@ class FilesystemsController
 
     public function store(Request $request): Response
     {
-        $data = $request->validate([
-            'assetTransform' => ['required', 'array'],
-            'assetTransform.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
-            'assetTransform.settings' => ['nullable', 'array'],
-        ]);
         $type = $request->string('type')->toString();
         $oldHandle = $request->string('oldHandle')->toString() ?: null;
 
@@ -116,7 +108,6 @@ class FilesystemsController
             'handle' => $request->input('handle'),
             'oldHandle' => $oldHandle,
             'settings' => $this->filesystemSettings($type, $oldHandle, $request->array('settings')),
-            'assetTransform' => $this->assetTransform($data['assetTransform']),
         ]);
 
         if (! $this->filesystems->saveFilesystem($fs)) {
@@ -143,9 +134,6 @@ class FilesystemsController
             'values.handle' => ['nullable', 'string'],
             'values.oldHandle' => ['nullable', 'string'],
             'values.settings' => ['nullable', 'array'],
-            'values.assetTransform' => ['required', 'array'],
-            'values.assetTransform.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
-            'values.assetTransform.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
         $values = $data['values'];
@@ -159,7 +147,6 @@ class FilesystemsController
             'handle' => $values['handle'] ?? null,
             'oldHandle' => $values['oldHandle'] ?? null,
             'settings' => $settings,
-            'assetTransform' => $this->assetTransform($values['assetTransform'], false),
         ]);
 
         return new JsonResponse([
@@ -184,7 +171,6 @@ class FilesystemsController
             $filesystem,
             $this->filesystems,
             $this->formResolver,
-            $this->assetTransforms,
             oldHandle: $oldHandle,
             readOnly: $this->readOnly,
         );
@@ -217,42 +203,5 @@ class FilesystemsController
         $filesystem = $this->filesystems->createFilesystem(['type' => $type]);
 
         return [...$filesystem->settingsAttributes(), 'hasUrls', 'url'];
-    }
-
-    /**
-     * @param  array{driver: string, settings?: array<string, mixed>|null}  $config
-     * @return array{driver:string,settings:array<string,mixed>}
-     */
-    private function assetTransform(array $config, bool $validateSettings = true): array
-    {
-        $driver = $config['driver'];
-        $settings = $config['settings'] ?? [];
-        $definition = $this->assetTransforms->driver($driver)->definition();
-
-        if ($validateSettings) {
-            $handles = array_map(function ($field): string {
-                $path = $field->getControl()?->path();
-                $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
-
-                if (! is_string($path) || $path === '' || str_contains($path, '.')) {
-                    throw ValidationException::withMessages([
-                        'assetTransform.driver' => t('The selected Asset Transform driver has invalid filesystem settings.'),
-                    ]);
-                }
-
-                return $path;
-            }, $definition->filesystemSettings);
-            $submittedHandles = array_keys($settings);
-            sort($handles);
-            sort($submittedHandles);
-
-            if ($submittedHandles !== $handles) {
-                throw ValidationException::withMessages([
-                    'assetTransform.settings' => t('Submit one value for each Asset Transform filesystem setting.'),
-                ]);
-            }
-        }
-
-        return compact('driver', 'settings');
     }
 }

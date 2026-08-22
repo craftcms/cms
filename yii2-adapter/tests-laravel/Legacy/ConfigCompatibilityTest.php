@@ -43,7 +43,7 @@ it('maps renamed general config settings in the adapter', function(): void {
 it('supports moved deprecated config settings', function(): void {
     $config = GeneralConfig::create();
 
-    expect($config->generateTransformsBeforePageLoad)->toBeNull();
+    expect($config->generateTransformsBeforePageLoad)->toBeFalse();
 
     $config
         ->defaultCookieDomain('.example.test')

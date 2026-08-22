@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
@@ -71,25 +73,6 @@ it('can save and fetch filesystems by handle through the new service', function 
     expect($this->service->removeFilesystem($filesystem))->toBeTrue();
 });
 
-it('round trips an Asset Transform override through project config', function () {
-    $filesystem = $this->service->createFilesystem([
-        'type' => Local::class,
-        'name' => 'Transformed Filesystem',
-        'handle' => 'transformedFilesystem',
-        'settings' => ['path' => sys_get_temp_dir().'/transformed-filesystem'],
-        'assetTransform' => [
-            'driver' => 'unavailable',
-            'settings' => ['$TOKEN', ['raw' => true]],
-        ],
-    ]);
-
-    expect($this->service->saveFilesystem($filesystem, false))->toBeTrue()
-        ->and($this->service->getFilesystemByHandle('transformedFilesystem')?->getAssetTransform())->toBe([
-            'driver' => 'unavailable',
-            'settings' => ['$TOKEN', ['raw' => true]],
-        ]);
-});
-
 it('dispatches a filesystem renamed event when renaming', function () {
     Event::fake([FilesystemRenamed::class]);
 
@@ -103,34 +86,29 @@ it('dispatches a filesystem renamed event when renaming', function () {
     Event::assertDispatched(fn (FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
 });
 
-it('rewrites only hard-coded Craft output filesystem references when renaming', function () {
+it('rewrites only hard-coded Craft transformer output filesystem references when renaming', function () {
     $renamed = createServiceLocalFilesystem($this->service, 'output-old');
 
     foreach ([
-        'hard-coded' => 'output-old',
+        'hardCoded' => 'output-old',
         'environment' => '$OUTPUT_FILESYSTEM',
-        'raw-disk' => 'disk:output-old',
+        'rawDisk' => 'disk:output-old',
     ] as $handle => $outputFilesystem) {
-        $filesystem = $this->service->createFilesystem([
-            'type' => Local::class,
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'name' => $handle,
             'handle' => $handle,
-            'settings' => ['path' => sys_get_temp_dir()."/{$handle}"],
-            'assetTransform' => [
-                'driver' => 'craft',
-                'settings' => ['filesystem' => $outputFilesystem],
-            ],
-        ]);
-        $this->service->saveFilesystem($filesystem, false);
+            'driver' => 'craft',
+            'settings' => ['filesystem' => $outputFilesystem],
+        ]));
     }
 
     $renamed->oldHandle = 'output-old';
     $renamed->handle = 'output-new';
     $this->service->saveFilesystem($renamed, false);
 
-    expect($this->service->getFilesystemByHandle('hard-coded')?->getAssetTransform()['settings']['filesystem'])->toBe('output-new')
-        ->and($this->service->getFilesystemByHandle('environment')?->getAssetTransform()['settings']['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
-        ->and($this->service->getFilesystemByHandle('raw-disk')?->getAssetTransform()['settings']['filesystem'])->toBe('disk:output-old');
+    expect(app(AssetTransformers::class)->resolve('hardCoded')->settings['filesystem'])->toBe('output-new')
+        ->and(app(AssetTransformers::class)->resolve('environment')->settings['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
+        ->and(app(AssetTransformers::class)->resolve('rawDisk')->settings['filesystem'])->toBe('disk:output-old');
 });
 
 it('validates local filesystems with laravel path requirements', function () {

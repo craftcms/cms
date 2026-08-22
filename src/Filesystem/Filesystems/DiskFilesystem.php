@@ -35,7 +35,6 @@ class DiskFilesystem extends Filesystem
             $disk = $config['disk'];
             $config['name'] ??= $disk;
             $config['handle'] ??= "disk:$disk";
-            $config['assetTransform'] ??= config("filesystems.disks.$disk.asset_transform");
         }
 
         parent::__construct($config);

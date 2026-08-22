@@ -40,17 +40,15 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 
         $transform = new ImageTransform($request->operations);
 
-        if (!($request->settings['legacyBeforeGenerate'] ?? false)) {
-            event($event = new TransformGenerating($request->asset, $transform));
+        event($event = new TransformGenerating($request->asset, $transform));
 
-            if ($event->url !== null) {
-                return self::result($request->asset, $transform, Html::encodeSpaces($event->url));
-            }
+        if ($event->url !== null) {
+            return self::result($request->asset, $transform, Html::encodeSpaces($event->url));
         }
 
         $url = Craft::$app->getImageTransforms()
             ->getImageTransformer($this->transformer)
-            ->getTransformUrl($request->asset, $transform, (bool) ($request->settings['generateBeforePageLoad'] ?? false));
+            ->getTransformUrl($request->asset, $transform, $request->immediately);
         $url = Html::encodeSpaces($url);
 
         event(new AfterGenerateTransform($request->asset, $transform, $url));

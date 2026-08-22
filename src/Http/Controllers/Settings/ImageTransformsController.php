@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Http\JsonResponse;
@@ -37,7 +39,8 @@ class ImageTransformsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly FormResolver $formResolver,
-        private readonly AssetTransforms $assetTransforms,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
     public function index(ImageTransforms $imageTransforms): \Inertia\Response
@@ -51,6 +54,7 @@ class ImageTransformsController
             'subnav' => [
                 new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
                 new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected(true),
+                new NavItem()->label(t('Asset Transformers'))->url(Url::cpUrl('settings/assets/transformers')),
             ],
             'title' => t('Image Transforms'),
             'transforms' => $imageTransforms
@@ -76,11 +80,14 @@ class ImageTransformsController
 
     public function store(Request $request, ImageTransforms $imageTransforms): Response
     {
-        $transform = new ImageTransform;
-        $transform->id = $request->integer('transformId') ?: null;
+        $transformId = $request->integer('transformId') ?: null;
+        $transform = $transformId ? $imageTransforms->getTransformById($transformId) : new ImageTransform;
+
+        abort_if($transform === null, 404, 'Transform not found');
+
+        $transform->id = $transformId;
         $transform->name = $request->input('name');
         $transform->handle = $request->input('handle');
-        $transform->driver = $request->input('driver') ?: null;
         $transform->width = (int) $request->input('width') ?: null;
         $transform->height = (int) $request->input('height') ?: null;
         $transform->mode = (string) $request->input('mode', $transform->mode);
@@ -95,22 +102,38 @@ class ImageTransformsController
             : null;
         $transform->upscale = $request->boolean('upscale', $transform->upscale);
 
-        $request->validate([
-            'driver' => ['nullable', Rule::in(array_keys($this->assetTransforms->getDriverDefinitions()))],
-        ]);
+        $operationBuckets = [];
 
-        $customOperationHandles = array_diff(
-            array_keys($this->assetTransforms->getOperationRules()),
-            ImageTransform::CORE_OPERATIONS,
-        );
+        foreach ($this->assetTransformers->getAllAssetTransformers(includeTransient: false) as $assetTransformer) {
+            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
+                $existing = $transform->getOperationsForTransformer($assetTransformer->uid);
 
-        try {
-            $transform->setOperations($this->assetTransforms->validateOperations(
-                $request->only($customOperationHandles),
-            ));
-        } catch (InvalidAssetTransformException $exception) {
-            throw ValidationException::withMessages(['operations' => $exception->getMessage()]);
+                if ($existing !== []) {
+                    $operationBuckets[$assetTransformer->uid] = $existing;
+                }
+
+                continue;
+            }
+
+            try {
+                $operations = $this->assetTransformers->validateOperations(
+                    $assetTransformer,
+                    $request->array("operations.{$assetTransformer->uid}"),
+                );
+            } catch (InvalidAssetTransformException $exception) {
+                throw ValidationException::withMessages([
+                    "operations.{$assetTransformer->uid}" => $exception->getMessage(),
+                ]);
+            }
+
+            $operations = Arr::except($operations, ImageTransform::CORE_OPERATIONS);
+
+            if ($operations !== []) {
+                $operationBuckets[$assetTransformer->uid] = $operations;
+            }
         }
+
+        $transform->setOperations($operationBuckets);
 
         if ($transform->format === '') {
             $transform->format = null;
@@ -147,7 +170,6 @@ class ImageTransformsController
             'values.transformId' => ['nullable', 'integer'],
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
-            'values.driver' => ['nullable', 'string'],
             'values.width' => ['nullable', 'integer', 'min:1'],
             'values.height' => ['nullable', 'integer', 'min:1'],
             'values.mode' => ['required', Rule::enum(ImageTransformMode::class)],
@@ -157,11 +179,8 @@ class ImageTransformsController
             'values.format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
             'values.fill' => ['nullable', 'string'],
             'values.upscale' => ['required', 'boolean'],
+            'values.operations' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
-            ...collect($this->assetTransforms->getOperationRules())
-                ->except(ImageTransform::CORE_OPERATIONS)
-                ->mapWithKeys(fn (array $rules, string $handle): array => ["values.{$handle}" => ['nullable', ...$rules]])
-                ->all(),
         ]);
         $values = $data['values'];
         $transform = empty($values['transformId'])
@@ -205,7 +224,8 @@ class ImageTransformsController
             $transform,
             $images,
             $this->formResolver,
-            $this->assetTransforms,
+            $this->assetTransformers,
+            $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,
         );

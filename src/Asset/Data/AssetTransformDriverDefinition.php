@@ -11,13 +11,13 @@ readonly class AssetTransformDriverDefinition
 {
     /**
      * @param  array<string, non-empty-list<string|Stringable>>  $operations
-     * @param  list<Field>  $filesystemSettings
+     * @param  list<Field>  $settings
      * @param  array<string, Field>  $operationFields
      */
     public function __construct(
         public string $name,
         public array $operations = [],
-        public array $filesystemSettings = [],
+        public array $settings = [],
         public array $operationFields = [],
     ) {}
 }

@@ -2,11 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransforms;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformRequest;
-use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\TransformDeleted;
 use CraftCms\Cms\Image\Events\TransformDeleting;
@@ -146,14 +141,13 @@ describe('getTransformByUid', function () {
 });
 
 describe('saveTransform', function () {
-    it('round trips a nullable driver and catalogue operations through canonical project config', function () {
-        app(AssetTransforms::class)->extend('custom', fn () => new NamedImageTransformDriver);
+    it('round trips transformer-specific operations through project config', function () {
+        $transformerUid = Str::uuid()->toString();
         $transform = new ImageTransform([
             'name' => 'Custom',
             'handle' => 'custom',
-            'driver' => null,
             'width' => 500,
-            'operations' => ['blur' => 12],
+            'operations' => [$transformerUid => ['blur' => 12]],
         ]);
 
         $this->service->saveTransform($transform);
@@ -164,26 +158,22 @@ describe('saveTransform', function () {
 
         expect($saved->id)->toBe($transform->id)
             ->and($saved->uid)->toBe($transform->uid)
-            ->and($saved->driver)->toBeNull()
-            ->and($saved->getOperations()['blur'])->toBe(12)
+            ->and($saved->getOperationsForTransformer($transformerUid))->toBe(['blur' => 12])
             ->and($model->width)->toBe(500)
-            ->and($model->operations)->toBe(['blur' => 12])
+            ->and($model->operations)->toBe([$transformerUid => ['blur' => 12]])
             ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toEqual([
                 'name' => 'Custom',
                 'handle' => 'custom',
-                'driver' => null,
-                'operations' => [
-                    'fill' => null,
-                    'format' => null,
-                    'height' => null,
-                    'interlace' => 'none',
-                    'mode' => 'crop',
-                    'position' => 'center-center',
-                    'quality' => null,
-                    'upscale' => true,
-                    'width' => 500,
-                    'blur' => 12,
-                ],
+                'fill' => null,
+                'format' => null,
+                'height' => null,
+                'interlace' => 'none',
+                'mode' => 'crop',
+                'position' => 'center-center',
+                'quality' => null,
+                'upscale' => true,
+                'width' => 500,
+                'operations' => [$transformerUid => ['blur' => 12]],
             ]);
     });
 
@@ -210,29 +200,25 @@ describe('saveTransform', function () {
         expect(ProjectConfig::get("imageTransforms.{$uid}"))->toEqual([
             'name' => 'Legacy',
             'handle' => 'legacy',
-            'driver' => null,
-            'operations' => [
-                'fill' => '#abcdef',
-                'format' => 'webp',
-                'height' => null,
-                'interlace' => 'line',
-                'mode' => 'fit',
-                'position' => 'top-left',
-                'quality' => 82,
-                'upscale' => false,
-                'width' => 640,
-            ],
+            'fill' => '#abcdef',
+            'format' => 'webp',
+            'height' => null,
+            'interlace' => 'line',
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 82,
+            'upscale' => false,
+            'width' => 640,
         ])->and(ImageTransformModel::where('uid', $uid)->firstOrFail()->parameterChangeTime->equalTo($parameterChangeTime))->toBeTrue();
     });
 
     it('changes parameterChangeTime for custom operations but not transform metadata', function () {
-        app(AssetTransforms::class)->extend('custom', fn () => new NamedImageTransformDriver);
+        $transformerUid = Str::uuid()->toString();
         $transform = new ImageTransform([
             'name' => 'Original',
             'handle' => 'stableHandle',
-            'driver' => 'custom',
             'width' => 500,
-            'operations' => ['blur' => 1],
+            'operations' => [$transformerUid => ['blur' => 1]],
         ]);
         $this->service->saveTransform($transform);
         $transform = $this->service->getTransformById($transform->id);
@@ -246,7 +232,7 @@ describe('saveTransform', function () {
 
         expect(ImageTransformModel::findOrFail($transform->id)->parameterChangeTime->equalTo($parameterChangeTime))->toBeTrue();
 
-        $transform->setOperations(['blur' => 2]);
+        $transform->setOperations([$transformerUid => ['blur' => 2]]);
         expect($this->service->saveTransform($transform))->toBeTrue();
 
         expect(ImageTransformModel::findOrFail($transform->id)->parameterChangeTime->equalTo($parameterChangeTime))->toBeFalse();
@@ -402,19 +388,6 @@ describe('saveTransform', function () {
         Event::assertDispatchedOnce(TransformSaved::class);
     });
 });
-
-class NamedImageTransformDriver implements AssetTransformDriver
-{
-    public function definition(): AssetTransformDriverDefinition
-    {
-        return new AssetTransformDriverDefinition('Custom', ['blur' => ['integer']]);
-    }
-
-    public function transform(AssetTransformRequest $request): AssetTransformResult
-    {
-        return new AssetTransformResult('/custom.webp', 'image/webp');
-    }
-}
 
 describe('deleteTransform', function () {
     it('deletes a transform', function () {

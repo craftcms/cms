@@ -36,8 +36,6 @@ class ImageTransform extends Component
 
     public ?string $handle = null;
 
-    public ?string $driver = null;
-
     public int|float|null $width = null;
 
     public int|float|null $height = null;
@@ -61,6 +59,9 @@ class ImageTransform extends Component
     public ?DateTimeInterface $parameterChangeTime = null;
 
     /** @var array<string, mixed> */
+    private array $inlineOperations = [];
+
+    /** @var array<string, array<string, mixed>> */
     private array $operations = [];
 
     /** @param array<string, mixed> $config */
@@ -69,11 +70,8 @@ class ImageTransform extends Component
         return new self([
             'name' => $config['name'],
             'handle' => $config['handle'],
-            'driver' => $config['driver'] ?? null,
-            'operations' => [
-                ...Arr::except($config, ['name', 'handle', 'driver', 'operations']),
-                ...(is_array($config['operations'] ?? null) ? $config['operations'] : []),
-            ],
+            ...Arr::only($config, self::CORE_OPERATIONS),
+            'operations' => is_array($config['operations'] ?? null) ? $config['operations'] : [],
         ]);
     }
 
@@ -83,7 +81,7 @@ class ImageTransform extends Component
     }
 
     /** @return array<string, mixed> */
-    public function getOperations(): array
+    public function getOperations(?string $transformerUid = null): array
     {
         $operations = [];
 
@@ -93,13 +91,28 @@ class ImageTransform extends Component
                 : $this->$property;
         }
 
-        return [...$operations, ...$this->operations];
+        return [
+            ...$operations,
+            ...$this->inlineOperations,
+            ...($transformerUid !== null ? ($this->operations[$transformerUid] ?? []) : []),
+        ];
     }
 
     /** @param array<string, mixed> $operations */
     public function setOperations(array $operations): void
     {
-        $this->operations = [];
+        $isTransformerMap = $operations === [] || array_all(
+            array_keys($operations),
+            fn (mixed $uid): bool => is_string($uid) && preg_match('/^[0-9a-f-]{36}$/i', $uid) === 1,
+        );
+
+        if ($isTransformerMap) {
+            $this->operations = array_filter($operations, is_array(...));
+
+            return;
+        }
+
+        $this->inlineOperations = [];
 
         foreach ($operations as $handle => $value) {
             if (in_array($handle, self::CORE_OPERATIONS, true)) {
@@ -108,14 +121,20 @@ class ImageTransform extends Component
                 continue;
             }
 
-            $this->operations[$handle] = $value;
+            $this->inlineOperations[$handle] = $value;
         }
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<string, array<string, mixed>> */
     public function getCustomOperations(): array
     {
         return $this->operations;
+    }
+
+    /** @return array<string, mixed> */
+    public function getOperationsForTransformer(string $uid): array
+    {
+        return $this->operations[$uid] ?? [];
     }
 
     /** @return array<string,mixed> */
@@ -124,8 +143,8 @@ class ImageTransform extends Component
         return [
             'name' => $this->name,
             'handle' => $this->handle,
-            'driver' => $this->driver,
-            'operations' => $this->getOperations(),
+            ...Arr::only($this->getOperations(), self::CORE_OPERATIONS),
+            'operations' => $this->operations,
         ];
     }
 
@@ -138,7 +157,6 @@ class ImageTransform extends Component
         return [
             'name' => ['required', 'string'],
             'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
-            'driver' => ['nullable', 'string'],
             'operations' => ['array'],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],

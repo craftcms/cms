@@ -46,6 +46,9 @@ interface Control
      */
     public function path(): string|array;
 
+    /** @param string|list<string> $path */
+    public function withPath(string|array $path): static;
+
     /**
      * Returns an optional ancestor path whose complete value must mutate atomically.
      *

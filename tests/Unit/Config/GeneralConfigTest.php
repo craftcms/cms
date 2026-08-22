@@ -35,17 +35,19 @@ it('can set compiledTemplatesPath via fluent setter', function () {
     expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
 });
 
-it('requires a default Asset Transform driver', function () {
+it('requires a default Asset Transformer', function () {
     $config = GeneralConfig::create();
 
-    expect($config->defaultAssetTransformDriver)->toBe('craft')
-        ->and($config->defaultAssetTransformDriver('remote')->defaultAssetTransformDriver)->toBe('remote')
-        ->and(fn () => $config->defaultAssetTransformDriver(''))->toThrow(RuntimeException::class);
+    expect($config->defaultAssetTransformer)->toBe('craft')
+        ->and($config->defaultAssetTransformer('remote')->defaultAssetTransformer)->toBe('remote')
+        ->and(fn () => $config->defaultAssetTransformer(''))->toThrow(RuntimeException::class);
 });
 
-it('does not expose the legacy transform generation policy', function () {
-    expect(property_exists(GeneralConfig::class, 'generateTransformsBeforePageLoad'))->toBeFalse()
-        ->and(method_exists(GeneralConfig::class, 'generateTransformsBeforePageLoad'))->toBeFalse();
+it('sets the transform generation policy', function () {
+    $config = GeneralConfig::create();
+
+    expect($config->generateTransformsBeforePageLoad)->toBeFalse()
+        ->and($config->generateTransformsBeforePageLoad()->generateTransformsBeforePageLoad)->toBeTrue();
 });
 
 it('normalizes pageTrigger on the main config class', function () {

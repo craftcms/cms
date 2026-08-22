@@ -14,9 +14,11 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -30,6 +32,7 @@ use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -143,11 +146,11 @@ it('uses configured legacy handler instances independently for each manager', fu
         $secondResult = new LegacyArgumentManager()->prepareArguments(['adapter' => true]);
 
         expect($firstResult)->toMatchArray([
-                'handledBy' => 'legacy',
-                'configuration' => 'configured',
-                'calls' => 1,
-                'managerBound' => true,
-            ])
+            'handledBy' => 'legacy',
+            'configuration' => 'configured',
+            'calls' => 1,
+            'managerBound' => true,
+        ])
             ->and($secondResult)->toMatchArray([
                 'handledBy' => 'legacy',
                 'configuration' => 'configured',
@@ -193,8 +196,14 @@ it('accepts the legacy immediately transform argument', function() {
 
 it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
     $driver = new GqlImmediateAssetTransformDriver();
-    app(AssetTransforms::class)->extend('gql-immediately', fn() => $driver);
-    Cms::config()->defaultAssetTransformDriver('gql-immediately');
+    app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
+    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'GQL immediately',
+        'handle' => 'gql-immediately',
+        'driver' => 'gql-immediately',
+    ]));
+    Cms::config()->defaultAssetTransformer('gql-immediately');
     Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
     $asset = Asset::factory()->createElement([
         'width' => 800,
@@ -231,11 +240,11 @@ it('applies legacy immediately behavior without mutating transform operations or
 
     expect($driver->requests)->toHaveCount(3)
         ->and($driver->requests[0]->operations)->toBe(['width' => 320])
-        ->and($driver->requests[0]->settings)->toBe(['generateBeforePageLoad' => false])
+        ->and($driver->requests[0]->immediately)->toBeFalse()
         ->and($driver->requests[1]->operations)->toBe(['width' => 640])
-        ->and($driver->requests[1]->settings)->toBe(['generateBeforePageLoad' => true])
+        ->and($driver->requests[1]->immediately)->toBeTrue()
         ->and($driver->requests[2]->operations)->toBe(['width' => 960])
-        ->and($driver->requests[2]->settings)->toBe(['generateBeforePageLoad' => true]);
+        ->and($driver->requests[2]->immediately)->toBeTrue();
 });
 
 it('returns gql token aliases from the legacy gql service', function() {

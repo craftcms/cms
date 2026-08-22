@@ -12,22 +12,19 @@ declare(strict_types=1);
 namespace craft\elements;
 
 use Craft;
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\models\ImageTransform as LegacyImageTransform;
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\Yii2Adapter\Asset\LegacyImageTransformerDriver;
 use Override;
 use Twig\Markup;
 
@@ -121,9 +118,9 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 
     #[Override]
     #[AllowedInSandbox]
-    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
+    public function transform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
     {
-        return app(AssetTransforms::class)->transform($this, $definition);
+        return app(AssetTransformers::class)->transform($this, $definition, $immediately);
     }
 
     #[Override]
@@ -140,46 +137,34 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     }
 
     #[Override]
-    protected function _tryTransform(#[\SensitiveParameter] mixed $definition): ?AssetTransformResult
+    protected function _tryTransform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): ?AssetTransformResult
     {
-        $immediately = $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        $settings = $immediately === null ? [] : ['generateBeforePageLoad' => $immediately];
-        $candidateDriver = null;
+        $immediately ??= $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+        $candidateTransformer = null;
 
         try {
-            if (!is_array($definition) || !array_key_exists('driver', $definition)) {
-                if (is_array($definition) && array_key_exists('transformer', $definition)) {
-                    $candidateDriver = $definition['transformer'];
+            if (is_array($definition) && array_key_exists('transformer', $definition)) {
+                $candidate = $definition['transformer'];
+
+                if (is_string($candidate) && is_subclass_of($candidate, ImageTransformerInterface::class)) {
+                    $candidateTransformer = $candidate === LegacyImageTransform::DEFAULT_TRANSFORMER
+                        ? null
+                        : Craft::$app->getImageTransforms()->getAssetTransformerHandle($candidate);
                     unset($definition['transformer']);
-                } elseif ($definition instanceof LegacyImageTransform) {
-                    $candidateDriver = $definition->getTransformer();
                 }
-
-                $transform = ImageTransformHelper::normalizeTransform($definition);
-
-                if ($candidateDriver !== null && !in_array($candidateDriver, [ImageTransformer::class, LegacyImageTransform::DEFAULT_TRANSFORMER], true)) {
-                    if (!$transform instanceof LegacyImageTransform) {
-                        $transform = new LegacyImageTransform(['operations' => $transform->getOperations()]);
-                    }
-
-                    $definition = $transform;
-                    $filesystemTransform = $this->getVolume()->getFs()->getAssetTransform();
-                    $legacySelected = $transform->driver === null
-                        && (!is_array($filesystemTransform) || !array_key_exists('driver', $filesystemTransform));
-
-                    if ($legacySelected) {
-                        event($event = new TransformGenerating($this, $transform));
-
-                        if ($event->url !== null) {
-                            return LegacyImageTransformerDriver::result($this, $transform, Html::encodeSpaces($event->url));
-                        }
-
-                        $settings['legacyBeforeGenerate'] = true;
-                    }
-                }
+            } elseif ($definition instanceof LegacyImageTransform) {
+                $candidate = $definition->getTransformer();
+                $candidateTransformer = $candidate === LegacyImageTransform::DEFAULT_TRANSFORMER
+                    ? null
+                    : Craft::$app->getImageTransforms()->getAssetTransformerHandle($candidate);
             }
 
-            return app(AssetTransforms::class)->transform($this, $definition, $settings, $candidateDriver);
+            return app(AssetTransformers::class)->transformWithCandidate(
+                $this,
+                $definition,
+                $candidateTransformer,
+                $immediately,
+            );
         } catch (AssetTransformException|NotSupportedException $exception) {
             report($exception);
 

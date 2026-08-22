@@ -2,18 +2,22 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransforms;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Queue;
 
@@ -45,7 +49,7 @@ describe('generate', function () {
         $transformer = app(ImageTransformer::class);
         $transform = new ImageTransform(['width' => 100]);
         $index = $transformer->getTransformIndex($asset, $transform);
-        $path = $asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
+        $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
         $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
         $index->fileExists = true;
         $transformer->storeTransformIndexData($index);
@@ -53,7 +57,7 @@ describe('generate', function () {
         get(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
             ->assertForbidden();
 
-        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -64,19 +68,25 @@ describe('generate', function () {
         config()->set('filesystems.disks.configured-private-source', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-source'),
-            'asset_transform' => [
-                'driver' => 'craft',
-                'settings' => [
-                    'filesystem' => 'disk:configured-private-target',
-                    'subpath' => 'renditions',
-                ],
-            ],
         ]);
         config()->set('filesystems.disks.configured-private-target', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
-        $volume = Volume::factory()->create(['fs' => 'disk:configured-private-source']);
+        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Configured private',
+            'handle' => 'configured-private',
+            'driver' => 'craft',
+            'settings' => [
+                'filesystem' => 'disk:configured-private-target',
+                'subpath' => 'renditions',
+            ],
+        ]));
+        $volume = Volume::factory()->create([
+            'fs' => 'disk:configured-private-source',
+            'assetTransformer' => 'configured-private',
+        ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $asset = AssetModel::factory()->createElement([
             'volumeId' => $volume->id,
@@ -92,7 +102,7 @@ describe('generate', function () {
         );
         Queue::fake();
 
-        $result = app(AssetTransforms::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -120,9 +130,9 @@ describe('generate', function () {
         );
         $result = app(ImageTransformer::class)->transform(new AssetTransformRequest(
             $asset,
-            'craft',
+            app(AssetTransformers::class)->resolve('craft'),
             ['width' => 100],
-            ['generateBeforePageLoad' => true],
+            true,
         ));
 
         get($result->url)->assertOk();
@@ -142,7 +152,7 @@ describe('generate', function () {
         ])->assertForbidden();
     });
 
-    it('generates named transforms with their selected driver', function () {
+    it('generates named transforms with the selected transformer', function () {
         $driver = new class implements AssetTransformDriver
         {
             public ?AssetTransformRequest $request = null;
@@ -159,11 +169,17 @@ describe('generate', function () {
                 return new AssetTransformResult('/plugin/card.jpg', 'image/jpeg');
             }
         };
-        app(AssetTransforms::class)->extend('controller-test', fn () => $driver);
+        app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
+        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+            'uid' => Str::uuid()->toString(),
+            'name' => 'Controller test',
+            'handle' => 'controller-test',
+            'driver' => 'controller-test',
+        ]));
+        Cms::config()->defaultAssetTransformer('controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',
             'handle' => 'controllerCard',
-            'driver' => 'controller-test',
             'width' => 320,
         ]));
         $asset = AssetModel::factory()->createElement([
@@ -179,7 +195,7 @@ describe('generate', function () {
             'handle' => 'controllerCard',
         ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
 
-        expect($driver->request?->driver)->toBe('controller-test');
+        expect($driver->request?->transformer->handle)->toBe('controller-test');
     });
 
     it('returns error for missing asset id', function () {

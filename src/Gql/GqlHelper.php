@@ -252,11 +252,6 @@ class GqlHelper
     {
         if (($arguments['immediately'] ?? null) !== null) {
             event($event = new TransformArgumentsPreparing($arguments));
-
-            if (! $event->handled) {
-                throw new InvalidArgumentException('The GraphQL `immediately` transform argument is not supported by the current application.');
-            }
-
             $arguments = $event->arguments;
         }
 
