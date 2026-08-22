@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+import {baseFieldStyles, baseInputStyles, baseComboboxStyles} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -13,14 +13,7 @@ export default css`
   }
 
   ::slotted(.form-control) {
-    width: 100%;
-    height: 100%;
-    appearance: none;
-    border: 0;
-    min-height: none;
-    padding-inline: var(--c-input-spacing-inline)
-      calc(var(--c-input-spacing-inline) * 1.5 + 1em);
-    border-radius: var(--c-input-radius);
+    ${baseComboboxStyles}
   }
 
   .input-group__input {

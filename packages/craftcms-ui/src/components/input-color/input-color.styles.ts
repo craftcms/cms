@@ -115,10 +115,4 @@ export default css`
     appearance: none;
     background-color: transparent;
   }
-
-  .input-group__prefix + .input-group__input ::slotted([slot='input']),
-  .input-group__input:has(+ .input-group__suffix) ::slotted([slot='input']) {
-    --c-focus-outline-style: inset;
-    --c-focus-outline-offset: -2px;
-  }
 `;

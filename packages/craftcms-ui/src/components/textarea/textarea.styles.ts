@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {baseFormControlStyles} from '@src/styles/form.styles';
 
 export default css`
   :host(:not([label-sr-only])) .form-field__group-one {
@@ -15,6 +16,7 @@ export default css`
   }
 
   ::slotted([slot='input']) {
+    ${baseFormControlStyles}
     padding-block: var(--c-spacing-md);
     line-height: var(--leading-normal);
     resize: none;
