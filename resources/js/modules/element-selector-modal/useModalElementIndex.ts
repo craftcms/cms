@@ -26,33 +26,15 @@ type Row = Record<string, any>;
 export type SelectedElement = ElementInfo;
 
 /**
- * Row keys carried through to the selection payload.
+ * The selection metadata `ModalIndexViewModel::extraRowData()` nests on each row.
  *
- * Not a blind spread of the row: a row is mostly rendered column HTML keyed by
- * attribute, and forwarding that would put kilobytes of markup into every
- * `onSelect` payload. These are the keys `ModalIndexViewModel::extraRowData()`
- * adds on purpose — `kind`/`alt` for the Markdown field, the folder keys for the
- * asset-move picker.
+ * Nested, not merged: the rest of a row is rendered column HTML keyed by
+ * attribute, and a flat merge let a column overwrite anything sharing its name —
+ * `status` arrived as a `<craft-badge>` element rather than `"pending"`. Reading
+ * one key also means no whitelist to keep in step with the server.
  */
-const EXTRA_ROW_KEYS = [
-  'kind',
-  'alt',
-  'isFolder',
-  'folderId',
-  'folderUrl',
-  'canMoveTo',
-] as const;
-
-function extraRowData(row: Row): Record<string, unknown> {
-  const extras: Record<string, unknown> = {};
-
-  for (const key of EXTRA_ROW_KEYS) {
-    if (row[key] !== undefined) {
-      extras[key] = row[key];
-    }
-  }
-
-  return extras;
+function elementInfo(row: Row): Record<string, unknown> {
+  return (row.elementInfo as Record<string, unknown> | undefined) ?? {};
 }
 
 interface Options {
@@ -194,15 +176,21 @@ export function useModalElementIndex(options: Options) {
    * because `onModalSelect` and `app/render-elements` both consume it.
    */
   const selectedElements = computed<SelectedElement[]>(() =>
-    table.getSelectedRowModel().rows.map(({original}) => ({
-      ...extraRowData(original),
-      id: Number(original.id),
-      siteId: original.siteId != null ? Number(original.siteId) : null,
-      label: String(original.label ?? original.title ?? original.id),
-      status: (original.status as string) ?? null,
-      url: (original.url as string) ?? null,
-      hasThumb: Boolean(original.hasThumb ?? original.thumb),
-    }))
+    table.getSelectedRowModel().rows.map(({original}) => {
+      const info = elementInfo(original);
+
+      return {
+        // Type-specific extras first — `kind`/`alt` for assets, `folderId` for
+        // folders — so the named keys below always win.
+        ...info,
+        id: Number(original.id),
+        siteId: info.siteId != null ? Number(info.siteId) : null,
+        label: String(info.label ?? original.id),
+        status: (info.status as string | null) ?? null,
+        url: (info.url as string | null) ?? null,
+        hasThumb: Boolean(info.hasThumb),
+      };
+    })
   );
 
   const hasSelection = computed(() => selectedElements.value.length > 0);

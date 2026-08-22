@@ -47,14 +47,24 @@ class ModalIndexViewModel extends ContentIndexViewModel
     protected function extraRowData(ElementInterface $element): array
     {
         return [
-            'siteId' => $element->siteId,
-            'label' => $element->getUiLabel(),
-            'status' => $element->getStatus(),
-            'url' => $element->getUrl(),
-            // Per element, not per type: an asset with no preview renders no thumb
-            // even though its element type has them.
-            'hasThumb' => $element->getThumbHtml(30) !== null,
-            ...$this->typeSpecificRowData($element),
+            // Nested rather than merged into the row.
+            //
+            // `tableRows()` spreads extra row data *before* the visible columns,
+            // so any key that matches a column attribute is overwritten by that
+            // column's rendered HTML — `status` came back as a `<craft-badge>`,
+            // and `kind` would come back as "Image" rather than "image" whenever
+            // the File Kind column happened to be visible. A key of its own can't
+            // collide with a column name.
+            'elementInfo' => [
+                'siteId' => $element->siteId,
+                'label' => $element->getUiLabel(),
+                'status' => $element->getStatus(),
+                'url' => $element->getUrl(),
+                // Per element, not per type: an asset with no preview renders no
+                // thumb even though its element type has them.
+                'hasThumb' => $element->getThumbHtml(30) !== null,
+                ...$this->typeSpecificRowData($element),
+            ],
         ];
     }
 
@@ -75,6 +85,9 @@ class ModalIndexViewModel extends ContentIndexViewModel
             return [
                 'kind' => $element->kind,
                 'alt' => $element->alt,
+                // What the folder picker selects; the element's own id is the
+                // asset's, not the folder's.
+                ...($element->isFolder ? ['folderId' => $element->folderId] : []),
             ];
         }
 

@@ -90,11 +90,13 @@ export async function createElementSelectorModal(
   const [
     {createApp},
     {default: ElementSelectorModal},
-    {createCpComponentRegistry},
+    {cpComponentRegistry},
+    {default: CpLink},
   ] = await Promise.all([
     import('vue'),
     import('./ElementSelectorModal.vue'),
     import('@/bootstrap/components'),
+    import('@/common/components/CpLink.vue'),
   ]);
 
   const host = document.createElement('div');
@@ -102,7 +104,19 @@ export async function createElementSelectorModal(
   document.body.append(host);
 
   const app: App = createApp(ElementSelectorModal, {controller});
-  createCpComponentRegistry().install(app);
+
+  // The index renders server HTML through `DynamicHtmlRenderer`, which compiles
+  // it at runtime — so every component that HTML names has to be registered on
+  // *this* app. Title cells name `CpLink`, which lives on the CP app rather than
+  // in the registry, so it is registered explicitly alongside it.
+  //
+  // `cpComponentRegistry` is the shared singleton. The old modal called
+  // `createCpComponentRegistry()`, which builds an *empty* one — so nothing was
+  // ever registered and every title cell rendered as an inert `<cplink>`.
+  app.component('CpLink', CpLink);
+  cpComponentRegistry.install(app);
+  app.onUnmount(() => cpComponentRegistry.uninstall(app));
+
   app.config.compilerOptions.isCustomElement = (tag: string) =>
     tag.includes('-');
   app.mount(host);
