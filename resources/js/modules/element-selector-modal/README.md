@@ -1,7 +1,6 @@
 # element-selector-modal
 
-The Vue presentation layer for the element selector, plus what is left of the
-legacy modal it replaced.
+The Vue presentation layer for the element selector.
 
 The business logic does **not** live here — it lives in
 `@craftcms/ui`'s [`core/element-selector`](../../../../packages/craftcms-ui/src/core/element-selector/),
@@ -44,8 +43,7 @@ index reusable and `useModalElementIndex` core-agnostic.
 | `useModalElementIndex.ts` | The composable behind it — the page's own `useElementIndex*` stack with a non-Inertia visitor. |
 | `modal-index-visitor.ts` | That visitor. |
 | `index.ts` | Registers the asset controller, drains legacy registrations, assigns the `Craft.*` shims. |
-| `volume-folder-selector-modal.ts` | **Still on the legacy modal.** See below. |
-| `base-element-selector-modal.ts`, `asset-selector-modal.ts`, `registry.ts` | **Legacy.** Only the volume-folder modal still reaches them. |
+| `volume-folder-selector-modal.ts` | The folder picker. Binds the same web component and controller to the **legacy jQuery index** — no Vue at all. |
 
 ## What the payload looks like
 
@@ -59,21 +57,37 @@ let a column silently overwrite anything sharing its name — `status` came back
 a `<craft-badge>` element rather than `"pending"`, and `kind` would have come back
 as `"Image"` rather than `"image"` whenever the File Kind column was visible.
 
-## The legacy remnant
+## The folder picker
 
-`volume-folder-selector-modal.ts` still extends `BaseElementSelectorModal`,
-because it drives the **legacy jQuery element index** rather than the Vue one:
-folder picking keys off the index's `sourcePath` (the breadcrumb of the folder
-you have navigated into), which is what "select the folder I'm looking at" means
-when no row is highlighted. It is the last thing keeping `ElementIndexHtml` and
-the HTML `element-indexes/*` endpoints alive.
+`volume-folder-selector-modal.ts` drives the **legacy jQuery element index**
+rather than the Vue one, because folder picking keys off that index's
+`sourcePath` — the breadcrumb of the folder you have navigated into, which is
+what "select the folder I'm looking at" means when no row is highlighted. It is
+the last thing keeping `ElementIndexHtml` and the HTML `element-indexes/*`
+endpoints alive.
 
-`VolumeFolderSelectorController` is already written and tested in the core, and
-`<craft-element-selector-modal>` has a `non-modal` mode for exactly this case —
-a top-layer dialog paints above `<body>`-appended menus, which is most of the
-legacy CP. What remains is the binder: create the element, slot
-`response.data.html` into it, boot `Craft.createElementIndex`, and adapt it to
-`VolumeFolderIndexAdapter`. Deleting the three legacy files falls out of that.
+It is also the proof that this split works: the same web component and the same
+controller as the Vue modal, with server HTML slotted in instead of a component
+tree, and a `VolumeFolderIndexAdapter` bridging the jQuery index to the core.
+
+It opens **`non-modal`** deliberately. `showModal()` puts a dialog in the top
+layer, where it paints above every menu the legacy CP appends to `<body>` — the
+breadcrumb, status and site menus this index depends on — and makes them
+unclickable. `show()` keeps it in the normal stacking context; the component
+supplies the backdrop, Escape and focus containment the platform then stops
+providing.
+
+The day a Vue folder index exists, this file collapses into
+`ElementSelectorModal.vue`.
+
+### A rule this fixed
+
+"Select the folder I'm looking at" never actually worked. The legacy modal gated
+it on `ev.currentTarget === this.$selectBtn[0]`, but the base class bound the
+click as a zero-argument arrow, so `ev` was always `undefined`: the Select button
+would enable and then do nothing. The rule now lives in the controller's
+`canSubmitSelection()` and `buildElementInfo()`, so the inherited `submit()`
+handles both cases with no override and no event to inspect.
 
 ## Registry
 
