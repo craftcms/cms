@@ -47,5 +47,9 @@ export type {
   ElementSelectorModalSettings,
 } from './create-element-selector-modal';
 export {VolumeFolderSelectorModal} from './volume-folder-selector-modal';
-export {default as ElementSelectorModal} from './ElementSelectorModal.vue';
-export {useElementSelectorController} from './useElementSelectorController';
+
+// `ElementSelectorModal.vue` and `useElementSelectorController` are deliberately
+// NOT re-exported here. `cp.ts` imports this module for its side effects, and a
+// static re-export would pull the Vue view — and with it the whole element-index
+// component tree — into every CP page, which is exactly what the factory's lazy
+// `import()` exists to avoid. Import them from their own modules.

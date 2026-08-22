@@ -179,7 +179,10 @@ export class VolumeFolderSelectorModal {
       const elements = [];
 
       for (let i = 0; i < selected.length; i++) {
-        const $element = $(selected.eq(i).find('.element:first'));
+        // `.first()`, not the deprecated `:first` positional selector — jQuery's
+        // engine does not resolve that one here and silently matches nothing,
+        // which turned every folder id into NaN.
+        const $element = selected.eq(i).find('.element').first();
         const folderId = parseInt($element.data('folder-id'), 10);
 
         elements.push({
@@ -206,7 +209,7 @@ export class VolumeFolderSelectorModal {
       onSelectSource: () => this.#updateHeading(),
       viewSettings: () => ({
         canSelectElement: ($element: any) =>
-          hasAttr($element.find('.element:first')[0], 'data-folder-id'),
+          hasAttr($element.find('.element').first()[0], 'data-folder-id'),
       }),
     };
   }
