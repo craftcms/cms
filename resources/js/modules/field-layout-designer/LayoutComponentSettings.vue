@@ -8,25 +8,26 @@
    */
   import {ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
+  import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import type {FormPayload, FormValues} from '@/modules/forms/types';
+  import {takeLayoutSettingsContext} from './settings-slideout';
 
   type FormErrors = Record<string, string | string[]>;
 
   const props = defineProps<{
-    payload: FormPayload;
+    contextId: string;
     title: string;
-    /** Identifies the component being edited, for the refresh request. */
-    requestData: () => Record<string, unknown>;
-    /** Persists the settings. Rejects with `{errors}` on a validation failure. */
-    apply: (values: Record<string, unknown>) => Promise<void>;
   }>();
+  const context = takeLayoutSettingsContext(props.contextId);
 
   const slideout = useSlideout();
-  const payload = shallowRef<FormPayload>(props.payload);
-  const errors = shallowRef<FormPayload['errors']>(props.payload.errors ?? []);
+  const payload = shallowRef<FormPayload>(context.payload);
+  const errors = shallowRef<FormPayload['errors']>(
+    context.payload.errors ?? []
+  );
   const renderer = ref<{
     currentValues(): FormPayload['values'];
   } | null>(null);
@@ -35,8 +36,8 @@
    * Backs the shell's Save button, and gives it an accurate dirty check for the
    * unsaved-changes prompt — kept in sync with the renderer's values below.
    */
-  const form = useForm<any>({
-    settings: settingsValues(props.payload.values),
+  const form = useForm({
+    settings: JSON.stringify(settingsValues(context.payload.values)),
   });
 
   useAppLayout(() => ({
@@ -45,18 +46,21 @@
     onSave: save,
   }));
 
-  function settingsValues(
-    values: FormPayload['values']
-  ): Record<string, unknown> {
-    return (values.settings ?? {}) as Record<string, unknown>;
+  function settingsValues(values: FormPayload['values']): FormValues {
+    const settings = values.settings;
+    return settings instanceof Object &&
+      !Array.isArray(settings) &&
+      !(settings instanceof File)
+      ? {...settings}
+      : {};
   }
 
-  function currentValues(): Record<string, unknown> {
+  function currentValues(): FormValues {
     return settingsValues(renderer.value?.currentValues() ?? {});
   }
 
   function onChange(): void {
-    form.settings = currentValues();
+    form.settings = JSON.stringify(currentValues());
   }
 
   function setErrors(next: FormErrors): void {
@@ -72,7 +76,7 @@
     errors.value = [];
 
     try {
-      await props.apply(currentValues());
+      await context.apply(currentValues());
     } catch (error: any) {
       const responseErrors = error?.response?.data?.errors;
 
@@ -98,7 +102,7 @@
       'fields/refresh-layout-component-settings',
       {
         // `values` is already relative to `scope`, unlike currentValues().
-        data: {...props.requestData(), settings: values, scope},
+        data: {...context.requestData(), settings: values, scope},
       }
     );
 
@@ -108,12 +112,8 @@
 
     // Server-rendered controls (condition builders, field selects) register
     // their own assets on every render.
-    const craft = Craft as typeof Craft & {
-      appendHeadHtml(html: string): Promise<void>;
-      appendBodyHtml(html: string): Promise<void>;
-    };
-    await craft.appendHeadHtml(data.headHtml);
-    await craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
     return data.form;
   }

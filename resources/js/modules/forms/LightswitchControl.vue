@@ -27,7 +27,11 @@
   const emit = defineEmits<{(event: 'update:value', value: boolean): void}>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    emit('update:value', (event.target as CraftSwitch).checked);
+    if (!(event.target instanceof CraftSwitch)) {
+      throw new TypeError('Expected a switch event target.');
+    }
+
+    emit('update:value', event.target.checked);
   });
 </script>
 

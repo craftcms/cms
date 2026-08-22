@@ -1,5 +1,8 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {BaseElementSelectInput} from './base-element-select-input';
+import {
+  BaseElementSelectInput,
+  type BaseElementSelectInputSettings,
+} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
 import {TagSelectInput} from './tag-select-input';
 
@@ -12,30 +15,27 @@ it('preserves legacy element select input extension points', () => {
   expect('_initialized' in input).toBe(true);
   expect('_$replaceElement' in input).toBe(true);
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectInput.prototype,
       'thumbLoader'
-    )?.get
-  ).toBe('function');
+    )
+  ).toMatchObject({get: expect.any(Function)});
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       BaseElementSelectInput.prototype,
       '_animateStructureElementAway'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
 
   expect(
-    typeof Object.getOwnPropertyDescriptor(
-      EntrySelectInput.prototype,
-      'section'
-    )?.get
-  ).toBe('function');
+    Object.getOwnPropertyDescriptor(EntrySelectInput.prototype, 'section')
+  ).toMatchObject({get: expect.any(Function)});
   expect(
-    typeof Object.getOwnPropertyDescriptor(
+    Object.getOwnPropertyDescriptor(
       EntrySelectInput.prototype,
       'showElementEditor'
     )?.value
-  ).toBe('function');
+  ).toBeInstanceOf(Function);
 
   for (const method of [
     'focusOption',
@@ -47,18 +47,15 @@ it('preserves legacy element select input extension points', () => {
     expect(Object.hasOwn(TagSelectInput.prototype, method)).toBe(true);
   }
   expect(
-    typeof Object.getOwnPropertyDescriptor(
-      TagSelectInput.prototype,
-      'fieldName'
-    )?.get
-  ).toBe('function');
+    Object.getOwnPropertyDescriptor(TagSelectInput.prototype, 'fieldName')
+  ).toMatchObject({get: expect.any(Function)});
 
   expect(BaseElementSelectInput.defaults).toMatchObject({
     allowAdd: true,
     allowRemove: true,
     modalSettings: {},
   });
-  expect(TagSelectInput.defaults).toEqual({tagGroupId: null});
+  expect(TagSelectInput.defaults).toMatchObject({tagGroupId: null});
 });
 
 afterEach(() => {
@@ -76,7 +73,11 @@ function chipActionInput(elementSelect: any = null) {
   const showModal = vi.fn();
   const removeElement = vi.fn();
   const input = new UninitializedElementSelectInput();
-  input.settings = {allowRemove: true, elementType: 'entry', sortable: false};
+  input.settings = {
+    allowRemove: true,
+    elementType: 'entry',
+    sortable: false,
+  } as BaseElementSelectInputSettings;
   input.elementSelect = elementSelect;
   input.showModal = showModal;
   input.removeElement = removeElement;
@@ -145,7 +146,7 @@ function replaceFlowInput() {
     maintainHierarchy: false,
     showActionMenu: false,
     criteria: {},
-  };
+  } as BaseElementSelectInputSettings;
   input.$elements = {length: 1};
 
   const removeElement = vi.fn(() => {

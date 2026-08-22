@@ -2,6 +2,7 @@ import type {App, Component} from 'vue';
 import {defineAsyncComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
+type ComponentApp = Pick<App, 'component' | 'config'>;
 
 export type CpComponentModule = {
   default: Component;
@@ -15,8 +16,8 @@ export type CpComponentRegistration = Component | CpComponentLoader;
 
 export interface CpComponentRegistry {
   register(name: string, componentOrLoader: CpComponentRegistration): void;
-  install(app: App): void;
-  uninstall(app: App): void;
+  install(app: ComponentApp): void;
+  uninstall(app: ComponentApp): void;
 }
 
 let nextAppId = 0;
@@ -24,7 +25,7 @@ let nextAppId = 0;
 function isLoader(
   componentOrLoader: CpComponentRegistration
 ): componentOrLoader is CpComponentLoader {
-  if (typeof componentOrLoader !== 'function') {
+  if (!(componentOrLoader instanceof Function)) {
     return false;
   }
 
@@ -45,10 +46,10 @@ function asyncComponent(loader: CpComponentLoader): Component {
 
 export function createCpComponentRegistry(): CpComponentRegistry {
   const components = new Map<string, CpComponentRegistration>();
-  const apps = new Set<App>();
+  const apps = new Set<ComponentApp>();
 
   function registerWithApp(
-    app: App,
+    app: ComponentApp,
     name: string,
     componentOrLoader: CpComponentRegistration
   ) {

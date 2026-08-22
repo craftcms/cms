@@ -41,6 +41,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
     this.updateAddElementsBtn();
 
+    // SAFETY: This listener is attached specifically to the native keydown event.
     this.addListener(this.$elementsContainer[0], 'keydown', ((
       ev: KeyboardEvent
     ) => {
@@ -115,7 +116,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
       fileInput: this.$fileInput,
     };
 
-    if (typeof this.settings.criteria.kind !== 'undefined') {
+    if (this.settings.criteria.kind !== undefined) {
       options.allowedKinds = this.settings.criteria.kind;
     }
 
@@ -180,6 +181,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
     this.addElements($newElement);
 
+    // SAFETY: The legacy base declares modal dynamically and deletion restores lazy creation.
     delete (this as any).modal;
   }
 
@@ -262,6 +264,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
     filename = filename || data?.files?.[0]?.name;
 
+    // SAFETY: The upload endpoint returns arrays of validation message strings.
     const errorMessages: string[] = errors
       ? (Object.values(errors).flat() as string[])
       : [];

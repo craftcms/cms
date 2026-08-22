@@ -8,7 +8,7 @@ import {
 } from 'vite-plus/test';
 import {QueueService} from './queue';
 import {ConfigService} from '@craftcms/ui/services/Config';
-import type {JobInfo} from './types';
+import type {JobInfo, JobStatusKey} from './types';
 import {JobStatus} from './types';
 
 // Mock axios
@@ -44,13 +44,14 @@ describe('QueueService', () => {
   describe('runQueue', () => {
     test('makes HTTP request and starts tracking when runAutomatically is true', async () => {
       const axios = await import('axios');
+      const postSpy = vi.spyOn(axios.default, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: true});
 
       const startTrackingSpy = vi.spyOn(queue, 'startTracking');
       await queue.runQueue();
 
-      expect(axios.default.post).toHaveBeenCalledWith(
+      expect(postSpy).toHaveBeenCalledWith(
         'https://example.com/actions/queue/run'
       );
       expect(startTrackingSpy).toHaveBeenCalledWith(false, true);
@@ -58,13 +59,14 @@ describe('QueueService', () => {
 
     test('skips HTTP request but still tracks when runAutomatically is false', async () => {
       const axios = await import('axios');
+      const postSpy = vi.spyOn(axios.default, 'post');
       const queue = QueueService.getInstance();
       queue.initialize({runAutomatically: false});
 
       const startTrackingSpy = vi.spyOn(queue, 'startTracking');
       await queue.runQueue();
 
-      expect(axios.default.post).not.toHaveBeenCalled();
+      expect(postSpy).not.toHaveBeenCalled();
       expect(startTrackingSpy).toHaveBeenCalledWith(false, true);
     });
   });
@@ -133,7 +135,7 @@ describe('QueueService', () => {
 
 function createMockJob(overrides: {
   id?: number;
-  status: number;
+  status: JobStatusKey;
   delay?: number;
 }): JobInfo {
   const id = overrides.id ?? 1;
@@ -145,7 +147,7 @@ function createMockJob(overrides: {
     progress: 0,
     progressLabel: null,
     status: {
-      label: overrides.status as any,
+      label: overrides.status,
       value: overrides.status,
     },
     delay: overrides.delay ?? 0,

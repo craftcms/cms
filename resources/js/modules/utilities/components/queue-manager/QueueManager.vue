@@ -28,6 +28,10 @@
 
   onMounted(async () => {
     queue?.addEventListener('job-update', (event) => {
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+      // SAFETY: Queue dispatches job-update with the JobUpdateDetail contract.
       const {detail} = event as CustomEvent<JobUpdateDetail>;
       jobs.value = detail.jobInfo;
       totalJobs.value = detail.totalJobs;

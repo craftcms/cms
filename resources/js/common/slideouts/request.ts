@@ -1,10 +1,11 @@
 import axios from 'axios';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 export interface SlideoutPage {
   component: InertiaPageComponent;
-  props: Record<string, unknown>;
+  props: ScreenPageProps;
   url: string;
 }
 

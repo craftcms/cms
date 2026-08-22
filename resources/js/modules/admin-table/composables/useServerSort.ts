@@ -4,7 +4,10 @@ import type {SortItem} from '@/common/types';
 
 interface OnChangeArgs {
   state: SortingState;
-  query: Record<string, any>;
+  query: Record<
+    string,
+    string | number | Record<number, {field: string; direction: string}>
+  >;
 }
 
 interface UseServerSortParams {
@@ -25,7 +28,7 @@ export function useServerSort({initialState, onChange}: UseServerSortParams) {
 
   function getNextSortParams(updater: Updater<SortingState>) {
     const next =
-      typeof updater === 'function' ? updater(sortingState.value) : updater;
+      updater instanceof Function ? updater(sortingState.value) : updater;
 
     // Convert array of objects to indexed object format
     const sortQueryParams = next.reduce<

@@ -15,8 +15,13 @@ export const fldTabData = new WeakMap<Element, Tab>();
 /** Legacy `$container.data('fld-element', element)` / `.data('fld-element')`. */
 export const fldElementData = new WeakMap<Element, FldElement>();
 
+export interface FieldLayoutHud {
+  $trigger: HTMLElement;
+  hide(): void;
+}
+
 /** Legacy `$(hud.$hud).data('hud', hud)` — looked up via `getActiveHud()`. */
-export const hudData = new WeakMap<Element, any>();
+export const hudData = new WeakMap<Element, FieldLayoutHud>();
 
 /** Legacy `$container.data('cvd', cvd)`. */
 export const cvdData = new WeakMap<Element, any>();
@@ -28,7 +33,11 @@ export const cvdData = new WeakMap<Element, any>();
 export function htmlToElement(html: string): HTMLElement {
   const template = document.createElement('template');
   template.innerHTML = html.trim();
-  return template.content.firstElementChild as HTMLElement;
+  const element = template.content.firstElementChild;
+  if (!(element instanceof HTMLElement)) {
+    throw new Error('Expected the HTML fragment to contain an element.');
+  }
+  return element;
 }
 
 /**

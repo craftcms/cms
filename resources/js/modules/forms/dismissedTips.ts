@@ -12,7 +12,9 @@ export function dismissedTipUids(): Array<string> {
     const parsed = stored ? JSON.parse(stored) : [];
 
     return Array.isArray(parsed)
-      ? parsed.filter((uid) => typeof uid === 'string')
+      ? parsed.filter(
+          (uid): uid is string => Object(uid).constructor === String
+        )
       : [];
   } catch {
     // Private browsing, quota, or a malformed value — treat as nothing dismissed.

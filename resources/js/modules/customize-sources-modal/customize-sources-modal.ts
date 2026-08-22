@@ -2,6 +2,13 @@ import {Modal, Base, DragSort, bod} from '@craftcms/garnish';
 
 declare const Craft: any;
 declare const Garnish: any;
+
+interface LegacySourceContainer {
+  insertBefore(target: any): LegacySourceContainer;
+  appendTo(target: any): LegacySourceContainer;
+  addClass(name: string): LegacySourceContainer;
+  removeClass(name: string): LegacySourceContainer;
+}
 declare const $: any;
 
 // ─── CustomizeSourcesModal ────────────────────────────────────────────────────
@@ -49,7 +56,7 @@ export class CustomizeSourcesModal extends Modal {
 
   $sourcesSidebar: any = null;
   $sourcesSidebarContent: any = null;
-  sourceContainers: Record<string, any> = {};
+  sourceContainers: Record<string, LegacySourceContainer> = {};
   $sourcesHeader: any = null;
   $newSourceBtn: any = null;
 
@@ -82,6 +89,7 @@ export class CustomizeSourcesModal extends Modal {
   #$container: any = null;
 
   constructor(elementIndex: any, settings?: any) {
+    // SAFETY: The legacy Modal base accepts an omitted container during deferred construction.
     super(undefined as any, {autoShow: false});
     this.setSettings(settings, {resizable: true});
 
@@ -106,7 +114,7 @@ export class CustomizeSourcesModal extends Modal {
     this.$sourcesSidebarContent = $(
       '<div class="cs-sidebar-content"/>'
     ).appendTo(this.$sourcesSidebar);
-    this.sourceContainers = [];
+    this.sourceContainers = {};
 
     this.$sourceSettingsOuterContainer = $(
       '<div class="cs-source-settings--outer"/>'
@@ -269,6 +277,7 @@ export class CustomizeSourcesModal extends Modal {
         label: Craft.t('app', 'New custom source'),
         onActivate: () => {
           const sortOptions = this.baseSortOptions!.slice(0);
+          // SAFETY: The legacy ElementIndex subclass supplies defaultSortOptions.
           sortOptions.push(...(this as any).defaultSortOptions);
           addSource({
             type: 'custom',
@@ -427,18 +436,21 @@ export class CustomizeSourcesModal extends Modal {
   }
 
   getSourceContainer(pageName: string, create = true): any {
-    if (this.sourceContainers[pageName] === undefined && create) {
-      this.sourceContainers[pageName] = $('<ol class="cs-sidebar-list">');
+    let sourceContainer = this.sourceContainers[pageName];
+    if (sourceContainer === undefined && create) {
+      const created: LegacySourceContainer = $('<ol class="cs-sidebar-list">');
+      sourceContainer = created;
+      this.sourceContainers[pageName] = created;
       if (this.$newSourceBtn) {
-        this.sourceContainers[pageName].insertBefore(this.$newSourceBtn);
+        created.insertBefore(this.$newSourceBtn);
       } else {
-        this.sourceContainers[pageName].appendTo(this.$sourcesSidebarContent);
+        created.appendTo(this.$sourcesSidebarContent);
       }
       if (this.multiPage && pageName !== this.selectedPage.name) {
-        this.sourceContainers[pageName].addClass('hidden');
+        created.addClass('hidden');
       }
     }
-    return this.sourceContainers[pageName];
+    return sourceContainer;
   }
 
   addSource(sourceData: any, isNew?: boolean): any {
@@ -649,11 +661,12 @@ export class PageSettingsModal extends Modal {
 
   constructor(modal: any, nameOrSettings?: any, icon?: any, settings?: any) {
     // (modal, settings) overload
-    if (typeof nameOrSettings === 'object' && !Array.isArray(nameOrSettings)) {
+    if (nameOrSettings instanceof Object && !Array.isArray(nameOrSettings)) {
       settings = nameOrSettings;
       nameOrSettings = null;
     }
 
+    // SAFETY: The legacy Modal base accepts an omitted container during deferred construction.
     super(undefined as any, {autoShow: false});
 
     this.modal = modal;
@@ -744,7 +757,9 @@ export class SourceDrag extends DragSort {
   activePage: any = null;
 
   constructor(modal: any, settings: any = {}) {
+    // SAFETY: Garnish invokes this filter with the active SourceDrag instance.
     settings.filter = function (this: SourceDrag) {
+      // SAFETY: Garnish Drag stores its current item in this legacy jQuery-compatible slot.
       const $item = $(this.$targetItem as any);
       if ($item.hasClass('cs-item--heading')) {
         return $item.add($item.nextUntil('.cs-item--heading'));
@@ -798,6 +813,7 @@ export class SourceDrag extends DragSort {
 
   override onDragStop(): void {
     if (this.activePage) {
+      // SAFETY: Garnish Drag stores its current draggee in this legacy jQuery-compatible slot.
       const $draggee = $(this.$draggee as any);
       $draggee.each((_: number, draggee: Element) => {
         $(draggee).data('source').moveToPage(this.activePage);

@@ -9,6 +9,8 @@
   import {router} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
 
+  type TranslationParams = NonNullable<Parameters<typeof t>[1]>;
+
   withDefaults(
     defineProps<{
       isActive?: boolean;
@@ -68,7 +70,7 @@
     ],
   });
 
-  function missingItemsHeading(type: string, params: Record<any, any>) {
+  function missingItemsHeading(type: string, params: TranslationParams) {
     if (type === 'folders' && reviewSession.value?.listEmptyFolders) {
       return t('Missing or empty {items}', params);
     }
@@ -76,7 +78,7 @@
     return t('Missing {items}', params);
   }
 
-  function missingItemsCopy(type: string, params: Record<any, any>) {
+  function missingItemsCopy(type: string, params: TranslationParams) {
     if (type === 'files' && reviewSession.value?.listEmptyFolders) {
       return t(
         'The following {items} could not be found or are empty. Should they be deleted from the index?',

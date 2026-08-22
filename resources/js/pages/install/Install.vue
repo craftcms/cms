@@ -15,6 +15,7 @@
   import StepScreen from '@/modules/install/components/StepScreen.vue';
 
   type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
+  type InstallFormStep = 'account' | 'db' | 'site';
   type DbDefaults = {
     host?: string;
     port?: string;
@@ -49,14 +50,15 @@
   } = useInstall();
 
   watchEffect(() => {
-    possibleSteps.value.db.hidden = !props.showDbScreen;
+    const dbStep = possibleSteps.value.db;
+    if (dbStep) dbStep.hidden = !props.showDbScreen;
   });
 
   function beginInstall() {
     goTo('license');
   }
 
-  const errors = reactive<Record<string, any>>({
+  const errors = reactive<Record<InstallFormStep, Record<string, string>>>({
     account: {},
     db: {},
     site: {},
@@ -91,18 +93,24 @@
       return;
     }
 
-    errors[currentId.value!] = {};
+    const step = currentId.value;
+    if (step !== 'account' && step !== 'db' && step !== 'site') {
+      throw new Error(`The ${step} installer step has no form.`);
+    }
+    errors[step] = {};
 
-    const form = evt.currentTarget as HTMLFormElement;
+    if (!(evt.currentTarget instanceof HTMLFormElement)) {
+      throw new Error('Expected an installer form submission.');
+    }
+    const form = evt.currentTarget;
     formData
-      // @ts-expect-error — dynamic key access on typed form data
-      .transform((data) => data[currentId.value!] as Record<string, any>)
+      .transform((data) => data[step])
       .post(form.action, {
         onSuccess: () => {
           goToNext();
         },
         onError: (validationErrors) => {
-          errors[currentId.value!] = validationErrors;
+          errors[step] = validationErrors;
         },
       });
   }

@@ -1,5 +1,4 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import type {Table} from '@tanstack/vue-table';
 import DataTable from './DataTable.vue';
 import {
   createSampleTable,
@@ -23,14 +22,16 @@ const meta = {
 } satisfies Meta<typeof DataTable>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+interface DataTableStoryArgs {
+  selectable?: boolean;
+  reorderable?: boolean;
+  loading?: boolean;
+}
 
-// Each story builds its real table inside setup(); this satisfies the
-// required `table` prop in `args`, which the template's :table overrides.
-const tablePlaceholder = null as unknown as Table<any>;
+type Story = StoryObj<DataTableStoryArgs>;
 
-function render(extraProps: Record<string, unknown> = {}) {
-  return (args: Record<string, unknown>) => ({
+function render(extraProps: Record<string, boolean> = {}) {
+  return (args: NonNullable<Story['args']>) => ({
     components: {DataTable},
     setup() {
       const table = createSampleTable();
@@ -42,7 +43,6 @@ function render(extraProps: Record<string, unknown> = {}) {
 
 export const Default: Story = {
   render: render(),
-  args: {table: tablePlaceholder},
 };
 
 /**
@@ -52,7 +52,6 @@ export const Default: Story = {
  */
 export const Selectable: Story = {
   render: render({selectable: true}),
-  args: {table: tablePlaceholder},
 };
 
 /**
@@ -61,12 +60,10 @@ export const Selectable: Story = {
  */
 export const Reorderable: Story = {
   render: render({reorderable: true}),
-  args: {table: tablePlaceholder},
 };
 
 export const Loading: Story = {
   render: render({loading: true}),
-  args: {table: tablePlaceholder},
 };
 
 export const Empty: Story = {
@@ -78,5 +75,4 @@ export const Empty: Story = {
     },
     template: '<DataTable v-bind="args" :table="table" />',
   }),
-  args: {table: tablePlaceholder},
 };

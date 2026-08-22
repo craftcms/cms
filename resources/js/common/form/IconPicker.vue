@@ -112,8 +112,8 @@
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
 
   function handleClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 

@@ -4,6 +4,7 @@ import type {PaginationData, SortItem} from '@/common/types';
 import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
+import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
 import type {
   SortOption,
   ViewMode,
@@ -11,6 +12,14 @@ import type {
 } from '@/modules/elements/types/view-state';
 
 type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
+
+export interface ElementIndexRow extends IndexQueryParams {
+  id: string | number;
+  isFolder?: boolean;
+  folderUrl?: string;
+  folderId?: string | number;
+  canMoveTo?: boolean;
+}
 
 /**
  * The `ContentIndexViewModel` payload, with the element-index domain types
@@ -38,7 +47,7 @@ export type ContentIndexData = Omit<
   viewModes: ViewMode[];
   sortOptions: SortOption[];
   sort: SortItem[];
-  data: Array<Record<string, unknown>>;
+  data: ElementIndexRow[];
   actions: BulkActionItem[] | null;
   pagination: PaginationData;
 };
@@ -63,7 +72,7 @@ export function useContentIndexData<
 >(extra?: Extra) {
   const inertiaPage = usePage<ContentIndexData>();
 
-  return reactive({
+  const data = reactive({
     // Element type
     elementType: computed(() => inertiaPage.props.elementType),
     elementDisplayName: computed(() => inertiaPage.props.elementDisplayName),
@@ -103,7 +112,7 @@ export function useContentIndexData<
     data: computed(() => inertiaPage.props.data),
     actions: computed(() => inertiaPage.props.actions),
     pagination: computed(() => inertiaPage.props.pagination),
-
-    ...(extra ?? ({} as Extra)),
   });
+
+  return Object.assign(data, extra);
 }

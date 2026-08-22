@@ -6,6 +6,7 @@
   import {openSlideout} from '@/common/slideouts';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import axios from 'axios';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
@@ -63,23 +64,24 @@
     creating.value = true;
 
     try {
+      const requestData = {
+        elementType: data.elementType,
+        ownerId: data.ownerId,
+        fieldId: data.fieldId,
+        siteId: data.ownerSiteId,
+      };
+      if (
+        data.createAttributes instanceof Object &&
+        !Array.isArray(data.createAttributes)
+      ) {
+        Object.assign(requestData, data.createAttributes);
+      }
+
       const {data: response} = await Craft.sendActionRequest(
         'POST',
         'elements/create',
         {
-          data: {
-            elementType: data.elementType,
-            ownerId: data.ownerId,
-            fieldId: data.fieldId,
-            siteId: data.ownerSiteId,
-            // Grouped create attributes (arrays) drive a disclosure menu in
-            // the legacy manager; only a plain attributes object applies here.
-            ...(typeof data.createAttributes === 'object' &&
-            data.createAttributes !== null &&
-            !Array.isArray(data.createAttributes)
-              ? data.createAttributes
-              : {}),
-          },
+          data: requestData,
         }
       );
 
@@ -111,8 +113,9 @@
       // Prefer the server's message; fall back to the thrown one so a local
       // failure doesn't surface as an empty notification.
       Craft.cp?.displayError?.(
-        (error as {response?: {data?: {message?: string}}})?.response?.data
-          ?.message ?? (error as Error)?.message
+        (axios.isAxiosError(error)
+          ? error.response?.data?.message
+          : undefined) ?? (error instanceof Error ? error.message : undefined)
       );
     } finally {
       creating.value = false;
@@ -133,7 +136,10 @@
   // bubbling `action:change-state` events — refresh the cards once one
   // succeeds.
   useEventListener(cardsContainer, 'action:change-state', (event: Event) => {
-    const detail = (event as CustomEvent).detail;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const detail = event.detail;
 
     if (detail?.state === 'success' && detail?.actionType === 'http') {
       router.reload({only: ['data']});

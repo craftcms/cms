@@ -4,10 +4,11 @@ import type {Site} from '@/common/types';
 import type {FormChange, FormPayload} from '@/modules/forms/types';
 import Edit from './Edit.vue';
 
-const state = vi.hoisted(() => ({
-  change: undefined as
-    | ((change: FormChange, values: FormPayload['values']) => void)
-    | undefined,
+const state = vi.hoisted<{
+  change?: (change: FormChange, values: FormPayload['values']) => void;
+  setValue: ReturnType<typeof vi.fn>;
+}>(() => ({
+  change: undefined,
   setValue: vi.fn(),
 }));
 
@@ -116,10 +117,25 @@ it.each([
 async function mount(siteId: number | null, baseUrl = ''): Promise<void> {
   app = createApp(Edit, {
     site: {
-      id: siteId,
+      id: siteId ?? 0,
+      uid: 'site-uid',
+      name: 'Test site',
+      nameRaw: 'Test site',
+      handle: 'testSite',
+      language: 'en-US',
+      languageRaw: 'en-US',
       enabled: true,
+      enabledRaw: true,
+      groupId: 1,
+      group: null,
       primary: false,
-    } as Site,
+      hasUrls: true,
+      baseUrl,
+      baseUrlRaw: baseUrl,
+      sortOrder: 1,
+      dateCreated: '2026-01-01T00:00:00Z',
+      dateUpdated: '2026-01-01T00:00:00Z',
+    } satisfies Site,
     form: {...form, values: {...values, siteId, baseUrl}},
     submit: {method: 'post', url: '/settings/sites'},
     refreshUrl: '/settings/sites/form',

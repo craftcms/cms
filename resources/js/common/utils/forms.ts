@@ -1,74 +1,106 @@
-type PostContainer = Record<string, unknown> | unknown[];
+export type PostValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | File
+  | PostValues
+  | PostValue[];
 
-/**
- * Expands a single POST array-style key (e.g. `fields[matrix][0][type]`)
- * into the given target object, creating nested containers as needed.
- */
-function expandPostKey(
-  expanded: Record<string, unknown>,
-  postKey: string,
-  value: unknown
+export interface PostValues {
+  [key: string]: PostValue;
+}
+
+type PostContainer = PostValues | PostValue[];
+
+function isPostValues(value: PostValue): value is PostValues {
+  return (
+    value instanceof Object && !Array.isArray(value) && !(value instanceof File)
+  );
+}
+
+function getValue(container: PostContainer, key: string): PostValue {
+  return Array.isArray(container) ? container[Number(key)] : container[key];
+}
+
+function setValue(
+  container: PostContainer,
+  key: string,
+  value: PostValue
 ): void {
-  const m = postKey.match(/^(\w+)(\[.*)?/);
-
-  if (!m?.[1]) {
-    return;
-  }
-
-  // Get all of the nested keys, chopping off the brackets
-  const keys: string[] = m[2]
-    ? (m[2].match(/\[[^[\]]*\]/g) ?? []).map((k) => k.slice(1, -1))
-    : [];
-
-  keys.unshift(m[1]);
-
-  let parentElem: PostContainer = expanded;
-
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i] as string;
-    const container = parentElem as Record<string, unknown>;
-
-    if (i < keys.length - 1) {
-      if (typeof container[key] !== 'object' || container[key] === null) {
-        // Figure out what this will be by looking at the next key
-        const nextKey = keys[i + 1];
-        container[key] =
-          !nextKey || Number.parseInt(nextKey) === Number(nextKey) ? [] : {};
-      }
-
-      parentElem = container[key] as PostContainer;
-    } else {
-      // Last one. Set the value
-      const lastKey = key || String((parentElem as unknown[]).length);
-      container[lastKey] = value;
-    }
+  if (Array.isArray(container)) {
+    container[Number(key)] = value;
+  } else {
+    container[key] = value;
   }
 }
 
-/**
- * Expands an object of POST array-style strings into a nested object.
- */
-export function expandPostArray(
-  arr: Record<string, unknown>
-): Record<string, unknown> {
-  const expanded: Record<string, unknown> = {};
+function isContainer(value: PostValue): value is PostContainer {
+  return Array.isArray(value) || isPostValues(value);
+}
 
-  for (const [postKey, value] of Object.entries(arr)) {
-    expandPostKey(expanded, postKey, value);
+/**
+ * Expands a single POST array-style key into the target object, creating
+ * nested arrays and objects as needed.
+ */
+function expandPostKey(
+  expanded: PostValues,
+  postKey: string,
+  value: PostValue
+): void {
+  const match = postKey.match(/^(\w+)(\[.*)?/);
+  const rootKey = match?.[1];
+
+  if (!rootKey) {
+    return;
   }
+
+  const keys = match[2]
+    ? (match[2].match(/\[[^[\]]*\]/g) ?? []).map((key) => key.slice(1, -1))
+    : [];
+  keys.unshift(rootKey);
+
+  let parent: PostContainer = expanded;
+
+  keys.forEach((rawKey, index) => {
+    const key =
+      rawKey || (Array.isArray(parent) ? String(parent.length) : rawKey);
+
+    if (index === keys.length - 1) {
+      setValue(parent, key, value);
+      return;
+    }
+
+    const nextKey = keys[index + 1];
+    let child = getValue(parent, key);
+    if (!isContainer(child)) {
+      child =
+        !nextKey || Number.parseInt(nextKey) === Number(nextKey) ? [] : {};
+      setValue(parent, key, child);
+    }
+
+    parent = child;
+  });
+}
+
+/** Expands an object of POST array-style strings into a nested object. */
+export function expandPostArray(values: PostValues): PostValues {
+  const expanded: PostValues = {};
+
+  Object.entries(values).forEach(([postKey, value]) => {
+    expandPostKey(expanded, postKey, value);
+  });
 
   return expanded;
 }
 
 /**
- * Expands a FormData object with POST array-style keys into a nested object.
- *
- * Repeated keys (e.g. multiple `tags[]` entries) are collected into arrays.
- * File values are passed through as-is, so the result is only
- * JSON-serializable if the form contains no file inputs.
+ * Expands FormData with POST array-style keys into a nested object. Repeated
+ * keys are collected into arrays, and files pass through unchanged.
  */
-export function expandFormData(data: FormData): Record<string, unknown> {
-  const expanded: Record<string, unknown> = {};
+export function expandFormData(data: FormData): PostValues {
+  const expanded: PostValues = {};
 
   for (const [postKey, value] of data.entries()) {
     expandPostKey(expanded, postKey, value);

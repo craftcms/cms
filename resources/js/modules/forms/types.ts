@@ -4,15 +4,36 @@ type GeneratedFormControlPayload = NonNullable<
   GeneratedFormNodePayload['control']
 >;
 
-export type FormControlPayload<Props extends object = Record<string, unknown>> =
-  Omit<GeneratedFormControlPayload, 'props' | 'forms'> & {
-    props: Props;
-    forms?: NestedFormPayload[];
-  };
+export type FormScalar = string | number | boolean | null | undefined | File;
+export type FormValue = FormScalar | FormValues | FormValue[];
+
+export interface FormValues {
+  [key: string]: FormValue;
+}
+
+export type FormPropertyValue =
+  | string
+  | number
+  | boolean
+  | null
+  | FormProperties
+  | FormPropertyValue[];
+
+export interface FormProperties {
+  [key: string]: FormPropertyValue;
+}
+
+export type FormControlPayload<Props extends object = FormProperties> = Omit<
+  GeneratedFormControlPayload,
+  'props' | 'forms'
+> & {
+  props: Props;
+  forms?: NestedFormPayload[];
+};
 
 export type FormNodePayload<
-  Props extends object = Record<string, unknown>,
-  ControlProps extends object = Record<string, unknown>,
+  Props extends object = FormProperties,
+  ControlProps extends object = FormProperties,
 > = Omit<GeneratedFormNodePayload, 'props' | 'control' | 'children'> & {
   props: Props;
   control?: FormControlPayload<ControlProps>;
@@ -20,10 +41,11 @@ export type FormNodePayload<
 };
 
 export type FormPayload<
-  ControlProps extends object = Record<string, unknown>,
-  NodeProps extends object = Record<string, unknown>,
-> = Omit<GeneratedFormPayload, 'nodes'> & {
+  ControlProps extends object = FormProperties,
+  NodeProps extends object = FormProperties,
+> = Omit<GeneratedFormPayload, 'nodes' | 'values'> & {
   nodes: FormNodePayload<NodeProps, ControlProps>[];
+  values: FormValues;
 };
 
 export type NestedFormPayload = {
@@ -43,11 +65,11 @@ export type FormChange = {
 
 export type FormControlOverrideProps = {
   control: FormControlPayload;
-  value: unknown;
+  value: FormValue;
   values: FormPayload['values'];
   label?: string;
   editable: boolean;
   invalid: boolean;
   required: boolean;
-  setValue(value: unknown, kind?: FormChangeKind): void;
+  setValue(value: FormValue, kind?: FormChangeKind): void;
 };

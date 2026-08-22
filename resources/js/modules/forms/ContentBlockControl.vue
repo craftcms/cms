@@ -10,6 +10,7 @@
     FormChange,
     FormControlPayload,
     FormPayload,
+    FormValues,
     NestedFormPayload,
   } from './types';
   import {inputName} from './runtime';
@@ -22,18 +23,14 @@
 
   const props = defineProps<{
     control: FormControlPayload<ContentBlockProps>;
-    value: Record<string, unknown> | null;
+    value: FormValues | null;
     values: FormPayload['values'];
     errors: FormPayload['errors'];
     touchedPaths: Set<string>;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (
-      event: 'update:value',
-      value: Record<string, unknown> | null,
-      kind: 'discrete'
-    ): void;
+    (event: 'update:value', value: FormValues | null, kind: 'discrete'): void;
     (event: 'change', change: FormChange): void;
   }>();
   const host = ref<HTMLElement>();

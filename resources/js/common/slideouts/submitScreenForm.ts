@@ -1,5 +1,6 @@
 import {actionClient} from '@craftcms/ui';
 import {firstMessages} from './errors';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 export interface ScreenFormResult {
   ok: boolean;
@@ -10,7 +11,7 @@ export interface ScreenFormResult {
   /** Set when the failure wasn't something the panel can present inline. */
   fatal?: unknown;
   /** The controller's response body, on success. */
-  data?: Record<string, unknown>;
+  data?: ScreenPageProps;
 }
 
 /**
@@ -29,7 +30,8 @@ export async function submitScreenForm(
     action,
     namespace,
     containerId,
-  }: {action: string; namespace?: string | null; containerId?: string | null}
+  }: {action: string; namespace?: string | null; containerId?: string | null},
+  client: Pick<typeof actionClient, 'post'> = actionClient
 ): Promise<ScreenFormResult> {
   const headers: Record<string, string> = {};
 
@@ -44,7 +46,7 @@ export async function submitScreenForm(
   try {
     // `actionClient` resolves a bare action path against the CP action URL and
     // adds CSRF + registered-asset headers.
-    const response = await actionClient.post(action, new FormData(formEl), {
+    const response = await client.post(action, new FormData(formEl), {
       headers,
     });
 

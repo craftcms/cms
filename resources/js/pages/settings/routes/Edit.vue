@@ -69,12 +69,12 @@
   function normalizedUriParts(): Array<MixedInputPart> {
     const parts = [...form.uriParts];
 
-    if (typeof parts[0] === 'string') {
+    if (parts[0] !== undefined && !(parts[0] instanceof Object)) {
       parts[0] = parts[0].replace(/^\/+/, '');
     }
 
     return parts.filter((part) =>
-      typeof part === 'string' ? part !== '' : true
+      part instanceof Object ? true : part !== ''
     );
   }
 

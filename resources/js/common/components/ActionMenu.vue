@@ -70,11 +70,11 @@
       if (action.type === 'display') {
         return {
           type: 'display',
-          node: displayToNode((action as ActionItemDisplay).is),
+          node: displayToNode(action.is),
         };
       }
 
-      return action as unknown as ActionMenuItem;
+      return {...action};
     });
   });
 

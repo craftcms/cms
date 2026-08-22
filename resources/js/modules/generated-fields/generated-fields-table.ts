@@ -1,6 +1,11 @@
 import {EditableTable, Row} from '@/modules/editable-table/editable-table';
 import {cvdData} from '@/modules/field-layout-designer/support';
-import type {EditableTableColumns} from '@/modules/editable-table/types';
+import type {
+  EditableTableColumns,
+  EditableTableRow,
+  EditableTableSettings,
+} from '@/modules/editable-table/types';
+import type {CardViewDesigner} from '@/modules/field-layout-designer/card-view-designer';
 
 // `Craft` and jQuery (`$`) are still globals on the page; used only at the
 // Craft-widget seams (`Craft.HandleGenerator`, `Craft.uuid`, `Craft.trim`) and
@@ -20,7 +25,10 @@ export class GeneratedFieldsTableRow extends Row {
   constructor(table?: EditableTable, tr?: any) {
     super(table, tr);
     if (new.target === GeneratedFieldsTableRow) {
-      this.init(table!, tr);
+      if (!table) {
+        throw new Error('GeneratedFieldsTableRow requires a table.');
+      }
+      this.init(table, tr);
     }
   }
 
@@ -38,6 +46,7 @@ export class GeneratedFieldsTableRow extends Row {
 
     this.addListener($nameInput, 'input', () => {
       const name = Craft.trim($nameInput.val());
+      // SAFETY: GeneratedFieldsTable creates every GeneratedFieldsTableRow instance.
       const cvd = (this.table as GeneratedFieldsTable).cvd;
 
       if (!cvd) {
@@ -55,7 +64,7 @@ export class GeneratedFieldsTableRow extends Row {
             labelHtml: name,
             data: {
               // `fieldId` was never set on the legacy Row either; resolves to undefined.
-              'field-id': (this as any).fieldId,
+              'field-id': undefined,
               'field-label': name,
             },
           });
@@ -67,6 +76,7 @@ export class GeneratedFieldsTableRow extends Row {
   }
 
   override destroy(): void {
+    // SAFETY: GeneratedFieldsTable creates every GeneratedFieldsTableRow instance.
     const cvd = (this.table as GeneratedFieldsTable).cvd;
     cvd?.removeCheckbox(`generatedField:${this.uid}`);
     super.destroy();
@@ -87,11 +97,16 @@ export class GeneratedFieldsTable extends EditableTable {
     id?: string,
     baseName?: string,
     columns?: EditableTableColumns,
-    settings?: any
+    settings?: Partial<EditableTableSettings>
   ) {
     super(id, baseName, columns, settings);
     if (new.target === GeneratedFieldsTable) {
-      this.init(id!, baseName!, columns!, settings);
+      if (!id || !baseName || !columns) {
+        throw new Error(
+          'GeneratedFieldsTable requires id, baseName, and columns.'
+        );
+      }
+      this.init(id, baseName, columns, settings);
     }
   }
 
@@ -100,7 +115,7 @@ export class GeneratedFieldsTable extends EditableTable {
    * FLD/CVD stores itself in the `cvdData` WeakMap (not jQuery `.data`), so we
    * resolve the `.card-view-designer` sibling element and look it up there.
    */
-  get cvd(): any {
+  get cvd(): CardViewDesigner | undefined {
     const tableEl: HTMLElement | undefined = this.$table?.[0];
     const field = tableEl?.closest('.field');
     const next = field?.nextElementSibling;
@@ -112,7 +127,7 @@ export class GeneratedFieldsTable extends EditableTable {
     rowId: string,
     columns: EditableTableColumns,
     baseName: string,
-    values: Record<string, any>
+    values: EditableTableRow
   ): any {
     const $tr = super.createRow(rowId, columns, baseName, values);
     $(

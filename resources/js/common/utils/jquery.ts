@@ -10,6 +10,6 @@
  * Returns the jQuery global (`window.jQuery`, aliased as `$`) if the CP bundle
  * has loaded it, else `null`.
  */
-export function jq(): any {
-  return (window as any).jQuery ?? (window as any).$ ?? null;
+export function jq(): JQueryStatic | null {
+  return window.jQuery ?? window.$ ?? null;
 }

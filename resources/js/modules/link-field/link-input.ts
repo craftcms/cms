@@ -18,8 +18,14 @@ interface LinkInputSettings extends GarnishBaseSettings {
   prefixes: string[] | null;
   pattern: string | null;
   inputName?: string;
-  inputAttributes?: Record<string, unknown>;
-  textInputAttributes?: Record<string, unknown>;
+  inputAttributes?: Record<
+    string,
+    string | number | boolean | null | undefined
+  >;
+  textInputAttributes?: Record<
+    string,
+    string | number | boolean | null | undefined
+  >;
 }
 
 /**
@@ -86,8 +92,12 @@ export class LinkInput extends Base<LinkInputSettings> {
     }
 
     this.addListener(this.container, 'click', (ev: GarnishEvent) => {
-      const target = ev.target as HTMLElement | null;
-      if (this.#chip && target && !['A', 'BUTTON'].includes(target.nodeName)) {
+      const target = ev.target;
+      if (
+        this.#chip &&
+        target instanceof HTMLElement &&
+        !['A', 'BUTTON'].includes(target.nodeName)
+      ) {
         this.switchToTextInput();
         this.#textInput?.focus();
       }
@@ -198,9 +208,12 @@ export class LinkInput extends Base<LinkInputSettings> {
     });
 
     this.addListener(this.#textInput, 'keydown', (ev: GarnishEvent) => {
-      const keyEvent = ev as unknown as KeyboardEvent;
-      if (keyEvent.key === 'Escape' && this.maybeSwitchToChip()) {
-        keyEvent.stopPropagation();
+      if (
+        ev instanceof KeyboardEvent &&
+        ev.key === 'Escape' &&
+        this.maybeSwitchToChip()
+      ) {
+        ev.stopPropagation();
         this.#chip?.querySelector('a')?.focus();
       }
     });

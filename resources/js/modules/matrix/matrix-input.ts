@@ -25,6 +25,7 @@ import {
 import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
 import {containerMatrixInputs} from './support';
+import type {FormValues} from '@/modules/forms/types';
 import {
   type CopiedElementInfo,
   type LegacyElementEditor,
@@ -89,10 +90,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   static getCollapsedEntryIds(): string[] {
-    const value = localStorage[MatrixInput.collapsedEntryStorageKey];
-    return typeof value === 'string'
-      ? craft().filterArray(value.split(','))
-      : [];
+    const value = localStorage.getItem(MatrixInput.collapsedEntryStorageKey);
+    return value ? craft().filterArray(value.split(',')) : [];
   }
 
   static setCollapsedEntryIds(ids: Array<string | number>): void {
@@ -100,7 +99,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   static rememberCollapsedEntryId(id: string | number): void {
-    if (typeof Storage === 'undefined') {
+    if (!('Storage' in globalThis)) {
       return;
     }
     const collapsedEntries = MatrixInput.getCollapsedEntryIds();
@@ -111,7 +110,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   }
 
   static forgetCollapsedEntryId(id: string | number): void {
-    if (typeof Storage === 'undefined') {
+    if (!('Storage' in globalThis)) {
       return;
     }
     const collapsedEntries = MatrixInput.getCollapsedEntryIds();
@@ -158,8 +157,8 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     this.inputNamePrefix = inputNamePrefix;
 
     // see if settings was actually set to the maxEntries value
-    if (typeof settings === 'number') {
-      settings = {maxEntries: settings};
+    if (settings !== undefined && !(settings instanceof Object)) {
+      settings = {maxEntries: Number(settings)};
     }
     this.setSettings(settings, MatrixInput.defaults);
 
@@ -236,6 +235,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
 
     // `Garnish.Select` has no modern port yet — see ./interop.
     if (!this.settings!.formControl) {
+      if (!this.entriesContainer) {
+        throw new Error('Matrix input requires a blocks container.');
+      }
       this.entrySelect = new (legacyGarnish().Select)(
         this.entriesContainer,
         entries,
@@ -243,8 +245,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
           multi: true,
           vertical: true,
           handle: '> .actions > .checkbox, > .titlebar',
-          filter: (target: unknown) =>
-            !(target as HTMLElement).closest?.('.tab-label'),
+          filter: (target: HTMLElement) => !target.closest('.tab-label'),
           checkboxMode: true,
         }
       );
@@ -276,21 +277,23 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     for (const btn of this.settings!.formControl ? [] : this.addEntryMenuBtns) {
       // The disclosure menu is initialized by the legacy bundle and stored in
       // jQuery data; its container holds the per-type buttons.
-      const menu = jqData(btn, 'disclosureMenu') as
-        | {$container: {0?: HTMLElement}}
-        | undefined;
+      const menu = jqData(btn, 'disclosureMenu');
       const menuContainer = menu?.$container?.[0] ?? null;
 
       for (const menuBtn of menuContainer?.querySelectorAll<HTMLElement>(
         'button'
       ) ?? []) {
         this.addListener(menuBtn, 'activate', async (event) => {
-          const ev = event as unknown as Event;
+          if (!(event instanceof Event)) {
+            return;
+          }
           btn.classList.add('loading');
           craft().cp.announce(t('Loading'));
           try {
             await this.addEntry(
-              (ev.currentTarget as HTMLElement).getAttribute('data-type') ?? ''
+              event.currentTarget instanceof HTMLElement
+                ? (event.currentTarget.getAttribute('data-type') ?? '')
+                : ''
             );
           } finally {
             btn.classList.remove('loading');
@@ -309,7 +312,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
       this.elementEditor?.on('update', () => {
         this.settings!.ownerId = this.elementEditor!.getDraftElementId(
           this.settings!.ownerId
-        ) as MatrixInputSettings['ownerId'];
+        );
       });
 
       this.trigger('afterInit');
@@ -325,7 +328,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     const form = this.form;
     if (form) {
       deferUntil(
-        () => jqData(form, 'elementEditor') as LegacyElementEditor | undefined,
+        () => jqData(form, 'elementEditor') ?? undefined,
         100,
         this.elementEditorController.signal
       )
@@ -342,9 +345,11 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     const deletable = this.container.closest('.js-deletable');
     if (deletable) {
       this.addListener(deletable, 'delete', (event) => {
-        const ev = event as unknown as Event;
+        if (!(event instanceof Event)) {
+          return;
+        }
         // Ignore delete events that came from nested elements
-        if (ev.target === ev.currentTarget) {
+        if (event.target === event.currentTarget) {
           this.destroy();
         }
       });
@@ -456,6 +461,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
         );
         data = response.data;
       } catch (e) {
+        // SAFETY: Craft action request errors use Axios's response data envelope.
         craft().cp.displayError(
           (e as {response?: {data?: {message?: string}}})?.response?.data
             ?.message
@@ -562,7 +568,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     type: string,
     insertBefore?: HTMLElement | null,
     autofocus = true,
-    params: Record<string, unknown> = {}
+    params: FormValues = {}
   ): Promise<void> {
     if (!this.canAddMoreEntries()) {
       this.updateStatusMessage();

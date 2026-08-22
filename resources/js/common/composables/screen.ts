@@ -6,6 +6,8 @@ import {
   type InjectionKey,
 } from 'vue';
 import {usePage} from '@inertiajs/vue3';
+import type {FormSaveOptions} from '@/common/types';
+import type {UseAppLayoutOptions} from './useAppLayout';
 
 /**
  * A CP screen renders in one of two contexts. The page component is the same
@@ -36,11 +38,24 @@ export const ScreenShellKey: InjectionKey<Component> = Symbol('screenShell');
  * `setLayoutProps`, which only addresses the one layout Inertia rendered and
  * would clobber the base page if a slideout wrote to it.
  */
-export type ScreenSaveHandler = (options?: unknown) => void;
+export type ScreenSaveHandler = (options?: FormSaveOptions) => void;
+
+export type ScreenPageProp =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ScreenPageProp[]
+  | ScreenPageProps;
+
+export interface ScreenPageProps {
+  [key: string]: ScreenPageProp;
+}
 
 export interface ScreenPropsStore {
-  props: Record<string, unknown>;
-  set(props: Record<string, unknown>): void;
+  props: UseAppLayoutOptions;
+  set(props: UseAppLayoutOptions): void;
   /**
    * Register a save handler, returning an unregister function.
    *
@@ -49,14 +64,14 @@ export interface ScreenPropsStore {
    * Handlers registered here bridge that gap.
    */
   onSave(handler: ScreenSaveHandler): () => void;
-  save(options?: unknown): void;
+  save(options?: FormSaveOptions): void;
 }
 
 export const ScreenPropsStoreKey: InjectionKey<ScreenPropsStore> =
   Symbol('screenPropsStore');
 
 export function createScreenPropsStore(): ScreenPropsStore {
-  const props = reactive<Record<string, unknown>>({});
+  const props = reactive<UseAppLayoutOptions>({});
   const handlers = new Set<ScreenSaveHandler>();
 
   return {
@@ -75,7 +90,7 @@ export function createScreenPropsStore(): ScreenPropsStore {
     save(options) {
       // `useAppLayout({onSave})` arrives as a prop, since Vue treats `onX` as
       // a listener for `x`.
-      (props.onSave as ScreenSaveHandler | undefined)?.(options);
+      props.onSave?.(options);
 
       handlers.forEach((handler) => handler(options));
     },
@@ -91,7 +106,7 @@ export function createScreenPropsStore(): ScreenPropsStore {
  * slideout panel provides its own props here; a full page has none and falls
  * back to `usePage()`.
  */
-export const ScreenPagePropsKey: InjectionKey<() => Record<string, unknown>> =
+export const ScreenPagePropsKey: InjectionKey<() => ScreenPageProps> =
   Symbol('screenPageProps');
 
 /**
@@ -132,14 +147,14 @@ export function useIsSlideout(): boolean {
  * Screen-specific page props for the current context — the slideout's own when
  * inside one, the base page's otherwise. See {@link ScreenPagePropsKey}.
  */
-export function useScreenPageProps(): () => Record<string, unknown> {
+export function useScreenPageProps(): () => ScreenPageProps {
   const scoped = inject(ScreenPagePropsKey, null);
 
   if (scoped) {
     return scoped;
   }
 
-  const page = usePage();
+  const page = usePage<ScreenPageProps>();
 
-  return () => page.props as Record<string, unknown>;
+  return () => page.props;
 }

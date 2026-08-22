@@ -1,12 +1,17 @@
 import {actionClient} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
-import {computed, readonly, ref, shallowRef, type Ref} from 'vue';
-import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
+import {computed, readonly, ref, shallowRef} from 'vue';
+import type {
+  FormChangeKind,
+  FormPayload,
+  FormValues,
+} from '@/modules/forms/types';
+import axios from 'axios';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
-interface Options {
+export interface ElementAutosaveOptions {
   /** The `elements/save-draft` endpoint. */
   url: string;
   /** The element class — the shared draft actions resolve the element by type. */
@@ -39,6 +44,10 @@ interface Options {
   }) => void;
 }
 
+export interface ElementAutosaveDependencies {
+  post: typeof actionClient.post;
+}
+
 /**
  * Autosaves the editor's unsaved changes into a provisional draft, the way the
  * legacy element editor does.
@@ -52,25 +61,11 @@ interface Options {
  * rather than racing it, so a burst of typing collapses into one trailing
  * request per quiet period.
  */
-export function useElementAutosave(
-  form: InertiaForm<Record<string, any>>,
-  options: Options
-): {
-  status: Readonly<Ref<AutosaveStatus>>;
-  draftId: Readonly<Ref<number | null>>;
-  savedAt: Readonly<Ref<string | null>>;
-  error: Readonly<Ref<string | null>>;
-  httpStatus: Readonly<Ref<number | null>>;
-  modified: Readonly<Ref<string[]>>;
-  form: Readonly<Ref<FormPayload | null>>;
-  screen: Readonly<Ref<Record<string, unknown> | null>>;
-  save: () => Promise<void>;
-  schedule: (kind?: FormChangeKind) => void;
-  cancel: () => void;
-  suspend: (during: () => void) => void;
-  setDraftId: (value: number | null) => void;
-  clearSaved: () => void;
-} {
+export function useElementAutosave<T extends object>(
+  form: InertiaForm<T>,
+  options: ElementAutosaveOptions,
+  dependencies: ElementAutosaveDependencies = actionClient
+) {
   const status = ref<AutosaveStatus>('idle');
   const draftId = ref<number | null>(options.draftId);
   const savedAt = ref<string | null>(null);
@@ -86,7 +81,7 @@ export function useElementAutosave(
   // screen it had just dropped.
   const saved = shallowRef<{
     form: FormPayload | null;
-    screen: Record<string, unknown> | null;
+    screen: FormValues | null;
     modified: string[];
   }>({form: null, screen: null, modified: []});
 
@@ -106,12 +101,12 @@ export function useElementAutosave(
     cancelled = false;
     controller = new AbortController();
 
-    const payload: Record<string, any> = {
-      ...form.data(),
+    const payload: FormValues = {
       elementType: options.elementType,
       elementId: options.elementId,
       siteId: options.siteId,
     };
+    Object.assign(payload, form.data());
 
     // No draft yet means this request creates one; an existing provisional
     // draft is targeted by id and stays provisional.
@@ -124,7 +119,7 @@ export function useElementAutosave(
     }
 
     try {
-      const {data} = await actionClient.post(options.url, payload, {
+      const {data} = await dependencies.post(options.url, payload, {
         signal: controller.signal,
       });
 
@@ -150,15 +145,17 @@ export function useElementAutosave(
         element: data.updatedTimestamp ?? null,
         canonical: data.canonicalUpdatedTimestamp ?? null,
       });
-    } catch (e: any) {
+    } catch (e) {
       // Our own abort, not a failure.
       if (cancelled) {
         return;
       }
 
       status.value = 'failed';
-      error.value = e?.response?.data?.message ?? null;
-      httpStatus.value = e?.response?.status ?? null;
+      if (axios.isAxiosError<{message?: string}>(e)) {
+        error.value = e.response?.data?.message ?? null;
+        httpStatus.value = e.response?.status ?? null;
+      }
     } finally {
       controller = null;
     }

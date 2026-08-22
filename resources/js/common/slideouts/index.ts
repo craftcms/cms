@@ -20,13 +20,11 @@ export type {
  * the console — can open a Vue slideout without importing anything.
  */
 export function registerSlideoutGlobals(): void {
-  const craft = (window as any).Craft;
+  const craft = window.Craft;
 
   if (!craft) {
     return;
   }
 
-  craft.openSlideout = openSlideout;
-  craft.closeSlideout = closeSlideout;
-  craft.closeAllSlideouts = closeAllSlideouts;
+  Object.assign(craft, {openSlideout, closeSlideout, closeAllSlideouts});
 }

@@ -32,11 +32,11 @@
   }>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    emit(
-      'update:value',
-      String((event.target as CraftTextarea).modelValue ?? ''),
-      'typing'
-    );
+    if (!(event.target instanceof CraftTextarea)) {
+      throw new TypeError('Expected a textarea event target.');
+    }
+
+    emit('update:value', String(event.target.modelValue ?? ''), 'typing');
   });
 </script>
 

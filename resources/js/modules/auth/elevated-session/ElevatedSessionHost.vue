@@ -18,7 +18,10 @@
     () => state.active,
     async (active) => {
       if (active) {
-        previouslyFocused = document.activeElement as HTMLElement | null;
+        previouslyFocused =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         await nextTick();
         loginForm.value?.focus();
       } else {
