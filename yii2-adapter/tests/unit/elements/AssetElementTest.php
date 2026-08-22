@@ -66,12 +66,12 @@ class AssetElementTest extends TestCase
                 );
             }
         });
-        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Test',
             'handle' => 'test',
             'driver' => 'test',
-        ]));
+        ]), false);
         Cms::config()->defaultAssetTransformer('test');
 
         ImageTransforms::shouldReceive('getTransformByHandle')

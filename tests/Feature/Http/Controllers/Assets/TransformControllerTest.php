@@ -73,7 +73,7 @@ describe('generate', function () {
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
-        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Configured private',
             'handle' => 'configured-private',
@@ -82,7 +82,7 @@ describe('generate', function () {
                 'filesystem' => 'disk:configured-private-target',
                 'subpath' => 'renditions',
             ],
-        ]));
+        ]), false);
         $volume = Volume::factory()->create([
             'fs' => 'disk:configured-private-source',
             'assetTransformer' => 'configured-private',
@@ -170,12 +170,12 @@ describe('generate', function () {
             }
         };
         app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
-        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Controller test',
             'handle' => 'controller-test',
             'driver' => 'controller-test',
-        ]));
+        ]), false);
         Cms::config()->defaultAssetTransformer('controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',

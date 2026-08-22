@@ -46,9 +46,6 @@ class AssetTransformers
     /** @var Collection<string, AssetTransformer>|null */
     private ?Collection $transformers = null;
 
-    /** @var Collection<string, AssetTransformer> */
-    private readonly Collection $transientTransformers;
-
     public function __construct(
         private readonly ProjectConfig $projectConfig,
         private readonly AssetTransformDrivers $drivers,
@@ -64,17 +61,14 @@ class AssetTransformers
             'upscale' => ['boolean'],
             'width' => ['integer', 'min:1'],
         ];
-        $this->transientTransformers = collect();
     }
 
     /** @return Collection<string, AssetTransformer> */
-    public function getAllAssetTransformers(bool $includeTransient = true): Collection
+    public function getAllAssetTransformers(): Collection
     {
         $this->ensureCraftAssetTransformer();
 
-        return $includeTransient
-            ? $this->assetTransformers()->merge($this->transientTransformers)
-            : $this->assetTransformers();
+        return $this->assetTransformers();
     }
 
     public function getAssetTransformerByHandle(string $handle): ?AssetTransformer
@@ -108,15 +102,6 @@ class AssetTransformers
 
         return $this->getAssetTransformerByHandle($parsedHandle)
             ?? throw new AssetTransformerNotFoundException("Asset Transformer [{$parsedHandle}] is not configured.");
-    }
-
-    public function registerTransient(AssetTransformer $transformer): void
-    {
-        if (! $transformer->uid || ! $transformer->handle || ! $transformer->driver) {
-            throw new InvalidArgumentException('Transient Asset Transformers require a UUID, handle, and driver.');
-        }
-
-        $this->transientTransformers->put($transformer->uid, $transformer);
     }
 
     public function ensureCraftAssetTransformer(): void
@@ -267,7 +252,7 @@ class AssetTransformers
 
         $changed = false;
 
-        foreach ($this->getAllAssetTransformers(includeTransient: false) as $transformer) {
+        foreach ($this->getAllAssetTransformers() as $transformer) {
             if ($transformer->driver !== 'craft' || ($transformer->settings['filesystem'] ?? null) !== $oldHandle) {
                 continue;
             }
@@ -287,17 +272,7 @@ class AssetTransformers
 
     public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
     {
-        return $this->transformWithCandidate($asset, $definition, null, $immediately);
-    }
-
-    /** @internal Used by the Yii compatibility adapter. */
-    public function transformWithCandidate(
-        Asset $asset,
-        #[\SensitiveParameter] mixed $definition,
-        ?string $candidateTransformer,
-        ?bool $immediately = null,
-    ): AssetTransformResult {
-        $request = $this->request($asset, $definition, $candidateTransformer, $immediately);
+        $request = $this->request($asset, $definition, $immediately);
 
         return $this->drivers->driver($request->transformer->driver)->transform($request);
     }
@@ -439,7 +414,7 @@ class AssetTransformers
             $transformer->errors()->add('driver', 'The selected Asset Transform driver is unavailable.');
         }
 
-        $duplicate = $this->getAllAssetTransformers(includeTransient: false)
+        $duplicate = $this->getAllAssetTransformers()
             ->first(fn (AssetTransformer $existing): bool => $existing->handle === $transformer->handle && $existing->uid !== $transformer->uid);
 
         if ($duplicate !== null) {
@@ -540,13 +515,11 @@ class AssetTransformers
     private function request(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?string $candidateTransformer = null,
         ?bool $immediately = null,
     ): AssetTransformRequest {
         $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
         $transformerHandle = $this->transformerOverride($definition)
             ?? ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
-            ?? $candidateTransformer
             ?? Cms::config()->defaultAssetTransformer;
         $transformer = $this->resolve($transformerHandle);
 

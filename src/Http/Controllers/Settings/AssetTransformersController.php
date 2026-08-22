@@ -53,7 +53,7 @@ class AssetTransformersController
             'subnav' => $this->subnav(),
             'title' => t('Asset Transformers'),
             'transformers' => $this->assetTransformers
-                ->getAllAssetTransformers(includeTransient: false)
+                ->getAllAssetTransformers()
                 ->map(fn (AssetTransformer $transformer): array => [
                     'uid' => $transformer->uid,
                     'name' => $transformer->name,

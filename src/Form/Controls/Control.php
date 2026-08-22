@@ -53,7 +53,11 @@ abstract class Control implements ControlContract
         return $this->path;
     }
 
-    /** @param string|list<string> $path */
+    /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
     final public function withPath(string|array $path): static
     {
         $control = clone $this;

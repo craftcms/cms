@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -192,7 +193,7 @@ class VolumeEditViewModel extends ViewModel
     private function assetTransformerOptions(): array
     {
         return $this->assetTransformers
-            ->getAllAssetTransformers(includeTransient: false)
+            ->getAllAssetTransformers()
             ->map(fn ($transformer): array => [
                 'value' => $transformer->handle,
                 'label' => $transformer->name,

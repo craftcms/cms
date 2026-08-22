@@ -4,7 +4,6 @@
   import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
   import {computed, h, ref} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import Empty from '@/common/components/Empty.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
@@ -57,7 +56,6 @@
           : getValue(),
       props: ({row}) => ({
         href: edit({handle: row.original.handle}).url,
-        inertia: false,
       }),
     }),
     columnHelper.handle('handle'),
@@ -93,28 +91,12 @@
 
 <template>
   <LayoutSlot v-if="!readOnly" name="actions">
-    <CpLink
-      variant="accent"
-      appearance="button"
-      :href="create().url"
-      :inertia="false"
-      >{{ t('New Asset Transformer') }}</CpLink
-    >
+    <CpLink variant="accent" appearance="button" :href="create().url">{{
+      t('New Asset Transformer')
+    }}</CpLink>
   </LayoutSlot>
 
   <craft-pane padding="0" appearance="raised">
-    <AdminTable :table="table" :reorderable="false">
-      <template #empty-row>
-        <Empty :label="t('No Asset Transformers exist yet.')" icon="image">
-          <CpLink
-            v-if="!readOnly"
-            appearance="button"
-            :href="create().url"
-            :inertia="false"
-            >{{ t('New Asset Transformer') }}</CpLink
-          >
-        </Empty>
-      </template>
-    </AdminTable>
+    <AdminTable :table="table" :reorderable="false" />
   </craft-pane>
 </template>

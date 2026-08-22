@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace craft\elements;
 
 use Craft;
-use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\models\ImageTransform as LegacyImageTransform;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
@@ -140,31 +138,8 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     protected function _tryTransform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): ?AssetTransformResult
     {
         $immediately ??= $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        $candidateTransformer = null;
-
         try {
-            if (is_array($definition) && array_key_exists('transformer', $definition)) {
-                $candidate = $definition['transformer'];
-
-                if (is_string($candidate) && is_subclass_of($candidate, ImageTransformerInterface::class)) {
-                    $candidateTransformer = $candidate === LegacyImageTransform::DEFAULT_TRANSFORMER
-                        ? null
-                        : Craft::$app->getImageTransforms()->getAssetTransformerHandle($candidate);
-                    unset($definition['transformer']);
-                }
-            } elseif ($definition instanceof LegacyImageTransform) {
-                $candidate = $definition->getTransformer();
-                $candidateTransformer = $candidate === LegacyImageTransform::DEFAULT_TRANSFORMER
-                    ? null
-                    : Craft::$app->getImageTransforms()->getAssetTransformerHandle($candidate);
-            }
-
-            return app(AssetTransformers::class)->transformWithCandidate(
-                $this,
-                $definition,
-                $candidateTransformer,
-                $immediately,
-            );
+            return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $immediately);
         } catch (AssetTransformException|NotSupportedException $exception) {
             report($exception);
 

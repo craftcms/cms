@@ -22,12 +22,12 @@ beforeEach(function () {
     $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
     app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
-    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'GraphQL',
         'handle' => 'gql',
         'driver' => 'gql',
-    ]));
+    ]), false);
     Cms::config()->defaultAssetTransformer('gql');
 });
 

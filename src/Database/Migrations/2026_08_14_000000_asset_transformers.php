@@ -22,5 +22,17 @@ return new class extends Migration
                 $table->json('operations')->nullable()->after('upscale');
             });
         }
+
+        if (Schema::hasColumn(Table::VOLUMES, 'transformFs')) {
+            Schema::table(Table::VOLUMES, function (Blueprint $table): void {
+                $table->dropColumn('transformFs');
+            });
+        }
+
+        if (Schema::hasColumn(Table::VOLUMES, 'transformSubpath')) {
+            Schema::table(Table::VOLUMES, function (Blueprint $table): void {
+                $table->dropColumn('transformSubpath');
+            });
+        }
     }
 };

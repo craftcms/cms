@@ -1220,7 +1220,7 @@ class GeneralConfig extends BaseConfig
     public string|false $filenameWordSeparator = '-';
 
     /**
-     * @var bool Whether asset transforms should be generated before page load by drivers that support deferred generation.
+     * @var bool Whether image transforms should be generated before page load.
      *
      * ::: code
      * ```php Static Config
@@ -4403,7 +4403,11 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether asset transforms should be generated before page load by drivers that support deferred generation.
+     * Whether image transforms should be generated before page load.
+     *
+     * ```php
+     * ->generateTransformsBeforePageLoad(true)
+     * ```
      *
      * @group Image Handling
      *

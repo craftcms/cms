@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Filesystems;
-use Illuminate\Support\Facades\DB;
 use WeakMap;
 
 class LegacyVolumeTransformData
@@ -27,13 +26,13 @@ class LegacyVolumeTransformData
             return $this->values[$volume];
         }
 
-        $record = $volume->id
-            ? DB::table(Table::VOLUMES)->select(['transformFs', 'transformSubpath'])->where('id', $volume->id)->first()
+        $config = $volume->uid
+            ? app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid)
             : null;
 
         return $this->values[$volume] = new LegacyVolumeTransformValues(
-            filesystem: isset($record->transformFs) ? (string) $record->transformFs : null,
-            subpath: isset($record->transformSubpath) ? (string) $record->transformSubpath : '',
+            filesystem: is_array($config) && isset($config['transformFs']) ? (string) $config['transformFs'] : null,
+            subpath: is_array($config) && isset($config['transformSubpath']) ? (string) $config['transformSubpath'] : '',
         );
     }
 

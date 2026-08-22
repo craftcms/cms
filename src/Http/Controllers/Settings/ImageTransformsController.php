@@ -104,7 +104,7 @@ class ImageTransformsController
 
         $operationBuckets = [];
 
-        foreach ($this->assetTransformers->getAllAssetTransformers(includeTransient: false) as $assetTransformer) {
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
             if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
                 $existing = $transform->getOperationsForTransformer($assetTransformer->uid);
 

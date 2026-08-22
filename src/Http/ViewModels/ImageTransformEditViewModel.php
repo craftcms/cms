@@ -106,7 +106,7 @@ class ImageTransformEditViewModel extends ViewModel
             )->instructions(t('The image format that transformed images should use.')),
         );
 
-        foreach ($this->assetTransformers->getAllAssetTransformers(includeTransient: false) as $transformer) {
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
             if (! $this->assetTransformDrivers->has($transformer->driver)) {
                 $form->add(Group::make("asset-transformer-{$transformer->uid}", [
                     Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This Asset Transformer’s driver is unavailable.')),

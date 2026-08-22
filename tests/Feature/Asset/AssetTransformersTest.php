@@ -213,13 +213,13 @@ function registerTransformer(
 ): TestAssetTransformDriver {
     $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition(ucfirst($handle), $operations));
     app(AssetTransformDrivers::class)->extend($handle, fn () => $driver);
-    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => ucfirst($handle),
         'handle' => $handle,
         'driver' => $handle,
         'settings' => $settings,
-    ]));
+    ]), false);
 
     return $driver;
 }

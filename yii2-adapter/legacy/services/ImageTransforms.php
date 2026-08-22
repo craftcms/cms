@@ -16,11 +16,13 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\TransformDeleted;
@@ -28,6 +30,7 @@ use CraftCms\Cms\Image\Events\TransformDeleting;
 use CraftCms\Cms\Image\Events\TransformDeletionApplying;
 use CraftCms\Cms\Image\Events\TransformSaved;
 use CraftCms\Cms\Image\Events\TransformSaving;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\Path;
@@ -37,6 +40,7 @@ use CraftCms\Yii2Adapter\Asset\LegacyImageTransformerDriver;
 use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Ramsey\Uuid\Uuid;
 use yii\base\Component;
 
@@ -193,29 +197,35 @@ class ImageTransforms extends Component
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
     {
-        $transforms = array_map(function(mixed $transform): mixed {
-            if ($transform instanceof LegacyImageTransform) {
-                return $transform->getTransformer() === LegacyImageTransform::DEFAULT_TRANSFORMER
-                    ? $transform
-                    : [
-                        'transformer' => $this->getAssetTransformerHandle($transform->getTransformer()),
-                        ...$transform->getOperations(),
-                    ];
-            }
+        $requestsByTransformer = [];
 
-            if (is_array($transform) && array_key_exists('transformer', $transform)) {
-                $transformer = $transform['transformer'];
-                unset($transform['transformer']);
+        foreach ($assets as $asset) {
+            $coreTransforms = [];
 
-                if ($transformer !== null && $transformer !== LegacyImageTransform::DEFAULT_TRANSFORMER) {
-                    $transform['transformer'] = $this->getAssetTransformerHandle($transformer);
+            foreach ($transforms as $transform) {
+                [$transformer, $definition] = $this->legacyTransformer($transform);
+                $request = $transformer === null
+                    ? null
+                    : $this->legacyTransformRequest($asset, $definition, $transformer, false);
+
+                if ($request === null) {
+                    $coreTransforms[] = $definition;
+
+                    continue;
                 }
+
+                $requestsByTransformer[$transformer][] = $request;
             }
 
-            return $transform;
-        }, $transforms);
+            if ($coreTransforms !== []) {
+                app(AssetTransformers::class)->preload([$asset], $coreTransforms);
+            }
+        }
 
-        app(AssetTransformers::class)->preload($assets, $transforms);
+        foreach ($requestsByTransformer as $transformer => $requests) {
+            app(ImageTransformers::class)->register($transformer);
+            new LegacyImageTransformerDriver($transformer)->preloadAssetTransforms($requests);
+        }
     }
 
     /**
@@ -370,33 +380,111 @@ class ImageTransforms extends Component
     public static function finalizeRegistrationEvents(): void
     {
         $transformers = app(ImageTransformers::class);
-        $existingTransformers = $transformers->types();
         TypeRegistryCompatibility::reconcile($transformers, Craft::$app->getImageTransforms(), self::EVENT_REGISTER_IMAGE_TRANSFORMERS);
+    }
 
-        foreach ($transformers->types()->diff($existingTransformers) as $transformer) {
-            Craft::$app->getImageTransforms()->getAssetTransformerHandle($transformer);
+    public function transformAsset(
+        Asset $asset,
+        #[\SensitiveParameter] mixed $definition,
+        bool $immediately,
+    ): AssetTransformResult {
+        [$transformer, $definition] = $this->legacyTransformer($definition);
+
+        if ($transformer === null) {
+            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
         }
+
+        app(ImageTransformers::class)->register($transformer);
+        $request = $this->legacyTransformRequest($asset, $definition, $transformer, $immediately);
+
+        if ($request === null) {
+            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
+        }
+
+        return new LegacyImageTransformerDriver($transformer)->transform($request);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
-    public function getAssetTransformerHandle(string $transformer): string
+    private function legacyAssetTransformer(string $transformer): AssetTransformer
     {
-        if (!is_subclass_of($transformer, ImageTransformerInterface::class)) {
-            throw new ImageTransformException("Invalid image transformer: $transformer");
+        return new AssetTransformer([
+            'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:legacy-image-transformer:$transformer")->toString(),
+            'name' => $transformer,
+            'handle' => 'legacy_' . substr(sha1($transformer), 0, 16),
+            'driver' => $transformer,
+        ]);
+    }
+
+    /** @param class-string<ImageTransformerInterface> $transformer */
+    private function legacyTransformRequest(
+        Asset $asset,
+        #[\SensitiveParameter] mixed $definition,
+        string $transformer,
+        bool $immediately,
+    ): ?AssetTransformRequest {
+        if ($asset->getVolume()->getAssetTransformerHandle(false) || $this->hasTransformerOverride($definition)) {
+            return null;
         }
 
-        $handle = 'legacy_' . substr(sha1($transformer), 0, 16);
-        $uid = Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:legacy-image-transformer:$transformer")->toString();
-        app(ImageTransformers::class)->register($transformer);
-        app(AssetTransformDrivers::class)->extend($transformer, fn() => new LegacyImageTransformerDriver($transformer));
-        app(AssetTransformers::class)->registerTransient(new AssetTransformer([
-            'uid' => $uid,
-            'name' => $transformer,
-            'handle' => $handle,
-            'driver' => $transformer,
-        ]));
+        $assetTransformer = $this->legacyAssetTransformer($transformer);
 
-        return $handle;
+        return new AssetTransformRequest(
+            asset: $asset,
+            transformer: $assetTransformer,
+            operations: $this->transformOperations($definition, (string) $assetTransformer->uid),
+            immediately: $immediately,
+        );
+    }
+
+    /** @return array{class-string<ImageTransformerInterface>|null, mixed} */
+    private function legacyTransformer(mixed $definition): array
+    {
+        $transformer = $definition instanceof LegacyImageTransform
+            ? $definition->getTransformer()
+            : (is_array($definition) ? ($definition['transformer'] ?? null) : null);
+
+        if (!is_string($transformer) || !is_subclass_of($transformer, ImageTransformerInterface::class)) {
+            return [null, $definition];
+        }
+
+        if (is_array($definition)) {
+            unset($definition['transformer']);
+        }
+
+        return [
+            $transformer === LegacyImageTransform::DEFAULT_TRANSFORMER ? null : $transformer,
+            $definition,
+        ];
+    }
+
+    private function hasTransformerOverride(mixed $definition): bool
+    {
+        if (!is_array($definition)) {
+            return false;
+        }
+
+        if (array_key_exists('transformer', $definition)) {
+            return true;
+        }
+
+        return array_key_exists('transform', $definition)
+            && $this->hasTransformerOverride($definition['transform']);
+    }
+
+    /** @return array<string, mixed> */
+    private function transformOperations(mixed $definition, string $transformerUid): array
+    {
+        try {
+            $transform = ImageTransformHelper::normalizeTransform($definition);
+        } catch (ImageTransformException|InvalidArgumentException $exception) {
+            throw new InvalidAssetTransformException($exception->getMessage(), previous: $exception);
+        }
+
+        if ($transform === null) {
+            throw new InvalidAssetTransformException('An Asset Transform definition must be an array, object, or named transform handle.');
+        }
+
+        return $transform->getOperations($transformerUid);
     }
 
     private function service(): ImageTransformsService

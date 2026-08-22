@@ -327,12 +327,12 @@ it('resets caches', function () {
 function registerControlPanelTransformer(ControlPanelAssetTransformDriver $driver): void
 {
     app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
-    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Test',
         'handle' => 'test',
         'driver' => 'test',
-    ]));
+    ]), false);
 }
 
 class ControlPanelAssetTransformDriver implements AssetTransformDriver

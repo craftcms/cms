@@ -1113,7 +1113,7 @@ class ProjectConfig
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
         $config[self::PATH_ASSET_TRANSFORMERS] = app(AssetTransformers::class)
-            ->getAllAssetTransformers(includeTransient: false)
+            ->getAllAssetTransformers()
             ->mapWithKeys(fn (AssetTransformer $transformer): array => [
                 $transformer->uid => $transformer->getConfig(),
             ])

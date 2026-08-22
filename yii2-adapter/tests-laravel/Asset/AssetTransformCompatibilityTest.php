@@ -37,6 +37,7 @@ use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -50,12 +51,12 @@ uses(DatabaseTestCase::class);
 beforeEach(function(): void {
     $this->driver = $driver = new CompatibilityAssetTransformDriver();
     app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => $driver);
-    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Compatibility test',
         'handle' => 'compatibility-test',
         'driver' => 'compatibility-test',
-    ]));
+    ]), false);
     Cms::config()->defaultAssetTransformer('compatibility-test');
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
@@ -468,16 +469,19 @@ it('bridges built-in transformed-image deletion events', function(): void {
 });
 
 it('keeps deprecated transform destinations distinct per Volume', function(): void {
-    $first = Volume::factory()->create([
-        'transformFs' => 'legacy-first',
-        'transformSubpath' => 'first-renditions',
-    ]);
+    $first = Volume::factory()->create();
     $second = Volume::factory()->create([
         'fs' => $first->fs,
-        'transformFs' => 'legacy-second',
-        'transformSubpath' => 'second-renditions',
     ]);
     $volumes = app(Volumes::class);
+    $firstVolume = $volumes->getVolumeById($first->id);
+    $secondVolume = $volumes->getVolumeById($second->id);
+    $firstVolume->setTransformFsHandle('legacy-first');
+    $firstVolume->setTransformSubpath('first-renditions');
+    $secondVolume->setTransformFsHandle('legacy-second');
+    $secondVolume->setTransformSubpath('second-renditions');
+    $volumes->saveVolume($firstVolume, false);
+    $volumes->saveVolume($secondVolume, false);
     $volumes->reset();
 
     $firstVolume = $volumes->getVolumeById($first->id);
@@ -495,8 +499,8 @@ it('keeps deprecated transform destinations distinct per Volume', function(): vo
     $firstVolume->name = 'Updated Volume';
     $volumes->saveVolume($firstVolume);
 
-    expect(DB::table(Table::VOLUMES)->where('id', $first->id)->first(['transformFs', 'transformSubpath']))
-        ->toMatchObject([
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES . '.' . $first->uid))
+        ->toMatchArray([
             'transformFs' => 'legacy-first',
             'transformSubpath' => 'first-renditions',
         ]);

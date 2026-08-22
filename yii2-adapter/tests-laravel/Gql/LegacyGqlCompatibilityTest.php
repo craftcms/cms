@@ -197,12 +197,12 @@ it('accepts the legacy immediately transform argument', function() {
 it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
     $driver = new GqlImmediateAssetTransformDriver();
     app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
-    app(AssetTransformers::class)->registerTransient(new AssetTransformer([
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'GQL immediately',
         'handle' => 'gql-immediately',
         'driver' => 'gql-immediately',
-    ]));
+    ]), false);
     Cms::config()->defaultAssetTransformer('gql-immediately');
     Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
     $asset = Asset::factory()->createElement([

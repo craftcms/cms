@@ -338,7 +338,7 @@ class Volumes
             ->orderBy('sortOrder')
             ->get()
             ->map(fn ($result) => new Volume(
-                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted', 'transformFs', 'transformSubpath'])
+                Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted'])
             ))
             ->values();
     }
