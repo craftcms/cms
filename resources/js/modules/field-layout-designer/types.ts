@@ -17,8 +17,19 @@ export interface FieldLayoutDesignerSettings extends GarnishBaseSettings {
  * The serialized field-layout config that round-trips through the hidden
  * `input[data-config-input]`. Very dynamic on the PHP side, so kept loose.
  */
-export interface FieldLayoutConfig {
+export type FieldLayoutConfigValue =
+  | string
+  | number
+  | boolean
+  | null
+  | FieldLayoutConfigObject
+  | FieldLayoutConfigValue[];
+
+export interface FieldLayoutConfigObject {
   uid?: string;
-  tabs: any[];
-  [key: string]: any;
+  [key: string]: FieldLayoutConfigValue | undefined;
+}
+
+export interface FieldLayoutConfig extends FieldLayoutConfigObject {
+  tabs: FieldLayoutConfigObject[];
 }

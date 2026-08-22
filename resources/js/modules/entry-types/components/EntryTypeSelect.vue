@@ -97,6 +97,7 @@
   }
 
   function selectCreatedEntryType({data}: SlideoutSaveResult) {
+    // SAFETY: the create-entry-type slideout returns its saved EntryType under data.entryType.
     const entryType = data?.entryType as EntryType | undefined;
 
     if (!entryType) {
@@ -140,11 +141,17 @@
       },
     });
 
-    const form = slideout.$container[0]!;
+    const form = slideout.$container[0];
+    if (!(form instanceof HTMLFormElement)) {
+      throw new Error('The entry type slideout form was not created.');
+    }
 
     form.addEventListener('submit', async (event: SubmitEvent) => {
       event.preventDefault();
-      const target = event.target as HTMLFormElement;
+      if (!(event.target instanceof HTMLFormElement)) {
+        throw new Error('The entry type form submission has no form target.');
+      }
+      const target = event.target;
       const body = new FormData(target);
 
       // We need to massage our form data into the format the server is expecting
@@ -193,10 +200,10 @@
     // Bind up the buttons
     form.querySelectorAll<HTMLElement>('[data-action]').forEach((el) => {
       el.addEventListener('click', (e: Event) => {
-        const target = e.target as HTMLElement;
-        if (!target) {
+        if (!(e.target instanceof HTMLElement)) {
           return;
         }
+        const target = e.target;
 
         const action = target.dataset.action;
         switch (action) {

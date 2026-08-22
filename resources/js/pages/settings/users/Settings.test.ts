@@ -1,7 +1,15 @@
 import {createApp, defineComponent, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormControlPayload, FormPayload} from '@/modules/forms/types';
+import type {
+  FormControlPayload,
+  FormPayload,
+  FormProperties,
+} from '@/modules/forms/types';
 import Settings from './Settings.vue';
+
+interface CheckboxGroupElement extends HTMLElement {
+  modelValue: string[];
+}
 
 const state = vi.hoisted(() => ({
   openSlideout: vi.fn(),
@@ -100,7 +108,9 @@ it('selects a volume created from the combobox', async () => {
     expect.objectContaining({onSaved: expect.any(Function)})
   );
 
-  state.openSlideout.mock.calls[0]![1].onSaved({
+  const openCall = state.openSlideout.mock.calls[0];
+  if (!openCall) throw new Error('Expected the volume slideout to open.');
+  openCall[1].onSaved({
     data: {volume: {name: 'User Photos', uid: 'new-volume'}},
   });
 
@@ -109,11 +119,10 @@ it('selects a volume created from the combobox', async () => {
 
 it('keeps the exclusive two-step verification value shape', () => {
   mount();
-  const group = container.querySelector(
+  const group = container.querySelector<CheckboxGroupElement>(
     'craft-checkbox-group'
-  ) as HTMLElement & {
-    modelValue: string[];
-  };
+  );
+  if (!group) throw new Error('Expected the two-step verification group.');
 
   group.modelValue = ['all'];
   group.dispatchEvent(new CustomEvent('model-value-changed'));
@@ -133,10 +142,7 @@ function mount(): void {
   app.mount(container);
 }
 
-function control(
-  path: string,
-  props: Record<string, unknown>
-): FormControlPayload {
+function control(path: string, props: FormProperties): FormControlPayload {
   return {
     type: 'test',
     component: 'test',

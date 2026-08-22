@@ -1,12 +1,14 @@
 import {actionClient, type ElementInfo} from '@craftcms/ui';
 import {getCoreRowModel, useVueTable} from '@tanstack/vue-table';
 import type {RowSelectionState} from '@tanstack/table-core';
-import {computed, ref, watch} from 'vue';
+import {computed, ref, shallowRef, watch} from 'vue';
 import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
 import {
   useContentIndexData,
   type ContentIndexData,
+  type ElementIndexRow,
 } from '@/modules/elements/composables/useContentIndexData';
+import type {IndexQueryValue} from '@/modules/elements/composables/useElementIndexVisits';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
 import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
 import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
@@ -14,7 +16,7 @@ import {useElementIndexViewMode} from '@/modules/elements/composables/useElement
 import {useElementIndexViewState} from '@/modules/elements/composables/useElementIndexViewState';
 import {createModalIndexVisitor} from './modal-index-visitor';
 
-type Row = Record<string, any>;
+type Row = ElementIndexRow;
 
 /**
  * What the modal hands back for each selected row.
@@ -62,7 +64,11 @@ interface Options {
  * modal.
  */
 export function useModalElementIndex(options: Options) {
-  const payload = ref<ContentIndexData>(options.initial);
+  // `shallowRef`, not `ref`: each load replaces the payload wholesale rather
+  // than mutating into it, and `ref` would compute `UnwrapRef` over the whole
+  // generated `ContentIndexData` — deep enough to trip TypeScript's
+  // instantiation limit.
+  const payload = shallowRef<ContentIndexData>(options.initial);
   const loading = ref(false);
 
   async function load(query: Record<string, string>): Promise<void> {
@@ -100,7 +106,10 @@ export function useModalElementIndex(options: Options) {
       {
         search: search.value || null,
         status: status.value || null,
-        condition: conditions.value ?? null,
+        // `ConditionConfig` and `IndexQueryValue` are parallel descriptions of
+        // the same JSON-serializable shape; the visitor only serializes this
+        // into the query string, so the cast crosses the two without loss.
+        condition: (conditions.value ?? null) as IndexQueryValue,
       },
       {resetPage: true}
     );

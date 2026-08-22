@@ -4,13 +4,25 @@ import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {useScreenPageProps} from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
-import type {FormChangeKind, FormPayload} from '@/modules/forms/types';
+import type {
+  FormChangeKind,
+  FormPayload,
+  FormValues,
+} from '@/modules/forms/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaFormRenderer} from '@/modules/forms/useInertiaFormRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
+
+export interface ElementEditFormData {
+  typeId?: string | number | null;
+  enabled?: string | number | boolean | null;
+  enabledForSite?: Record<string, string | number | boolean | null>;
+  provisional?: number;
+  redirect?: string;
+}
 
 /**
  * A save the screen can perform besides the plain Save button — an alternate
@@ -22,7 +34,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 export interface ElementFormAction {
   label: string;
   actionUrl: string | null;
-  params: Record<string, unknown>;
+  params: FormValues;
   /** Pre-encrypted by the server; the save controllers decrypt it. */
   redirect: string | null;
   variant?: string;
@@ -51,7 +63,7 @@ export interface ElementEditPayload {
   fieldLayoutId: number | null;
   title: string;
   docTitle: string;
-  crumbs: Array<Record<string, any>>;
+  crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
   form: FormPayload | null;
   sidebarForm: FormPayload | null;
@@ -80,16 +92,22 @@ export interface ElementEditPayload {
     label: string;
     items: Array<ElementContextMenuItem>;
   } | null;
-  // Element-type view models add their own keys on top of the shared payload.
-  [key: string]: unknown;
 }
 
+/*
+ * `origin/6.x` added an `isElementEditPayload()` guard here that threw when the
+ * merged payload was missing any key. It is dropped rather than merged: this
+ * branch lets `pageProps()` read a slideout panel's own props, which are a
+ * partial payload by design, so the guard rejected every slideout screen and
+ * failed 14 of this composable's tests. Worth reinstating once the slideout
+ * path supplies a complete payload.
+ */
 interface Options {
   /**
    * Identity and element-type attributes merged into every submission —
    * whatever the type's save action needs to resolve the element it's saving.
    */
-  saveData?: () => Record<string, unknown>;
+  saveData?: () => FormValues;
 }
 
 /**
@@ -134,7 +152,7 @@ export function useElementEditor({saveData}: Options = {}) {
   const savedForm = shallowRef<FormPayload | null>(null);
   const formPayload = computed(() => savedForm.value ?? props.form);
   const sidebarPayload = computed(() => props.sidebarForm);
-  const form = useForm<Record<string, any>>({});
+  const form = useForm<ElementEditFormData>({});
 
   // Two bridges share one Inertia form. Each only ever deletes the root keys
   // it wrote itself, and both are constructed here — before either receives a
@@ -240,7 +258,9 @@ export function useElementEditor({saveData}: Options = {}) {
       }
 
       if (screen) {
-        savedScreen.value = screen as Partial<ElementEditPayload>;
+        const payload: Partial<ElementEditPayload> = {};
+        Object.assign(payload, screen);
+        savedScreen.value = payload;
       }
 
       // Released after the flush, so the renderers' pre-flush reconcile — and
@@ -309,12 +329,11 @@ export function useElementEditor({saveData}: Options = {}) {
       method: 'post' as const,
     }),
     {
-      transform: (data) => ({
+      transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
         // the page was rendered with.
-        ...saveData?.(),
-        ...data,
+        const transformed = {...saveData?.(), ...data};
         // Once autosave has created a provisional draft, the submission has to
         // target it — otherwise applying would save the canonical element and
         // strand the draft holding the newer values.
@@ -322,21 +341,24 @@ export function useElementEditor({saveData}: Options = {}) {
         // This posts to a shared `elements/*` action rather than the element
         // type's own, so it needs the generic identity params: the type-specific
         // ones (an entry's `entryId`) mean nothing there.
-        ...(autosave.draftId.value !== null
-          ? {
-              elementType: props.elementType,
-              elementId: props.canonicalId,
-              draftId: autosave.draftId.value,
-              ...(draftIsProvisional.value ? {provisional: 1} : {}),
-            }
-          : {}),
+        if (autosave.draftId.value !== null) {
+          Object.assign(transformed, {
+            elementType: props.elementType,
+            elementId: props.canonicalId,
+            draftId: autosave.draftId.value,
+          });
+          if (draftIsProvisional.value) transformed.provisional = 1;
+        }
+
         // An alternate action's own params win — "Create a draft" has to be
         // able to override the provisional targeting above.
-        ...pendingAction.value?.params,
-        ...(pendingAction.value?.redirect
-          ? {redirect: pendingAction.value.redirect}
-          : {}),
-      }),
+        Object.assign(transformed, pendingAction.value?.params);
+        if (pendingAction.value?.redirect) {
+          transformed.redirect = pendingAction.value.redirect;
+        }
+
+        return transformed;
+      },
       // A submission supersedes any in-flight draft write.
       onBeforeSave: () => autosave.cancel(),
       onSuccess: () => {

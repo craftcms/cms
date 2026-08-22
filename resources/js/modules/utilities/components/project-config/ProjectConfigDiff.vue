@@ -11,15 +11,18 @@
   // const {isLoading, displayedLines, hasMoreLines, fetchDiff, showAll, cancel} =
   //   useProjectConfigDiff(props.invert);
 
-  const {data, isLoading} = useFetch(ProjectConfigController.diff().url, {
-    params: {invert: props.invert},
-  });
+  const {data, isLoading} = useFetch<string>(
+    ProjectConfigController.diff().url,
+    {
+      params: {invert: props.invert},
+    }
+  );
   const diffLines = ref<string[]>([]);
   const showAllLines = ref(false);
   const maxInitialLines = 20;
 
   watch(data, (newValue) => {
-    diffLines.value = newValue.split(/\n/);
+    diffLines.value = newValue?.split(/\n/) ?? [];
   });
 
   function showAll(): void {

@@ -7,6 +7,14 @@ import {Base} from '@craftcms/garnish';
 // rely on jQuery's box model. d3 is a real ESM import (bundled).
 declare const $: any;
 
+declare global {
+  interface Window {
+    d3Formats?: Record<string, string>;
+    d3FormatLocaleDefinition?: Parameters<typeof d3.formatLocale>[0];
+    d3TimeFormatLocaleDefinition?: Parameters<typeof d3.timeFormatLocale>[0];
+  }
+}
+
 /**
  * Craft.charts.DataTable — parses a `{columns, rows}` payload, coercing each
  * cell by its column type (dates via `d3.timeParse`, percents, numbers).
@@ -154,9 +162,9 @@ export class BaseChart extends Base {
     this.setSettings(settings);
 
     const globalSettings = {
-      formats: (window as any).d3Formats,
-      formatLocaleDefinition: (window as any).d3FormatLocaleDefinition,
-      timeFormatLocaleDefinition: (window as any).d3TimeFormatLocaleDefinition,
+      formats: window.d3Formats,
+      formatLocaleDefinition: window.d3FormatLocaleDefinition,
+      timeFormatLocaleDefinition: window.d3TimeFormatLocaleDefinition,
     };
 
     this.setSettings(globalSettings);
@@ -169,10 +177,7 @@ export class BaseChart extends Base {
   // Note: unlike garnish `Base.setSettings`, this accumulates via a deep merge —
   // it's called repeatedly to layer defaults + overrides + global config.
   override setSettings(settings?: any, defaults?: any): void {
-    const baseSettings =
-      typeof this.settings === 'undefined' || this.settings === null
-        ? {}
-        : this.settings;
+    const baseSettings = this.settings ?? {};
     this.settings = $.extend(true, {}, baseSettings, defaults, settings);
   }
 
@@ -590,7 +595,9 @@ export class Area extends BaseChart {
     const xDomainMin = d3.min(this.dataTable.rows, (d: any) => d[0]);
     const xDomainMax = d3.max(this.dataTable.rows, (d: any) => d[0]);
 
-    let xDomain = [xDomainMin, xDomainMax];
+    let xDomain = [xDomainMin, xDomainMax].filter(
+      (value): value is Date => value instanceof Date
+    );
 
     if (this.orientation === 'rtl') {
       xDomain = [xDomainMax, xDomainMin];
@@ -605,7 +612,7 @@ export class Area extends BaseChart {
     }
 
     const x = d3.scaleTime().range([left, this.width - right]);
-    x.domain(xDomain as any);
+    x.domain(xDomain);
 
     return x;
   }

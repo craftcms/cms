@@ -12,6 +12,7 @@ import {
   hudData,
 } from './support';
 import {type ActionMenuItem} from '@craftcms/ui';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 declare const $: any;
@@ -74,7 +75,16 @@ export class Tab extends Base {
     }));
     // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
     // with the FLD WeakMap so `designer.getActiveHud()` can find it.
-    hudData.set(hud.$hud!, hud);
+    if (
+      !(hud.$hud instanceof Element) ||
+      !(hud.$trigger instanceof HTMLElement)
+    ) {
+      throw new Error('Field layout HUD requires a trigger and container.');
+    }
+    hudData.set(hud.$hud, {
+      $trigger: hud.$trigger,
+      hide: () => hud.hide(),
+    });
     hud.on('show', () => {
       hud.$main!.appendChild(this.designer.$libraryContainer);
       this.designer.libraryPicker?.select(0);
@@ -90,9 +100,10 @@ export class Tab extends Base {
       hud.show();
     });
 
-    const $elements = (
-      Array.from($tabContent.children) as HTMLElement[]
-    ).filter((el) => el !== this.$addBtn);
+    const $elements = Array.from($tabContent.children).filter(
+      (element): element is HTMLElement =>
+        element instanceof HTMLElement && element !== this.$addBtn
+    );
 
     for (const el of $elements) {
       this.initElement(el);
@@ -174,7 +185,7 @@ export class Tab extends Base {
     $tab.appendChild(menu);
   }
 
-  private settingsRequestData(): Record<string, unknown> {
+  private settingsRequestData() {
     return {
       uid: this.uid,
       layoutConfig: this.designer.config,
@@ -254,7 +265,7 @@ export class Tab extends Base {
    * Rejects on failure so the Vue settings panel can surface the errors
    * against the fields they belong to.
    */
-  async applyTabSettings(settings: Record<string, unknown>): Promise<void> {
+  async applyTabSettings(settings: FormValues): Promise<void> {
     if (!settings.name) {
       const message = Craft.t('app', 'You must specify a tab name.');
 

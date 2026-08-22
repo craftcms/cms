@@ -5,14 +5,14 @@ import {installCpApp} from './cp-app';
 
 afterEach(() => {
   document.body.innerHTML = '';
-  delete (window as any).Craft;
+  delete window.Craft;
   vi.restoreAllMocks();
 });
 
 it('installs and uninstalls shared CP app behavior', () => {
   const root = document.createElement('div');
   document.body.appendChild(root);
-  (window as any).Craft = {};
+  window.Craft = Object.create(null);
   const app = createApp({render: () => h('div')});
   const uninstall = vi.spyOn(cpComponentRegistry, 'uninstall');
 

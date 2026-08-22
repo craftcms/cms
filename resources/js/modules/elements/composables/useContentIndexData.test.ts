@@ -1,5 +1,5 @@
 import {expect, it, vi} from 'vite-plus/test';
-import {ref} from 'vue';
+import {shallowRef} from 'vue';
 import {
   useContentIndexData,
   type ContentIndexData,
@@ -24,7 +24,7 @@ function payload(overrides: Partial<ContentIndexData> = {}): ContentIndexData {
 }
 
 it('reads the payload from an explicit source instead of the Inertia page', () => {
-  const source = ref(payload({search: 'first'}));
+  const source = shallowRef(payload({search: 'first'}));
   const index = useContentIndexData(undefined, source);
 
   expect(index.context).toBe('modal');
@@ -32,7 +32,7 @@ it('reads the payload from an explicit source instead of the Inertia page', () =
 });
 
 it('tracks the source, so an XHR-driven index updates like a page visit', () => {
-  const source = ref(payload({search: 'first', data: []}));
+  const source = shallowRef(payload({search: 'first', data: []}));
   const index = useContentIndexData(undefined, source);
 
   source.value = payload({search: 'second', data: [{id: 1}]});
@@ -42,7 +42,7 @@ it('tracks the source, so an XHR-driven index updates like a page visit', () => 
 });
 
 it('still lets extra keys win over the payload', () => {
-  const source = ref(payload({search: 'from-payload'}));
+  const source = shallowRef(payload({search: 'from-payload'}));
   const index = useContentIndexData({search: 'from-extra'}, source);
 
   expect(index.search).toBe('from-extra');

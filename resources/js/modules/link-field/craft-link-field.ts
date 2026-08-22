@@ -20,7 +20,7 @@ export type LinkTypeConfig = {
   inputAttributes?: Record<string, string>;
   elementType?: string;
   refHandle?: string;
-  elementSelectConfig?: Record<string, unknown>;
+  elementSelectConfig?: import('@/modules/forms/types').FormValues;
 };
 
 export type LinkFieldValue = {
@@ -128,13 +128,20 @@ class CraftLinkField extends LitElement {
   }
 
   private handleTypeChange(event: Event): void {
-    this.typeId = (event.target as HTMLSelectElement).value;
+    if (!(event.target instanceof HTMLSelectElement)) {
+      return;
+    }
+    this.typeId = event.target.value;
     this.value = '';
     this.defaultLabel = '';
     this.valueError = '';
   }
 
   private handleValueChange(event: Event): void {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    // SAFETY: This handler is registered only on the craft-input value control.
     const input = event.target as HTMLElementTagNameMap['craft-input'];
     this.value = this.inputValue(input);
     this.valueError = '';
@@ -147,8 +154,18 @@ class CraftLinkField extends LitElement {
     return String(input.modelValue ?? '');
   }
 
+  private handleLabelChange(event: Event): void {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    // SAFETY: this handler is registered only on the craft-input label control.
+    this.label = this.inputValue(
+      event.target as HTMLElementTagNameMap['craft-input']
+    );
+  }
+
   private textInputValue(event: Event): string {
-    return (event.target as HTMLInputElement).value;
+    return event.target instanceof HTMLInputElement ? event.target.value : '';
   }
 
   private async chooseElement(event: Event): Promise<void> {
@@ -535,10 +552,7 @@ class CraftLinkField extends LitElement {
                 type="text"
                 .modelValue=${this.label}
                 .disabled=${this.disabled}
-                @model-value-changed=${(event: Event) =>
-                  (this.label = this.inputValue(
-                    event.target as HTMLElementTagNameMap['craft-input']
-                  ))}
+                @model-value-changed=${this.handleLabelChange}
               ></craft-input>
             `
           : nothing}

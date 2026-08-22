@@ -9,13 +9,11 @@
     job: JobInfo;
   }>();
 
-  // Cast to Record for generic iteration in template (job may have extra server-side fields)
-  const jobRecord = computed(() => {
-    const record = props.job as Record<string, any>;
-    return Object.fromEntries(
-      Object.entries(record).filter(([, value]) => value !== null)
-    ) as Record<string, any>;
-  });
+  const jobRecord = computed(() =>
+    Object.fromEntries(
+      Object.entries(props.job).filter(([, value]) => value !== null)
+    )
+  );
 
   const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
 

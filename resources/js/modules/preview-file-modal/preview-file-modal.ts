@@ -15,8 +15,11 @@ declare const $: any;
 declare const Garnish: any;
 
 const DEFAULTS = {
+  // SAFETY: These nullable dimensions are populated with measured numbers before arithmetic.
   minGutter: 50,
+  // SAFETY: The starting width is nullable until the preview payload supplies it.
   startingWidth: null as number | null,
+  // SAFETY: The starting height is nullable until the preview payload supplies it.
   startingHeight: null as number | null,
   resizable: true,
 };
@@ -54,14 +57,12 @@ export class PreviewFileModal extends Modal {
 
   constructor(assetId: number, elementSelectOrSettings?: any, settings?: any) {
     // (assetId, settings) overload
-    if (
-      typeof settings === 'undefined' &&
-      $.isPlainObject(elementSelectOrSettings)
-    ) {
+    if (settings === undefined && $.isPlainObject(elementSelectOrSettings)) {
       settings = elementSelectOrSettings;
       elementSelectOrSettings = null;
     }
 
+    // SAFETY: The legacy Modal base accepts an omitted container during deferred construction.
     super(undefined as any, {autoShow: false, resizable: true});
 
     this.settings = Object.assign({}, DEFAULTS, settings);
@@ -99,6 +100,7 @@ export class PreviewFileModal extends Modal {
       this.settings.startingHeight
     );
 
+    // SAFETY: The keydown listener always receives a native KeyboardEvent.
     this.addListener(this.#$container[0], 'keydown', ((ev: KeyboardEvent) => {
       switch (ev.keyCode) {
         case LEFT_KEY:
@@ -375,7 +377,9 @@ export class PreviewFileModal extends Modal {
       instance._resizeContainer(containerWidth, containerHeight);
       $img.css({width: containerWidth, height: containerHeight});
 
+      // SAFETY: The image editor bundle owns the optional imageFocalPoint global.
       if ((window as any).imageFocalPoint) {
+        // SAFETY: The guarded image editor global exposes renderFocal.
         (window as any).imageFocalPoint.renderFocal();
       }
     }

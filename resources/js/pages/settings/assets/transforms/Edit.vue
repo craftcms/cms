@@ -7,6 +7,7 @@
     FormControlOverrideProps,
     FormControlPayload,
     FormPayload,
+    FormValue,
   } from '@/modules/forms/types';
   import {inputName} from '@/modules/forms/runtime';
   import FormPage from '@/pages/Form.vue';
@@ -28,20 +29,34 @@
     refreshUrl: string | null;
   }>();
 
-  const modeImageUrls: Record<string, string> = {
+  const modeImageUrls = {
     crop: cropImageUrl,
     fit: fitImageUrl,
     letterbox: letterboxImageUrl,
     stretch: stretchImageUrl,
   };
 
+  function isTransformMode(value: string): value is keyof typeof modeImageUrls {
+    return Object.hasOwn(modeImageUrls, value);
+  }
+
+  function modeImageUrl(value: FormValue): string {
+    const mode = String(value);
+    if (isTransformMode(mode)) {
+      return modeImageUrls[mode];
+    }
+
+    throw new Error(`Unsupported transform mode: ${mode}`);
+  }
+
   function options(control: FormControlPayload): ChoiceOption[] {
+    // SAFETY: choice controls serialize this documented option shape.
     return control.props.options as ChoiceOption[];
   }
 
   function qualityPickerValue(
     control: FormControlPayload,
-    quality: unknown
+    quality: FormValue
   ): string {
     const numericQuality = Number(quality);
 
@@ -96,7 +111,7 @@
         >
           <img
             class="mode-option__image"
-            :src="modeImageUrls[String(option.value)]"
+            :src="modeImageUrl(option.value)"
             width="113"
             height="75"
             alt=""

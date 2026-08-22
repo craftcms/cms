@@ -23,7 +23,11 @@
   const emit = defineEmits<{(event: 'update:value', value: boolean): void}>();
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    emit('update:value', (event.target as HTMLInputElement).checked);
+    if (!(event.target instanceof HTMLInputElement)) {
+      throw new TypeError('Expected a checkbox event target.');
+    }
+
+    emit('update:value', event.target.checked);
   });
 </script>
 

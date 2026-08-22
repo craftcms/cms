@@ -1,16 +1,10 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useElementQuickEdit} from './useElementQuickEdit';
 
-const openSlideout = vi.hoisted(() => vi.fn());
-const refreshResults = vi.hoisted(() => vi.fn());
+const openSlideout = vi.fn();
+const refreshResults = vi.fn();
 
-vi.mock('@/common/slideouts', () => ({openSlideout}));
-vi.mock('@/modules/elements/composables/useElementIndexTable', () => ({
-  useElementIndexTable: () => ({refreshResults}),
-}));
-
-const {useElementQuickEdit} = await import('./useElementQuickEdit');
-
-const {onDblClick} = useElementQuickEdit();
+const {onDblClick} = useElementQuickEdit({openSlideout, refreshResults});
 
 beforeEach(() => {
   openSlideout.mockReset();

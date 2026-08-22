@@ -8,10 +8,7 @@ import {
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
-
-// Element index rows are dynamic attribute maps, so the column helper is typed
-// against an open record (matching the page's `Element` type).
-type Row = Record<any, any>;
+import type {ElementIndexRow} from '@/modules/elements/composables/useContentIndexData';
 
 interface ElementIndexColumnsContext {
   /** Columns available for the current source: `{label, value}` per column. */
@@ -97,7 +94,7 @@ export function useElementIndexColumns(
         .filter((column) => column !== undefined)
   );
 
-  const columnHelper = createCraftColumnHelper<Row>();
+  const columnHelper = createCraftColumnHelper<ElementIndexRow>();
 
   const columns = computed(() => [
     columnHelper.html(pinned.key, {header: pinned.label}),

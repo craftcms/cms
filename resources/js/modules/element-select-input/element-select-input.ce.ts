@@ -6,7 +6,7 @@ import {EntrySelectInput} from './entry-select-input';
 declare const Craft: any;
 
 type ElementSelectInputConstructor = new (
-  settings?: Record<string, any>
+  settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
 ) => BaseElementSelectInput;
 
 export default class CraftElementSelectInput extends ControllerElement<BaseElementSelectInput> {
@@ -86,7 +86,7 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
 
     const Input = this.#globalInputClass(name);
 
-    if (typeof Input !== 'function') {
+    if (!(Input instanceof Function)) {
       throw new Error(`Unknown element select input class [${name}].`);
     }
 

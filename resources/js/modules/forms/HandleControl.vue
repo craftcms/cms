@@ -34,11 +34,11 @@
   });
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    emit(
-      'update:value',
-      String((event.target as CraftInputHandle).modelValue ?? ''),
-      'typing'
-    );
+    if (!(event.target instanceof CraftInputHandle)) {
+      throw new TypeError('Expected a handle input event target.');
+    }
+
+    emit('update:value', String(event.target.modelValue ?? ''), 'typing');
   });
 
   function sourceValue(): string {

@@ -1,7 +1,13 @@
-import {useForm} from '@inertiajs/vue3';
-import {createApp, defineComponent, nextTick} from 'vue';
+import {createApp, defineComponent, nextTick, reactive} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
 import {useSiteStatuses} from './useSiteStatuses';
+
+type SubmittedStatus = string | number | boolean | null | undefined;
+
+interface StatusForm {
+  enabled?: SubmittedStatus;
+  enabledForSite?: Record<string, SubmittedStatus>;
+}
 
 describe('useSiteStatuses', () => {
   let app: ReturnType<typeof createApp>;
@@ -12,17 +18,14 @@ describe('useSiteStatuses', () => {
     container?.remove();
   });
 
-  function mount(
-    initial: Record<string, any>
-  ): ReturnType<typeof useForm<Record<string, any>>> {
-    let form!: ReturnType<typeof useForm<Record<string, any>>>;
+  function mount(initial: StatusForm): StatusForm {
+    const form = reactive(initial);
 
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(
       defineComponent({
         setup() {
-          form = useForm<Record<string, any>>(initial);
           useSiteStatuses(form);
 
           return () => null;
@@ -52,8 +55,9 @@ describe('useSiteStatuses', () => {
       enabledForSite: {'1': true, '2': true},
     });
 
-    form.enabledForSite['1'] = false;
-    form.enabledForSite['2'] = false;
+    const statuses = form.enabledForSite;
+    if (!statuses) throw new Error('Expected per-site statuses.');
+    Object.assign(statuses, {'1': false, '2': false});
     await nextTick();
 
     expect(form.enabled).toBe(false);
@@ -65,7 +69,9 @@ describe('useSiteStatuses', () => {
       enabledForSite: {'1': true, '2': true},
     });
 
-    form.enabledForSite['2'] = false;
+    const statuses = form.enabledForSite;
+    if (!statuses) throw new Error('Expected per-site statuses.');
+    Object.assign(statuses, {'2': false});
     await nextTick();
 
     expect(form.enabled).toBe('-');
@@ -77,7 +83,9 @@ describe('useSiteStatuses', () => {
       enabledForSite: {'1': true, '2': false},
     });
 
-    form.enabledForSite['2'] = true;
+    const statuses = form.enabledForSite;
+    if (!statuses) throw new Error('Expected per-site statuses.');
+    Object.assign(statuses, {'2': true});
     await nextTick();
 
     expect(form.enabled).toBe(true);

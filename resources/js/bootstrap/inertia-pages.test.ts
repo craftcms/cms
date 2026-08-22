@@ -1,17 +1,15 @@
+import {defineComponent} from 'vue';
 import {describe, expect, it} from 'vite-plus/test';
 import {
   createInertiaPageRegistry,
   resolveCoreInertiaPage,
   resolveInertiaPage,
-  type InertiaPageComponent,
   type InertiaPageGlob,
 } from './inertia-pages';
 
-const settingsPage = {name: 'SettingsPage'} as unknown as InertiaPageComponent;
-const alternateSettingsPage = {
-  name: 'AlternateSettingsPage',
-} as unknown as InertiaPageComponent;
-const sitesPage = {name: 'SitesPage'} as unknown as InertiaPageComponent;
+const settingsPage = defineComponent({name: 'SettingsPage'});
+const alternateSettingsPage = defineComponent({name: 'AlternateSettingsPage'});
+const sitesPage = defineComponent({name: 'SitesPage'});
 
 describe('Inertia page registry', () => {
   it('registers and resolves plugin page components', async () => {

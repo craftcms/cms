@@ -24,7 +24,7 @@
   const connectRequest = useHttp<Record<string, never>, ConnectResponse>({});
   const disconnectRequest = useHttp<
     Record<string, never>,
-    Record<string, unknown>
+    Record<string, never>
   >({});
 
   async function connectProvider(provider: Provider) {

@@ -11,6 +11,7 @@ import {
 } from './support';
 import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 
@@ -110,7 +111,10 @@ export class Element extends Base {
       }
 
       widthSlider.addEventListener('value-change', (event: Event) => {
-        const width = (event as CustomEvent<{value: number}>).detail.value;
+        if (!(event instanceof CustomEvent)) {
+          return;
+        }
+        const width = Number(event.detail?.value);
         this.updateConfig((config: any) => {
           config.width = width;
           return config;
@@ -256,7 +260,7 @@ export class Element extends Base {
     return label !== '' ? label : this.$container.dataset.attribute;
   }
 
-  private settingsRequestData(): Record<string, unknown> {
+  private settingsRequestData() {
     return {
       uid: this.uid,
       layoutConfig: this.tab.designer.config,
@@ -321,7 +325,9 @@ export class Element extends Base {
       this.slideout.$container[0].querySelector('.fields');
 
     this.addListener($fieldsContainer, 'field-saved', (event) => {
-      this.refreshField((event as unknown as CustomEvent).detail.selectorHtml);
+      if (event instanceof CustomEvent && event.detail?.selectorHtml) {
+        this.refreshField(String(event.detail.selectorHtml));
+      }
     });
 
     this.trigger('createSettings');
@@ -419,7 +425,7 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    settings: Record<string, unknown> | null = null,
+    settings: FormValues | null = null,
     closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
@@ -521,7 +527,7 @@ export class Element extends Base {
 
   get index(): number {
     const tabConfig = this.tab.config;
-    if (typeof tabConfig === 'undefined') {
+    if (tabConfig === undefined) {
       return -1;
     }
     return tabConfig.elements.findIndex((c: any) => c.uid === this.uid);

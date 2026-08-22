@@ -22,13 +22,25 @@ type AssetInfo = ElementInfo & {
   alt?: string | null;
 };
 
+type AssetCriteriaValue =
+  | string
+  | number
+  | boolean
+  | null
+  | AssetCriteriaValue[]
+  | AssetCriteria;
+
+interface AssetCriteria {
+  [key: string]: AssetCriteriaValue;
+}
+
 export type AssetController = {
   open: () => void | Promise<void>;
 };
 
 export function createAssetController(
   editor: OverTypeInstance,
-  assetCriteria: Record<string, unknown>,
+  assetCriteria: AssetCriteria,
   assetSources: string[],
   preview: PreviewController
 ): AssetController {

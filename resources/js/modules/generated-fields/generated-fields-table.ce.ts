@@ -1,6 +1,25 @@
 import {getPostData} from '@craftcms/garnish';
 import {GeneratedFieldsTable} from '@/modules/generated-fields/generated-fields-table';
 import {ControllerElement} from '@/common/web-components';
+import {
+  expandPostArray,
+  type PostValue,
+  type PostValues,
+} from '@/common/utils/forms';
+import type {EditableTableColumns} from '@/modules/editable-table/types';
+
+interface GeneratedFieldRow extends PostValues {
+  name?: string;
+  handle?: string;
+  template?: string;
+  uid?: string;
+}
+
+function isGeneratedFieldRow(value: PostValue): value is GeneratedFieldRow {
+  return (
+    value instanceof Object && !Array.isArray(value) && !(value instanceof File)
+  );
+}
 
 /**
  * `<craft-generated-fields-table>` — boots a {@link GeneratedFieldsTable} around
@@ -18,10 +37,12 @@ export default class CraftGeneratedFieldsTable extends ControllerElement<Generat
   protected readonly rootSelector = 'table';
 
   protected create(table: HTMLElement): GeneratedFieldsTable {
+    // SAFETY: PHP serializes the generated-fields column definitions into the cols attribute.
+    const columns = this.jsonAttr('cols') as EditableTableColumns;
     return new GeneratedFieldsTable(
       table.id,
       this.getAttribute('name') ?? '',
-      this.jsonAttr('cols'),
+      columns,
       this.jsonAttr('settings')
     );
   }
@@ -42,7 +63,7 @@ export default class CraftGeneratedFieldsTable extends ControllerElement<Generat
    * transform merges this in; native/Twig forms still post the inputs directly, so
    * this is additive.
    */
-  serialize(): any[] {
+  serialize(): GeneratedFieldRow[] {
     const table = this.querySelector<HTMLTableElement>('table');
     if (!table) {
       return [];
@@ -52,22 +73,21 @@ export default class CraftGeneratedFieldsTable extends ControllerElement<Generat
     // the legacy `getPostData` + `expandPostArray` pairing. Scoped to the inner
     // `<table>` so the sibling base hidden input is excluded.
     const flat = getPostData(table);
-    const expand = (window as any).Craft?.expandPostArray;
-    const expandedAll: Record<string, any> = expand ? expand(flat) : {};
+    const expandedAll = expandPostArray(flat);
     const baseName = this.getAttribute('name') ?? 'generatedFields';
     // Single top-level key; prefer the base name, fall back to that lone key.
-    const rowsById: Record<string, any> =
-      expandedAll[baseName] ?? Object.values(expandedAll)[0] ?? {};
+    const rowsValue = expandedAll[baseName] ?? Object.values(expandedAll)[0];
+    const rowsById = isGeneratedFieldRow(rowsValue) ? rowsValue : {};
 
     // Read the row order from the DOM — drag-sort reorders the `<tr>`s but not
     // their baked-in input-name indices — and return the payloads in that order.
-    const domOrderIds = Array.from(table.querySelectorAll('tbody tr')).map(
-      (tr) => (tr as HTMLElement).dataset.id
-    );
+    const domOrderIds = Array.from(
+      table.querySelectorAll<HTMLTableRowElement>('tbody tr')
+    ).map((tr) => tr.dataset.id);
 
     return domOrderIds
       .map((id) => (id != null ? rowsById[id] : undefined))
-      .filter(Boolean);
+      .filter(isGeneratedFieldRow);
   }
 }
 

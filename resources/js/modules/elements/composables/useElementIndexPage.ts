@@ -5,7 +5,10 @@ import {
   useVueTable,
 } from '@tanstack/vue-table';
 import {computed, onMounted, onScopeDispose, ref} from 'vue';
-import {useContentIndexData} from '@/modules/elements/composables/useContentIndexData';
+import {
+  type ElementIndexRow,
+  useContentIndexData,
+} from '@/modules/elements/composables/useContentIndexData';
 import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
 import {useConditionBuilder} from '@/modules/elements/composables/useConditionBuilder';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
@@ -20,8 +23,6 @@ import {
   type ElementIndexRoute,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
-
-type Element = Record<any, any>;
 
 interface UseElementIndexPageOptions {
   /** The page's index route — the one per-page piece of the pipeline. */
@@ -183,7 +184,7 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     return modal;
   }
 
-  const elementTable = useVueTable<Element>({
+  const elementTable = useVueTable<ElementIndexRow>({
     get data() {
       return elementIndex.data ?? [];
     },
@@ -213,9 +214,9 @@ export function useElementIndexPage(options: UseElementIndexPageOptions) {
     enableRowSelection: (row) => !row.original?.isFolder,
     onRowSelectionChange: (updater) => {
       rowSelection.value =
-        typeof updater === 'function' ? updater(rowSelection.value) : updater;
+        updater instanceof Function ? updater(rowSelection.value) : updater;
     },
-    getCoreRowModel: getCoreRowModel<Element>(),
+    getCoreRowModel: getCoreRowModel<ElementIndexRow>(),
     ...sortingConfig,
     ...paginationConfig,
     enableMultiSort: false,

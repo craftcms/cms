@@ -9,6 +9,7 @@
     FormChangeKind,
     FormControlOverrideProps,
     FormPayload,
+    FormValue,
   } from '@/modules/forms/types';
   import {isRecord, pathsMatch} from '@/modules/forms/runtime';
   import PreviewTargetsTable from '@/modules/sections/components/PreviewTargetsTable.vue';
@@ -35,10 +36,10 @@
   }>();
 
   const formPage = ref<{
-    setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
+    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
   }>();
 
-  function selectedEntryTypes(value: unknown): EntryType[] {
+  function selectedEntryTypes(value: FormValue): EntryType[] {
     if (!Array.isArray(value)) {
       return [];
     }
@@ -62,12 +63,20 @@
     );
   }
 
-  function siteSettings(value: unknown): SiteSettings {
-    return isRecord(value) ? (value as SiteSettings) : {};
+  function siteSettings(value: FormValue): SiteSettings {
+    if (!isRecord(value)) {
+      return {};
+    }
+    // SAFETY: the section form's `sites` control emits SectionSiteSettingsData rows.
+    return value as SiteSettings;
   }
 
-  function previewTargets(value: unknown): PreviewTarget[] {
-    return Array.isArray(value) ? (value as PreviewTarget[]) : [];
+  function previewTargets(value: FormValue): PreviewTarget[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    // SAFETY: the preview-targets control owns this array and emits PreviewTarget rows.
+    return value as PreviewTarget[];
   }
 
   function onChange(change: FormChange, values: FormPayload['values']): void {

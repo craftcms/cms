@@ -34,6 +34,24 @@ import './panel-stack.css';
 // `@craftcms/garnish/compat` (which also calls this) yet.
 initGarnish();
 
+type UiLayerManager = NonNullable<typeof Garnish.uiLayerManager>;
+
+interface LegacyHud {
+  showing: boolean;
+  updateSizeAndPosition(force: boolean): void;
+}
+
+interface LegacyGarnishRuntime {
+  uiLayerManager?: UiLayerManager;
+  hideModalBackgroundLayers?: () => void;
+  resetModalBackgroundLayerVisibility?: () => void;
+  HUD?: {instances: LegacyHud[]};
+}
+
+function legacyGarnish(): LegacyGarnishRuntime | null {
+  return Object.getOwnPropertyDescriptor(window, 'Garnish')?.value ?? null;
+}
+
 /**
  * The UI-layer manager slideouts should coordinate with.
  *
@@ -45,8 +63,8 @@ initGarnish();
  * the page's legacy manager when present; fall back to the modern one for
  * legacy-free surfaces.
  */
-export function uiLayerManager(): any {
-  return (window as any).Garnish?.uiLayerManager ?? Garnish.uiLayerManager!;
+export function uiLayerManager(): UiLayerManager {
+  return legacyGarnish()?.uiLayerManager ?? Garnish.uiLayerManager!;
 }
 
 /**
@@ -57,12 +75,12 @@ export function uiLayerManager(): any {
  * pairs with the modals and HUDs it stacks against.
  */
 function hideBackgroundLayers(): void {
-  const legacy = (window as any).Garnish?.hideModalBackgroundLayers;
+  const legacy = legacyGarnish()?.hideModalBackgroundLayers;
   (legacy ?? hideModalBackgroundLayers)();
 }
 
 function resetBackgroundLayerVisibility(): void {
-  const legacy = (window as any).Garnish?.resetModalBackgroundLayerVisibility;
+  const legacy = legacyGarnish()?.resetModalBackgroundLayerVisibility;
   (legacy ?? resetModalBackgroundLayerVisibility)();
 }
 
@@ -250,7 +268,7 @@ function syncShade(): void {
 function repositionHuds(): void {
   // The legacy garnish bundle keeps its own `Garnish.HUD` instance registry,
   // separate from the modern class's — sweep both.
-  const legacyInstances = (window as any).Garnish?.HUD?.instances ?? [];
+  const legacyInstances = legacyGarnish()?.HUD?.instances ?? [];
 
   for (const hud of [...HUD.instances, ...legacyInstances]) {
     if (hud.showing) {

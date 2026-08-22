@@ -1,5 +1,7 @@
 import {router} from '@inertiajs/vue3';
 
+type FolderNavigationRouter = Pick<typeof router, 'visit'>;
+
 /**
  * Navigation into an asset folder shown inline in the index listing.
  *
@@ -9,7 +11,9 @@ import {router} from '@inertiajs/vue3';
  * drops the `source` query param (the folder's path is now the source), and
  * restarts paging.
  */
-export function useFolderNavigation() {
+export function useFolderNavigation(
+  navigationRouter: FolderNavigationRouter = router
+) {
   function navigateToFolder(folderUrl: string) {
     const url = new URL(folderUrl, window.location.origin);
 
@@ -26,18 +30,23 @@ export function useFolderNavigation() {
 
     // Mirror the source-switch visit in ElementSources: keep the page component
     // and scroll position, swap in the new folder's data.
-    router.visit(url.href, {
+    navigationRouter.visit(url.href, {
       preserveState: true,
       preserveScroll: true,
     });
   }
 
   /** Whether a row/card represents a navigable folder. */
-  function isFolderRow(row: {
-    isFolder?: unknown;
-    folderUrl?: unknown;
-  }): boolean {
-    return Boolean(row?.isFolder) && typeof row?.folderUrl === 'string';
+  interface FolderRow {
+    id?: string | number;
+    isFolder?: boolean;
+    folderUrl?: string;
+    folderId?: string | number;
+    canMoveTo?: boolean;
+  }
+
+  function isFolderRow(row: FolderRow): row is FolderRow & {folderUrl: string} {
+    return Boolean(row.isFolder && row.folderUrl);
   }
 
   /**
@@ -46,28 +55,17 @@ export function useFolderNavigation() {
    * (`data-folder-drop-target` + `data-folder-id` + `data-can-move-to`). Inert
    * unless an asset-move drag is set up on the page (asset index only).
    */
-  function rowMoveAttrs(row: {
-    id?: unknown;
-    isFolder?: unknown;
-    folderUrl?: unknown;
-    folderId?: unknown;
-    canMoveTo?: unknown;
-  }): Record<string, string> {
-    const attrs: Record<string, string> = {'data-id': String(row.id)};
+  function rowMoveAttrs(row: FolderRow) {
+    const folder = isFolderRow(row);
 
-    if (isFolderRow(row)) {
-      attrs['data-folder-drop-target'] = '';
-      if (row.folderId != null) {
-        attrs['data-folder-id'] = String(row.folderId);
-      }
-      if (row.canMoveTo) {
-        attrs['data-can-move-to'] = '';
-      }
-    } else {
-      attrs['data-movable-asset'] = '';
-    }
-
-    return attrs;
+    return {
+      'data-id': String(row.id),
+      'data-folder-drop-target': folder ? '' : undefined,
+      'data-folder-id':
+        folder && row.folderId != null ? String(row.folderId) : undefined,
+      'data-can-move-to': folder && row.canMoveTo ? '' : undefined,
+      'data-movable-asset': folder ? undefined : '',
+    };
   }
 
   return {navigateToFolder, isFolderRow, rowMoveAttrs};

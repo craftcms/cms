@@ -19,16 +19,16 @@ export function resolveElement(input: ElementArg): HTMLElement | null {
   if (input == null) {
     return null;
   }
-  if (typeof input === 'string') {
-    return document.querySelector<HTMLElement>(input);
+  if (input instanceof HTMLElement) {
+    return input;
   }
   if (input instanceof Element) {
-    return input as HTMLElement;
+    return null;
   }
-  if (typeof (input as ArrayLike<Element>).length === 'number') {
-    return ((input as ArrayLike<Element>)[0] as HTMLElement) ?? null;
+  if (!(input instanceof Object)) {
+    return document.querySelector<HTMLElement>(input);
   }
-  return null;
+  return input[0] instanceof HTMLElement ? input[0] : null;
 }
 
 /**

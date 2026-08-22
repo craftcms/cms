@@ -1,5 +1,6 @@
-import type {InertiaForm} from '@inertiajs/vue3';
 import {watch} from 'vue';
+
+type SubmittedStatus = string | number | boolean | null | undefined;
 
 /**
  * Keeps the editor's "Enabled for all sites" switch in sync with the per-site
@@ -12,7 +13,12 @@ import {watch} from 'vue';
  * Both switches are ordinary Form Controls writing into the shared Inertia
  * form, so this only has to reconcile their values — no DOM involved.
  */
-export function useSiteStatuses(form: InertiaForm<Record<string, any>>): void {
+interface SiteStatusForm {
+  enabled?: SubmittedStatus;
+  enabledForSite?: Record<string, SubmittedStatus>;
+}
+
+export function useSiteStatuses(form: SiteStatusForm): void {
   // Guards the two watchers below from re-entering each other: whichever
   // direction fires first owns the reconciliation for that tick.
   let syncing = false;
@@ -43,6 +49,9 @@ export function useSiteStatuses(form: InertiaForm<Record<string, any>>): void {
 
       withSync(() => {
         const value = normalize(enabled);
+        if (!form.enabledForSite) {
+          return;
+        }
 
         for (const siteId of siteIds()) {
           form.enabledForSite[siteId] = value;
@@ -76,6 +85,6 @@ export function useSiteStatuses(form: InertiaForm<Record<string, any>>): void {
 }
 
 /** Lightswitch values arrive as booleans or their submitted string forms. */
-function normalize(value: unknown): boolean {
+function normalize(value: SubmittedStatus): boolean {
   return value === true || value === '1' || value === 1;
 }

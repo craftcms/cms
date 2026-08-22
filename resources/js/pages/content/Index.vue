@@ -3,7 +3,10 @@
     type PublishableSection,
   } from '@/modules/elements/components/NewEntryButton.vue';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
-  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import {
+    appendIndexQuery,
+    type ElementIndexRoute,
+  } from '@/modules/elements/composables/useElementIndexVisits';
   import {index} from '@/routes/craft/cp/content/index.js';
   import {usePage} from '@inertiajs/vue3';
 
@@ -20,12 +23,12 @@
   // lives at `content.index` with `page`/`sectionHandle` route params.
   const route: ElementIndexRoute = {
     url: (query = {}) =>
-      index.url(
-        {
+      appendIndexQuery(
+        index.url({
           page: page.props.page ?? '',
           sectionHandle: props.sectionHandle || undefined,
-        },
-        {query: query as Record<string, string>}
+        }),
+        query
       ),
   };
 </script>

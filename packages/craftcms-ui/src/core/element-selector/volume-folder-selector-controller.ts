@@ -82,13 +82,17 @@ export class VolumeFolderSelectorController extends ElementSelectorController<Vo
 
     const last = sourcePath[sourcePath.length - 1]!;
 
-    if (last.folderId === undefined) {
+    // Coerced and range-checked rather than trusted: the breadcrumb comes from
+    // the index, which builds it from server HTML, so a missing or unparseable
+    // `folderId` has to read as "no folder" instead of leaking NaN into the
+    // selection payload.
+    const folderId = Number(last.folderId);
+
+    if (!Number.isFinite(folderId)) {
       return null;
     }
 
-    return this.disabledFolderIds.includes(last.folderId)
-      ? null
-      : last.folderId;
+    return this.disabledFolderIds.includes(folderId) ? null : folderId;
   }
 
   protected override canSubmitSelection(): boolean {

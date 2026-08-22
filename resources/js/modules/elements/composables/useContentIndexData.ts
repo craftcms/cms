@@ -4,6 +4,7 @@ import type {PaginationData, SortItem} from '@/common/types';
 import type {ConditionConfig} from '@/modules/elements/composables/useConditionBuilder';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
+import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
 import type {
   SortOption,
   ViewMode,
@@ -11,6 +12,14 @@ import type {
 } from '@/modules/elements/types/view-state';
 
 type GeneratedProps = CraftCms.Cms.Http.ViewModels.ContentIndexViewModel;
+
+export interface ElementIndexRow extends IndexQueryParams {
+  id: string | number;
+  isFolder?: boolean;
+  folderUrl?: string;
+  folderId?: string | number;
+  canMoveTo?: boolean;
+}
 
 /**
  * The `ContentIndexViewModel` payload, with the element-index domain types
@@ -38,7 +47,7 @@ export type ContentIndexData = Omit<
   viewModes: ViewMode[];
   sortOptions: SortOption[];
   sort: SortItem[];
-  data: Array<Record<string, unknown>>;
+  data: ElementIndexRow[];
   actions: BulkActionItem[] | null;
   pagination: PaginationData;
 };
@@ -72,7 +81,7 @@ export function useContentIndexData<
   const props = (): ContentIndexData =>
     source === undefined ? inertiaPage!.props : toValue(source);
 
-  return reactive({
+  const data = reactive({
     // Element type
     elementType: computed(() => props().elementType),
     elementDisplayName: computed(() => props().elementDisplayName),
@@ -111,6 +120,12 @@ export function useContentIndexData<
     actions: computed(() => props().actions),
     pagination: computed(() => props().pagination),
 
-    ...(extra ?? ({} as Extra)),
+    // Merged into the literal rather than `Object.assign`ed onto the result:
+    // every key above is a `computed()` ref, and assigning over one after
+    // `reactive()` has wrapped it does not take — `extra` would silently lose
+    // to the payload, which is the opposite of the documented precedence.
+    ...((extra ?? {}) as Extra),
   });
+
+  return data;
 }

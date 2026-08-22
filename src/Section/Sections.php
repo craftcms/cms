@@ -947,6 +947,12 @@ class Sections
             ->siteId($siteIds)
             ->status(null);
 
+        // Prefer the primary site if it's enabled for the section
+        $primarySiteId = Sites::getPrimarySite()->id;
+        if (in_array($primarySiteId, $siteIds)) {
+            $baseEntryQuery->preferSites([$primarySiteId]);
+        }
+
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
         $entry = $baseEntryQuery

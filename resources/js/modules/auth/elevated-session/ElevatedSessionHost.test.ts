@@ -28,7 +28,7 @@ vi.mock('@craftcms/ui', () => ({
   ConfigService: {
     getInstance: () => ({
       getCpUrl: (path: string) => `https://example.test/admin/${path}`,
-      get: (key: string, fallback: unknown) =>
+      get: (key: string, fallback: boolean) =>
         key === 'useEmailAsUsername' ? true : fallback,
     }),
   },
@@ -75,7 +75,8 @@ describe('ElevatedSessionHost', () => {
   });
 
   it('renders the dialog surface with its accessible name and description', () => {
-    const pane = container.querySelector('craft-pane')!;
+    const pane = container.querySelector('craft-pane');
+    if (!pane) throw new Error('Expected the elevated-session pane.');
 
     expect(pane).not.toBeNull();
     expect(pane.getAttribute('role')).toBe('dialog');

@@ -25,9 +25,12 @@
   }>();
 
   function apply(event: Event): void {
-    const {label, title, type, urlSuffix, value} = (
-      event as CustomEvent<LinkFieldValue>
-    ).detail;
+    if (!(event instanceof CustomEvent)) {
+      throw new TypeError('Expected a link-field custom event.');
+    }
+
+    const detail: LinkFieldValue = event.detail;
+    const {label, title, type, urlSuffix, value} = detail;
     emit('update:value', {label, title, type, urlSuffix, value}, 'discrete');
   }
 </script>

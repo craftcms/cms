@@ -5,7 +5,13 @@ import CraftElementSelectInput from './element-select-input.ce';
 const destroy = vi.fn();
 const showReplaceModal = vi.fn();
 const removeElementOrSelection = vi.fn();
-let receivedSettings: Record<string, any> | undefined;
+
+interface PluginSettings {
+  id: string;
+  limit: number;
+}
+
+let receivedSettings: PluginSettings | undefined;
 
 /**
  * The slice of the jQuery collection API `CraftElementSelectInput` uses to
@@ -31,7 +37,7 @@ function fakeElements(ids: number[]): FakeElements {
 class PluginElementSelectInput {
   $elements = fakeElements([7, 3]);
 
-  constructor(settings: Record<string, any>) {
+  constructor(settings: PluginSettings) {
     receivedSettings = settings;
   }
 
@@ -62,7 +68,9 @@ function bootInput(): InstanceType<typeof CraftElementSelectInput> {
   element.setAttribute('input-class', 'Craft.PluginElementSelectInput');
   element.setAttribute('settings', JSON.stringify({limit: 2, id: 'ignored'}));
   element.append(document.createElement('ul'));
-  element.firstElementChild!.className = 'elements';
+  if (!element.firstElementChild)
+    throw new Error('Expected the elements list fixture.');
+  element.firstElementChild.className = 'elements';
   document.body.append(element);
 
   return element;
