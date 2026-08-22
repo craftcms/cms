@@ -14,7 +14,7 @@ type LegacySettingValue =
   | JQuery
   | LegacyWidgetSettings
   | LegacySettingValue[]
-  | (() => void);
+  | ((...args: any[]) => void);
 
 interface LegacyWidgetSettings {
   [key: string]: LegacySettingValue;
