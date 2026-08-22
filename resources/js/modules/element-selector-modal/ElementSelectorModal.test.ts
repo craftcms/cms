@@ -1,6 +1,11 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {ElementSelectorController, type ElementInfo} from '@craftcms/ui';
+import {
+  AssetSelectorController,
+  ElementSelectorController,
+  type AssetSelectorOptions,
+  type ElementInfo,
+} from '@craftcms/ui';
 
 /**
  * The real index pulls the whole element-index component tree and its
@@ -15,6 +20,28 @@ const stub = vi.hoisted(() => ({
   lastProps: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
+
+const menu = vi.hoisted(() => ({
+  actions: null as any[] | null,
+}));
+
+vi.mock('@/common/components/ActionMenu.vue', async () => {
+  const {defineComponent: define, h: create} = await import('vue');
+
+  return {
+    default: define({
+      name: 'ActionMenuStub',
+      props: ['actions', 'label'],
+      setup(props) {
+        // Read inside render so each re-render republishes the current list.
+        return () => {
+          menu.actions = props.actions as any[];
+          return create('div', {class: 'action-menu-stub'});
+        };
+      },
+    }),
+  };
+});
 
 vi.mock('./ModalElementIndex.vue', async () => {
   const {defineComponent: define, h: create} = await import('vue');
@@ -87,6 +114,7 @@ beforeEach(() => {
   stub.clearSelection.mockClear();
   stub.lastProps = null;
   stub.emit = null;
+  menu.actions = null;
 });
 
 afterEach(() => {
@@ -203,5 +231,79 @@ describe('ElementSelectorModal', () => {
     unmount();
 
     expect(instance.index).toBeNull();
+  });
+});
+
+describe('the transform menu', () => {
+  function assetController(
+    transforms: {handle: string; name: string}[],
+    options: Partial<AssetSelectorOptions> = {}
+  ) {
+    return new AssetSelectorController({
+      elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
+      transforms,
+      hideOnSelect: false,
+      loadIndexBody: async () => ({html: '', props: {}}),
+      fetchTransformUrl: async (id, handle) => `/t/${handle}/${id}.jpg`,
+      ...options,
+    });
+  }
+
+  it('is absent for a controller with no transforms', async () => {
+    const {host, unmount} = await mountModal(controller());
+
+    expect(host.querySelector('.action-menu-stub')).toBeNull();
+    unmount();
+  });
+
+  it('is absent for an asset controller that was given none', async () => {
+    const {host, unmount} = await mountModal(assetController([]));
+
+    expect(host.querySelector('.action-menu-stub')).toBeNull();
+    unmount();
+  });
+
+  it('offers one item per transform', async () => {
+    const instance = assetController([
+      {handle: 'thumb', name: 'Thumbnail'},
+      {handle: 'large', name: 'Large'},
+    ]);
+    const {host, unmount} = await mountModal(instance);
+
+    expect(host.querySelector('.action-menu-stub')).not.toBeNull();
+    expect(menu.actions!.map((a) => a.label)).toEqual(['Thumbnail', 'Large']);
+    unmount();
+  });
+
+  it('disables the items until something is selected', async () => {
+    // The invoker is frozen under `v-once`, so this is where reactivity has to
+    // land — a `disabled` on the invoker would never update.
+    const instance = assetController([{handle: 'thumb', name: 'Thumbnail'}]);
+    const {unmount} = await mountModal(instance);
+
+    expect(menu.actions!.every((a) => a.disabled)).toBe(true);
+
+    instance.setSelection([element(1)]);
+    await nextTick();
+
+    expect(menu.actions!.every((a) => a.disabled)).toBe(false);
+    unmount();
+  });
+
+  it('submits with the chosen transform applied', async () => {
+    const onSelect = vi.fn();
+    const instance = assetController([{handle: 'thumb', name: 'Thumbnail'}], {
+      onSelect,
+    });
+    const {unmount} = await mountModal(instance);
+
+    instance.setSelection([element(1)]);
+    await nextTick();
+    await menu.actions![0]!.onClick();
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0]![1]).toEqual({transform: 'thumb'});
+    expect(onSelect.mock.calls[0]![0][0].url).toBe('/t/thumb/1.jpg');
+    unmount();
   });
 });
