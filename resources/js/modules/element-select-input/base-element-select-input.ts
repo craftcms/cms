@@ -939,7 +939,7 @@ export class BaseElementSelectInput extends Base {
     }
 
     if (this.modal) {
-      this.modal.show();
+      void this.modal.show();
 
       return;
     }
@@ -966,7 +966,7 @@ export class BaseElementSelectInput extends Base {
    */
   async createModal(): Promise<any> {
     const {createElementSelectorModal} =
-      await import('@/modules/element-selector-modal/registry');
+      await import('@/modules/element-selector-modal/create-element-selector-modal');
 
     return createElementSelectorModal(
       this.settings.elementType,
@@ -999,7 +999,9 @@ export class BaseElementSelectInput extends Base {
         siteIds: this.settings.siteIds,
         disabledElementIds: this.getDisabledElementIds(),
         onSelect: this.onModalSelect.bind(this),
-        onHide: this.onModalHide.bind(this),
+        // Was `onHide`; the controller calls this one whenever it closes,
+        // whether that came from Cancel, Escape or a completed selection.
+        onClose: this.onModalHide.bind(this),
         triggerElement: () => this.getNextLogicalFocusElement(),
         modalTitle: Craft.t('app', 'Choose'),
       },
@@ -1048,11 +1050,6 @@ export class BaseElementSelectInput extends Base {
   }
 
   async onModalSelect(elements: any[]): Promise<void> {
-    this.modal?.disable();
-    this.modal?.disableCancelBtn();
-    this.modal?.disableSelectBtn();
-    this.modal?.showFooterSpinner();
-
     this.elementEditor?.pause();
 
     const [inputUiType, inputUiSize] = (() => {
@@ -1134,10 +1131,8 @@ export class BaseElementSelectInput extends Base {
       this.updateDisabledElementsInModal();
     }
 
-    this.modal?.enable();
-    this.modal?.enableCancelBtn();
-    this.modal?.enableSelectBtn();
-    this.modal?.hideFooterSpinner();
+    // `busy` is the controller's, held across this method because it is the
+    // awaited `onSelect`. Only the close is ours to ask for.
     this.modal?.hide();
 
     await Craft.appendHeadHtml(data.headHtml);
@@ -1307,9 +1302,7 @@ export class BaseElementSelectInput extends Base {
    * enable or disable individual ids, so both directions are one assignment.
    */
   updateDisabledElementsInModal(): void {
-    if (this.modal) {
-      this.modal.settings.disabledElementIds = this.getDisabledElementIds();
-    }
+    this.modal?.setDisabledElementIds(this.getDisabledElementIds());
   }
 
   getElementById(id: number): any {

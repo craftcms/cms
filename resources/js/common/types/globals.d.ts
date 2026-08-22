@@ -80,22 +80,39 @@ interface SlideoutInstance {
 }
 
 interface ElementSelectorModalInstance {
-  show(): void;
-  on(event: string, callback: () => void): void;
+  show(): Promise<void>;
+  hide(): void;
+  destroy(): void;
+  /** Returns an unsubscribe function. */
+  on(event: string, callback: (data?: unknown) => void): () => void;
+  /** Republishes the whole set; the index re-reads it. */
+  setDisabledElementIds(ids: number[]): void;
+  setBusy(busy: boolean): void;
 }
 
 type FieldLayoutDesignerInstance = any;
 
 interface ElementSelectorModalSettings {
+  /** Accepted for compatibility; the native dialog manages stacking itself. */
   closeOtherModals?: boolean;
   criteria?: Record<string, unknown>;
   disabledElementIds?: number[];
+  disableElementsOnSelect?: boolean;
   hideOnSelect?: boolean;
   modalTitle?: string;
+  showTitle?: boolean;
+  selectBtnLabel?: string;
   multiSelect?: boolean;
-  onSelect?: (elements: any[]) => void;
-  showSiteMenu?: boolean;
+  /** May return a promise; the modal stays busy until it settles. */
+  onSelect?: (elements: any[], meta?: {transform?: string | null}) => unknown;
+  onCancel?: () => void;
+  onClose?: () => void;
+  showSiteMenu?: boolean | 'auto' | null;
+  siteIds?: number[] | null;
   sources?: string[] | null;
+  condition?: unknown;
+  storageKey?: string | null;
+  triggerElement?: HTMLElement | (() => HTMLElement | null) | null;
 }
 
 interface CraftStatic {
@@ -110,7 +127,7 @@ interface CraftStatic {
   createElementSelectorModal(
     elementType: string,
     settings?: ElementSelectorModalSettings
-  ): ElementSelectorModalInstance;
+  ): Promise<ElementSelectorModalInstance>;
   expandPostArray(arr: object): any;
   escapeHtml(str: string);
   sites: Site[];
