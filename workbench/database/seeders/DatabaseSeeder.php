@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\Database\Seeders;
 
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
@@ -11,17 +12,21 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Concerns\InteractsWithIO;
@@ -30,6 +35,7 @@ use Illuminate\Console\View\Components\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
+use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -78,6 +84,40 @@ class DatabaseSeeder extends Seeder
         app(LaravelMigrations::class)->ensureSessionsTable();
 
         $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
+
+        $this->components->task('Creating assets filesystem', function (): void {
+            $_SERVER['DOCUMENT_ROOT'] = Env::get('DOCUMENT_ROOT') ?: public_path();
+
+            $filesystem = Filesystems::createFilesystem([
+                'type' => Local::class,
+                'name' => 'Assets',
+                'handle' => 'assets',
+                'settings' => [
+                    'path' => '$DOCUMENT_ROOT/assets',
+                    'hasUrls' => true,
+                    'url' => '/assets',
+                ],
+            ]);
+
+            if (! Filesystems::saveFilesystem($filesystem)) {
+                throw new RuntimeException('Failed to create the assets filesystem.');
+            }
+        });
+
+        $this->components->task('Creating asset volumes', function (): void {
+            foreach (['images' => 'Images', 'documents' => 'Documents'] as $handle => $name) {
+                $volume = new Volume([
+                    'name' => $name,
+                    'handle' => $handle,
+                    'fsHandle' => 'assets',
+                    'subpath' => $handle,
+                ]);
+
+                if (! Volumes::saveVolume($volume)) {
+                    throw new RuntimeException("Failed to create the {$name} volume.");
+                }
+            }
+        });
 
         $site = Sites::getCurrentSite();
 
