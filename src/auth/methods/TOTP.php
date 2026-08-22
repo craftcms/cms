@@ -76,6 +76,19 @@ class TOTP extends BaseAuthMethod
     /**
      * @inheritdoc
      */
+    public function getSetupData(): array
+    {
+        $secret = trim($this->secret());
+
+        return [
+            'secret' => $secret,
+            'qrCode' => $this->generateQrCode($secret),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSetupHtml(string $containerId): string
     {
         $secret = $this->secret();

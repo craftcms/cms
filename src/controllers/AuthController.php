@@ -8,6 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\auth\methods\AuthMethodInterface;
+use craft\auth\methods\BaseAuthMethod;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
 use craft\helpers\Html;
@@ -15,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
 
@@ -97,6 +100,45 @@ class AuthController extends Controller
     }
 
     /**
+     * Returns the data for available authentication methods.
+     *
+     * @return Response
+     */
+    public function actionGetAvailableMethods(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        return $this->asJson([
+            'methods' => array_map(
+                fn(AuthMethodInterface $method) => $this->authMethodData($method),
+                Craft::$app->getAuth()->getAvailableMethods(),
+            ),
+        ]);
+    }
+
+    /**
+     * Returns the data needed to set up an authentication method.
+     *
+     * @return Response
+     */
+    public function actionGetSetupData(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+        $this->requireElevatedSession();
+
+        $class = $this->request->getRequiredBodyParam('method');
+        try {
+            $method = Craft::$app->getAuth()->getMethod($class);
+        } catch (InvalidArgumentException $e) {
+            return $this->asFailure($e->getMessage());
+        }
+
+        return $this->asJson($method instanceof BaseAuthMethod ? $method->getSetupData() : []);
+    }
+
+    /**
      * Remove auth type setup (for 2FA or Passkeys) from the database
      *
      * @return Response|null
@@ -105,14 +147,19 @@ class AuthController extends Controller
      */
     public function actionRemoveMethod(): ?Response
     {
-        $this->requireCpRequest();
         $this->requirePostRequest();
+        $this->requireAcceptsJson();
         $this->requireElevatedSession();
 
         $methodClass = $this->request->getRequiredBodyParam('method');
 
         $auth = Craft::$app->getAuth();
-        $method = $auth->getMethod($methodClass);
+        try {
+            $method = $auth->getMethod($methodClass);
+        } catch (InvalidArgumentException $e) {
+            return $this->asFailure($e->getMessage());
+        }
+
         $method->remove();
 
         // if that was the last non-Recovery Codes method, remove Recovery Codes too
@@ -261,6 +308,17 @@ class AuthController extends Controller
         return $this->getView()->renderTemplate('users/_passkeys-table.twig', [
             'passkeys' => Craft::$app->getAuth()->getPasskeys(static::currentUser()),
         ]);
+    }
+
+    private function authMethodData(AuthMethodInterface $method): array
+    {
+        return [
+            'class' => $method::class,
+            'name' => $method::displayName(),
+            'description' => $method::description(),
+            'actionMenuItems' => $method->getActionMenuItems(),
+            'isActive' => $method->isActive(),
+        ];
     }
 
     /**
