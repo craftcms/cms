@@ -19,7 +19,7 @@ export class ElementSelectorHostController implements ReactiveController {
 
   constructor(
     private readonly host: ReactiveControllerHost,
-    private readonly source: () => ElementSelectorController | null
+    private readonly source: () => ElementSelectorController<any> | null
   ) {
     host.addController(this);
   }

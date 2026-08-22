@@ -167,6 +167,13 @@ export class ElementSelectorController<
     this.#selection = [];
     this.#indexBody = null;
     this.#open = false;
+    // Cleared too, so the last state anyone sees is idle. An opener that
+    // destroys the modal from inside `onSelect` gets here while `submit()` is
+    // still holding `busy`, and the release in its `finally` lands after
+    // `#listeners.clear()` — leaving a subscriber frozen mid-save.
+    this.#busy = false;
+    this.#loading = false;
+    this.#error = null;
     this.#update();
     this.#listeners.clear();
   }

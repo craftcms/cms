@@ -517,6 +517,33 @@ describe('open and close', () => {
 });
 
 describe('destroy', () => {
+  it('leaves an idle state behind when destroyed mid-submit', async () => {
+    // The relation field destroys the modal from inside its own `onSelect`,
+    // which runs while `submit()` still holds `busy`.
+    let release: () => void = () => {};
+    const controller: ElementSelectorController = create({
+      hideOnSelect: false,
+      onSelect: () =>
+        new Promise<void>((resolve) => {
+          release = () => {
+            controller.destroy();
+            resolve();
+          };
+        }),
+    });
+    const states: boolean[] = [];
+    controller.on('change', (state) => states.push(state.busy));
+    controller.setSelection([element(1)]);
+
+    const pending = controller.submit();
+    expect(controller.state.busy).toBe(true);
+    release();
+    await pending;
+
+    expect(controller.state.busy).toBe(false);
+    expect(states[states.length - 1]).toBe(false);
+  });
+
   it('tears down the adapter and stops emitting', async () => {
     const controller = create();
     const index = stubIndex();

@@ -54,9 +54,13 @@ export default class CraftElementSelectorModal extends CraftDialog {
   /**
    * The business layer. Set as a property, never constructed here — one
    * controller may be shared with a Vue view of the same modal.
+   *
+   * The adapter type is deliberately loose: the chrome never touches the index,
+   * so a subclass that narrows it (the folder picker, which requires a
+   * `sourcePath`) has to remain assignable here.
    */
-  @property({attribute: false}) controller: ElementSelectorController | null =
-    null;
+  @property({attribute: false})
+  controller: ElementSelectorController<any> | null = null;
 
   /** Show the heading. When false it stays in the a11y tree but is hidden. */
   @property({type: Boolean, attribute: 'show-title', reflect: true})
