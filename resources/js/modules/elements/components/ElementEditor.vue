@@ -15,13 +15,14 @@
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
     /**
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => Record<string, unknown>;
+    saveData?: () => FormValues;
   }>();
 
   const {
@@ -63,7 +64,7 @@
   const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
     // The entry type can be switched in the sidebar without saving, so the
     // settings slideout should follow the field rather than the stored value.
-    currentEntryTypeId: () => form.typeId,
+    currentEntryTypeId: () => form.typeId ?? null,
   });
 
   // "View" opens the element on the front end. The hrefs arrive ready to
@@ -114,6 +115,13 @@
     }
   });
 
+  const autosaveErrorCode = computed(() =>
+    autosave.status.value === 'failed' ? autosave.httpStatus.value : null
+  );
+
+  // 400 from a draft save means the session expired; reloading restores it.
+  const autosaveExpired = computed(() => autosaveErrorCode.value === 400);
+
   useAppLayout(() => ({
     title: payload.title,
     form,
@@ -153,7 +161,20 @@
       :class="{'text-danger-text': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
+      <code v-if="autosaveErrorCode" class="text-xs">{{
+        autosaveErrorCode
+      }}</code>
     </span>
+
+    <craft-button
+      v-if="autosaveExpired"
+      type="button"
+      appearance="outline"
+      size="small"
+      @click="reload"
+    >
+      {{ t('Refresh') }}
+    </craft-button>
   </LayoutSlot>
 
   <!-- Who else is working on this element, beside the save controls. -->
@@ -234,6 +255,7 @@
     ref="renderer"
     :payload="formPayload"
     :errors="errors"
+    :modified="autosave.modified.value"
     @update:mutation="onMutation"
   />
 
@@ -256,6 +278,7 @@
       ref="sidebarRenderer"
       :payload="sidebarPayload"
       :errors="sidebarErrors"
+      :modified="autosave.modified.value"
       @update:mutation="onSidebarMutation"
     />
 

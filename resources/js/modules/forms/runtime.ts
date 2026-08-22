@@ -1,6 +1,6 @@
 import {Validator} from '@lion/ui/form-core.js';
-import type {InjectionKey, Slots} from 'vue';
-import type {FormChange} from './types';
+import type {InjectionKey, Ref, Slots} from 'vue';
+import type {FormChange, FormValue, FormValues} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
@@ -8,6 +8,10 @@ export const FormFailure: InjectionKey<(message: string) => void> =
 export const FormControlOverrides: InjectionKey<Readonly<Slots>> = Symbol(
   'FormControlOverrides'
 );
+
+/** Modified delta groups as dotted paths, provided to every field beneath. */
+export const FormModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
+  Symbol('FormModifiedGroups');
 
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
@@ -32,7 +36,7 @@ export function ignoreModelValueInitialization(
   callback: (event: Event) => void
 ): (event: Event) => void {
   return (event) => {
-    if (!(event as CustomEvent).detail?.initialize) {
+    if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
       callback(event);
     }
   };
@@ -75,18 +79,23 @@ export function formTabPanelId(uid: string, scope: string[]): string {
   return scope.length ? Craft.namespaceId(id, inputName(scope)) : id;
 }
 
-export function valueAt(source: unknown, path: string[]): unknown {
-  return path.reduce<unknown>(
-    (value, segment) =>
-      (value as Record<string, unknown> | undefined)?.[segment],
-    source
-  );
+export function valueAt(source: FormValue, path: string[]): FormValue {
+  let value = source;
+
+  for (const segment of path) {
+    if (!isRecord(value)) {
+      return undefined;
+    }
+    value = value[segment];
+  }
+
+  return value;
 }
 
 export function setValue(
-  source: Record<string, unknown>,
+  source: FormValues,
   path: string[],
-  value: unknown
+  value: FormValue
 ): void {
   let target = source;
 
@@ -97,12 +106,14 @@ export function setValue(
       return;
     }
 
-    target[segment] ??= {};
-    target = target[segment] as Record<string, unknown>;
+    if (!isRecord(target[segment])) {
+      target[segment] = {};
+    }
+    target = target[segment];
   });
 }
 
-export function unsetValue(source: unknown, path: string[]): void {
+export function unsetValue(source: FormValue, path: string[]): void {
   if (!isRecord(source) || path.length === 0) {
     return;
   }
@@ -121,6 +132,8 @@ export function pathsMatch(left: string[], right: string[]): boolean {
   );
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+export function isRecord(value: FormValue): value is FormValues {
+  return (
+    value instanceof Object && !Array.isArray(value) && !(value instanceof File)
+  );
 }

@@ -58,7 +58,7 @@
       return id ? Number(id) : null;
     },
     update: (value) =>
-      emit('update:value', (value ?? null) as number | null, 'discrete'),
+      emit('update:value', value == null ? null : Number(value), 'discrete'),
   });
 </script>
 

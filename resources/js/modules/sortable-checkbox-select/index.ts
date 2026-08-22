@@ -5,7 +5,7 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 // Re-expose the Item sub-class on the constructor, as the legacy bundle did
 // (`Craft.SortableCheckboxSelect.Item`).
-(SortableCheckboxSelect as any).Item = Item;
+Object.assign(SortableCheckboxSelect, {Item});
 
 // Assign onto the legacy `Craft` global so the Twig-emitted
 // `new Craft.SortableCheckboxSelect($container)` and the

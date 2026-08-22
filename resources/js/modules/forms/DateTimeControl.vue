@@ -37,23 +37,24 @@
   );
 
   function clear(): void {
-    emit(
-      'update:value',
-      {
-        ...props.value,
-        ...(props.control.props.showDate ? {date: ''} : {}),
-        ...(props.control.props.showTime ? {time: ''} : {}),
-        ...(props.control.props.showTimeZone ? {timezone: ''} : {}),
-      },
-      'discrete'
-    );
+    const value = {...props.value};
+
+    if (props.control.props.showDate) value.date = '';
+    if (props.control.props.showTime) value.time = '';
+    if (props.control.props.showTimeZone) value.timezone = '';
+
+    emit('update:value', value, 'discrete');
   }
 
   const update = ignoreModelValueInitialization((event) => {
-    const input = event.target as CraftInput;
-    const part = input.dataset.dateTimePart as keyof DateTimeValue | undefined;
+    if (!(event.target instanceof CraftInput)) {
+      throw new TypeError('Expected a date-time input event target.');
+    }
 
-    if (!part) {
+    const input = event.target;
+    const part = input.dataset.dateTimePart;
+
+    if (part !== 'date' && part !== 'time' && part !== 'timezone') {
       return;
     }
 

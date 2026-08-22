@@ -57,7 +57,7 @@
   );
 
   function onOpenedChanged(event: Event) {
-    if ((event as CustomEvent).detail?.opened) {
+    if (event instanceof CustomEvent && event.detail?.opened) {
       takeSnapshot();
     }
   }
@@ -69,9 +69,11 @@
   }
 
   function closePopover(event: MouseEvent) {
-    (event.currentTarget as HTMLElement).dispatchEvent(
-      new Event('close-overlay', {bubbles: true, composed: true})
-    );
+    if (event.currentTarget instanceof HTMLElement) {
+      event.currentTarget.dispatchEvent(
+        new Event('close-overlay', {bubbles: true, composed: true})
+      );
+    }
   }
 </script>
 

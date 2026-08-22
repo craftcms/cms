@@ -140,7 +140,10 @@ export class BaseDrag extends Drag {
 
   /** Sets item midpoints up front so we don't recompute them on every mouse move. */
   setMidpoints(): void {
-    for (const item of this.$items as HTMLElement[]) {
+    for (const item of this.$items) {
+      if (!(item instanceof HTMLElement)) {
+        continue;
+      }
       // Skip library elements
       if (item.classList.contains('unused')) {
         continue;
@@ -196,7 +199,8 @@ export class BaseDrag extends Drag {
         this.showingInsertion &&
         this.$items.indexOf(this.$insertion!) <
           this.$items.indexOf(closestItem) &&
-        !this.$caboose.includes(closestItem as HTMLElement)
+        closestItem instanceof HTMLElement &&
+        !this.$caboose.includes(closestItem)
       ) {
         closestItem.after(this.$insertion!);
       } else {
@@ -259,7 +263,7 @@ export class BaseDrag extends Drag {
     onDone?: () => void
   ): void {
     el.style.opacity = String(to);
-    if (prefersReducedMotion() || typeof el.animate !== 'function') {
+    if (prefersReducedMotion()) {
       onDone?.();
       return;
     }
@@ -284,7 +288,10 @@ export class BaseDrag extends Drag {
     }
     this.helpers = [];
 
-    const hideDraggee = (this.settings as any)?.hideDraggee;
+    const hideDraggee = Object.getOwnPropertyDescriptor(
+      this.settings ?? {},
+      'hideDraggee'
+    )?.value;
     this.$draggee.forEach((el) => {
       el.style.display = this.draggeeDisplay ?? '';
       el.style.visibility = hideDraggee ? 'hidden' : '';
@@ -378,10 +385,11 @@ export class TabDrag extends BaseDrag {
    */
   override createInsertion(): HTMLElement {
     const $draggee = this.$draggee[0]!;
-    const $tab = $draggee.querySelector('.tab') as HTMLElement;
-    const $tabContent = $draggee.querySelector(
-      '.fld-tabcontent'
-    ) as HTMLElement;
+    const $tab = $draggee.querySelector<HTMLElement>('.tab');
+    const $tabContent = $draggee.querySelector<HTMLElement>('.fld-tabcontent');
+    if (!$tab || !$tabContent) {
+      throw new Error('The dragged field layout tab is incomplete.');
+    }
 
     const template = document.createElement('template');
     template.innerHTML = `
@@ -396,7 +404,11 @@ export class TabDrag extends BaseDrag {
   }px;"></div>
 </div>
 `.trim();
-    return template.content.firstElementChild as HTMLElement;
+    const insertion = template.content.firstElementChild;
+    if (!(insertion instanceof HTMLElement)) {
+      throw new Error('The field layout insertion template is invalid.');
+    }
+    return insertion;
   }
 }
 
@@ -525,9 +537,13 @@ export class ElementDrag extends BaseDrag {
     const showingInsertion = this.showingInsertion;
     if (showingInsertion) {
       if (this.draggingLibraryElement) {
+        const draggee = this.$draggee[0];
+        if (!draggee) {
+          throw new Error('Field layout drag requires a draggee.');
+        }
         // Clone the element and set this.$draggee to the clone, as if we were dragging that all along
         this.$draggee = [
-          this.designer.cloneLibraryElementForSelection(this.$draggee[0]),
+          this.designer.cloneLibraryElementForSelection(draggee),
         ];
       }
     } else if (!this.draggingLibraryElement) {

@@ -1,41 +1,9 @@
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {createApp, defineComponent, h, nextTick, type Component} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import type {ScreenPageProps} from '@/common/composables/screen';
+import type {FormPayload} from '@/modules/forms/types';
 
-const fetchSlideoutPage = vi.hoisted(() => vi.fn());
-
-vi.mock('./request', () => ({
-  fetchSlideoutPage,
-  setAssetVersion: vi.fn(),
-}));
-
-// `usePage()` is only reachable inside a real Inertia app; the shells read
-// chrome props off it.
-const pageProps = vi.hoisted(() => ({
-  value: {} as Record<string, unknown>,
-}));
-
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({
-    get props() {
-      return pageProps.value;
-    },
-    version: 'test-version',
-  }),
-  Head: {render: () => null},
-  setLayoutProps: vi.fn(),
-}));
-
-vi.mock('@craftcms/ui/utilities/translate', () => ({
-  t: (message: string) => message,
-}));
-
-// Partial: the shells pull in components that import plenty else from here.
-vi.mock('@craftcms/ui', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  appendHeadHtml: vi.fn(async () => vi.fn()),
-  appendBodyHtml: vi.fn(async () => vi.fn()),
-  appendElementHtml: vi.fn(async () => vi.fn()),
-}));
+const fetchSlideoutPage = vi.fn();
 
 const {
   closeAllSlideouts,
@@ -43,6 +11,7 @@ const {
   notifySlideoutSaved,
   openSlideout,
   openSlideoutWith,
+  setSlideoutPageLoader,
   setSlideoutDirtyCheck,
   slideoutPanels,
 } = await import('./store');
@@ -53,7 +22,13 @@ const {useAppLayout} = await import('@/common/composables/useAppLayout');
 
 const apps: Array<{unmount(): void; root: HTMLElement}> = [];
 
-function mount(component: any, props?: Record<string, unknown>): HTMLElement {
+function required<T>(value: T | null | undefined, message: string): T {
+  if (value === null || value === undefined) throw new Error(message);
+
+  return value;
+}
+
+function mount(component: Component, props?: ScreenPageProps): HTMLElement {
   const root = document.createElement('div');
   document.body.appendChild(root);
   const app = createApp(component, props);
@@ -65,15 +40,16 @@ function mount(component: any, props?: Record<string, unknown>): HTMLElement {
 }
 
 beforeEach(() => {
-  pageProps.value = {title: 'Fallback title'};
   fetchSlideoutPage.mockReset();
+  setSlideoutPageLoader(fetchSlideoutPage);
 });
 
 afterEach(() => {
+  setSlideoutPageLoader();
   closeAllSlideouts();
 
   while (apps.length) {
-    const entry = apps.pop()!;
+    const entry = required(apps.pop(), 'Expected a mounted app.');
     entry.unmount();
     entry.root.remove();
   }
@@ -166,7 +142,10 @@ describe('slideout store', () => {
       url: '/a',
     });
 
-    const panel = (await openSlideout('/a'))!;
+    const panel = required(
+      await openSlideout('/a'),
+      'Expected the failed slideout.'
+    );
 
     expect(fetchSlideoutPage).toHaveBeenCalledWith('/a', panel.containerId);
   });
@@ -205,14 +184,14 @@ describe('locally-built panels', () => {
   const Local = defineComponent({render: () => h('div', 'local')});
 
   it('opens without fetching a screen', () => {
-    const panel = openSlideoutWith(Local as any, {foo: 'bar'});
+    const panel = openSlideoutWith(Local, {foo: 'bar'});
 
     expect(fetchSlideoutPage).not.toHaveBeenCalled();
     expect(panel).not.toBeNull();
-    expect(panel!.component).toStrictEqual(Local);
-    expect(panel!.props).toEqual({foo: 'bar'});
-    expect(panel!.loading).toBe(false);
-    expect(panel!.href).toBe('');
+    expect(panel?.component).toStrictEqual(Local);
+    expect(panel?.props).toEqual({foo: 'bar'});
+    expect(panel?.loading).toBe(false);
+    expect(panel?.href).toBe('');
   });
 
   it('stacks against fetched panels like any other', async () => {
@@ -223,10 +202,12 @@ describe('locally-built panels', () => {
     });
     const first = await openSlideout('/one');
     openSlideoutWith(
-      Local as any,
+      Local,
       {},
       {
-        opener: openerInPanel(first!.id),
+        opener: openerInPanel(
+          required(first, 'Expected the first slideout.').id
+        ),
       }
     );
 
@@ -240,7 +221,7 @@ describe('locally-built panels', () => {
       url: '/one',
     });
     await openSlideout('/one');
-    openSlideoutWith(Local as any);
+    openSlideoutWith(Local);
 
     expect(slideoutPanels()).toHaveLength(1);
   });
@@ -252,7 +233,10 @@ describe('locally-built panels', () => {
       url: '/one',
     });
     const first = await openSlideout('/one');
-    setSlideoutDirtyCheck(first!.id, () => true);
+    setSlideoutDirtyCheck(
+      required(first, 'Expected the first slideout.').id,
+      () => true
+    );
     // happy-dom doesn't implement confirm(), so install one to spy on.
     const confirmSpy = vi.fn(() => false);
     Object.defineProperty(window, 'confirm', {
@@ -261,7 +245,7 @@ describe('locally-built panels', () => {
       value: confirmSpy,
     });
 
-    const panel = openSlideoutWith(Local as any);
+    const panel = openSlideoutWith(Local);
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(panel).toBeNull();
@@ -395,7 +379,10 @@ describe('discarding unsaved changes', () => {
   });
 
   it('asks once when closing a parent with dirty nested panels', async () => {
-    const first = (await openSlideout('/a'))!;
+    const first = required(
+      await openSlideout('/a'),
+      'Expected the first slideout.'
+    );
     const nested = (await openSlideout('/b', {
       opener: openerInPanel(first.id),
     }))!;
@@ -438,7 +425,11 @@ describe('SlideoutHost', () => {
     });
 
     const SlideoutHost = (await import('./SlideoutHost.vue')).default;
-    const root = mount(defineComponent({render: () => h(SlideoutHost)}));
+    const root = mount(
+      defineComponent({
+        render: () => h(SlideoutHost, {assetVersion: 'test-version'}),
+      })
+    );
     await nextTick();
 
     return root;
@@ -506,7 +497,10 @@ describe('SlideoutHost', () => {
     await openSlideout('/b', {opener: openerInPanel(first.id)});
     await nextTick();
 
-    document.querySelector<HTMLElement>('.cp-slideout-shade')!.click();
+    required(
+      document.querySelector<HTMLElement>('.cp-slideout-shade'),
+      'Expected the slideout shade.'
+    ).click();
     await nextTick();
 
     // Only the top one — clicking again closes the next.
@@ -516,14 +510,17 @@ describe('SlideoutHost', () => {
 
 describe('SlideoutPanel', () => {
   /** Mount a panel around a page component, as the host does. */
-  async function mountPanel(page: any, props: Record<string, unknown> = {}) {
+  async function mountPanel(page: Component, props: ScreenPageProps = {}) {
     fetchSlideoutPage.mockResolvedValue({
       component: page,
       props,
       url: '/screen',
     });
 
-    const instance = (await openSlideout('/screen'))!;
+    const instance = required(
+      await openSlideout('/screen'),
+      'Expected the screen slideout.'
+    );
 
     const root = mount(
       defineComponent({
@@ -600,9 +597,9 @@ describe('SlideoutPanel', () => {
   it('closes on Escape via the layer manager', async () => {
     await mountPanel(defineComponent({render: () => h('div')}));
 
-    document.body.dispatchEvent(
-      new KeyboardEvent('keydown', {keyCode: 27} as never)
-    );
+    const event = new KeyboardEvent('keydown', {key: 'Escape'});
+    Object.defineProperty(event, 'keyCode', {value: 27});
+    document.body.dispatchEvent(event);
     await nextTick();
 
     expect(slideoutPanels()).toHaveLength(0);
@@ -645,8 +642,6 @@ describe('SlideoutPanel', () => {
   it("titles itself from the slideout's own props, not the page behind it", async () => {
     // `usePage()` always resolves to the base page, so a shell reading its
     // chrome from there shows the title of whatever is open underneath.
-    pageProps.value = {title: 'Entries'};
-
     const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
       title: 'Edit entry type',
     });
@@ -657,8 +652,6 @@ describe('SlideoutPanel', () => {
   });
 
   it('reads the edit URL from the slideout props', async () => {
-    pageProps.value = {title: 'Entries', screen: {editUrl: '/wrong'}};
-
     const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
       screen: {editUrl: '/admin/entries/5'},
     });
@@ -703,7 +696,15 @@ describe('SlideoutPanel', () => {
 
     const Page = defineComponent({
       setup() {
-        useAppLayout({form: {} as any, onSave});
+        const form: FormPayload = {
+          scope: [],
+          refreshable: false,
+          nodes: [],
+          values: {},
+          errors: [],
+          globalErrors: [],
+        };
+        useAppLayout({form, onSave});
 
         return () => h('div');
       },

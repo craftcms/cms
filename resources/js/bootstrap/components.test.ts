@@ -1,51 +1,49 @@
 import {describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from './components';
-import {createApp, defineComponent, h, useId, type Component} from 'vue';
+import {createApp, defineComponent, h, useId} from 'vue';
 
-const testComponent = {name: 'TestComponent'} as Component;
-const alternateComponent = {name: 'AlternateComponent'} as Component;
+const testComponent = defineComponent({name: 'TestComponent'});
+const alternateComponent = defineComponent({name: 'AlternateComponent'});
+
+function createTestApp() {
+  const app = createApp(defineComponent({render: () => null}));
+  const component = vi.spyOn(app, 'component');
+
+  return {app, component};
+}
 
 describe('CP component registry', () => {
   it('installs registered components', () => {
     const registry = createCpComponentRegistry();
-    const app = {
-      config: {idPrefix: ''},
-      component: vi.fn(),
-    };
+    const {app, component} = createTestApp();
 
     registry.register('TestComponent', testComponent);
-    registry.install(app as any);
+    registry.install(app);
 
-    expect(app.component).toHaveBeenCalledWith('TestComponent', testComponent);
+    expect(component).toHaveBeenCalledWith('TestComponent', testComponent);
   });
 
   it('registers components added after install', () => {
     const registry = createCpComponentRegistry();
-    const app = {
-      config: {idPrefix: ''},
-      component: vi.fn(),
-    };
+    const {app, component} = createTestApp();
 
-    registry.install(app as any);
+    registry.install(app);
     registry.register('TestComponent', testComponent);
 
-    expect(app.component).toHaveBeenCalledWith('TestComponent', testComponent);
+    expect(component).toHaveBeenCalledWith('TestComponent', testComponent);
   });
 
   it('registers components with every mounted form host', () => {
     const registry = createCpComponentRegistry();
-    const firstApp = {config: {idPrefix: ''}, component: vi.fn()};
-    const secondApp = {config: {idPrefix: ''}, component: vi.fn()};
+    const {app: firstApp, component: firstComponent} = createTestApp();
+    const {app: secondApp, component: secondComponent} = createTestApp();
 
-    registry.install(firstApp as any);
-    registry.install(secondApp as any);
+    registry.install(firstApp);
+    registry.install(secondApp);
     registry.register('TestComponent', testComponent);
 
-    expect(firstApp.component).toHaveBeenCalledWith(
-      'TestComponent',
-      testComponent
-    );
-    expect(secondApp.component).toHaveBeenCalledWith(
+    expect(firstComponent).toHaveBeenCalledWith('TestComponent', testComponent);
+    expect(secondComponent).toHaveBeenCalledWith(
       'TestComponent',
       testComponent
     );
@@ -76,13 +74,13 @@ describe('CP component registry', () => {
 
   it('stops registering components with unmounted form hosts', () => {
     const registry = createCpComponentRegistry();
-    const app = {config: {idPrefix: ''}, component: vi.fn()};
+    const {app, component} = createTestApp();
 
-    registry.install(app as any);
-    registry.uninstall(app as any);
+    registry.install(app);
+    registry.uninstall(app);
     registry.register('TestComponent', testComponent);
 
-    expect(app.component).not.toHaveBeenCalled();
+    expect(component).not.toHaveBeenCalled();
   });
 
   it('allows duplicate registrations with the same value', () => {

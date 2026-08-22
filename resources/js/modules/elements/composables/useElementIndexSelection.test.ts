@@ -1,6 +1,22 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {ref, type Ref} from 'vue';
-import {useElementIndexSelection} from './useElementIndexSelection';
+import type {Row, Table} from '@tanstack/vue-table';
+import type {BulkActionItem} from '@/modules/elements/types/actions';
+import {
+  useElementIndexSelection,
+  type ElementIndexSelectionOptions,
+} from './useElementIndexSelection';
+
+interface TestElement {
+  id: number;
+}
+
+function rowAt(rows: Array<Row<TestElement>>, index: number): Row<TestElement> {
+  const row = rows[index];
+  if (!row) throw new Error(`Expected row ${index}.`);
+
+  return row;
+}
 
 // Minimal TanStack-table stand-in: row-selection state lives in a single Vue
 // ref (matching TanStack's `RowSelectionState`, a `Record<rowId, boolean>`),
@@ -15,23 +31,26 @@ function makeRow(
   id: number,
   selection: Ref<Record<string, boolean>>,
   selected = false
-) {
+): Row<TestElement> {
   const rowId = String(id);
   if (selected) {
     selection.value = {...selection.value, [rowId]: true};
   }
+  // SAFETY: This focused Row fixture implements every member read by the selection composable.
   return {
     id: rowId,
     original: {id},
+    getCanSelect: () => true,
     getIsSelected: () => !!selection.value[rowId],
     toggleSelected: (v?: boolean) => {
       const next = v ?? !selection.value[rowId];
       selection.value = {...selection.value, [rowId]: next};
     },
-  };
+  } as Row<TestElement>;
 }
 
-function makeTable(rows: ReturnType<typeof makeRow>[]) {
+function makeTable(rows: Array<Row<TestElement>>): Table<TestElement> {
+  // SAFETY: This focused Table fixture implements every member read by the selection composable.
   return {
     getRowModel: () => ({rows}),
     getSelectedRowModel: () => ({rows: rows.filter((r) => r.getIsSelected())}),
@@ -40,10 +59,12 @@ function makeTable(rows: ReturnType<typeof makeRow>[]) {
       rows.forEach((r) => r.toggleSelected(v));
     },
     resetRowSelection: () => rows.forEach((r) => r.toggleSelected(false)),
-  } as any;
+  } as Table<TestElement>;
 }
 
-const opts = (over = {}) => ({
+const opts = (
+  over: Partial<ElementIndexSelectionOptions> = {}
+): ElementIndexSelectionOptions => ({
   selectable: true,
   readOnly: false,
   actions: [],
@@ -61,9 +82,9 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
-    s.selectRow(rows[1]! as any, {checked: true});
+    s.selectRow(rowAt(rows, 1), {checked: true});
 
-    expect(rows[1]!.getIsSelected()).toBe(true);
+    expect(rowAt(rows, 1).getIsSelected()).toBe(true);
     expect(s.anchorIndex.value).toBe(1);
     expect(s.selectedIds.value).toEqual([2]);
     expect(s.hasSelection.value).toBe(true);
@@ -80,8 +101,8 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
-    s.selectRow(rows[0]! as any, {checked: true}); // anchor = 0
-    s.selectRow(rows[2]! as any, {checked: true, shiftKey: true});
+    s.selectRow(rowAt(rows, 0), {checked: true}); // anchor = 0
+    s.selectRow(rowAt(rows, 2), {checked: true, shiftKey: true});
 
     expect(rows.map((r) => r.getIsSelected())).toEqual([
       true,
@@ -97,7 +118,7 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
-    s.selectRow(rows[0]! as any, {checked: true}); // already selected → no-op, no anchor
+    s.selectRow(rowAt(rows, 0), {checked: true}); // already selected → no-op, no anchor
     expect(s.anchorIndex.value).toBe(null);
   });
 
@@ -107,10 +128,10 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts({readOnly: true}));
 
-    s.selectRow(rows[0]! as any, {checked: true});
+    s.selectRow(rowAt(rows, 0), {checked: true});
     s.onToggleAllSelected(true);
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
   // A stand-in for the row/card element the `@click` listener is bound to;
@@ -124,11 +145,13 @@ describe('useElementIndexSelection', () => {
   // terminates there, exactly like a real click bubbling to the row listener.
   function clickEvent(path: Element | Element[] = [], shiftKey = false) {
     const nodes = Array.isArray(path) ? path : [path];
-    return {
-      shiftKey,
-      currentTarget: rowEl,
-      composedPath: () => [...nodes, rowEl],
-    } as unknown as MouseEvent;
+    const event = new MouseEvent('click', {shiftKey});
+    Object.defineProperties(event, {
+      currentTarget: {value: rowEl},
+      composedPath: {value: () => [...nodes, rowEl]},
+    });
+
+    return event;
   }
 
   it('toggles the row when the click lands on the row body', () => {
@@ -139,11 +162,11 @@ describe('useElementIndexSelection', () => {
 
     // Clicking a plain cell — and even the row itself — is not interactive.
     s.selectRowFromEvent(
-      rows[1]! as any,
+      rowAt(rows, 1),
       clickEvent(document.createElement('td'))
     );
 
-    expect(rows[1]!.getIsSelected()).toBe(true);
+    expect(rowAt(rows, 1).getIsSelected()).toBe(true);
     expect(s.anchorIndex.value).toBe(1);
   });
 
@@ -158,9 +181,9 @@ describe('useElementIndexSelection', () => {
     const label = document.createElement('span'); // a click on a child of the link
     link.append(label);
 
-    s.selectRowFromEvent(rows[0]! as any, clickEvent([label, link]));
+    s.selectRowFromEvent(rowAt(rows, 0), clickEvent([label, link]));
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
     expect(s.anchorIndex.value).toBe(null);
   });
 
@@ -175,9 +198,9 @@ describe('useElementIndexSelection', () => {
     const host = document.createElement('craft-checkbox');
     const innerInput = document.createElement('input');
 
-    s.selectRowFromEvent(rows[0]! as any, clickEvent([innerInput, host]));
+    s.selectRowFromEvent(rowAt(rows, 0), clickEvent([innerInput, host]));
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
   it('does nothing on a row click when read-only', () => {
@@ -186,9 +209,9 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts({readOnly: true}));
 
-    s.selectRowFromEvent(rows[0]! as any, clickEvent());
+    s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
   it('does nothing on a row click when the index is not selectable', () => {
@@ -197,9 +220,9 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts({selectable: false}));
 
-    s.selectRowFromEvent(rows[0]! as any, clickEvent());
+    s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
   it('respects a row that cannot be selected', () => {
@@ -208,11 +231,12 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
-    const row = {...rows[0]!, getCanSelect: () => false};
+    const row = rowAt(rows, 0);
+    row.getCanSelect = () => false;
 
-    s.selectRowFromEvent(row as any, clickEvent());
+    s.selectRowFromEvent(row, clickEvent());
 
-    expect(rows[0]!.getIsSelected()).toBe(false);
+    expect(rowAt(rows, 0).getIsSelected()).toBe(false);
   });
 
   it('shift-clicking a row body extends the range from the anchor', () => {
@@ -225,8 +249,8 @@ describe('useElementIndexSelection', () => {
     const table = makeTable(rows);
     const s = useElementIndexSelection(table, opts());
 
-    s.selectRowFromEvent(rows[0]! as any, clickEvent());
-    s.selectRowFromEvent(rows[2]! as any, clickEvent([], true));
+    s.selectRowFromEvent(rowAt(rows, 0), clickEvent());
+    s.selectRowFromEvent(rowAt(rows, 2), clickEvent([], true));
 
     expect(rows.map((r) => r.getIsSelected())).toEqual([true, true, true]);
   });
@@ -235,14 +259,16 @@ describe('useElementIndexSelection', () => {
     const selection = makeSelection();
     const rows = [makeRow(1, selection)];
     const table = makeTable(rows);
-    const actions = ref<any[]>([{label: 'Delete'}]);
+    const actions = ref<Array<BulkActionItem>>([
+      {key: 'delete', label: 'Delete'},
+    ]);
     const s = useElementIndexSelection(table, opts({actions}));
 
     expect(s.hasBulkActions.value).toBe(true);
     expect(s.showBulkActions.value).toBe(true);
     expect(s.bulkActionsActive.value).toBe(false);
 
-    s.selectRow(rows[0]! as any, {checked: true});
+    s.selectRow(rowAt(rows, 0), {checked: true});
     expect(s.bulkActionsActive.value).toBe(true);
   });
 });

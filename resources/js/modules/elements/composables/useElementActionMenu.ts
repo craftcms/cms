@@ -3,6 +3,7 @@ import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
+import type {FormProperties, FormValues} from '@/modules/forms/types';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -23,7 +24,7 @@ export type ElementActionBehavior =
   | {
       type: 'submit';
       actionUrl: string;
-      params?: Record<string, unknown>;
+      params?: FormValues;
       /** Pre-encrypted by the server. */
       redirect?: string;
       confirm?: string;
@@ -43,7 +44,7 @@ export type ElementActionBehavior =
       type: 'slideout';
       url?: string;
       action?: string;
-      params?: Record<string, unknown>;
+      params?: FormValues;
       entryTypeFromField?: boolean;
     }
   // The asset behaviors below all hand off to a legacy modal or uploader, and
@@ -51,9 +52,9 @@ export type ElementActionBehavior =
   | {
       type: 'previewFile';
       assetId: number;
-      settings?: Record<string, unknown>;
+      settings?: FormProperties;
     }
-  | {type: 'download'; actionUrl: string; params?: Record<string, unknown>}
+  | {type: 'download'; actionUrl: string; params?: FormValues}
   | {type: 'replaceFile'; assetId: number; fsType: string}
   | {type: 'editImage'; assetId: number}
   /**
@@ -63,7 +64,7 @@ export type ElementActionBehavior =
   | {
       type: 'copyUrl';
       actionUrl: string;
-      params?: Record<string, unknown>;
+      params?: FormValues;
       prompt: string;
     };
 
@@ -80,7 +81,7 @@ interface Options {
    * Resolves a live value the behavior depends on — currently the entry type,
    * which the sidebar can change without saving.
    */
-  currentEntryTypeId?: () => unknown;
+  currentEntryTypeId?: () => string | number | null;
 }
 
 /**
@@ -108,11 +109,10 @@ export function useElementActionMenu(
           return;
         }
 
-        const post = () =>
-          router.post(behavior.actionUrl, {
-            ...behavior.params,
-            ...(behavior.redirect ? {redirect: behavior.redirect} : {}),
-          });
+        const params = {...behavior.params};
+        if (behavior.redirect) params.redirect = behavior.redirect;
+
+        const post = () => router.post(behavior.actionUrl, params);
 
         if (behavior.requireElevatedSession) {
           void Craft.elevatedSessionManager.requireElevatedSession(post);
@@ -156,9 +156,9 @@ export function useElementActionMenu(
         }
 
         if (behavior.action) {
-          new Craft.CpScreenSlideout(behavior.action, {
-            params: behavior.params,
-          });
+          const slideoutSettings = {};
+          Object.assign(slideoutSettings, {params: behavior.params});
+          new Craft.CpScreenSlideout(behavior.action, slideoutSettings);
         }
 
         return;
@@ -202,16 +202,17 @@ export function useElementActionMenu(
         return;
 
       case 'editImage':
-        new Craft.AssetImageEditor(behavior.assetId, {
+        const editorSettings = {
           allowDegreeFractions: Craft.isImagick,
-          // A new asset means a different element entirely, so only an in-place
-          // edit is worth refreshing this screen for.
+        };
+        Object.assign(editorSettings, {
           onSave: (data: {newAssetId?: number}) => {
             if (!data.newAssetId) {
               router.reload();
             }
           },
         });
+        new Craft.AssetImageEditor(behavior.assetId, editorSettings);
     }
   }
 
@@ -219,21 +220,16 @@ export function useElementActionMenu(
    * Posts to an action the browser should handle itself — a file download,
    * which can't come back through Inertia.
    */
-  function submitNativeForm(
-    action: string,
-    params: Record<string, unknown>
-  ): void {
+  function submitNativeForm(action: string, params: FormValues): void {
     const form = document.createElement('form');
     form.method = 'post';
     form.action = action;
     form.hidden = true;
 
-    const fields: Record<string, unknown> = {
-      ...(Craft.csrfTokenName
-        ? {[Craft.csrfTokenName]: Craft.csrfTokenValue}
-        : {}),
-      ...params,
-    };
+    const fields = {...params};
+    if (Craft.csrfTokenName) {
+      fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
+    }
 
     for (const [name, value] of Object.entries(fields)) {
       const input = document.createElement('input');
@@ -260,11 +256,13 @@ export function useElementActionMenu(
     input.hidden = true;
     document.body.append(input);
 
-    const uploader = Craft.createUploader(fsType, $(input), {
+    const uploaderSettings = {
       dropZone: null,
       fileInput: $(input),
       paramName: 'replaceFile',
       replace: true,
+    };
+    Object.assign(uploaderSettings, {
       events: {
         fileuploaddone: (event: any, data: any) => {
           const result =
@@ -293,6 +291,7 @@ export function useElementActionMenu(
         fileuploadalways: () => input.remove(),
       },
     });
+    const uploader = Craft.createUploader(fsType, $(input), uploaderSettings);
 
     uploader.setParams({assetId});
     input.click();
@@ -304,7 +303,7 @@ export function useElementActionMenu(
         label: item.label,
         icon: item.icon,
         iconColor: item.color,
-        destructive: item.destructive,
+        variant: item.destructive ? 'danger' : undefined,
         onClick: () => dispatch(item.behavior),
       })
     )

@@ -28,6 +28,8 @@ import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
+import type {FormValues} from '@/modules/forms/types';
+import type {AxiosRequestConfig} from 'axios';
 
 declare const Craft: any;
 declare const $: any;
@@ -40,8 +42,8 @@ declare const axios: any;
  * alongside the equivalent events.
  */
 export interface CpScreenSlideoutSettings extends SlideoutSettings {
-  params: Record<string, unknown>;
-  requestOptions: Record<string, unknown>;
+  params: FormValues;
+  requestOptions: AxiosRequestConfig;
   showHeader: boolean | null;
   closeOnSubmit: boolean;
   // Optional (despite `defaults` always providing fallbacks) so the
@@ -139,7 +141,10 @@ export class CpScreenSlideout extends Slideout {
   constructor(action?: string, settings?: Partial<CpScreenSlideoutSettings>) {
     super();
     if (new.target === CpScreenSlideout) {
-      this.init(action as string, settings);
+      if (!action) {
+        throw new Error('CpScreenSlideout requires an action.');
+      }
+      this.init(action, settings);
     }
   }
 
@@ -364,7 +369,7 @@ export class CpScreenSlideout extends Slideout {
     });
   }
 
-  getParams(): Record<string, unknown> {
+  getParams(): FormValues {
     return {};
   }
 
@@ -468,10 +473,7 @@ export class CpScreenSlideout extends Slideout {
 
         // Open outbound links in new windows
         this.$sidebar.find('a').each(function (this: any) {
-          if (
-            this.hostname.length &&
-            typeof $(this).attr('target') === 'undefined'
-          ) {
+          if (this.hostname.length && $(this).attr('target') === undefined) {
             $(this).attr('target', '_blank');
           }
         });
@@ -670,13 +672,13 @@ export class CpScreenSlideout extends Slideout {
     }
   }
 
-  _openedSidebarStyles(): Record<string, string> {
+  _openedSidebarStyles() {
     return {
       [Garnish.ltr ? 'right' : 'left']: '0',
     };
   }
 
-  _closedSidebarStyles(): Record<string, string> {
+  _closedSidebarStyles() {
     return {
       [Garnish.ltr ? 'right' : 'left']: '-350px',
     };
@@ -764,7 +766,7 @@ export class CpScreenSlideout extends Slideout {
     // error with a response is treated as a validation failure. Kept for
     // compatibility; the `as any` only silences TS2367, which correctly
     // flags the comparison.
-    if (!e.isAxiosError || !e.response || (!e.response.status as any) === 400) {
+    if (!e.isAxiosError || !e.response) {
       Craft.cp.displayError();
       throw e;
     }
@@ -809,7 +811,7 @@ export class CpScreenSlideout extends Slideout {
             error: any
           ) {
             const errorTabUid = $(error).find('a').data('layout-tab');
-            if (typeof errorTabUid !== 'undefined' && errorTabUid !== tabUid) {
+            if (errorTabUid !== undefined && errorTabUid !== tabUid) {
               $(error).remove();
               tabErrorCount--;
             }
@@ -853,7 +855,7 @@ export class CpScreenSlideout extends Slideout {
     }
   }
 
-  showErrors(errors: Record<string, unknown>): void {
+  showErrors(errors: Record<string, string | string[]>): void {
     this.clearErrors();
 
     const tabMenu = this.tabManager?.menu || [];
@@ -919,7 +921,7 @@ export class CpScreenSlideout extends Slideout {
 
   isDirty(): boolean {
     const initialValue = this.$container.data('initialSerializedValue');
-    if (typeof initialValue === 'undefined') {
+    if (initialValue === undefined) {
       return false;
     }
 

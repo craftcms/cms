@@ -1,10 +1,13 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
+  // Leaf module, not the barrel — the barrel registers every `craft-*` element.
+  import {t} from '@craftcms/ui/utilities/translate';
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import FormNodeList from './FormNodeList.vue';
   import {
     FormControlOverrides,
     FormFailure,
+    FormModifiedGroups,
     formChangeFromEvent,
     pathsMatch,
     setValue as setPathValue,
@@ -15,6 +18,7 @@
     FormChangeKind,
     FormNodePayload,
     FormPayload,
+    FormValue,
   } from './types';
 
   type FieldNodeProps = {
@@ -64,15 +68,12 @@
 
   onErrorCaptured((error) => {
     invalidate(
-      `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${errorMessage(error)}`
+      `Failed to render Form Control [${control.value.type}] with component [${control.value.component}] at [${control.value.path.join('.')}]: ${error instanceof Error ? error.message : String(error)}`
     );
 
     return false;
   });
 
-  function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
-  }
   const editable = computed(() => control.value.mode === 'editable');
   const controlErrors = computed(() =>
     props.errors.flatMap((error) =>
@@ -81,7 +82,14 @@
   );
   const value = computed(() => valueAt(props.values, control.value.path));
 
-  function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
+  // Matched on the delta group, so a field split across several controls badges
+  // as one unit.
+  const modifiedGroups = inject(FormModifiedGroups, undefined);
+  const modified = computed(
+    () => modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
+  );
+
+  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
 
     emit('change', {
@@ -123,8 +131,10 @@
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     :has-errors="controlErrors.length > 0"
-    :status="node.props.status"
-    :status-label="node.props.statusLabel"
+    :status="modified ? 'modified' : node.props.status"
+    :status-label="
+      modified ? t('This field has been modified.') : node.props.statusLabel
+    "
     :class="node.props.width ? `width-${node.props.width}` : undefined"
     :data-layout-element="node.props.layoutUid"
   >

@@ -22,8 +22,14 @@ interface MoveAssetParams {
   force?: 1;
 }
 
-async function moveOne(params: MoveAssetParams): Promise<Record<string, any>> {
-  const {data} = await actionClient.post(
+interface MoveAssetResponse {
+  conflict?: boolean;
+  filename?: string;
+  suggestedFilename?: string;
+}
+
+async function moveOne(params: MoveAssetParams): Promise<MoveAssetResponse> {
+  const {data} = await actionClient.post<MoveAssetResponse>(
     getActionUrl('assets/move-asset'),
     params
   );
@@ -53,6 +59,9 @@ export async function moveAssets(
     let data = await moveOne(params);
 
     if (data.conflict) {
+      if (!data.filename || !data.suggestedFilename) {
+        throw new Error('The asset conflict response is missing filenames.');
+      }
       const choice = await resolveConflict({
         assetId,
         filename: data.filename,

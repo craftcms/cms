@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import {useMediaQuery} from '@vueuse/core';
+  import CpLink from '@/common/components/CpLink.vue';
 
   const {items = []} = defineProps<{
     items?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -69,29 +70,33 @@
                 <span class="text-xs font-bold">{{ item.label }}</span>
 
                 <craft-nav-list slot="subnav">
-                  <craft-nav-item
+                  <CpLink
                     v-for="(subitem, subindex) in item.subnav"
                     :key="subindex"
-                    :active="subitem.selected"
+                    as="craft-nav-item"
+                    :active.prop="subitem.selected"
                     :href="subitem.url"
-                    block
+                    :inertia="!subitem.external"
                     flush
+                    block
                   >
                     {{ subitem.label }}
-                  </craft-nav-item>
+                  </CpLink>
                 </craft-nav-list>
               </craft-nav-item>
             </template>
 
             <template v-else>
-              <craft-nav-item
-                :active="item.selected"
+              <CpLink
+                as="craft-nav-item"
+                :active.prop="item.selected"
                 :href="item.url"
-                block
+                :inertia="!item.external"
                 flush
+                block
               >
                 {{ item.label }}
-              </craft-nav-item>
+              </CpLink>
             </template>
           </template>
         </craft-nav-list>

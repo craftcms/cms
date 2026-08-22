@@ -20,9 +20,16 @@
   type FilterHudRequest = {
     elementType: string;
     context: string;
-    source: SourceItem;
+    source: {
+      type: 'native' | 'custom';
+      key: string;
+      label: string;
+    };
     id: string;
-    conditionConfig?: ConditionConfig;
+    conditionConfig?: {
+      class: string;
+      conditionRules?: Array<{class: string}>;
+    };
   };
 
   const emit = defineEmits<{

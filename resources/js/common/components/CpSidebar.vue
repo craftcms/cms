@@ -19,10 +19,10 @@
     async (visibility) => {
       if (shouldManageFocus.value && visibility === 'visible') {
         await nextTick();
-        const el = document.querySelector('.cp-sidebar') as HTMLElement | null;
-        const firstFocusable = el?.querySelector(
+        const sidebar = document.querySelector<HTMLElement>('.cp-sidebar');
+        const firstFocusable = sidebar?.querySelector<HTMLElement>(
           'button, [href], [tabindex]:not([tabindex="-1"])'
-        ) as HTMLElement | undefined;
+        );
         firstFocusable?.focus();
       }
     }

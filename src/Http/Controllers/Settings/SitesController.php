@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -74,7 +75,7 @@ readonly class SitesController
             'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
-            'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
+            'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
             'groups' => $groups,
             'subnav' => [
@@ -294,12 +295,12 @@ readonly class SitesController
         $nodes = [
             HiddenField::make('siteId'),
             $group,
-            Field::make(t('Name'), Combobox::make('name')
-                ->options(SelectOptions::getEnvSuggestions()))
+            Field::make(t('Name'), Text::make('name')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
                 ->required()
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable.'),
+                    t('Type `$` to choose an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
@@ -356,12 +357,12 @@ readonly class SitesController
         $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'));
 
         if ($values['hasUrls'] ?? false) {
-            $nodes[] = Field::make(t('Base URL'), Combobox::make('baseUrl')
-                ->options(SelectOptions::getEnvSuggestions(true, Str::isUrl(...))))
+            $nodes[] = Field::make(t('Base URL'), Text::make('baseUrl')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, Str::isUrl(...))))
                 ->instructions(t('The base URL for the site.'))
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable or alias.'),
+                    t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 ));

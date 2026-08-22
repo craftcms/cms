@@ -1,4 +1,18 @@
-import {appendElementHtml, serializeFormInputsAsObject} from '@craftcms/ui';
+/**
+ * Import the DOM helpers from their leaf module rather than the `@craftcms/ui`
+ * barrel. The barrel side-effect-registers every `craft-*` element, which drags
+ * Lit, lit-html and @lit/reactive-element into this webpack bundle — a second
+ * copy alongside the one Vite serves to `cp.ts` / `legacy.ts`. Two Lit
+ * instances on a page means a template result or directive minted by one gets
+ * committed by the other, which throws `n._$AT is not a function`. The leaf
+ * module has no imports at all, so nothing but the helpers is inlined here and
+ * the Vite copy of `@craftcms/ui` stays the single `customElements.define`
+ * winner.
+ */
+import {
+  appendElementHtml,
+  serializeFormInputsAsObject,
+} from '@craftcms/ui/utilities/dom';
 
 (() => {
   const elementName = 'craft-legacy-html-control';

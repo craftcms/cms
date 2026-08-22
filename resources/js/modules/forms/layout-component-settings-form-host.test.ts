@@ -13,7 +13,7 @@ afterEach(() => document.body.replaceChildren());
 type Host = HTMLElement & {
   payload: FormPayload | null;
   errors: Record<string, string | string[]>;
-  currentValues(): Record<string, unknown>;
+  currentValues(): FormPayload['values'];
 };
 
 function payload(): FormPayload {
@@ -53,7 +53,7 @@ function payload(): FormPayload {
     values: {settings: {label: 'Heading', labelHidden: false}},
     errors: [],
     globalErrors: [],
-  } as FormPayload;
+  };
 }
 
 function mountHost(): Host {
@@ -64,6 +64,7 @@ function mountHost(): Host {
   components.register('craft:checkbox', CheckboxControl);
   defineLayoutComponentSettingsFormHost(components);
 
+  // SAFETY: The definition above registers the tested host API for this tag.
   const host = document.createElement(
     'craft-layout-component-settings-form'
   ) as Host;

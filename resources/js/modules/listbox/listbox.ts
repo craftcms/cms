@@ -122,11 +122,12 @@ export class Listbox extends Base<ListboxSettings> {
     // Param mapping: `new Listbox(settings)` when the first arg is a plain
     // object. A jQuery collection is NOT a plain object, so it falls through to
     // the container branch below and gets unwrapped there.
-    let containerArg: unknown = null;
+    const containerArg =
+      settings === undefined && isPlainObject(container)
+        ? null
+        : (container ?? null);
     if (settings === undefined && isPlainObject(container)) {
-      settings = container as Partial<ListboxSettings>;
-    } else {
-      containerArg = container ?? null;
+      settings = container;
     }
 
     this.setSettings(settings, Listbox.defaults);
@@ -165,9 +166,14 @@ export class Listbox extends Base<ListboxSettings> {
 
       if (!this.settings!.readOnly) {
         this.addListener(this.$options, 'click', (event) => {
-          const ev = event as unknown as Event;
-          this.select(this.$options.indexOf(ev.currentTarget as HTMLElement));
-          ev.preventDefault();
+          if (
+            !(event instanceof Event) ||
+            !(event.currentTarget instanceof HTMLElement)
+          ) {
+            return;
+          }
+          this.select(this.$options.indexOf(event.currentTarget));
+          event.preventDefault();
         });
       } else {
         for (const option of this.$options) {
@@ -246,10 +252,11 @@ export class Listbox extends Base<ListboxSettings> {
   }
 }
 
-function isPlainObject(val: unknown): val is Record<string, unknown> {
+function isPlainObject(
+  val: Element | Partial<ListboxSettings> | null | undefined
+): val is Partial<ListboxSettings> {
   return (
-    typeof val === 'object' &&
-    val !== null &&
+    val instanceof Object &&
     !(val instanceof Element) &&
     (Object.getPrototypeOf(val) === Object.prototype ||
       Object.getPrototypeOf(val) === null)

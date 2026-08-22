@@ -4,8 +4,9 @@ import {BaseElementSelectorModal} from './base-element-selector-modal';
 declare const $: any;
 
 const DEFAULTS = {
+  // SAFETY: The empty default establishes the mutable numeric ID list owned by this modal.
   disabledFolderIds: [] as number[],
-  indexSettings: {} as Record<string, any>,
+  indexSettings: {},
 };
 
 /**
@@ -15,6 +16,7 @@ const DEFAULTS = {
  * highlighted.
  */
 export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
+  // SAFETY: These defaults extend the base modal settings without changing existing keys.
   static override defaults =
     DEFAULTS as typeof BaseElementSelectorModal.defaults & typeof DEFAULTS;
 
@@ -41,7 +43,7 @@ export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
     super.init('CraftCms\\Cms\\Asset\\Elements\\Asset', merged);
   }
 
-  override getElementIndexParams(): Record<string, any> {
+  override getElementIndexParams() {
     return Object.assign({}, super.getElementIndexParams(), {
       foldersOnly: true,
     });
@@ -52,13 +54,9 @@ export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
 
     // Allow selecting the current folder when nothing is highlighted, unless
     // it is in the disabled list.
-    const sourcePath = this.elementIndex?.sourcePath;
-    if (!sourcePath?.length) return false;
-
-    const last = sourcePath[sourcePath.length - 1];
+    const folderId = this.currentFolderId();
     return (
-      typeof last.folderId !== 'undefined' &&
-      !this.settings.disabledFolderIds.includes(last.folderId)
+      folderId !== null && !this.settings.disabledFolderIds?.includes(folderId)
     );
   }
 
@@ -73,14 +71,26 @@ export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
       ev?.currentTarget === this.$selectBtn[0] &&
       this.shouldEnableSelectBtn()
     ) {
-      const sourcePath = this.elementIndex.sourcePath;
-      const {folderId} = sourcePath[sourcePath.length - 1];
+      const folderId = this.currentFolderId();
+      if (folderId === null) {
+        return;
+      }
       this.onSelect([{folderId}]);
 
       if (this.settings.hideOnSelect) {
         this.hide();
       }
     }
+  }
+
+  private currentFolderId(): number | null {
+    const sourcePath = this.elementIndex?.sourcePath;
+    const last = Array.isArray(sourcePath) ? sourcePath.at(-1) : null;
+    if (!(last instanceof Object) || !('folderId' in last)) {
+      return null;
+    }
+    const folderId = Number(last.folderId);
+    return Number.isFinite(folderId) ? folderId : null;
   }
 
   override getElementInfo($selectedElements: any): Array<{folderId: number}> {
@@ -93,7 +103,7 @@ export class VolumeFolderSelectorModal extends BaseElementSelectorModal {
     return info;
   }
 
-  override getIndexSettings(): Record<string, any> {
+  override getIndexSettings() {
     return Object.assign(super.getIndexSettings(), {
       foldersOnly: true,
       viewSettings: () => ({

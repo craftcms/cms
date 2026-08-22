@@ -22,7 +22,12 @@
   const {table} = useEditableTable<PreviewTarget>({
     data: () => props.modelValue,
     name: props.name,
-    onChange: (data) => emit('update:modelValue', data as Array<PreviewTarget>),
+    onChange: (data) => {
+      if (!Array.isArray(data)) {
+        throw new Error('Preview targets must remain an ordered list.');
+      }
+      emit('update:modelValue', data);
+    },
     columns: ({columnHelper}) => [
       columnHelper.text('label', {
         header: t('Label'),

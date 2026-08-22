@@ -102,7 +102,7 @@ readonly class InstallController
 
                 return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
             }),
-            'baseUrlSuggestions' => SelectOptions::getEnvSuggestions(true, fn ($value) => Str::isUrl($value)),
+            'baseUrlTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,

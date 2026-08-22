@@ -49,7 +49,6 @@ class CraftServiceProvider extends AggregateServiceProvider
         LicenseServiceProvider::class,
         RouteServiceProvider::class,
         AppServiceProvider::class,
-        IconServiceProvider::class,
         ConsoleServiceProvider::class,
         ElementServiceProvider::class,
         EmailServiceProvider::class,

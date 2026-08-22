@@ -11,7 +11,7 @@ declare const Craft: any;
  */
 interface LegacyElementIndex {
   siteId: number;
-  $source: {data(key: string): unknown};
+  $source: {data(key: string): string | number | null | undefined};
   $elements: {attr(name: string, value: string): {focus(): void}};
   updateElements(): void;
 }
@@ -114,6 +114,7 @@ export class EntryMover extends Base {
 
     // `Craft.ui.createSubmitButton` is still a legacy jQuery factory (not yet in
     // @craftcms/ui/factory); take its DOM element.
+    // SAFETY: The legacy button factory returns a jQuery collection whose first item is the created button.
     this.#selectBtn = Craft.ui.createSubmitButton({
       class: 'disabled',
       label: Craft.t('app', 'Move'),

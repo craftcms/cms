@@ -1,5 +1,6 @@
 import type {InjectionKey} from 'vue';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 export interface SlideoutInstance {
   id: string;
@@ -12,7 +13,7 @@ export interface SlideoutInstance {
   containerId: string;
   href: string;
   component: InertiaPageComponent | null;
-  props: Record<string, unknown>;
+  props: ScreenPageProps;
   loading: boolean;
   error: string | null;
   /** Refocused when the panel closes. */
@@ -23,7 +24,7 @@ export interface SlideoutInstance {
 
 export interface SlideoutSaveResult {
   /** Whatever the controller returned for the saved record, if anything. */
-  data?: Record<string, unknown>;
+  data?: ScreenPageProps;
   /**
    * True for an autosaved draft rather than a finished save.
    *

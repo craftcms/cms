@@ -2,19 +2,27 @@ import {Base} from '@craftcms/garnish';
 import {compatify, type LegacyMembers} from '@craftcms/garnish/compat';
 
 type CraftClass = typeof Base & {
-  ancestor?: unknown;
-  extend?: (instanceMembers?: LegacyMembers, staticMembers?: object) => unknown;
+  ancestor?: CraftClass;
+  extend?: (
+    instanceMembers?: LegacyMembers,
+    staticMembers?: LegacyMembers
+  ) => CraftClass;
 };
 
-function restoreLegacyClassApi(value: unknown): void {
+interface CraftGlobalValue {
+  readonly constructor: Function;
+}
+
+function restoreLegacyClassApi(value: CraftGlobalValue): void {
   if (
-    typeof value !== 'function' ||
+    !(value instanceof Function) ||
     !value.prototype ||
     !(value.prototype instanceof Base)
   ) {
     return;
   }
 
+  // SAFETY: the checks above establish a Base constructor with its prototype.
   const craftClass = value as CraftClass;
 
   if (!Object.hasOwn(craftClass, 'ancestor')) {
@@ -31,7 +39,7 @@ function restoreLegacyClassApi(value: unknown): void {
       value: function (
         this: CraftClass,
         instanceMembers?: LegacyMembers,
-        staticMembers?: object
+        staticMembers?: LegacyMembers
       ) {
         const Subclass = compatify(this).extend(instanceMembers, staticMembers);
         Subclass.ancestor = this;
@@ -55,9 +63,11 @@ function restoreLegacyClassApi(value: unknown): void {
  * registerCraftGlobals({FieldToggle});
  * registerCraftGlobals({FormObserver, IntervalManager});
  */
-export function registerCraftGlobals(globals: Record<string, unknown>): void {
+export function registerCraftGlobals(
+  globals: Record<string, CraftGlobalValue>
+): void {
   Object.values(globals).forEach(restoreLegacyClassApi);
 
-  const craft = ((window as any).Craft ??= {});
+  const craft = Object.assign(window, {Craft: window.Craft ?? {}}).Craft;
   Object.assign(craft, globals);
 }

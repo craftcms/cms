@@ -14,6 +14,7 @@ import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 declare const $: any;
@@ -35,13 +36,24 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
   /** Ask the server to validate the element as part of the initial load. */
   prevalidate: boolean;
   /** Extra params injected as hidden inputs just before submitting. */
-  saveParams: Record<string, unknown> | null;
+  saveParams: FormValues | null;
   /** Callback receiving the saved element's data (alongside the `submit` event). */
-  onSaveElement: ((data: any) => void) | null;
+  onSaveElement: ((data: FormValues) => void) | null;
   validators: unknown[];
   expandData: unknown[];
   isStatic: boolean;
   onBeforeSubmit: () => Promise<void>;
+}
+
+interface ElementEditorParams extends FormValues {
+  elementType?: string;
+  elementId?: number;
+  draftId?: number | null;
+  revisionId?: number | null;
+  fieldId?: number | null;
+  ownerId?: number | null;
+  siteId?: number;
+  prevalidate?: 1;
 }
 
 /**
@@ -91,7 +103,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
    *   {@link ElementEditorSlideoutSettings}).
    */
   constructor(
-    element?: unknown,
+    element?: string | Element | ArrayLike<Element> | null,
     settings?: Partial<ElementEditorSlideoutSettings>
   ) {
     super();
@@ -101,7 +113,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   }
 
   override init(
-    element?: unknown,
+    element?: string | Element | ArrayLike<Element> | null,
     settings?: Partial<ElementEditorSlideoutSettings>
   ): void {
     this.$element = $(element);
@@ -193,8 +205,8 @@ export class ElementEditorSlideout extends CpScreenSlideout {
     });
   }
 
-  override getParams(): Record<string, unknown> {
-    const params: Record<string, unknown> = {};
+  override getParams(): ElementEditorParams {
+    const params: ElementEditorParams = {};
 
     if (this.settings!.elementType) {
       params.elementType = this.settings!.elementType;

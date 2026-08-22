@@ -3,13 +3,16 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {FormChange, FormPayload} from '@/modules/forms/types';
 import Edit from './Edit.vue';
 
-const state = vi.hoisted(() => ({
+const state = vi.hoisted<{
+  layout: ReturnType<typeof vi.fn>;
+  save: ReturnType<typeof vi.fn>;
+  setValue: ReturnType<typeof vi.fn>;
+  change?: (change: FormChange, values: FormPayload['values']) => void;
+}>(() => ({
   layout: vi.fn(),
   save: vi.fn(),
   setValue: vi.fn(),
-  change: undefined as
-    | ((change: FormChange, values: FormPayload['values']) => void)
-    | undefined,
+  change: undefined,
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({

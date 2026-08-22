@@ -2,7 +2,6 @@ import {
   Base,
   deferUntil,
   ESC_KEY,
-  type GarnishEvent,
   hasAttr,
   requestAnimationFrame,
   RETURN_KEY,
@@ -12,8 +11,15 @@ import {Listbox} from '@/modules/listbox/listbox';
 import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
-import {fldElementData, fldTabData, htmlToElement, hudData} from './support';
+import {
+  fldElementData,
+  fldTabData,
+  htmlToElement,
+  hudData,
+  type FieldLayoutHud,
+} from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
+import type {FormPayload, FormValues} from '@/modules/forms/types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
 import {Slideout} from '@/modules/slideout';
@@ -23,6 +29,26 @@ import {Slideout} from '@/modules/slideout';
 // require jQuery). Everywhere else FLD uses native DOM.
 declare const Craft: any;
 declare const $: any;
+
+interface LayoutComponentSettingsForm extends HTMLElement {
+  payload: FormPayload;
+  requestData: () => FormValues;
+}
+
+interface FieldLayoutSlideoutData {
+  form: FormPayload;
+  headHtml?: string;
+  bodyHtml?: string;
+}
+
+interface FieldLayoutSlideoutSettings {
+  triggerElement?: HTMLElement;
+  requestData?: () => FormValues;
+}
+
+type FieldLayoutSettingsSlideout = Slideout & {
+  settingsForm: LayoutComponentSettingsForm;
+};
 
 /**
  * Field Layout Designer — a port of the legacy `Craft.FieldLayoutDesigner` onto
@@ -52,7 +78,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   $uiLibraryElements: any = null;
   $fieldSearch: any = null;
   $clearFieldSearchBtn: any = null;
-  $fieldGroups: any = null;
+  $fieldGroups: HTMLElement[] = [];
   $fields: any = null;
   $createFieldBtn: any = null;
 
@@ -66,14 +92,18 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
   _config: FieldLayoutConfig | null = null;
   _$selectedFields: any = null;
-  _fieldHandles: Record<string, unknown> = {};
-
-  constructor(container: any, settings?: Partial<FieldLayoutDesignerSettings>) {
+  constructor(
+    container: HTMLElement | string,
+    settings?: Partial<FieldLayoutDesignerSettings>
+  ) {
     super();
     this.$container =
-      typeof container === 'string'
-        ? document.querySelector(container)
-        : container;
+      container instanceof HTMLElement
+        ? container
+        : document.querySelector(container);
+    if (!this.$container) {
+      throw new Error('FieldLayoutDesigner: container not found.');
+    }
     this.setSettings(settings, FieldLayoutDesigner.defaults);
 
     this.$configInput = this.$container.querySelector(
@@ -83,8 +113,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (!this._config!.tabs) {
       this._config!.tabs = [];
     }
-
-    this._fieldHandles = {};
 
     this.$innerContainer = this.$container.querySelector(
       ':scope > .fld-container'
@@ -116,7 +144,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     void deferUntil(
       () =>
         !!Craft?.Grid &&
-        typeof $ === 'function' &&
+        $ instanceof Function &&
         !!this.$fieldLibrary.querySelector('input[type="search"]')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
@@ -137,7 +165,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     const $tabs = Array.from(this.$tabContainer.children);
     for (const tab of $tabs) {
-      this.initTab(tab as HTMLElement);
+      if (tab instanceof HTMLElement) {
+        this.initTab(tab);
+      }
     }
 
     this.elementDrag = new ElementDrag(this);
@@ -155,14 +185,15 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     // Set up the library
     if (this.settings!.customizableUi) {
-      const $libraryPicker = this.$libraryContainer.querySelector(
-        ':scope > .btngroup'
-      ) as HTMLElement | null;
+      const $libraryPicker =
+        this.$libraryContainer.querySelector(':scope > .btngroup');
       if ($libraryPicker) {
         this.libraryPicker = new Listbox($libraryPicker, {
           onChange: (option) => {
-            const library = (option as HTMLElement | undefined)?.dataset
-              .library;
+            const library =
+              option instanceof HTMLElement
+                ? option.dataset.library
+                : undefined;
             switch (library) {
               case 'field':
                 this.$fieldLibrary.classList.remove('hidden');
@@ -180,8 +211,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       }
     }
 
-    this.addListener(this.$fieldSearch, 'input', (event) =>
-      this.updateFieldSearchResults(event as GarnishEvent<HTMLInputElement>)
+    this.addListener(this.$fieldSearch, 'input', () =>
+      this.updateFieldSearchResults()
     );
 
     this.addListener(this.$fieldSearch, 'keydown', (ev: any) => {
@@ -236,16 +267,16 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     const fields: HTMLElement[] = [];
     for (const group of this.$fieldGroups) {
       fields.push(
-        ...(Array.from(
-          group.querySelectorAll(':scope > .fld-element')
-        ) as HTMLElement[])
+        ...Array.from(
+          group.querySelectorAll<HTMLElement>(':scope > .fld-element')
+        )
       );
     }
     return fields;
   }
 
-  updateFieldSearchResults(event?: GarnishEvent<HTMLInputElement>): void {
-    const val = event?.target?.value.toLowerCase().replace(/['"]/g, '');
+  updateFieldSearchResults(): void {
+    const val = this.$fieldSearch?.value.toLowerCase().replace(/['"]/g, '');
     if (!val) {
       this.$fieldLibrary
         .querySelectorAll('.filtered')
@@ -262,7 +293,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     for (const group of this.$fieldGroups) {
       if (group.matches(`[data-name*="${val}"]`)) {
         for (const el of group.querySelectorAll(':scope > .fld-element')) {
-          matches.add(el as HTMLElement);
+          if (el instanceof HTMLElement) {
+            matches.add(el);
+          }
         }
       }
     }
@@ -412,6 +445,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   set config(config: FieldLayoutConfig) {
     this._config = config;
     this.$configInput.value = JSON.stringify(config);
+
+    // Assigning `.value` fires nothing, and the designer's edits are drags and
+    // menu actions, so wrappers have no other signal that the config changed.
+    this.$configInput.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   updateConfig(
@@ -434,8 +471,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     for (const $fieldGroup of this.$fieldGroups) {
       const $fields = Array.from(
-        $fieldGroup.querySelectorAll(':scope > .fld-element')
-      ) as HTMLElement[];
+        $fieldGroup.querySelectorAll<HTMLElement>(':scope > .fld-element')
+      );
       $fields.sort((a, b) =>
         (a.dataset.uiLabel ?? '') > (b.dataset.uiLabel ?? '') ? 1 : -1
       );
@@ -467,10 +504,15 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       opener: this.$createFieldBtn,
       onSaved: ({data}) => {
         // add the library selector
-        const $selector = htmlToElement(
-          (data as {selectorHtml: string}).selectorHtml
-        );
+        const selectorHtml = data?.selectorHtml;
+        if (Object(selectorHtml).constructor !== String) {
+          throw new Error('The saved field response omitted selector HTML.');
+        }
+        const $selector = htmlToElement(String(selectorHtml));
         const $lastGroup = this.$fieldGroups[this.$fieldGroups.length - 1];
+        if (!$lastGroup) {
+          throw new Error('The field library requires at least one group.');
+        }
         $lastGroup.appendChild($selector);
         $lastGroup.classList.remove('hidden');
         this.refreshLibraryFields();
@@ -500,10 +542,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     });
   }
 
-  cloneLibraryElementForSelection(libraryElement: any): HTMLElement {
+  cloneLibraryElementForSelection(libraryElement: HTMLElement): HTMLElement {
     // Create a new element based on that one
-    const $libraryElement = libraryElement as HTMLElement;
-    const $element = $libraryElement.cloneNode(true) as HTMLElement;
+    const $libraryElement = libraryElement;
+    const $element = $libraryElement.cloneNode(true);
+    if (!($element instanceof HTMLElement)) {
+      throw new Error('Expected a field layout element clone.');
+    }
     $element.classList.remove('unused');
     $element.removeAttribute('tabindex');
 
@@ -530,41 +575,50 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     return $element;
   }
 
-  getActiveHud(): any {
+  getActiveHud(): FieldLayoutHud | undefined {
     const hudEl = this.$libraryContainer.closest('.fld-library-hud');
     return hudEl ? hudData.get(hudEl) : undefined;
   }
 
-  addLibraryElementToActiveTab(libraryElement: any): void {
+  addLibraryElementToActiveTab(libraryElement: HTMLElement): void {
     const hud = this.getActiveHud();
     if (!hud) {
       return;
     }
 
     const $element = this.cloneLibraryElementForSelection(libraryElement);
-    const tab = fldTabData.get(hud.$trigger.closest('.fld-tab'));
+    const tabContainer = hud.$trigger.closest('.fld-tab');
+    if (!tabContainer) {
+      throw new Error('Field layout HUD is not inside a tab.');
+    }
+    const tab = fldTabData.get(tabContainer);
     hud.$trigger.before($element);
     const element = tab!.initElement($element);
     element.onSelect();
     element.updatePositionInConfig();
   }
 
-  static async createSlideout(data: any, settings: any = {}): Promise<any> {
+  static async createSlideout(
+    data: FieldLayoutSlideoutData,
+    settings: FieldLayoutSlideoutSettings = {}
+  ): Promise<FieldLayoutSettingsSlideout> {
     const $body = document.createElement('div');
     $body.className = 'fld-element-settings-body';
     const $fields = document.createElement('div');
     $fields.className = 'fields';
     const $form = document.createElement(
       'craft-layout-component-settings-form'
-    ) as HTMLElement & {
-      payload: unknown;
-      requestData: () => unknown;
-    };
-    $form.payload = data.form;
-    if (settings.requestData) {
-      $form.requestData = settings.requestData;
+    );
+    if (!('payload' in $form) || !('requestData' in $form)) {
+      throw new Error('Layout component settings form is not registered.');
     }
-    $fields.appendChild($form);
+    // SAFETY: The registration check above establishes the form element's public contract.
+    const settingsForm = $form as LayoutComponentSettingsForm;
+    settingsForm.payload = data.form;
+    if (settings.requestData) {
+      settingsForm.requestData = settings.requestData;
+    }
+    $fields.appendChild(settingsForm);
     $body.appendChild($fields);
 
     const $footer = document.createElement('div');
@@ -586,6 +640,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     $footer.appendChild(submitBtn);
 
     // Craft.Slideout is a jQuery widget — pass a jQuery wrapper at the seam.
+    const {requestData: _requestData, ...slideoutSettings} = settings;
     const slideout = new Slideout(
       [$body, $footer],
       Object.assign(
@@ -598,7 +653,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
             class: 'fld-element-settings',
           },
         },
-        settings
+        slideoutSettings
       )
     );
 
@@ -606,11 +661,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       // Hold off until it's positioned and the form has mounted...
       requestAnimationFrame(() => {
         // Focus on the first editable control
-        (
-          slideout.$container[0].querySelector(
-            'input:not([type=hidden]):not([disabled]), textarea:not([disabled]), craft-input, craft-combobox, .text'
-          ) as HTMLElement | null
-        )?.focus();
+        const focusTarget = slideout.$container[0].querySelector(
+          'input:not([type=hidden]):not([disabled]), textarea:not([disabled]), craft-input, craft-combobox, .text'
+        );
+        if (focusTarget instanceof HTMLElement) {
+          focusTarget.focus();
+        }
       });
     });
 
@@ -627,8 +683,6 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     Craft.initUiElements(slideout.$container);
 
-    (slideout as any).settingsForm = $form;
-
-    return slideout;
+    return Object.assign(slideout, {settingsForm});
   }
 }

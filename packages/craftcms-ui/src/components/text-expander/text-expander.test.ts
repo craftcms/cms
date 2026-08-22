@@ -8,14 +8,27 @@ import type {
   TextExpanderOption,
   TextExpanderErrorDetail,
   TextExpanderSelectDetail,
+  TextExpanderTrigger,
+  TextExpanderTriggerBoundary,
   TextExpanderTriggers,
 } from './text-expander.js';
 import './text-expander.js';
 
 type Target = HTMLInputElement | HTMLTextAreaElement;
+type OptionalBoundary<T> = T extends unknown
+  ? Omit<T, 'trigger' | 'boundary'> & {
+      boundary?: TextExpanderTriggerBoundary;
+    }
+  : never;
+type FixtureTrigger = OptionalBoundary<TextExpanderTrigger>;
+type FixtureTriggerMap = Record<
+  string,
+  FixtureTrigger | readonly FixtureTrigger[]
+>;
+type FixtureTriggers = FixtureTriggerMap | TextExpanderTriggers;
 
 async function createFixture(
-  triggers: TextExpanderTriggers,
+  triggers: FixtureTriggers,
   target: Target = document.createElement('textarea')
 ): Promise<{expander: CraftTextExpander; target: Target}> {
   target.id = 'text-expander-target';
@@ -25,7 +38,17 @@ async function createFixture(
     'craft-text-expander'
   ) as CraftTextExpander;
   expander.for = target.id;
-  expander.triggers = triggers;
+  expander.triggers = Array.isArray(triggers)
+    ? triggers
+    : Object.entries(triggers).flatMap(([trigger, configuration]) =>
+        (Array.isArray(configuration) ? configuration : [configuration]).map(
+          (configuration) => ({
+            trigger,
+            boundary: 'whitespace',
+            ...configuration,
+          })
+        )
+      );
   document.body.append(expander);
   await expander.updateComplete;
 
@@ -128,9 +151,13 @@ describe('craft-text-expander', () => {
       'craft-text-expander'
     ) as CraftTextExpander;
     expander.for = host.id;
-    expander.triggers = {
-      '@': {options: [{label: 'Brad', value: '@brad'}]},
-    };
+    expander.triggers = [
+      {
+        trigger: '@',
+        boundary: 'whitespace',
+        options: [{label: 'Brad', value: '@brad'}],
+      },
+    ];
     document.body.append(expander);
     await expander.updateComplete;
 
@@ -185,7 +212,22 @@ describe('craft-text-expander', () => {
     expect(target.getAttribute('aria-autocomplete')).toBe('list');
   });
 
-  it('matches static options anywhere in labels and keywords while preserving order and limit', async () => {
+  it('shows all static options when no limit is configured', async () => {
+    const {expander, target} = await createFixture({
+      '@': {
+        options: Array.from({length: 9}, (_, index) => ({
+          label: `Option ${index + 1}`,
+          value: `@option-${index + 1}`,
+        })),
+      },
+    });
+
+    type(target, '@');
+
+    expect(options(expander)).toHaveLength(9);
+  });
+
+  it('matches static options anywhere in labels and keywords while preserving order and an explicit limit', async () => {
     const {expander, target} = await createFixture({
       '@': {
         limit: 2,
@@ -204,6 +246,25 @@ describe('craft-text-expander', () => {
     ).toEqual(['Alpha', 'Bravo']);
   });
 
+  it('keeps dotted queries active', async () => {
+    const {expander, target} = await createFixture({
+      '{': {
+        boundary: 'anywhere',
+        options: [
+          {
+            label: 'Author Username',
+            value: '{author.username}',
+            keywords: ['author.username'],
+          },
+        ],
+      },
+    });
+
+    type(target, '{author.user');
+
+    expect(options(expander)[0]?.textContent?.trim()).toBe('Author Username');
+  });
+
   it('does not rebuild options when selectionchange keeps the same caret', async () => {
     const {expander, target} = await createFixture({
       '@': {options: [{label: 'Brad', value: '@brad'}]},
@@ -217,19 +278,93 @@ describe('craft-text-expander', () => {
     expect(options(expander)[0]).toBe(firstOption);
   });
 
-  it('recognizes multiple triggers only at whitespace boundaries', async () => {
-    const {expander, target} = await createFixture({
-      '@': {options: [{label: 'Alias', value: '@alias'}]},
-      '#': {options: [{label: 'Environment', value: '#ENVIRONMENT'}]},
-    });
+  it('honors each trigger boundary', async () => {
+    const {expander, target} = await createFixture([
+      {
+        trigger: '@',
+        boundary: 'whitespace',
+        options: [{label: 'Alias', value: '@alias'}],
+      },
+      {
+        trigger: '$',
+        boundary: 'start',
+        options: [{label: 'Direct', value: '$DIRECT'}],
+      },
+      {
+        trigger: '$',
+        boundary: 'anywhere',
+        options: [
+          {label: 'Embedded Direct', value: '${DIRECT}'},
+          {label: 'Nested', value: '${NESTED}'},
+        ],
+      },
+    ]);
 
     type(target, 'mail@example');
     expect(options(expander)).toHaveLength(0);
 
-    type(target, 'Use #ENV');
+    type(target, 'Use @ali');
     expect(
       options(expander).map((option) => option.textContent?.trim())
-    ).toEqual(['Environment']);
+    ).toEqual(['Alias']);
+
+    type(target, 'Use $DIR');
+    expect(options(expander)[0]?.textContent?.trim()).toBe('Embedded Direct');
+
+    type(target, '$DIR');
+    expect(options(expander)[0]?.textContent?.trim()).toBe('Direct');
+
+    type(target, 'https://$NES');
+    expect(options(expander)[0]?.textContent?.trim()).toBe('Nested');
+  });
+
+  it('renders option hints and includes them in accessible names', async () => {
+    const {expander, target} = await createFixture({
+      $: {
+        boundary: 'start',
+        options: [
+          {
+            label: '$PRIMARY_SITE_URL',
+            value: '$PRIMARY_SITE_URL',
+            data: {hint: 'https://example.com'},
+          },
+        ],
+      },
+    });
+
+    type(target, '$PRIMARY');
+    const option = options(expander)[0] as HTMLElement & {hint: string};
+
+    expect(option.hint).toBe('https://example.com');
+    expect(option.getAttribute('aria-label')).toBe(
+      '$PRIMARY_SITE_URL, https://example.com'
+    );
+  });
+
+  it.each([
+    ['$PRIMARY', '$PRIMARY_SITE_URL'],
+    ['Prefix $PRIMARY', 'Prefix ${PRIMARY_SITE_URL}'],
+  ])('uses the first matching variant for %s', async (value, expectedValue) => {
+    const {expander, target} = await createFixture([
+      {
+        trigger: '$',
+        boundary: 'start',
+        options: [{label: '$PRIMARY_SITE_URL', value: '$PRIMARY_SITE_URL'}],
+      },
+      {
+        trigger: '$',
+        boundary: 'anywhere',
+        options: [{label: '$PRIMARY_SITE_URL', value: '${PRIMARY_SITE_URL}'}],
+      },
+    ]);
+
+    type(target, value);
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+
+    expect(target.value).toBe(expectedValue);
   });
 
   it('selects the first option with Enter and emits input before selection', async () => {
@@ -304,6 +439,27 @@ describe('craft-text-expander', () => {
 
     expect(enter.defaultPrevented).toBe(true);
     expect(target.value).toBe('@brad');
+  });
+
+  it('does not reopen after a trigger refresh when a suggestion was committed', async () => {
+    const trigger: TextExpanderTrigger = {
+      trigger: '@',
+      boundary: 'whitespace',
+      options: [{label: 'Brad', value: '@brad'}],
+    };
+    const {expander, target} = await createFixture([trigger]);
+
+    type(target, '@b');
+    await waitForFirstOption(expander);
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+    expander.triggers = [{...trigger}];
+    await expander.updateComplete;
+
+    expect(target.value).toBe('@brad');
+    expect(options(expander)).toHaveLength(0);
+    expect(popover(expander).opened).toBe(false);
   });
 
   it('closes the popup with Escape', async () => {
@@ -529,7 +685,7 @@ describe('craft-text-expander', () => {
     expect(request).toHaveBeenCalledWith(
       'https://craft.test/actions/text-expander/options',
       {
-        params: {query: '#a', limit: 8},
+        params: {query: '#a'},
         signal: expect.any(AbortSignal),
       }
     );
@@ -652,12 +808,14 @@ describe('craft-text-expander', () => {
     expander.setAttribute('for', target.id);
     expander.setAttribute(
       'triggers',
-      JSON.stringify({
-        '@': {
+      JSON.stringify([
+        {
+          trigger: '@',
+          boundary: 'whitespace',
           label: 'People',
           options: [{label: 'Brad', value: '@brad'}],
         },
-      })
+      ])
     );
     document.body.append(expander);
     await expander.updateComplete;

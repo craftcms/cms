@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import type CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroupItem from '@/common/form/CheckboxGroupItem.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
@@ -40,8 +39,14 @@
   // has applied ours. Treating that as a change would emit an empty selection
   // over whatever the caller passed in.
   const handleValueChange = ignoreModelValueInitialization((event) => {
-    const target = event.target as CraftCheckbox;
-    emit('update:modelValue', target.modelValue);
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      'modelValue' in target &&
+      Array.isArray(target.modelValue)
+    ) {
+      emit('update:modelValue', target.modelValue.map(String));
+    }
   });
 
   // Only non-disabled options are reorderable; disabled options (e.g. a pinned

@@ -12,6 +12,72 @@ declare const $: any;
 
 const noop = () => {};
 
+type CriteriaValue =
+  | string
+  | number
+  | boolean
+  | null
+  | CriteriaValue[]
+  | ElementCriteria;
+
+interface ElementCriteria {
+  [key: string]: CriteriaValue;
+}
+
+interface LegacyElementInfo {
+  id: string | number;
+}
+
+type LegacyIndexCallback = (...args: any[]) => any;
+
+type ElementIndexSettingValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | string[]
+  | number[]
+  | ElementCriteria
+  | BaseElementSelectorModal
+  | LegacyIndexCallback;
+
+export interface ElementIndexSettings {
+  [key: string]: ElementIndexSettingValue;
+}
+
+export interface BaseElementSelectorModalSettings extends ModalSettings {
+  fullscreen: boolean;
+  storageKey: string | null;
+  sources: string[] | null;
+  condition: ElementCriteria | null;
+  referenceElementId: number | null;
+  referenceElementOwnerId: number | null;
+  referenceElementSiteId: number | null;
+  criteria: ElementCriteria | null;
+  multiSelect: boolean;
+  showSiteMenu: boolean | string | null;
+  siteIds: number[] | null;
+  disabledElementIds: number[];
+  disableElementsOnSelect: boolean;
+  hideOnSelect: boolean;
+  modalTitle: string | null;
+  showTitle: boolean;
+  selectBtnLabel: string | null;
+  onCancel(): void;
+  onSelect(elementInfo: LegacyElementInfo, ...args: any[]): void;
+  hideSidebar: boolean;
+  defaultSiteId: number | null;
+  defaultSource: string | null;
+  defaultSourcePath: string | null;
+  preferStoredSource: boolean;
+  showSourcePath: boolean;
+  bodyAction: string;
+  indexSettings: ElementIndexSettings;
+  transforms?: Array<{handle: string; name: string}>;
+  disabledFolderIds?: number[];
+}
+
 // Non-runtime-dependent defaults, separated so the static getter can augment them.
 const BASE_DEFAULTS = {
   // Modal settings preserved after we overwrite this.settings in init()
@@ -23,33 +89,33 @@ const BASE_DEFAULTS = {
   onHide: noop,
   // Craft-specific defaults
   fullscreen: false,
-  storageKey: null as string | null,
-  sources: null as string[] | null,
-  condition: null as any,
-  referenceElementId: null as number | null,
-  referenceElementOwnerId: null as number | null,
-  referenceElementSiteId: null as number | null,
-  criteria: null as Record<string, any> | null,
+  storageKey: null,
+  sources: null,
+  condition: null,
+  referenceElementId: null,
+  referenceElementOwnerId: null,
+  referenceElementSiteId: null,
+  criteria: null,
   multiSelect: false,
-  showSiteMenu: null as boolean | string | null,
-  siteIds: null as number[] | null,
-  disabledElementIds: [] as number[],
+  showSiteMenu: null,
+  siteIds: null,
+  disabledElementIds: [],
   disableElementsOnSelect: false,
   hideOnSelect: true,
-  modalTitle: null as string | null,
+  modalTitle: null,
   showTitle: false,
-  selectBtnLabel: null as string | null,
+  selectBtnLabel: null,
   onCancel: noop,
-  onSelect: noop as (elementInfo: any, ...args: any[]) => void,
+  onSelect: noop,
   hideSidebar: false,
-  defaultSiteId: null as number | null,
-  defaultSource: null as string | null,
-  defaultSourcePath: null as string | null,
+  defaultSiteId: null,
+  defaultSource: null,
+  defaultSourcePath: null,
   preferStoredSource: false,
   showSourcePath: true,
   bodyAction: 'element-selector-modals/body',
-  indexSettings: {} as Record<string, any>,
-};
+  indexSettings: {},
+} satisfies Partial<BaseElementSelectorModalSettings>;
 
 /**
  * BaseElementSelectorModal — a port of `Craft.BaseElementSelectorModal` onto the
@@ -64,11 +130,13 @@ const BASE_DEFAULTS = {
  * events).
  */
 export class BaseElementSelectorModal extends Modal {
-  static override defaults: ModalSettings & typeof BASE_DEFAULTS =
-    Object.assign({}, Modal.defaults, BASE_DEFAULTS);
+  static override defaults: BaseElementSelectorModalSettings = {
+    ...Modal.defaults,
+    ...BASE_DEFAULTS,
+  };
 
   // Shadows Modal's typed `settings` so we can store our own key/value shape.
-  declare settings: any;
+  declare settings: BaseElementSelectorModalSettings;
 
   // Not a static `defaults` override of Modal's typed defaults — we use a
   // module-level constant (BASE_DEFAULTS) and resolve Craft.t() values lazily
@@ -450,26 +518,21 @@ export class BaseElementSelectorModal extends Modal {
     super.enable();
   }
 
-  getElementIndexParams(): Record<string, any> {
-    const params: Record<string, any> = {
+  getElementIndexParams() {
+    return {
       context: 'modal',
       elementType: this.elementType,
       sources: this.settings.sources,
       condition: this.settings.condition,
+      showSiteMenu:
+        this.settings.showSiteMenu !== null &&
+        this.settings.showSiteMenu !== 'auto'
+          ? this.settings.showSiteMenu
+            ? '1'
+            : '0'
+          : undefined,
+      siteIds: this.settings.siteIds || undefined,
     };
-
-    if (
-      this.settings.showSiteMenu !== null &&
-      this.settings.showSiteMenu !== 'auto'
-    ) {
-      params.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
-    }
-
-    if (this.settings.siteIds) {
-      params.siteIds = this.settings.siteIds;
-    }
-
-    return params;
   }
 
   _createElementIndex(): void {
@@ -516,7 +579,7 @@ export class BaseElementSelectorModal extends Modal {
     });
   }
 
-  getIndexSettings(): Record<string, any> {
+  getIndexSettings(): ElementIndexSettings {
     return Object.assign(
       {
         context: 'modal',

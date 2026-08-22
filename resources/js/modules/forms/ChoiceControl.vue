@@ -10,7 +10,7 @@
   import {t} from '@craftcms/ui';
   import type {CheckboxOption} from '@/common/types';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
-  import type {FormControlPayload} from './types';
+  import type {FormControlPayload, FormValue} from './types';
   import {inputName, serverErrorValidators} from './runtime';
 
   // Mirrors Choice::ALL_VALUE.
@@ -36,7 +36,7 @@
 
   const props = defineProps<{
     control: FormControlPayload<ChoiceControlProps>;
-    value: unknown;
+    value: FormValue;
     label?: string;
     editable: boolean;
     invalid: boolean;
@@ -46,20 +46,25 @@
     (event: 'update:value', value: string | string[]): void;
   }>();
 
-  function inputValue(value: unknown): string {
+  function inputValue(value: FormValue): string {
     return value === true ? '1' : value === false ? '' : String(value);
   }
 
   function selected(value: ChoiceValue): boolean {
-    const values = props.control.props.multiple
-      ? (props.value as unknown[])
-      : [props.value];
+    const values =
+      props.control.props.multiple && Array.isArray(props.value)
+        ? props.value
+        : [props.value];
 
     return (values ?? []).map(inputValue).includes(inputValue(value));
   }
 
   function onSelect(event: Event): void {
-    const select = event.target as HTMLSelectElement;
+    if (!(event.target instanceof HTMLSelectElement)) {
+      throw new TypeError('Expected a select event target.');
+    }
+
+    const select = event.target;
     emit(
       'update:value',
       props.control.props.multiple
@@ -69,7 +74,11 @@
   }
 
   function onOptionChanged(event: Event): void {
-    const input = event.target as HTMLInputElement;
+    if (!(event.target instanceof HTMLInputElement)) {
+      throw new TypeError('Expected a choice input event target.');
+    }
+
+    const input = event.target;
 
     if (!props.control.props.multiple) {
       emit('update:value', input.value);

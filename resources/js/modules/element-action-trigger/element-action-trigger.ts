@@ -56,7 +56,7 @@ export class ElementActionTrigger extends Base {
     }
 
     // batch => bulk
-    if (typeof settings.batch !== 'undefined') {
+    if (settings.batch !== undefined) {
       settings.bulk = settings.batch;
       delete settings.batch;
     }
@@ -122,7 +122,7 @@ export class ElementActionTrigger extends Base {
       }
     }
 
-    if (typeof this.settings.validateSelection === 'function') {
+    if (this.settings.validateSelection instanceof Function) {
       return this._call(() =>
         this.settings.validateSelection(this.$selectedItems, this.elementIndex)
       );

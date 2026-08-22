@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient} from '@craftcms/ui';
-  import type {FormControlPayload} from './types';
+  import type {FormControlPayload, FormValue, FormValues} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
@@ -14,15 +14,11 @@
 
   const props = defineProps<{
     control: FormControlPayload<FieldLayoutDesignerProps>;
-    value: Record<string, unknown>;
+    value: FormValues;
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (
-      event: 'update:value',
-      value: Record<string, unknown>,
-      kind: 'discrete'
-    ): void;
+    (event: 'update:value', value: FormValues, kind: 'discrete'): void;
   }>();
   const {host, html} = useServerRenderedControl({
     value: () => props.value,
@@ -50,9 +46,10 @@
         return undefined;
       }
 
-      const value = JSON.parse(input.value) as Record<string, unknown>;
+      // SAFETY: The config input is JSON rendered by the field-layout designer.
+      const value = JSON.parse(input.value) as FormValues;
       const generatedFields = host.querySelector<
-        HTMLElement & {serialize(): unknown[]}
+        HTMLElement & {serialize(): FormValue[]}
       >('craft-generated-fields-table');
 
       return generatedFields

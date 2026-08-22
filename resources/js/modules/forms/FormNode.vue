@@ -34,7 +34,7 @@
 
   onErrorCaptured((error) => {
     invalidate(
-      `Failed to render Form Node [${props.node.type}] with component [${props.node.component}] at [${identity()}]: ${errorMessage(error)}`
+      `Failed to render Form Node [${props.node.type}] with component [${props.node.component}] at [${identity()}]: ${error instanceof Error ? error.message : String(error)}`
     );
 
     return false;
@@ -42,10 +42,6 @@
 
   function identity(): string {
     return props.node.uid ?? props.node.control?.path.join('.') ?? 'unknown';
-  }
-
-  function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
   }
 
   function onChange(change: FormChange | Event): void {

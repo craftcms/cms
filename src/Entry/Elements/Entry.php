@@ -272,6 +272,19 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    public static function objectTemplateSuggestions(): array
+    {
+        return [
+            ...parent::objectTemplateSuggestions(),
+            'section.handle' => t('Section Handle'),
+            'type.handle' => t('Entry Type Handle'),
+            'author.username' => t('Author Username'),
+            'postDate' => t('Post Date'),
+            'expiryDate' => t('Expiry Date'),
+        ];
+    }
+
+    #[Override]
     public static function lowerDisplayName(): string
     {
         return t('entry');

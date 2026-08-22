@@ -25,11 +25,11 @@ export class AuthMethodSetupSlideout extends Slideout {
   constructor(data?: AuthMethodSetupSlideoutData) {
     super();
     if (new.target === AuthMethodSetupSlideout) {
-      this.init(data!);
+      this.initSetup(data!);
     }
   }
 
-  override init(data: AuthMethodSetupSlideoutData): void {
+  private initSetup(data: AuthMethodSetupSlideoutData): void {
     this.methodName = data.methodName;
 
     const contents = `

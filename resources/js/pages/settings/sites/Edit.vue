@@ -10,6 +10,7 @@
     FormChange,
     FormChangeKind,
     FormPayload,
+    FormValue,
   } from '@/modules/forms/types';
   import {pathsMatch} from '@/modules/forms/runtime';
 
@@ -21,7 +22,7 @@
   }>();
 
   const formPage = ref<{
-    setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
+    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
   }>();
   const baseUrlDirty = ref(
     Boolean(props.form.values.siteId) || Boolean(props.form.values.baseUrl)

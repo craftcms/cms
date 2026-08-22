@@ -12,6 +12,7 @@
     FormChangeKind,
     FormNodePayload,
     FormPayload,
+    FormValue,
   } from './types';
 
   const props = defineProps<{
@@ -56,7 +57,7 @@
   );
   const value = computed(() => valueAt(props.values, control.value.path));
 
-  function setValue(value: unknown, kind: FormChangeKind = 'discrete'): void {
+  function setValue(value: FormValue, kind: FormChangeKind = 'discrete'): void {
     setPathValue(props.values, control.value.path, value);
 
     emit('change', {

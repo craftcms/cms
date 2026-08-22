@@ -35,10 +35,24 @@ const INTERACTIVE_SELECTOR = [
  * `BaseElementIndexView` does it — so the table and cards views both get it
  * without either having to know about it.
  */
-export function useElementQuickEdit() {
+export interface ElementQuickEditDependencies {
+  openSlideout: typeof openSlideout;
+  refreshResults: () => void;
+}
+
+function defaultDependencies(): ElementQuickEditDependencies {
+  return {
+    openSlideout,
+    refreshResults: useElementIndexTable().refreshResults,
+  };
+}
+
+export function useElementQuickEdit(
+  dependencies: ElementQuickEditDependencies = defaultDependencies()
+) {
   // The active index's partial reload — the same one a bulk action triggers,
   // minus clearing the selection. Editing one row shouldn't deselect anything.
-  const {refreshResults} = useElementIndexTable();
+  const {openSlideout: open, refreshResults} = dependencies;
 
   /**
    * Drafts autosave as the user types, and each one is a chance for the row to
@@ -78,10 +92,10 @@ export function useElementQuickEdit() {
    */
   function elementIn(row: Element): HTMLElement | null {
     const element = row.matches('[data-cp-url]')
-      ? (row as HTMLElement)
+      ? row
       : row.querySelector<HTMLElement>('[data-cp-url]');
 
-    if (!element) {
+    if (!(element instanceof HTMLElement)) {
       return null;
     }
 
@@ -130,7 +144,7 @@ export function useElementQuickEdit() {
     // Two fast clicks leave a text selection behind.
     window.getSelection()?.removeAllRanges();
 
-    void openSlideout(element.dataset.cpUrl!, {
+    void open(element.dataset.cpUrl!, {
       opener: row instanceof HTMLElement ? row : null,
       onSaved,
     });

@@ -42,7 +42,7 @@
   }>();
 
   function autocompleteValue(value: boolean | string | undefined): string {
-    if (typeof value === 'string') {
+    if (value !== undefined && value !== true && value !== false) {
       return value;
     }
 
@@ -50,11 +50,15 @@
   }
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
+    if (!(event.target instanceof CraftInput)) {
+      throw new TypeError('Expected a craft input event target.');
+    }
+
     emit(
       'update:value',
-      String((event.target as CraftInput).modelValue ?? ''),
+      String(event.target.modelValue ?? ''),
       ['text', 'email', 'url', 'tel', 'password', 'number'].includes(
-        String((event.target as CraftInput).type)
+        String(event.target.type)
       )
         ? 'typing'
         : 'discrete'

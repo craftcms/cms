@@ -50,6 +50,6 @@ import './modules/uploader';
 import './modules/nested-element-manager';
 import './modules/ui';
 
-window.Cp = Cp as unknown as typeof window.Cp;
+window.Cp = Cp;
 defineEntryFieldLayoutFormHost(Cp.$components);
 defineLayoutComponentSettingsFormHost(Cp.$components);

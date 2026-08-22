@@ -1,5 +1,4 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import type {Table} from '@tanstack/vue-table';
 import AdminTable from './AdminTable.vue';
 import {
   createSampleTable,
@@ -25,11 +24,7 @@ const meta = {
 } satisfies Meta<typeof AdminTable>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
-
-// Each story builds its real table inside setup(); this satisfies the
-// required `table` prop in `args`, which the template's :table overrides.
-const tablePlaceholder = null as unknown as Table<any>;
+type Story = StoryObj<{title?: string}>;
 
 export const Default: Story = {
   render: (args) => ({
@@ -40,7 +35,6 @@ export const Default: Story = {
     },
     template: '<AdminTable v-bind="args" :table="table" />',
   }),
-  args: {table: tablePlaceholder},
 };
 
 /**
@@ -66,7 +60,6 @@ export const Paginated: Story = {
       />
     `,
   }),
-  args: {table: tablePlaceholder},
 };
 
 /**
@@ -90,5 +83,4 @@ export const SelectableWithActions: Story = {
       />
     `,
   }),
-  args: {table: tablePlaceholder},
 };

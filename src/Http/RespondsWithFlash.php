@@ -98,14 +98,14 @@ trait RespondsWithFlash
         array $data = [],
     ): Response {
         $modelName ??= 'model';
-        $data = Arr::merge(array_filter([
+        $data += array_filter([
             'modelName' => $modelName,
             'modelClass' => $model::class,
             $modelName => Arr::toArray($model),
             'errors' => $model instanceof Validatable
                 ? $model->errors()->getMessages()
                 : null,
-        ]), $data);
+        ]);
 
         return $this->asFailure($message, $data);
     }
@@ -125,11 +125,11 @@ trait RespondsWithFlash
             unset($modelData['cpEditUrl']);
         }
 
-        $data = Arr::merge([
+        $data += [
             'modelName' => $modelName,
             'modelClass' => $model::class,
             $modelName => $modelData,
-        ], $data);
+        ];
 
         if ($model instanceof Identifiable) {
             $data['modelId'] = $model->getId();
