@@ -39,8 +39,6 @@ use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -714,7 +712,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $this->addressManager()->getTranslationDescription($element);
     }
 
-    /** @return list<array<string, bool|string|Color>> */
+    /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -737,50 +735,29 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return [...$items, ...$parentItems];
     }
 
-    /** @return array{id:string, icon:string, color:Color, label:string, showInChips:false} */
+    /** @return array{id:string, icon:string, color:Color, label:string, showInChips:false, action:array<string, mixed>} */
     private function copyAction(): array
     {
-        $id = sprintf('action-copy-%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $fieldId) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getAddresses = () => field.find(' > .nested-element-cards > .elements > li > .element');
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getAddresses());
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      btn.toggleClass('disabled', !getAddresses().length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            InputNamespace::namespaceId($this->getInputId()),
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-%s', mt_rand()),
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
             'label' => mb_ucfirst(t('Copy all {type}', [
                 'type' => Address::pluralLowerDisplayName(),
             ])),
+            // Operates on the field's input, which isn't present where chips render
             'showInChips' => false,
+            // Behavior travels with the item as a declarative action, handled
+            // by the field action listeners in `resources/js/modules/fields`.
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-nested-elements',
+                'detail' => [
+                    'selector' => '.nested-element-cards .elements > li > .element',
+                    'elementType' => Address::class,
+                    'fieldId' => $this->id,
+                ],
+            ],
         ];
     }
 

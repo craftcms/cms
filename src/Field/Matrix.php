@@ -59,7 +59,6 @@ use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -902,60 +901,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         // Expand/Collapse all. These operate on the field's input, so they're
         // excluded from chip menus, where the input may not be present (e.g.
         // the field layout designer's field-settings slideout).
-        $expandAllId = sprintf('expand-all-%s', mt_rand());
-        $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+        // Behavior travels with each item as a declarative action, handled by
+        // the field action listeners in `resources/js/modules/fields`. The
+        // listeners resolve the blocks from the invoking item's own field, so
+        // no ID coordination between PHP and the Vue renderer is needed.
         $items[] = [
-            'id' => $expandAllId,
+            'id' => sprintf('expand-all-%s', mt_rand()),
             'icon' => 'expand',
             'label' => mb_ucfirst(t('Expand all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-toggle-all',
+                'detail' => ['collapse' => false],
+            ],
         ];
         $items[] = [
-            'id' => $collapseAllId,
+            'id' => sprintf('collapse-all-%s', mt_rand()),
             'icon' => 'collapse',
             'label' => mb_ucfirst(t('Collapse all blocks', [
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:matrix-toggle-all',
+                'detail' => ['collapse' => true],
+            ],
         ];
-        HtmlStack::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
-(() => {
-  const field = $('#' + $fieldId);
-  const expandBtn = $('#' + $expandAllId);
-  const collapseBtn = $('#' + $collapseAllId);
-  const menu = expandBtn.closest('.menu');
-  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
-  expandBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').expand();
-    });
-  });
-
-  collapseBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').collapse();
-    });
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      let blocks = getBlocks();
-      disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
-      disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($expandAllId),
-            InputNamespace::namespaceId($collapseAllId),
-            InputNamespace::namespaceId($this->getInputId()),
-        ]);
-
-        $items[] = $this->copyAction(t('blocks'), ' > .blocks > .matrixblock');
+        $items[] = $this->copyAction(t('blocks'), '.matrixblock');
 
         return $items;
     }
@@ -968,66 +945,17 @@ JS, [
         // Copy
         $items[] = $this->copyAction(
             Entry::pluralLowerDisplayName(),
-            ' > .nested-element-cards > .elements > li > .element',
+            '.nested-element-cards .elements > li > .element',
         );
 
         return $items;
     }
 
-    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false} */
+    /** @return array{id:string,icon:string,color:Color,label:string,showInChips:false,action:array<string,mixed>} */
     private function copyAction(string $type, string $entrySelector): array
     {
-        $id = sprintf('action-copy-%s', mt_rand());
-
-        $baseInfo = Json::encode([
-            'type' => Entry::class,
-            'fieldId' => $this->id,
-        ]);
-
-        HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getEntries = () => field.find($entrySelector)
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries().toArray().map((element) => {
-      element = $(element);
-      return {
-          ... $baseInfo,
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        }
-    }));
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      btn.toggleClass('disabled', !getEntries().length);
-    });
-  }, 1);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            InputNamespace::namespaceId($this->getInputId()),
-            $entrySelector,
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-%s', mt_rand()),
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
             'label' => mb_ucfirst(t('Copy all {type}', [
@@ -1036,6 +964,15 @@ JS, [
             // Operates on the field's input, which isn't present where chips
             // render (e.g. the field layout designer's settings slideout)
             'showInChips' => false,
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-nested-elements',
+                'detail' => [
+                    'selector' => $entrySelector,
+                    'elementType' => Entry::class,
+                    'fieldId' => $this->id,
+                ],
+            ],
         ];
     }
 
