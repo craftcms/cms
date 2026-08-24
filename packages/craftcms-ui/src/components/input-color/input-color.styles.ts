@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+import {baseFieldStyles, baseInputStyles, baseFormControlStyles} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -16,7 +16,7 @@ export default css`
   .input-color__control {
     display: flex;
     align-items: center;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
   }
 
   .input-color__swatch {
@@ -69,7 +69,7 @@ export default css`
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 15%);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 43%);
   }
 
   .input-color__picker {
@@ -99,7 +99,6 @@ export default css`
     color: var(--c-text-quiet);
     user-select: none;
     font-family: var(--c-font-mono);
-    padding-inline: var(--c-input-spacing-inline) 0;
     display: grid;
     place-items: center;
   }
@@ -110,9 +109,13 @@ export default css`
     font: inherit;
     font-family: var(--c-font-mono);
     padding-block: 0;
-    padding-inline: var(--c-spacing-xs) var(--c-input-spacing-inline);
+    
     border: 0;
     appearance: none;
     background-color: transparent;
+  }
+  
+  ::slotted(.form-control) {
+    ${baseFormControlStyles}
   }
 `;
