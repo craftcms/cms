@@ -21,18 +21,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteProcessor(processor: AssetProcessorData): void {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” Asset Processor?', {
-          name: processor.name,
-        })
-      )
-    ) {
-      router.delete(destroy({handle: processor.handle}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<AssetProcessorData>();
   const columnVisibility = computed(() => ({
     name: true,
@@ -59,7 +47,20 @@
       row.original.canDelete
         ? [
             h(DeleteButton, {
-              onClick: () => deleteProcessor(row.original),
+              confirm: t(
+                'Are you sure you want to delete the “{name}” Asset Processor?',
+                {name: row.original.name}
+              ),
+              onClick: () =>
+                router
+                  .optimistic<{processors: Array<AssetProcessorData>}>(
+                    ({processors}) => ({
+                      processors: processors.filter(
+                        ({handle}) => handle !== row.original.handle
+                      ),
+                    })
+                  )
+                  .delete(destroy({handle: row.original.handle})),
             }),
           ]
         : []
