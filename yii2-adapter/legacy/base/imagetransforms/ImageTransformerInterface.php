@@ -2,8 +2,8 @@
 
 namespace craft\base\imagetransforms;
 
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Image\Data\ImageTransform;
+use craft\elements\Asset;
+use craft\models\ImageTransform;
 
 interface ImageTransformerInterface
 {

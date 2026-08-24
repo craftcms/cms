@@ -369,8 +369,7 @@ class ImageTransforms extends Component
                     continue;
                 }
 
-                Craft::$app->getImageTransforms()
-                    ->getImageTransformer($transformer)
+                new LegacyImageTransformerDriver($transformer)
                     ->invalidateAssetTransforms($event->asset);
             }
         });

@@ -7,6 +7,7 @@ namespace CraftCms\Yii2Adapter\Asset;
 use Craft;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
+use craft\elements\Asset as LegacyAsset;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
@@ -38,22 +39,23 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
             throw new LogicException("Legacy image transformer [{$this->transformer}] is invalid.");
         }
 
+        $asset = $this->legacyAsset($request->asset);
         $transform = new ImageTransform($request->operations);
 
-        event($event = new TransformGenerating($request->asset, $transform));
+        event($event = new TransformGenerating($asset, $transform));
 
         if ($event->url !== null) {
-            return self::result($request->asset, $transform, Html::encodeSpaces($event->url));
+            return self::result($asset, $transform, Html::encodeSpaces($event->url));
         }
 
         $url = Craft::$app->getImageTransforms()
             ->getImageTransformer($this->transformer)
-            ->getTransformUrl($request->asset, $transform, $request->immediately);
+            ->getTransformUrl($asset, $transform, $request->immediately);
         $url = Html::encodeSpaces($url);
 
-        event(new AfterGenerateTransform($request->asset, $transform, $url));
+        event(new AfterGenerateTransform($asset, $transform, $url));
 
-        return self::result($request->asset, $transform, $url);
+        return self::result($asset, $transform, $url);
     }
 
     /** @param non-empty-list<AssetTransformRequest> $requests */
@@ -69,11 +71,19 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         $transforms = [];
 
         foreach ($requests as $request) {
-            $assets[$request->asset->id ?? spl_object_id($request->asset)] = $request->asset;
+            $asset = $this->legacyAsset($request->asset);
+            $assets[$asset->id ?? spl_object_id($asset)] = $asset;
             $transforms[serialize($request->operations)] ??= new ImageTransform($request->operations);
         }
 
         $transformer->eagerLoadTransforms(array_values($transforms), array_values($assets));
+    }
+
+    public function invalidateAssetTransforms(Asset $asset): void
+    {
+        Craft::$app->getImageTransforms()
+            ->getImageTransformer($this->transformer)
+            ->invalidateAssetTransforms($this->legacyAsset($asset));
     }
 
     public static function result(Asset $asset, ImageTransform $transform, string $url): AssetTransformResult
@@ -88,5 +98,24 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         }
 
         return new AssetTransformResult($url, $mimeType);
+    }
+
+    private function legacyAsset(Asset $asset): LegacyAsset
+    {
+        if ($asset instanceof LegacyAsset) {
+            return $asset;
+        }
+
+        $legacyAsset = LegacyAsset::find()
+            ->id($asset->id)
+            ->siteId($asset->siteId)
+            ->status(null)
+            ->one();
+
+        if (!$legacyAsset instanceof LegacyAsset) {
+            throw new LogicException("Unable to resolve legacy Asset [{$asset->id}].");
+        }
+
+        return $legacyAsset;
     }
 }
