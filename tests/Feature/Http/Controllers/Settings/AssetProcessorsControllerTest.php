@@ -5,9 +5,12 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Data\Volume as VolumeData;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
@@ -41,7 +44,33 @@ it('lists the required Craft processor', function () {
             ->where('processors', fn ($processors): bool => collect($processors)
                 ->contains(fn (array $processor): bool => $processor['handle'] === 'craft'
                     && $processor['isDefault'] === true
-                    && $processor['canDelete'] === false)));
+                    && $processor['deleteDisabledReason'] === 'The Craft Asset Processor cannot be deleted.')));
+});
+
+it('explains why processors assigned to volumes cannot be deleted', function () {
+    config()->set('filesystems.disks.controller-test', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/controller-test'),
+    ]);
+    $processor = new AssetProcessor([
+        'name' => 'Assigned',
+        'handle' => 'assigned',
+        'driver' => 'craft',
+    ]);
+    app(AssetProcessors::class)->saveAssetProcessor($processor);
+    app(Volumes::class)->saveVolume(new VolumeData([
+        'name' => 'Assets',
+        'handle' => 'assets',
+        'fsHandle' => 'disk:controller-test',
+        'assetProcessor' => 'assigned',
+    ]));
+
+    get(action([AssetProcessorsController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('processors', fn ($processors): bool => collect($processors)
+                ->contains(fn (array $processor): bool => $processor['handle'] === 'assigned'
+                    && $processor['deleteDisabledReason'] === 'This Asset Processor cannot be deleted because it is assigned to a volume.')));
 });
 
 it('renders the standalone processor form', function () {

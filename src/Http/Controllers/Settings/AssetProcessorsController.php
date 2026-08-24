@@ -62,7 +62,7 @@ class AssetProcessorsController extends BaseAssetSettingsController
                         ? $this->assetProcessorDrivers->driver($processor->driver)->definition()->name
                         : t('{driver} (Unavailable)', ['driver' => $processor->driver]),
                     'isDefault' => $processor->handle === $defaultHandle,
-                    'canDelete' => ! $this->readOnly && $processor->handle !== 'craft' && $processor->handle !== $defaultHandle,
+                    'deleteDisabledReason' => $this->assetProcessors->getDeleteDisabledReason($processor),
                 ]))
                 ->sortBy('name')
                 ->values(),

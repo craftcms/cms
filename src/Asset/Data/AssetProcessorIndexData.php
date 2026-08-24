@@ -18,5 +18,5 @@ class AssetProcessorIndexData extends Component
 
     public bool $isDefault;
 
-    public bool $canDelete;
+    public ?string $deleteDisabledReason = null;
 }

@@ -47,28 +47,47 @@
     columnHelper.accessor('driver', {
       header: t('Driver'),
     }),
-    columnHelper.actions(({row}) =>
-      row.original.canDelete
-        ? [
-            h(DeleteButton, {
-              confirm: t(
-                'Are you sure you want to delete the “{name}” Asset Processor?',
-                {name: row.original.name}
-              ),
-              onClick: () =>
-                router
-                  .optimistic<{processors: Array<AssetProcessorIndexData>}>(
-                    ({processors}) => ({
-                      processors: processors.filter(
-                        ({handle}) => handle !== row.original.handle
-                      ),
-                    })
-                  )
-                  .delete(destroy({handle: row.original.handle})),
-            }),
-          ]
-        : []
-    ),
+    columnHelper.actions(({row}) => {
+      const processor = row.original;
+      const deleteButton = h(DeleteButton, {
+        confirm: t(
+          'Are you sure you want to delete the “{name}” Asset Processor?',
+          {
+            name: processor.name,
+          }
+        ),
+        disabled: processor.deleteDisabledReason !== null,
+        onClick: () =>
+          router
+            .optimistic<{processors: Array<AssetProcessorIndexData>}>(
+              ({processors}) => ({
+                processors: processors.filter(
+                  ({handle}) => handle !== processor.handle
+                ),
+              })
+            )
+            .delete(destroy({handle: processor.handle})),
+      });
+
+      if (processor.deleteDisabledReason === null) {
+        return [deleteButton];
+      }
+
+      const tooltipId = `delete-asset-processor-${processor.uid}`;
+
+      return [
+        h(
+          'span',
+          {
+            id: tooltipId,
+            class: 'inline-flex',
+            tabindex: 0,
+          },
+          deleteButton
+        ),
+        h('craft-tooltip', {for: tooltipId}, processor.deleteDisabledReason),
+      ];
+    }),
   ]);
   const table = useVueTable<AssetProcessorIndexData>({
     get data() {

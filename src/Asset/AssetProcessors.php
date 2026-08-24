@@ -171,11 +171,12 @@ class AssetProcessors
 
     public function deleteAssetProcessor(AssetProcessor $processor): bool
     {
-        if ($processor->handle === 'craft') {
-            throw new AssetTransformException('The reserved [craft] Asset Processor cannot be deleted.');
+        $deleteDisabledReason = $this->getDeleteDisabledReason($processor);
+
+        if ($deleteDisabledReason !== null) {
+            throw new AssetTransformException($deleteDisabledReason);
         }
 
-        $this->ensureNotReferenced($processor);
         $this->projectConfig->remove(
             ProjectConfig::PATH_ASSET_PROCESSORS.'.'.$processor->uid,
             "Delete the “{$processor->handle}” Asset Processor",
@@ -229,11 +230,12 @@ class AssetProcessors
 
         $processor = $this->createAssetProcessor($uid, $event->oldValue);
 
-        if ($processor->handle === 'craft') {
-            throw new AssetTransformException('The reserved [craft] Asset Processor cannot be deleted.');
+        $deleteDisabledReason = $this->getDeleteDisabledReason($processor);
+
+        if ($deleteDisabledReason !== null) {
+            throw new AssetTransformException($deleteDisabledReason);
         }
 
-        $this->ensureNotReferenced($processor);
         event(new AssetProcessorDeleting($processor));
         $this->reset();
     }
@@ -428,27 +430,33 @@ class AssetProcessors
         }
     }
 
-    private function ensureNotReferenced(AssetProcessor $processor): void
+    public function getDeleteDisabledReason(AssetProcessor $processor): ?string
     {
+        if ($processor->handle === 'craft') {
+            return t('The Craft Asset Processor cannot be deleted.');
+        }
+
         $default = Env::parse(Cms::config()->defaultAssetProcessor);
 
         if ($default === $processor->handle) {
-            throw new AssetTransformException("Asset Processor [{$processor->handle}] is the configured default.");
+            return t('This Asset Processor cannot be deleted because it is configured as the default.');
         }
 
         $volumes = $this->projectConfig->get(ProjectConfig::PATH_VOLUMES);
 
         if (! is_array($volumes)) {
-            return;
+            return null;
         }
 
         foreach ($volumes as $volume) {
             $reference = is_array($volume) ? ($volume['assetProcessor'] ?? null) : null;
 
             if (is_string($reference) && Env::parse($reference) === $processor->handle) {
-                throw new AssetTransformException("Asset Processor [{$processor->handle}] is referenced by a volume.");
+                return t('This Asset Processor cannot be deleted because it is assigned to a volume.');
             }
         }
+
+        return null;
     }
 
     private function rewriteHandleReferences(string $oldHandle, string $newHandle): void

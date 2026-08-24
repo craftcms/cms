@@ -18,22 +18,29 @@ vi.mock('@/common/components/LayoutSlot.vue', () => ({
 }));
 
 vi.mock('@/modules/admin-table/components/DeleteButton.vue', () => ({
-  default: defineComponent({render: () => h('button')}),
+  default: defineComponent({
+    inheritAttrs: false,
+    props: ['disabled'],
+    render() {
+      return h('button', {disabled: this.disabled, ...this.$attrs});
+    },
+  }),
 }));
 
 vi.mock('@/modules/admin-table/components/AdminTable.vue', () => ({
   default: defineComponent({
     props: ['table'],
     render() {
-      const nameCell = this.table
+      return this.table
         .getRowModel()
         .rows[0].getVisibleCells()
-        .find((cell: any) => cell.column.id === 'name');
-
-      return h(FlexRender, {
-        render: nameCell.column.columnDef.cell,
-        props: nameCell.getContext(),
-      });
+        .filter((cell: any) => ['name', 'actions'].includes(cell.column.id))
+        .map((cell: any) =>
+          h(FlexRender, {
+            render: cell.column.columnDef.cell,
+            props: cell.getContext(),
+          })
+        );
     },
   }),
 }));
@@ -60,7 +67,7 @@ it('links the default Craft processor to its edit screen', async () => {
         handle: 'craft',
         driver: 'Craft',
         isDefault: true,
-        canDelete: false,
+        deleteDisabledReason: 'The Craft Asset Processor cannot be deleted.',
       },
     ],
     readOnly: false,
@@ -72,4 +79,8 @@ it('links the default Craft processor to its edit screen', async () => {
 
   expect(link?.textContent).toBe('Craft (Default)');
   expect(link?.getAttribute('href')).toBe('/settings/assets/processors/craft');
+  expect(container.querySelector('button')?.disabled).toBe(true);
+  expect(container.querySelector('craft-tooltip')?.textContent).toBe(
+    'The Craft Asset Processor cannot be deleted.'
+  );
 });
