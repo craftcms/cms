@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
@@ -425,7 +426,7 @@ it('rejects unsupported source kinds before generating transforms', function () 
         'filename' => 'transform-test.txt',
         'kind' => 'text',
     ]);
-    expect(fn () => $this->transformer->transform(new AssetTransformRequest(
+    expect(fn () => app(AssetProcessorDrivers::class)->driver('craft')->transform(new AssetTransformRequest(
         $asset,
         app(AssetProcessors::class)->resolve('craft'),
         [
@@ -447,7 +448,7 @@ it('rejects invalid Craft driver settings', function () {
         'settings' => ['filesystem' => []],
     ]);
 
-    expect(fn () => $this->transformer->transform(new AssetTransformRequest(
+    expect(fn () => app(AssetProcessorDrivers::class)->driver('craft')->transform(new AssetTransformRequest(
         $asset,
         $assetProcessor,
         ['width' => 100],

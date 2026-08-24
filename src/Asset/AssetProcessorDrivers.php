@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Asset;
 use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Exceptions\AssetProcessorDriverNotFoundException;
-use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\CraftAssetProcessorDriver;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Manager;
 use InvalidArgumentException;
@@ -73,6 +73,6 @@ class AssetProcessorDrivers extends Manager
 
     protected function createCraftDriver(): AssetProcessorDriver
     {
-        return $this->container->make(ImageTransformer::class);
+        return $this->container->make(CraftAssetProcessorDriver::class);
     }
 }

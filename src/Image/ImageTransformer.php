@@ -7,23 +7,14 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformRequest;
-use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetProcessorDeleting;
 use CraftCms\Cms\Asset\Events\AssetProcessorUpdating;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -56,7 +47,7 @@ use Throwable;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-class ImageTransformer implements AssetProcessorDriver, PreloadsAssetTransforms
+class ImageTransformer
 {
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
@@ -64,77 +55,6 @@ class ImageTransformer implements AssetProcessorDriver, PreloadsAssetTransforms
     private ?Raster $editingImage = null;
 
     private ?string $editingTempPath = null;
-
-    public function definition(): AssetProcessorDriverDefinition
-    {
-        return new AssetProcessorDriverDefinition(t('Craft'), settings: [
-            Field::make(t('Output Filesystem'), Combobox::make('filesystem')
-                ->value(null)
-                ->options([
-                    ['label' => t('Same as source'), 'value' => ''],
-                    ...SelectOptions::getFsOptions(),
-                    ...SelectOptions::getEnvSuggestions(),
-                ])),
-            Field::make(t('Output Subpath'), Combobox::make('subpath')
-                ->value('')
-                ->options(SelectOptions::getEnvSuggestions(true))),
-        ]);
-    }
-
-    public function transform(AssetTransformRequest $request): AssetTransformResult
-    {
-        if (! ImageHelper::canManipulateAsImage($request->asset->getExtension())) {
-            throw new NotSupportedException('The Asset cannot be manipulated as an image.');
-        }
-
-        $transform = new ImageTransform($request->operations);
-        try {
-            $url = $this->getTransformUrl($request->asset, $transform, $request->immediately, $request->processor);
-        } catch (ImageTransformException $exception) {
-            throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
-        }
-
-        $format = $transform->format ?? ImageTransformHelper::detectTransformFormat($request->asset);
-        $source = clone $request->asset;
-        if (method_exists($source, 'setTransform')) {
-            $source->setTransform(null);
-        }
-        $sourceWidth = $source->getWidth();
-        $sourceHeight = $source->getHeight();
-        [$width, $height] = $sourceWidth && $sourceHeight
-            ? ImageHelper::targetDimensions(
-                $sourceWidth,
-                $sourceHeight,
-                $transform->width !== null ? (int) $transform->width : null,
-                $transform->height !== null ? (int) $transform->height : null,
-                $transform->mode,
-                $transform->upscale,
-            )
-            : [null, null];
-
-        return new AssetTransformResult(
-            url: $url,
-            mimeType: File::getMimeTypeByExtension("transform.{$format}") ?? "image/{$format}",
-            width: $width,
-            height: $height,
-        );
-    }
-
-    public function preloadAssetTransforms(array $requests): void
-    {
-        $groups = [];
-
-        foreach ($requests as $request) {
-            $key = $request->processor->uid.':'.serialize($request->operations);
-            $groups[$key]['transform'] ??= new ImageTransform($request->operations);
-            $groups[$key]['processor'] ??= $request->processor;
-            $groups[$key]['assets'][$request->asset->id] = $request->asset;
-        }
-
-        foreach ($groups as $group) {
-            $this->eagerLoadTransforms([$group['transform']], array_values($group['assets']), $group['processor']);
-        }
-    }
 
     public function getTransformUrl(
         Asset $asset,
