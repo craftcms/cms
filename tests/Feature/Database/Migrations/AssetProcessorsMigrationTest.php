@@ -59,6 +59,8 @@ it('migrates volume transform destinations to asset processors', function () {
 
     $migration->up();
 
+    $projectConfig->reset();
+    app(AssetProcessors::class)->reset();
     app()->forgetInstance(Volumes::class);
     $volumes = app(Volumes::class);
     $firstProcessorHandle = $volumes->getVolumeByUid($firstVolume->uid)->getAssetProcessorHandle(false);
