@@ -53,6 +53,18 @@ describe('getIsNamedTransform', function () {
     });
 });
 
+test('constructs inline operations without inferring their shape from the keys', function () {
+    $operation = '00000000-0000-4000-8000-000000000000';
+    $transform = ImageTransform::fromOperations([
+        'width' => 200,
+        $operation => ['amount' => 2],
+    ]);
+
+    expect($transform->width)->toBe(200)
+        ->and($transform->getOperations()[$operation])->toBe(['amount' => 2])
+        ->and($transform->getCustomOperations())->toBe([]);
+});
+
 describe('getConfig', function () {
     test('returns project config representation', function () {
         $transform = new ImageTransform([

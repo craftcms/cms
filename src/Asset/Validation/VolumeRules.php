@@ -50,15 +50,15 @@ class VolumeRules extends Ruleset
             ],
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'assetProcessor' => new EnvValueRule([
+            'assetProcessor' => [new EnvValueRule([
                 'nullable',
                 'string',
                 Rule::in(app(AssetProcessors::class)->getAllAssetProcessors()->pluck('handle')->all()),
-            ]),
-            'subpath' => new EnvValueRule([
+            ])],
+            'subpath' => [new EnvValueRule([
                 Rule::requiredIf(fn () => $this->subpathRequired()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
-            ]),
+            ])],
         ];
 
         $tempAssetUploadTarget = $this->subject->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);

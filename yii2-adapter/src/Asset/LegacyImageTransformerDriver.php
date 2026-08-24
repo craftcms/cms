@@ -40,7 +40,7 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         }
 
         $asset = $this->legacyAsset($request->asset);
-        $transform = new ImageTransform($request->operations);
+        $transform = new ImageTransform()->setInlineOperations($request->operations);
 
         event($event = new TransformGenerating($asset, $transform));
 
@@ -73,7 +73,7 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         foreach ($requests as $request) {
             $asset = $this->legacyAsset($request->asset);
             $assets[$asset->id ?? spl_object_id($asset)] = $asset;
-            $transforms[serialize($request->operations)] ??= new ImageTransform($request->operations);
+            $transforms[serialize($request->operations)] ??= new ImageTransform()->setInlineOperations($request->operations);
         }
 
         $transformer->eagerLoadTransforms(array_values($transforms), array_values($assets));

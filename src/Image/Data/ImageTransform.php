@@ -75,6 +75,24 @@ class ImageTransform extends Component
         ]);
     }
 
+    /** @param array<string, mixed> $operations */
+    public static function fromOperations(array $operations): self
+    {
+        return new self()->setInlineOperations($operations);
+    }
+
+    /** @param array<string, mixed> $operations */
+    public function setInlineOperations(array $operations): static
+    {
+        foreach (Arr::only($operations, self::CORE_OPERATIONS) as $handle => $value) {
+            $this->$handle = $value;
+        }
+
+        $this->inlineOperations = Arr::except($operations, self::CORE_OPERATIONS);
+
+        return $this;
+    }
+
     public function getIsNamedTransform(): bool
     {
         return (bool) $this->id;
@@ -98,31 +116,10 @@ class ImageTransform extends Component
         ];
     }
 
-    /** @param array<string, mixed> $operations */
+    /** @param array<string, array<string, mixed>> $operations */
     public function setOperations(array $operations): void
     {
-        $isTransformerMap = $operations === [] || array_all(
-            array_keys($operations),
-            fn (mixed $uid): bool => is_string($uid) && preg_match('/^[0-9a-f-]{36}$/i', $uid) === 1,
-        );
-
-        if ($isTransformerMap) {
-            $this->operations = array_filter($operations, is_array(...));
-
-            return;
-        }
-
-        $this->inlineOperations = [];
-
-        foreach ($operations as $handle => $value) {
-            if (in_array($handle, self::CORE_OPERATIONS, true)) {
-                $this->$handle = $value;
-
-                continue;
-            }
-
-            $this->inlineOperations[$handle] = $value;
-        }
+        $this->operations = array_filter($operations, is_array(...));
     }
 
     /** @return array<string, array<string, mixed>> */

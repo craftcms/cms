@@ -46,7 +46,7 @@ class CraftAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTr
             throw new NotSupportedException('The Asset cannot be manipulated as an image.');
         }
 
-        $transform = new ImageTransform($request->operations);
+        $transform = ImageTransform::fromOperations($request->operations);
         try {
             $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $request->immediately, $request->processor);
         } catch (ImageTransformException $exception) {
@@ -85,7 +85,7 @@ class CraftAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTr
 
         foreach ($requests as $request) {
             $key = $request->processor->uid.':'.serialize($request->operations);
-            $groups[$key]['transform'] ??= new ImageTransform($request->operations);
+            $groups[$key]['transform'] ??= ImageTransform::fromOperations($request->operations);
             $groups[$key]['processor'] ??= $request->processor;
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
