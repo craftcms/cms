@@ -13,6 +13,7 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function Illuminate\Filesystem\join_paths;
@@ -27,7 +28,11 @@ class FallbackTransformController
             abort(400, 'Request contained an invalid transform param.');
         }
 
-        [$assetId, $transformString] = explode(',', (string) $transform, 2);
+        $parts = is_string($transform) ? explode(',', $transform, 2) : [];
+
+        abort_if(count($parts) !== 2 || $parts[0] === '' || $parts[1] === '', 400, 'Request contained an invalid transform param.');
+
+        [$assetId, $transformString] = $parts;
 
         /** @var Asset|null $asset */
         $asset = Asset::find()->id($assetId)->one();
@@ -45,7 +50,12 @@ class FallbackTransformController
         if ($useOriginal) {
             $extension = $asset->getExtension();
         } else {
-            $transform = new ImageTransform(ImageTransformHelper::parseTransformString($transformString));
+            try {
+                $transform = new ImageTransform(ImageTransformHelper::parseTransformString($transformString));
+            } catch (InvalidArgumentException) {
+                abort(400, 'Request contained an invalid transform param.');
+            }
+
             $extension = $transform->format ?: ImageTransformHelper::detectTransformFormat($asset);
         }
 
