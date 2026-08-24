@@ -919,29 +919,12 @@ class ImageTransformer implements AssetProcessorDriver, PreloadsAssetTransforms
                 continue;
             }
 
-            $this->deleteAssetProcessorFile($asset, $index, $assetProcessor);
+            $this->deleteImageTransformFile($asset, $index, $assetProcessor);
         }
 
         DB::table(Table::IMAGETRANSFORMINDEX)
             ->where('transformer', $assetProcessor->uid)
             ->delete();
-    }
-
-    private function deleteAssetProcessorFile(
-        Asset $asset,
-        ImageTransformIndex $transformIndex,
-        AssetProcessor $assetProcessor,
-    ): void {
-        $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
-        $subpath = $this->outputSettings($assetProcessor->settings)[1];
-
-        event(new DeletingTransformedImage(
-            asset: $asset,
-            imageTransformIndex: $transformIndex,
-            path: ($subpath ? $subpath.DIRECTORY_SEPARATOR : '').$diskPath,
-        ));
-
-        $this->transformDisk($asset, $assetProcessor)->delete($diskPath);
     }
 
     private function assetProcessorForIndex(ImageTransformIndex $index): AssetProcessor

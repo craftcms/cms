@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Events\AssetProcessorDeleting;
+use CraftCms\Cms\Asset\Events\AssetProcessorUpdating;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -345,6 +347,41 @@ it('reports Craft cleanup failures with redacted context', function () {
         && str_contains($exception->getMessage(), (string) $asset->id)
         && ! str_contains($exception->getMessage(), '/secret/source/path.jpg'));
 });
+
+it('removes processor indexes when rendition cleanup fails', function (Closure $invalidate) {
+    $asset = ($this->createImageAsset)();
+    $processor = new AssetProcessor([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Unavailable',
+        'handle' => 'unavailable',
+        'driver' => 'craft',
+        'settings' => ['filesystem' => 'disk:unavailable'],
+    ]);
+    $index = new ImageTransformIndex([
+        'assetId' => $asset->id,
+        'transformer' => $processor->uid,
+        'filename' => 'transform-test.jpg',
+        'transformString' => '_100x100_crop_center-center_none',
+        'dateIndexed' => now(),
+    ]);
+    $this->transformer->storeTransformIndexData($index);
+    Exceptions::fake();
+    Filesystems::shouldReceive('disk')->once()->andThrow(new RuntimeException('Unavailable output disk'));
+
+    $invalidate($this->transformer, $processor);
+
+    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
+    Exceptions::assertReported(RuntimeException::class);
+})->with([
+    'update' => [function (ImageTransformer $transformer, AssetProcessor $processor): void {
+        $newProcessor = clone $processor;
+        $newProcessor->settings = [];
+        $transformer->handleAssetProcessorUpdating(new AssetProcessorUpdating($processor, $newProcessor));
+    }],
+    'delete' => [function (ImageTransformer $transformer, AssetProcessor $processor): void {
+        $transformer->handleAssetProcessorDeleting(new AssetProcessorDeleting($processor));
+    }],
+]);
 
 it('does not reuse a rendition older than the source Asset', function () {
     $asset = ($this->createImageAsset)();
