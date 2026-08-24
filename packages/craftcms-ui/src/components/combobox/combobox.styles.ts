@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles, baseComboboxStyles} from '../../styles/form.styles';
+import {baseFieldStyles, baseInputWrapperStyles, baseComboboxStyles} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -23,10 +23,7 @@ export default css`
   }
 
   .input-group__input {
-    ${baseInputStyles}
-    padding-inline: 0;
-    position: relative;
-    min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
+    ${baseInputWrapperStyles}
   }
 
   .input-group__container {

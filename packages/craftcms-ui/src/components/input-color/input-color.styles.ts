@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles, baseFormControlStyles} from '../../styles/form.styles';
+import {baseFieldStyles, baseInputWrapperStyles, baseFormControlStyles} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -84,7 +84,7 @@ export default css`
   }
 
   .input-group__container {
-    ${baseInputStyles}
+    ${baseInputWrapperStyles}
     flex: 0 0 7.25rem;
     inline-size: 7.25rem;
     max-inline-size: 100%;

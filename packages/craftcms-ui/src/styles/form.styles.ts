@@ -1,5 +1,16 @@
 import {css} from 'lit';
 
+/**
+ * Base styles for the form control itself — the native `<input>`/`<select>`/
+ * `<textarea>` (or equivalent custom element, e.g. `craft-select-invoker`)
+ * that actually receives focus and holds the value. Apply this to the
+ * focusable control, not its wrapper.
+ *
+ * It sets the control's own border, radius, background, box-shadow, and
+ * min-height, so the control's `:focus-visible` outline traces its own shape
+ * rather than an ancestor's. Pair it with {@link baseInputWrapperStyles} on
+ * the surrounding `.input-group__input`/`.input-group__container` div.
+ */
 export const baseFormControlStyles = css`
   --_input-border-width: var(
       --c-input-border-width,
@@ -20,8 +31,18 @@ export const baseFormControlStyles = css`
   );
 `;
 
-/** Wrapper div **/
-export const baseInputStyles = css`
+/**
+ * Base styles for the `.input-group__input`/`.input-group__container` div
+ * that Lion's `FormControlMixin` renders around a slotted form control (see
+ * `_inputGroupInputTemplate()` in `@lion/ui`'s `form-core`). Apply this to
+ * that wrapper element, not the control itself.
+ *
+ * It only sets layout/sizing concerns the wrapper needs (flex, width,
+ * position) — it does not draw a border, radius, or background of its own.
+ * Pair it with {@link baseFormControlStyles} on the actual
+ * `::slotted([slot='input'])`/`::slotted(.form-control)` control.
+ */
+export const baseInputWrapperStyles = css`
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
@@ -97,7 +118,7 @@ export const inputStyles = css`
   }
 
   .input-group__container {
-    ${baseInputStyles}
+    ${baseInputWrapperStyles}
   }
 
   .input-group__prefix,
