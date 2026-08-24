@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
@@ -11,7 +11,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
+use CraftCms\Cms\Http\Controllers\Settings\AssetProcessorsController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
@@ -23,41 +23,41 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
-    app(AssetTransformers::class)->resolve('craft');
+    app(AssetProcessors::class)->resolve('craft');
 });
 
 it('requires authentication', function () {
     Auth::logout();
 
-    get(action([AssetTransformersController::class, 'index']))->assertRedirect();
-    postJson(action([AssetTransformersController::class, 'store']))->assertUnauthorized();
+    get(action([AssetProcessorsController::class, 'index']))->assertRedirect();
+    postJson(action([AssetProcessorsController::class, 'store']))->assertUnauthorized();
 });
 
-it('lists the required Craft transformer', function () {
-    get(action([AssetTransformersController::class, 'index']))
+it('lists the required Craft processor', function () {
+    get(action([AssetProcessorsController::class, 'index']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/assets/transformers/Index')
-            ->where('transformers', fn ($transformers): bool => collect($transformers)
-                ->contains(fn (array $transformer): bool => $transformer['handle'] === 'craft'
-                    && $transformer['isDefault'] === true
-                    && $transformer['canDelete'] === false)));
+            ->component('settings/assets/processors/Index')
+            ->where('processors', fn ($processors): bool => collect($processors)
+                ->contains(fn (array $processor): bool => $processor['handle'] === 'craft'
+                    && $processor['isDefault'] === true
+                    && $processor['canDelete'] === false)));
 });
 
-it('renders the standalone transformer form', function () {
-    get(action([AssetTransformersController::class, 'create']))
+it('renders the standalone processor form', function () {
+    get(action([AssetProcessorsController::class, 'create']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Form')
             ->where('form.values.driver', 'craft')
-            ->where('submit.url', action([AssetTransformersController::class, 'store']))
-            ->where('refreshUrl', action([AssetTransformersController::class, 'renderForm'])));
+            ->where('submit.url', action([AssetProcessorsController::class, 'store']))
+            ->where('refreshUrl', action([AssetProcessorsController::class, 'renderForm'])));
 });
 
-it('stores driver settings on the Asset Transformer', function () {
+it('stores driver settings on the Asset Processor', function () {
     app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
 
-    postJson(action([AssetTransformersController::class, 'store']), [
+    postJson(action([AssetProcessorsController::class, 'store']), [
         'name' => 'Remote',
         'handle' => 'remote',
         'driver' => 'controller-test',
@@ -65,17 +65,17 @@ it('stores driver settings on the Asset Transformer', function () {
             'endpoint' => 'https://images.example.test',
             'ignored' => 'discarded',
         ],
-    ])->assertOk()->assertJsonPath('modelName', 'assetTransformer');
+    ])->assertOk()->assertJsonPath('modelName', 'assetProcessor');
 
-    expect(app(AssetTransformers::class)->resolve('remote')->settings)->toBe([
+    expect(app(AssetProcessors::class)->resolve('remote')->settings)->toBe([
         'endpoint' => 'https://images.example.test',
     ]);
 });
 
-it('keeps the Craft transformer identity pinned', function () {
-    $craft = app(AssetTransformers::class)->resolve('craft');
+it('keeps the Craft processor identity pinned', function () {
+    $craft = app(AssetProcessors::class)->resolve('craft');
 
-    postJson(action([AssetTransformersController::class, 'store']), [
+    postJson(action([AssetProcessorsController::class, 'store']), [
         'uid' => $craft->uid,
         'name' => 'Changed',
         'handle' => 'changed',
@@ -83,32 +83,32 @@ it('keeps the Craft transformer identity pinned', function () {
         'settings' => ['subpath' => 'renditions'],
     ])->assertOk();
 
-    $saved = app(AssetTransformers::class)->resolve('craft');
+    $saved = app(AssetProcessors::class)->resolve('craft');
     expect($saved->name)->toBe('Craft')
         ->and($saved->driver)->toBe('craft')
         ->and($saved->settings['subpath'])->toBe('renditions');
 });
 
-it('deletes non-reserved transformers', function () {
+it('deletes non-reserved processors', function () {
     app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
-    postJson(action([AssetTransformersController::class, 'store']), [
+    postJson(action([AssetProcessorsController::class, 'store']), [
         'name' => 'Disposable',
         'handle' => 'disposable',
         'driver' => 'controller-test',
     ])->assertOk();
 
-    deleteJson(action([AssetTransformersController::class, 'destroy'], ['handle' => 'disposable']))->assertOk();
+    deleteJson(action([AssetProcessorsController::class, 'destroy'], ['handle' => 'disposable']))->assertOk();
 
-    expect(app(AssetTransformers::class)->getAssetTransformerByHandle('disposable'))->toBeNull();
+    expect(app(AssetProcessors::class)->getAssetProcessorByHandle('disposable'))->toBeNull();
 });
 
 it('respects read-only mode', function () {
     Cms::config()->allowAdminChanges = false;
 
-    get(action([AssetTransformersController::class, 'index']))
+    get(action([AssetProcessorsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
-    get(action([AssetTransformersController::class, 'create']))->assertForbidden();
-    postJson(action([AssetTransformersController::class, 'store']))->assertForbidden();
+    get(action([AssetProcessorsController::class, 'create']))->assertForbidden();
+    postJson(action([AssetProcessorsController::class, 'store']))->assertForbidden();
 });
 
 class ControllerTestAssetTransformDriver implements AssetTransformDriver

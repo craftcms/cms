@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -39,7 +39,7 @@ class ImageTransformsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly FormResolver $formResolver,
-        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetProcessors $assetProcessors,
         private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
@@ -54,7 +54,7 @@ class ImageTransformsController
             'subnav' => [
                 new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
                 new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected(true),
-                new NavItem()->label(t('Asset Transformers'))->url(Url::cpUrl('settings/assets/transformers')),
+                new NavItem()->label(t('Asset Processors'))->url(Url::cpUrl('settings/assets/processors')),
             ],
             'title' => t('Image Transforms'),
             'transforms' => $imageTransforms
@@ -104,32 +104,32 @@ class ImageTransformsController
 
         $operationBuckets = [];
 
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
-            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
-                $existing = $transform->getOperationsForTransformer($assetTransformer->uid);
+        foreach ($this->assetProcessors->getAllAssetProcessors() as $assetProcessor) {
+            if (! $this->assetTransformDrivers->has($assetProcessor->driver)) {
+                $existing = $transform->getOperationsForTransformer($assetProcessor->uid);
 
                 if ($existing !== []) {
-                    $operationBuckets[$assetTransformer->uid] = $existing;
+                    $operationBuckets[$assetProcessor->uid] = $existing;
                 }
 
                 continue;
             }
 
             try {
-                $operations = $this->assetTransformers->validateOperations(
-                    $assetTransformer,
-                    $request->array("operations.{$assetTransformer->uid}"),
+                $operations = $this->assetProcessors->validateOperations(
+                    $assetProcessor,
+                    $request->array("operations.{$assetProcessor->uid}"),
                 );
             } catch (InvalidAssetTransformException $exception) {
                 throw ValidationException::withMessages([
-                    "operations.{$assetTransformer->uid}" => $exception->getMessage(),
+                    "operations.{$assetProcessor->uid}" => $exception->getMessage(),
                 ]);
             }
 
             $operations = Arr::except($operations, ImageTransform::CORE_OPERATIONS);
 
             if ($operations !== []) {
-                $operationBuckets[$assetTransformer->uid] = $operations;
+                $operationBuckets[$assetProcessor->uid] = $operations;
             }
         }
 
@@ -224,7 +224,7 @@ class ImageTransformsController
             $transform,
             $images,
             $this->formResolver,
-            $this->assetTransformers,
+            $this->assetProcessors,
             $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,

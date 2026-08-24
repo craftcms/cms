@@ -32,7 +32,7 @@ use function CraftCms\Cms\t;
 /**
  * @property FsInterface $fs
  * @property string $fsHandle
- * @property string|null $assetTransformer
+ * @property string|null $assetProcessor
  * @property string $subpath
  */
 #[Ruleset(VolumeRules::class)]
@@ -76,7 +76,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         }
     }
 
-    public ?string $assetTransformer = null;
+    public ?string $assetProcessor = null;
 
     private string $_subpath = '';
 
@@ -119,7 +119,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'fsHandle' => $this->getFsHandle(false),
-            'assetTransformer' => $this->getAssetTransformerHandle(false),
+            'assetProcessor' => $this->getAssetProcessorHandle(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
         ]);
     }
@@ -131,7 +131,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => t('Handle'),
             'name' => t('Name'),
             'fsHandle' => t('Asset Filesystem'),
-            'assetTransformer' => t('Asset Transformer'),
+            'assetProcessor' => t('Asset Processor'),
             'subpath' => t('Subpath'),
         ];
     }
@@ -313,9 +313,9 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
     }
 
-    public function getAssetTransformerHandle(bool $parse = true): ?string
+    public function getAssetProcessorHandle(bool $parse = true): ?string
     {
-        $handle = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
+        $handle = $parse ? Env::parse($this->assetProcessor) : $this->assetProcessor;
 
         return is_string($handle) && $handle !== '' ? $handle : null;
     }
@@ -328,7 +328,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
             'subpath' => $this->_subpath,
-            'assetTransformer' => $this->assetTransformer ?: null,
+            'assetProcessor' => $this->assetProcessor ?: null,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,

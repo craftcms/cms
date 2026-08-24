@@ -11,9 +11,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn(Table::VOLUMES, 'assetTransformer')) {
+        if (! Schema::hasColumn(Table::VOLUMES, 'assetProcessor')) {
             Schema::table(Table::VOLUMES, function (Blueprint $table): void {
-                $table->string('assetTransformer')->nullable()->after('subpath');
+                $table->string('assetProcessor')->nullable()->after('subpath');
             });
         }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Asset\AssetIndexer;
-use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -23,7 +23,7 @@ readonly class AssetIndexesController
 
     public function __construct(
         private AssetIndexer $assetIndexer,
-        private AssetTransformers $assetTransformers,
+        private AssetProcessors $assetProcessors,
         Utilities $utilitiesService,
     ) {
         if (! $utilitiesService->checkAuthorization(AssetIndexes::class)) {
@@ -207,7 +207,7 @@ readonly class AssetIndexesController
                 ->all();
 
             foreach ($assets as $asset) {
-                $this->assetTransformers->invalidate($asset);
+                $this->assetProcessors->invalidate($asset);
                 $asset->keepFileOnDelete = true;
                 $elements->deleteElement($asset);
             }

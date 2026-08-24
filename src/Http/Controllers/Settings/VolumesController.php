@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -37,7 +37,7 @@ class VolumesController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetProcessors $assetProcessors,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -69,7 +69,7 @@ class VolumesController
             'subnav' => [
                 new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected(true),
                 new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
-                new NavItem()->label(t('Asset Transformers'))->url(Url::cpUrl('settings/assets/transformers')),
+                new NavItem()->label(t('Asset Processors'))->url(Url::cpUrl('settings/assets/processors')),
             ],
             'title' => t('Volume Settings'),
             'volumes' => $volumes->getAllVolumes(...),
@@ -101,7 +101,7 @@ class VolumesController
             'values.handle' => ['nullable', 'string'],
             'values.fsHandle' => ['nullable', 'string'],
             'values.subpath' => ['nullable', 'string'],
-            'values.assetTransformer' => ['nullable', 'string'],
+            'values.assetProcessor' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -119,7 +119,7 @@ class VolumesController
                 $volume,
                 $volumes,
                 $formResolver,
-                $this->assetTransformers,
+                $this->assetProcessors,
                 values: $data['values'],
             )->form(),
         ]);
@@ -128,7 +128,7 @@ class VolumesController
     public function store(Request $request, Volumes $volumes, Fields $fields): Response
     {
         $data = $request->validate([
-            'assetTransformer' => ['nullable', 'string'],
+            'assetProcessor' => ['nullable', 'string'],
         ]);
         $volumeId = $request->integer('volumeId') ?: null;
         $volume = $volumeId ? $volumes->getVolumeById($volumeId) : new Volume;
@@ -145,7 +145,7 @@ class VolumesController
         $volume->handle = $request->input('handle');
         $volume->fsHandle = $request->input('fsHandle');
         $volume->subpath = $subpath;
-        $volume->assetTransformer = ($data['assetTransformer'] ?? null) ?: null;
+        $volume->assetProcessor = ($data['assetProcessor'] ?? null) ?: null;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);
@@ -193,7 +193,7 @@ class VolumesController
                 $volume,
                 $volumes,
                 $formResolver,
-                $this->assetTransformers,
+                $this->assetProcessors,
                 readOnly: $this->readOnly,
             ))
             ->unless(

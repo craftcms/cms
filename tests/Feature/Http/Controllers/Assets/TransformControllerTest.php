@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -57,7 +57,7 @@ describe('generate', function () {
         get(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
             ->assertForbidden();
 
-        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -73,7 +73,7 @@ describe('generate', function () {
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
             'uid' => Str::uuid()->toString(),
             'name' => 'Configured private',
             'handle' => 'configured-private',
@@ -85,7 +85,7 @@ describe('generate', function () {
         ]), false);
         $volume = Volume::factory()->create([
             'fs' => 'disk:configured-private-source',
-            'assetTransformer' => 'configured-private',
+            'assetProcessor' => 'configured-private',
         ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $asset = AssetModel::factory()->createElement([
@@ -102,7 +102,7 @@ describe('generate', function () {
         );
         Queue::fake();
 
-        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -130,7 +130,7 @@ describe('generate', function () {
         );
         $result = app(ImageTransformer::class)->transform(new AssetTransformRequest(
             $asset,
-            app(AssetTransformers::class)->resolve('craft'),
+            app(AssetProcessors::class)->resolve('craft'),
             ['width' => 100],
             true,
         ));
@@ -152,7 +152,7 @@ describe('generate', function () {
         ])->assertForbidden();
     });
 
-    it('generates named transforms with the selected transformer', function () {
+    it('generates named transforms with the selected processor', function () {
         $driver = new class implements AssetTransformDriver
         {
             public ?AssetTransformRequest $request = null;
@@ -170,13 +170,13 @@ describe('generate', function () {
             }
         };
         app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
             'uid' => Str::uuid()->toString(),
             'name' => 'Controller test',
             'handle' => 'controller-test',
             'driver' => 'controller-test',
         ]), false);
-        Cms::config()->defaultAssetTransformer('controller-test');
+        Cms::config()->defaultAssetProcessor('controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',
             'handle' => 'controllerCard',
@@ -195,7 +195,7 @@ describe('generate', function () {
             'handle' => 'controllerCard',
         ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
 
-        expect($driver->request?->transformer->handle)->toBe('controller-test');
+        expect($driver->request?->processor->handle)->toBe('controller-test');
     });
 
     it('returns error for missing asset id', function () {

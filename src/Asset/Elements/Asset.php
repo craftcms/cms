@@ -16,8 +16,8 @@ use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
 use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
@@ -1978,7 +1978,7 @@ JS, [
     #[AllowedInSandbox]
     public function transform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
     {
-        return app(AssetTransformers::class)->transform($this, $definition, $immediately);
+        return app(AssetProcessors::class)->transform($this, $definition, $immediately);
     }
 
     protected function _tryTransform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): ?AssetTransformResult
@@ -3455,7 +3455,7 @@ JS;
 
     private function deleteTransformData(): void
     {
-        app(AssetTransformers::class)->invalidate($this);
+        app(AssetProcessors::class)->invalidate($this);
 
         $dir = Path::imageEditorSources((string) $this->id);
 

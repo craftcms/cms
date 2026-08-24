@@ -13,12 +13,12 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
@@ -51,13 +51,13 @@ uses(DatabaseTestCase::class);
 beforeEach(function(): void {
     $this->driver = $driver = new CompatibilityAssetTransformDriver();
     app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'Compatibility test',
         'handle' => 'compatibility-test',
         'driver' => 'compatibility-test',
     ]), false);
-    Cms::config()->defaultAssetTransformer('compatibility-test');
+    Cms::config()->defaultAssetProcessor('compatibility-test');
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
             ...$attributes,
@@ -251,7 +251,7 @@ it('selects the volume before the legacy transformer candidate', function(): voi
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'disk:legacy-precedence-source',
-        'assetTransformer' => 'compatibility-test',
+        'assetProcessor' => 'compatibility-test',
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
     $asset = ($this->asset)([
@@ -286,7 +286,7 @@ it('does not use the legacy selector for typed transform calls', function(): voi
 
     try {
         expect($asset->transform($transform)->url)->toBe('/renditions/320x160.webp')
-            ->and(app(AssetTransformers::class)->transform($asset, $transform)->url)->toBe('/renditions/320x160.webp')
+            ->and(app(AssetProcessors::class)->transform($asset, $transform)->url)->toBe('/renditions/320x160.webp')
             ->and($asset->getUrl(['transformer' => 'compatibility-test', 'transform' => $transform]))->toBe('/renditions/320x160.webp')
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
@@ -324,7 +324,7 @@ it('lazily bridges a selected legacy transformer that was not registered', funct
     $transform->setTransformer(UnregisteredLegacyImageTransformer::class);
 
     expect($asset->getUrl($transform))->toBe('/legacy/320%20image.jpg');
-    app(AssetTransformers::class)->invalidate($asset);
+    app(AssetProcessors::class)->invalidate($asset);
 
     expect(app(ImageTransformers::class)->types())->toContain(UnregisteredLegacyImageTransformer::class)
         ->and($this->driver->request)->toBeNull()
@@ -392,7 +392,7 @@ it('keeps the built-in Craft transform index facade scoped to Craft rows', funct
     $transformer->storeTransformIndexData($foreignIndex);
 
     expect($transformer->getTransformIndexModelById($index->id)->fileExists)->toBeTrue()
-        ->and($index->transformer)->toBe(app(AssetTransformers::class)->resolve('craft')->uid)
+        ->and($index->transformer)->toBe(app(AssetProcessors::class)->resolve('craft')->uid)
         ->and($transformer->getTransformIndexModelById($foreignId))->toBeNull()
         ->and($transformer->getPendingTransformIndexIds())->not->toContain($foreignId)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->value('fileExists'))->toBe(0);

@@ -16,8 +16,8 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -218,7 +218,7 @@ class ImageTransforms extends Component
             }
 
             if ($coreTransforms !== []) {
-                app(AssetTransformers::class)->preload([$asset], $coreTransforms);
+                app(AssetProcessors::class)->preload([$asset], $coreTransforms);
             }
         }
 
@@ -288,7 +288,7 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        app(AssetTransformers::class)->invalidate($asset);
+        app(AssetProcessors::class)->invalidate($asset);
     }
 
     /**
@@ -391,23 +391,23 @@ class ImageTransforms extends Component
         [$transformer, $definition] = $this->legacyTransformer($definition);
 
         if ($transformer === null) {
-            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
+            return app(AssetProcessors::class)->transform($asset, $definition, $immediately);
         }
 
         app(ImageTransformers::class)->register($transformer);
         $request = $this->legacyTransformRequest($asset, $definition, $transformer, $immediately);
 
         if ($request === null) {
-            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
+            return app(AssetProcessors::class)->transform($asset, $definition, $immediately);
         }
 
         return new LegacyImageTransformerDriver($transformer)->transform($request);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
-    private function legacyAssetTransformer(string $transformer): AssetTransformer
+    private function legacyAssetProcessor(string $transformer): AssetProcessor
     {
-        return new AssetTransformer([
+        return new AssetProcessor([
             'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:legacy-image-transformer:$transformer")->toString(),
             'name' => $transformer,
             'handle' => 'legacy_' . substr(sha1($transformer), 0, 16),
@@ -422,16 +422,16 @@ class ImageTransforms extends Component
         string $transformer,
         bool $immediately,
     ): ?AssetTransformRequest {
-        if ($asset->getVolume()->getAssetTransformerHandle(false) || $this->hasTransformerOverride($definition)) {
+        if ($asset->getVolume()->getAssetProcessorHandle(false) || $this->hasTransformerOverride($definition)) {
             return null;
         }
 
-        $assetTransformer = $this->legacyAssetTransformer($transformer);
+        $assetProcessor = $this->legacyAssetProcessor($transformer);
 
         return new AssetTransformRequest(
             asset: $asset,
-            transformer: $assetTransformer,
-            operations: $this->transformOperations($definition, (string) $assetTransformer->uid),
+            processor: $assetProcessor,
+            operations: $this->transformOperations($definition, (string) $assetProcessor->uid),
             immediately: $immediately,
         );
     }

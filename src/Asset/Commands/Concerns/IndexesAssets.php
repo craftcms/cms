@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
-use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
@@ -108,7 +108,7 @@ trait IndexesAssets
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
-                        app(AssetTransformers::class)->invalidate($asset);
+                        app(AssetProcessors::class)->invalidate($asset);
                         $asset->keepFileOnDelete = true;
                         Elements::deleteElement($asset);
                     }

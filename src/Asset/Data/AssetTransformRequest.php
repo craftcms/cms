@@ -13,7 +13,7 @@ readonly class AssetTransformRequest
      */
     public function __construct(
         public Asset $asset,
-        public AssetTransformer $transformer,
+        public AssetProcessor $processor,
         public array $operations,
         public bool $immediately,
     ) {}

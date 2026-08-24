@@ -631,20 +631,20 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The Asset Transformer to use when none is selected explicitly.
+     * @var string The Asset Processor to use when none is selected explicitly.
      *
      * ::: code
      * ```php Static Config
-     * ->defaultAssetTransformer('craft')
+     * ->defaultAssetProcessor('craft')
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
+     * CRAFT_DEFAULT_ASSET_PROCESSOR=craft
      * ```
      * :::
      *
      * @group Assets
      */
-    public string $defaultAssetTransformer = 'craft';
+    public string $defaultAssetProcessor = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -3726,19 +3726,19 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Asset Transformer to use when none is selected explicitly.
+     * The Asset Processor to use when none is selected explicitly.
      *
      * @group Assets
      *
-     * @see $defaultAssetTransformer
+     * @see $defaultAssetProcessor
      */
-    public function defaultAssetTransformer(string $value): self
+    public function defaultAssetProcessor(string $value): self
     {
         if ($value === '') {
-            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
+            throw new RuntimeException('`defaultAssetProcessor` cannot be empty.');
         }
 
-        $this->defaultAssetTransformer = $value;
+        $this->defaultAssetProcessor = $value;
 
         return $this;
     }

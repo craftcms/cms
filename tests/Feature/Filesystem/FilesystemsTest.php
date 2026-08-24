@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
@@ -94,7 +94,7 @@ it('rewrites only hard-coded Craft transformer output filesystem references when
         'environment' => '$OUTPUT_FILESYSTEM',
         'rawDisk' => 'disk:output-old',
     ] as $handle => $outputFilesystem) {
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
             'name' => $handle,
             'handle' => $handle,
             'driver' => 'craft',
@@ -106,9 +106,9 @@ it('rewrites only hard-coded Craft transformer output filesystem references when
     $renamed->handle = 'output-new';
     $this->service->saveFilesystem($renamed, false);
 
-    expect(app(AssetTransformers::class)->resolve('hardCoded')->settings['filesystem'])->toBe('output-new')
-        ->and(app(AssetTransformers::class)->resolve('environment')->settings['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
-        ->and(app(AssetTransformers::class)->resolve('rawDisk')->settings['filesystem'])->toBe('disk:output-old');
+    expect(app(AssetProcessors::class)->resolve('hardCoded')->settings['filesystem'])->toBe('output-new')
+        ->and(app(AssetProcessors::class)->resolve('environment')->settings['filesystem'])->toBe('$OUTPUT_FILESYSTEM')
+        ->and(app(AssetProcessors::class)->resolve('rawDisk')->settings['filesystem'])->toBe('disk:output-old');
 });
 
 it('validates local filesystems with laravel path requirements', function () {

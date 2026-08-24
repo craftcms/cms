@@ -14,11 +14,11 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -197,13 +197,13 @@ it('accepts the legacy immediately transform argument', function() {
 it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
     $driver = new GqlImmediateAssetTransformDriver();
     app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'GQL immediately',
         'handle' => 'gql-immediately',
         'driver' => 'gql-immediately',
     ]), false);
-    Cms::config()->defaultAssetTransformer('gql-immediately');
+    Cms::config()->defaultAssetProcessor('gql-immediately');
     Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
     $asset = Asset::factory()->createElement([
         'width' => 800,

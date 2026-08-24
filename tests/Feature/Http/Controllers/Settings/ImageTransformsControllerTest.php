@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
@@ -75,15 +75,15 @@ function validTransformData(array $overrides = []): array
     ], $overrides);
 }
 
-function registerControllerAssetTransformer(string $driver = 'custom'): AssetTransformer
+function registerControllerAssetProcessor(string $driver = 'custom'): AssetProcessor
 {
     app(AssetTransformDrivers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
-    $transformer = new AssetTransformer([
+    $transformer = new AssetProcessor([
         'name' => 'Custom',
         'handle' => $driver,
         'driver' => $driver,
     ]);
-    app(AssetTransformers::class)->saveAssetTransformer($transformer);
+    app(AssetProcessors::class)->saveAssetProcessor($transformer);
 
     return $transformer;
 }
@@ -151,8 +151,8 @@ it('renders a functional create form', function () {
                 ->contains(['mode'])));
 });
 
-it('groups declared operation controls by Asset Transformer', function () {
-    $transformer = registerControllerAssetTransformer();
+it('groups declared operation controls by Asset Processor', function () {
+    $transformer = registerControllerAssetProcessor();
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -288,8 +288,8 @@ it('rejects save when both width and height are missing', function () {
         ->assertSessionHasErrors('width');
 });
 
-it('saves custom operations under the Asset Transformer UUID', function () {
-    $transformer = registerControllerAssetTransformer();
+it('saves custom operations under the Asset Processor UUID', function () {
+    $transformer = registerControllerAssetProcessor();
     $payload = validTransformData([
         'operations' => [$transformer->uid => ['blur' => '5']],
     ]);
@@ -305,17 +305,17 @@ it('saves custom operations under the Asset Transformer UUID', function () {
 });
 
 it('preserves operations for a configured unavailable driver', function () {
-    $assetTransformer = new AssetTransformer([
+    $assetProcessor = new AssetProcessor([
         'name' => 'Unavailable',
         'handle' => 'unavailable',
         'driver' => 'missing',
     ]);
-    app(AssetTransformers::class)->saveAssetTransformer($assetTransformer, runValidation: false);
+    app(AssetProcessors::class)->saveAssetProcessor($assetProcessor, runValidation: false);
     $transform = new ImageTransformData([
         'name' => 'Unavailable',
         'handle' => 'unavailable',
         'width' => 100,
-        'operations' => [$assetTransformer->uid => ['blur' => 5]],
+        'operations' => [$assetProcessor->uid => ['blur' => 5]],
     ]);
     app(ImageTransforms::class)->saveTransform($transform, runValidation: false);
 
@@ -327,7 +327,7 @@ it('preserves operations for a configured unavailable driver', function () {
     app(ImageTransforms::class)->reset();
 
     expect(app(ImageTransforms::class)->getTransformByHandle('unavailable')
-        ?->getOperationsForTransformer($assetTransformer->uid))->toBe(['blur' => 5]);
+        ?->getOperationsForTransformer($assetProcessor->uid))->toBe(['blur' => 5]);
 });
 
 it('normalizes letterbox fill color on save', function () {

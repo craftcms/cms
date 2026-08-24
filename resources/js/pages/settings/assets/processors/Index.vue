@@ -12,9 +12,9 @@
     create,
     destroy,
     edit,
-  } from '@actions/Settings/AssetTransformersController';
+  } from '@actions/Settings/AssetProcessorsController';
 
-  interface AssetTransformerData {
+  interface AssetProcessorData {
     uid: string;
     name: string;
     handle: string;
@@ -24,23 +24,23 @@
   }
 
   const props = defineProps<{
-    transformers: Array<AssetTransformerData>;
+    processors: Array<AssetProcessorData>;
     readOnly: boolean;
   }>();
 
-  function deleteTransformer(transformer: AssetTransformerData): void {
+  function deleteProcessor(processor: AssetProcessorData): void {
     if (
       confirm(
-        t('Are you sure you want to delete the “{name}” Asset Transformer?', {
-          name: transformer.name,
+        t('Are you sure you want to delete the “{name}” Asset Processor?', {
+          name: processor.name,
         })
       )
     ) {
-      router.delete(destroy({handle: transformer.handle}));
+      router.delete(destroy({handle: processor.handle}));
     }
   }
 
-  const columnHelper = createCraftColumnHelper<AssetTransformerData>();
+  const columnHelper = createCraftColumnHelper<AssetProcessorData>();
   const columnVisibility = computed(() => ({
     name: true,
     handle: true,
@@ -66,15 +66,15 @@
       row.original.canDelete
         ? [
             h(DeleteButton, {
-              onClick: () => deleteTransformer(row.original),
+              onClick: () => deleteProcessor(row.original),
             }),
           ]
         : []
     ),
   ]);
-  const table = useVueTable<AssetTransformerData>({
+  const table = useVueTable<AssetProcessorData>({
     get data() {
-      return props.transformers;
+      return props.processors;
     },
     get columns() {
       return columns.value;
@@ -85,14 +85,14 @@
       },
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<AssetTransformerData>(),
+    getCoreRowModel: getCoreRowModel<AssetProcessorData>(),
   });
 </script>
 
 <template>
   <LayoutSlot v-if="!readOnly" name="actions">
     <CpLink variant="accent" appearance="button" :href="create().url">{{
-      t('New Asset Transformer')
+      t('New Asset Processor')
     }}</CpLink>
   </LayoutSlot>
 

@@ -976,7 +976,7 @@ class Install extends Migration
             $table->string('handle');
             $table->string('fs');
             $table->string('subpath')->nullable();
-            $table->string('assetTransformer')->nullable();
+            $table->string('assetProcessor')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);

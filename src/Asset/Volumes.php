@@ -169,7 +169,7 @@ class Volumes
             $volumeModel->handle = $data['handle'];
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
+            $volumeModel->assetProcessor = $data['assetProcessor'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;

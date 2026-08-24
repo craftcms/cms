@@ -12,11 +12,11 @@ namespace crafttests\unit\elements;
 use craft\fs\Local;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -66,13 +66,13 @@ class AssetElementTest extends TestCase
                 );
             }
         });
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
             'uid' => Str::uuid()->toString(),
             'name' => 'Test',
             'handle' => 'test',
             'driver' => 'test',
         ]), false);
-        Cms::config()->defaultAssetTransformer('test');
+        Cms::config()->defaultAssetProcessor('test');
 
         ImageTransforms::shouldReceive('getTransformByHandle')
             ->andReturn($this->make(ImageTransform::class, [

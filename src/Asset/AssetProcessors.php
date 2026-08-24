@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AssetTransformerDeleting;
-use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
+use CraftCms\Cms\Asset\Events\AssetProcessorDeleting;
+use CraftCms\Cms\Asset\Events\AssetProcessorUpdating;
+use CraftCms\Cms\Asset\Exceptions\AssetProcessorNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -37,14 +37,16 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
-class AssetTransformers
+class AssetProcessors
 {
     /** @var array<string, non-empty-list<string|Stringable>> */
     private readonly array $operations;
 
-    /** @var Collection<string, AssetTransformer>|null */
-    private ?Collection $transformers = null;
+    /** @var Collection<string, AssetProcessor>|null */
+    private ?Collection $processors = null;
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
@@ -63,15 +65,15 @@ class AssetTransformers
         ];
     }
 
-    /** @return Collection<string, AssetTransformer> */
-    public function getAllAssetTransformers(): Collection
+    /** @return Collection<string, AssetProcessor> */
+    public function getAllAssetProcessors(): Collection
     {
-        $this->ensureCraftAssetTransformer();
+        $this->ensureCraftAssetProcessor();
 
-        return $this->assetTransformers();
+        return $this->assetProcessors();
     }
 
-    public function getAssetTransformerByHandle(string $handle): ?AssetTransformer
+    public function getAssetProcessorByHandle(string $handle): ?AssetProcessor
     {
         $handle = Env::parse($handle);
 
@@ -79,44 +81,44 @@ class AssetTransformers
             return null;
         }
 
-        return $this->getAllAssetTransformers()->firstWhere('handle', $handle);
+        return $this->getAllAssetProcessors()->firstWhere('handle', $handle);
     }
 
-    public function getAssetTransformerByUid(string $uid): ?AssetTransformer
+    public function getAssetProcessorByUid(string $uid): ?AssetProcessor
     {
-        return $this->getAllAssetTransformers()->get($uid);
+        return $this->getAllAssetProcessors()->get($uid);
     }
 
-    public function getDefaultAssetTransformer(): AssetTransformer
+    public function getDefaultAssetProcessor(): AssetProcessor
     {
-        return $this->resolve(Cms::config()->defaultAssetTransformer);
+        return $this->resolve(Cms::config()->defaultAssetProcessor);
     }
 
-    public function resolve(string $handle): AssetTransformer
+    public function resolve(string $handle): AssetProcessor
     {
         $parsedHandle = Env::parse($handle);
 
         if (! is_string($parsedHandle) || $parsedHandle === '') {
-            throw new AssetTransformerNotFoundException("Asset Transformer [{$handle}] is not configured.");
+            throw new AssetProcessorNotFoundException("Asset Processor [{$handle}] is not configured.");
         }
 
-        return $this->getAssetTransformerByHandle($parsedHandle)
-            ?? throw new AssetTransformerNotFoundException("Asset Transformer [{$parsedHandle}] is not configured.");
+        return $this->getAssetProcessorByHandle($parsedHandle)
+            ?? throw new AssetProcessorNotFoundException("Asset Processor [{$parsedHandle}] is not configured.");
     }
 
-    public function ensureCraftAssetTransformer(): void
+    public function ensureCraftAssetProcessor(): void
     {
-        $craft = $this->assetTransformers()->firstWhere('handle', 'craft');
+        $craft = $this->assetProcessors()->firstWhere('handle', 'craft');
 
         if ($craft !== null && $craft->driver === 'craft') {
             return;
         }
 
         if ($craft !== null) {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer must use the [craft] driver.');
+            throw new AssetTransformException('The reserved [craft] Asset Processor must use the [craft] driver.');
         }
 
-        $this->saveAssetTransformer(new AssetTransformer([
+        $this->saveAssetProcessor(new AssetProcessor([
             'name' => 'Craft',
             'handle' => 'craft',
             'driver' => 'craft',
@@ -127,39 +129,39 @@ class AssetTransformers
         ]), false);
     }
 
-    public function saveAssetTransformer(AssetTransformer $transformer, bool $runValidation = true): bool
+    public function saveAssetProcessor(AssetProcessor $processor, bool $runValidation = true): bool
     {
-        $existing = $transformer->uid
-            ? $this->getAssetTransformerByUid($transformer->uid)
+        $existing = $processor->uid
+            ? $this->getAssetProcessorByUid($processor->uid)
             : null;
 
         if ($existing?->handle === 'craft') {
-            $transformer->name = 'Craft';
-            $transformer->handle = 'craft';
-            $transformer->driver = 'craft';
+            $processor->name = 'Craft';
+            $processor->handle = 'craft';
+            $processor->driver = 'craft';
         }
 
         if ($runValidation) {
-            $this->validateAssetTransformer($transformer);
+            $this->validateAssetProcessor($processor);
         }
 
-        if ($transformer->errors()->isNotEmpty()) {
+        if ($processor->errors()->isNotEmpty()) {
             return false;
         }
 
-        $transformer->uid ??= Str::uuid()->toString();
+        $processor->uid ??= Str::uuid()->toString();
         $oldHandle = $existing?->handle;
-        $config = $transformer->getConfig();
+        $config = $processor->getConfig();
         $config['settings'] = ProjectConfigHelper::packAssociativeArrays($config['settings']);
 
         $this->projectConfig->set(
-            ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
+            ProjectConfig::PATH_ASSET_PROCESSORS.'.'.$processor->uid,
             $config,
-            "Save the “{$transformer->handle}” Asset Transformer",
+            "Save the “{$processor->handle}” Asset Processor",
         );
 
-        if ($oldHandle && $oldHandle !== $transformer->handle) {
-            $this->rewriteHandleReferences($oldHandle, $transformer->handle);
+        if ($oldHandle && $oldHandle !== $processor->handle) {
+            $this->rewriteHandleReferences($oldHandle, $processor->handle);
         }
 
         $this->reset();
@@ -167,23 +169,23 @@ class AssetTransformers
         return true;
     }
 
-    public function deleteAssetTransformer(AssetTransformer $transformer): bool
+    public function deleteAssetProcessor(AssetProcessor $processor): bool
     {
-        if ($transformer->handle === 'craft') {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer cannot be deleted.');
+        if ($processor->handle === 'craft') {
+            throw new AssetTransformException('The reserved [craft] Asset Processor cannot be deleted.');
         }
 
-        $this->ensureNotReferenced($transformer);
+        $this->ensureNotReferenced($processor);
         $this->projectConfig->remove(
-            ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
-            "Delete the “{$transformer->handle}” Asset Transformer",
+            ProjectConfig::PATH_ASSET_PROCESSORS.'.'.$processor->uid,
+            "Delete the “{$processor->handle}” Asset Processor",
         );
         $this->reset();
 
         return true;
     }
 
-    public function handleChangedAssetTransformer(ConfigEvent $event): void
+    public function handleChangedAssetProcessor(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0] ?? null;
 
@@ -193,29 +195,29 @@ class AssetTransformers
             return;
         }
 
-        $newTransformer = $this->createAssetTransformer($uid, $event->newValue);
-        $oldTransformer = is_array($event->oldValue)
-            ? $this->createAssetTransformer($uid, $event->oldValue)
+        $newProcessor = $this->createAssetProcessor($uid, $event->newValue);
+        $oldProcessor = is_array($event->oldValue)
+            ? $this->createAssetProcessor($uid, $event->oldValue)
             : null;
 
         if (
-            ($oldTransformer?->handle === 'craft' && $newTransformer->handle !== 'craft')
-            || ($newTransformer->handle === 'craft' && ($newTransformer->name !== 'Craft' || $newTransformer->driver !== 'craft'))
+            ($oldProcessor?->handle === 'craft' && $newProcessor->handle !== 'craft')
+            || ($newProcessor->handle === 'craft' && ($newProcessor->name !== 'Craft' || $newProcessor->driver !== 'craft'))
         ) {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer’s name, handle, and driver cannot be changed.');
+            throw new AssetTransformException('The reserved [craft] Asset Processor’s name, handle, and driver cannot be changed.');
         }
 
         if (
-            $oldTransformer !== null
-            && ($oldTransformer->driver !== $newTransformer->driver || $oldTransformer->settings !== $newTransformer->settings)
+            $oldProcessor !== null
+            && ($oldProcessor->driver !== $newProcessor->driver || $oldProcessor->settings !== $newProcessor->settings)
         ) {
-            event(new AssetTransformerUpdating($oldTransformer, $newTransformer));
+            event(new AssetProcessorUpdating($oldProcessor, $newProcessor));
         }
 
         $this->reset();
     }
 
-    public function handleDeletedAssetTransformer(ConfigEvent $event): void
+    public function handleDeletedAssetProcessor(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0] ?? null;
 
@@ -225,20 +227,20 @@ class AssetTransformers
             return;
         }
 
-        $transformer = $this->createAssetTransformer($uid, $event->oldValue);
+        $processor = $this->createAssetProcessor($uid, $event->oldValue);
 
-        if ($transformer->handle === 'craft') {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer cannot be deleted.');
+        if ($processor->handle === 'craft') {
+            throw new AssetTransformException('The reserved [craft] Asset Processor cannot be deleted.');
         }
 
-        $this->ensureNotReferenced($transformer);
-        event(new AssetTransformerDeleting($transformer));
+        $this->ensureNotReferenced($processor);
+        event(new AssetProcessorDeleting($processor));
         $this->reset();
     }
 
-    public function handleAssetTransformersRemoved(): void
+    public function handleAssetProcessorsRemoved(): void
     {
-        throw new AssetTransformException('The Asset Transformers Project Config section cannot be removed.');
+        throw new AssetTransformException('The Asset Processors Project Config section cannot be removed.');
     }
 
     public function handleFilesystemRenamed(FilesystemRenamed $event): void
@@ -252,15 +254,15 @@ class AssetTransformers
 
         $changed = false;
 
-        foreach ($this->getAllAssetTransformers() as $transformer) {
-            if ($transformer->driver !== 'craft' || ($transformer->settings['filesystem'] ?? null) !== $oldHandle) {
+        foreach ($this->getAllAssetProcessors() as $processor) {
+            if ($processor->driver !== 'craft' || ($processor->settings['filesystem'] ?? null) !== $oldHandle) {
                 continue;
             }
 
             $this->projectConfig->set(
-                ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid.'.settings.filesystem',
+                ProjectConfig::PATH_ASSET_PROCESSORS.'.'.$processor->uid.'.settings.filesystem',
                 $newHandle,
-                "Update the “{$transformer->handle}” Asset Transformer's output filesystem",
+                "Update the “{$processor->handle}” Asset Processor's output filesystem",
             );
             $changed = true;
         }
@@ -274,7 +276,7 @@ class AssetTransformers
     {
         $request = $this->request($asset, $definition, $immediately);
 
-        return $this->drivers->driver($request->transformer->driver)->transform($request);
+        return $this->drivers->driver($request->processor->driver)->transform($request);
     }
 
     public function invalidate(Asset $asset): void
@@ -292,7 +294,7 @@ class AssetTransformers
 
         foreach ($assets as $asset) {
             foreach ($this->preloadRequests($asset, $definitions) as $request) {
-                $requestsByDriver[$request->transformer->driver][] = $request;
+                $requestsByDriver[$request->processor->driver][] = $request;
             }
         }
 
@@ -306,11 +308,11 @@ class AssetTransformers
     }
 
     /** @return array<string, non-empty-list<string|Stringable>> */
-    public function operationRules(AssetTransformer $transformer): array
+    public function operationRules(AssetProcessor $processor): array
     {
         $operations = $this->operations;
 
-        foreach ($this->drivers->driver($transformer->driver)->definition()->operations as $handle => $rules) {
+        foreach ($this->drivers->driver($processor->driver)->definition()->operations as $handle => $rules) {
             if (! is_string($handle) || $handle === '') {
                 throw new InvalidAssetTransformException('Asset Transform operation handles must be non-empty strings.');
             }
@@ -332,10 +334,10 @@ class AssetTransformers
     }
 
     /** @return array<string, Field> */
-    public function operationFields(AssetTransformer $transformer): array
+    public function operationFields(AssetProcessor $processor): array
     {
-        $definition = $this->drivers->driver($transformer->driver)->definition();
-        $rules = $this->operationRules($transformer);
+        $definition = $this->drivers->driver($processor->driver)->definition();
+        $rules = $this->operationRules($processor);
 
         foreach ($definition->operationFields as $handle => $field) {
             $path = $field->getControl()?->path();
@@ -353,9 +355,9 @@ class AssetTransformers
      * @param  array<string, mixed>  $operations
      * @return array<string, mixed>
      */
-    public function validateOperations(AssetTransformer $transformer, array $operations): array
+    public function validateOperations(AssetProcessor $processor, array $operations): array
     {
-        $rules = $this->operationRules($transformer);
+        $rules = $this->operationRules($processor);
         $operations = Arr::only($operations, array_keys($rules));
         $rules = Arr::only($rules, array_keys($operations));
         $rules = array_map(fn (array $rules): array => ['nullable', ...$rules], $rules);
@@ -371,33 +373,33 @@ class AssetTransformers
 
     public function reset(): void
     {
-        $this->transformers = null;
+        $this->processors = null;
     }
 
-    /** @return Collection<string, AssetTransformer> */
-    private function assetTransformers(): Collection
+    /** @return Collection<string, AssetProcessor> */
+    private function assetProcessors(): Collection
     {
-        if ($this->transformers !== null) {
-            return $this->transformers;
+        if ($this->processors !== null) {
+            return $this->processors;
         }
 
-        $configs = $this->projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS);
+        $configs = $this->projectConfig->get(ProjectConfig::PATH_ASSET_PROCESSORS);
 
         if (! is_array($configs)) {
             $configs = [];
         }
 
-        return $this->transformers = collect($configs)
+        return $this->processors = collect($configs)
             ->filter(fn (mixed $config, mixed $uid): bool => is_string($uid) && is_array($config))
-            ->map(fn (array $config, string $uid): AssetTransformer => $this->createAssetTransformer($uid, $config));
+            ->map(fn (array $config, string $uid): AssetProcessor => $this->createAssetProcessor($uid, $config));
     }
 
     /** @param array<string, mixed> $config */
-    private function createAssetTransformer(string $uid, array $config): AssetTransformer
+    private function createAssetProcessor(string $uid, array $config): AssetProcessor
     {
         $settings = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
 
-        return new AssetTransformer([
+        return new AssetProcessor([
             'uid' => $uid,
             'name' => $config['name'] ?? null,
             'handle' => $config['handle'] ?? null,
@@ -406,32 +408,32 @@ class AssetTransformers
         ]);
     }
 
-    private function validateAssetTransformer(AssetTransformer $transformer): void
+    private function validateAssetProcessor(AssetProcessor $processor): void
     {
-        $transformer->validate();
+        $processor->validate();
 
-        if ($transformer->driver && ! $this->drivers->has($transformer->driver)) {
-            $transformer->errors()->add('driver', 'The selected Asset Transform driver is unavailable.');
+        if ($processor->driver && ! $this->drivers->has($processor->driver)) {
+            $processor->errors()->add('driver', t('The selected Asset Transform driver is unavailable.'));
         }
 
-        $duplicate = $this->getAllAssetTransformers()
-            ->first(fn (AssetTransformer $existing): bool => $existing->handle === $transformer->handle && $existing->uid !== $transformer->uid);
+        $duplicate = $this->getAllAssetProcessors()
+            ->first(fn (AssetProcessor $existing): bool => $existing->handle === $processor->handle && $existing->uid !== $processor->uid);
 
         if ($duplicate !== null) {
-            $transformer->errors()->add('handle', 'The Asset Transformer handle has already been taken.');
+            $processor->errors()->add('handle', t('The Asset Processor handle has already been taken.'));
         }
 
-        if ($transformer->handle === 'craft' && $transformer->driver !== 'craft') {
-            $transformer->errors()->add('driver', 'The reserved [craft] Asset Transformer must use the [craft] driver.');
+        if ($processor->handle === 'craft' && $processor->driver !== 'craft') {
+            $processor->errors()->add('driver', t('The reserved [craft] Asset Processor must use the [craft] driver.'));
         }
     }
 
-    private function ensureNotReferenced(AssetTransformer $transformer): void
+    private function ensureNotReferenced(AssetProcessor $processor): void
     {
-        $default = Env::parse(Cms::config()->defaultAssetTransformer);
+        $default = Env::parse(Cms::config()->defaultAssetProcessor);
 
-        if ($default === $transformer->handle) {
-            throw new AssetTransformException("Asset Transformer [{$transformer->handle}] is the configured default.");
+        if ($default === $processor->handle) {
+            throw new AssetTransformException("Asset Processor [{$processor->handle}] is the configured default.");
         }
 
         $volumes = $this->projectConfig->get(ProjectConfig::PATH_VOLUMES);
@@ -441,28 +443,28 @@ class AssetTransformers
         }
 
         foreach ($volumes as $volume) {
-            $reference = is_array($volume) ? ($volume['assetTransformer'] ?? null) : null;
+            $reference = is_array($volume) ? ($volume['assetProcessor'] ?? null) : null;
 
-            if (is_string($reference) && Env::parse($reference) === $transformer->handle) {
-                throw new AssetTransformException("Asset Transformer [{$transformer->handle}] is referenced by a volume.");
+            if (is_string($reference) && Env::parse($reference) === $processor->handle) {
+                throw new AssetTransformException("Asset Processor [{$processor->handle}] is referenced by a volume.");
             }
         }
     }
 
     private function rewriteHandleReferences(string $oldHandle, string $newHandle): void
     {
-        if (Cms::config()->defaultAssetTransformer === $oldHandle) {
-            Cms::config()->defaultAssetTransformer = $newHandle;
+        if (Cms::config()->defaultAssetProcessor === $oldHandle) {
+            Cms::config()->defaultAssetProcessor = $newHandle;
         }
 
         $volumes = app(Volumes::class);
 
         foreach ($volumes->getAllVolumes() as $volume) {
-            if ($volume->getAssetTransformerHandle(false) !== $oldHandle) {
+            if ($volume->getAssetProcessorHandle(false) !== $oldHandle) {
                 continue;
             }
 
-            $volume->assetTransformer = $newHandle;
+            $volume->assetProcessor = $newHandle;
             $volumes->saveVolume($volume);
         }
     }
@@ -504,7 +506,7 @@ class AssetTransformers
             }
 
             $requests[] = $this->request($asset, [
-                'transformer' => $referenceRequest->transformer->handle,
+                'processor' => $referenceRequest->processor->handle,
                 ...$operations,
             ]);
         }
@@ -517,59 +519,59 @@ class AssetTransformers
         #[\SensitiveParameter] mixed $definition,
         ?bool $immediately = null,
     ): AssetTransformRequest {
-        $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
-        $transformerHandle = $this->transformerOverride($definition)
-            ?? ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
-            ?? Cms::config()->defaultAssetTransformer;
-        $transformer = $this->resolve($transformerHandle);
+        $volumeProcessor = $asset->getVolume()->getAssetProcessorHandle(false);
+        $processorHandle = $this->processorOverride($definition)
+            ?? ($volumeProcessor !== null && $volumeProcessor !== '' ? $volumeProcessor : null)
+            ?? Cms::config()->defaultAssetProcessor;
+        $processor = $this->resolve($processorHandle);
 
         try {
-            $operations = $this->normalizeDefinition($definition, $transformer);
+            $operations = $this->normalizeDefinition($definition, $processor);
         } catch (ImageTransformException|InvalidArgumentException $exception) {
             throw new InvalidAssetTransformException($exception->getMessage(), previous: $exception);
         }
 
         return new AssetTransformRequest(
             asset: $asset,
-            transformer: $transformer,
-            operations: $this->validateOperations($transformer, $operations),
+            processor: $processor,
+            operations: $this->validateOperations($processor, $operations),
             immediately: $immediately ?? Cms::config()->generateTransformsBeforePageLoad,
         );
     }
 
-    private function transformerOverride(mixed $definition): ?string
+    private function processorOverride(mixed $definition): ?string
     {
         if (! is_array($definition)) {
             return null;
         }
 
-        if (array_key_exists('transformer', $definition)) {
-            $handle = $definition['transformer'];
+        if (array_key_exists('processor', $definition)) {
+            $handle = $definition['processor'];
 
             if (! is_string($handle) || $handle === '') {
-                throw new AssetTransformerNotFoundException('The selected Asset Transformer is invalid.');
+                throw new AssetProcessorNotFoundException('The selected Asset Processor is invalid.');
             }
 
             return $handle;
         }
 
         return array_key_exists('transform', $definition)
-            ? $this->transformerOverride($definition['transform'])
+            ? $this->processorOverride($definition['transform'])
             : null;
     }
 
     /** @return array<string, mixed> */
-    private function normalizeDefinition(mixed $definition, AssetTransformer $transformer): array
+    private function normalizeDefinition(mixed $definition, AssetProcessor $processor): array
     {
         if (is_array($definition)) {
-            unset($definition['transformer']);
+            unset($definition['processor']);
 
             if (! array_key_exists('transform', $definition)) {
                 return $definition;
             }
 
             return [
-                ...$this->normalizeDefinition(Arr::pull($definition, 'transform'), $transformer),
+                ...$this->normalizeDefinition(Arr::pull($definition, 'transform'), $processor),
                 ...$definition,
             ];
         }
@@ -580,6 +582,6 @@ class AssetTransformers
             throw new InvalidAssetTransformException('An Asset Transform definition must be an array, object, or named transform handle.');
         }
 
-        return $transform->getOperations($transformer->uid);
+        return $transform->getOperations($processor->uid);
     }
 }

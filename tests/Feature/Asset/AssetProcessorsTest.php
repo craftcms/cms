@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
+use CraftCms\Cms\Asset\Exceptions\AssetProcessorNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -23,110 +23,110 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 
-it('executes the selected configured transformer', function () {
-    $driver = registerTransformer('remote', ['token' => 'secret']);
+it('executes the selected configured processor', function () {
+    $driver = registerProcessor('remote', ['token' => 'secret']);
     $asset = Asset::factory()->createElement();
 
-    $result = app(AssetTransformers::class)->transform($asset, [
-        'transformer' => 'remote',
+    $result = app(AssetProcessors::class)->transform($asset, [
+        'processor' => 'remote',
         'format' => 'webp',
         'width' => '1200',
     ], true);
 
     expect($result->url)->toBe('/renditions/hero.webp')
         ->and($driver->request->asset)->toBe($asset)
-        ->and($driver->request->transformer->handle)->toBe('remote')
-        ->and($driver->request->transformer->settings)->toBe(['token' => 'secret'])
+        ->and($driver->request->processor->handle)->toBe('remote')
+        ->and($driver->request->processor->settings)->toBe(['token' => 'secret'])
         ->and($driver->request->operations)->toBe(['format' => 'webp', 'width' => '1200'])
         ->and($driver->request->immediately)->toBeTrue();
 });
 
-it('selects inline, volume, and default transformers in that order', function () {
-    $explicit = registerTransformer('explicit');
-    $volumeTransformer = registerTransformer('volume');
-    $default = registerTransformer('default');
-    Cms::config()->defaultAssetTransformer('default');
-    config()->set('filesystems.disks.transformer-source', [
+it('selects inline, volume, and default processors in that order', function () {
+    $explicit = registerProcessor('explicit');
+    $volumeProcessor = registerProcessor('volume');
+    $default = registerProcessor('default');
+    Cms::config()->defaultAssetProcessor('default');
+    config()->set('filesystems.disks.processor-source', [
         'driver' => 'local',
-        'root' => storage_path('framework/testing/transformer-source'),
+        'root' => storage_path('framework/testing/processor-source'),
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'disk:transformer-source',
-        'assetTransformer' => 'volume',
+        'fs' => 'disk:processor-source',
+        'assetProcessor' => 'volume',
     ]);
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
 
-    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
-    app(AssetTransformers::class)->transform($asset, ['transformer' => 'explicit', 'width' => 200]);
+    app(AssetProcessors::class)->transform($asset, ['width' => 100]);
+    app(AssetProcessors::class)->transform($asset, ['processor' => 'explicit', 'width' => 200]);
 
-    expect($volumeTransformer->request->operations['width'])->toBe(100)
+    expect($volumeProcessor->request->operations['width'])->toBe(100)
         ->and($explicit->request->operations['width'])->toBe(200)
         ->and($default->request)->toBeNull();
 });
 
 it('uses the global immediate-generation policy by default', function () {
-    $driver = registerTransformer('remote');
+    $driver = registerProcessor('remote');
     Cms::config()
-        ->defaultAssetTransformer('remote')
+        ->defaultAssetProcessor('remote')
         ->generateTransformsBeforePageLoad();
 
-    app(AssetTransformers::class)->transform(Asset::factory()->createElement(), ['width' => 100]);
+    app(AssetProcessors::class)->transform(Asset::factory()->createElement(), ['width' => 100]);
 
     expect($driver->request->immediately)->toBeTrue();
 });
 
-it('protects and rewrites volume transformer references', function () {
-    config()->set('filesystems.disks.transformer-reference', [
+it('protects and rewrites volume processor references', function () {
+    config()->set('filesystems.disks.processor-reference', [
         'driver' => 'local',
-        'root' => storage_path('framework/testing/transformer-reference'),
+        'root' => storage_path('framework/testing/processor-reference'),
     ]);
-    $transformer = new AssetTransformer([
+    $processor = new AssetProcessor([
         'name' => 'Referenced',
         'handle' => 'referenced',
         'driver' => 'craft',
     ]);
-    $service = app(AssetTransformers::class);
-    $service->saveAssetTransformer($transformer);
+    $service = app(AssetProcessors::class);
+    $service->saveAssetProcessor($processor);
     $volume = new VolumeData([
         'name' => 'Referenced Volume',
         'handle' => 'referencedVolume',
-        'fsHandle' => 'disk:transformer-reference',
-        'assetTransformer' => 'referenced',
+        'fsHandle' => 'disk:processor-reference',
+        'assetProcessor' => 'referenced',
     ]);
     app(Volumes::class)->saveVolume($volume);
 
-    expect(fn () => $service->deleteAssetTransformer($transformer))
+    expect(fn () => $service->deleteAssetProcessor($processor))
         ->toThrow(AssetTransformException::class);
 
-    $transformer->handle = 'renamed';
-    $service->saveAssetTransformer($transformer);
+    $processor->handle = 'renamed';
+    $service->saveAssetProcessor($processor);
     app()->forgetInstance(Volumes::class);
 
-    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES.'.'.$volume->uid.'.assetTransformer'))
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES.'.'.$volume->uid.'.assetProcessor'))
         ->toBe('renamed')
-        ->and(Volume::query()->where('handle', 'referencedVolume')->value('assetTransformer'))
+        ->and(Volume::query()->where('handle', 'referencedVolume')->value('assetProcessor'))
         ->toBe('renamed')
-        ->and(app(Volumes::class)->getVolumeByHandle('referencedVolume')?->getAssetTransformerHandle(false))
+        ->and(app(Volumes::class)->getVolumeByHandle('referencedVolume')?->getAssetProcessorHandle(false))
         ->toBe('renamed');
 });
 
-it('uses transformer-specific named operations', function () {
-    $first = registerTransformer('first', operations: ['blur' => ['integer']]);
-    $second = registerTransformer('second', operations: ['sharpen' => ['integer']]);
+it('uses processor-specific named operations', function () {
+    $first = registerProcessor('first', operations: ['blur' => ['integer']]);
+    $second = registerProcessor('second', operations: ['sharpen' => ['integer']]);
     $transform = new ImageTransform([
         'name' => 'Hero',
         'handle' => 'hero',
         'width' => 1200,
         'operations' => [
-            transformer('first')->uid => ['blur' => 8],
-            transformer('second')->uid => ['sharpen' => 4],
+            processor('first')->uid => ['blur' => 8],
+            processor('second')->uid => ['sharpen' => 4],
         ],
     ]);
     app(ImageTransforms::class)->saveTransform($transform);
     $asset = Asset::factory()->createElement();
 
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero', 'transformer' => 'first']);
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero', 'transformer' => 'second']);
+    app(AssetProcessors::class)->transform($asset, ['transform' => 'hero', 'processor' => 'first']);
+    app(AssetProcessors::class)->transform($asset, ['transform' => 'hero', 'processor' => 'second']);
 
     expect($first->request->operations)->toMatchArray(['width' => 1200, 'blur' => 8])
         ->and($first->request->operations)->not->toHaveKey('sharpen')
@@ -135,10 +135,10 @@ it('uses transformer-specific named operations', function () {
 });
 
 it('ignores undeclared operations', function () {
-    $driver = registerTransformer('remote', operations: ['blur' => ['integer']]);
+    $driver = registerProcessor('remote', operations: ['blur' => ['integer']]);
 
-    app(AssetTransformers::class)->transform(Asset::factory()->createElement(), [
-        'transformer' => 'remote',
+    app(AssetProcessors::class)->transform(Asset::factory()->createElement(), [
+        'processor' => 'remote',
         'blur' => 5,
         'unknown' => 'ignored',
     ]);
@@ -146,37 +146,37 @@ it('ignores undeclared operations', function () {
     expect($driver->request->operations)->toBe(['blur' => 5]);
 });
 
-it('rejects invalid operations and missing transformer handles', function () {
-    registerTransformer('remote');
+it('rejects invalid operations and missing processor handles', function () {
+    registerProcessor('remote');
     $asset = Asset::factory()->createElement();
 
-    expect(fn () => app(AssetTransformers::class)->transform($asset, [
-        'transformer' => 'remote',
+    expect(fn () => app(AssetProcessors::class)->transform($asset, [
+        'processor' => 'remote',
         'width' => 0,
     ]))->toThrow(InvalidAssetTransformException::class)
-        ->and(fn () => app(AssetTransformers::class)->transform($asset, [
-            'transformer' => 'missing',
-        ]))->toThrow(AssetTransformerNotFoundException::class);
+        ->and(fn () => app(AssetProcessors::class)->transform($asset, [
+            'processor' => 'missing',
+        ]))->toThrow(AssetProcessorNotFoundException::class);
 });
 
 it('preloads requests grouped by driver', function () {
     $driver = new TestPreloadingAssetTransformDriver;
-    registerTransformer('remote', driver: $driver);
-    Cms::config()->defaultAssetTransformer('remote');
+    registerProcessor('remote', driver: $driver);
+    Cms::config()->defaultAssetProcessor('remote');
     $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
 
-    app(AssetTransformers::class)->preload($assets, [['width' => 320]]);
+    app(AssetProcessors::class)->preload($assets, [['width' => 320]]);
 
     expect($driver->requests)->toHaveCount(2)
         ->and(array_column($driver->requests, 'asset'))->toBe($assets)
-        ->and(array_map(fn (AssetTransformRequest $request) => $request->transformer->handle, $driver->requests))
+        ->and(array_map(fn (AssetTransformRequest $request) => $request->processor->handle, $driver->requests))
         ->toBe(['remote', 'remote']);
 });
 
-it('redacts transformer settings from debug output', function () {
+it('redacts processor settings from debug output', function () {
     $request = new AssetTransformRequest(
         Asset::factory()->createElement(),
-        transformer('remote', ['token' => 'secret-value']),
+        processor('remote', ['token' => 'secret-value']),
         [],
         false,
     );
@@ -189,10 +189,10 @@ it('redacts transformer settings from debug output', function () {
 });
 
 /** @param array<string, mixed> $settings */
-function transformer(string $handle, array $settings = []): AssetTransformer
+function processor(string $handle, array $settings = []): AssetProcessor
 {
-    return app(AssetTransformers::class)->getAssetTransformerByHandle($handle)
-        ?? new AssetTransformer([
+    return app(AssetProcessors::class)->getAssetProcessorByHandle($handle)
+        ?? new AssetProcessor([
             'uid' => Str::uuid()->toString(),
             'name' => ucfirst($handle),
             'handle' => $handle,
@@ -205,7 +205,7 @@ function transformer(string $handle, array $settings = []): AssetTransformer
  * @param  array<string, mixed>  $settings
  * @param  array<string, non-empty-list<string|Stringable>>  $operations
  */
-function registerTransformer(
+function registerProcessor(
     string $handle,
     array $settings = [],
     array $operations = [],
@@ -213,7 +213,7 @@ function registerTransformer(
 ): TestAssetTransformDriver {
     $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition(ucfirst($handle), $operations));
     app(AssetTransformDrivers::class)->extend($handle, fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => ucfirst($handle),
         'handle' => $handle,

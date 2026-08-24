@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -22,13 +22,13 @@ beforeEach(function () {
     $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
     app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'GraphQL',
         'handle' => 'gql',
         'driver' => 'gql',
     ]), false);
-    Cms::config()->defaultAssetTransformer('gql');
+    Cms::config()->defaultAssetProcessor('gql');
 });
 
 it('keeps directive transforms local to their resolved Assets', function () {
@@ -61,7 +61,7 @@ it('resolves rendition fields for a capable non-image driver', function () {
         {
             asset(id: {$asset->id}) {
                 url(width: 320)
-                custom: url(transformer: "gql", width: 640)
+                custom: url(processor: "gql", width: 640)
                 width(width: 320)
                 height(height: 180)
                 format(format: "webp")
