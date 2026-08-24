@@ -119,7 +119,6 @@ export function createCraftColumnHelper<T extends object>() {
               CpLink,
               {
                 class: 'font-bold',
-                inertia: false,
                 ...props(cellContext),
               },
               () => cellContext.getValue()
