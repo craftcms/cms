@@ -8,12 +8,8 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-
-afterEach(function (): void {
-    RefreshDatabaseState::$migrated = false;
-});
 
 it('migrates volume transform destinations to asset processors', function () {
     if (! Schema::hasColumn(Table::VOLUMES, 'transformFs')) {
@@ -93,4 +89,7 @@ it('migrates volume transform destinations to asset processors', function () {
         ])
         ->and($projectConfig->get(ProjectConfig::PATH_VOLUMES.'.'.$firstVolume->uid.'.assetProcessor'))->toBe($firstProcessorHandle)
         ->and($projectConfig->get(ProjectConfig::PATH_VOLUMES.'.'.$sourceVolume->uid.'.assetProcessor'))->toBe($sourceProcessorHandle);
-});
+})->skip(
+    fn () => DB::isMysql(),
+    'MySQL implicitly commits the schema changes exercised by this test.',
+);
