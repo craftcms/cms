@@ -20,7 +20,21 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+
+it('resolves the Craft processor without writing project config', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->readOnly = true;
+
+    $processors = app(AssetProcessors::class);
+    $processor = $processors->resolve('craft');
+    $processors->reset();
+
+    expect($processor->handle)->toBe('craft')
+        ->and($processors->resolve('craft')->uid)->toBe($processor->uid)
+        ->and($projectConfig->get(ProjectConfig::PATH_ASSET_PROCESSORS))->toBeNull();
+});
 
 it('executes the selected configured processor', function () {
     $driver = registerProcessor('remote', ['token' => 'secret']);

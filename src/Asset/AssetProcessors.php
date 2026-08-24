@@ -42,6 +42,8 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class AssetProcessors
 {
+    private const string CRAFT_PROCESSOR_UID = '0f7dbd20-f39e-57db-8b25-dcadccdd1733';
+
     /** @var array<string, non-empty-list<string|Stringable>> */
     private readonly array $operations;
 
@@ -68,8 +70,6 @@ class AssetProcessors
     /** @return Collection<string, AssetProcessor> */
     public function getAllAssetProcessors(): Collection
     {
-        $this->ensureCraftAssetProcessor();
-
         return $this->assetProcessors();
     }
 
@@ -104,29 +104,6 @@ class AssetProcessors
 
         return $this->getAssetProcessorByHandle($parsedHandle)
             ?? throw new AssetProcessorNotFoundException("Asset Processor [{$parsedHandle}] is not configured.");
-    }
-
-    public function ensureCraftAssetProcessor(): void
-    {
-        $craft = $this->assetProcessors()->firstWhere('handle', 'craft');
-
-        if ($craft !== null && $craft->driver === 'craft') {
-            return;
-        }
-
-        if ($craft !== null) {
-            throw new AssetTransformException('The reserved [craft] Asset Processor must use the [craft] driver.');
-        }
-
-        $this->saveAssetProcessor(new AssetProcessor([
-            'name' => 'Craft',
-            'handle' => 'craft',
-            'driver' => 'craft',
-            'settings' => [
-                'filesystem' => null,
-                'subpath' => null,
-            ],
-        ]), false);
     }
 
     public function saveAssetProcessor(AssetProcessor $processor, bool $runValidation = true): bool
@@ -391,9 +368,30 @@ class AssetProcessors
             $configs = [];
         }
 
-        return $this->processors = collect($configs)
+        $processors = collect($configs)
             ->filter(fn (mixed $config, mixed $uid): bool => is_string($uid) && is_array($config))
             ->map(fn (array $config, string $uid): AssetProcessor => $this->createAssetProcessor($uid, $config));
+
+        $craft = $processors->firstWhere('handle', 'craft');
+
+        if ($craft !== null && $craft->driver !== 'craft') {
+            throw new AssetTransformException('The reserved [craft] Asset Processor must use the [craft] driver.');
+        }
+
+        if ($craft === null) {
+            $processors->put(self::CRAFT_PROCESSOR_UID, new AssetProcessor([
+                'uid' => self::CRAFT_PROCESSOR_UID,
+                'name' => 'Craft',
+                'handle' => 'craft',
+                'driver' => 'craft',
+                'settings' => [
+                    'filesystem' => null,
+                    'subpath' => null,
+                ],
+            ]));
+        }
+
+        return $this->processors = $processors;
     }
 
     /** @param array<string, mixed> $config */
