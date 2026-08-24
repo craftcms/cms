@@ -12,16 +12,16 @@ class AssetProcessor extends Component
 {
     public ?string $uid = null;
 
-    public ?string $name = null;
+    public string $name = '';
 
-    public ?string $handle = null;
+    public string $handle = '';
 
-    public ?string $driver = null;
+    public string $driver = '';
 
     /** @var array<string, mixed> */
     public array $settings = [];
 
-    /** @return array{name:?string,handle:?string,driver:?string,settings:array<string,mixed>} */
+    /** @return array{name:string,handle:string,driver:string,settings:array<string,mixed>} */
     public function getConfig(): array
     {
         return [

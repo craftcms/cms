@@ -401,9 +401,9 @@ class AssetProcessors
 
         return new AssetProcessor([
             'uid' => $uid,
-            'name' => $config['name'] ?? null,
-            'handle' => $config['handle'] ?? null,
-            'driver' => $config['driver'] ?? null,
+            'name' => $config['name'] ?? '',
+            'handle' => $config['handle'] ?? '',
+            'driver' => $config['driver'] ?? '',
             'settings' => $settings,
         ]);
     }

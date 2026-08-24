@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use CraftCms\Cms\Asset\Data\AssetProcessorIndexData;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
@@ -52,6 +53,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [
+                    AssetProcessorIndexData::class,
                     GqlSchema::class,
                     GqlToken::class,
                     ImageTransform::class,

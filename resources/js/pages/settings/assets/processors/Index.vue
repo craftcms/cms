@@ -14,14 +14,7 @@
     edit,
   } from '@actions/Settings/AssetProcessorsController';
 
-  interface AssetProcessorData {
-    uid: string;
-    name: string;
-    handle: string;
-    driver: string;
-    isDefault: boolean;
-    canDelete: boolean;
-  }
+  type AssetProcessorData = CraftCms.Cms.Asset.Data.AssetProcessorIndexData;
 
   const props = defineProps<{
     processors: Array<AssetProcessorData>;

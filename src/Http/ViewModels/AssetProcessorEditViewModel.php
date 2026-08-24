@@ -39,10 +39,10 @@ class AssetProcessorEditViewModel extends ViewModel
     {
         $values = $this->values ?? [
             'uid' => $this->processor->uid,
-            'name' => $this->processor->name ?? '',
-            'handle' => $this->processor->handle ?? '',
-            'driver' => $this->processor->driver ?? 'craft',
-            'oldDriver' => $this->processor->driver ?? 'craft',
+            'name' => $this->processor->name,
+            'handle' => $this->processor->handle,
+            'driver' => $this->processor->driver,
+            'oldDriver' => $this->processor->driver,
             'settings' => $this->processor->settings,
         ];
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;

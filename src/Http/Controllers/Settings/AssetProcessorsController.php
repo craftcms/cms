@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\Data\AssetProcessorIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Form\FormResolver;
@@ -54,7 +55,7 @@ class AssetProcessorsController
             'title' => t('Asset Processors'),
             'processors' => $this->assetProcessors
                 ->getAllAssetProcessors()
-                ->map(fn (AssetProcessor $processor): array => [
+                ->map(fn (AssetProcessor $processor): AssetProcessorIndexData => new AssetProcessorIndexData([
                     'uid' => $processor->uid,
                     'name' => $processor->name,
                     'handle' => $processor->handle,
@@ -63,7 +64,7 @@ class AssetProcessorsController
                         : t('{driver} (Unavailable)', ['driver' => $processor->driver]),
                     'isDefault' => $processor->handle === $defaultHandle,
                     'canDelete' => ! $this->readOnly && $processor->handle !== 'craft' && $processor->handle !== $defaultHandle,
-                ])
+                ]))
                 ->sortBy('name')
                 ->values(),
         ]);
@@ -99,8 +100,8 @@ class AssetProcessorsController
         ]);
         $processor = new AssetProcessor([
             'uid' => $data['uid'] ?? null,
-            'name' => $data['name'] ?? null,
-            'handle' => $data['handle'] ?? null,
+            'name' => $data['name'] ?? '',
+            'handle' => $data['handle'] ?? '',
             'driver' => $data['driver'],
             'settings' => $this->settings($data['driver'], $data['settings'] ?? []),
         ]);
@@ -139,8 +140,8 @@ class AssetProcessorsController
 
         $processor = new AssetProcessor([
             'uid' => $values['uid'] ?? null,
-            'name' => $values['name'] ?? null,
-            'handle' => $values['handle'] ?? null,
+            'name' => $values['name'] ?? '',
+            'handle' => $values['handle'] ?? '',
             'driver' => $values['driver'],
             'settings' => $values['settings'] ?? [],
         ]);
@@ -164,7 +165,7 @@ class AssetProcessorsController
     private function editScreen(AssetProcessor $processor): CpScreenResponse
     {
         $title = $processor->uid
-            ? trim((string) $processor->name) ?: t('Edit Asset Processor')
+            ? trim($processor->name) ?: t('Edit Asset Processor')
             : t('Create a new Asset Processor');
 
         return new CpScreenResponse()
