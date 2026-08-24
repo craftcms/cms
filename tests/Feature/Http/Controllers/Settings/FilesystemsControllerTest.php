@@ -325,6 +325,30 @@ test('save returns failure on invalid data', function () {
         ->assertJsonStructure(['errors' => ['name', 'handle', 'settings.path']]);
 });
 
+test('save rejects missing environment variables for required settings', function () {
+    postJson(action([FilesystemsController::class, 'store']), [
+        'type' => Local::class,
+        'name' => 'Missing Path',
+        'handle' => 'missingPath',
+        'settings' => [
+            'path' => '$FILESYSTEM_SETTINGS_MISSING',
+        ],
+    ])->assertStatus(400)
+        ->assertJsonStructure(['errors' => ['settings.path']]);
+
+    postJson(action([FilesystemsController::class, 'store']), [
+        'type' => Local::class,
+        'name' => 'Missing URL',
+        'handle' => 'missingUrl',
+        'settings' => [
+            'hasUrls' => true,
+            'url' => '$FILESYSTEM_SETTINGS_MISSING',
+            'path' => sys_get_temp_dir().'/missing-url',
+        ],
+    ])->assertStatus(400)
+        ->assertJsonStructure(['errors' => ['settings.url']]);
+});
+
 test('delete removes filesystem successfully', function () {
     $fs = Filesystems::createFilesystem([
         'type' => Local::class,

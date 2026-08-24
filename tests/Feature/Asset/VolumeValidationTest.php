@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     Cms::config()->tempAssetUploadFs = null;
+    putenv('CRAFT_TEST_VOLUME_SUBPATH');
 });
 
 it('validates id and fieldLayoutId integer attributes', function () {
@@ -148,6 +149,42 @@ it('validates fsHandle for required invalid references and internal disks', func
         ->and($internal->errors()->has('fsHandle'))->toBeTrue();
 });
 
+it('validates asset processor references while allowing unresolved environment variables', function () {
+    $invalid = new Volume([
+        'assetProcessor' => 'missing-processor',
+    ]);
+
+    expect($invalid->validate(['assetProcessor']))->toBeFalse()
+        ->and($invalid->errors()->has('assetProcessor'))->toBeTrue();
+
+    $valid = new Volume([
+        'assetProcessor' => 'craft',
+    ]);
+
+    expect($valid->validate(['assetProcessor']))->toBeTrue()
+        ->and($valid->errors()->has('assetProcessor'))->toBeFalse();
+
+    $unresolved = new Volume([
+        'assetProcessor' => '$CRAFT_TEST_ASSET_PROCESSOR',
+    ]);
+
+    expect($unresolved->validate(['assetProcessor']))->toBeTrue()
+        ->and($unresolved->errors()->has('assetProcessor'))->toBeFalse();
+
+    putenv('CRAFT_TEST_ASSET_PROCESSOR=missing-processor');
+
+    try {
+        $resolved = new Volume([
+            'assetProcessor' => '$CRAFT_TEST_ASSET_PROCESSOR',
+        ]);
+
+        expect($resolved->validate(['assetProcessor']))->toBeFalse()
+            ->and($resolved->errors()->has('assetProcessor'))->toBeTrue();
+    } finally {
+        putenv('CRAFT_TEST_ASSET_PROCESSOR');
+    }
+});
+
 it('rejects the temp upload filesystem target for fsHandle', function () {
     config()->set('filesystems.disks.temp-reserved', [
         'driver' => 'local',
@@ -184,6 +221,16 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
 
     expect($missingSubpath->validate(['subpath']))->toBeFalse()
         ->and($missingSubpath->errors()->has('subpath'))->toBeTrue();
+
+    $missingEnvironmentSubpath = new Volume([
+        'name' => 'Missing Environment Subpath',
+        'handle' => 'missingEnvironmentSubpath',
+        'fsHandle' => 'shared-validation-disk',
+        'subpath' => '$CRAFT_TEST_VOLUME_SUBPATH',
+    ]);
+
+    expect($missingEnvironmentSubpath->validate(['subpath']))->toBeFalse()
+        ->and($missingEnvironmentSubpath->errors()->has('subpath'))->toBeTrue();
 
     $overlap = new Volume([
         'name' => 'Overlap',
