@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
@@ -55,7 +55,7 @@ it('renders the standalone processor form', function () {
 });
 
 it('stores driver settings on the Asset Processor', function () {
-    app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
+    app(AssetProcessorDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetProcessorDriver);
 
     postJson(action([AssetProcessorsController::class, 'store']), [
         'name' => 'Remote',
@@ -90,7 +90,7 @@ it('keeps the Craft processor identity pinned', function () {
 });
 
 it('deletes non-reserved processors', function () {
-    app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
+    app(AssetProcessorDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetProcessorDriver);
     postJson(action([AssetProcessorsController::class, 'store']), [
         'name' => 'Disposable',
         'handle' => 'disposable',
@@ -111,11 +111,11 @@ it('respects read-only mode', function () {
     postJson(action([AssetProcessorsController::class, 'store']))->assertForbidden();
 });
 
-class ControllerTestAssetTransformDriver implements AssetTransformDriver
+class ControllerTestAssetProcessorDriver implements AssetProcessorDriver
 {
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition('Controller test', settings: [
+        return new AssetProcessorDriverDefinition('Controller test', settings: [
             Field::make('Endpoint', Text::make('endpoint')),
         ]);
     }

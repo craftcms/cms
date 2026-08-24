@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
@@ -29,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class VolumesController
+class VolumesController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
@@ -66,11 +65,7 @@ class VolumesController
                 ['label' => t('Volumes')],
             ],
             'sort' => $sort,
-            'subnav' => [
-                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets'))->selected(true),
-                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
-                new NavItem()->label(t('Asset Processors'))->url(Url::cpUrl('settings/assets/processors')),
-            ],
+            'subnav' => $this->subnav(),
             'title' => t('Volume Settings'),
             'volumes' => $volumes->getAllVolumes(...),
         ]);

@@ -2,26 +2,22 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Gql\AssetTransformContext;
-use CraftCms\Cms\Gql\Directives\Transform;
-use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Support\Str;
-use GraphQL\Type\Definition\ResolveInfo;
 
 beforeEach(function () {
-    $this->driver = new GqlAssetTransformDriver;
+    $this->driver = new GqlAssetProcessorDriver;
     $driver = $this->driver;
-    app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
+    app(AssetProcessorDrivers::class)->extend('gql', fn () => $driver);
     app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'GraphQL',
@@ -36,18 +32,31 @@ it('keeps directive transforms local to their resolved Assets', function () {
         'width' => 800,
         'height' => 400,
     ]);
-    $resolveInfo = new ReflectionClass(ResolveInfo::class)->newInstanceWithoutConstructor();
-    $resolveInfo->fieldName = 'asset';
+    gqlActivateFullAccessSchema();
 
-    $transformed = Transform::apply(null, $asset, ['width' => 320], $resolveInfo);
-    $transformedList = Transform::apply(null, collect([$asset]), ['ratio' => 1.5], $resolveInfo);
-
-    expect($transformed)->not->toBe($asset)
-        ->and(app(AssetTransformContext::class)->get($transformed)->definition)->toBe(['width' => 320])
-        ->and($transformedList[0])->not->toBe($asset)
-        ->and(app(AssetTransformContext::class)->get($transformedList[0])->definition)->toBe(['ratio' => 1.5])
-        ->and(app(AssetTransformContext::class)->get($asset))->toBeNull()
-        ->and($asset->getWidth())->toBe(800);
+    graphQL(<<<GQL
+        {
+            transformed: asset(id: {$asset->id}) @transform(width: 320) {
+                width
+                height
+            }
+            transformedList: assets(id: [{$asset->id}]) @transform(height: 180) {
+                width
+                height
+            }
+            source: asset(id: {$asset->id}) {
+                width
+                height
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonPath('data.transformed.width', 320)
+        ->assertJsonPath('data.transformed.height', 360)
+        ->assertJsonPath('data.transformedList.0.width', 640)
+        ->assertJsonPath('data.transformedList.0.height', 180)
+        ->assertJsonPath('data.source.width', 800)
+        ->assertJsonPath('data.source.height', 400);
 });
 
 it('resolves rendition fields for a capable non-image driver', function () {
@@ -135,19 +144,18 @@ it('passes non-null immediately arguments to the selected driver', function () {
         ->assertOk()
         ->assertJsonPath('data.asset.url', '/gql-rendition.webp');
 
-    expect(GqlHelper::prepareTransformArguments(['immediately' => false]))->toBe([])
-        ->and($this->driver->request?->immediately)->toBeFalse();
+    expect($this->driver->request?->immediately)->toBeFalse();
 });
 
-class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
+class GqlAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTransforms
 {
     public array $preloaded = [];
 
     public ?AssetTransformRequest $request = null;
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition('GraphQL', [
+        return new AssetProcessorDriverDefinition('GraphQL', [
             'ratio' => ['numeric'],
         ]);
     }

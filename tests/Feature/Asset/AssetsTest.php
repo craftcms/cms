@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -115,7 +115,7 @@ it('uses ThumbUrlResolving event url when set', function () {
 });
 
 it('renders non-image thumbnails and previews through the selected driver', function () {
-    $driver = new ControlPanelAssetTransformDriver;
+    $driver = new ControlPanelAssetProcessorDriver;
     registerControlPanelTransformer($driver);
     Cms::config()->defaultAssetProcessor('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
@@ -139,7 +139,7 @@ it('renders non-image thumbnails and previews through the selected driver', func
 });
 
 it('uses file-kind images only when the selected driver does not support the source', function () {
-    registerControlPanelTransformer(new ControlPanelAssetTransformDriver(
+    registerControlPanelTransformer(new ControlPanelAssetProcessorDriver(
         new NotSupportedException('unsupported'),
     ));
     Cms::config()->defaultAssetProcessor('test');
@@ -324,9 +324,9 @@ it('resets caches', function () {
     expect(true)->toBeTrue();
 });
 
-function registerControlPanelTransformer(ControlPanelAssetTransformDriver $driver): void
+function registerControlPanelTransformer(ControlPanelAssetProcessorDriver $driver): void
 {
-    app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
+    app(AssetProcessorDrivers::class)->extend('test', fn () => $driver);
     app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'Test',
@@ -335,7 +335,7 @@ function registerControlPanelTransformer(ControlPanelAssetTransformDriver $drive
     ]), false);
 }
 
-class ControlPanelAssetTransformDriver implements AssetTransformDriver
+class ControlPanelAssetProcessorDriver implements AssetProcessorDriver
 {
     public array $requests = [];
 
@@ -343,9 +343,9 @@ class ControlPanelAssetTransformDriver implements AssetTransformDriver
         private readonly ?Throwable $failure = null,
     ) {}
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition('Control panel test');
+        return new AssetProcessorDriverDefinition('Control panel test');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

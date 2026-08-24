@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added configurable asset processors, which can be managed from Settings → Assets → Asset Processors and assigned to asset volumes by handle.
-- Added `CraftCms\Cms\Asset\AssetProcessors` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
+- Added `CraftCms\Cms\Asset\AssetProcessors` and `CraftCms\Cms\Asset\AssetProcessorDrivers`.
 - Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetProcessor` and restored `CraftCms\Cms\Config\GeneralConfig::$generateTransformsBeforePageLoad`.
 - Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.

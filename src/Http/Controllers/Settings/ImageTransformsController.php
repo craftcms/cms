@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -32,7 +31,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class ImageTransformsController
+class ImageTransformsController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
@@ -40,7 +39,7 @@ class ImageTransformsController
         private readonly GeneralConfig $generalConfig,
         private readonly FormResolver $formResolver,
         private readonly AssetProcessors $assetProcessors,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
+        private readonly AssetProcessorDrivers $assetProcessorDrivers,
     ) {}
 
     public function index(ImageTransforms $imageTransforms): \Inertia\Response
@@ -51,11 +50,7 @@ class ImageTransformsController
                 ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets/transforms')],
                 ['label' => t('Image Transforms')],
             ],
-            'subnav' => [
-                new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
-                new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms'))->selected(true),
-                new NavItem()->label(t('Asset Processors'))->url(Url::cpUrl('settings/assets/processors')),
-            ],
+            'subnav' => $this->subnav(),
             'title' => t('Image Transforms'),
             'transforms' => $imageTransforms
                 ->getAllTransforms()
@@ -105,7 +100,7 @@ class ImageTransformsController
         $operationBuckets = [];
 
         foreach ($this->assetProcessors->getAllAssetProcessors() as $assetProcessor) {
-            if (! $this->assetTransformDrivers->has($assetProcessor->driver)) {
+            if (! $this->assetProcessorDrivers->has($assetProcessor->driver)) {
                 $existing = $transform->getOperationsForTransformer($assetProcessor->uid);
 
                 if ($existing !== []) {
@@ -225,7 +220,7 @@ class ImageTransformsController
             $images,
             $this->formResolver,
             $this->assetProcessors,
-            $this->assetTransformDrivers,
+            $this->assetProcessorDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,
         );

@@ -13,12 +13,12 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
@@ -49,8 +49,8 @@ use Illuminate\Support\Facades\Storage;
 uses(DatabaseTestCase::class);
 
 beforeEach(function(): void {
-    $this->driver = $driver = new CompatibilityAssetTransformDriver();
-    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => $driver);
+    $this->driver = $driver = new CompatibilityAssetProcessorDriver();
+    app(AssetProcessorDrivers::class)->extend('compatibility-test', fn() => $driver);
     app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'Compatibility test',
@@ -197,7 +197,7 @@ it('applies the legacy generation policy to control panel thumbnails', function(
 
 it('reports legacy URL failures and returns null', function(): void {
     Exceptions::fake();
-    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetTransformDriver());
+    app(AssetProcessorDrivers::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetProcessorDriver());
     $asset = ($this->asset)();
 
     expect($asset->getUrl(['width' => 320]))->toBeNull();
@@ -533,13 +533,13 @@ it('provides deprecated Volume transform filesystem methods through the adapter'
         ->and(Storage::disk('legacy-volume-target')->exists('renditions/image.jpg'))->toBeTrue();
 });
 
-class CompatibilityAssetTransformDriver implements AssetTransformDriver
+class CompatibilityAssetProcessorDriver implements AssetProcessorDriver
 {
     public ?AssetTransformRequest $request = null;
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition('Compatibility test');
+        return new AssetProcessorDriverDefinition('Compatibility test');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -557,7 +557,7 @@ class CompatibilityAssetTransformDriver implements AssetTransformDriver
     }
 }
 
-class FailingCompatibilityAssetTransformDriver extends CompatibilityAssetTransformDriver
+class FailingCompatibilityAssetProcessorDriver extends CompatibilityAssetProcessorDriver
 {
     #[Override]
     public function transform(AssetTransformRequest $request): AssetTransformResult

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Asset\Data\AssetProcessorIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -25,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class AssetProcessorsController
+class AssetProcessorsController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
@@ -34,7 +33,7 @@ class AssetProcessorsController
     public function __construct(
         GeneralConfig $generalConfig,
         private readonly AssetProcessors $assetProcessors,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
+        private readonly AssetProcessorDrivers $assetProcessorDrivers,
         private readonly FormResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -59,8 +58,8 @@ class AssetProcessorsController
                     'uid' => $processor->uid,
                     'name' => $processor->name,
                     'handle' => $processor->handle,
-                    'driver' => $this->assetTransformDrivers->has($processor->driver)
-                        ? $this->assetTransformDrivers->driver($processor->driver)->definition()->name
+                    'driver' => $this->assetProcessorDrivers->has($processor->driver)
+                        ? $this->assetProcessorDrivers->driver($processor->driver)->definition()->name
                         : t('{driver} (Unavailable)', ['driver' => $processor->driver]),
                     'isDefault' => $processor->handle === $defaultHandle,
                     'canDelete' => ! $this->readOnly && $processor->handle !== 'craft' && $processor->handle !== $defaultHandle,
@@ -95,7 +94,7 @@ class AssetProcessorsController
             'uid' => ['nullable', 'uuid'],
             'name' => ['nullable', 'string'],
             'handle' => ['nullable', 'string'],
-            'driver' => ['required', 'string', Rule::in(array_keys($this->assetTransformDrivers->definitions()))],
+            'driver' => ['required', 'string', Rule::in(array_keys($this->assetProcessorDrivers->definitions()))],
             'settings' => ['nullable', 'array'],
         ]);
         $processor = new AssetProcessor([
@@ -127,7 +126,7 @@ class AssetProcessorsController
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
             'values.oldDriver' => ['nullable', 'string'],
-            'values.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransformDrivers->definitions()))],
+            'values.driver' => ['required', 'string', Rule::in(array_keys($this->assetProcessorDrivers->definitions()))],
             'values.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -190,7 +189,7 @@ class AssetProcessorsController
     {
         return new AssetProcessorEditViewModel(
             $processor,
-            $this->assetTransformDrivers,
+            $this->assetProcessorDrivers,
             $this->formResolver,
             readOnly: $this->readOnly,
             values: $values,
@@ -209,23 +208,13 @@ class AssetProcessorsController
 
             if (! is_string($path) || $path === '' || str_contains($path, '.')) {
                 throw ValidationException::withMessages([
-                    'driver' => t('The selected Asset Transform driver has invalid settings.'),
+                    'driver' => t('The selected Asset Processor driver has invalid settings.'),
                 ]);
             }
 
             return $path;
-        }, $this->assetTransformDrivers->driver($driver)->definition()->settings);
+        }, $this->assetProcessorDrivers->driver($driver)->definition()->settings);
 
         return Arr::only($settings, $handles);
-    }
-
-    /** @return list<NavItem> */
-    private function subnav(): array
-    {
-        return [
-            new NavItem()->label(t('Volumes'))->url(Url::cpUrl('settings/assets')),
-            new NavItem()->label(t('Image Transforms'))->url(Url::cpUrl('settings/assets/transforms')),
-            new NavItem()->label(t('Asset Processors'))->url(Url::cpUrl('settings/assets/processors'))->selected(true),
-        ];
     }
 }

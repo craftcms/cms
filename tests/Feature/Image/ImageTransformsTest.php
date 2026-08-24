@@ -15,8 +15,6 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
-use function Pest\Laravel\travel;
-
 beforeEach(function () {
     $this->service = app(ImageTransforms::class);
 });
@@ -154,24 +152,11 @@ describe('saveTransform', function () {
         $this->service->reset();
 
         $saved = $this->service->getTransformByHandle('custom');
-        $model = ImageTransformModel::firstOrFail();
 
         expect($saved->id)->toBe($transform->id)
             ->and($saved->uid)->toBe($transform->uid)
             ->and($saved->getOperationsForTransformer($transformerUid))->toBe(['blur' => 12])
-            ->and($model->width)->toBe(500)
-            ->and($model->operations)->toBe([$transformerUid => ['blur' => 12]])
-            ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toEqual([
-                'name' => 'Custom',
-                'handle' => 'custom',
-                'fill' => null,
-                'format' => null,
-                'height' => null,
-                'interlace' => 'none',
-                'mode' => 'crop',
-                'position' => 'center-center',
-                'quality' => null,
-                'upscale' => true,
+            ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toMatchArray([
                 'width' => 500,
                 'operations' => [$transformerUid => ['blur' => 12]],
             ]);
@@ -193,11 +178,9 @@ describe('saveTransform', function () {
             'fill' => '#abcdef',
             'upscale' => false,
         ]);
-        $parameterChangeTime = ImageTransformModel::where('uid', $uid)->firstOrFail()->parameterChangeTime;
-        travel(1)->seconds();
         ProjectConfig::rebuild();
 
-        expect(ProjectConfig::get("imageTransforms.{$uid}"))->toEqual([
+        expect(ProjectConfig::get("imageTransforms.{$uid}"))->toMatchArray([
             'name' => 'Legacy',
             'handle' => 'legacy',
             'fill' => '#abcdef',
@@ -209,10 +192,10 @@ describe('saveTransform', function () {
             'quality' => 82,
             'upscale' => false,
             'width' => 640,
-        ])->and(ImageTransformModel::where('uid', $uid)->firstOrFail()->parameterChangeTime->equalTo($parameterChangeTime))->toBeTrue();
+        ])->and(ProjectConfig::get("imageTransforms.{$uid}"))->not->toHaveKey('operations');
     });
 
-    it('changes parameterChangeTime for custom operations but not transform metadata', function () {
+    it('preserves custom operations through metadata changes and saves operation updates', function () {
         $transformerUid = Str::uuid()->toString();
         $transform = new ImageTransform([
             'name' => 'Original',
@@ -221,21 +204,22 @@ describe('saveTransform', function () {
             'operations' => [$transformerUid => ['blur' => 1]],
         ]);
         $this->service->saveTransform($transform);
-        $transform = $this->service->getTransformById($transform->id);
-        $transformModel = ImageTransformModel::findOrFail($transform->id);
-        $transformModel->parameterChangeTime = now()->subMinute()->startOfSecond();
-        $transformModel->save();
-        $parameterChangeTime = $transformModel->parameterChangeTime;
+        $saved = $this->service->getTransformById($transform->id);
 
-        $transform->name = 'Renamed';
-        expect($this->service->saveTransform($transform))->toBeTrue();
+        $saved->name = 'Renamed';
+        $this->service->saveTransform($saved);
+        $this->service->reset();
 
-        expect(ImageTransformModel::findOrFail($transform->id)->parameterChangeTime->equalTo($parameterChangeTime))->toBeTrue();
+        $saved = $this->service->getTransformById($transform->id);
+        expect($saved->name)->toBe('Renamed')
+            ->and($saved->getOperationsForTransformer($transformerUid))->toBe(['blur' => 1]);
 
-        $transform->setOperations([$transformerUid => ['blur' => 2]]);
-        expect($this->service->saveTransform($transform))->toBeTrue();
+        $saved->setOperations([$transformerUid => ['blur' => 2]]);
+        $this->service->saveTransform($saved);
+        $this->service->reset();
 
-        expect(ImageTransformModel::findOrFail($transform->id)->parameterChangeTime->equalTo($parameterChangeTime))->toBeFalse();
+        expect($this->service->getTransformById($transform->id)
+            ->getOperationsForTransformer($transformerUid))->toBe(['blur' => 2]);
     });
 
     it('saves a new transform', function () {

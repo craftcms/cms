@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Asset\Data;
 use CraftCms\Cms\Form\Nodes\Field;
 use Stringable;
 
-readonly class AssetTransformDriverDefinition
+readonly class AssetProcessorDriverDefinition
 {
     /**
      * @param  array<string, non-empty-list<string|Stringable>>  $operations

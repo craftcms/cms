@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -42,7 +42,7 @@ class ImageTransformEditViewModel extends ViewModel
         private readonly Images $images,
         private readonly FormResolver $formResolver,
         private readonly AssetProcessors $assetProcessors,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
+        private readonly AssetProcessorDrivers $assetProcessorDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -107,7 +107,7 @@ class ImageTransformEditViewModel extends ViewModel
         );
 
         foreach ($this->assetProcessors->getAllAssetProcessors() as $processor) {
-            if (! $this->assetTransformDrivers->has($processor->driver)) {
+            if (! $this->assetProcessorDrivers->has($processor->driver)) {
                 $form->add(Group::make("asset-processor-{$processor->uid}", [
                     Callout::make("asset-processor-{$processor->uid}-unavailable", t('This Asset Processor’s driver is unavailable.')),
                 ])->label((string) $processor->name));

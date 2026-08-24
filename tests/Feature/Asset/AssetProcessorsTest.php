@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
@@ -20,7 +20,6 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 
 it('executes the selected configured processor', function () {
@@ -55,13 +54,15 @@ it('selects inline, volume, and default processors in that order', function () {
         'assetProcessor' => 'volume',
     ]);
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+    $defaultAsset = Asset::factory()->createElement();
 
     app(AssetProcessors::class)->transform($asset, ['width' => 100]);
     app(AssetProcessors::class)->transform($asset, ['processor' => 'explicit', 'width' => 200]);
+    app(AssetProcessors::class)->transform($defaultAsset, ['width' => 300]);
 
     expect($volumeProcessor->request->operations['width'])->toBe(100)
         ->and($explicit->request->operations['width'])->toBe(200)
-        ->and($default->request)->toBeNull();
+        ->and($default->request->operations['width'])->toBe(300);
 });
 
 it('uses the global immediate-generation policy by default', function () {
@@ -75,7 +76,7 @@ it('uses the global immediate-generation policy by default', function () {
     expect($driver->request->immediately)->toBeTrue();
 });
 
-it('protects and rewrites volume processor references', function () {
+it('protects processors referenced by volumes', function () {
     config()->set('filesystems.disks.processor-reference', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/processor-reference'),
@@ -97,16 +98,33 @@ it('protects and rewrites volume processor references', function () {
 
     expect(fn () => $service->deleteAssetProcessor($processor))
         ->toThrow(AssetTransformException::class);
+});
+
+it('rewrites volume references when a processor handle changes', function () {
+    config()->set('filesystems.disks.processor-reference', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/processor-reference'),
+    ]);
+    $processor = new AssetProcessor([
+        'name' => 'Referenced',
+        'handle' => 'referenced',
+        'driver' => 'craft',
+    ]);
+    $service = app(AssetProcessors::class);
+    $service->saveAssetProcessor($processor);
+    $volume = new VolumeData([
+        'name' => 'Referenced Volume',
+        'handle' => 'referencedVolume',
+        'fsHandle' => 'disk:processor-reference',
+        'assetProcessor' => 'referenced',
+    ]);
+    app(Volumes::class)->saveVolume($volume);
 
     $processor->handle = 'renamed';
     $service->saveAssetProcessor($processor);
     app()->forgetInstance(Volumes::class);
 
-    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES.'.'.$volume->uid.'.assetProcessor'))
-        ->toBe('renamed')
-        ->and(Volume::query()->where('handle', 'referencedVolume')->value('assetProcessor'))
-        ->toBe('renamed')
-        ->and(app(Volumes::class)->getVolumeByHandle('referencedVolume')?->getAssetProcessorHandle(false))
+    expect(app(Volumes::class)->getVolumeByHandle('referencedVolume')?->getAssetProcessorHandle(false))
         ->toBe('renamed');
 });
 
@@ -160,17 +178,31 @@ it('rejects invalid operations and missing processor handles', function () {
 });
 
 it('preloads requests grouped by driver', function () {
-    $driver = new TestPreloadingAssetTransformDriver;
-    registerProcessor('remote', driver: $driver);
-    Cms::config()->defaultAssetProcessor('remote');
-    $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
+    $firstDriver = new TestPreloadingAssetProcessorDriver;
+    $secondDriver = new TestPreloadingAssetProcessorDriver;
+    registerProcessor('first', driver: $firstDriver);
+    registerProcessor('second', driver: $secondDriver);
+    $assets = collect(['first', 'second'])->map(function (string $handle) {
+        config()->set("filesystems.disks.{$handle}-processor-source", [
+            'driver' => 'local',
+            'root' => storage_path("framework/testing/{$handle}-processor-source"),
+        ]);
+        $volume = Volume::factory()->create([
+            'fs' => "disk:{$handle}-processor-source",
+            'assetProcessor' => $handle,
+        ]);
+
+        return Asset::factory()->createElement(['volumeId' => $volume->id]);
+    })->all();
 
     app(AssetProcessors::class)->preload($assets, [['width' => 320]]);
 
-    expect($driver->requests)->toHaveCount(2)
-        ->and(array_column($driver->requests, 'asset'))->toBe($assets)
-        ->and(array_map(fn (AssetTransformRequest $request) => $request->processor->handle, $driver->requests))
-        ->toBe(['remote', 'remote']);
+    expect($firstDriver->requests)->toHaveCount(1)
+        ->and($firstDriver->requests[0]->asset)->toBe($assets[0])
+        ->and($firstDriver->requests[0]->processor->handle)->toBe('first')
+        ->and($secondDriver->requests)->toHaveCount(1)
+        ->and($secondDriver->requests[0]->asset)->toBe($assets[1])
+        ->and($secondDriver->requests[0]->processor->handle)->toBe('second');
 });
 
 it('redacts processor settings from debug output', function () {
@@ -209,10 +241,10 @@ function registerProcessor(
     string $handle,
     array $settings = [],
     array $operations = [],
-    ?TestAssetTransformDriver $driver = null,
-): TestAssetTransformDriver {
-    $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition(ucfirst($handle), $operations));
-    app(AssetTransformDrivers::class)->extend($handle, fn () => $driver);
+    ?TestAssetProcessorDriver $driver = null,
+): TestAssetProcessorDriver {
+    $driver ??= new TestAssetProcessorDriver(new AssetProcessorDriverDefinition(ucfirst($handle), $operations));
+    app(AssetProcessorDrivers::class)->extend($handle, fn () => $driver);
     app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => ucfirst($handle),
@@ -224,17 +256,17 @@ function registerProcessor(
     return $driver;
 }
 
-class TestAssetTransformDriver implements AssetTransformDriver
+class TestAssetProcessorDriver implements AssetProcessorDriver
 {
     public ?AssetTransformRequest $request = null;
 
     public function __construct(
-        private readonly ?AssetTransformDriverDefinition $driverDefinition = null,
+        private readonly ?AssetProcessorDriverDefinition $driverDefinition = null,
     ) {}
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return $this->driverDefinition ?? new AssetTransformDriverDefinition('Test');
+        return $this->driverDefinition ?? new AssetProcessorDriverDefinition('Test');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -245,7 +277,7 @@ class TestAssetTransformDriver implements AssetTransformDriver
     }
 }
 
-class TestPreloadingAssetTransformDriver extends TestAssetTransformDriver implements PreloadsAssetTransforms
+class TestPreloadingAssetProcessorDriver extends TestAssetProcessorDriver implements PreloadsAssetTransforms
 {
     /** @var list<AssetTransformRequest> */
     public array $requests = [];

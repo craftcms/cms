@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
@@ -77,7 +77,7 @@ function validTransformData(array $overrides = []): array
 
 function registerControllerAssetProcessor(string $driver = 'custom'): AssetProcessor
 {
-    app(AssetTransformDrivers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
+    app(AssetProcessorDrivers::class)->extend($driver, fn () => new ControllerAssetProcessorDriver);
     $transformer = new AssetProcessor([
         'name' => 'Custom',
         'handle' => $driver,
@@ -86,21 +86,6 @@ function registerControllerAssetProcessor(string $driver = 'custom'): AssetProce
     app(AssetProcessors::class)->saveAssetProcessor($transformer);
 
     return $transformer;
-}
-
-function imageTransformFormControls(array $nodes): array
-{
-    $controls = [];
-
-    foreach ($nodes as $node) {
-        if (isset($node['control'])) {
-            $controls[] = $node['control'];
-        }
-
-        array_push($controls, ...imageTransformFormControls($node['children'] ?? []));
-    }
-
-    return $controls;
 }
 
 it('requires authentication', function () {
@@ -156,8 +141,10 @@ it('groups declared operation controls by Asset Processor', function () {
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', fn ($nodes): bool => collect(imageTransformFormControls(collect($nodes)->all()))
-                ->pluck('path')
+            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+                ->pluck('children')
+                ->flatten(1)
+                ->pluck('control.path')
                 ->contains(['operations', $transformer->uid, 'blur'])));
 });
 
@@ -361,11 +348,11 @@ it('deletes a transform', function () {
     expect($service->getTransformByHandle($transform->handle))->toBeNull();
 });
 
-class ControllerAssetTransformDriver implements AssetTransformDriver
+class ControllerAssetProcessorDriver implements AssetProcessorDriver
 {
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition(
+        return new AssetProcessorDriverDefinition(
             'Custom',
             operations: ['blur' => ['integer', 'min:1']],
             operationFields: [

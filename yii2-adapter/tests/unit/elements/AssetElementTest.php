@@ -12,11 +12,11 @@ namespace crafttests\unit\elements;
 use craft\fs\Local;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -52,10 +52,10 @@ class AssetElementTest extends TestCase
             'filename' => 'foo.jpg',
         ]);
 
-        app(AssetTransformDrivers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
-            public function definition(): AssetTransformDriverDefinition
+        app(AssetProcessorDrivers::class)->extend('test', fn() => new class() implements AssetProcessorDriver {
+            public function definition(): AssetProcessorDriverDefinition
             {
-                return new AssetTransformDriverDefinition('Test');
+                return new AssetProcessorDriverDefinition('Test');
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult

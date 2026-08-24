@@ -50,7 +50,7 @@ class AssetProcessors
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
-        private readonly AssetTransformDrivers $drivers,
+        private readonly AssetProcessorDrivers $processorDrivers,
     ) {
         $this->operations = [
             'fill' => ['string'],
@@ -276,7 +276,7 @@ class AssetProcessors
     {
         $request = $this->request($asset, $definition, $immediately);
 
-        return $this->drivers->driver($request->processor->driver)->transform($request);
+        return $this->processorDrivers->driver($request->processor->driver)->transform($request);
     }
 
     public function invalidate(Asset $asset): void
@@ -299,7 +299,7 @@ class AssetProcessors
         }
 
         foreach ($requestsByDriver as $driverHandle => $requests) {
-            $driver = $this->drivers->driver($driverHandle);
+            $driver = $this->processorDrivers->driver($driverHandle);
 
             if ($driver instanceof PreloadsAssetTransforms) {
                 $driver->preloadAssetTransforms($requests);
@@ -312,7 +312,7 @@ class AssetProcessors
     {
         $operations = $this->operations;
 
-        foreach ($this->drivers->driver($processor->driver)->definition()->operations as $handle => $rules) {
+        foreach ($this->processorDrivers->driver($processor->driver)->definition()->operations as $handle => $rules) {
             if (! is_string($handle) || $handle === '') {
                 throw new InvalidAssetTransformException('Asset Transform operation handles must be non-empty strings.');
             }
@@ -336,7 +336,7 @@ class AssetProcessors
     /** @return array<string, Field> */
     public function operationFields(AssetProcessor $processor): array
     {
-        $definition = $this->drivers->driver($processor->driver)->definition();
+        $definition = $this->processorDrivers->driver($processor->driver)->definition();
         $rules = $this->operationRules($processor);
 
         foreach ($definition->operationFields as $handle => $field) {
@@ -412,8 +412,8 @@ class AssetProcessors
     {
         $processor->validate();
 
-        if ($processor->driver && ! $this->drivers->has($processor->driver)) {
-            $processor->errors()->add('driver', t('The selected Asset Transform driver is unavailable.'));
+        if ($processor->driver && ! $this->processorDrivers->has($processor->driver)) {
+            $processor->errors()->add('driver', t('The selected Asset Processor driver is unavailable.'));
         }
 
         $duplicate = $this->getAllAssetProcessors()

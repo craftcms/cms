@@ -14,14 +14,15 @@
     edit,
   } from '@actions/Settings/AssetProcessorsController';
 
-  type AssetProcessorData = CraftCms.Cms.Asset.Data.AssetProcessorIndexData;
+  type AssetProcessorIndexData =
+    CraftCms.Cms.Asset.Data.AssetProcessorIndexData;
 
   const props = defineProps<{
-    processors: Array<AssetProcessorData>;
+    processors: Array<AssetProcessorIndexData>;
     readOnly: boolean;
   }>();
 
-  const columnHelper = createCraftColumnHelper<AssetProcessorData>();
+  const columnHelper = createCraftColumnHelper<AssetProcessorIndexData>();
   const columnVisibility = computed(() => ({
     name: true,
     handle: true,
@@ -53,7 +54,7 @@
               ),
               onClick: () =>
                 router
-                  .optimistic<{processors: Array<AssetProcessorData>}>(
+                  .optimistic<{processors: Array<AssetProcessorIndexData>}>(
                     ({processors}) => ({
                       processors: processors.filter(
                         ({handle}) => handle !== row.original.handle
@@ -66,7 +67,7 @@
         : []
     ),
   ]);
-  const table = useVueTable<AssetProcessorData>({
+  const table = useVueTable<AssetProcessorIndexData>({
     get data() {
       return props.processors;
     },
@@ -79,7 +80,7 @@
       },
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<AssetProcessorData>(),
+    getCoreRowModel: getCoreRowModel<AssetProcessorIndexData>(),
   });
 </script>
 

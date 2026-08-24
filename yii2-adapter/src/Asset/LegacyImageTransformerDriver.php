@@ -8,9 +8,9 @@ use Craft;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\models\ImageTransform;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -21,15 +21,15 @@ use CraftCms\Cms\Support\Html;
 use LogicException;
 
 /** @internal */
-class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAssetTransforms
+class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAssetTransforms
 {
     public function __construct(private readonly string $transformer)
     {
     }
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition($this->transformer);
+        return new AssetProcessorDriverDefinition($this->transformer);
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

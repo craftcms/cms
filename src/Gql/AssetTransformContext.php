@@ -34,12 +34,3 @@ class AssetTransformContext
         return $this->transforms[$asset] ?? null;
     }
 }
-
-readonly class AssetTransformState
-{
-    /** @param array<string, mixed>|string $definition */
-    public function __construct(
-        public array|string $definition,
-        public ?bool $immediately,
-    ) {}
-}

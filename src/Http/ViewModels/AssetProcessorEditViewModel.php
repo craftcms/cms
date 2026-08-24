@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Handle;
@@ -29,7 +29,7 @@ class AssetProcessorEditViewModel extends ViewModel
     /** @param array<string, mixed>|null $values */
     public function __construct(
         private readonly AssetProcessor $processor,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
+        private readonly AssetProcessorDrivers $assetProcessorDrivers,
         private readonly FormResolver $formResolver,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
@@ -99,7 +99,7 @@ class AssetProcessorEditViewModel extends ViewModel
     /** @return list<array{label:string,value:string,disabled?:bool}> */
     private function driverOptions(): array
     {
-        $options = collect($this->assetTransformDrivers->definitions())
+        $options = collect($this->assetProcessorDrivers->definitions())
             ->map(fn ($definition, string $handle): array => [
                 'label' => $definition->name,
                 'value' => $handle,
@@ -122,7 +122,7 @@ class AssetProcessorEditViewModel extends ViewModel
     {
         $driver = $values['driver'];
 
-        if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
+        if (! is_string($driver) || ! $this->assetProcessorDrivers->has($driver)) {
             return $this->formResolver->resolve(Form::make([
                 Callout::make('unavailable-driver', t('This Asset Processor’s driver is unavailable. Select an available driver to save it.')),
                 Field::make(
@@ -134,7 +134,7 @@ class AssetProcessorEditViewModel extends ViewModel
             ]), new FormContext(mode: $mode));
         }
 
-        $definition = $this->assetTransformDrivers->driver($driver)->definition();
+        $definition = $this->assetProcessorDrivers->driver($driver)->definition();
 
         return $this->formResolver->resolve(
             Form::make($definition->settings),

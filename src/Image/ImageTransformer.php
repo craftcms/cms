@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -56,7 +56,7 @@ use Throwable;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-class ImageTransformer implements AssetTransformDriver, PreloadsAssetTransforms
+class ImageTransformer implements AssetProcessorDriver, PreloadsAssetTransforms
 {
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
@@ -65,9 +65,9 @@ class ImageTransformer implements AssetTransformDriver, PreloadsAssetTransforms
 
     private ?string $editingTempPath = null;
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition(t('Craft'), settings: [
+        return new AssetProcessorDriverDefinition(t('Craft'), settings: [
             Field::make(t('Output Filesystem'), Combobox::make('filesystem')
                 ->value(null)
                 ->options([

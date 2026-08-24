@@ -63,7 +63,7 @@ trait EagerloadsTransforms
     }
 
     /**
-     * Asks capable Asset Transform drivers to preload the requested transforms for matching assets.
+     * Asks capable Asset Processor drivers to preload the requested transforms for matching assets.
      *
      * This may improve later transform rendering performance, but does not guarantee that output has materialized.
      *

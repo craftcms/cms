@@ -2,9 +2,20 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
+use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 
@@ -12,6 +23,36 @@ use function CraftCms\Cms\t;
 
 beforeEach(function () {
     $this->systemMessages = app(SystemMessages::class);
+});
+
+it('generates asset transforms immediately while rendering system messages', function () {
+    $driver = new SystemMessageAssetProcessorDriver;
+    app(AssetProcessorDrivers::class)->extend('system-message', fn () => $driver);
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'System message',
+        'handle' => 'system-message',
+        'driver' => 'system-message',
+    ]), false);
+    Cms::config()
+        ->defaultAssetProcessor('system-message')
+        ->generateTransformsBeforePageLoad(false);
+    $asset = Asset::factory()->createElement();
+    $this->systemMessages->register('asset-transform', fn () => new SystemMessage([
+        'key' => 'asset-transform',
+        'heading' => 'Asset transform',
+        'subject' => 'Asset transform',
+        'body' => '{{ asset.getUrl({ width: 320 }) }}',
+    ]));
+
+    $message = app(RenderSystemMessageAction::class)->handle('asset-transform', ['asset' => $asset]);
+    $systemMessageRequests = count($driver->requests);
+    $asset->transform(['width' => 640]);
+
+    expect($message->textBody)->toContain('/system-message/320.webp')
+        ->and(collect($driver->requests)->take($systemMessageRequests)->every->immediately)->toBeTrue()
+        ->and($driver->requests)->toHaveCount($systemMessageRequests + 1)
+        ->and($driver->requests[$systemMessageRequests]->immediately)->toBeFalse();
 });
 
 it('resolves registered messages in the site locale', function () {
@@ -91,3 +132,24 @@ it('can get messages including overrides', function () {
 
     Edition::set($edition);
 });
+
+class SystemMessageAssetProcessorDriver implements AssetProcessorDriver
+{
+    /** @var list<AssetTransformRequest> */
+    public array $requests = [];
+
+    public function definition(): AssetProcessorDriverDefinition
+    {
+        return new AssetProcessorDriverDefinition('System message');
+    }
+
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        $this->requests[] = $request;
+
+        return new AssetTransformResult(
+            "/system-message/{$request->operations['width']}.webp",
+            'image/webp',
+        );
+    }
+}

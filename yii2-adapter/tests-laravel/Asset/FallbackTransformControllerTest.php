@@ -39,14 +39,11 @@ it('serves originals from the source filesystem', function(): void {
     ]);
     $asset->getVolume()->sourceDisk()->put($asset->getPath(), 'original-bytes');
 
-    $response = $this->get(action(FallbackTransformController::class, [
+    $this->get(action(FallbackTransformController::class, [
         'transform' => Crypt::encrypt($asset->id . ',original'),
-    ]))->assertOk();
-
-    $sourcePath = $asset->getVolume()->sourceDisk()->path($asset->getPath());
-
-    expect($response->baseResponse->getFile()->getRealPath())
-        ->toBe(realpath($sourcePath));
+    ]))
+        ->assertOk()
+        ->assertStreamedContent('original-bytes');
 });
 
 it('serves existing fallback transform files', function(): void {
@@ -61,9 +58,9 @@ it('serves existing fallback transform files', function(): void {
     File::ensureDirectoryExists(dirname($path));
     file_put_contents($path, 'transform-bytes');
 
-    $response = $this->get(action(FallbackTransformController::class, [
+    $this->get(action(FallbackTransformController::class, [
         'transform' => Crypt::encrypt("{$asset->id},{$transformString}"),
-    ]))->assertOk();
-
-    expect($response->baseResponse->getFile()->getRealPath())->toBe(realpath($path));
+    ]))
+        ->assertOk()
+        ->assertStreamedContent('transform-bytes');
 });

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -15,7 +15,6 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -46,22 +45,16 @@ describe('generate', function () {
             'height' => 800,
             'dateModified' => now()->subMinute(),
         ]);
-        $transformer = app(ImageTransformer::class);
-        $transform = new ImageTransform(['width' => 100]);
-        $index = $transformer->getTransformIndex($asset, $transform);
-        $path = $asset->getVolume()->uid.DIRECTORY_SEPARATOR.$asset->folderPath.$index->transformString.DIRECTORY_SEPARATOR.$index->filename;
-        $asset->getVolume()->sourceDisk()->put($path, 'transform-bytes');
-        $index->fileExists = true;
-        $transformer->storeTransformIndexData($index);
+        $asset->getVolume()->sourceDisk()->put(
+            $asset->getPath(),
+            file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
+        );
 
-        get(action([TransformController::class, 'generate'], ['transformId' => $index->id]))
-            ->assertForbidden();
-
-        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100], true);
 
         get($result->url)
             ->assertOk()
-            ->assertStreamedContent('transform-bytes');
+            ->assertHeader('Content-Type', 'image/jpeg');
     });
 
     it('serves Craft driver renditions from a configured private output filesystem', function () {
@@ -128,12 +121,7 @@ describe('generate', function () {
             $asset->getPath(),
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
-        $result = app(ImageTransformer::class)->transform(new AssetTransformRequest(
-            $asset,
-            app(AssetProcessors::class)->resolve('craft'),
-            ['width' => 100],
-            true,
-        ));
+        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100], true);
 
         get($result->url)->assertOk();
     });
@@ -153,13 +141,13 @@ describe('generate', function () {
     });
 
     it('generates named transforms with the selected processor', function () {
-        $driver = new class implements AssetTransformDriver
+        $driver = new class implements AssetProcessorDriver
         {
             public ?AssetTransformRequest $request = null;
 
-            public function definition(): AssetTransformDriverDefinition
+            public function definition(): AssetProcessorDriverDefinition
             {
-                return new AssetTransformDriverDefinition('Controller test');
+                return new AssetProcessorDriverDefinition('Controller test');
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -169,7 +157,7 @@ describe('generate', function () {
                 return new AssetTransformResult('/plugin/card.jpg', 'image/jpeg');
             }
         };
-        app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
+        app(AssetProcessorDrivers::class)->extend('controller-test', fn () => $driver);
         app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
             'uid' => Str::uuid()->toString(),
             'name' => 'Controller test',

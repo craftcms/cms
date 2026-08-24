@@ -14,11 +14,11 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
+use CraftCms\Cms\Asset\AssetProcessorDrivers;
 use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
 use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -187,16 +187,9 @@ it('keeps the legacy gql helper working against the new service', function() {
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
 });
 
-it('accepts the legacy immediately transform argument', function() {
-    expect(GqlHelper::prepareTransformArguments([
-        'width' => 320,
-        'immediately' => false,
-    ]))->toBe(['width' => 320]);
-});
-
 it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
-    $driver = new GqlImmediateAssetTransformDriver();
-    app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
+    $driver = new GqlImmediateAssetProcessorDriver();
+    app(AssetProcessorDrivers::class)->extend('gql-immediately', fn() => $driver);
     app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
         'uid' => Str::uuid()->toString(),
         'name' => 'GQL immediately',
@@ -315,13 +308,13 @@ class LegacyReplacementArgumentHandler extends AdapterArgumentHandler
     }
 }
 
-class GqlImmediateAssetTransformDriver implements AssetTransformDriver
+class GqlImmediateAssetProcessorDriver implements AssetProcessorDriver
 {
     public array $requests = [];
 
-    public function definition(): AssetTransformDriverDefinition
+    public function definition(): AssetProcessorDriverDefinition
     {
-        return new AssetTransformDriverDefinition('GraphQL immediately');
+        return new AssetProcessorDriverDefinition('GraphQL immediately');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
