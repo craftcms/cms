@@ -119,6 +119,6 @@ return new class extends Migration
             $projectConfig->muteEvents = $muteEvents;
         }
 
-        $projectConfig->flush();
+        $projectConfig->saveModifiedConfigData();
     }
 };
