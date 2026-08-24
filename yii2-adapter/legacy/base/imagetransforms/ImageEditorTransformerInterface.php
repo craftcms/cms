@@ -2,7 +2,7 @@
 
 namespace craft\base\imagetransforms;
 
-use CraftCms\Cms\Asset\Elements\Asset;
+use craft\elements\Asset;
 
 interface ImageEditorTransformerInterface
 {
