@@ -30,16 +30,19 @@
     actions: !props.readOnly,
   }));
   const columns = ref([
-    columnHelper.link('name', {
-      header: t('Name'),
-      cell: ({row, getValue}) =>
-        row.original.isDefault
-          ? `${String(getValue())} (${t('Default')})`
-          : getValue(),
-      props: ({row}) => ({
-        href: edit({handle: row.original.handle}).url,
-      }),
-    }),
+    columnHelper.link(
+      (processor) =>
+        processor.isDefault
+          ? `${processor.name} (${t('Default')})`
+          : processor.name,
+      {
+        id: 'name',
+        header: t('Name'),
+        props: ({row}) => ({
+          href: edit({handle: row.original.handle}).url,
+        }),
+      }
+    ),
     columnHelper.handle('handle'),
     columnHelper.accessor('driver', {
       header: t('Driver'),
