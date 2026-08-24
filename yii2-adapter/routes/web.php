@@ -10,10 +10,18 @@ use CraftCms\Yii2Adapter\Http\SavePluginSettingsController;
 use Illuminate\Support\Facades\Route;
 
 $routes = app(CraftRoutes::class);
+$sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpActionTriggerRoutePrefix()
+    ? [[$routes->cpActionTriggerRoutePrefix(), ['craft.cp']]]
+    : [
+        [$routes->actionTriggerRoutePrefix(), ['craft.web']],
+        [$routes->cpActionTriggerRoutePrefix(), ['craft.cp']],
+    ];
 
-Route::middleware(['craft', 'craft.web'])
-    ->prefix($routes->actionTriggerRoutePrefix())
-    ->get('assets/generate-fallback-transform', FallbackTransformController::class);
+foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
+    Route::middleware(['web', 'craft', ...$middleware])
+        ->prefix($prefix)
+        ->get('assets/generate-fallback-transform', FallbackTransformController::class);
+}
 
 Route::middleware([
     'web',
