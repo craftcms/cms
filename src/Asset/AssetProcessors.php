@@ -459,10 +459,6 @@ class AssetProcessors
 
     private function rewriteHandleReferences(string $oldHandle, string $newHandle): void
     {
-        if (Cms::config()->defaultAssetProcessor === $oldHandle) {
-            Cms::config()->defaultAssetProcessor = $newHandle;
-        }
-
         $volumes = app(Volumes::class);
 
         foreach ($volumes->getAllVolumes() as $volume) {
