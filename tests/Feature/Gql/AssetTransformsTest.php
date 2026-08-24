@@ -12,6 +12,8 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Str;
 
 beforeEach(function () {
@@ -91,6 +93,36 @@ it('resolves rendition fields for a capable non-image driver', function () {
         ->assertJsonPath('data.transformed.url', '/gql-rendition.webp');
 });
 
+it('applies processor and operation overrides to named transforms', function () {
+    $driver = new GqlAssetProcessorDriver('/explicit-rendition.webp');
+    app(AssetProcessorDrivers::class)->extend('explicit-gql', fn () => $driver);
+    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Explicit GraphQL',
+        'handle' => 'explicit-gql',
+        'driver' => 'explicit-gql',
+    ]), false);
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Thumbnail',
+        'handle' => 'thumbnail',
+        'width' => 200,
+    ]));
+    $asset = Asset::factory()->createElement();
+    gqlActivateFullAccessSchema();
+
+    graphQL(<<<GQL
+        {
+            asset(id: {$asset->id}) {
+                url(handle: "thumbnail", processor: "explicit-gql", width: 480)
+                width(handle: "thumbnail", processor: "explicit-gql", width: 480)
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonPath('data.asset.url', '/explicit-rendition.webp')
+        ->assertJsonPath('data.asset.width', 480);
+});
+
 it('keeps Asset field resolution order-independent', function () {
     $asset = Asset::factory()->createElement([
         'width' => 800,
@@ -153,6 +185,8 @@ class GqlAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTran
 
     public ?AssetTransformRequest $request = null;
 
+    public function __construct(private readonly string $url = '/gql-rendition.webp') {}
+
     public function definition(): AssetProcessorDriverDefinition
     {
         return new AssetProcessorDriverDefinition('GraphQL', [
@@ -165,7 +199,7 @@ class GqlAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTran
         $this->request = $request;
 
         return new AssetTransformResult(
-            url: '/gql-rendition.webp',
+            url: $this->url,
             mimeType: 'image/webp',
             width: $request->operations['width'] ?? 640,
             height: $request->operations['height'] ?? 360,

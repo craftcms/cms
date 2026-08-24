@@ -257,7 +257,16 @@ class GqlHelper
 
         unset($arguments['immediately']);
 
-        return $arguments['handle'] ?? $arguments;
+        $handle = $arguments['handle'] ?? null;
+
+        if ($handle === null) {
+            return $arguments;
+        }
+
+        unset($arguments['handle']);
+        $arguments['transform'] = $handle;
+
+        return $arguments;
     }
 
     /**
