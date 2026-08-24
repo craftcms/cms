@@ -7,13 +7,18 @@
   const props = withDefaults(
     defineProps<{
       confirm?: string;
+      disabled?: boolean;
       label?: string;
       icon?: string;
     }>(),
-    {label: t('Delete item'), icon: 'x'}
+    {disabled: false, label: t('Delete item'), icon: 'x'}
   );
 
   function handleClick(): void {
+    if (props.disabled) {
+      return;
+    }
+
     if (props.confirm && !window.confirm(props.confirm)) {
       return;
     }
@@ -26,6 +31,7 @@
   <craft-button
     type="button"
     @click="handleClick"
+    :aria-disabled="disabled ? 'true' : undefined"
     size="small"
     variant="danger-plain"
     v-bind="$attrs"
@@ -34,4 +40,9 @@
   </craft-button>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  craft-button[aria-disabled='true'] {
+    cursor: default;
+    opacity: 0.25;
+  }
+</style>

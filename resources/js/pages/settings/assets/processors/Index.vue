@@ -81,7 +81,6 @@
           {
             id: tooltipId,
             class: 'inline-flex',
-            tabindex: 0,
           },
           deleteButton
         ),

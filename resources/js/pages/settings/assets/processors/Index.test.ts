@@ -22,7 +22,10 @@ vi.mock('@/modules/admin-table/components/DeleteButton.vue', () => ({
     inheritAttrs: false,
     props: ['disabled'],
     render() {
-      return h('button', {disabled: this.disabled, ...this.$attrs});
+      return h('button', {
+        'aria-disabled': this.disabled ? 'true' : undefined,
+        ...this.$attrs,
+      });
     },
   }),
 }));
@@ -79,7 +82,15 @@ it('links the default Craft processor to its edit screen', async () => {
 
   expect(link?.textContent).toBe('Craft (Default)');
   expect(link?.getAttribute('href')).toBe('/settings/assets/processors/craft');
-  expect(container.querySelector('button')?.disabled).toBe(true);
+  expect(container.querySelector('button')?.disabled).toBe(false);
+  expect(container.querySelector('button')?.getAttribute('aria-disabled')).toBe(
+    'true'
+  );
+  expect(
+    container
+      .querySelector('#delete-asset-processor-craft-uid')
+      ?.hasAttribute('tabindex')
+  ).toBe(false);
   expect(container.querySelector('craft-tooltip')?.textContent).toBe(
     'The Craft Asset Processor cannot be deleted.'
   );
