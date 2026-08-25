@@ -78,6 +78,7 @@ use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -7217,7 +7218,7 @@ JS,
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, $criteria);
+                Craft::configure($query, ComponentHelper::cleanseConfig($criteria));
             }
         }
 
