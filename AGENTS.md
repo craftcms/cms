@@ -18,6 +18,11 @@ This is a large codebase with some large files. Search narrowly before reading f
 ## Commands
 
 - Use `composer fix-cs`, `composer phpstan`, and `composer ci` for repository-wide PHP checks.
+- Pass `--no-interaction` to Artisan commands.
+
+## Routes
+
+- For links to registered Laravel routes, use named routes and `route()` instead of hard-coded paths.
 
 ## PHP
 
