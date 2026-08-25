@@ -91,6 +91,16 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   #resizeObserver: ResizeObserver | null = null;
 
+  constructor() {
+    super();
+
+    // This modal's dismissal is the footer's Cancel button, and its header
+    // override renders no close button — so a close button must not be what
+    // keeps the header alive. With `show-title` off the header then collapses
+    // instead of reserving a band of padding above the index.
+    this.noClose = true;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
 

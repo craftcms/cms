@@ -33,6 +33,11 @@ let nextId = 0;
  * @csspart header - The header row.
  * @csspart title - The heading.
  * @csspart close - The header close button.
+ *
+ * The header renders when there is something to put in it — a `label`, a close
+ * button, or both. Set `no-close` on a dialog that dismisses itself some other
+ * way; with no label either, the header is dropped rather than left as an empty
+ * band of padding.
  * @csspart body - The scrolling body region.
  * @csspart footer - The footer row.
  *
@@ -80,6 +85,17 @@ export default class CraftDialog extends LitElement {
   /** Close when the backdrop is clicked. Off by default. */
   @property({type: Boolean, attribute: 'close-on-outside-click'})
   closeOnOutsideClick = false;
+
+  /**
+   * Drop the header's close button.
+   *
+   * Negated because the button is on by default, and a boolean attribute can
+   * only express presence. Set it on a dialog that provides its own dismissal —
+   * a Cancel button in the footer, say — so the header isn't kept alive by a
+   * control that isn't there.
+   */
+  @property({type: Boolean, attribute: 'no-close', reflect: true})
+  noClose = false;
 
   protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
@@ -143,7 +159,9 @@ export default class CraftDialog extends LitElement {
         : nothing}
       <dialog
         part="dialog"
-        aria-labelledby=${this.hasHeader ? this.titleId : nothing}
+        aria-labelledby=${this.hasHeader && this.label !== ''
+          ? this.titleId
+          : nothing}
         @cancel=${this.#onNativeCancel}
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
@@ -159,30 +177,33 @@ export default class CraftDialog extends LitElement {
   /**
    * Whether to render the header at all.
    *
-   * A dialog with no label has nothing to put there, and rendering the row
-   * anyway leaves an empty band of padding above the body. It also governs
-   * `aria-labelledby`, which must not point at a heading that isn't there.
+   * It goes when there is nothing to put in it — no label *and* no close
+   * button — because the row is otherwise just a band of padding above the
+   * body. A close button on its own is reason enough to keep it; it needs
+   * somewhere to live.
    *
-   * Note the header owns the close button, so a label-less dialog needs to
-   * supply its own dismissal — a `data-dialog="close"` control in the footer.
+   * Also governs `aria-labelledby`, which must not point at a heading that
+   * isn't rendered.
    */
   protected get hasHeader(): boolean {
-    return this.label !== '';
+    return this.label !== '' || !this.noClose;
   }
 
   protected renderHeader(): TemplateResult {
     return html`
       <header class="header" part="header">
         <h2 class="title" part="title" id=${this.titleId}>${this.label}</h2>
-        <button
-          type="button"
-          class="close"
-          part="close"
-          aria-label=${t('Close')}
-          @click=${() => this.requestClose()}
-        >
-          <craft-icon name="xmark"></craft-icon>
-        </button>
+        ${this.noClose
+          ? nothing
+          : html`<button
+              type="button"
+              class="close"
+              part="close"
+              aria-label=${t('Close')}
+              @click=${() => this.requestClose()}
+            >
+              <craft-icon name="xmark"></craft-icon>
+            </button>`}
       </header>
     `;
   }

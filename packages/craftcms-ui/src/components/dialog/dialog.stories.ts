@@ -56,11 +56,7 @@ type Story = StoryObj<DialogArgs>;
 
 export const Default: Story = {};
 
-/**
- * No label — the header is not rendered at all, so there is no empty band of
- * padding above the body. Note it also carries the close button, so a
- * label-less dialog should supply its own dismissal.
- */
+/** No label, but the close button keeps the header — it needs somewhere to live. */
 export const NoLabel: Story = {
   render(args: DialogArgs) {
     function open() {
@@ -71,6 +67,30 @@ export const NoLabel: Story = {
 
     return html`
       <craft-dialog id="storybook-dialog-nolabel">
+        ${args.body}
+
+        <craft-button slot="footer" data-dialog="close">Close</craft-button>
+      </craft-dialog>
+
+      <craft-button @click=${open}>Open Dialog</craft-button>
+    `;
+  },
+};
+
+/**
+ * Neither a label nor a close button, so the header goes entirely rather than
+ * leaving a band of padding above the body. Dismissal comes from the footer.
+ */
+export const NoHeader: Story = {
+  render(args: DialogArgs) {
+    function open() {
+      (
+        document.getElementById('storybook-dialog-noheader') as CraftDialog
+      ).opened = true;
+    }
+
+    return html`
+      <craft-dialog id="storybook-dialog-noheader" no-close>
         ${args.body}
 
         <craft-button slot="footer" data-dialog="close">Close</craft-button>
