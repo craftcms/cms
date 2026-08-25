@@ -63,7 +63,7 @@ describe('craft-dialog', () => {
     const title = shadow(dialog, '.title');
 
     expect(title).not.toBeNull();
-    expect(title!.textContent).toBe('Test Dialog');
+    expect(title!.textContent!.trim()).toBe('Test Dialog');
   });
 
   it('labels the dialog with the title', async () => {
@@ -101,7 +101,7 @@ describe('craft-dialog', () => {
   it('keeps a labelled header when the close button is dropped', async () => {
     const dialog = await createDialog((d) => d.setAttribute('no-close', ''));
 
-    expect(shadow(dialog, '.title')!.textContent).toBe('Test Dialog');
+    expect(shadow(dialog, '.title')!.textContent!.trim()).toBe('Test Dialog');
     expect(shadow(dialog, '.close')).toBeNull();
   });
 
@@ -130,7 +130,7 @@ describe('craft-dialog', () => {
     dialog.label = 'Now labelled';
     await dialog.updateComplete;
 
-    expect(shadow(dialog, '.title')!.textContent).toBe('Now labelled');
+    expect(shadow(dialog, '.title')!.textContent!.trim()).toBe('Now labelled');
     expect(shadow(dialog, 'dialog')!.getAttribute('aria-labelledby')).toBe(
       shadow(dialog, '.title')!.id
     );

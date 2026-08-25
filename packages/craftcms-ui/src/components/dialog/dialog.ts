@@ -49,6 +49,11 @@ function releasePageScroll(): void {
  * {@link renderFooter} rather than `render()`, and resize themselves through the
  * `--c-dialog-*` custom properties.
  *
+ * The header renders when there is something to put in it — a `label`, a close
+ * button, or both. Set `no-close` on a dialog that dismisses itself some other
+ * way; with no label either, the header is dropped rather than left as an empty
+ * band of padding.
+ *
  * @slot - The dialog body.
  * @slot footer - Footer content, typically buttons.
  * @csspart dialog - The native `<dialog>` element.
@@ -56,11 +61,6 @@ function releasePageScroll(): void {
  * @csspart header - The header row.
  * @csspart title - The heading.
  * @csspart close - The header close button.
- *
- * The header renders when there is something to put in it — a `label`, a close
- * button, or both. Set `no-close` on a dialog that dismisses itself some other
- * way; with no label either, the header is dropped rather than left as an empty
- * band of padding.
  * @csspart body - The scrolling body region.
  * @csspart footer - The footer row.
  *
@@ -221,7 +221,11 @@ export default class CraftDialog extends LitElement {
   protected renderHeader(): TemplateResult {
     return html`
       <header class="header" part="header">
-        <h2 class="title" part="title" id=${this.titleId}>${this.label}</h2>
+        ${this.label === ''
+          ? nothing
+          : html`<h2 class="title" part="title" id=${this.titleId}>
+              ${this.label}
+            </h2>`}
         ${this.noClose
           ? nothing
           : html`<button

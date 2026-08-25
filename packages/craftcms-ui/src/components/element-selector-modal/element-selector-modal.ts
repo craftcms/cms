@@ -154,13 +154,15 @@ export default class CraftElementSelectorModal extends CraftDialog {
   protected override renderHeader(): TemplateResult {
     return html`
       <header class="header" part="header">
-        <h1
-          class=${this.showTitle ? 'title' : 'title title--hidden'}
-          part="title"
-          id=${this.titleId}
-        >
-          ${this.label}
-        </h1>
+        ${this.label === ''
+          ? nothing
+          : html`<h1
+              class=${this.showTitle ? 'title' : 'title title--hidden'}
+              part="title"
+              id=${this.titleId}
+            >
+              ${this.label}
+            </h1>`}
         <button
           type="button"
           class="close"

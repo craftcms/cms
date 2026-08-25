@@ -4,7 +4,12 @@ import {
   type SourcePathSegment,
   type VolumeFolderSelectorOptions,
 } from '@craftcms/ui';
-import type CraftElementSelectorModal from '@craftcms/ui/components/element-selector-modal/element-selector-modal';
+// The type comes from the package root, the same entry as the controller above.
+// The deep subpath emits its own declaration of `ElementSelectorController`, and
+// the class has private fields — so TypeScript treats the two as different
+// types and the controller stops being assignable to `element.controller`. The
+// deep import stays, but only for its side effect: registering the element.
+import type {CraftElementSelectorModal} from '@craftcms/ui';
 import '@craftcms/ui/components/element-selector-modal/element-selector-modal';
 import {uiLayerManager} from '@/modules/slideout/slideout';
 
