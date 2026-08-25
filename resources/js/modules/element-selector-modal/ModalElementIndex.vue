@@ -59,52 +59,38 @@
     deep: true,
   });
 
-  /**
-   * `ElementSources` renders real links, because on a page picking a source IS a
-   * navigation. In a modal it must not be — following one would replace the page
-   * behind the modal — so the click is intercepted and turned into a load.
-   */
-  function onSourceClick(event: MouseEvent): void {
-    const link = (event.target as HTMLElement | null)?.closest?.('a[href]');
-
-    if (!link) {
-      return;
-    }
-
-    event.preventDefault();
-
-    const source = new URL(
-      link.getAttribute('href')!,
-      window.location.origin
-    ).searchParams.get('source');
-
-    if (source) {
-      clearSelection();
-      index.query.value = {...index.query.value, source};
-      void index.load(index.query.value);
-    }
-  }
+  // Switching source replaces the whole result set, so anything picked from
+  // the old one is no longer on screen to un-pick.
+  watch(
+    () => elementIndex.source?.key,
+    () => clearSelection()
+  );
 
   defineExpose({selectedElements, hasSelection, clearSelection});
 </script>
 
 <template>
-  <div class="modal-element-index flex h-full">
+  <div class="modal-element-index">
     <nav
       v-if="elementIndex.sources.length > 1"
-      class="modal-element-index__sidebar sidebar"
+      class="modal-element-index__sidebar"
       :aria-label="t('Sources')"
-      @click="onSourceClick"
     >
+      <!--
+        The visitor is what keeps a source click inside the modal. Without it
+        `ElementSources` runs an Inertia visit, which navigates the page behind
+        it — the route below exists only so the nav items render as real links.
+      -->
       <ElementSources
         :sources="elementIndex.sources"
         :route="{url: () => ''}"
+        :index-visitor="index.visitor"
         :active-source="elementIndex.source?.key"
         :view-mode="viewState.mode !== 'table' ? viewState.mode : null"
       />
     </nav>
 
-    <div class="modal-element-index__main content flex-grow">
+    <div class="modal-element-index__main">
       <BaseElementIndex
         :table="table"
         :selectable="true"
@@ -163,3 +149,16 @@
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+  .modal-element-index {
+    display: grid;
+    grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
+  }
+
+  .modal-element-index__sidebar {
+  }
+
+  .modal-element-index__main {
+  }
+</style>

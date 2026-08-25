@@ -51,12 +51,14 @@ export default css`
   }
 
   /*
-    With the title hidden the heading is still rendered — the dialog is labelled
-    by it — but it is taken out of flow, so the header has to collapse rather
-    than leave a band of padding above the index.
+    The close button is always present, so the header always has something in
+    it. With the title hidden the heading is taken out of flow, leaving the
+    button as the only flex item — and space-between would then push it to the
+    left, so it is pinned to the end instead.
   */
   .header {
-    padding: 0;
+    justify-content: flex-end;
+    padding-block-end: 0;
   }
 
   /*
@@ -76,8 +78,7 @@ export default css`
   }
 
   :host([show-title]) .header {
-    padding-inline: var(--c-spacing-lg);
-    padding-block-start: var(--c-spacing-lg);
+    justify-content: space-between;
     padding-block-end: var(--c-spacing-md);
   }
 

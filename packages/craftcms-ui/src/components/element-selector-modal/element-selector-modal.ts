@@ -7,6 +7,7 @@ import CraftDialog from '../dialog/dialog.js';
 import {ElementSelectorHostController} from './controller-host.js';
 import styles from './element-selector-modal.styles.js';
 import '../button/button.js';
+import '../icon/icon.js';
 import '../spinner/spinner.js';
 
 /** Below this the index hides its sidebar behind a toggle. */
@@ -35,6 +36,7 @@ const NARROW_THRESHOLD = 550;
  * @csspart footer - The footer row.
  * @csspart secondary-actions - The left-hand footer group.
  * @csspart primary-actions - The right-hand footer group.
+ * @csspart close - The header close button.
  * @csspart cancel - The Cancel button.
  * @csspart select - The Select button.
  *
@@ -91,16 +93,6 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   #resizeObserver: ResizeObserver | null = null;
 
-  constructor() {
-    super();
-
-    // This modal's dismissal is the footer's Cancel button, and its header
-    // override renders no close button — so a close button must not be what
-    // keeps the header alive. With `show-title` off the header then collapses
-    // instead of reserving a band of padding above the index.
-    this.noClose = true;
-  }
-
   override connectedCallback(): void {
     super.connectedCallback();
 
@@ -152,7 +144,13 @@ export default class CraftElementSelectorModal extends CraftDialog {
     }
   }
 
-  /** Heading only — dismissal lives in the footer's Cancel button. */
+  /**
+   * An `h1` rather than the base's `h2` — the modal is the page's main content
+   * while it is open — and the close button alongside it.
+   *
+   * The heading is rendered even when `show-title` is off, because the dialog is
+   * labelled by it; it is only taken out of flow.
+   */
   protected override renderHeader(): TemplateResult {
     return html`
       <header class="header" part="header">
@@ -163,6 +161,16 @@ export default class CraftElementSelectorModal extends CraftDialog {
         >
           ${this.label}
         </h1>
+        <button
+          type="button"
+          class="close"
+          part="close"
+          aria-label=${t('Close')}
+          ?disabled=${this.busy}
+          @click=${this.#onCloseClick}
+        >
+          <craft-icon name="xmark"></craft-icon>
+        </button>
       </header>
     `;
   }
@@ -252,6 +260,15 @@ export default class CraftElementSelectorModal extends CraftDialog {
   };
 
   #onCancelClick = (): void => {
+    if (this.busy) {
+      return;
+    }
+
+    this.requestClose();
+  };
+
+  // Same dismissal as Cancel — the controller decides whether it is allowed.
+  #onCloseClick = (): void => {
     if (this.busy) {
       return;
     }

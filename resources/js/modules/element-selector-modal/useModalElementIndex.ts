@@ -228,5 +228,7 @@ export function useModalElementIndex(options: Options) {
     clearSelection,
     load,
     query: visitor.query,
+    /** Handed to `ElementSources` so picking a source loads here, not the page. */
+    visitor,
   };
 }

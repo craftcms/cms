@@ -10,6 +10,29 @@ import '../icon/icon.js';
 let nextId = 0;
 
 /**
+ * How many open dialogs are holding the page's scroll.
+ *
+ * Counted rather than toggled, because dialogs stack — a selector modal opened
+ * from a slideout — and only the last one to close should hand scrolling back.
+ * `no-scroll` is the CP's existing convention (the legacy stylesheet and
+ * `panel-stack.css` both define it), so this cooperates with the slideouts
+ * rather than fighting them over `body.style.overflow`.
+ */
+let scrollLocks = 0;
+
+function lockPageScroll(): void {
+  if (scrollLocks++ === 0) {
+    document.body.classList.add('no-scroll');
+  }
+}
+
+function releasePageScroll(): void {
+  if (scrollLocks > 0 && --scrollLocks === 0) {
+    document.body.classList.remove('no-scroll');
+  }
+}
+
+/**
  * craft-dialog is a modal dialog over a native `<dialog>`.
  *
  * Set the `open` attribute (or the `opened` property) to show it; default-slot
@@ -107,6 +130,8 @@ export default class CraftDialog extends LitElement {
 
   #releaseFocusTrap: (() => void) | null = null;
 
+  #holdsScrollLock = false;
+
   /**
    * Watches light-DOM children so an empty footer collapses.
    *
@@ -137,6 +162,10 @@ export default class CraftDialog extends LitElement {
 
     this.#releaseFocusTrap?.();
     this.#releaseFocusTrap = null;
+
+    // Removed while still open — an unmounting Vue view, say — must not leave
+    // the page stuck.
+    this.#releaseScrollLock();
   }
 
   /** The native element, once rendered. */
@@ -245,6 +274,12 @@ export default class CraftDialog extends LitElement {
       this.#releaseFocusTrap?.();
       this.#releaseFocusTrap = trapFocus(this);
     }
+
+    // Neither `showModal()` nor `show()` stops the page behind from scrolling.
+    if (!this.#holdsScrollLock) {
+      this.#holdsScrollLock = true;
+      lockPageScroll();
+    }
   }
 
   #hideDialog(): void {
@@ -256,6 +291,16 @@ export default class CraftDialog extends LitElement {
 
     this.#releaseFocusTrap?.();
     this.#releaseFocusTrap = null;
+
+    this.#releaseScrollLock();
+  }
+
+  /** Idempotent, so teardown can't release a lock this dialog never took. */
+  #releaseScrollLock(): void {
+    if (this.#holdsScrollLock) {
+      this.#holdsScrollLock = false;
+      releasePageScroll();
+    }
   }
 
   /**

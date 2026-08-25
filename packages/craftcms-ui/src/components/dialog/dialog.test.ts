@@ -204,6 +204,49 @@ describe('craft-dialog', () => {
     expect(dialog.opened).toBe(false);
   });
 
+  describe('page scroll', () => {
+    it('holds the page still while open', async () => {
+      const dialog = await createDialog();
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+
+      dialog.opened = true;
+      await dialog.updateComplete;
+      expect(document.body.classList.contains('no-scroll')).toBe(true);
+
+      dialog.opened = false;
+      await dialog.updateComplete;
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+    });
+
+    it('hands scrolling back only when the last dialog closes', async () => {
+      // Dialogs stack — a selector modal opened from a slideout.
+      const first = await createDialog();
+      const second = await createDialog();
+      first.opened = true;
+      second.opened = true;
+      await first.updateComplete;
+      await second.updateComplete;
+
+      first.opened = false;
+      await first.updateComplete;
+      expect(document.body.classList.contains('no-scroll')).toBe(true);
+
+      second.opened = false;
+      await second.updateComplete;
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+    });
+
+    it('releases the lock if it is removed while still open', async () => {
+      const dialog = await createDialog();
+      dialog.opened = true;
+      await dialog.updateComplete;
+
+      dialog.remove();
+
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+    });
+  });
+
   it('emits craft-show and craft-hide', async () => {
     const dialog = await createDialog();
     const events: string[] = [];

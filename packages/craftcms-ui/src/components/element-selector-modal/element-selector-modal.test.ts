@@ -135,6 +135,41 @@ describe('chrome', () => {
     expect(slot.assignedNodes({flatten: true})).toContain(index);
   });
 
+  it('has a close button that dismisses it', async () => {
+    const modal = await createModal((m) => m.setAttribute('open', ''));
+    const seen = vi.fn();
+    modal.addEventListener('craft-cancel', seen);
+
+    shadow<HTMLButtonElement>(modal, '[part="close"]')!.click();
+    await modal.updateComplete;
+
+    expect(seen).toHaveBeenCalledTimes(1);
+    expect(modal.opened).toBe(false);
+  });
+
+  it('keeps the close button when the title is hidden', async () => {
+    // The heading goes out of flow, but the button still needs to be reachable.
+    const modal = await createModal();
+
+    expect(modal.showTitle).toBe(false);
+    expect(shadow(modal, '[part="close"]')).not.toBeNull();
+  });
+
+  it('refuses a close click while busy', async () => {
+    const modal = await createModal((m) => {
+      m.setAttribute('open', '');
+      m.busy = true;
+    });
+    const seen = vi.fn();
+    modal.addEventListener('craft-cancel', seen);
+
+    shadow<HTMLButtonElement>(modal, '[part="close"]')!.click();
+    await modal.updateComplete;
+
+    expect(seen).not.toHaveBeenCalled();
+    expect(modal.opened).toBe(true);
+  });
+
   it('exposes the footer slots', async () => {
     const modal = await createModal();
 
