@@ -152,6 +152,7 @@ readonly class RenderController
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (! empty($config['overrides'])) {
+                        $component = clone $component;
                         Typecast::configure($component, $config['overrides']);
                     }
                     $componentHtml[$componentType][$id][] = $this->elementHtml->chipHtml($component, $config);
