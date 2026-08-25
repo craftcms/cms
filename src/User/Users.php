@@ -639,6 +639,8 @@ class Users
             $userModel->pending = false;
             $userModel->locked = false;
             $userModel->suspended = false;
+            $userModel->verificationCode = null;
+            $userModel->verificationCodeIssuedDate = null;
             $userModel->invalidLoginWindowStart = null;
             $userModel->invalidLoginCount = null;
             $userModel->lastInvalidLoginDate = null;
@@ -648,7 +650,9 @@ class Users
             $userModel->save();
 
             // If they have an unverified email address, now is the time to set it to their primary email address
-            $this->verifyEmailForUser($user);
+            if ($user->unverifiedEmail) {
+                $this->verifyEmailForUser($user);
+            }
 
             DB::commit();
         } catch (Throwable $e) {
@@ -724,23 +728,35 @@ class Users
      */
     public function verifyEmailForUser(User $user): void
     {
-        // Bail if they don't have an unverified email to begin with
-        if (! $user->unverifiedEmail) {
-            return;
-        }
-
         $userModel = UserModel::findOrFail($user->id);
-        $userModel->email = $user->unverifiedEmail;
-        $userModel->unverifiedEmail = null;
+        $useEmailAsUsername = Cms::config()->useEmailAsUsername;
 
-        if (Cms::config()->useEmailAsUsername) {
-            $userModel->username = $user->unverifiedEmail;
+        if ($user->unverifiedEmail) {
+            $userModel->email = $user->unverifiedEmail;
+            $userModel->unverifiedEmail = null;
+
+            if ($useEmailAsUsername) {
+                $userModel->username = $user->unverifiedEmail;
+            }
         }
+
+        // Clear out the verification code
+        $userModel->verificationCode = null;
+        $userModel->verificationCodeIssuedDate = null;
 
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
         if (! $userModel->save()) {
             throw new InvalidElementException($user);
+        }
+
+        if ($user->unverifiedEmail) {
+            $user->email = $user->unverifiedEmail;
+            $user->unverifiedEmail = null;
+
+            if ($useEmailAsUsername) {
+                $user->username = $user->email;
+            }
         }
 
         // If the user status is pending, let's activate them.
