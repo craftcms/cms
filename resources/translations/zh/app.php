@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => '插件商店不可用，请稍后再试。',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Craft CMS 发送邮件时应使用的回复电子邮件地址。',
     'The URI can’t begin with the {setting} config setting.' => 'URI 不能以 {setting} 配置设置开头。',
-    'The `@web` alias is not recommended.' => '不建议使用 `@web` 别名。',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => '要使用此令牌而应随 GraphQL API 请求发送的 `Authorization` 标头。',
     'The allowed values are [{values}]' => '允许的值为 [{values}]',
     'The asset you’re trying to download does not exist.' => '您正在尝试下载的资产不存在。',

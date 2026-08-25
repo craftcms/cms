@@ -1361,11 +1361,6 @@ readonly class FormFields
                     Html::a(t('Learn more'), 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings', [
                         'class' => 'go',
                     ]);
-            } elseif (
-                ! isset($config['warning']) &&
-                ($value === '@web' || str_starts_with((string) $value, '@web/'))
-            ) {
-                $config['warning'] = t('The `@web` alias is not recommended.');
             }
         }
 

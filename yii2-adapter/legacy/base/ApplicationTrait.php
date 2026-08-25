@@ -1389,7 +1389,7 @@ trait ApplicationTrait
     {
         $generalConfig = Cms::config();
 
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath);
+        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath ?? '@webroot/cpresources');
 
         if (! @FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");

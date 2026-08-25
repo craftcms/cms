@@ -266,11 +266,6 @@ class AppServiceProvider extends ServiceProvider
                 : $this->app->basePath('templates'));
         }
 
-        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
-            Aliases::set('@web', $webUrl);
-        } else {
-            Aliases::set('@web', config('app.url'));
-        }
     }
 
     private function registerThrottleExceptionHandler(): void
