@@ -97,7 +97,61 @@ const meta = {
 export default meta;
 type Story = StoryObj<ModalArgs>;
 
+/** Opens the story's modal and hands back its surface box. */
+async function openAndMeasure(canvasElement: HTMLElement) {
+  const element = canvasElement.querySelector(
+    'craft-element-selector-modal'
+  ) as CraftElementSelectorModal;
+
+  element.opened = true;
+  await element.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const shadow = element.shadowRoot!;
+
+  return {
+    element,
+    surface: shadow.querySelector('.surface')!.getBoundingClientRect(),
+    body: shadow.querySelector('.body') as HTMLElement,
+    viewport: window.innerHeight,
+  };
+}
+
 export const Default: Story = {};
+
+/** A short result list gets a short dialog, not a tall one full of empty space. */
+export const FewResults: Story = {
+  args: {rows: 2},
+  async play({canvasElement}) {
+    const {surface, viewport} = await openAndMeasure(canvasElement);
+
+    // Well clear of the 90dvh cap — the whole point of sizing to content.
+    await expect(surface.height).toBeLessThan(viewport * 0.9 - 1);
+    // ...and not collapsed below the floor.
+    await expect(surface.height).toBeGreaterThanOrEqual(400);
+  },
+};
+
+/** ...but never shorter than the floor, however little there is to show. */
+export const NoResults: Story = {
+  args: {rows: 0},
+  async play({canvasElement}) {
+    const {surface} = await openAndMeasure(canvasElement);
+
+    await expect(surface.height).toBeGreaterThanOrEqual(400);
+  },
+};
+
+/** A long list fills to the cap and scrolls inside rather than growing past it. */
+export const ManyResults: Story = {
+  args: {rows: 200},
+  async play({canvasElement}) {
+    const {surface, viewport} = await openAndMeasure(canvasElement);
+
+    await expect(surface.height).toBeLessThanOrEqual(viewport * 0.9 + 1);
+    await expect(surface.height).toBeGreaterThan(viewport * 0.5);
+  },
+};
 
 export const WithSelection: Story = {
   args: {canSubmit: true},

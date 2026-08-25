@@ -143,16 +143,31 @@ export default class CraftDialog extends LitElement {
         : nothing}
       <dialog
         part="dialog"
-        aria-labelledby=${this.titleId}
+        aria-labelledby=${this.hasHeader ? this.titleId : nothing}
         @cancel=${this.#onNativeCancel}
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
       >
         <div class="surface" part="surface">
-          ${this.renderHeader()} ${this.renderBody()} ${this.renderFooter()}
+          ${this.hasHeader ? this.renderHeader() : nothing} ${this.renderBody()}
+          ${this.renderFooter()}
         </div>
       </dialog>
     `;
+  }
+
+  /**
+   * Whether to render the header at all.
+   *
+   * A dialog with no label has nothing to put there, and rendering the row
+   * anyway leaves an empty band of padding above the body. It also governs
+   * `aria-labelledby`, which must not point at a heading that isn't there.
+   *
+   * Note the header owns the close button, so a label-less dialog needs to
+   * supply its own dismissal — a `data-dialog="close"` control in the footer.
+   */
+  protected get hasHeader(): boolean {
+    return this.label !== '';
   }
 
   protected renderHeader(): TemplateResult {

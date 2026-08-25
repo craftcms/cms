@@ -54,6 +54,10 @@ export default class CraftLoginResetPassword extends LitElement {
       });
 
       const dialog = document.createElement('craft-dialog');
+      // Labelled deliberately: `craft-dialog` renders no header without one, and
+      // the header carries the close button — this dialog has no footer, so
+      // Escape would otherwise be the only way out.
+      dialog.setAttribute('label', t('Check your email'));
       dialog.setAttribute('open', '');
       const msg = document.createElement('p');
       msg.textContent = t(

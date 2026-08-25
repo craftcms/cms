@@ -15,19 +15,23 @@ export default css`
     --_dialog-max-block-size: var(--c-dialog-max-block-size, 90dvh);
 
     /*
-      The index has its own internal scrolling regions (a sticky toolbar over a
-      scrolling result list), so it needs a resolved height to fill rather than
-      a body that grows to fit it.
+      A floor, not a fixed height. The surface grows with the result list up to
+      the max-block-size above and then scrolls inside; a short list gets a
+      short dialog rather than a tall one full of empty space. The floor keeps
+      a one-row result from collapsing into a sliver.
     */
-    --_dialog-block-size: var(--c-dialog-block-size, 90dvh);
+    --_dialog-min-block-size: var(--c-dialog-min-block-size, 400px);
   }
 
   .surface {
-    block-size: var(--_dialog-block-size);
+    min-block-size: min(
+      var(--_dialog-min-block-size),
+      var(--_dialog-max-block-size)
+    );
   }
 
   :host([fullscreen]) {
-    --_dialog-block-size: var(--c-dialog-block-size, 100dvh);
+    --_dialog-min-block-size: var(--c-dialog-min-block-size, 100dvh);
   }
 
   /* The index supplies its own padding, and its sidebar runs edge to edge. */
@@ -46,8 +50,13 @@ export default css`
     min-block-size: 0;
   }
 
+  /*
+    With the title hidden the heading is still rendered — the dialog is labelled
+    by it — but it is taken out of flow, so the header has to collapse rather
+    than leave a band of padding above the index.
+  */
   .header {
-    padding-block-end: 0;
+    padding: 0;
   }
 
   /*
@@ -67,6 +76,8 @@ export default css`
   }
 
   :host([show-title]) .header {
+    padding-inline: var(--c-spacing-lg);
+    padding-block-start: var(--c-spacing-lg);
     padding-block-end: var(--c-spacing-md);
   }
 

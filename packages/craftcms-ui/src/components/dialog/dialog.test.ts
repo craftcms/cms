@@ -74,6 +74,45 @@ describe('craft-dialog', () => {
     );
   });
 
+  it('renders no header when there is no label', async () => {
+    // An empty header is just a band of padding above the body.
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
+    dialog.append(document.createElement('p'));
+    document.body.append(dialog);
+    await dialog.updateComplete;
+
+    expect(shadow(dialog, '.header')).toBeNull();
+    expect(shadow(dialog, '.title')).toBeNull();
+    expect(shadow(dialog, '.close')).toBeNull();
+  });
+
+  it('drops aria-labelledby along with the header', async () => {
+    // Pointing at a heading that isn't rendered would leave the dialog with a
+    // broken accessible name rather than none.
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
+    document.body.append(dialog);
+    await dialog.updateComplete;
+
+    expect(shadow(dialog, 'dialog')!.hasAttribute('aria-labelledby')).toBe(
+      false
+    );
+  });
+
+  it('brings the header back when a label is set later', async () => {
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
+    document.body.append(dialog);
+    await dialog.updateComplete;
+    expect(shadow(dialog, '.header')).toBeNull();
+
+    dialog.label = 'Now labelled';
+    await dialog.updateComplete;
+
+    expect(shadow(dialog, '.title')!.textContent).toBe('Now labelled');
+    expect(shadow(dialog, 'dialog')!.getAttribute('aria-labelledby')).toBe(
+      shadow(dialog, '.title')!.id
+    );
+  });
+
   it('renders a close button that closes the dialog', async () => {
     const dialog = await createDialog();
     dialog.opened = true;
