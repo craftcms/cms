@@ -26,6 +26,8 @@ export function useElementIndexPagination(
 
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination,
+    // A non-page index keeps its query in the visitor, not in the URL.
+    currentQuery: () => visitor.currentQuery(),
     onChange: ({query}) => {
       visitor.visit(query, {only: ['data', 'pagination']});
     },

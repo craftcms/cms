@@ -1,5 +1,6 @@
 import {ref, type Ref} from 'vue';
 import type {
+  IndexQueryParams,
   IndexVisitOptions,
   IndexVisitor,
 } from '@/modules/elements/composables/useElementIndexVisits';
@@ -16,12 +17,12 @@ import type {
  * composables drive a modal index without knowing they are.
  */
 export function createModalIndexVisitor(
-  load: (query: Record<string, string>) => Promise<void>,
-  initialQuery: Record<string, string> = {}
-): IndexVisitor & {query: Ref<Record<string, string>>} {
-  const query = ref<Record<string, string>>({...initialQuery});
+  load: (query: IndexQueryParams) => Promise<void>,
+  initialQuery: IndexQueryParams = {}
+): IndexVisitor & {query: Ref<IndexQueryParams>} {
+  const query = ref<IndexQueryParams>({...initialQuery});
 
-  function currentQuery(replacing: Array<string> = []): Record<string, string> {
+  function currentQuery(replacing: Array<string> = []): IndexQueryParams {
     return Object.fromEntries(
       Object.entries(query.value).filter(
         ([key]) =>
@@ -34,11 +35,14 @@ export function createModalIndexVisitor(
     next: Record<string, unknown>,
     _options: IndexVisitOptions = {}
   ): void {
+    // Values are kept structured rather than stringified. The page visitor has
+    // to flatten everything into a URL; this one POSTs JSON, and `sort` is an
+    // object — `String()`-ing it sent the server a literal "[object Object]".
     query.value = Object.fromEntries(
-      Object.entries(next)
-        .filter(([, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => [key, String(value)])
-    );
+      Object.entries(next).filter(
+        ([, value]) => value !== null && value !== undefined
+      )
+    ) as IndexQueryParams;
 
     void load(query.value);
   }

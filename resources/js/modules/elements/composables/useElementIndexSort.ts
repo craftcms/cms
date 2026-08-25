@@ -79,6 +79,8 @@ export function useElementIndexSort(
 
   const {sortingState, sortingConfig, onSortingChange} = useServerSort({
     initialState: normalizeSort(props.sort ?? persistedSort()),
+    // A non-page index keeps its query in the visitor, not in the URL.
+    currentQuery: () => visitor.currentQuery(),
     onChange: ({query}) => {
       visitor.visit(query, {only: ['data', 'sort', 'pagination']});
     },

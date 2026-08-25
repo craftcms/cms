@@ -8,7 +8,10 @@ import {
   type ContentIndexData,
   type ElementIndexRow,
 } from '@/modules/elements/composables/useContentIndexData';
-import type {IndexQueryValue} from '@/modules/elements/composables/useElementIndexVisits';
+import type {
+  IndexQueryParams,
+  IndexQueryValue,
+} from '@/modules/elements/composables/useElementIndexVisits';
 import {useElementIndexColumns} from '@/modules/elements/composables/useElementIndexColumns';
 import {useElementIndexPagination} from '@/modules/elements/composables/useElementIndexPagination';
 import {useElementIndexSort} from '@/modules/elements/composables/useElementIndexSort';
@@ -71,7 +74,7 @@ export function useModalElementIndex(options: Options) {
   const payload = shallowRef<ContentIndexData>(options.initial);
   const loading = ref(false);
 
-  async function load(query: Record<string, string>): Promise<void> {
+  async function load(query: IndexQueryParams): Promise<void> {
     loading.value = true;
 
     try {

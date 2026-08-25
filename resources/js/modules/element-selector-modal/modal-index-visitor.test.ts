@@ -64,3 +64,33 @@ it('strips bracketed forms of a replaced key', () => {
     sort: 'dateCreated',
   });
 });
+
+it('keeps structured values intact rather than stringifying them', () => {
+  // This one POSTs JSON, so a `sort` object should survive. Coercing every
+  // value with `String()` sent the server a literal "[object Object]".
+  const load = vi.fn().mockResolvedValue(undefined);
+  const visitor = createModalIndexVisitor(load);
+  const sort = {0: {field: 'title', direction: 'asc'}};
+
+  visitor.visit({source: 'admins', sort});
+
+  expect(load).toHaveBeenCalledWith({source: 'admins', sort});
+  expect(visitor.currentQuery().sort).toEqual(sort);
+});
+
+it('carries the chosen source through a later sort or page change', () => {
+  // The composables build their next query from `currentQuery()`, so whatever
+  // navigation put there has to still be there. Reading the host page's URL
+  // instead is what used to drop the source a click had just applied.
+  const load = vi.fn().mockResolvedValue(undefined);
+  const visitor = createModalIndexVisitor(load);
+
+  visitor.merge({source: 'section:news'}, {resetPage: true});
+
+  const next = {...visitor.currentQuery(['sort']), sort: {0: {field: 'title'}}};
+  visitor.visit(next);
+
+  expect(load).toHaveBeenLastCalledWith(
+    expect.objectContaining({source: 'section:news'})
+  );
+});
