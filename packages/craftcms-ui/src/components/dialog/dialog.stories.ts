@@ -26,7 +26,7 @@ const meta: Meta<CraftDialog & typeof args> = {
   component: 'craft-dialog',
   // Everything but these two comes from the manifest, so the controls stay in
   // step with the component's attributes on their own.
-  args: {...args, open: true, label: 'Dialog'},
+  args: {...args, label: 'Dialog'},
   argTypes,
   render: (args) => template(args, html`${body}${footerClose}`),
   parameters: {
