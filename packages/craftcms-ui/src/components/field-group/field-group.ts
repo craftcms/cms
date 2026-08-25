@@ -15,8 +15,8 @@ export default class CraftFieldGroup extends LitElement {
           grid-column: 1 / -1;
           min-width: 0;
         }
-        
-        @container (min-width: 30rem){
+
+        @container (min-width: 30rem) {
           craft-field-group > .width-25 {
             grid-column: span 3;
           }
@@ -36,7 +36,6 @@ export default class CraftFieldGroup extends LitElement {
           craft-field-group > .width-75 {
             grid-column: span 6;
           }
-          
         }
 
         @container (min-width: 50rem) {
