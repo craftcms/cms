@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Element activity timeline prototype</title>
+    <!--
+        PROTOTYPE. Three variants on the element editor, switchable with ?variant=A|B|C.
+        Run: python3 -m http.server 8124 --directory resources/prototypes
+    -->
+    <style>
+      :root {
+        color: #2f4054;
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        --blue: #2563eb;
+        --border: #cfd8e3;
+        --muted: #62748a;
+        --panel: #f7f9fc;
+        --green: #087f5b;
+        --amber: #9a6700;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #eef2f7;
+      }
+      button,
+      textarea {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      a {
+        color: #175cd3;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        font-size: 19px;
+      }
+      h2 {
+        font-size: 15px;
+      }
+      h3 {
+        font-size: 14px;
+      }
+
+      .topbar {
+        align-items: center;
+        background: #070d20;
+        color: white;
+        display: flex;
+        height: 50px;
+        justify-content: space-between;
+        padding: 0 18px;
+      }
+
+      .brand {
+        font-weight: 700;
+      }
+      .account {
+        color: #dce5f2;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        min-height: calc(100vh - 50px);
+      }
+      .nav {
+        background: #f7f9fc;
+        border-right: 1px solid var(--border);
+        padding: 18px 14px;
+      }
+      .nav a {
+        border-radius: 4px;
+        color: #32445a;
+        display: block;
+        padding: 8px 12px;
+      }
+      .nav a.active {
+        background: var(--blue);
+        color: white;
+      }
+      .nav .indent {
+        margin-left: 12px;
+      }
+      .screen {
+        background: white;
+        min-width: 0;
+      }
+      .header {
+        border-bottom: 1px solid var(--border);
+        padding: 14px 18px 10px;
+      }
+      .crumbs {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 14px;
+      }
+      .heading {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+      }
+      .heading h1 {
+        margin-bottom: 5px;
+      }
+      .status {
+        color: var(--green);
+        font-size: 13px;
+      }
+      .button {
+        background: white;
+        border: 1px solid #9eacbe;
+        border-radius: 4px;
+        color: #31445a;
+        padding: 7px 12px;
+      }
+      .button:hover {
+        background: #f2f5f9;
+        text-decoration: none;
+      }
+      .button.primary {
+        background: #e11900;
+        border-color: #e11900;
+        color: white;
+      }
+      .button.small {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+      .button.link {
+        border: 0;
+        color: #175cd3;
+        padding: 4px;
+      }
+      .button.danger {
+        color: #b42318;
+      }
+      .editor {
+        min-width: 0;
+        padding: 18px;
+      }
+      .tabs {
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 26px;
+        margin-bottom: 22px;
+      }
+      .tabs span {
+        padding: 9px 0;
+      }
+      .tabs .active {
+        border-bottom: 2px solid var(--blue);
+      }
+      .field {
+        margin-bottom: 17px;
+      }
+      .field label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .input,
+      textarea {
+        background: white;
+        border: 1px solid #8fa0b5;
+        border-radius: 4px;
+        color: #2f4054;
+        padding: 9px;
+        width: 100%;
+      }
+      .matrix {
+        border: 1px solid #9fb0c4;
+        border-radius: 4px;
+      }
+      .matrix h3 {
+        background: #edf2f8;
+        border-bottom: 1px solid #9fb0c4;
+        margin: 0;
+        padding: 8px;
+      }
+      .matrix .body {
+        padding: 10px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-left: 1px solid var(--border);
+        min-width: 0;
+      }
+      .panel-header {
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 18px;
+        padding: 11px 16px;
+      }
+      .panel-header .active {
+        border-bottom: 2px solid var(--blue);
+        padding-bottom: 8px;
+      }
+      .timeline {
+        padding: 14px 16px 130px;
+      }
+      .day {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        margin: 18px 0 8px;
+        text-transform: uppercase;
+      }
+      .day:first-child {
+        margin-top: 0;
+      }
+      .event {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 28px minmax(0, 1fr);
+        padding: 9px 0;
+        position: relative;
+      }
+      .event::after {
+        background: #c8d2df;
+        content: '';
+        height: calc(100% - 26px);
+        left: 13px;
+        position: absolute;
+        top: 35px;
+        width: 1px;
+      }
+      .event:last-child::after {
+        display: none;
+      }
+      .icon {
+        align-items: center;
+        background: white;
+        border: 1px solid #9eafc3;
+        border-radius: 50%;
+        display: flex;
+        height: 28px;
+        justify-content: center;
+        position: relative;
+        width: 28px;
+        z-index: 1;
+      }
+      .icon.comment {
+        background: #e8efff;
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+      .icon.workflow {
+        background: #fff4cc;
+        border-color: #d9a514;
+        color: var(--amber);
+      }
+      .icon.success {
+        background: #dcfae6;
+        border-color: #16a36b;
+        color: var(--green);
+      }
+      .event-head {
+        align-items: baseline;
+        display: flex;
+        gap: 7px;
+        justify-content: space-between;
+      }
+      .event-head time {
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .actor {
+        font-weight: 700;
+      }
+      .deleted {
+        color: var(--muted);
+      }
+      .comment-card,
+      .change-card,
+      .fallback-card {
+        background: white;
+        border: 1px solid #aab8c9;
+        border-radius: 4px;
+        margin-top: 7px;
+        padding: 10px;
+      }
+      .comment-card {
+        border-color: #6f98f5;
+      }
+      .comment-card p:last-child {
+        margin-bottom: 0;
+      }
+      .comment-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .mention {
+        background: #e7efff;
+        border-radius: 3px;
+        color: #174ea6;
+        padding: 1px 3px;
+      }
+      details summary {
+        color: #175cd3;
+        cursor: pointer;
+      }
+      .changes {
+        border-collapse: collapse;
+        margin-top: 8px;
+        width: 100%;
+      }
+      .changes th,
+      .changes td {
+        border-top: 1px solid #dde4ed;
+        padding: 6px;
+        text-align: left;
+      }
+      .changes th {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      del {
+        color: #b42318;
+      }
+      ins {
+        color: #067647;
+        text-decoration: none;
+      }
+      .composer {
+        background: white;
+        border-top: 1px solid var(--border);
+        bottom: 0;
+        padding: 12px 16px;
+        position: sticky;
+      }
+      .composer-actions {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+        margin-top: 7px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .new-activity {
+        background: #fff8dc;
+        border: 1px solid #e1bf52;
+        border-radius: 18px;
+        color: #694e00;
+        padding: 6px 11px;
+      }
+      .load {
+        display: block;
+        margin: 0 auto 12px;
+      }
+      .boundary {
+        color: var(--muted);
+        font-size: 12px;
+        padding: 8px;
+        text-align: center;
+      }
+      .skeleton {
+        animation: pulse 1s infinite alternate;
+        background: #dfe6ef;
+        border-radius: 3px;
+        height: 12px;
+        margin: 9px;
+      }
+      @keyframes pulse {
+        to {
+          opacity: 0.45;
+        }
+      }
+
+      .variant-a {
+        display: grid;
+        grid-template-columns: minmax(480px, 3fr) minmax(390px, 2fr);
+      }
+      .variant-a .panel {
+        height: calc(100vh - 154px);
+        overflow: auto;
+      }
+
+      .variant-b .editor {
+        min-height: 330px;
+      }
+      .drawer {
+        border-top: 3px solid #2c3e55;
+        display: grid;
+        grid-template-columns: minmax(330px, 2fr) minmax(340px, 3fr);
+        min-height: 420px;
+      }
+      .drawer-list {
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        padding: 12px;
+      }
+      .drawer-row {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid #d8e0ea;
+        display: grid;
+        gap: 4px;
+        padding: 10px;
+        text-align: left;
+        width: 100%;
+      }
+      .drawer-row.selected {
+        background: #e8efff;
+        border-left: 3px solid var(--blue);
+      }
+      .drawer-row small {
+        color: var(--muted);
+      }
+      .drawer-detail {
+        padding: 18px;
+      }
+      .drawer-detail .comment-card {
+        max-width: 680px;
+      }
+      .drawer-toolbar {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .pills {
+        display: flex;
+        gap: 6px;
+      }
+      .pill {
+        background: white;
+        border: 1px solid #aab8c9;
+        border-radius: 15px;
+        padding: 4px 9px;
+      }
+      .pill.active {
+        background: #25364b;
+        color: white;
+      }
+
+      .variant-c {
+        display: grid;
+        grid-template-columns: 280px minmax(420px, 1fr) 300px;
+        min-height: calc(100vh - 154px);
+      }
+      .activity-nav {
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        padding: 18px;
+      }
+      .activity-nav .button {
+        margin-bottom: 16px;
+        width: 100%;
+      }
+      .filter {
+        border-bottom: 1px solid #d8e0ea;
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 0;
+      }
+      .stream {
+        padding: 18px 26px 120px;
+      }
+      .operation {
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-bottom: 13px;
+        overflow: hidden;
+      }
+      .operation-title {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 12px;
+        padding: 7px 11px;
+      }
+      .operation .event {
+        padding: 11px;
+      }
+      .context {
+        border-left: 1px solid var(--border);
+        padding: 18px;
+      }
+      .context dt {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 12px;
+      }
+      .context dd {
+        margin: 2px 0 0;
+      }
+
+      .switcher {
+        align-items: center;
+        background: #111827;
+        border-radius: 24px;
+        bottom: 16px;
+        box-shadow: 0 6px 22px #0005;
+        color: white;
+        display: flex;
+        gap: 11px;
+        left: 50%;
+        padding: 7px 10px;
+        position: fixed;
+        transform: translateX(-50%);
+        z-index: 20;
+      }
+      .switcher button {
+        background: #344054;
+        border: 0;
+        border-radius: 50%;
+        color: white;
+        height: 30px;
+        width: 30px;
+      }
+      .state {
+        background: #fff;
+        border: 1px solid #98a7ba;
+        border-radius: 4px;
+        bottom: 12px;
+        font:
+          11px/1.35 ui-monospace,
+          monospace;
+        left: 12px;
+        max-width: 250px;
+        padding: 7px;
+        position: fixed;
+        white-space: pre-wrap;
+        z-index: 20;
+      }
+      .toast {
+        background: #163a2d;
+        border-radius: 4px;
+        color: white;
+        padding: 8px 11px;
+        position: fixed;
+        right: 14px;
+        top: 64px;
+        z-index: 30;
+      }
+
+      @media (max-width: 1000px) {
+        .app {
+          grid-template-columns: 180px minmax(0, 1fr);
+        }
+        .variant-a {
+          grid-template-columns: 1fr;
+        }
+        .variant-a .panel {
+          border-left: 0;
+          border-top: 1px solid var(--border);
+          height: auto;
+        }
+        .variant-c {
+          grid-template-columns: 220px 1fr;
+        }
+        .variant-c .context {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const variants = [
+        {key: 'A', name: 'Side rail'},
+        {key: 'B', name: 'Review drawer'},
+        {key: 'C', name: 'Activity workspace'},
+      ];
+      const requestedVariant =
+        new URLSearchParams(window.location.search).get('variant') ?? 'A';
+      const state = {
+        variant: variants.some(({key}) => key === requestedVariant)
+          ? requestedVariant
+          : 'A',
+        loadingOlder: false,
+        olderLoaded: false,
+        pendingUpdates: 0,
+        selectedEvent: 'updated',
+        commentText: '',
+        comments: [
+          {
+            id: 1,
+            actor: 'Brandon Kelly',
+            body: 'The lead reads well. @brandonkelly should we keep the product name in the title?',
+            edited: true,
+            deleted: false,
+          },
+        ],
+        notice: '',
+      };
+
+      const events = [
+        {
+          id: 'created',
+          kind: 'system',
+          actor: 'Rias',
+          text: 'created the entry',
+          date: 'Yesterday, 16:14',
+        },
+        {
+          id: 'comment',
+          kind: 'comment',
+          actor: 'Brandon Kelly',
+          text: 'left a comment',
+          date: 'Today, 09:18',
+        },
+        {
+          id: 'review',
+          kind: 'workflow',
+          actor: 'Rias',
+          text: 'requested review from Brandon Kelly and Leah',
+          date: 'Today, 09:22',
+        },
+        {
+          id: 'updated',
+          kind: 'change',
+          actor: 'Rias',
+          text: 'updated the entry',
+          date: 'Today, 10:03',
+        },
+        {
+          id: 'approved',
+          kind: 'success',
+          actor: 'Leah',
+          text: 'approved the entry',
+          date: 'Today, 10:17',
+        },
+        {
+          id: 'deleted-actor',
+          kind: 'system',
+          actor: 'Sam Lee',
+          text: 'restored Revision 4',
+          date: 'Today, 11:05',
+          deleted: true,
+        },
+        {
+          id: 'plugin',
+          kind: 'plugin',
+          actor: 'Craft system',
+          text: 'acme.seo.analysis-completed',
+          date: 'Today, 11:42',
+        },
+      ];
+
+      function escapeHtml(value) {
+        return value.replace(
+          /[&<>'"]/g,
+          (character) =>
+            ({
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              "'": '&#039;',
+              '"': '&quot;',
+            })[character]
+        );
+      }
+
+      function renderCommentBody(body) {
+        return escapeHtml(body).replaceAll(
+          '@brandonkelly',
+          '<span class="mention">@brandonkelly</span>'
+        );
+      }
+
+      function iconFor(kind) {
+        return {
+          comment: '●',
+          workflow: '↗',
+          success: '✓',
+          change: '✎',
+          plugin: '◇',
+          system: '•',
+        }[kind];
+      }
+
+      function editorMarkup() {
+        return `
+                <main class="editor">
+                    <div class="tabs"><span class="active">Content</span><span>SEO</span></div>
+                    <div class="field"><label>Title</label><div class="input">Made for Fun: Matt Jones and Red Bull</div></div>
+                    <div class="field"><label>Main image</label><div class="input"><a href="#">Matt Jones Red Bull Final</a></div></div>
+                    <div class="field">
+                        <label>Content blocks</label>
+                        <div class="matrix"><h3>Body</h3><div class="body">This story follows pro rider Matt Jones as he explores Marin Bikes.</div></div>
+                    </div>
+                </main>`;
+      }
+
+      function commentCard() {
+        const comment = state.comments[0];
+        if (comment.deleted) {
+          return '<div class="comment-card deleted">Comment removed</div>';
+        }
+        return `<div class="comment-card">
+                <p>${renderCommentBody(comment.body)}</p>
+                <div class="comment-meta">${comment.edited ? 'Edited · ' : ''}<button class="button link" data-action="edit-comment">Edit</button> · <button class="button link danger" data-action="delete-comment">Remove</button></div>
+            </div>`;
+      }
+
+      function changesMarkup() {
+        return `<details class="change-card"><summary>2 changes</summary><table class="changes">
+                <tr><th>Field</th><th>Before</th><th>After</th></tr>
+                <tr><td>Title</td><td><del>Made for Fun</del></td><td><ins>Made for Fun: Matt Jones and Red Bull</ins></td></tr>
+                <tr><td>Post date</td><td>Aug 28</td><td>Aug 29</td></tr>
+            </table></details>`;
+      }
+
+      function fallbackMarkup() {
+        return '<div class="fallback-card"><strong>Acme SEO</strong><br>acme.seo.analysis-completed<br><span class="hint">The formatter is unavailable. Captured event data remains readable.</span></div>';
+      }
+
+      function eventExtra(event) {
+        if (event.id === 'comment') return commentCard();
+        if (event.id === 'updated') return changesMarkup();
+        if (event.id === 'deleted-actor')
+          return '<p class="hint">Revision unavailable. The actor account was deleted.</p>';
+        if (event.id === 'plugin') return fallbackMarkup();
+        return '';
+      }
+
+      function eventMarkup(event) {
+        const actor = event.deleted
+          ? `<span class="actor deleted">${event.actor} (deleted)</span>`
+          : `<a class="actor" href="#">${event.actor}</a>`;
+        return `<article class="event" id="event-${event.id}">
+                <span class="icon ${event.kind}">${iconFor(event.kind)}</span>
+                <div><div class="event-head"><span>${actor} ${event.text}</span><time title="August 25, 2026 at ${event.date}">${event.date}</time></div>${eventExtra(event)}</div>
+            </article>`;
+      }
+
+      function historyControls() {
+        if (state.loadingOlder)
+          return '<div aria-label="Loading earlier activity"><div class="skeleton"></div><div class="skeleton"></div></div>';
+        if (state.olderLoaded)
+          return '<div class="boundary">Activity older than 1 year is automatically deleted.</div>';
+        return '<button class="button small load" data-action="load-older">Load earlier activity</button>';
+      }
+
+      function composerMarkup() {
+        return `<form class="composer" data-action="post-comment">
+                <textarea rows="2" aria-label="Add a comment" placeholder="Add a comment. Type @ to mention someone.">${escapeHtml(state.commentText)}</textarea>
+                <div class="composer-actions"><span class="hint">Markdown supported · mentions do not grant access</span><span><button type="button" class="button small" data-action="mention">Mention Brandon</button> <button class="button primary small">Comment</button></span></div>
+            </form>`;
+      }
+
+      function pendingUpdateMarkup() {
+        return state.pendingUpdates
+          ? `<button class="new-activity" data-action="show-updates">${state.pendingUpdates} new updates</button>`
+          : '<button class="button small" data-action="simulate-update">Simulate concurrent update</button>';
+      }
+
+      function variantA() {
+        return `<div class="variant-a">
+                ${editorMarkup()}
+                <aside class="panel">
+                    <div class="panel-header"><span>Info</span><span class="active">Activity</span><span>Revisions</span><span style="margin-left:auto">${pendingUpdateMarkup()}</span></div>
+                    <div class="timeline">${historyControls()}<div class="day">Yesterday</div>${eventMarkup(events[0])}<div class="day">Today</div>${events.slice(1).map(eventMarkup).join('')}</div>
+                    ${composerMarkup()}
+                </aside>
+            </div>`;
+      }
+
+      function drawerRow(event) {
+        return `<button class="drawer-row ${state.selectedEvent === event.id ? 'selected' : ''}" data-action="select-event" data-event-id="${event.id}">
+                <strong>${event.actor} ${event.text}</strong><small>${event.date}</small>
+            </button>`;
+      }
+
+      function variantB() {
+        const selected =
+          events.find(({id}) => id === state.selectedEvent) ?? events[0];
+        return `<div class="variant-b">
+                ${editorMarkup()}
+                <section class="drawer">
+                    <div class="drawer-list">
+                        <div class="drawer-toolbar"><strong>Activity review</strong>${pendingUpdateMarkup()}</div>
+                        <div class="pills"><button class="pill active">All</button><button class="pill">Comments</button><button class="pill">Changes</button></div>
+                        ${historyControls()}${[...events].reverse().map(drawerRow).join('')}
+                    </div>
+                    <div class="drawer-detail">
+                        <p class="hint">Selected event · ${selected.date}</p>
+                        <h2>${selected.actor} ${selected.text}</h2>
+                        ${eventExtra(selected) || '<p>No further details were recorded for this event.</p>'}
+                        ${composerMarkup()}
+                    </div>
+                </section>
+            </div>`;
+      }
+
+      function operationMarkup(title, operationEvents) {
+        return `<section class="operation"><div class="operation-title">${title}</div>${operationEvents.map(eventMarkup).join('')}</section>`;
+      }
+
+      function variantC() {
+        return `<div class="variant-c">
+                <aside class="activity-nav">
+                    <h2>Activity</h2>
+                    <button class="button primary" data-action="focus-comment">Add a comment</button>
+                    <div class="filter"><span>All activity</span><strong>7</strong></div>
+                    <div class="filter"><span>Comments</span><strong>1</strong></div>
+                    <div class="filter"><span>Changes</span><strong>2</strong></div>
+                    <div class="filter"><span>Workflow</span><strong>2</strong></div>
+                    <p class="hint" style="margin-top:18px">Site: Primary Site<br>Newest activity appears last.</p>
+                    ${pendingUpdateMarkup()}
+                </aside>
+                <main class="stream">
+                    ${historyControls()}
+                    <div class="day">Yesterday</div>${operationMarkup('Entry created', [events[0]])}
+                    <div class="day">Today</div>
+                    ${operationMarkup('Review requested · one operation', events.slice(1, 3))}
+                    ${operationMarkup('Content updated', events.slice(3, 4))}
+                    ${operationMarkup('Review completed', events.slice(4, 5))}
+                    ${operationMarkup('Other activity', events.slice(5))}
+                    ${composerMarkup()}
+                </main>
+                <aside class="context"><h2>Entry context</h2><dl><dt>Status</dt><dd>Live</dd><dt>Site</dt><dd>Primary Site</dd><dt>Last saved</dt><dd>Today, 11:42 by Rias</dd><dt>Retention</dt><dd>1 year</dd></dl><hr><p class="hint">Comments from this site and site-neutral activity are shown.</p></aside>
+            </div>`;
+      }
+
+      function shellMarkup() {
+        const content = {A: variantA, B: variantB, C: variantC}[
+          state.variant
+        ]();
+        return `<header class="topbar"><span class="brand">Spoke & Chain</span><span class="account">Search · Settings · rias</span></header>
+                <div class="app"><nav class="nav"><a href="#">Dashboard</a><a href="#">Content</a><div class="indent"><a class="active" href="#">Entries</a><a href="#">Globals</a><a href="#">Categories</a><a href="#">Assets</a></div><a href="#">Users</a><a href="#">Utilities</a></nav>
+                <section class="screen"><header class="header"><div class="crumbs">Primary Site / Articles / Made for Fun</div><div class="heading"><div><h1>Made for Fun: Matt Jones and Red Bull</h1><span class="status">● Live · Saved</span></div><div><button class="button">Create a draft</button> <button class="button primary">Save</button></div></div></header>${content}</section></div>`;
+      }
+
+      function switcherMarkup() {
+        const current = variants.find(({key}) => key === state.variant);
+        return `<div class="switcher"><button data-action="previous-variant" aria-label="Previous variant">←</button><span>${current.key} · ${current.name}</span><button data-action="next-variant" aria-label="Next variant">→</button></div>`;
+      }
+
+      function render() {
+        document.querySelector('#app').innerHTML =
+          shellMarkup() +
+          switcherMarkup() +
+          `<output class="state" aria-live="polite">${escapeHtml(
+            JSON.stringify(
+              {
+                variant: state.variant,
+                olderLoaded: state.olderLoaded,
+                pendingUpdates: state.pendingUpdates,
+                selectedEvent: state.selectedEvent,
+                comment: state.comments[0].deleted
+                  ? 'removed'
+                  : state.comments[0].edited
+                    ? 'edited'
+                    : 'active',
+              },
+              null,
+              2
+            )
+          )}</output>` +
+          (state.notice
+            ? `<div class="toast" role="status">${escapeHtml(state.notice)}</div>`
+            : '');
+      }
+
+      function selectVariant(offset) {
+        const currentIndex = variants.findIndex(
+          ({key}) => key === state.variant
+        );
+        state.variant =
+          variants[
+            (currentIndex + offset + variants.length) % variants.length
+          ].key;
+        const url = new URL(window.location);
+        url.searchParams.set('variant', state.variant);
+        window.history.replaceState({}, '', url);
+        render();
+      }
+
+      function notify(message) {
+        state.notice = message;
+        render();
+        window.setTimeout(() => {
+          state.notice = '';
+          render();
+        }, 1400);
+      }
+
+      document.addEventListener('input', (event) => {
+        if (event.target.matches('.composer textarea'))
+          state.commentText = event.target.value;
+      });
+
+      document.addEventListener('submit', (event) => {
+        if (!event.target.matches('[data-action="post-comment"]')) return;
+        event.preventDefault();
+        const body = state.commentText.trim();
+        if (!body) return notify('A comment cannot be blank.');
+        state.comments.unshift({
+          id: Date.now(),
+          actor: 'Rias',
+          body,
+          edited: false,
+          deleted: false,
+        });
+        state.commentText = '';
+        notify(
+          'Comment added. Mention notifications will be queued after commit.'
+        );
+      });
+
+      document.addEventListener('click', (event) => {
+        const control = event.target.closest('[data-action]');
+        if (!control) return;
+        const action = control.dataset.action;
+        if (action === 'previous-variant') selectVariant(-1);
+        if (action === 'next-variant') selectVariant(1);
+        if (action === 'load-older') {
+          state.loadingOlder = true;
+          render();
+          window.setTimeout(() => {
+            state.loadingOlder = false;
+            state.olderLoaded = true;
+            render();
+          }, 650);
+        }
+        if (action === 'simulate-update') {
+          state.pendingUpdates = 2;
+          notify('New activity held outside the current reading position.');
+        }
+        if (action === 'show-updates') {
+          state.pendingUpdates = 0;
+          notify('New activity appended to the timeline.');
+        }
+        if (action === 'mention') {
+          state.commentText += `${state.commentText ? ' ' : ''}@brandonkelly `;
+          render();
+          document.querySelector('.composer textarea')?.focus();
+        }
+        if (action === 'edit-comment') {
+          const body = window
+            .prompt('Edit comment', state.comments[0].body)
+            ?.trim();
+          if (body) {
+            state.comments[0].body = body;
+            state.comments[0].edited = true;
+            notify('Comment edited in place.');
+          }
+        }
+        if (action === 'delete-comment') {
+          state.comments[0].deleted = true;
+          notify('Comment removed. Its timeline position remains.');
+        }
+        if (action === 'select-event') {
+          state.selectedEvent = control.dataset.eventId;
+          render();
+        }
+        if (action === 'focus-comment')
+          document.querySelector('.composer textarea')?.focus();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        if (event.target.matches('input, textarea, [contenteditable]')) return;
+        selectVariant(event.key === 'ArrowLeft' ? -1 : 1);
+      });
+
+      console.assert(
+        variants.length === 3 &&
+          variants.every(({key}) => ['A', 'B', 'C'].includes(key))
+      );
+      render();
+    </script>
+  </body>
+</html>
