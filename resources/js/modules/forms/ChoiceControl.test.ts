@@ -1,7 +1,7 @@
 import {createApp, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import ChoiceControl from './ChoiceControl.vue';
-import type {FormControlPayload} from './types';
+import type {FormControlPayload, FormValue} from './types';
 
 // `craft-button-group` calls attachInternals(), which happy-dom doesn't
 // implement. Same stub FormRenderer.test.ts uses.
@@ -45,7 +45,7 @@ describe('ChoiceControl', () => {
 
   async function mount(
     props: Record<string, unknown>,
-    value: unknown
+    value: FormValue
   ): Promise<void> {
     emitted = [];
     const control = reactive<FormControlPayload<any>>({
