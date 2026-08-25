@@ -154,11 +154,17 @@
   .modal-element-index {
     display: grid;
     grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
+    background-color: var(--c-color-neutral-fill-quiet);
+    height: 100%;
   }
 
   .modal-element-index__sidebar {
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--c-spacing-sm);
   }
 
   .modal-element-index__main {
+    background: var(--c-surface-overlay);
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

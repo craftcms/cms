@@ -58,7 +58,6 @@ export default css`
   */
   .header {
     justify-content: flex-end;
-    padding-block-end: 0;
   }
 
   /*
@@ -80,21 +79,6 @@ export default css`
   :host([show-title]) .header {
     justify-content: space-between;
     padding-block-end: var(--c-spacing-md);
-  }
-
-  .footer {
-    /* Secondary actions left, primary right — as the legacy footer did. */
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--c-spacing-md);
-    padding-block-start: var(--c-spacing-md);
-    border-block-start: 1px solid var(--c-border-subtle, transparent);
-  }
-
-  .footer__group {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
   }
 
   /*

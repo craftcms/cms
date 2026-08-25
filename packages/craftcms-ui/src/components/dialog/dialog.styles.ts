@@ -84,9 +84,11 @@ export default css`
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-lg);
-    padding-block-start: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-md);
+    padding: var(--c-spacing-md);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    box-shadow: var(--c-shadow-sm);
+    position: relative;
+    z-index: 2;
   }
 
   .title {
@@ -111,15 +113,17 @@ export default css`
     */
     min-block-size: 0;
     overflow: auto;
-    padding-inline: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-lg);
+    padding: var(--c-spacing-lg);
   }
 
   .footer {
     display: flex;
     justify-content: flex-end;
     gap: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-lg);
-    padding-block-end: var(--c-spacing-lg);
+    padding: var(--c-spacing-md);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    box-shadow: var(--c-shadow-sm);
+    position: relative;
+    z-index: 2;
   }
 `;

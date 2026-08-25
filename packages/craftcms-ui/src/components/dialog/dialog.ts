@@ -222,7 +222,7 @@ export default class CraftDialog extends LitElement {
     return html`
       <header class="header" part="header">
         ${this.label === ''
-          ? nothing
+          ? html`<div></div>`
           : html`<h2 class="title" part="title" id=${this.titleId}>
               ${this.label}
             </h2>`}
