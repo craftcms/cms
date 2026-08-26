@@ -286,14 +286,18 @@ it('does not reuse similar transform results across Craft transformer profiles',
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    app(AssetTransformers::class)->transform($asset, [
-        'transformer' => $profiles['first']->handle,
-        'width' => 100,
-    ], true);
-    app(AssetTransformers::class)->transform($asset, [
-        'transformer' => $profiles['second']->handle,
-        'width' => 100,
-    ], true);
+    app(AssetTransformers::class)->transform(
+        $asset,
+        ['width' => 100],
+        immediately: true,
+        transformer: $profiles['first']->handle,
+    );
+    app(AssetTransformers::class)->transform(
+        $asset,
+        ['width' => 100],
+        immediately: true,
+        transformer: $profiles['second']->handle,
+    );
 
     expect(Storage::disk('first-transform-target')->allFiles())->toHaveCount(1)
         ->and(Storage::disk('second-transform-target')->allFiles())->toHaveCount(1);

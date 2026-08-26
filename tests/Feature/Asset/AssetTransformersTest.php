@@ -41,11 +41,10 @@ it('executes the selected configured transformer', function () {
     $driver = registerTransformer('remote', ['token' => 'secret']);
     $asset = Asset::factory()->createElement();
 
-    $result = app(AssetTransformers::class)->transform($asset, [
-        'transformer' => 'remote',
+    $result = $asset->transform([
         'format' => 'webp',
         'width' => '1200',
-    ], true);
+    ], immediately: true, transformer: 'remote');
 
     expect($result->url)->toBe('/transforms/hero.webp')
         ->and($driver->request->asset)->toBe($asset)
@@ -55,7 +54,18 @@ it('executes the selected configured transformer', function () {
         ->and($driver->request->immediately)->toBeTrue();
 });
 
-it('selects inline, volume, and default transformers in that order', function () {
+it('selects a transformer separately from URL transform parameters', function () {
+    $driver = registerTransformer('remote');
+    $asset = Asset::factory()->createElement();
+
+    $url = $asset->getUrl(['width' => 320], transformer: 'remote');
+
+    expect($url)->toBe('/transforms/hero.webp')
+        ->and($driver->request->transformer->handle)->toBe('remote')
+        ->and($driver->request->parameters)->toBe(['width' => 320]);
+});
+
+it('selects explicit, volume, and default transformers in that order', function () {
     $explicit = registerTransformer('explicit');
     $volumeTransformer = registerTransformer('volume');
     $default = registerTransformer('default');
@@ -72,7 +82,7 @@ it('selects inline, volume, and default transformers in that order', function ()
     $defaultAsset = Asset::factory()->createElement();
 
     app(AssetTransformers::class)->transform($asset, ['width' => 100]);
-    app(AssetTransformers::class)->transform($asset, ['transformer' => 'explicit', 'width' => 200]);
+    app(AssetTransformers::class)->transform($asset, ['width' => 200], transformer: 'explicit');
     app(AssetTransformers::class)->transform($defaultAsset, ['width' => 300]);
 
     expect($volumeTransformer->request->parameters['width'])->toBe(100)
@@ -158,8 +168,8 @@ it('uses transformer-specific named parameters', function () {
     app(ImageTransforms::class)->saveTransform($transform);
     $asset = Asset::factory()->createElement();
 
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero', 'transformer' => 'first']);
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero', 'transformer' => 'second']);
+    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero'], transformer: 'first');
+    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero'], transformer: 'second');
 
     expect($first->request->parameters)->toMatchArray(['width' => 1200, 'blur' => 8])
         ->and($first->request->parameters)->not->toHaveKey('sharpen')
@@ -171,10 +181,9 @@ it('passes undeclared parameters without validating them', function () {
     $driver = registerTransformer('remote', parameterRules: ['blur' => ['integer']]);
 
     app(AssetTransformers::class)->transform(Asset::factory()->createElement(), [
-        'transformer' => 'remote',
         'unknown' => 'passed-through',
         'blur' => 5,
-    ]);
+    ], transformer: 'remote');
 
     expect($driver->request->parameters)->toBe([
         'blur' => 5,
@@ -188,29 +197,30 @@ it('uses driver rules in place of conflicting core rules', function () {
     ]);
     $asset = Asset::factory()->createElement();
 
-    app(AssetTransformers::class)->transform($asset, [
-        'transformer' => 'remote',
-        'quality' => 'high',
-    ]);
+    app(AssetTransformers::class)->transform($asset, ['quality' => 'high'], transformer: 'remote');
 
     expect($driver->request->parameters['quality'])->toBe('high')
-        ->and(fn () => app(AssetTransformers::class)->transform($asset, [
-            'transformer' => 'remote',
-            'quality' => 'maximum',
-        ]))->toThrow(InvalidAssetTransformException::class);
+        ->and(fn () => app(AssetTransformers::class)->transform(
+            $asset,
+            ['quality' => 'maximum'],
+            transformer: 'remote',
+        ))->toThrow(InvalidAssetTransformException::class);
 });
 
 it('rejects invalid parameters and missing transformer handles', function () {
     registerTransformer('remote');
     $asset = Asset::factory()->createElement();
 
-    expect(fn () => app(AssetTransformers::class)->transform($asset, [
-        'transformer' => 'remote',
-        'width' => 0,
-    ]))->toThrow(InvalidAssetTransformException::class)
-        ->and(fn () => app(AssetTransformers::class)->transform($asset, [
-            'transformer' => 'missing',
-        ]))->toThrow(AssetTransformerNotFoundException::class);
+    expect(fn () => app(AssetTransformers::class)->transform(
+        $asset,
+        ['width' => 0],
+        transformer: 'remote',
+    ))->toThrow(InvalidAssetTransformException::class)
+        ->and(fn () => app(AssetTransformers::class)->transform(
+            $asset,
+            [],
+            transformer: 'missing',
+        ))->toThrow(AssetTransformerNotFoundException::class);
 });
 
 it('preloads requests grouped by driver', function () {

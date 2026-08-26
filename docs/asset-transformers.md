@@ -31,10 +31,9 @@ An explicit transformer can be combined with an inline transform:
 
 ```php
 $result = $asset->transform([
-    'transformer' => 'remote-images',
     'width' => 1200,
     'format' => 'webp',
-]);
+], transformer: 'remote-images');
 
 $url = $result->url;
 ```
@@ -43,10 +42,9 @@ The same override is available through `getUrl()` and Twig:
 
 ```twig
 <img src="{{ asset.getUrl({
-    transformer: 'remote-images',
     width: 1200,
     format: 'webp',
-}) }}" alt="">
+}, transformer: 'remote-images') }}" alt="">
 ```
 
 GraphQL transform arguments also accept `transformer`:
@@ -59,7 +57,7 @@ query {
 }
 ```
 
-The `transformer` key selects the profile and is not passed to the driver as a parameter.
+The `transformer` argument selects the profile and remains separate from the parameters passed to the driver.
 
 ## Transform definitions
 
@@ -73,9 +71,8 @@ Asset Transformers accept the same transform definition forms as Assets:
 ```php
 $result = $asset->transform([
     'transform' => 'card',
-    'transformer' => 'remote-images',
     'width' => 800,
-]);
+], transformer: 'remote-images');
 ```
 
 Craft normalizes the definition, merges overrides, selects the transformer, and validates the parameters before invoking

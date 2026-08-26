@@ -251,9 +251,13 @@ class AssetTransformers
         }
     }
 
-    public function transform(Asset $asset, #[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
-    {
-        $request = $this->request($asset, $definition, $immediately);
+    public function transform(
+        Asset $asset,
+        #[\SensitiveParameter] mixed $definition,
+        ?bool $immediately = null,
+        ?string $transformer = null,
+    ): AssetTransformResult {
+        $request = $this->request($asset, $definition, $immediately, $transformer);
 
         return $this->transformDrivers->driver($request->transformer->driver)->transform($request);
     }
@@ -502,10 +506,11 @@ class AssetTransformers
                     : (int) ceil($referenceRequest->parameters['height'] * $size);
             }
 
-            $requests[] = $this->request($asset, [
-                'transformer' => $referenceRequest->transformer->handle,
-                ...$parameters,
-            ]);
+            $requests[] = $this->request(
+                $asset,
+                $parameters,
+                transformerHandle: $referenceRequest->transformer->handle,
+            );
         }
 
         return $requests;
@@ -515,11 +520,11 @@ class AssetTransformers
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
         ?bool $immediately = null,
+        ?string $transformerHandle = null,
     ): AssetTransformRequest {
         $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
-        $transformerHandle = $this->transformerOverride($definition)
-            ?? ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
-            ?? Cms::config()->defaultAssetTransformer;
+        $transformerHandle ??= ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
+        ?? Cms::config()->defaultAssetTransformer;
         $transformer = $this->resolve($transformerHandle);
 
         try {
@@ -536,33 +541,10 @@ class AssetTransformers
         );
     }
 
-    private function transformerOverride(mixed $definition): ?string
-    {
-        if (! is_array($definition)) {
-            return null;
-        }
-
-        if (array_key_exists('transformer', $definition)) {
-            $handle = $definition['transformer'];
-
-            if (! is_string($handle) || $handle === '') {
-                throw new AssetTransformerNotFoundException('The selected Asset Transformer is invalid.');
-            }
-
-            return $handle;
-        }
-
-        return array_key_exists('transform', $definition)
-            ? $this->transformerOverride($definition['transform'])
-            : null;
-    }
-
     /** @return array<string, mixed> */
     private function normalizeDefinition(mixed $definition, AssetTransformer $transformer): array
     {
         if (is_array($definition)) {
-            unset($definition['transformer']);
-
             if (! array_key_exists('transform', $definition)) {
                 return $definition;
             }

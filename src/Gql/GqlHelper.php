@@ -16,8 +16,10 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\File;
 use GraphQL\Error\Error;
 use GraphQL\Executor\Values;
 use GraphQL\Language\Parser;
@@ -278,12 +280,18 @@ class GqlHelper
         string $field,
         ?bool $immediately = null,
     ): mixed {
+        $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
+
+        if ($transformer !== null && ! is_string($transformer)) {
+            throw new InvalidArgumentException('The Asset Transformer handle must be a string.');
+        }
+
         return match ($field) {
-            'format' => $asset->getFormat($definition),
-            'height' => $asset->getHeight($definition),
-            'mimeType' => $asset->getMimeType($definition),
-            'url' => app(AssetTransformContext::class)->set(clone $asset, $definition, $immediately)->getUrl($definition, $immediately),
-            'width' => $asset->getWidth($definition),
+            'format' => File::getExtensionByMimeType($asset->transform($definition, $immediately, $transformer)->mimeType),
+            'height' => $asset->transform($definition, $immediately, $transformer)->height,
+            'mimeType' => $asset->transform($definition, $immediately, $transformer)->mimeType,
+            'url' => $asset->getUrl($definition, $immediately, $transformer),
+            'width' => $asset->transform($definition, $immediately, $transformer)->width,
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
     }
