@@ -337,7 +337,6 @@ class AssetTransformers
     public function validateParameters(AssetTransformer $transformer, array $parameters): array
     {
         $rules = $this->parameterRules($transformer);
-        $parameters = Arr::only($parameters, array_keys($rules));
         $rules = Arr::only($rules, array_keys($parameters));
         $rules = array_map(fn (array $rules): array => ['nullable', ...$rules], $rules);
 

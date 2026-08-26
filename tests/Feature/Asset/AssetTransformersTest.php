@@ -166,16 +166,19 @@ it('uses transformer-specific named parameters', function () {
         ->and($second->request->parameters)->not->toHaveKey('blur');
 });
 
-it('ignores undeclared parameters', function () {
+it('passes undeclared parameters without validating them', function () {
     $driver = registerTransformer('remote', parameterRules: ['blur' => ['integer']]);
 
     app(AssetTransformers::class)->transform(Asset::factory()->createElement(), [
         'transformer' => 'remote',
+        'unknown' => 'passed-through',
         'blur' => 5,
-        'unknown' => 'ignored',
     ]);
 
-    expect($driver->request->parameters)->toBe(['blur' => 5]);
+    expect($driver->request->parameters)->toBe([
+        'blur' => 5,
+        'unknown' => 'passed-through',
+    ]);
 });
 
 it('rejects invalid parameters and missing transformer handles', function () {

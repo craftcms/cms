@@ -93,8 +93,8 @@ the driver. The core parameters are:
 | `upscale` | Boolean |
 | `width` | Integer greater than zero |
 
-A driver can declare further parameters. Unknown parameters are removed, invalid values cause an
-`InvalidAssetTransformException`, and the driver receives parameters sorted by handle.
+A driver can declare further parameters. Craft validates core and declared parameters, passes undeclared parameters
+through without validation, and sorts all parameters by handle before invoking the driver.
 
 Named Image Transforms store custom parameter values against the transformer UUID. This keeps values for transformers that
 use different parameter sets separate, even if the transformers share a driver.
@@ -228,6 +228,7 @@ production driver should use the service’s authenticated source-upload or sign
 
 Core parameters are already available to every driver and should not be redeclared. A custom parameter that uses a core
 handle must use exactly the core validation rules; conflicting rules cause an `InvalidAssetTransformException`.
+The driver is responsible for validating any undeclared parameters it uses or passes to a remote service.
 
 Each settings field must use a single-segment Control path. The Control Panel only persists submitted settings declared
 by the driver. The driver must still validate the resolved setting values at its runtime boundary, particularly URLs,
