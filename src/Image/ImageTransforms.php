@@ -99,35 +99,35 @@ class ImageTransforms
         [$transformModel, $isNewTransform] = DB::transaction(function () use ($transformUid, $data) {
             $transformModel = $this->getImageTransformModel($transformUid);
             $isNewTransform = ! $transformModel->exists;
-            $operations = Arr::only($data, ImageTransform::CORE_OPERATIONS);
-            $customOperations = $data['operations'];
+            $parameters = Arr::only($data, ImageTransform::CORE_PARAMETERS);
+            $customParameters = $data['parameters'];
 
             $transformModel->name = $data['name'];
             $transformModel->handle = $data['handle'];
-            $storedCustomOperations = $transformModel->getAttribute('operations');
-            $customOperationsChanged = (is_array($storedCustomOperations) ? $storedCustomOperations : []) !== $customOperations;
+            $storedCustomParameters = $transformModel->getAttribute('parameters');
+            $customParametersChanged = (is_array($storedCustomParameters) ? $storedCustomParameters : []) !== $customParameters;
 
-            $dimensionsChanged = $transformModel->width !== $operations['width'] || $transformModel->height !== $operations['height'];
-            $modeChanged = $transformModel->mode !== $operations['mode'] || $transformModel->position !== $operations['position'];
-            $qualityChanged = $transformModel->quality !== $operations['quality'];
-            $interlaceChanged = $transformModel->interlace !== $operations['interlace'];
-            $fillChanged = $transformModel->fill !== $operations['fill'];
-            $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== $operations['upscale'];
+            $dimensionsChanged = $transformModel->width !== $parameters['width'] || $transformModel->height !== $parameters['height'];
+            $modeChanged = $transformModel->mode !== $parameters['mode'] || $transformModel->position !== $parameters['position'];
+            $qualityChanged = $transformModel->quality !== $parameters['quality'];
+            $interlaceChanged = $transformModel->interlace !== $parameters['interlace'];
+            $fillChanged = $transformModel->fill !== $parameters['fill'];
+            $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== $parameters['upscale'];
 
-            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged || $customOperationsChanged) {
+            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged || $customParametersChanged) {
                 $transformModel->parameterChangeTime = Query::prepareDateForDb(now());
             }
 
-            $transformModel->mode = $operations['mode'];
-            $transformModel->position = $operations['position'];
-            $transformModel->width = $operations['width'];
-            $transformModel->height = $operations['height'];
-            $transformModel->quality = $operations['quality'];
-            $transformModel->interlace = $operations['interlace'];
-            $transformModel->format = $operations['format'];
-            $transformModel->fill = $operations['fill'];
-            $transformModel->upscale = $operations['upscale'];
-            $transformModel->setAttribute('operations', $customOperations ?: null);
+            $transformModel->mode = $parameters['mode'];
+            $transformModel->position = $parameters['position'];
+            $transformModel->width = $parameters['width'];
+            $transformModel->height = $parameters['height'];
+            $transformModel->quality = $parameters['quality'];
+            $transformModel->interlace = $parameters['interlace'];
+            $transformModel->format = $parameters['format'];
+            $transformModel->fill = $parameters['fill'];
+            $transformModel->upscale = $parameters['upscale'];
+            $transformModel->setAttribute('parameters', $customParameters ?: null);
             $transformModel->uid = $transformUid;
 
             $transformModel->save();
@@ -211,7 +211,7 @@ class ImageTransforms
                 'interlace',
                 'fill',
                 'upscale',
-                'operations',
+                'parameters',
                 'parameterChangeTime',
                 'uid',
             ])

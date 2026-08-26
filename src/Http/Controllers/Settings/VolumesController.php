@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -36,7 +36,7 @@ class VolumesController extends BaseAssetSettingsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private readonly AssetProcessors $assetProcessors,
+        private readonly AssetTransformers $assetTransformers,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -96,7 +96,7 @@ class VolumesController extends BaseAssetSettingsController
             'values.handle' => ['nullable', 'string'],
             'values.fsHandle' => ['nullable', 'string'],
             'values.subpath' => ['nullable', 'string'],
-            'values.assetProcessor' => ['nullable', 'string'],
+            'values.assetTransformer' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -114,7 +114,7 @@ class VolumesController extends BaseAssetSettingsController
                 $volume,
                 $volumes,
                 $formResolver,
-                $this->assetProcessors,
+                $this->assetTransformers,
                 values: $data['values'],
             )->form(),
         ]);
@@ -123,7 +123,7 @@ class VolumesController extends BaseAssetSettingsController
     public function store(Request $request, Volumes $volumes, Fields $fields): Response
     {
         $data = $request->validate([
-            'assetProcessor' => ['nullable', 'string'],
+            'assetTransformer' => ['nullable', 'string'],
         ]);
         $volumeId = $request->integer('volumeId') ?: null;
         $volume = $volumeId ? $volumes->getVolumeById($volumeId) : new Volume;
@@ -140,7 +140,7 @@ class VolumesController extends BaseAssetSettingsController
         $volume->handle = $request->input('handle');
         $volume->fsHandle = $request->input('fsHandle');
         $volume->subpath = $subpath;
-        $volume->assetProcessor = ($data['assetProcessor'] ?? null) ?: null;
+        $volume->assetTransformer = ($data['assetTransformer'] ?? null) ?: null;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);
@@ -188,7 +188,7 @@ class VolumesController extends BaseAssetSettingsController
                 $volume,
                 $volumes,
                 $formResolver,
-                $this->assetProcessors,
+                $this->assetTransformers,
                 readOnly: $this->readOnly,
             ))
             ->unless(

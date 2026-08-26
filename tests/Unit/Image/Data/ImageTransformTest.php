@@ -53,16 +53,16 @@ describe('getIsNamedTransform', function () {
     });
 });
 
-test('constructs inline operations without inferring their shape from the keys', function () {
-    $operation = '00000000-0000-4000-8000-000000000000';
-    $transform = ImageTransform::fromOperations([
+test('constructs inline parameters without inferring their shape from the keys', function () {
+    $parameter = '00000000-0000-4000-8000-000000000000';
+    $transform = ImageTransform::fromParameters([
         'width' => 200,
-        $operation => ['amount' => 2],
+        $parameter => ['amount' => 2],
     ]);
 
     expect($transform->width)->toBe(200)
-        ->and($transform->getOperations()[$operation])->toBe(['amount' => 2])
-        ->and($transform->getCustomOperations())->toBe([]);
+        ->and($transform->getParameters()[$parameter])->toBe(['amount' => 2])
+        ->and($transform->getCustomParameters())->toBe([]);
 });
 
 describe('getConfig', function () {
@@ -93,7 +93,7 @@ describe('getConfig', function () {
             'quality' => 80,
             'upscale' => true,
             'width' => 200,
-            'operations' => [],
+            'parameters' => [],
         ]);
     });
 

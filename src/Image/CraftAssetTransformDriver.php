@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
@@ -20,13 +20,13 @@ use CraftCms\Cms\Support\File;
 
 use function CraftCms\Cms\t;
 
-class CraftAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTransforms
+class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public function __construct(private readonly ImageTransformer $imageTransformer) {}
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition(t('Craft'), settings: [
+        return new AssetTransformDriverDefinition(t('Craft'), settingsFields: [
             Field::make(t('Output Filesystem'), Combobox::make('filesystem')
                 ->value(null)
                 ->options([
@@ -46,9 +46,9 @@ class CraftAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTr
             throw new NotSupportedException('The Asset cannot be manipulated as an image.');
         }
 
-        $transform = ImageTransform::fromOperations($request->operations);
+        $transform = ImageTransform::fromParameters($request->parameters);
         try {
-            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $request->immediately, $request->processor);
+            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $request->immediately, $request->transformer);
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
         }
@@ -84,14 +84,14 @@ class CraftAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTr
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = $request->processor->uid.':'.serialize($request->operations);
-            $groups[$key]['transform'] ??= ImageTransform::fromOperations($request->operations);
-            $groups[$key]['processor'] ??= $request->processor;
+            $key = $request->transformer->uid.':'.serialize($request->parameters);
+            $groups[$key]['transform'] ??= ImageTransform::fromParameters($request->parameters);
+            $groups[$key]['transformer'] ??= $request->transformer;
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
 
         foreach ($groups as $group) {
-            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']), $group['processor']);
+            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']), $group['transformer']);
         }
     }
 }

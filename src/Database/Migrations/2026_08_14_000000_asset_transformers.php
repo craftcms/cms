@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Database\Migrations\Migration;
@@ -16,15 +16,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn(Table::VOLUMES, 'assetProcessor')) {
+        if (! Schema::hasColumn(Table::VOLUMES, 'assetTransformer')) {
             Schema::table(Table::VOLUMES, function (Blueprint $table): void {
-                $table->string('assetProcessor')->nullable()->after('subpath');
+                $table->string('assetTransformer')->nullable()->after('subpath');
             });
         }
 
-        if (! Schema::hasColumn(Table::IMAGETRANSFORMS, 'operations')) {
+        if (! Schema::hasColumn(Table::IMAGETRANSFORMS, 'parameters')) {
             Schema::table(Table::IMAGETRANSFORMS, function (Blueprint $table): void {
-                $table->json('operations')->nullable()->after('upscale');
+                $table->json('parameters')->nullable()->after('upscale');
             });
         }
 
@@ -92,8 +92,8 @@ return new class extends Migration
             foreach ($destinations as $key => $destination) {
                 $handle = 'legacyTransforms'.ucfirst(substr($key, 0, 12));
 
-                app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
-                    'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:asset-processor:{$key}")->toString(),
+                app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
+                    'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:asset-transformer:{$key}")->toString(),
                     'name' => "{$destination['name']} Transforms",
                     'handle' => $handle,
                     'driver' => 'craft',
@@ -105,11 +105,11 @@ return new class extends Migration
 
                 DB::table(Table::VOLUMES)
                     ->whereIn('uid', $destination['volumeUids'])
-                    ->update(['assetProcessor' => $handle]);
+                    ->update(['assetTransformer' => $handle]);
 
                 foreach ($destination['volumeUids'] as $volumeUid) {
                     $projectConfig->set(
-                        ProjectConfig::PATH_VOLUMES.".{$volumeUid}.assetProcessor",
+                        ProjectConfig::PATH_VOLUMES.".{$volumeUid}.assetTransformer",
                         $handle,
                         'Migrate the volume transform destination',
                     );

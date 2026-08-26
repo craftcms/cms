@@ -9,12 +9,12 @@ use CraftCms\Cms\Asset\Elements\Asset;
 readonly class AssetTransformRequest
 {
     /**
-     * @param  array<string, mixed>  $operations
+     * @param  array<string, mixed>  $parameters
      */
     public function __construct(
         public Asset $asset,
-        public AssetProcessor $processor,
-        public array $operations,
+        public AssetTransformer $transformer,
+        public array $parameters,
         public bool $immediately,
     ) {}
 }

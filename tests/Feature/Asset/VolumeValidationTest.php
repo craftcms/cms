@@ -149,39 +149,39 @@ it('validates fsHandle for required invalid references and internal disks', func
         ->and($internal->errors()->has('fsHandle'))->toBeTrue();
 });
 
-it('validates asset processor references while allowing unresolved environment variables', function () {
+it('validates asset transformer references while allowing unresolved environment variables', function () {
     $invalid = new Volume([
-        'assetProcessor' => 'missing-processor',
+        'assetTransformer' => 'missing-transformer',
     ]);
 
-    expect($invalid->validate(['assetProcessor']))->toBeFalse()
-        ->and($invalid->errors()->has('assetProcessor'))->toBeTrue();
+    expect($invalid->validate(['assetTransformer']))->toBeFalse()
+        ->and($invalid->errors()->has('assetTransformer'))->toBeTrue();
 
     $valid = new Volume([
-        'assetProcessor' => 'craft',
+        'assetTransformer' => 'craft',
     ]);
 
-    expect($valid->validate(['assetProcessor']))->toBeTrue()
-        ->and($valid->errors()->has('assetProcessor'))->toBeFalse();
+    expect($valid->validate(['assetTransformer']))->toBeTrue()
+        ->and($valid->errors()->has('assetTransformer'))->toBeFalse();
 
     $unresolved = new Volume([
-        'assetProcessor' => '$CRAFT_TEST_ASSET_PROCESSOR',
+        'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
     ]);
 
-    expect($unresolved->validate(['assetProcessor']))->toBeTrue()
-        ->and($unresolved->errors()->has('assetProcessor'))->toBeFalse();
+    expect($unresolved->validate(['assetTransformer']))->toBeTrue()
+        ->and($unresolved->errors()->has('assetTransformer'))->toBeFalse();
 
-    putenv('CRAFT_TEST_ASSET_PROCESSOR=missing-processor');
+    putenv('CRAFT_TEST_ASSET_TRANSFORMER=missing-transformer');
 
     try {
         $resolved = new Volume([
-            'assetProcessor' => '$CRAFT_TEST_ASSET_PROCESSOR',
+            'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
         ]);
 
-        expect($resolved->validate(['assetProcessor']))->toBeFalse()
-            ->and($resolved->errors()->has('assetProcessor'))->toBeTrue();
+        expect($resolved->validate(['assetTransformer']))->toBeFalse()
+            ->and($resolved->errors()->has('assetTransformer'))->toBeTrue();
     } finally {
-        putenv('CRAFT_TEST_ASSET_PROCESSOR');
+        putenv('CRAFT_TEST_ASSET_TRANSFORMER');
     }
 });
 

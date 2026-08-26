@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -26,16 +26,16 @@ beforeEach(function () {
 });
 
 it('generates asset transforms immediately while rendering system messages', function () {
-    $driver = new SystemMessageAssetProcessorDriver;
-    app(AssetProcessorDrivers::class)->extend('system-message', fn () => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+    $driver = new SystemMessageAssetTransformDriver;
+    app(AssetTransformDrivers::class)->extend('system-message', fn () => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'System message',
         'handle' => 'system-message',
         'driver' => 'system-message',
     ]), false);
     Cms::config()
-        ->defaultAssetProcessor('system-message')
+        ->defaultAssetTransformer('system-message')
         ->generateTransformsBeforePageLoad(false);
     $asset = Asset::factory()->createElement();
     $this->systemMessages->register('asset-transform', fn () => new SystemMessage([
@@ -133,14 +133,14 @@ it('can get messages including overrides', function () {
     Edition::set($edition);
 });
 
-class SystemMessageAssetProcessorDriver implements AssetProcessorDriver
+class SystemMessageAssetTransformDriver implements AssetTransformDriver
 {
     /** @var list<AssetTransformRequest> */
     public array $requests = [];
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition('System message');
+        return new AssetTransformDriverDefinition('System message');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -148,7 +148,7 @@ class SystemMessageAssetProcessorDriver implements AssetProcessorDriver
         $this->requests[] = $request;
 
         return new AssetTransformResult(
-            "/system-message/{$request->operations['width']}.webp",
+            "/system-message/{$request->parameters['width']}.webp",
             'image/webp',
         );
     }

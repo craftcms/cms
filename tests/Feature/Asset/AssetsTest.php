@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
-use CraftCms\Cms\Asset\Exceptions\AssetProcessorNotFoundException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -115,9 +115,9 @@ it('uses ThumbUrlResolving event url when set', function () {
 });
 
 it('renders non-image thumbnails and previews through the selected driver', function () {
-    $driver = new ControlPanelAssetProcessorDriver;
+    $driver = new ControlPanelAssetTransformDriver;
     registerControlPanelTransformer($driver);
-    Cms::config()->defaultAssetProcessor('test');
+    Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -129,9 +129,9 @@ it('renders non-image thumbnails and previews through the selected driver', func
         'height' => 800,
     ]);
 
-    expect($this->assets->getThumbUrl($asset, 120, 80))->toBe('/renditions/120x80.webp')
-        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe('/renditions/1000x1000.webp')
-        ->and(array_column($driver->requests, 'operations'))->toBe([
+    expect($this->assets->getThumbUrl($asset, 120, 80))->toBe('/transforms/120x80.webp')
+        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe('/transforms/1000x1000.webp')
+        ->and(array_column($driver->requests, 'parameters'))->toBe([
             ['height' => 80, 'mode' => 'crop', 'width' => 120],
             ['height' => 1000, 'mode' => 'crop', 'width' => 1000],
         ])
@@ -139,10 +139,10 @@ it('renders non-image thumbnails and previews through the selected driver', func
 });
 
 it('uses file-kind images only when the selected driver does not support the source', function () {
-    registerControlPanelTransformer(new ControlPanelAssetProcessorDriver(
+    registerControlPanelTransformer(new ControlPanelAssetTransformDriver(
         new NotSupportedException('unsupported'),
     ));
-    Cms::config()->defaultAssetProcessor('test');
+    Cms::config()->defaultAssetTransformer('test');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -159,7 +159,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 });
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
-    Cms::config()->defaultAssetProcessor('missing');
+    Cms::config()->defaultAssetTransformer('missing');
     $volume = Volume::factory()->create(['fs' => 'disk:test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -170,9 +170,9 @@ it('does not disguise control-panel transform configuration failures as file-kin
     ]);
 
     expect(fn () => $this->assets->getThumbUrl($asset, 100))
-        ->toThrow(AssetProcessorNotFoundException::class)
+        ->toThrow(AssetTransformerNotFoundException::class)
         ->and(fn () => $this->assets->getImagePreviewUrl($asset, 1000, 1000))
-        ->toThrow(AssetProcessorNotFoundException::class);
+        ->toThrow(AssetTransformerNotFoundException::class);
 });
 
 it('dispatches PreviewHandlerResolving event', function () {
@@ -324,10 +324,10 @@ it('resets caches', function () {
     expect(true)->toBeTrue();
 });
 
-function registerControlPanelTransformer(ControlPanelAssetProcessorDriver $driver): void
+function registerControlPanelTransformer(ControlPanelAssetTransformDriver $driver): void
 {
-    app(AssetProcessorDrivers::class)->extend('test', fn () => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+    app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Test',
         'handle' => 'test',
@@ -335,7 +335,7 @@ function registerControlPanelTransformer(ControlPanelAssetProcessorDriver $drive
     ]), false);
 }
 
-class ControlPanelAssetProcessorDriver implements AssetProcessorDriver
+class ControlPanelAssetTransformDriver implements AssetTransformDriver
 {
     public array $requests = [];
 
@@ -343,9 +343,9 @@ class ControlPanelAssetProcessorDriver implements AssetProcessorDriver
         private readonly ?Throwable $failure = null,
     ) {}
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition('Control panel test');
+        return new AssetTransformDriverDefinition('Control panel test');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -357,7 +357,7 @@ class ControlPanelAssetProcessorDriver implements AssetProcessorDriver
         $this->requests[] = $request;
 
         return new AssetTransformResult(
-            url: sprintf('/renditions/%sx%s.webp', $request->operations['width'], $request->operations['height']),
+            url: sprintf('/transforms/%sx%s.webp', $request->parameters['width'], $request->parameters['height']),
             mimeType: 'image/webp',
         );
     }

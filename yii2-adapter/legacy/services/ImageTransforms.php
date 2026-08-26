@@ -16,8 +16,8 @@ use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -218,7 +218,7 @@ class ImageTransforms extends Component
             }
 
             if ($coreTransforms !== []) {
-                app(AssetProcessors::class)->preload([$asset], $coreTransforms);
+                app(AssetTransformers::class)->preload([$asset], $coreTransforms);
             }
         }
 
@@ -288,7 +288,7 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        app(AssetProcessors::class)->invalidate($asset);
+        app(AssetTransformers::class)->invalidate($asset);
     }
 
     /**
@@ -390,23 +390,23 @@ class ImageTransforms extends Component
         [$transformer, $definition] = $this->legacyTransformer($definition);
 
         if ($transformer === null) {
-            return app(AssetProcessors::class)->transform($asset, $definition, $immediately);
+            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
         }
 
         app(ImageTransformers::class)->register($transformer);
         $request = $this->legacyTransformRequest($asset, $definition, $transformer, $immediately);
 
         if ($request === null) {
-            return app(AssetProcessors::class)->transform($asset, $definition, $immediately);
+            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
         }
 
         return new LegacyImageTransformerDriver($transformer)->transform($request);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
-    private function legacyAssetProcessor(string $transformer): AssetProcessor
+    private function legacyAssetTransformer(string $transformer): AssetTransformer
     {
-        return new AssetProcessor([
+        return new AssetTransformer([
             'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:legacy-image-transformer:$transformer")->toString(),
             'name' => $transformer,
             'handle' => 'legacy_' . substr(sha1($transformer), 0, 16),
@@ -421,16 +421,16 @@ class ImageTransforms extends Component
         string $transformer,
         bool $immediately,
     ): ?AssetTransformRequest {
-        if ($asset->getVolume()->getAssetProcessorHandle(false) || $this->hasTransformerOverride($definition)) {
+        if ($asset->getVolume()->getAssetTransformerHandle(false) || $this->hasTransformerOverride($definition)) {
             return null;
         }
 
-        $assetProcessor = $this->legacyAssetProcessor($transformer);
+        $assetTransformer = $this->legacyAssetTransformer($transformer);
 
         return new AssetTransformRequest(
             asset: $asset,
-            processor: $assetProcessor,
-            operations: $this->transformOperations($definition, (string) $assetProcessor->uid),
+            transformer: $assetTransformer,
+            parameters: $this->transformParameters($definition, (string) $assetTransformer->uid),
             immediately: $immediately,
         );
     }
@@ -471,7 +471,7 @@ class ImageTransforms extends Component
     }
 
     /** @return array<string, mixed> */
-    private function transformOperations(mixed $definition, string $transformerUid): array
+    private function transformParameters(mixed $definition, string $transformerUid): array
     {
         try {
             $transform = ImageTransformHelper::normalizeTransform($definition);
@@ -480,10 +480,10 @@ class ImageTransforms extends Component
         }
 
         if ($transform === null) {
-            throw new InvalidAssetTransformException('An Asset Transform definition must be an array, object, or named transform handle.');
+            throw new InvalidAssetTransformException('A transform definition must be an array, object, or named transform handle.');
         }
 
-        return $transform->getOperations($transformerUid);
+        return $transform->getParameters($transformerUid);
     }
 
     private function service(): ImageTransformsService

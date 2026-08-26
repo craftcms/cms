@@ -12,17 +12,17 @@
     create,
     destroy,
     edit,
-  } from '@actions/Settings/AssetProcessorsController';
+  } from '@actions/Settings/AssetTransformersController';
 
-  type AssetProcessorIndexData =
-    CraftCms.Cms.Asset.Data.AssetProcessorIndexData;
+  type AssetTransformerIndexData =
+    CraftCms.Cms.Asset.Data.AssetTransformerIndexData;
 
   const props = defineProps<{
-    processors: Array<AssetProcessorIndexData>;
+    transformers: Array<AssetTransformerIndexData>;
     readOnly: boolean;
   }>();
 
-  const columnHelper = createCraftColumnHelper<AssetProcessorIndexData>();
+  const columnHelper = createCraftColumnHelper<AssetTransformerIndexData>();
   const columnVisibility = computed(() => ({
     name: true,
     handle: true,
@@ -31,10 +31,10 @@
   }));
   const columns = ref([
     columnHelper.link(
-      (processor) =>
-        processor.isDefault
-          ? `${processor.name} (${t('Default')})`
-          : processor.name,
+      (transformer) =>
+        transformer.isDefault
+          ? `${transformer.name} (${t('Default')})`
+          : transformer.name,
       {
         id: 'name',
         header: t('Name'),
@@ -48,32 +48,32 @@
       header: t('Driver'),
     }),
     columnHelper.actions(({row}) => {
-      const processor = row.original;
+      const transformer = row.original;
       const deleteButton = h(DeleteButton, {
         confirm: t(
-          'Are you sure you want to delete the “{name}” Asset Processor?',
+          'Are you sure you want to delete the “{name}” Asset Transformer?',
           {
-            name: processor.name,
+            name: transformer.name,
           }
         ),
-        disabled: processor.deleteDisabledReason !== null,
+        disabled: transformer.deleteDisabledReason !== null,
         onClick: () =>
           router
-            .optimistic<{processors: Array<AssetProcessorIndexData>}>(
-              ({processors}) => ({
-                processors: processors.filter(
-                  ({handle}) => handle !== processor.handle
+            .optimistic<{transformers: Array<AssetTransformerIndexData>}>(
+              ({transformers}) => ({
+                transformers: transformers.filter(
+                  ({handle}) => handle !== transformer.handle
                 ),
               })
             )
-            .delete(destroy({handle: processor.handle})),
+            .delete(destroy({handle: transformer.handle})),
       });
 
-      if (processor.deleteDisabledReason === null) {
+      if (transformer.deleteDisabledReason === null) {
         return [deleteButton];
       }
 
-      const tooltipId = `delete-asset-processor-${processor.uid}`;
+      const tooltipId = `delete-asset-transformer-${transformer.uid}`;
 
       return [
         h(
@@ -84,13 +84,13 @@
           },
           deleteButton
         ),
-        h('craft-tooltip', {for: tooltipId}, processor.deleteDisabledReason),
+        h('craft-tooltip', {for: tooltipId}, transformer.deleteDisabledReason),
       ];
     }),
   ]);
-  const table = useVueTable<AssetProcessorIndexData>({
+  const table = useVueTable<AssetTransformerIndexData>({
     get data() {
-      return props.processors;
+      return props.transformers;
     },
     get columns() {
       return columns.value;
@@ -101,14 +101,14 @@
       },
     },
     enableSorting: false,
-    getCoreRowModel: getCoreRowModel<AssetProcessorIndexData>(),
+    getCoreRowModel: getCoreRowModel<AssetTransformerIndexData>(),
   });
 </script>
 
 <template>
   <LayoutSlot v-if="!readOnly" name="actions">
     <CpLink variant="accent" appearance="button" :href="create().url">{{
-      t('New Asset Processor')
+      t('New Asset Transformer')
     }}</CpLink>
   </LayoutSlot>
 

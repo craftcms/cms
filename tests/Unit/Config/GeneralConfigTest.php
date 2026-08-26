@@ -35,12 +35,12 @@ it('can set compiledTemplatesPath via fluent setter', function () {
     expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
 });
 
-it('requires a default Asset Processor', function () {
+it('requires a default Asset Transformer', function () {
     $config = GeneralConfig::create();
 
-    expect($config->defaultAssetProcessor)->toBe('craft')
-        ->and($config->defaultAssetProcessor('remote')->defaultAssetProcessor)->toBe('remote')
-        ->and(fn () => $config->defaultAssetProcessor(''))->toThrow(RuntimeException::class);
+    expect($config->defaultAssetTransformer)->toBe('craft')
+        ->and($config->defaultAssetTransformer('remote')->defaultAssetTransformer)->toBe('remote')
+        ->and(fn () => $config->defaultAssetTransformer(''))->toThrow(RuntimeException::class);
 });
 
 it('sets the transform generation policy', function () {

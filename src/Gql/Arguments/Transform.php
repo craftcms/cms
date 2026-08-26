@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Arguments;
 
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use GraphQL\Type\Definition\Type;
 
@@ -33,14 +33,14 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.',
             ],
-            'processor' => [
-                'name' => 'processor',
+            'transformer' => [
+                'name' => 'transformer',
                 'type' => Type::string(),
-                'description' => 'The Asset Processor handle to use.',
+                'description' => 'The Asset Transformer handle to use.',
             ],
         ];
 
-        foreach (app(AssetProcessors::class)->coreOperationRules() as $handle => $rules) {
+        foreach (app(AssetTransformers::class)->coreParameterRules() as $handle => $rules) {
             $arguments[$handle] = [
                 'name' => $handle,
                 'type' => match ($rules[0]) {
@@ -48,7 +48,7 @@ class Transform extends Arguments
                     'integer' => Type::int(),
                     'numeric' => Type::float(),
                     'string' => Type::string(),
-                    default => throw new InvalidAssetTransformException('Invalid Asset Transform operation type.'),
+                    default => throw new InvalidAssetTransformException('Invalid Asset Transform parameter type.'),
                 },
                 'description' => $descriptions[$handle] ?? ucfirst($handle).' for the generated transform.',
             ];

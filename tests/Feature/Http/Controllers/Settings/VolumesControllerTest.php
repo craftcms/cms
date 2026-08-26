@@ -109,7 +109,7 @@ describe('create / edit', function () {
                 ->where('title', t('Create a new asset volume'))
                 ->where('form.values.volumeId', null)
                 ->where('form.values.name', '')
-                ->where('form.values.assetProcessor', '')
+                ->where('form.values.assetTransformer', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
                 ->where('form.nodes', function (Collection $nodes): bool {
                     $paths = $nodes->pluck('control.path');
@@ -124,7 +124,7 @@ describe('create / edit', function () {
                         )
                         && $paths->doesntContain(['transformFsHandle'])
                         && $paths->doesntContain(['transformSubpath'])
-                        && $paths->contains(['assetProcessor']);
+                        && $paths->contains(['assetTransformer']);
                 }));
     });
 
@@ -175,7 +175,7 @@ describe('create / edit', function () {
                 'handle' => 'newVolume',
                 'fsHandle' => 'disk:test-disk',
                 'subpath' => '',
-                'assetProcessor' => 'craft',
+                'assetTransformer' => 'craft',
                 'titleTranslationMethod' => 'site',
                 'titleTranslationKeyFormat' => '',
                 'altTranslationMethod' => 'none',
@@ -187,7 +187,7 @@ describe('create / edit', function () {
             ->assertOk()
             ->assertJsonPath('form.values.handle', 'newVolume')
             ->assertJsonPath('form.values.fsHandle', 'disk:test-disk')
-            ->assertJsonPath('form.values.assetProcessor', 'craft');
+            ->assertJsonPath('form.values.assetTransformer', 'craft');
     });
 
     test('edit returns 404 for non-existent volume', function () {
@@ -202,14 +202,14 @@ describe('store', function () {
             'name' => 'New Volume',
             'handle' => 'newVolume',
             'fsHandle' => 'disk:test-disk',
-            'assetProcessor' => 'craft',
+            'assetTransformer' => 'craft',
         ])->assertOk();
 
         app()->forgetInstance(Volumes::class);
         $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
         expect($volume)->not()->toBeNull();
         expect($volume->name)->toBe('New Volume')
-            ->and($volume->getAssetProcessorHandle(false))->toBe('craft');
+            ->and($volume->getAssetTransformerHandle(false))->toBe('craft');
     });
 
     test('store updates existing volume', function () {
@@ -235,14 +235,14 @@ describe('store', function () {
         ])->assertUnprocessable();
     });
 
-    test('store validates the Asset Processor reference shape', function () {
+    test('store validates the Asset Transformer reference shape', function () {
         postJson(action([VolumesController::class, 'store']), [
             'name' => 'Invalid Transform Volume',
             'handle' => 'invalidTransformVolume',
             'fsHandle' => 'disk:test-disk',
-            'assetProcessor' => [],
+            'assetTransformer' => [],
         ])->assertUnprocessable()
-            ->assertJsonValidationErrors('assetProcessor');
+            ->assertJsonValidationErrors('assetTransformer');
     });
 
     test('store validates changes made by saving event listeners', function () {

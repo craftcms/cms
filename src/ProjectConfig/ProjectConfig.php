@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -124,7 +124,7 @@ class ProjectConfig
 
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
 
-    public const string PATH_ASSET_PROCESSORS = 'assetProcessors';
+    public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';
 
@@ -1112,9 +1112,9 @@ class ProjectConfig
         unset($config[self::PATH_META]);
 
         $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
-        $config[self::PATH_ASSET_PROCESSORS] = app(AssetProcessors::class)
-            ->getAllAssetProcessors()
-            ->mapWithKeys(fn (AssetProcessor $transformer): array => [
+        $config[self::PATH_ASSET_TRANSFORMERS] = app(AssetTransformers::class)
+            ->getAllAssetTransformers()
+            ->mapWithKeys(fn (AssetTransformer $transformer): array => [
                 $transformer->uid => $transformer->getConfig(),
             ])
             ->all();

@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
-use CraftCms\Cms\Asset\Exceptions\AssetProcessorDriverNotFoundException;
-use CraftCms\Cms\Image\CraftAssetProcessorDriver;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Manager;
 use InvalidArgumentException;
 use Override;
 
 #[Singleton]
-class AssetProcessorDrivers extends Manager
+class AssetTransformDrivers extends Manager
 {
     public function getDefaultDriver(): string
     {
         return 'craft';
     }
 
-    /** @return array<string, AssetProcessorDriverDefinition> */
+    /** @return array<string, AssetTransformDriverDefinition> */
     public function definitions(): array
     {
         $definitions = ['craft' => $this->driver('craft')->definition()];
@@ -36,25 +36,25 @@ class AssetProcessorDrivers extends Manager
     /**
      * @param  string|null  $driver
      *
-     * @throws AssetProcessorDriverNotFoundException
+     * @throws AssetTransformDriverNotFoundException
      */
     #[Override]
-    public function driver($driver = null): AssetProcessorDriver
+    public function driver($driver = null): AssetTransformDriver
     {
         $handle = $driver ?? $this->getDefaultDriver();
 
         if (! is_string($handle) || $handle === '') {
-            throw new AssetProcessorDriverNotFoundException('The selected Asset Processor driver is invalid.');
+            throw new AssetTransformDriverNotFoundException('The selected Asset Transform driver is invalid.');
         }
 
         try {
             $resolved = parent::driver($handle);
         } catch (InvalidArgumentException $exception) {
-            throw new AssetProcessorDriverNotFoundException("Asset Processor driver [{$handle}] is not registered.", previous: $exception);
+            throw new AssetTransformDriverNotFoundException("Asset Transform driver [{$handle}] is not registered.", previous: $exception);
         }
 
-        if (! $resolved instanceof AssetProcessorDriver) {
-            throw new AssetProcessorDriverNotFoundException("Asset Processor driver [{$handle}] is invalid.");
+        if (! $resolved instanceof AssetTransformDriver) {
+            throw new AssetTransformDriverNotFoundException("Asset Transform driver [{$handle}] is invalid.");
         }
 
         return $resolved;
@@ -66,13 +66,13 @@ class AssetProcessorDrivers extends Manager
             $this->driver($handle);
 
             return true;
-        } catch (AssetProcessorDriverNotFoundException) {
+        } catch (AssetTransformDriverNotFoundException) {
             return false;
         }
     }
 
-    protected function createCraftDriver(): AssetProcessorDriver
+    protected function createCraftDriver(): AssetTransformDriver
     {
-        return $this->container->make(CraftAssetProcessorDriver::class);
+        return $this->container->make(CraftAssetTransformDriver::class);
     }
 }

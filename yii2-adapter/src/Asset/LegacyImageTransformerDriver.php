@@ -9,9 +9,9 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\elements\Asset as LegacyAsset;
 use craft\models\ImageTransform;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -22,15 +22,15 @@ use CraftCms\Cms\Support\Html;
 use LogicException;
 
 /** @internal */
-class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAssetTransforms
+class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public function __construct(private readonly string $transformer)
     {
     }
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition($this->transformer);
+        return new AssetTransformDriverDefinition($this->transformer);
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -40,7 +40,7 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         }
 
         $asset = $this->legacyAsset($request->asset);
-        $transform = new ImageTransform()->setInlineOperations($request->operations);
+        $transform = new ImageTransform()->setInlineParameters($request->parameters);
 
         event($event = new TransformGenerating($asset, $transform));
 
@@ -73,7 +73,7 @@ class LegacyImageTransformerDriver implements AssetProcessorDriver, PreloadsAsse
         foreach ($requests as $request) {
             $asset = $this->legacyAsset($request->asset);
             $assets[$asset->id ?? spl_object_id($asset)] = $asset;
-            $transforms[serialize($request->operations)] ??= new ImageTransform()->setInlineOperations($request->operations);
+            $transforms[serialize($request->parameters)] ??= new ImageTransform()->setInlineParameters($request->parameters);
         }
 
         $transformer->eagerLoadTransforms(array_values($transforms), array_values($assets));

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -35,7 +35,7 @@ beforeEach(function () {
 });
 
 describe('generate', function () {
-    it('serves Craft driver renditions from filesystems without URLs', function () {
+    it('serves Craft driver transform results from filesystems without URLs', function () {
         $asset = AssetModel::factory()->createElement([
             'volumeId' => test()->volume->id,
             'folderId' => test()->folder->id,
@@ -50,14 +50,14 @@ describe('generate', function () {
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
 
-        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100], true);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
 
         get($result->url)
             ->assertOk()
             ->assertHeader('Content-Type', 'image/jpeg');
     });
 
-    it('serves Craft driver renditions from a configured private output filesystem', function () {
+    it('serves Craft driver transform results from a configured private output filesystem', function () {
         config()->set('filesystems.disks.configured-private-source', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-source'),
@@ -66,19 +66,19 @@ describe('generate', function () {
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
-        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Configured private',
             'handle' => 'configured-private',
             'driver' => 'craft',
             'settings' => [
                 'filesystem' => 'disk:configured-private-target',
-                'subpath' => 'renditions',
+                'subpath' => 'transforms',
             ],
         ]), false);
         $volume = Volume::factory()->create([
             'fs' => 'disk:configured-private-source',
-            'assetProcessor' => 'configured-private',
+            'assetTransformer' => 'configured-private',
         ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $asset = AssetModel::factory()->createElement([
@@ -95,7 +95,7 @@ describe('generate', function () {
         );
         Queue::fake();
 
-        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100]);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -107,7 +107,7 @@ describe('generate', function () {
             ->assertStatus(400);
     });
 
-    it('generates Craft driver renditions from private sources', function () {
+    it('generates Craft driver transform results from private sources', function () {
         $asset = AssetModel::factory()->createElement([
             'volumeId' => test()->volume->id,
             'folderId' => test()->folder->id,
@@ -121,7 +121,7 @@ describe('generate', function () {
             $asset->getPath(),
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
-        $result = app(AssetProcessors::class)->transform($asset, ['width' => 100], true);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
 
         get($result->url)->assertOk();
     });
@@ -140,14 +140,14 @@ describe('generate', function () {
         ])->assertForbidden();
     });
 
-    it('generates named transforms with the selected processor', function () {
-        $driver = new class implements AssetProcessorDriver
+    it('generates named transforms with the selected transformer', function () {
+        $driver = new class implements AssetTransformDriver
         {
             public ?AssetTransformRequest $request = null;
 
-            public function definition(): AssetProcessorDriverDefinition
+            public function definition(): AssetTransformDriverDefinition
             {
-                return new AssetProcessorDriverDefinition('Controller test');
+                return new AssetTransformDriverDefinition('Controller test');
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -157,14 +157,14 @@ describe('generate', function () {
                 return new AssetTransformResult('/plugin/card.jpg', 'image/jpeg');
             }
         };
-        app(AssetProcessorDrivers::class)->extend('controller-test', fn () => $driver);
-        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+        app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Controller test',
             'handle' => 'controller-test',
             'driver' => 'controller-test',
         ]), false);
-        Cms::config()->defaultAssetProcessor('controller-test');
+        Cms::config()->defaultAssetTransformer('controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',
             'handle' => 'controllerCard',
@@ -183,7 +183,7 @@ describe('generate', function () {
             'handle' => 'controllerCard',
         ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
 
-        expect($driver->request?->processor->handle)->toBe('controller-test');
+        expect($driver->request?->transformer->handle)->toBe('controller-test');
     });
 
     it('returns error for missing asset id', function () {

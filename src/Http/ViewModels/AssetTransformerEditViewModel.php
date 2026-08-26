@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Text;
@@ -18,18 +18,18 @@ use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Http\Controllers\Settings\AssetProcessorsController;
+use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 
 use function CraftCms\Cms\t;
 
-class AssetProcessorEditViewModel extends ViewModel
+class AssetTransformerEditViewModel extends ViewModel
 {
     /** @param array<string, mixed>|null $values */
     public function __construct(
-        private readonly AssetProcessor $processor,
-        private readonly AssetProcessorDrivers $assetProcessorDrivers,
+        private readonly AssetTransformer $transformer,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly FormResolver $formResolver,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
@@ -38,18 +38,18 @@ class AssetProcessorEditViewModel extends ViewModel
     public function form(): FormPayload
     {
         $values = $this->values ?? [
-            'uid' => $this->processor->uid,
-            'name' => $this->processor->name,
-            'handle' => $this->processor->handle,
-            'driver' => $this->processor->driver,
-            'oldDriver' => $this->processor->driver,
-            'settings' => $this->processor->settings,
+            'uid' => $this->transformer->uid,
+            'name' => $this->transformer->name,
+            'handle' => $this->transformer->handle,
+            'driver' => $this->transformer->driver,
+            'oldDriver' => $this->transformer->driver,
+            'settings' => $this->transformer->settings,
         ];
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
-        $identityMode = $this->processor->handle === 'craft' ? ControlMode::ReadOnly : ControlMode::Editable;
+        $identityMode = $this->transformer->handle === 'craft' ? ControlMode::ReadOnly : ControlMode::Editable;
         $handle = Handle::make('handle')->mode($identityMode);
 
-        if ($this->processor->uid === null) {
+        if ($this->transformer->uid === null) {
             $handle->source('name');
         }
 
@@ -64,7 +64,7 @@ class AssetProcessorEditViewModel extends ViewModel
             )->required(),
         ]), new FormContext(
             values: $values,
-            errors: Arr::only($this->processor->errors()->getMessages(), ['name', 'handle', 'driver']),
+            errors: Arr::only($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),
             mode: $mode,
             refreshable: ! $this->readOnly,
         ));
@@ -85,7 +85,7 @@ class AssetProcessorEditViewModel extends ViewModel
     {
         return [
             'method' => 'post',
-            'url' => action([AssetProcessorsController::class, 'store']),
+            'url' => action([AssetTransformersController::class, 'store']),
         ];
     }
 
@@ -93,18 +93,18 @@ class AssetProcessorEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([AssetProcessorsController::class, 'renderForm']);
+            : action([AssetTransformersController::class, 'renderForm']);
     }
 
     /** @return list<array{label:string,value:string,disabled?:bool}> */
     private function driverOptions(): array
     {
-        $options = collect($this->assetProcessorDrivers->definitions())
+        $options = collect($this->assetTransformDrivers->definitions())
             ->map(fn ($definition, string $handle): array => [
                 'label' => $definition->name,
                 'value' => $handle,
             ]);
-        $selected = $this->processor->driver;
+        $selected = $this->transformer->driver;
 
         if ($selected && ! $options->has($selected)) {
             $options->put($selected, [
@@ -122,26 +122,26 @@ class AssetProcessorEditViewModel extends ViewModel
     {
         $driver = $values['driver'];
 
-        if (! is_string($driver) || ! $this->assetProcessorDrivers->has($driver)) {
+        if (! is_string($driver) || ! $this->assetTransformDrivers->has($driver)) {
             return $this->formResolver->resolve(Form::make([
-                Callout::make('unavailable-driver', t('This Asset Processor’s driver is unavailable. Select an available driver to save it.')),
+                Callout::make('unavailable-driver', t('This Asset Transformer’s driver is unavailable. Select an available driver to save it.')),
                 Field::make(
                     t('Stored settings'),
                     Textarea::make('unavailableSettings')
-                        ->value(Json::encode($this->processor->settings, JSON_PRETTY_PRINT))
+                        ->value(Json::encode($this->transformer->settings, JSON_PRETTY_PRINT))
                         ->mode(ControlMode::ReadOnly),
                 ),
             ]), new FormContext(mode: $mode));
         }
 
-        $definition = $this->assetProcessorDrivers->driver($driver)->definition();
+        $definition = $this->assetTransformDrivers->driver($driver)->definition();
 
         return $this->formResolver->resolve(
-            Form::make($definition->settings),
+            Form::make($definition->settingsFields),
             new FormContext(
                 namespace: 'settings',
                 values: $values,
-                errors: Arr::except($this->processor->errors()->getMessages(), ['name', 'handle', 'driver']),
+                errors: Arr::except($this->transformer->errors()->getMessages(), ['name', 'handle', 'driver']),
                 mode: $mode,
                 refreshable: ! $this->readOnly,
             ),

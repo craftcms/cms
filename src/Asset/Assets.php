@@ -57,7 +57,7 @@ class Assets
     public function __construct(
         private readonly Folders $folders,
         private readonly Elements $elements,
-        private readonly AssetProcessors $assetProcessors,
+        private readonly AssetTransformers $assetTransformers,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
@@ -144,7 +144,7 @@ class Assets
         $extension = $asset->getExtension();
 
         try {
-            $url = $this->assetProcessors->transform($asset, [
+            $url = $this->assetTransformers->transform($asset, [
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
@@ -185,7 +185,7 @@ class Assets
 
         try {
             $url = $transform !== null
-                ? $this->assetProcessors->transform($asset, $transform, true)->url
+                ? $this->assetTransformers->transform($asset, $transform, true)->url
                 : $asset->getUrl();
         } catch (NotSupportedException) {
             return Url::actionUrl('assets/icon', [

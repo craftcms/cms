@@ -3,13 +3,13 @@ import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Index from './Index.vue';
 
-vi.mock('@actions/Settings/AssetProcessorsController', () => ({
-  create: () => ({url: '/settings/assets/processors/new'}),
+vi.mock('@actions/Settings/AssetTransformersController', () => ({
+  create: () => ({url: '/settings/assets/transformers/new'}),
   destroy: ({handle}: {handle: string}) => ({
-    url: `/settings/assets/processors/${handle}`,
+    url: `/settings/assets/transformers/${handle}`,
   }),
   edit: ({handle}: {handle: string}) => ({
-    url: `/settings/assets/processors/${handle}`,
+    url: `/settings/assets/transformers/${handle}`,
   }),
 }));
 
@@ -61,16 +61,16 @@ afterEach(() => {
   container.remove();
 });
 
-it('links the default Craft processor to its edit screen', async () => {
+it('links the default Craft transformer to its edit screen', async () => {
   app = createApp(Index, {
-    processors: [
+    transformers: [
       {
         uid: 'craft-uid',
         name: 'Craft',
         handle: 'craft',
         driver: 'Craft',
         isDefault: true,
-        deleteDisabledReason: 'The Craft Asset Processor cannot be deleted.',
+        deleteDisabledReason: 'The Craft Asset Transformer cannot be deleted.',
       },
     ],
     readOnly: false,
@@ -81,17 +81,19 @@ it('links the default Craft processor to its edit screen', async () => {
   const link = container.querySelector('a');
 
   expect(link?.textContent).toBe('Craft (Default)');
-  expect(link?.getAttribute('href')).toBe('/settings/assets/processors/craft');
+  expect(link?.getAttribute('href')).toBe(
+    '/settings/assets/transformers/craft'
+  );
   expect(container.querySelector('button')?.disabled).toBe(false);
   expect(container.querySelector('button')?.getAttribute('aria-disabled')).toBe(
     'true'
   );
   expect(
     container
-      .querySelector('#delete-asset-processor-craft-uid')
+      .querySelector('#delete-asset-transformer-craft-uid')
       ?.hasAttribute('tabindex')
   ).toBe(false);
   expect(container.querySelector('craft-tooltip')?.textContent).toBe(
-    'The Craft Asset Processor cannot be deleted.'
+    'The Craft Asset Transformer cannot be deleted.'
   );
 });

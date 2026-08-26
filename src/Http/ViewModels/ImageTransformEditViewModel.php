@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -41,8 +41,8 @@ class ImageTransformEditViewModel extends ViewModel
         private readonly ImageTransform $transform,
         private readonly Images $images,
         private readonly FormResolver $formResolver,
-        private readonly AssetProcessors $assetProcessors,
-        private readonly AssetProcessorDrivers $assetProcessorDrivers,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -106,31 +106,31 @@ class ImageTransformEditViewModel extends ViewModel
             )->instructions(t('The image format that transformed images should use.')),
         );
 
-        foreach ($this->assetProcessors->getAllAssetProcessors() as $processor) {
-            if (! $this->assetProcessorDrivers->has($processor->driver)) {
-                $form->add(Group::make("asset-processor-{$processor->uid}", [
-                    Callout::make("asset-processor-{$processor->uid}-unavailable", t('This Asset Processor’s driver is unavailable.')),
-                ])->label((string) $processor->name));
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
+            if (! $this->assetTransformDrivers->has($transformer->driver)) {
+                $form->add(Group::make("asset-transformer-{$transformer->uid}", [
+                    Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This Asset Transformer’s driver is unavailable.')),
+                ])->label((string) $transformer->name));
 
                 continue;
             }
 
-            $fields = array_map(function (Field $field) use ($processor): Field {
+            $fields = array_map(function (Field $field) use ($transformer): Field {
                 $field = clone $field;
                 $control = $field->getControl();
 
                 if ($control !== null) {
                     $handle = $control->path();
                     $handle = is_array($handle) ? $handle[0] : $handle;
-                    $field->control($control->withPath(['operations', $processor->uid, $handle]));
+                    $field->control($control->withPath(['parameters', $transformer->uid, $handle]));
                 }
 
                 return $field;
-            }, array_values($this->assetProcessors->operationFields($processor)));
+            }, array_values($this->assetTransformers->parameterFields($transformer)));
 
             if ($fields !== []) {
-                $form->add(Group::make("asset-processor-{$processor->uid}", $fields)
-                    ->label((string) $processor->name));
+                $form->add(Group::make("asset-transformer-{$transformer->uid}", $fields)
+                    ->label((string) $transformer->name));
             }
         }
 
@@ -176,7 +176,7 @@ class ImageTransformEditViewModel extends ViewModel
                 ? ltrim($this->transform->fill, '#')
                 : '',
             'upscale' => $this->transform->upscale,
-            'operations' => $this->transform->getCustomOperations(),
+            'parameters' => $this->transform->getCustomParameters(),
         ];
     }
 

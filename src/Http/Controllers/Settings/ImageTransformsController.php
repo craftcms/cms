@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Form\FormResolver;
@@ -38,8 +38,8 @@ class ImageTransformsController extends BaseAssetSettingsController
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly FormResolver $formResolver,
-        private readonly AssetProcessors $assetProcessors,
-        private readonly AssetProcessorDrivers $assetProcessorDrivers,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
     public function index(ImageTransforms $imageTransforms): \Inertia\Response
@@ -97,38 +97,38 @@ class ImageTransformsController extends BaseAssetSettingsController
             : null;
         $transform->upscale = $request->boolean('upscale', $transform->upscale);
 
-        $operationBuckets = [];
+        $parameterBuckets = [];
 
-        foreach ($this->assetProcessors->getAllAssetProcessors() as $assetProcessor) {
-            if (! $this->assetProcessorDrivers->has($assetProcessor->driver)) {
-                $existing = $transform->getOperationsForTransformer($assetProcessor->uid);
+        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
+            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
+                $existing = $transform->getParametersForTransformer($assetTransformer->uid);
 
                 if ($existing !== []) {
-                    $operationBuckets[$assetProcessor->uid] = $existing;
+                    $parameterBuckets[$assetTransformer->uid] = $existing;
                 }
 
                 continue;
             }
 
             try {
-                $operations = $this->assetProcessors->validateOperations(
-                    $assetProcessor,
-                    $request->array("operations.{$assetProcessor->uid}"),
+                $parameters = $this->assetTransformers->validateParameters(
+                    $assetTransformer,
+                    $request->array("parameters.{$assetTransformer->uid}"),
                 );
             } catch (InvalidAssetTransformException $exception) {
                 throw ValidationException::withMessages([
-                    "operations.{$assetProcessor->uid}" => $exception->getMessage(),
+                    "parameters.{$assetTransformer->uid}" => $exception->getMessage(),
                 ]);
             }
 
-            $operations = Arr::except($operations, ImageTransform::CORE_OPERATIONS);
+            $parameters = Arr::except($parameters, ImageTransform::CORE_PARAMETERS);
 
-            if ($operations !== []) {
-                $operationBuckets[$assetProcessor->uid] = $operations;
+            if ($parameters !== []) {
+                $parameterBuckets[$assetTransformer->uid] = $parameters;
             }
         }
 
-        $transform->setOperations($operationBuckets);
+        $transform->setParameters($parameterBuckets);
 
         if ($transform->format === '') {
             $transform->format = null;
@@ -174,7 +174,7 @@ class ImageTransformsController extends BaseAssetSettingsController
             'values.format' => ['nullable', Rule::enum(ImageTransformFormat::class)],
             'values.fill' => ['nullable', 'string'],
             'values.upscale' => ['required', 'boolean'],
-            'values.operations' => ['nullable', 'array'],
+            'values.parameters' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
         $values = $data['values'];
@@ -219,8 +219,8 @@ class ImageTransformsController extends BaseAssetSettingsController
             $transform,
             $images,
             $this->formResolver,
-            $this->assetProcessors,
-            $this->assetProcessorDrivers,
+            $this->assetTransformers,
+            $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,
         );

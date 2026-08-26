@@ -14,11 +14,11 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -187,16 +187,16 @@ it('keeps the legacy gql helper working against the new service', function() {
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
 });
 
-it('applies legacy immediately behavior without mutating transform operations or the Asset', function() {
-    $driver = new GqlImmediateAssetProcessorDriver();
-    app(AssetProcessorDrivers::class)->extend('gql-immediately', fn() => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+it('applies legacy immediately behavior without mutating transform parameters or the Asset', function() {
+    $driver = new GqlImmediateAssetTransformDriver();
+    app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'GQL immediately',
         'handle' => 'gql-immediately',
         'driver' => 'gql-immediately',
     ]), false);
-    Cms::config()->defaultAssetProcessor('gql-immediately');
+    Cms::config()->defaultAssetTransformer('gql-immediately');
     Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
     $asset = Asset::factory()->createElement([
         'width' => 800,
@@ -223,20 +223,20 @@ it('applies legacy immediately behavior without mutating transform operations or
         'data' => [
             'source' => [
                 'sourceBefore' => 800,
-                'deferred' => '/renditions/320.webp',
-                'nullDefault' => '/renditions/640.webp',
+                'deferred' => '/transforms/320.webp',
+                'nullDefault' => '/transforms/640.webp',
                 'sourceAfter' => 800,
             ],
-            'omittedDefault' => ['url' => '/renditions/960.webp'],
+            'omittedDefault' => ['url' => '/transforms/960.webp'],
         ],
     ]);
 
     expect($driver->requests)->toHaveCount(3)
-        ->and($driver->requests[0]->operations)->toBe(['width' => 320])
+        ->and($driver->requests[0]->parameters)->toBe(['width' => 320])
         ->and($driver->requests[0]->immediately)->toBeFalse()
-        ->and($driver->requests[1]->operations)->toBe(['width' => 640])
+        ->and($driver->requests[1]->parameters)->toBe(['width' => 640])
         ->and($driver->requests[1]->immediately)->toBeTrue()
-        ->and($driver->requests[2]->operations)->toBe(['width' => 960])
+        ->and($driver->requests[2]->parameters)->toBe(['width' => 960])
         ->and($driver->requests[2]->immediately)->toBeTrue();
 });
 
@@ -308,13 +308,13 @@ class LegacyReplacementArgumentHandler extends AdapterArgumentHandler
     }
 }
 
-class GqlImmediateAssetProcessorDriver implements AssetProcessorDriver
+class GqlImmediateAssetTransformDriver implements AssetTransformDriver
 {
     public array $requests = [];
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition('GraphQL immediately');
+        return new AssetTransformDriverDefinition('GraphQL immediately');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -322,7 +322,7 @@ class GqlImmediateAssetProcessorDriver implements AssetProcessorDriver
         $this->requests[] = $request;
 
         return new AssetTransformResult(
-            url: "/renditions/{$request->operations['width']}.webp",
+            url: "/transforms/{$request->parameters['width']}.webp",
             mimeType: 'image/webp',
         );
     }

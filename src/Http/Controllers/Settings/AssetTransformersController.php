@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorIndexData;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Http\ViewModels\AssetProcessorEditViewModel;
+use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-class AssetProcessorsController extends BaseAssetSettingsController
+class AssetTransformersController extends BaseAssetSettingsController
 {
     use RespondsWithFlash;
 
@@ -32,8 +32,8 @@ class AssetProcessorsController extends BaseAssetSettingsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private readonly AssetProcessors $assetProcessors,
-        private readonly AssetProcessorDrivers $assetProcessorDrivers,
+        private readonly AssetTransformers $assetTransformers,
+        private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly FormResolver $formResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -41,28 +41,28 @@ class AssetProcessorsController extends BaseAssetSettingsController
 
     public function index(): \Inertia\Response
     {
-        $defaultHandle = $this->assetProcessors->getDefaultAssetProcessor()->handle;
+        $defaultHandle = $this->assetTransformers->getDefaultAssetTransformer()->handle;
 
-        return Inertia::render('settings/assets/processors/Index', [
+        return Inertia::render('settings/assets/transformers/Index', [
             'crumbs' => fn () => [
                 ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets')],
-                ['label' => t('Asset Processors')],
+                ['label' => t('Asset Transformers')],
             ],
             'readOnly' => $this->readOnly,
             'subnav' => $this->subnav(),
-            'title' => t('Asset Processors'),
-            'processors' => $this->assetProcessors
-                ->getAllAssetProcessors()
-                ->map(fn (AssetProcessor $processor): AssetProcessorIndexData => new AssetProcessorIndexData([
-                    'uid' => $processor->uid,
-                    'name' => $processor->name,
-                    'handle' => $processor->handle,
-                    'driver' => $this->assetProcessorDrivers->has($processor->driver)
-                        ? $this->assetProcessorDrivers->driver($processor->driver)->definition()->name
-                        : t('{driver} (Unavailable)', ['driver' => $processor->driver]),
-                    'isDefault' => $processor->handle === $defaultHandle,
-                    'deleteDisabledReason' => $this->assetProcessors->getDeleteDisabledReason($processor),
+            'title' => t('Asset Transformers'),
+            'transformers' => $this->assetTransformers
+                ->getAllAssetTransformers()
+                ->map(fn (AssetTransformer $transformer): AssetTransformerIndexData => new AssetTransformerIndexData([
+                    'uid' => $transformer->uid,
+                    'name' => $transformer->name,
+                    'handle' => $transformer->handle,
+                    'driver' => $this->assetTransformDrivers->has($transformer->driver)
+                        ? $this->assetTransformDrivers->driver($transformer->driver)->definition()->name
+                        : t('{driver} (Unavailable)', ['driver' => $transformer->driver]),
+                    'isDefault' => $transformer->handle === $defaultHandle,
+                    'deleteDisabledReason' => $this->assetTransformers->getDeleteDisabledReason($transformer),
                 ]))
                 ->sortBy('name')
                 ->values(),
@@ -73,7 +73,7 @@ class AssetProcessorsController extends BaseAssetSettingsController
     {
         abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
 
-        return $this->editScreen(new AssetProcessor([
+        return $this->editScreen(new AssetTransformer([
             'driver' => 'craft',
             'settings' => [],
         ]));
@@ -81,11 +81,11 @@ class AssetProcessorsController extends BaseAssetSettingsController
 
     public function edit(string $handle): CpScreenResponse
     {
-        $processor = $this->assetProcessors->getAssetProcessorByHandle($handle);
+        $transformer = $this->assetTransformers->getAssetTransformerByHandle($handle);
 
-        abort_if($processor === null, 404, 'Asset Processor not found');
+        abort_if($transformer === null, 404, 'Asset Transformer not found');
 
-        return $this->editScreen($processor);
+        return $this->editScreen($transformer);
     }
 
     public function store(Request $request): Response
@@ -94,10 +94,10 @@ class AssetProcessorsController extends BaseAssetSettingsController
             'uid' => ['nullable', 'uuid'],
             'name' => ['nullable', 'string'],
             'handle' => ['nullable', 'string'],
-            'driver' => ['required', 'string', Rule::in(array_keys($this->assetProcessorDrivers->definitions()))],
+            'driver' => ['required', 'string', Rule::in(array_keys($this->assetTransformDrivers->definitions()))],
             'settings' => ['nullable', 'array'],
         ]);
-        $processor = new AssetProcessor([
+        $transformer = new AssetTransformer([
             'uid' => $data['uid'] ?? null,
             'name' => $data['name'] ?? '',
             'handle' => $data['handle'] ?? '',
@@ -105,16 +105,16 @@ class AssetProcessorsController extends BaseAssetSettingsController
             'settings' => $this->settings($data['driver'], $data['settings'] ?? []),
         ]);
 
-        if (! $this->assetProcessors->saveAssetProcessor($processor)) {
-            throw ValidationException::withMessages($processor->errors()->getMessages());
+        if (! $this->assetTransformers->saveAssetTransformer($transformer)) {
+            throw ValidationException::withMessages($transformer->errors()->getMessages());
         }
 
         return $this->asModelSuccess(
-            $processor,
-            t('Asset Processor saved.'),
-            'assetProcessor',
-            redirect: $this->getPostedRedirectUrl($processor)
-                ?? Url::cpUrl("settings/assets/processors/{$processor->handle}"),
+            $transformer,
+            t('Asset Transformer saved.'),
+            'assetTransformer',
+            redirect: $this->getPostedRedirectUrl($transformer)
+                ?? Url::cpUrl("settings/assets/transformers/{$transformer->handle}"),
         );
     }
 
@@ -126,7 +126,7 @@ class AssetProcessorsController extends BaseAssetSettingsController
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
             'values.oldDriver' => ['nullable', 'string'],
-            'values.driver' => ['required', 'string', Rule::in(array_keys($this->assetProcessorDrivers->definitions()))],
+            'values.driver' => ['required', 'string', Rule::in(array_keys($this->assetTransformDrivers->definitions()))],
             'values.settings' => ['nullable', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -137,7 +137,7 @@ class AssetProcessorsController extends BaseAssetSettingsController
             $values['oldDriver'] = $values['driver'];
         }
 
-        $processor = new AssetProcessor([
+        $transformer = new AssetTransformer([
             'uid' => $values['uid'] ?? null,
             'name' => $values['name'] ?? '',
             'handle' => $values['handle'] ?? '',
@@ -146,38 +146,38 @@ class AssetProcessorsController extends BaseAssetSettingsController
         ]);
 
         return new JsonResponse([
-            'form' => $this->viewModel($processor, $values)->form(),
+            'form' => $this->viewModel($transformer, $values)->form(),
         ]);
     }
 
     public function destroy(string $handle): Response
     {
-        $processor = $this->assetProcessors->getAssetProcessorByHandle($handle);
+        $transformer = $this->assetTransformers->getAssetTransformerByHandle($handle);
 
-        if ($processor !== null) {
-            $this->assetProcessors->deleteAssetProcessor($processor);
+        if ($transformer !== null) {
+            $this->assetTransformers->deleteAssetTransformer($transformer);
         }
 
-        return $this->asSuccess(t('Asset Processor deleted.'));
+        return $this->asSuccess(t('Asset Transformer deleted.'));
     }
 
-    private function editScreen(AssetProcessor $processor): CpScreenResponse
+    private function editScreen(AssetTransformer $transformer): CpScreenResponse
     {
-        $title = $processor->uid
-            ? trim($processor->name) ?: t('Edit Asset Processor')
-            : t('Create a new Asset Processor');
+        $title = $transformer->uid
+            ? trim($transformer->name) ?: t('Edit Asset Transformer')
+            : t('Create a new Asset Transformer');
 
         return new CpScreenResponse()
             ->title($title)
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Assets'), 'settings/assets')
-            ->addCrumb(t('Asset Processors'), 'settings/assets/processors')
-            ->inertiaPage('Form', $this->viewModel($processor))
-            ->redirectUrl('settings/assets/processors')
+            ->addCrumb(t('Asset Transformers'), 'settings/assets/transformers')
+            ->inertiaPage('Form', $this->viewModel($transformer))
+            ->redirectUrl('settings/assets/transformers')
             ->unless($this->readOnly, function (CpScreenResponse $response) {
                 $response
                     ->addAltAction(t('Save and continue editing'), [
-                        'redirect' => 'settings/assets/processors/{handle}',
+                        'redirect' => 'settings/assets/transformers/{handle}',
                         'shortcut' => true,
                         'retainScroll' => true,
                     ]);
@@ -185,11 +185,11 @@ class AssetProcessorsController extends BaseAssetSettingsController
     }
 
     /** @param array<string, mixed>|null $values */
-    private function viewModel(AssetProcessor $processor, ?array $values = null): AssetProcessorEditViewModel
+    private function viewModel(AssetTransformer $transformer, ?array $values = null): AssetTransformerEditViewModel
     {
-        return new AssetProcessorEditViewModel(
-            $processor,
-            $this->assetProcessorDrivers,
+        return new AssetTransformerEditViewModel(
+            $transformer,
+            $this->assetTransformDrivers,
             $this->formResolver,
             readOnly: $this->readOnly,
             values: $values,
@@ -208,12 +208,12 @@ class AssetProcessorsController extends BaseAssetSettingsController
 
             if (! is_string($path) || $path === '' || str_contains($path, '.')) {
                 throw ValidationException::withMessages([
-                    'driver' => t('The selected Asset Processor driver has invalid settings.'),
+                    'driver' => t('The selected Asset Transform driver has invalid settings.'),
                 ]);
             }
 
             return $path;
-        }, $this->assetProcessorDrivers->driver($driver)->definition()->settings);
+        }, $this->assetTransformDrivers->driver($driver)->definition()->settingsFields);
 
         return Arr::only($settings, $handles);
     }

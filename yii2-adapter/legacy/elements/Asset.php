@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace craft\elements;
 
 use Craft;
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
@@ -118,7 +118,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     #[AllowedInSandbox]
     public function transform(#[\SensitiveParameter] mixed $definition, ?bool $immediately = null): AssetTransformResult
     {
-        return app(AssetProcessors::class)->transform($this, $definition, $immediately);
+        return app(AssetTransformers::class)->transform($this, $definition, $immediately);
     }
 
     #[Override]

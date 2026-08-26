@@ -139,13 +139,13 @@ describe('getTransformByUid', function () {
 });
 
 describe('saveTransform', function () {
-    it('round trips transformer-specific operations through project config', function () {
+    it('round trips transformer-specific parameters through project config', function () {
         $transformerUid = Str::uuid()->toString();
         $transform = new ImageTransform([
             'name' => 'Custom',
             'handle' => 'custom',
             'width' => 500,
-            'operations' => [$transformerUid => ['blur' => 12]],
+            'parameters' => [$transformerUid => ['blur' => 12]],
         ]);
 
         $this->service->saveTransform($transform);
@@ -155,14 +155,14 @@ describe('saveTransform', function () {
 
         expect($saved->id)->toBe($transform->id)
             ->and($saved->uid)->toBe($transform->uid)
-            ->and($saved->getOperationsForTransformer($transformerUid))->toBe(['blur' => 12])
+            ->and($saved->getParametersForTransformer($transformerUid))->toBe(['blur' => 12])
             ->and(ProjectConfig::get("imageTransforms.{$transform->uid}"))->toMatchArray([
                 'width' => 500,
-                'operations' => [$transformerUid => ['blur' => 12]],
+                'parameters' => [$transformerUid => ['blur' => 12]],
             ]);
     });
 
-    it('canonicalizes legacy top-level operations without changing their values', function () {
+    it('canonicalizes legacy top-level parameters without changing their values', function () {
         $uid = (string) Str::uuid();
 
         ProjectConfig::set("imageTransforms.{$uid}", [
@@ -192,16 +192,16 @@ describe('saveTransform', function () {
             'quality' => 82,
             'upscale' => false,
             'width' => 640,
-        ])->and(ProjectConfig::get("imageTransforms.{$uid}"))->not->toHaveKey('operations');
+        ])->and(ProjectConfig::get("imageTransforms.{$uid}"))->not->toHaveKey('parameters');
     });
 
-    it('preserves custom operations through metadata changes and saves operation updates', function () {
+    it('preserves custom parameters through metadata changes and saves parameter updates', function () {
         $transformerUid = Str::uuid()->toString();
         $transform = new ImageTransform([
             'name' => 'Original',
             'handle' => 'stableHandle',
             'width' => 500,
-            'operations' => [$transformerUid => ['blur' => 1]],
+            'parameters' => [$transformerUid => ['blur' => 1]],
         ]);
         $this->service->saveTransform($transform);
         $saved = $this->service->getTransformById($transform->id);
@@ -212,14 +212,14 @@ describe('saveTransform', function () {
 
         $saved = $this->service->getTransformById($transform->id);
         expect($saved->name)->toBe('Renamed')
-            ->and($saved->getOperationsForTransformer($transformerUid))->toBe(['blur' => 1]);
+            ->and($saved->getParametersForTransformer($transformerUid))->toBe(['blur' => 1]);
 
-        $saved->setOperations([$transformerUid => ['blur' => 2]]);
+        $saved->setParameters([$transformerUid => ['blur' => 2]]);
         $this->service->saveTransform($saved);
         $this->service->reset();
 
         expect($this->service->getTransformById($transform->id)
-            ->getOperationsForTransformer($transformerUid))->toBe(['blur' => 2]);
+            ->getParametersForTransformer($transformerUid))->toBe(['blur' => 2]);
     });
 
     it('saves a new transform', function () {

@@ -51,7 +51,7 @@ class FallbackTransformController
             $extension = $asset->getExtension();
         } else {
             try {
-                $transform = new ImageTransform()->setInlineOperations(ImageTransformHelper::parseTransformString($transformString));
+                $transform = new ImageTransform()->setInlineParameters(ImageTransformHelper::parseTransformString($transformString));
             } catch (InvalidArgumentException) {
                 abort(400, 'Request contained an invalid transform param.');
             }

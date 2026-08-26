@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformers;
 use Illuminate\Support\Collection;
 
 /**
@@ -56,14 +56,14 @@ trait EagerloadsTransforms
                     : [$transforms];
             }
 
-            app(AssetProcessors::class)->preload($result->all(), $transforms);
+            app(AssetTransformers::class)->preload($result->all(), $transforms);
 
             return $result;
         });
     }
 
     /**
-     * Asks capable Asset Processor drivers to preload the requested transforms for matching assets.
+     * Asks capable Asset Transform drivers to preload the requested transforms for matching assets.
      *
      * This may improve later transform rendering performance, but does not guarantee that output has materialized.
      *

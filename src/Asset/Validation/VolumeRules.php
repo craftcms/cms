@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Validation;
 
 use Closure;
-use CraftCms\Cms\Asset\AssetProcessors;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
@@ -50,10 +50,10 @@ class VolumeRules extends Ruleset
             ],
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
             'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'assetProcessor' => [new EnvValueRule([
+            'assetTransformer' => [new EnvValueRule([
                 'nullable',
                 'string',
-                Rule::in(app(AssetProcessors::class)->getAllAssetProcessors()->pluck('handle')->all()),
+                Rule::in(app(AssetTransformers::class)->getAllAssetTransformers()->pluck('handle')->all()),
             ])],
             'subpath' => [new EnvValueRule([
                 Rule::requiredIf(fn () => $this->subpathRequired()),

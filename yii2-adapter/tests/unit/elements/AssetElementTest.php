@@ -12,11 +12,11 @@ namespace crafttests\unit\elements;
 use craft\fs\Local;
 use craft\models\ImageTransform;
 use craft\test\TestCase;
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -52,27 +52,27 @@ class AssetElementTest extends TestCase
             'filename' => 'foo.jpg',
         ]);
 
-        app(AssetProcessorDrivers::class)->extend('test', fn() => new class() implements AssetProcessorDriver {
-            public function definition(): AssetProcessorDriverDefinition
+        app(AssetTransformDrivers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
+            public function definition(): AssetTransformDriverDefinition
             {
-                return new AssetProcessorDriverDefinition('Test');
+                return new AssetTransformDriverDefinition('Test');
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult
             {
                 return new AssetTransformResult(
-                    "w={$request->operations['width']}&h={$request->operations['height']}",
+                    "w={$request->parameters['width']}&h={$request->parameters['height']}",
                     'image/jpeg',
                 );
             }
         });
-        app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
             'uid' => Str::uuid()->toString(),
             'name' => 'Test',
             'handle' => 'test',
             'driver' => 'test',
         ]), false);
-        Cms::config()->defaultAssetProcessor('test');
+        Cms::config()->defaultAssetTransformer('test');
 
         ImageTransforms::shouldReceive('getTransformByHandle')
             ->andReturn($this->make(ImageTransform::class, [

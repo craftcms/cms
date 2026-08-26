@@ -13,12 +13,12 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
@@ -49,15 +49,15 @@ use Illuminate\Support\Facades\Storage;
 uses(DatabaseTestCase::class);
 
 beforeEach(function(): void {
-    $this->driver = $driver = new CompatibilityAssetProcessorDriver();
-    app(AssetProcessorDrivers::class)->extend('compatibility-test', fn() => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+    $this->driver = $driver = new CompatibilityAssetTransformDriver();
+    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Compatibility test',
         'handle' => 'compatibility-test',
         'driver' => 'compatibility-test',
     ]), false);
-    Cms::config()->defaultAssetProcessor('compatibility-test');
+    Cms::config()->defaultAssetTransformer('compatibility-test');
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
             ...$attributes,
@@ -76,19 +76,19 @@ it('provides mutable transform state and transformed copies', function(): void {
     ]);
 
     expect($asset->setTransform(['width' => 320]))->toBe($asset)
-        ->and($asset->getUrl())->toBe('/renditions/320x160.webp')
+        ->and($asset->getUrl())->toBe('/transforms/320x160.webp')
         ->and($asset->getWidth())->toBe(320)
         ->and($asset->getHeight())->toBe(160)
         ->and($asset->getMimeType())->toBe('image/webp')
-        ->and((string) $asset->getImg())->toContain('src="/renditions/320x160.webp"')
-        ->and($asset->getSrcset(['1x']))->toBe('/renditions/320x160.webp')
-        ->and((string) $asset)->toBe('/renditions/320x160.webp');
+        ->and((string) $asset->getImg())->toContain('src="/transforms/320x160.webp"')
+        ->and($asset->getSrcset(['1x']))->toBe('/transforms/320x160.webp')
+        ->and((string) $asset)->toBe('/transforms/320x160.webp');
 
     $copy = $asset->copyWithTransform(['width' => 640]);
 
     expect($copy)->not->toBe($asset)
-        ->and($copy->getUrl())->toBe('/renditions/640x320.webp')
-        ->and($asset->getUrl())->toBe('/renditions/320x160.webp');
+        ->and($copy->getUrl())->toBe('/transforms/640x320.webp')
+        ->and($asset->getUrl())->toBe('/transforms/320x160.webp');
 });
 
 it('provides named transform magic properties', function(): void {
@@ -102,8 +102,8 @@ it('provides named transform magic properties', function(): void {
 
     expect(isset($asset->card))->toBeTrue()
         ->and($asset->card)->toBeInstanceOf($asset::class)
-        ->and($asset->card->getUrl())->toBe('/renditions/400x200.webp')
-        ->and($asset->{'transform:card'}->getUrl())->toBe('/renditions/400x200.webp');
+        ->and($asset->card->getUrl())->toBe('/transforms/400x200.webp')
+        ->and($asset->{'transform:card'}->getUrl())->toBe('/transforms/400x200.webp');
 });
 
 it('returns legacy models from named transform getters', function(): void {
@@ -166,7 +166,7 @@ it('preserves legacy URL event order and handled null semantics', function(): vo
         expect($asset->getUrl(['width' => 320]))->toBeNull()
             ->and($events)->toBe(['before', 'after'])
             ->and($payload)->toBe([$asset, $asset, ['width' => 320]])
-            ->and($definedPayload)->toBe([$asset, $asset, ['width' => 320], '/renditions/320x160.webp']);
+            ->and($definedPayload)->toBe([$asset, $asset, ['width' => 320], '/transforms/320x160.webp']);
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_DEFINE_URL, $before);
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_DEFINE_URL, $after);
@@ -197,7 +197,7 @@ it('applies the legacy generation policy to control panel thumbnails', function(
 
 it('reports legacy URL failures and returns null', function(): void {
     Exceptions::fake();
-    app(AssetProcessorDrivers::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetProcessorDriver());
+    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetTransformDriver());
     $asset = ($this->asset)();
 
     expect($asset->getUrl(['width' => 320]))->toBeNull();
@@ -251,7 +251,7 @@ it('selects the volume before the legacy transformer candidate', function(): voi
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'disk:legacy-precedence-source',
-        'assetProcessor' => 'compatibility-test',
+        'assetTransformer' => 'compatibility-test',
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
     $asset = ($this->asset)([
@@ -266,7 +266,7 @@ it('selects the volume before the legacy transformer candidate', function(): voi
     Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
 
     try {
-        expect($asset->getUrl($transform))->toBe('/renditions/320x160.webp')
+        expect($asset->getUrl($transform))->toBe('/transforms/320x160.webp')
             ->and($this->driver->request)->not->toBeNull()
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
@@ -285,9 +285,9 @@ it('does not use the legacy selector for typed transform calls', function(): voi
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
 
     try {
-        expect($asset->transform($transform)->url)->toBe('/renditions/320x160.webp')
-            ->and(app(AssetProcessors::class)->transform($asset, $transform)->url)->toBe('/renditions/320x160.webp')
-            ->and($asset->getUrl(['transformer' => 'compatibility-test', 'transform' => $transform]))->toBe('/renditions/320x160.webp')
+        expect($asset->transform($transform)->url)->toBe('/transforms/320x160.webp')
+            ->and(app(AssetTransformers::class)->transform($asset, $transform)->url)->toBe('/transforms/320x160.webp')
+            ->and($asset->getUrl(['transformer' => 'compatibility-test', 'transform' => $transform]))->toBe('/transforms/320x160.webp')
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
@@ -311,7 +311,7 @@ it('does not use the legacy selector for typed calls from URL listeners', functi
 
     try {
         expect($asset->getUrl($transform))->toBe('/resolved.jpg')
-            ->and($typedUrl)->toBe('/renditions/320x160.webp')
+            ->and($typedUrl)->toBe('/transforms/320x160.webp')
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
@@ -324,7 +324,7 @@ it('lazily bridges a selected legacy transformer that was not registered', funct
     $transform->setTransformer(UnregisteredLegacyImageTransformer::class);
 
     expect($asset->getUrl($transform))->toBe('/legacy/320%20image.jpg');
-    app(AssetProcessors::class)->invalidate($asset);
+    app(AssetTransformers::class)->invalidate($asset);
 
     expect(app(ImageTransformers::class)->types())->toContain(UnregisteredLegacyImageTransformer::class)
         ->and($this->driver->request)->toBeNull()
@@ -392,7 +392,7 @@ it('keeps the built-in Craft transform index facade scoped to Craft rows', funct
     $transformer->storeTransformIndexData($foreignIndex);
 
     expect($transformer->getTransformIndexModelById($index->id)->fileExists)->toBeTrue()
-        ->and($index->transformer)->toBe(app(AssetProcessors::class)->resolve('craft')->uid)
+        ->and($index->transformer)->toBe(app(AssetTransformers::class)->resolve('craft')->uid)
         ->and($transformer->getTransformIndexModelById($foreignId))->toBeNull()
         ->and($transformer->getPendingTransformIndexIds())->not->toContain($foreignId)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->value('fileExists'))->toBe(0);
@@ -477,9 +477,9 @@ it('keeps deprecated transform destinations distinct per Volume', function(): vo
     $firstVolume = $volumes->getVolumeById($first->id);
     $secondVolume = $volumes->getVolumeById($second->id);
     $firstVolume->setTransformFsHandle('legacy-first');
-    $firstVolume->setTransformSubpath('first-renditions');
+    $firstVolume->setTransformSubpath('first-transforms');
     $secondVolume->setTransformFsHandle('legacy-second');
-    $secondVolume->setTransformSubpath('second-renditions');
+    $secondVolume->setTransformSubpath('second-transforms');
     $volumes->saveVolume($firstVolume, false);
     $volumes->saveVolume($secondVolume, false);
     $volumes->reset();
@@ -488,12 +488,12 @@ it('keeps deprecated transform destinations distinct per Volume', function(): vo
     $secondVolume = $volumes->getVolumeById($second->id);
 
     expect($firstVolume->getTransformFsHandle(false))->toBe('legacy-first')
-        ->and($firstVolume->getTransformSubpath(false, false))->toBe('first-renditions')
+        ->and($firstVolume->getTransformSubpath(false, false))->toBe('first-transforms')
         ->and($secondVolume->getTransformFsHandle(false))->toBe('legacy-second')
-        ->and($secondVolume->getTransformSubpath(false, false))->toBe('second-renditions')
+        ->and($secondVolume->getTransformSubpath(false, false))->toBe('second-transforms')
         ->and($firstVolume->getConfig())->toMatchArray([
             'transformFs' => 'legacy-first',
-            'transformSubpath' => 'first-renditions',
+            'transformSubpath' => 'first-transforms',
         ]);
 
     $firstVolume->name = 'Updated Volume';
@@ -502,7 +502,7 @@ it('keeps deprecated transform destinations distinct per Volume', function(): vo
     expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES . '.' . $first->uid))
         ->toMatchArray([
             'transformFs' => 'legacy-first',
-            'transformSubpath' => 'first-renditions',
+            'transformSubpath' => 'first-transforms',
         ]);
 });
 
@@ -523,33 +523,33 @@ it('provides deprecated Volume transform filesystem methods through the adapter'
         'handle' => 'legacyVolume',
         'fs' => 'legacy-volume-source',
         'transformFs' => 'legacy-volume-target',
-        'transformSubpath' => 'renditions',
+        'transformSubpath' => 'transforms',
     ]);
 
     expect($volume->getTransformFsHandle(false))->toBe('disk:legacy-volume-target')
-        ->and($volume->getTransformSubpath())->toBe('renditions/')
+        ->and($volume->getTransformSubpath())->toBe('transforms/')
         ->and($volume->transformHasUrls())->toBeTrue()
         ->and($volume->transformDisk()->put('image.jpg', 'image'))->toBeTrue()
-        ->and(Storage::disk('legacy-volume-target')->exists('renditions/image.jpg'))->toBeTrue();
+        ->and(Storage::disk('legacy-volume-target')->exists('transforms/image.jpg'))->toBeTrue();
 });
 
-class CompatibilityAssetProcessorDriver implements AssetProcessorDriver
+class CompatibilityAssetTransformDriver implements AssetTransformDriver
 {
     public ?AssetTransformRequest $request = null;
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition('Compatibility test');
+        return new AssetTransformDriverDefinition('Compatibility test');
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
         $this->request = $request;
-        $width = $request->operations['width'] ?? 800;
-        $height = $request->operations['height'] ?? (int) ($width / 2);
+        $width = $request->parameters['width'] ?? 800;
+        $height = $request->parameters['height'] ?? (int) ($width / 2);
 
         return new AssetTransformResult(
-            url: "/renditions/{$width}x{$height}.webp",
+            url: "/transforms/{$width}x{$height}.webp",
             mimeType: 'image/webp',
             width: $width,
             height: $height,
@@ -557,7 +557,7 @@ class CompatibilityAssetProcessorDriver implements AssetProcessorDriver
     }
 }
 
-class FailingCompatibilityAssetProcessorDriver extends CompatibilityAssetProcessorDriver
+class FailingCompatibilityAssetTransformDriver extends CompatibilityAssetTransformDriver
 {
     #[Override]
     public function transform(AssetTransformRequest $request): AssetTransformResult

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetProcessorDrivers;
-use CraftCms\Cms\Asset\AssetProcessors;
-use CraftCms\Cms\Asset\Contracts\AssetProcessorDriver;
+use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
-use CraftCms\Cms\Asset\Data\AssetProcessor;
-use CraftCms\Cms\Asset\Data\AssetProcessorDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -17,16 +17,16 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Str;
 
 beforeEach(function () {
-    $this->driver = new GqlAssetProcessorDriver;
+    $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
-    app(AssetProcessorDrivers::class)->extend('gql', fn () => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+    app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'GraphQL',
         'handle' => 'gql',
         'driver' => 'gql',
     ]), false);
-    Cms::config()->defaultAssetProcessor('gql');
+    Cms::config()->defaultAssetTransformer('gql');
 });
 
 it('keeps directive transforms local to their resolved Assets', function () {
@@ -61,7 +61,7 @@ it('keeps directive transforms local to their resolved Assets', function () {
         ->assertJsonPath('data.source.height', 400);
 });
 
-it('resolves rendition fields for a capable non-image driver', function () {
+it('resolves transform result fields for a capable non-image driver', function () {
     $asset = Asset::factory()->createElement([
         'filename' => 'document.pdf',
         'kind' => 'pdf',
@@ -72,7 +72,7 @@ it('resolves rendition fields for a capable non-image driver', function () {
         {
             asset(id: {$asset->id}) {
                 url(width: 320)
-                custom: url(processor: "gql", width: 640)
+                custom: url(transformer: "gql", width: 640)
                 width(width: 320)
                 height(height: 180)
                 format(format: "webp")
@@ -84,19 +84,19 @@ it('resolves rendition fields for a capable non-image driver', function () {
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', '/gql-rendition.webp')
-        ->assertJsonPath('data.asset.custom', '/gql-rendition.webp')
+        ->assertJsonPath('data.asset.url', '/gql-transform.webp')
+        ->assertJsonPath('data.asset.custom', '/gql-transform.webp')
         ->assertJsonPath('data.asset.width', 320)
         ->assertJsonPath('data.asset.height', 180)
         ->assertJsonPath('data.asset.format', 'webp')
         ->assertJsonPath('data.asset.mimeType', 'image/webp')
-        ->assertJsonPath('data.transformed.url', '/gql-rendition.webp');
+        ->assertJsonPath('data.transformed.url', '/gql-transform.webp');
 });
 
-it('applies processor and operation overrides to named transforms', function () {
-    $driver = new GqlAssetProcessorDriver('/explicit-rendition.webp');
-    app(AssetProcessorDrivers::class)->extend('explicit-gql', fn () => $driver);
-    app(AssetProcessors::class)->saveAssetProcessor(new AssetProcessor([
+it('applies transformer and parameter overrides to named transforms', function () {
+    $driver = new GqlAssetTransformDriver('/explicit-transform.webp');
+    app(AssetTransformDrivers::class)->extend('explicit-gql', fn () => $driver);
+    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
         'uid' => Str::uuid()->toString(),
         'name' => 'Explicit GraphQL',
         'handle' => 'explicit-gql',
@@ -113,13 +113,13 @@ it('applies processor and operation overrides to named transforms', function () 
     graphQL(<<<GQL
         {
             asset(id: {$asset->id}) {
-                url(handle: "thumbnail", processor: "explicit-gql", width: 480)
-                width(handle: "thumbnail", processor: "explicit-gql", width: 480)
+                url(handle: "thumbnail", transformer: "explicit-gql", width: 480)
+                width(handle: "thumbnail", transformer: "explicit-gql", width: 480)
             }
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', '/explicit-rendition.webp')
+        ->assertJsonPath('data.asset.url', '/explicit-transform.webp')
         ->assertJsonPath('data.asset.width', 480);
 });
 
@@ -157,10 +157,10 @@ it('preloads GraphQL list transforms through the selected driver', function () {
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.assets.0.url', '/gql-rendition.webp');
+        ->assertJsonPath('data.assets.0.url', '/gql-transform.webp');
 
     expect($this->driver->preloaded)->toHaveCount(1)
-        ->and($this->driver->preloaded[0]->operations)->toBe(['width' => 320]);
+        ->and($this->driver->preloaded[0]->parameters)->toBe(['width' => 320]);
 });
 
 it('passes non-null immediately arguments to the selected driver', function () {
@@ -174,22 +174,22 @@ it('passes non-null immediately arguments to the selected driver', function () {
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', '/gql-rendition.webp');
+        ->assertJsonPath('data.asset.url', '/gql-transform.webp');
 
     expect($this->driver->request?->immediately)->toBeFalse();
 });
 
-class GqlAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTransforms
+class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public array $preloaded = [];
 
     public ?AssetTransformRequest $request = null;
 
-    public function __construct(private readonly string $url = '/gql-rendition.webp') {}
+    public function __construct(private readonly string $url = '/gql-transform.webp') {}
 
-    public function definition(): AssetProcessorDriverDefinition
+    public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetProcessorDriverDefinition('GraphQL', [
+        return new AssetTransformDriverDefinition('GraphQL', [
             'ratio' => ['numeric'],
         ]);
     }
@@ -201,8 +201,8 @@ class GqlAssetProcessorDriver implements AssetProcessorDriver, PreloadsAssetTran
         return new AssetTransformResult(
             url: $this->url,
             mimeType: 'image/webp',
-            width: $request->operations['width'] ?? 640,
-            height: $request->operations['height'] ?? 360,
+            width: $request->parameters['width'] ?? 640,
+            height: $request->parameters['height'] ?? 360,
         );
     }
 

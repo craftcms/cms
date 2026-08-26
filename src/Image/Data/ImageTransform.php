@@ -18,7 +18,7 @@ use Override;
 
 class ImageTransform extends Component
 {
-    public const array CORE_OPERATIONS = [
+    public const array CORE_PARAMETERS = [
         'fill',
         'format',
         'height',
@@ -59,10 +59,10 @@ class ImageTransform extends Component
     public ?DateTimeInterface $parameterChangeTime = null;
 
     /** @var array<string, mixed> */
-    private array $inlineOperations = [];
+    private array $inlineParameters = [];
 
     /** @var array<string, array<string, mixed>> */
-    private array $operations = [];
+    private array $parameters = [];
 
     /** @param array<string, mixed> $config */
     public static function fromConfig(array $config): self
@@ -70,25 +70,25 @@ class ImageTransform extends Component
         return new self([
             'name' => $config['name'],
             'handle' => $config['handle'],
-            ...Arr::only($config, self::CORE_OPERATIONS),
-            'operations' => is_array($config['operations'] ?? null) ? $config['operations'] : [],
+            ...Arr::only($config, self::CORE_PARAMETERS),
+            'parameters' => is_array($config['parameters'] ?? null) ? $config['parameters'] : [],
         ]);
     }
 
-    /** @param array<string, mixed> $operations */
-    public static function fromOperations(array $operations): self
+    /** @param array<string, mixed> $parameters */
+    public static function fromParameters(array $parameters): self
     {
-        return new self()->setInlineOperations($operations);
+        return new self()->setInlineParameters($parameters);
     }
 
-    /** @param array<string, mixed> $operations */
-    public function setInlineOperations(array $operations): static
+    /** @param array<string, mixed> $parameters */
+    public function setInlineParameters(array $parameters): static
     {
-        foreach (Arr::only($operations, self::CORE_OPERATIONS) as $handle => $value) {
+        foreach (Arr::only($parameters, self::CORE_PARAMETERS) as $handle => $value) {
             $this->$handle = $value;
         }
 
-        $this->inlineOperations = Arr::except($operations, self::CORE_OPERATIONS);
+        $this->inlineParameters = Arr::except($parameters, self::CORE_PARAMETERS);
 
         return $this;
     }
@@ -99,39 +99,39 @@ class ImageTransform extends Component
     }
 
     /** @return array<string, mixed> */
-    public function getOperations(?string $transformerUid = null): array
+    public function getParameters(?string $transformerUid = null): array
     {
-        $operations = [];
+        $parameters = [];
 
-        foreach (self::CORE_OPERATIONS as $property) {
-            $operations[$property] = in_array($property, ['height', 'width'], true)
+        foreach (self::CORE_PARAMETERS as $property) {
+            $parameters[$property] = in_array($property, ['height', 'width'], true)
                 ? ($this->$property ?: null)
                 : $this->$property;
         }
 
         return [
-            ...$operations,
-            ...$this->inlineOperations,
-            ...($transformerUid !== null ? ($this->operations[$transformerUid] ?? []) : []),
+            ...$parameters,
+            ...$this->inlineParameters,
+            ...($transformerUid !== null ? ($this->parameters[$transformerUid] ?? []) : []),
         ];
     }
 
-    /** @param array<string, array<string, mixed>> $operations */
-    public function setOperations(array $operations): void
+    /** @param array<string, array<string, mixed>> $parameters */
+    public function setParameters(array $parameters): void
     {
-        $this->operations = array_filter($operations, is_array(...));
+        $this->parameters = array_filter($parameters, is_array(...));
     }
 
     /** @return array<string, array<string, mixed>> */
-    public function getCustomOperations(): array
+    public function getCustomParameters(): array
     {
-        return $this->operations;
+        return $this->parameters;
     }
 
     /** @return array<string, mixed> */
-    public function getOperationsForTransformer(string $uid): array
+    public function getParametersForTransformer(string $uid): array
     {
-        return $this->operations[$uid] ?? [];
+        return $this->parameters[$uid] ?? [];
     }
 
     /** @return array<string,mixed> */
@@ -140,8 +140,8 @@ class ImageTransform extends Component
         return [
             'name' => $this->name,
             'handle' => $this->handle,
-            ...Arr::only($this->getOperations(), self::CORE_OPERATIONS),
-            'operations' => $this->operations,
+            ...Arr::only($this->getParameters(), self::CORE_PARAMETERS),
+            'parameters' => $this->parameters,
         ];
     }
 
@@ -154,7 +154,7 @@ class ImageTransform extends Component
         return [
             'name' => ['required', 'string'],
             'handle' => ['required', 'string', new HandleRule, Rule::unique(Table::IMAGETRANSFORMS, 'handle')->ignore($this->id)],
-            'operations' => ['array'],
+            'parameters' => ['array'],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
             'mode' => ['required', Rule::enum(ImageTransformMode::class)],
