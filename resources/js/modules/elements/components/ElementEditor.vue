@@ -155,7 +155,7 @@
   -->
   <LayoutSlot v-if="autosaveMessage" name="toolbar">
     <span
-      class="text-sm text-text-quiet"
+      class="text-sm text-neutral-on-quiet"
       role="status"
       aria-live="polite"
       :class="{'text-danger-on-normal': autosave.status.value === 'failed'}"

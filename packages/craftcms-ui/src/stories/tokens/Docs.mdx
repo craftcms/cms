@@ -235,27 +235,30 @@ appearance: AppearanceKey = Appearance.Fill;
 
 ## Using tokens from Tailwind
 
-Every color token is republished into Tailwind's `--color-*` namespace by
-`@craftcms/ui/tailwind.css`, so each one has a matching set of utility classes.
-The token name _is_ the utility name — drop the `--c-color-` (or `--c-`)
-prefix, and what's left is what you type:
+The semantic color tokens are republished into Tailwind's `--color-*` namespace
+by `@craftcms/ui/tailwind.css`, so each one has a matching set of utility
+classes. The token name _is_ the utility name — drop the `--c-color-` prefix,
+and what's left is what you type:
 
-| Token                            | Utilities                                                      |
-| -------------------------------- | -------------------------------------------------------------- |
-| `--c-color-neutral-border-quiet` | `border-neutral-border-quiet`, `divide-…`, `ring-…`            |
-| `--c-color-danger-fill-normal`   | `bg-danger-fill-normal`                                        |
-| `--c-color-accent-on-loud`       | `text-accent-on-loud`                                          |
-| `--c-surface-raised`             | `bg-surface-raised`                                            |
-| `--c-text-quiet`                 | `text-text-quiet`                                              |
-| `--c-status-live-fill`           | `bg-status-live-fill`                                          |
+| Token                            | Utilities                                           |
+| -------------------------------- | --------------------------------------------------- |
+| `--c-color-neutral-border-quiet` | `border-neutral-border-quiet`, `divide-…`, `ring-…` |
+| `--c-color-danger-fill-normal`   | `bg-danger-fill-normal`                             |
+| `--c-color-accent-on-loud`       | `text-accent-on-loud`                               |
+
+The generic tokens are mapped too, which is usually what you want inside a
+component: `bg-fill-quiet`, `border-border-normal`, and `text-on-loud` paint
+with whatever the nearest `[data-color]` or `variant` resolved to, rather than
+naming a color up front.
 
 The mapping is `@theme inline`, so the utilities reference the custom
-properties rather than snapshotting their values. `[data-theme='dark']` and
-`[data-color]` both keep working through them — including the generic
-contextual tokens, where `bg-fill-normal` / `border-border-normal` /
-`text-on-normal` paint with whatever color the nearest `[data-color]` or
-`variant` resolved to.
+properties rather than snapshotting their values — `[data-theme='dark']` and
+`[data-color]` both keep working through them.
+
+Scope is deliberately narrow: the six semantic groups plus the generic tokens.
+The raw palette (`--c-color-red-*` and friends) is still reachable from CSS and
+from `[data-color]`, it just doesn't get utility classes.
 
 `tailwind.css` is generated from `src/constants/colors.data.ts` by
 `scripts/generate-colors.js` alongside `shared/colorable.css`, so adding a
-color there gives you its utilities for free. Don't edit it by hand.
+semantic color there gives you its utilities for free. Don't edit it by hand.
