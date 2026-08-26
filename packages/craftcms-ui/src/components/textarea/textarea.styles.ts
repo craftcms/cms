@@ -19,6 +19,6 @@ export default css`
     ${baseFormControlStyles}
     padding-block: var(--c-spacing-md);
     line-height: var(--leading-normal);
-    resize: none;
+    resize: vertical;
   }
 `;
