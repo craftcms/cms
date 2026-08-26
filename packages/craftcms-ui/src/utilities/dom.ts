@@ -22,7 +22,7 @@ export type AppendHtmlDisposer = () => void;
 export async function appendElementHtml(
   html: string,
   parent: HTMLElement,
-  rejectOnError = false
+  rejectOnError = false,
 ): Promise<AppendHtmlDisposer> {
   const appended: Node[] = [];
   const releases: Array<() => void> = [];
@@ -64,18 +64,12 @@ export async function appendElementHtml(
       }
 
       const node = cloneNode(source);
-      const loaded =
-        asset && node instanceof HTMLScriptElement
-          ? waitForScript(node, asset.value)
-          : null;
+      const loaded = asset && node instanceof HTMLScriptElement ? waitForScript(node, asset.value) : null;
 
       parent.appendChild(node);
 
-      if (
-        asset &&
-        (node instanceof HTMLLinkElement || node instanceof HTMLScriptElement)
-      ) {
-        const ownedAsset = {node, loaded, references: 1};
+      if (asset && (node instanceof HTMLLinkElement || node instanceof HTMLScriptElement)) {
+        const ownedAsset = { node, loaded, references: 1 };
 
         ownedAssets.set(asset.key, ownedAsset);
         releases.push(() => releaseAsset(asset.key, ownedAsset));
@@ -136,27 +130,20 @@ function assetDetails(node: Node): AssetDetails | null {
 function hasAsset(asset: AssetDetails): boolean {
   return Array.from(document.querySelectorAll(asset.selector)).some(
     (element) =>
-      (element instanceof HTMLLinkElement
-        ? element.href
-        : (element as HTMLScriptElement).src) === asset.value
+      (element instanceof HTMLLinkElement ? element.href : (element as HTMLScriptElement).src) === asset.value,
   );
 }
 
 function waitForScript(script: HTMLScriptElement, url: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    script.addEventListener('load', () => resolve(), {once: true});
-    script.addEventListener(
-      'error',
-      () => reject(new Error(`Failed to load asset [${url}].`)),
-      {once: true}
-    );
+    script.addEventListener('load', () => resolve(), { once: true });
+    script.addEventListener('error', () => reject(new Error(`Failed to load asset [${url}].`)), {
+      once: true,
+    });
   });
 }
 
-async function awaitAsset(
-  loaded: Promise<void>,
-  rejectOnError: boolean
-): Promise<void> {
+async function awaitAsset(loaded: Promise<void>, rejectOnError: boolean): Promise<void> {
   try {
     await loaded;
   } catch (error) {
@@ -182,9 +169,7 @@ function releaseAsset(key: string, asset: OwnedAsset): void {
  *
  * Returns a disposer that removes the appended nodes when called.
  */
-export async function appendHeadHtml(
-  html: string
-): Promise<AppendHtmlDisposer> {
+export async function appendHeadHtml(html: string): Promise<AppendHtmlDisposer> {
   return appendElementHtml(html, document.head);
 }
 
@@ -193,15 +178,13 @@ export async function appendHeadHtml(
  *
  * Returns a disposer that removes the appended nodes when called.
  */
-export async function appendBodyHtml(
-  html: string
-): Promise<AppendHtmlDisposer> {
+export async function appendBodyHtml(html: string): Promise<AppendHtmlDisposer> {
   return appendElementHtml(html, document.body);
 }
 
 export function isVisible(el: HTMLElement): boolean {
   if (typeof el.checkVisibility === 'function') {
-    return el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true});
+    return el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
   }
 
   // Fallback: mirrors jQuery's :visible behavior
@@ -221,14 +204,12 @@ interface FormValueHost extends HTMLElement {
 }
 
 /** Lion choice-input model shape (`craft-checkbox`, `craft-option`, …). */
-function isChoiceModelValue(
-  modelValue: unknown
-): modelValue is {value: unknown; checked: boolean} {
+function isChoiceModelValue(modelValue: unknown): modelValue is { value: unknown; checked: boolean } {
   return (
     typeof modelValue === 'object' &&
     modelValue !== null &&
     'checked' in modelValue &&
-    typeof (modelValue as {checked: unknown}).checked === 'boolean'
+    typeof (modelValue as { checked: unknown }).checked === 'boolean'
   );
 }
 
@@ -261,9 +242,7 @@ export function serializeFormInputs(container: HTMLElement): string {
  * flat keys, matching what the server would see after parsing the string
  * form. Repeated names are grouped into arrays rather than last-one-wins.
  */
-export function serializeFormInputsAsObject(
-  container: HTMLElement
-): Record<string, string | string[]> {
+export function serializeFormInputsAsObject(container: HTMLElement): Record<string, string | string[]> {
   const object: Record<string, string | string[]> = {};
 
   for (const [name, value] of collectFormInputs(container)) {
@@ -283,9 +262,9 @@ export function serializeFormInputsAsObject(
 
 function collectFormInputs(container: HTMLElement): URLSearchParams {
   const params = new URLSearchParams();
-  const controls = container.querySelectorAll<
-    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-  >('input[name], select[name], textarea[name]');
+  const controls = container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+    'input[name], select[name], textarea[name]',
+  );
 
   for (const control of controls) {
     if (control.disabled) {
@@ -293,16 +272,11 @@ function collectFormInputs(container: HTMLElement): URLSearchParams {
     }
 
     if (control instanceof HTMLInputElement) {
-      if (
-        ['file', 'submit', 'button', 'reset', 'image'].includes(control.type)
-      ) {
+      if (['file', 'submit', 'button', 'reset', 'image'].includes(control.type)) {
         continue;
       }
 
-      if (
-        (control.type === 'checkbox' || control.type === 'radio') &&
-        !control.checked
-      ) {
+      if ((control.type === 'checkbox' || control.type === 'radio') && !control.checked) {
         continue;
       }
     }

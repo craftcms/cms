@@ -1,4 +1,4 @@
-import type {LitElement, PropertyValues} from 'lit';
+import type { LitElement, PropertyValues } from 'lit';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -16,6 +16,8 @@ interface ChoiceInputHost {
 interface ChoiceInputInternals {
   _inputId: string;
   _inputNode: HTMLElement | undefined;
+  _isHandlingUserInput: boolean;
+  _toggleChecked(ev: Event): void;
 }
 
 /**
@@ -30,11 +32,7 @@ interface ChoiceInputInternals {
  * Returns `Base`'s own type so the subclass keeps Lion's statics and member
  * visibility; the mixin only adds lifecycle behavior.
  */
-export const SsrChoiceInputMixin = <
-  T extends Constructor<LitElement & ChoiceInputHost>,
->(
-  Base: T
-): T => {
+export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInputHost>>(Base: T): T => {
   class SsrChoiceInput extends Base {
     private __ssrStateAdopted = false;
 
@@ -47,11 +45,7 @@ export const SsrChoiceInputMixin = <
      * `undefined` (treated as not-yet-adopted) when the guard matters.
      */
     override set value(value: string) {
-      if (
-        value === '' &&
-        !this.__ssrStateAdopted &&
-        this.__slottedInput()?.hasAttribute('value')
-      ) {
+      if (value === '' && !this.__ssrStateAdopted && this.__slottedInput()?.hasAttribute('value')) {
         return;
       }
 
@@ -65,6 +59,47 @@ export const SsrChoiceInputMixin = <
     override connectedCallback() {
       this.__adoptSlottedInputState();
       super.connectedCallback();
+    }
+
+    /**
+     * Derive the new state from the input the user just toggled, rather than
+     * inverting the host's own.
+     *
+     * Lion toggles relatively (`this.checked = !this.checked`), which assumes
+     * it is the only writer. It isn't: a consumer that also binds `checked`
+     * declaratively — `ChoiceControl` renders `.checked="selected(…)"` on both
+     * checkboxes and radios — updates its model from the input's `change` and
+     * re-renders, and that write can land on the host *before* this handler
+     * runs. The host then already holds the value the user produced, so
+     * inverting it puts it straight back and the click is swallowed. Only
+     * every second click registers.
+     *
+     * Reading the input instead is idempotent, so it lands on the same result
+     * whether or not a re-render got there first. It is also the more correct
+     * reading for a radio, where activating an already-checked one must leave
+     * it checked rather than flip it off.
+     *
+     * `_toggleChecked` is bound in Lion's constructor off the prototype chain,
+     * so this override is what gets subscribed to `user-input-changed`.
+     */
+    protected _toggleChecked(ev: Event) {
+      const internals = this as unknown as ChoiceInputInternals;
+      const input = internals._inputNode;
+
+      if (this.disabled) {
+        return;
+      }
+
+      if (!(input instanceof HTMLInputElement)) {
+        // Nothing to read from — leave Lion's own behavior in place.
+        Object.getPrototypeOf(SsrChoiceInput.prototype)._toggleChecked?.call(this, ev);
+
+        return;
+      }
+
+      internals._isHandlingUserInput = true;
+      this.checked = input.checked;
+      internals._isHandlingUserInput = false;
     }
 
     /**
@@ -86,7 +121,7 @@ export const SsrChoiceInputMixin = <
     protected override updated(changedProperties: PropertyValues) {
       super.updated(changedProperties);
 
-      const {_inputNode} = this as unknown as ChoiceInputInternals;
+      const { _inputNode } = this as unknown as ChoiceInputInternals;
       const choiceValue = this.choiceValue;
 
       if (
@@ -101,8 +136,7 @@ export const SsrChoiceInputMixin = <
 
     private __slottedInput(): HTMLInputElement | undefined {
       return Array.from(this.children).find(
-        (child): child is HTMLInputElement =>
-          child instanceof HTMLInputElement && child.slot === 'input'
+        (child): child is HTMLInputElement => child instanceof HTMLInputElement && child.slot === 'input',
       );
     }
 
