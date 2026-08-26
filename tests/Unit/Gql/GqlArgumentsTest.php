@@ -72,7 +72,7 @@ it('derives transform argument types from the operation catalogue', function () 
     expect($arguments['fill']['type'])->toBeInstanceOf(StringType::class)
         ->and($arguments['height']['type'])->toBeInstanceOf(IntType::class)
         ->and($arguments['upscale']['type'])->toBeInstanceOf(BooleanType::class)
-        ->and($arguments['immediately']['type'])->toBeInstanceOf(BooleanType::class);
+        ->and($arguments)->not()->toHaveKey('immediately');
 });
 
 class RegistryArgumentHandler implements ArgumentHandlerInterface

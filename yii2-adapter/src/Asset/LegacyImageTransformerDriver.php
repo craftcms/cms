@@ -24,8 +24,10 @@ use LogicException;
 /** @internal */
 class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
-    public function __construct(private readonly string $transformer)
-    {
+    public function __construct(
+        private readonly string $transformer,
+        private readonly bool $immediately = false,
+    ) {
     }
 
     public function definition(): AssetTransformDriverDefinition
@@ -50,7 +52,7 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 
         $url = Craft::$app->getImageTransforms()
             ->getImageTransformer($this->transformer)
-            ->getTransformUrl($asset, $transform, $request->immediately);
+            ->getTransformUrl($asset, $transform, $this->immediately);
         $url = Html::encodeSpaces($url);
 
         event(new AfterGenerateTransform($asset, $transform, $url));

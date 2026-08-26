@@ -96,25 +96,6 @@ driver, for example, can replace the `quality` rule to accept integers and prese
 Named Image Transforms key custom parameter values by transformer UUID. The UUID keeps values separate for profiles with
 different parameter sets, even when they share a driver.
 
-## Immediate and deferred generation
-
-`Asset::transform()` accepts an optional `immediately` argument:
-
-```php
-$result = $asset->transform(['width' => 800], immediately: true);
-```
-
-When omitted, it defaults to the `generateTransformsBeforePageLoad` general config setting. The driver receives the resolved
-boolean as `AssetTransformRequest::$immediately`.
-
-The value tells the driver when the output must exist:
-
-- `true` requires the driver to make the result available before returning.
-- `false` allows the driver to return a URL that generates or warms the result on its first request.
-
-An on-demand service can return the same URL in both cases. If it supports prewarming or verification, `true` should trigger
-that work before the driver returns.
-
 ## The Craft transformer
 
 Craft reserves the `craft` transformer and driver. Its name, handle, and driver cannot change, and the transformer cannot be
@@ -123,12 +104,17 @@ deleted. You can still edit these settings:
 - **Output Filesystem** selects where Craft stores generated transforms. Leave it empty to use the source Asset's
   filesystem.
 - **Output Subpath** places generated transforms below a subpath on the selected output filesystem.
+- **Generate Transforms Before Page Load** controls whether Craft generates each transform before returning its URL.
+  Otherwise, Craft generates it when the URL is first requested.
 
-Both settings accept environment-variable aliases. The built-in driver resolves the aliases before choosing its output
-filesystem.
+The filesystem settings accept environment-variable aliases. The built-in driver resolves the aliases before choosing its
+output filesystem.
 
 The Craft driver uses Craft's local image transformer. It rejects unsupported source formats, maintains the transform index,
 supports deferred generation, and preloads index data for Asset queries.
+
+Code that requires generated files immediately can use `CraftAssetTransformDriver::withImmediateTransforms()` to override
+the profile setting for a callback. The driver restores the configured behavior after the callback returns or throws.
 
 ## Implementing a custom driver
 
@@ -151,16 +137,11 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
-use Illuminate\Http\Client\Factory;
 
 use function CraftCms\Cms\t;
 
 class RemoteImageDriver implements AssetTransformDriver
 {
-    public function __construct(
-        private readonly Factory $http,
-    ) {}
-
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
@@ -199,10 +180,6 @@ class RemoteImageDriver implements AssetTransformDriver
         ]);
         $url = sprintf('%s/render?%s', rtrim($endpoint, '/'), $query);
 
-        if ($request->immediately) {
-            $this->http->head($url)->throw();
-        }
-
         return new AssetTransformResult(
             url: $url,
             mimeType: File::getMimeTypeByExtension("transform.{$format}") ?? 'application/octet-stream',
@@ -211,8 +188,8 @@ class RemoteImageDriver implements AssetTransformDriver
 }
 ```
 
-This example requires a public source Asset URL and a service that supports warming with a `HEAD` request. For private
-Assets, upload the source or sign the request using the service's supported flow.
+This example requires a public source Asset URL. For private Assets, upload the source or sign the request using the
+service's supported flow.
 
 ### The driver definition
 
@@ -248,8 +225,7 @@ Each `AssetTransformRequest` contains:
 
 - `asset`: the source `Asset` element;
 - `transformer`: the selected transformer profile, including its driver settings;
-- `parameters`: normalized and validated core and custom parameters; and
-- `immediately`: the resolved generation policy.
+- `parameters`: normalized and validated core and custom parameters.
 
 Use `$request->transformer` for the selected profile. The transformer handle never appears in
 `$request->parameters`.

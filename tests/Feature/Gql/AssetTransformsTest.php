@@ -163,22 +163,6 @@ it('preloads GraphQL list transforms through the selected driver', function () {
         ->and($this->driver->preloaded[0]->parameters)->toBe(['width' => 320]);
 });
 
-it('passes non-null immediately arguments to the selected driver', function () {
-    $asset = Asset::factory()->createElement();
-    gqlActivateFullAccessSchema();
-    graphQL(<<<GQL
-        {
-            asset(id: {$asset->id}) {
-                url(width: 320, immediately: false)
-            }
-        }
-        GQL)
-        ->assertOk()
-        ->assertJsonPath('data.asset.url', '/gql-transform.webp');
-
-    expect($this->driver->request?->immediately)->toBeFalse();
-});
-
 class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
     public array $preloaded = [];

@@ -127,9 +127,6 @@ class Mailer extends \yii\symfonymailer\Mailer
         $generalConfig = Cms::config();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();
-        $generateTransformsBeforePageLoad = $generalConfig instanceof GeneralConfig
-            ? $generalConfig->generateTransformsBeforePageLoad
-            : null;
 
         $originalTemplateMode = TemplateMode::get();
         TemplateMode::set(TemplateMode::Site);
@@ -208,9 +205,6 @@ class Mailer extends \yii\symfonymailer\Mailer
         } finally {
             // Set things back to normal.
             app()->setLocale($language);
-            if ($generalConfig instanceof GeneralConfig) {
-                $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
-            }
 
             if ($currentSite && $messageSite) {
                 Sites::setCurrentSite($currentSite);

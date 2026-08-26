@@ -13,7 +13,6 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
-use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
@@ -173,26 +172,12 @@ it('preserves legacy URL event order and handled null semantics', function(): vo
     }
 });
 
-it('applies the nullable legacy generation policy and immediate overrides', function(): void {
+it('accepts the legacy immediate URL argument', function(): void {
     Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
     $asset = ($this->asset)();
 
-    $asset->getUrl(['width' => 320]);
-
-    expect($this->driver->request->immediately)->toBeTrue();
-
-    $asset->getUrl(['width' => 320], false);
-
-    expect($this->driver->request->immediately)->toBeFalse();
-});
-
-it('applies the legacy generation policy to control panel thumbnails', function(): void {
-    Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
-    $asset = ($this->asset)();
-
-    app(Assets::class)->getThumbUrl($asset, 320, 160);
-
-    expect($this->driver->request->immediately)->toBeTrue();
+    expect($asset->getUrl(['width' => 320], false))->toBe('/transforms/320x160.webp')
+        ->and($asset->getUrl(['width' => 320], true))->toBe('/transforms/320x160.webp');
 });
 
 it('reports legacy URL failures and returns null', function(): void {

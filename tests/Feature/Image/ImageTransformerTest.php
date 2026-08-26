@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -77,11 +78,13 @@ it('runs the configured Craft driver without changing transform identity', funct
     );
     Cms::config()->revAssetUrls(true);
 
-    $result = app(AssetTransformers::class)->transform($asset, [
-        'width' => 100,
-        'height' => 100,
-        'mode' => 'crop',
-    ], true);
+    $result = app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, [
+            'width' => 100,
+            'height' => 100,
+            'mode' => 'crop',
+        ]),
+    );
 
     expect($result->url)->toStartWith('https://example.test/image-transformer-test/')
         ->and($result->mimeType)->toBe('image/jpeg')
@@ -254,7 +257,9 @@ it('uses Craft driver output settings from the source filesystem', function () {
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
 
-    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+    $result = app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
 
     expect($result->url)->toStartWith('https://transforms.example.test/transforms/')
         ->and(Storage::disk('configured-transform-target')->allFiles())->toHaveCount(1);
@@ -286,18 +291,18 @@ it('does not reuse similar transform results across Craft transformer profiles',
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    app(AssetTransformers::class)->transform(
-        $asset,
-        ['width' => 100],
-        immediately: true,
-        transformer: $profiles['first']->handle,
-    );
-    app(AssetTransformers::class)->transform(
-        $asset,
-        ['width' => 100],
-        immediately: true,
-        transformer: $profiles['second']->handle,
-    );
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(function () use ($asset, $profiles): void {
+        app(AssetTransformers::class)->transform(
+            $asset,
+            ['width' => 100],
+            transformer: $profiles['first']->handle,
+        );
+        app(AssetTransformers::class)->transform(
+            $asset,
+            ['width' => 100],
+            transformer: $profiles['second']->handle,
+        );
+    });
 
     expect(Storage::disk('first-transform-target')->allFiles())->toHaveCount(1)
         ->and(Storage::disk('second-transform-target')->allFiles())->toHaveCount(1);
@@ -331,7 +336,9 @@ it('cleans the Craft transform index when an Asset is invalidated', function () 
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
     $transformPath = collect($disk->allFiles())->sole(fn (string $path): bool => $path !== $asset->getPath());
 
     event(new AssetTransformsInvalidating($asset));
@@ -395,7 +402,9 @@ it('does not reuse a transform result older than the source Asset', function () 
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
     $transformPath = collect($disk->allFiles())->sole(fn (string $path): bool => $path !== $asset->getPath());
     $originalTransform = $disk->get($transformPath);
 
@@ -405,7 +414,9 @@ it('does not reuse a transform result older than the source Asset', function () 
     );
     $asset->dateModified = now()->addMinute();
 
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
 
     expect($disk->get($transformPath))->not->toBe($originalTransform);
 });
@@ -418,9 +429,14 @@ it('includes the source revision in transform URL identity', function () {
     );
     Cms::config()->revAssetUrls(false);
 
-    $firstUrl = app(AssetTransformers::class)->transform($asset, ['width' => 100], true)->url;
+    $driver = app(CraftAssetTransformDriver::class);
+    $firstUrl = $driver->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
     $asset->dateUpdated = now()->addMinute();
-    $secondUrl = app(AssetTransformers::class)->transform($asset, ['width' => 100], true)->url;
+    $secondUrl = $driver->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
 
     expect($secondUrl)->not->toBe($firstUrl);
 });
@@ -438,7 +454,6 @@ it('rejects unsupported source kinds before generating transforms', function () 
             'height' => 100,
             'mode' => 'crop',
         ],
-        true,
     )))->toThrow(NotSupportedException::class);
 });
 
@@ -456,6 +471,5 @@ it('rejects invalid Craft driver settings', function () {
         $asset,
         $assetTransformer,
         ['width' => 100],
-        false,
     )))->toThrow(FilesystemException::class);
 });

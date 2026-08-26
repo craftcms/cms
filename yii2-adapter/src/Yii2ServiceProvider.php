@@ -12,7 +12,6 @@ use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
-use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
@@ -25,7 +24,6 @@ use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Form\FormControlTypes;
 use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Gql\AssetTransformContext;
-use CraftCms\Cms\Gql\Events\TransformArgumentsPreparing;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
@@ -41,7 +39,6 @@ use CraftCms\Cms\Utility\UtilityTypes;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
-use CraftCms\Yii2Adapter\Asset\LegacyAssetTransformers;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
@@ -126,14 +123,10 @@ class Yii2ServiceProvider extends ServiceProvider
         });
         new FilesystemCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
-        $this->app->singleton(AssetTransformers::class, LegacyAssetTransformers::class);
         $this->app->singleton(Settings::class, LegacySettings::class);
         $this->app->singleton(GqlArguments::class, LegacyGqlArguments::class);
         $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
         $this->app->singleton(GqlTypes::class, LegacyGqlTypes::class);
-        Event::listen(TransformArgumentsPreparing::class, function(TransformArgumentsPreparing $event): void {
-            $event->handled = true;
-        });
         Event::listen(AssetUrlResolving::class, function(AssetUrlResolving $event): void {
             $state = $this->app->make(AssetTransformContext::class)->get($event->asset);
 
@@ -141,17 +134,10 @@ class Yii2ServiceProvider extends ServiceProvider
                 return;
             }
 
-            $immediately = $state->immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-
-            if ($immediately === null) {
-                return;
-            }
-
             try {
                 $event->url = $this->app->make(AssetTransformers::class)->transform(
                     $event->asset,
                     $event->transform,
-                    $immediately,
                 )->url;
             } catch (AssetTransformException|NotSupportedException $exception) {
                 report($exception);
@@ -286,14 +272,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Event::listen(ThumbUrlResolving::class, function(ThumbUrlResolving $event): void {
-            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-
-            if ($immediately !== null) {
-                $event->immediately = $immediately;
-            }
-        });
-
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
             $kernel->getGlobalMiddleware(),

@@ -44,8 +44,7 @@ class Transform extends Directive
 
         $transform = Gql::prepareTransformArguments($arguments);
         $context = app(AssetTransformContext::class);
-        $immediately = $arguments['immediately'] ?? null;
-        $withTransform = fn (Asset $asset) => $context->set(clone $asset, $transform, $immediately);
+        $withTransform = fn (Asset $asset) => $context->set(clone $asset, $transform);
 
         if ($value instanceof Asset) {
             return $withTransform($value);
@@ -64,7 +63,7 @@ class Transform extends Directive
         }
 
         return Gql::isAssetTransformField($resolveInfo->fieldName)
-            ? Gql::resolveAssetTransform($source, $transform, $resolveInfo->fieldName, $arguments['immediately'] ?? null)
+            ? Gql::resolveAssetTransform($source, $transform, $resolveInfo->fieldName)
             : $value;
     }
 }

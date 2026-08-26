@@ -11,7 +11,6 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Directives\Directive;
-use CraftCms\Cms\Gql\Events\TransformArgumentsPreparing;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
@@ -252,13 +251,6 @@ class GqlHelper
      */
     public static function prepareTransformArguments(array $arguments): array|string
     {
-        if (($arguments['immediately'] ?? null) !== null) {
-            event($event = new TransformArgumentsPreparing($arguments));
-            $arguments = $event->arguments;
-        }
-
-        unset($arguments['immediately']);
-
         $handle = $arguments['handle'] ?? null;
 
         if ($handle === null) {
@@ -278,7 +270,6 @@ class GqlHelper
         Asset $asset,
         array|string $definition,
         string $field,
-        ?bool $immediately = null,
     ): mixed {
         $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
 
@@ -287,11 +278,11 @@ class GqlHelper
         }
 
         return match ($field) {
-            'format' => File::getExtensionByMimeType($asset->transform($definition, $immediately, $transformer)->mimeType),
-            'height' => $asset->transform($definition, $immediately, $transformer)->height,
-            'mimeType' => $asset->transform($definition, $immediately, $transformer)->mimeType,
-            'url' => $asset->transform($definition, $immediately, $transformer)->url,
-            'width' => $asset->transform($definition, $immediately, $transformer)->width,
+            'format' => File::getExtensionByMimeType($asset->transform($definition, $transformer)->mimeType),
+            'height' => $asset->transform($definition, $transformer)->height,
+            'mimeType' => $asset->transform($definition, $transformer)->mimeType,
+            'url' => $asset->transform($definition, $transformer)->url,
+            'width' => $asset->transform($definition, $transformer)->width,
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
     }

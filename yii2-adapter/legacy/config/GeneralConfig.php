@@ -10,6 +10,7 @@
 namespace craft\config;
 
 use craft\services\Config;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -19,6 +20,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config as ConfigFacade;
+use Illuminate\Support\Facades\Context;
 use InvalidArgumentException;
 use RuntimeException;
 use yii\base\InvalidConfigException;
@@ -49,6 +51,19 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     ];
 
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @var bool Whether Craft image transforms should be generated before page load.
+     *
+     * @deprecated in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.
+     */
+    public bool $generateTransformsBeforePageLoad = false {
+        set {
+            $this->deprecateGenerateTransformsBeforePageLoad();
+            Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value);
+            $this->generateTransformsBeforePageLoad = $value;
+        }
+    }
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -630,6 +645,14 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         });
 
         $this->devMode = $value;
+
+        return $this;
+    }
+
+    #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.')]
+    public function generateTransformsBeforePageLoad(bool $value = true): self
+    {
+        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }
@@ -1353,5 +1376,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         }
 
         return $to;
+    }
+
+    private function deprecateGenerateTransformsBeforePageLoad(): void
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.generateTransformsBeforePageLoad',
+            'generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.',
+        ));
     }
 }

@@ -15,6 +15,5 @@ readonly class AssetTransformRequest
         public Asset $asset,
         public AssetTransformer $transformer,
         public array $parameters,
-        public bool $immediately,
     ) {}
 }

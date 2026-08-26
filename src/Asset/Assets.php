@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
@@ -58,6 +59,7 @@ class Assets
         private readonly Folders $folders,
         private readonly Elements $elements,
         private readonly AssetTransformers $assetTransformers,
+        private readonly CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
@@ -148,7 +150,7 @@ class Assets
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
-            ], $event->immediately)->url;
+            ])->url;
         } catch (NotSupportedException) {
             return $iconFallback ? Url::actionUrl('assets/icon', [
                 'extension' => $extension,
@@ -185,7 +187,9 @@ class Assets
 
         try {
             $url = $transform !== null
-                ? $this->assetTransformers->transform($asset, $transform, true)->url
+                ? $this->craftAssetTransformDriver->withImmediateTransforms(
+                    fn (): string => $this->assetTransformers->transform($asset, $transform)->url,
+                )
                 : $asset->getUrl();
         } catch (NotSupportedException) {
             return Url::actionUrl('assets/icon', [

@@ -254,10 +254,9 @@ class AssetTransformers
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
         ?string $transformer = null,
     ): AssetTransformResult {
-        $request = $this->request($asset, $definition, $immediately, $transformer);
+        $request = $this->request($asset, $definition, $transformer);
 
         return $this->transformDrivers->driver($request->transformer->driver)->transform($request);
     }
@@ -386,6 +385,7 @@ class AssetTransformers
                 'settings' => [
                     'filesystem' => null,
                     'subpath' => null,
+                    'generateTransformsBeforePageLoad' => false,
                 ],
             ]));
         }
@@ -519,7 +519,6 @@ class AssetTransformers
     private function request(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
         ?string $transformerHandle = null,
     ): AssetTransformRequest {
         $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
@@ -537,13 +536,7 @@ class AssetTransformers
             asset: $asset,
             transformer: $transformer,
             parameters: $this->validateParameters($transformer, $parameters),
-            immediately: $immediately ?? $this->defaultImmediately(),
         );
-    }
-
-    protected function defaultImmediately(): bool
-    {
-        return Cms::config()->generateTransformsBeforePageLoad;
     }
 
     /** @return array<string, mixed> */

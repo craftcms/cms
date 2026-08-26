@@ -206,7 +206,7 @@ class ImageTransforms extends Component
                 [$transformer, $definition] = $this->legacyTransformer($transform);
                 $request = $transformer === null
                     ? null
-                    : $this->legacyTransformRequest($asset, $definition, $transformer, false);
+                    : $this->legacyTransformRequest($asset, $definition, $transformer);
 
                 if ($request === null) {
                     $coreTransforms[] = $definition;
@@ -385,22 +385,24 @@ class ImageTransforms extends Component
     public function transformAsset(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        bool $immediately,
+        ?bool $immediately,
     ): AssetTransformResult {
         [$transformer, $definition] = $this->legacyTransformer($definition);
 
         if ($transformer === null) {
-            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
+            return app(AssetTransformers::class)->transform($asset, $definition);
         }
+
+        $immediately ??= false;
 
         app(ImageTransformers::class)->register($transformer);
-        $request = $this->legacyTransformRequest($asset, $definition, $transformer, $immediately);
+        $request = $this->legacyTransformRequest($asset, $definition, $transformer);
 
         if ($request === null) {
-            return app(AssetTransformers::class)->transform($asset, $definition, $immediately);
+            return app(AssetTransformers::class)->transform($asset, $definition);
         }
 
-        return new LegacyImageTransformerDriver($transformer)->transform($request);
+        return new LegacyImageTransformerDriver($transformer, $immediately)->transform($request);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
@@ -419,7 +421,6 @@ class ImageTransforms extends Component
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
         string $transformer,
-        bool $immediately,
     ): ?AssetTransformRequest {
         if ($asset->getVolume()->getAssetTransformerHandle(false) || $this->hasTransformerOverride($definition)) {
             return null;
@@ -431,7 +432,6 @@ class ImageTransforms extends Component
             asset: $asset,
             transformer: $assetTransformer,
             parameters: $this->transformParameters($definition, (string) $assetTransformer->uid),
-            immediately: $immediately,
         );
     }
 

@@ -18,11 +18,14 @@ use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Validation\Rule;
 
 it('resolves the Craft transformer without writing project config', function () {
@@ -34,6 +37,7 @@ it('resolves the Craft transformer without writing project config', function () 
     $transformers->reset();
 
     expect($transformer->handle)->toBe('craft')
+        ->and($transformer->settings['generateTransformsBeforePageLoad'])->toBeFalse()
         ->and($transformers->resolve('craft')->uid)->toBe($transformer->uid)
         ->and($projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS))->toBeNull();
 });
@@ -45,14 +49,13 @@ it('executes the selected configured transformer', function () {
     $result = $asset->transform([
         'format' => 'webp',
         'width' => '1200',
-    ], immediately: true, transformer: 'remote');
+    ], transformer: 'remote');
 
     expect($result->url)->toBe('/transforms/hero.webp')
         ->and($driver->request->asset)->toBe($asset)
         ->and($driver->request->transformer->handle)->toBe('remote')
         ->and($driver->request->transformer->settings)->toBe(['token' => 'secret'])
-        ->and($driver->request->parameters)->toBe(['format' => 'webp', 'width' => '1200'])
-        ->and($driver->request->immediately)->toBeTrue();
+        ->and($driver->request->parameters)->toBe(['format' => 'webp', 'width' => '1200']);
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {
@@ -94,15 +97,52 @@ it('selects explicit, volume, and default transformers in that order', function 
         ->and($default->request->parameters['width'])->toBe(300);
 });
 
-it('uses the global immediate-generation policy by default', function () {
-    $driver = registerTransformer('remote');
-    Cms::config()
-        ->defaultAssetTransformer('remote')
-        ->generateTransformsBeforePageLoad();
+it('lets the Craft driver control immediate generation', function () {
+    $immediateValues = [];
+    $imageTransformer = Mockery::mock(ImageTransformer::class);
+    $imageTransformer->shouldReceive('getTransformUrl')
+        ->times(5)
+        ->andReturnUsing(function (mixed $asset, mixed $transform, bool $immediately) use (&$immediateValues): string {
+            $immediateValues[] = $immediately;
 
-    app(AssetTransformers::class)->transform(Asset::factory()->createElement(), ['width' => 100]);
+            return '/transforms/hero.webp';
+        });
+    $driver = new CraftAssetTransformDriver($imageTransformer);
+    $asset = Asset::factory()->createElement([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $deferred = new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Deferred Craft',
+        'handle' => 'deferredCraft',
+        'driver' => 'craft',
+        'settings' => ['generateTransformsBeforePageLoad' => false],
+    ]);
+    $immediate = new AssetTransformer([
+        'uid' => Str::uuid()->toString(),
+        'name' => 'Immediate Craft',
+        'handle' => 'immediateCraft',
+        'driver' => 'craft',
+        'settings' => ['generateTransformsBeforePageLoad' => true],
+    ]);
+    $request = fn (AssetTransformer $transformer) => new AssetTransformRequest(
+        $asset,
+        $transformer,
+        ['width' => 320],
+    );
 
-    expect($driver->request->immediately)->toBeTrue();
+    $driver->transform($request($deferred));
+    $driver->transform($request($immediate));
+    Context::scope(
+        fn () => $driver->transform($request($immediate)),
+        hidden: [CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT => false],
+    );
+    $driver->withImmediateTransforms(fn () => $driver->transform($request($deferred)));
+    $driver->transform($request($deferred));
+
+    expect($immediateValues)->toBe([false, true, false, true, false]);
 });
 
 it('protects transformers referenced by volumes', function () {
@@ -260,7 +300,6 @@ it('redacts transformer settings from debug output', function () {
         Asset::factory()->createElement(),
         transformer('remote', ['token' => 'secret-value']),
         [],
-        false,
     );
     ob_start();
     var_dump($request);

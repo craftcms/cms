@@ -50,7 +50,7 @@ describe('generate', function () {
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
 
-        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
         get($result->url)
             ->assertOk()
@@ -121,7 +121,7 @@ describe('generate', function () {
             $asset->getPath(),
             file_get_contents(dirname(__DIR__, 4).'/_data/assets/files/background.jpg'),
         );
-        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100], true);
+        $result = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
         get($result->url)->assertOk();
     });

@@ -80,12 +80,8 @@ class AssetElementTest extends TestCase
                 'height' => 200,
             ]));
 
-        $previousValue = Cms::config()->generateTransformsBeforePageLoad;
-        Cms::config()->generateTransformsBeforePageLoad = true;
         $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
         self::assertSame('w=200&h=200', $url);
-
-        Cms::config()->generateTransformsBeforePageLoad = $previousValue;
     }
 }

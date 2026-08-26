@@ -54,13 +54,6 @@ class Transform extends Arguments
             ];
         }
 
-        return [
-            ...$arguments,
-            'immediately' => [
-                'name' => 'immediately',
-                'type' => Type::boolean(),
-                'description' => 'Whether the transform should be generated immediately or only when the image is requested used the generated URL',
-            ],
-        ];
+        return $arguments;
     }
 }

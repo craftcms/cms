@@ -1979,18 +1979,16 @@ JS, [
     #[AllowedInSandbox]
     public function transform(
         #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
         ?string $transformer = null,
     ): AssetTransformResult {
-        return app(AssetTransformers::class)->transform($this, $definition, $immediately, $transformer);
+        return app(AssetTransformers::class)->transform($this, $definition, $transformer);
     }
 
     protected function _tryTransform(
         #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
     ): ?AssetTransformResult {
         try {
-            return $this->transform($definition, $immediately);
+            return $this->transform($definition);
         } catch (AssetTransformException|NotSupportedException $exception) {
             report($exception);
 
@@ -2019,14 +2017,13 @@ JS, [
      * Returns the element’s full URL.
      *
      * @param  ImageTransform|string|TransformConfig|null  $transform  Deprecated. Use {@see transform()} and read the result’s URL instead.
-     * @param  bool|null  $immediately  Deprecated. Whether the image should be transformed immediately.
      *
      * @throws RuntimeException
      */
     #[Override]
-    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
+    public function getUrl(mixed $transform = null): ?string
     {
-        if ($transform !== null || $immediately !== null) {
+        if ($transform !== null) {
             Deprecator::log(
                 'Asset::getUrl($transform)',
                 'Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.',
@@ -2043,7 +2040,7 @@ JS, [
 
         // If AssetUrlResolving::$url is set to null, only respect that if $handled is true
         if ($event->url === null && ! $event->handled) {
-            $url = $this->_url($transform, $immediately);
+            $url = $this->_url($transform);
         }
 
         event($event = new AssetUrlDefined($this, $transform, $url));
@@ -2056,10 +2053,10 @@ JS, [
         return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
-    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
+    private function _url(mixed $transform = null): ?string
     {
         if ($transform !== null) {
-            return $this->_tryTransform($transform, $immediately)?->url;
+            return $this->_tryTransform($transform)?->url;
         }
 
         if (! $this->folderId) {

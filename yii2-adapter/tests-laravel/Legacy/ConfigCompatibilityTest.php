@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 
 it('preserves callable config values', function(): void {
     $originalConfigPath = $this->app->configPath();
@@ -50,9 +53,16 @@ it('supports moved deprecated config settings', function(): void {
         ->generateTransformsBeforePageLoad(true)
         ->rememberedUserSessionDuration(7200)
         ->verificationCodeDuration(1800);
+    expect(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeTrue();
+
+    $config->generateTransformsBeforePageLoad = false;
+    $deprecation = collect(Deprecator::getRequestLogs())
+        ->firstWhere('key', 'generalConfig.generateTransformsBeforePageLoad');
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
-        ->and($config->generateTransformsBeforePageLoad)->toBeTrue()
+        ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
+        ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
+        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });

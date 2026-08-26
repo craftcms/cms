@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace craft\elements;
 
 use Craft;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
@@ -115,23 +114,13 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     }
 
     #[Override]
-    #[AllowedInSandbox]
-    public function transform(
-        #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
-        ?string $transformer = null,
-    ): AssetTransformResult {
-        return app(AssetTransformers::class)->transform($this, $definition, $immediately, $transformer);
-    }
-
-    #[Override]
     public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
         $previous = $this->_immediately;
         $this->_immediately = $immediately;
 
         try {
-            return parent::getUrl($transform ?? $this->_transform, $immediately);
+            return parent::getUrl($transform ?? $this->_transform);
         } finally {
             $this->_immediately = $previous;
         }
@@ -140,11 +129,9 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     #[Override]
     protected function _tryTransform(
         #[\SensitiveParameter] mixed $definition,
-        ?bool $immediately = null,
     ): ?AssetTransformResult {
-        $immediately ??= $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         try {
-            return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $immediately);
+            return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $this->_immediately);
         } catch (AssetTransformException|NotSupportedException $exception) {
             report($exception);
 

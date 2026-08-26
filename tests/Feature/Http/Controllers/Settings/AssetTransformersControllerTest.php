@@ -109,13 +109,17 @@ it('keeps the Craft transformer identity pinned', function () {
         'name' => 'Changed',
         'handle' => 'changed',
         'driver' => 'craft',
-        'settings' => ['subpath' => 'transforms'],
+        'settings' => [
+            'subpath' => 'transforms',
+            'generateTransformsBeforePageLoad' => true,
+        ],
     ])->assertOk();
 
     $saved = app(AssetTransformers::class)->resolve('craft');
     expect($saved->name)->toBe('Craft')
         ->and($saved->driver)->toBe('craft')
-        ->and($saved->settings['subpath'])->toBe('transforms');
+        ->and($saved->settings['subpath'])->toBe('transforms')
+        ->and($saved->settings['generateTransformsBeforePageLoad'])->toBeTrue();
 });
 
 it('deletes non-reserved transformers', function () {

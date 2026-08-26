@@ -43,13 +43,6 @@ it('requires a default Asset Transformer', function () {
         ->and(fn () => $config->defaultAssetTransformer(''))->toThrow(RuntimeException::class);
 });
 
-it('sets the transform generation policy', function () {
-    $config = GeneralConfig::create();
-
-    expect($config->generateTransformsBeforePageLoad)->toBeFalse()
-        ->and($config->generateTransformsBeforePageLoad()->generateTransformsBeforePageLoad)->toBeTrue();
-});
-
 it('normalizes pageTrigger on the main config class', function () {
     $config = GeneralConfig::create();
 

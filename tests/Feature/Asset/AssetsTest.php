@@ -134,8 +134,7 @@ it('renders non-image thumbnails and previews through the selected driver', func
         ->and(array_column($driver->requests, 'parameters'))->toBe([
             ['height' => 80, 'mode' => 'crop', 'width' => 120],
             ['height' => 1000, 'mode' => 'crop', 'width' => 1000],
-        ])
-        ->and(array_map(fn (AssetTransformRequest $request): bool => $request->immediately, $driver->requests))->toBe([false, true]);
+        ]);
 });
 
 it('uses file-kind images only when the selected driver does not support the source', function () {

@@ -14,14 +14,6 @@ use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
-use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
-use CraftCms\Cms\Asset\Data\AssetTransformRequest;
-use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
@@ -31,8 +23,6 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
-use CraftCms\Cms\Gql\GqlHelper;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -187,59 +177,6 @@ it('keeps the legacy gql helper working against the new service', function() {
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
 });
 
-it('applies legacy immediately behavior without mutating transform parameters or the Asset', function() {
-    $driver = new GqlImmediateAssetTransformDriver();
-    app(AssetTransformDrivers::class)->extend('gql-immediately', fn() => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'GQL immediately',
-        'handle' => 'gql-immediately',
-        'driver' => 'gql-immediately',
-    ]), false);
-    Cms::config()->defaultAssetTransformer('gql-immediately');
-    Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
-    $asset = Asset::factory()->createElement([
-        'width' => 800,
-        'height' => 400,
-    ]);
-    $schema = GqlHelper::createFullAccessSchema();
-    app(Gql::class)->setActiveSchema($schema);
-    Cms::config()->lazyGqlTypes = false;
-    $result = app(Gql::class)->executeQuery($schema, <<<GQL
-        {
-            source: asset(id: {$asset->id}) {
-                sourceBefore: width
-                deferred: url(width: 320, immediately: false)
-                nullDefault: url(width: 640, immediately: null)
-                sourceAfter: width
-            }
-            omittedDefault: asset(id: {$asset->id}) @transform(width: 960) {
-                url
-            }
-        }
-        GQL);
-
-    expect($result)->toMatchArray([
-        'data' => [
-            'source' => [
-                'sourceBefore' => 800,
-                'deferred' => '/transforms/320.webp',
-                'nullDefault' => '/transforms/640.webp',
-                'sourceAfter' => 800,
-            ],
-            'omittedDefault' => ['url' => '/transforms/960.webp'],
-        ],
-    ]);
-
-    expect($driver->requests)->toHaveCount(3)
-        ->and($driver->requests[0]->parameters)->toBe(['width' => 320])
-        ->and($driver->requests[0]->immediately)->toBeFalse()
-        ->and($driver->requests[1]->parameters)->toBe(['width' => 640])
-        ->and($driver->requests[1]->immediately)->toBeTrue()
-        ->and($driver->requests[2]->parameters)->toBe(['width' => 960])
-        ->and($driver->requests[2]->immediately)->toBeTrue();
-});
-
 it('returns gql token aliases from the legacy gql service', function() {
     $modernToken = app(Gql::class)->getPublicToken();
     $legacyToken = Craft::$app->getGql()->getPublicToken();
@@ -305,25 +242,5 @@ class LegacyReplacementArgumentHandler extends AdapterArgumentHandler
     public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->argumentManager = $argumentManager;
-    }
-}
-
-class GqlImmediateAssetTransformDriver implements AssetTransformDriver
-{
-    public array $requests = [];
-
-    public function definition(): AssetTransformDriverDefinition
-    {
-        return new AssetTransformDriverDefinition('GraphQL immediately');
-    }
-
-    public function transform(AssetTransformRequest $request): AssetTransformResult
-    {
-        $this->requests[] = $request;
-
-        return new AssetTransformResult(
-            url: "/transforms/{$request->parameters['width']}.webp",
-            mimeType: 'image/webp',
-        );
     }
 }

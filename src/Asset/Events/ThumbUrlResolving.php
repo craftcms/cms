@@ -16,8 +16,6 @@ class ThumbUrlResolving
 
     public ?string $url = null;
 
-    public ?bool $immediately = null;
-
     public function __construct(
         public Asset $asset,
         public int $width,

@@ -13,15 +13,19 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\File;
+use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\t;
 
 class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
+    public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';
+
     public function __construct(private readonly ImageTransformer $imageTransformer) {}
 
     public function definition(): AssetTransformDriverDefinition
@@ -37,6 +41,10 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
             Field::make(t('Output Subpath'), Combobox::make('subpath')
                 ->value('')
                 ->options(SelectOptions::getEnvSuggestions(true))),
+            Field::make(
+                t('Generate Transforms Before Page Load'),
+                Lightswitch::make('generateTransformsBeforePageLoad'),
+            )->instructions(t('Whether image transforms should be generated before the page loads.')),
         ]);
     }
 
@@ -47,8 +55,11 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         }
 
         $transform = ImageTransform::fromParameters($request->parameters);
+        $immediately = Context::hasHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT)
+            ? Context::getHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT) === true
+            : ($request->transformer->settings['generateTransformsBeforePageLoad'] ?? false) === true;
         try {
-            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $request->immediately, $request->transformer);
+            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $request->transformer);
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
         }
@@ -76,6 +87,14 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
             mimeType: File::getMimeTypeByExtension("transform.{$format}") ?? "image/{$format}",
             width: $width,
             height: $height,
+        );
+    }
+
+    public function withImmediateTransforms(callable $callback): mixed
+    {
+        return Context::scope(
+            $callback,
+            hidden: [self::IMMEDIATE_TRANSFORMS_CONTEXT => true],
         );
     }
 
