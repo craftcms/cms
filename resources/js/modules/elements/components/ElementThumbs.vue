@@ -1,11 +1,10 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {computed, ref} from 'vue';
-  import type {Table} from '@tanstack/vue-table';
   import {usePage} from '@inertiajs/vue3';
   import Empty from '@/common/components/Empty.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
+  import type {Selectable} from '@/common/composables/useSelectable';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
   interface ThumbElement {
@@ -14,14 +13,15 @@
     folderUrl?: string;
     folderId?: string | number;
     canMoveTo?: boolean;
-    url?: string;
+    // The server sends the element's edit URL, which is null when it has none.
+    url?: string | null;
     thumbHtml?: string;
     label?: string;
   }
 
   const props = withDefaults(
     defineProps<{
-      table: Table<any>;
+      selection: Selectable<any>;
       data?: Array<ThumbElement>;
       selectable?: boolean;
       readOnly?: boolean;
@@ -33,16 +33,8 @@
   const page = usePage<{readOnly: boolean}>();
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
-  const {onToggleAllSelected, selectRow, toggleRow, extendSelectionTo} =
-    useElementIndexSelection(() => props.table, {
-      selectable: () => props.selectable,
-      readOnly,
-      actions: () => [],
-    });
-
-  function rowFor(id: number | string) {
-    return props.table.getRow(String(id));
-  }
+  // Selection is handed in rather than derived from a table, so this body works
+  // for anything with an ordered list of ids.
 
   const pendingShiftKey = ref(false);
   function rememberShift(event: MouseEvent) {
@@ -92,7 +84,7 @@
           window.location.assign(element.url);
           break;
         }
-        toggleRow(rowFor(id));
+        props.selection.toggle(id);
         break;
       }
       case 'ArrowRight':
@@ -100,7 +92,7 @@
         event.preventDefault();
         const nextIndex = Math.min(index + 1, last);
         const nextEl = props.data[nextIndex];
-        if (event.shiftKey && nextEl) extendSelectionTo(rowFor(nextEl.id));
+        if (event.shiftKey && nextEl) props.selection.extendTo(nextEl.id);
         focusTileByIndex(nextIndex, target);
         break;
       }
@@ -109,7 +101,7 @@
         event.preventDefault();
         const prevIndex = Math.max(index - 1, 0);
         const prevEl = props.data[prevIndex];
-        if (event.shiftKey && prevEl) extendSelectionTo(rowFor(prevEl.id));
+        if (event.shiftKey && prevEl) props.selection.extendTo(prevEl.id);
         focusTileByIndex(prevIndex, target);
         break;
       }
@@ -117,7 +109,11 @@
   }
 
   function checkboxValue(event: Event): boolean {
-    return event.target instanceof HTMLInputElement && event.target.checked;
+    // `craft-checkbox` dispatches `model-value-changed` from the host, not from
+    // an inner `<input>`, so an `instanceof HTMLInputElement` test reads every
+    // change as unchecked. Since it also re-fires on programmatic `.checked`
+    // updates, that turned each selection into an immediate deselection.
+    return Boolean((event.target as {checked?: boolean} | null)?.checked);
   }
 </script>
 
@@ -129,10 +125,10 @@
     <div class="thumbsview-header" v-if="selectable">
       <craft-checkbox
         label-sr-only
-        .checked="table.getIsAllRowsSelected()"
-        .indeterminate="table.getIsSomeRowsSelected()"
+        .checked="selection.allSelected.value"
+        .indeterminate="selection.someSelected.value"
         .disabled="readOnly"
-        @model-value-changed="onToggleAllSelected(checkboxValue($event))"
+        @model-value-changed="selection.toggleAll(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
@@ -149,19 +145,18 @@
         :class="{
           element: true,
           'element--folder': isFolderRow(element),
-          sel: rowFor(element.id)?.getIsSelected(),
+          sel: selection.isSelected(element.id),
         }"
       >
         <craft-checkbox
           v-if="selectable"
           class="thumb-check"
           label-sr-only
-          .checked="rowFor(element.id)?.getIsSelected()"
-          .disabled="readOnly || !rowFor(element.id)?.getCanSelect()"
+          .checked="selection.isSelected(element.id)"
+          .disabled="readOnly || !selection.canSelect(element.id)"
           @click="rememberShift($event)"
           @model-value-changed="
-            selectRow(rowFor(element.id), {
-              checked: checkboxValue($event),
+            selection.setChecked(element.id, checkboxValue($event), {
               shiftKey: pendingShiftKey,
             })
           "
