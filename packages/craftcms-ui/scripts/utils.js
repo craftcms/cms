@@ -1,6 +1,8 @@
 import {globby} from 'globby';
-import {dirname} from 'path';
+import {readFileSync} from 'fs';
+import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'node:url';
+import {transformSync} from 'esbuild';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const getRootDir = () => process.env.ROOT_DIR || dirname(__dirname);
@@ -20,4 +22,20 @@ export async function resolveFrom(pattern) {
     acc[rest.join('/')] = file;
     return acc;
   }, {});
+}
+
+/*
+The canonical color data lives in src/constants/colors.data.ts (shared with
+constants/colors.ts). Scripts can't import TypeScript directly, so we transpile
+it with esbuild and import the result.
+ */
+export async function loadColorData() {
+  const dataFile = resolve(getRootDir(), 'src/constants/colors.data.ts');
+  const {code} = transformSync(readFileSync(dataFile, 'utf8'), {
+    loader: 'ts',
+    format: 'esm',
+  });
+  return import(
+    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
+  );
 }
