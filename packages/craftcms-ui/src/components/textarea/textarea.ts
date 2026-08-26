@@ -30,54 +30,28 @@ export default class CraftTextarea extends LionTextarea {
   }
 
   /**
-   * `LionTextarea` uses the `autosize` package to keep the textarea's height
-   * in sync with its content. To avoid fighting a user's own drag-resize,
-   * `autosize` disables the native vertical resize handle (downgrading
-   * `resize: vertical`/`both` to `none`/`horizontal` via an inline style) on
-   * every height recalculation — which is what `textarea.styles.ts`'s
-   * `resize: vertical` is fighting against.
+   * `autosize` (used by `LionTextarea`) auto-grows the textarea and disables
+   * native vertical resize on every recalculation, to avoid fighting a
+   * manual drag. We want the opposite: auto-grow stays on until the user
+   * manually resizes, then `autosize` is destroyed for good so their choice
+   * sticks.
    *
-   * We want the opposite default: let auto-grow run until the user manually
-   * resizes, then hand control to them permanently for that instance (the
-   * common "auto-grow until you take over" pattern).
-   *
-   * A `ResizeObserver` can't tell "autosize changed the height" apart from
-   * "the user dragged the resize handle" on its own — both produce a size
-   * change. We disambiguate by comparing the observed height against the
-   * height `autosize` itself last wrote, tracked via `#lastAutosizeHeight`.
-   * That tracking must come *exclusively* from autosize's own
-   * `autosize:resized` event — the one signal that's reliably "autosize did
-   * this" and nothing else. It must never be updated from the
-   * `MutationObserver` below, even though that observer also sees every
-   * height change: it can't tell autosize's mutations apart from a manual
-   * one, so folding it into the same baseline would silently resync
-   * `#lastAutosizeHeight` to match a manual resize too, right before the
-   * `ResizeObserver` gets a chance to compare against it — which defeats
-   * the whole comparison (this happened; a manual shrink briefly appeared
-   * to work, but the next keystroke immediately snapped the height back,
-   * because `autosize.destroy()` was never actually reached).
-   *
-   * Separately, we need to keep undoing the `resize: none` downgrade
-   * itself: `autosize` re-checks `computed.resize` and re-applies it on
-   * *every* recalculation it does, not just the first one. That includes
-   * several paths besides typing — its own initial synchronous run inside
-   * `super.connectedCallback()` (the stamp visible on page load, before any
-   * user interaction), and, notably, the `IntersectionObserver` that
-   * `LionTextarea.connectedCallback()` sets up right after — it always
-   * fires once automatically on `observe()`, which calls `resizeTextarea()`
-   * and re-triggers the downgrade check even though nothing actually
-   * changed. That case computes the *same* height as before, so `autosize`
-   * doesn't dispatch `autosize:resized` for it (that event is conditional
-   * on the height actually changing) — the event alone would silently miss
-   * it. A `MutationObserver` on the `style` attribute instead reacts to
-   * every inline mutation unconditionally, however it happened, so nothing
-   * slips past it — but for that same reason, it must stay purely a
-   * cleanup mechanism and never feed the manual-resize baseline above.
+   * - `#lastAutosizeHeight` must only be set from `autosize`'s own
+   *   `autosize:resized` event, never from the `MutationObserver` below —
+   *   otherwise a manual resize would resync the baseline before the
+   *   `ResizeObserver` can compare against it, and the drag would be undone
+   *   on the very next keystroke.
+   * - `autosize` also re-stamps `resize: none` on updates that don't fire
+   *   `autosize:resized` (e.g. the initial `IntersectionObserver` check),
+   *   so we watch the `style` attribute directly instead of relying on that
+   *   event for cleanup.
+   * - `autosize.destroy()` resets `height` to empty and leaves a stale
+   *   `overflow` behind (a shorthand/longhand mismatch in its own code) —
+   *   both are fixed up manually right after destroying.
    */
   #watchForManualResize() {
-    // `_inputNode` is inherited from Lion's FormControlMixin, typed there as
-    // the general form-control union — narrow it, since for CraftTextarea
-    // it's always the textarea itself.
+    // Narrowed from Lion's general form-control union — always the textarea
+    // itself for CraftTextarea.
     const input = this._inputNode as HTMLTextAreaElement | undefined;
     if (
       !input ||
@@ -87,11 +61,8 @@ export default class CraftTextarea extends LionTextarea {
       return;
     }
 
-    // Seed the baseline from whatever autosize already applied during its
-    // synchronous initial run inside super.connectedCallback(), and clean
-    // up that first `resize: none` stamp immediately — both happen before
-    // this method can attach the listener below, so they'd otherwise be
-    // missed entirely (see the class-level doc comment).
+    // autosize already ran once, synchronously, inside super.connectedCallback()
+    // — seed our baseline from it and undo its first resize:none stamp.
     this.#lastAutosizeHeight = input.style.height;
     input.style.removeProperty('resize');
 
@@ -100,10 +71,8 @@ export default class CraftTextarea extends LionTextarea {
     });
 
     this.#styleObserver = new MutationObserver(() => {
-      // Guard against reacting to our own `removeProperty` call below —
-      // once `resize` is already cleared, this is a no-op, so the mutation
-      // it would otherwise cause (and the observer callback it would
-      // trigger) never happens.
+      // Skip if already clear, so our own removeProperty call below doesn't
+      // retrigger this observer.
       if (input.style.resize !== '') {
         input.style.removeProperty('resize');
       }
@@ -118,29 +87,11 @@ export default class CraftTextarea extends LionTextarea {
         return;
       }
 
-      // The user dragged the native resize handle — let them keep the
-      // height they chose instead of autosize overwriting it on the next
-      // keystroke.
+      // A manual resize — hand control to the user permanently.
       const manualHeight = input.style.height;
       autosize.destroy(input);
-      // destroy() restores `height` (among other properties) to whatever it
-      // was *before* autosize's very first run — always empty here, since
-      // nothing else sets an inline height — which would otherwise snap the
-      // box back down to its unstyled size right after the user lets go of
-      // the handle. Put the height they just chose back.
-      input.style.height = manualHeight;
-
-      // autosize's own destroy() doesn't fully clean up after itself: its
-      // internal setHeight() sets the *shorthand* `overflow` inline (to
-      // `scroll` once content is clamped at max-height, or `hidden` while
-      // everything still fits without it), but destroy()'s restore snapshot
-      // only tracks the *longhand* `overflowY`/`overflowX`, so it never
-      // touches the shorthand it actually set. Left alone, a stale
-      // `overflow: hidden` would block scrolling to any content that
-      // overflows once the user shrinks the textarea below its natural
-      // height. There's no stylesheet rule for `overflow` here, so clearing
-      // it hands the textarea back to its native scrollable default.
-      input.style.removeProperty('overflow');
+      input.style.height = manualHeight; // destroy() clears this; restore it
+      input.style.removeProperty('overflow'); // destroy() leaves this stale
 
       this.#styleObserver?.disconnect();
       this.#styleObserver = undefined;
