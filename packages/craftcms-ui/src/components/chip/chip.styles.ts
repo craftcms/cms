@@ -1,4 +1,4 @@
-import {css} from 'lit';
+import { css } from 'lit';
 
 export default css`
   :host {
@@ -25,11 +25,8 @@ export default css`
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     border-width: var(--c-chip-border-width, 1px);
     border-style: var(--c-chip-border-style, solid);
-    border-color: var(
-      --c-color-border-quiet,
-      var(--c-color-neutral-border-quiet)
-    );
-    background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
+    border-color: var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+    background-color: var(--c-surface-raised);
     overflow: clip;
   }
 
@@ -58,6 +55,19 @@ export default css`
   .cp-chip--medium {
     padding-block: 0;
     min-height: var(--c-size-control-md);
+  }
+
+  /*
+   * Selected state, matching a selected thumbnail tile in the element index
+   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
+   * elements are being shown.
+   *
+   * Specificity puts this above the appearance and size variants deliberately:
+   * a selected chip stays legible as selected even when it is plain.
+   */
+  :host([selected]) .cp-chip {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
   }
 
   .cp-chip__prefix,
