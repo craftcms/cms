@@ -1,0 +1,170 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Composables/useSelectable Overview" />
+
+# useSelectable
+
+Anchor-based list selection for any ordered list of ids: plain click, ctrl/cmd
+click, and shift-click ranges, plus the imperative API behind keyboard
+navigation.
+
+It started as the element index's selection and was pulled out so the same
+gestures can go on a relation field's chips, an admin table, or anything else
+that shows a list. `useElementIndexSelection` and `ElementSelectControl` are both
+built on it.
+
+## Usage
+
+```ts
+const selection = useSelectable<number>({
+  ids: computed(() => rows.value.map((row) => row.id)),
+  click: 'replace',
+});
+
+selection.handleClick(id, event); // click path
+selection.toggle(id); // keyboard: Space/Enter
+selection.extendTo(id); // keyboard: Shift+Arrow
+```
+
+The composable is generic over the id type, so a list keyed by `number` gets
+`number` back out — `selectedIds` is `readonly number[]`, not
+`(string | number)[]`.
+
+## Options
+
+| Option      | Type                              | Default    | What it does                                                          |
+| ----------- | --------------------------------- | ---------- | --------------------------------------------------------------------- |
+| `ids`       | `MaybeRefOrGetter<readonly Id[]>` | —          | The ids **in display order**. Ranges walk this.                        |
+| `enabled`   | `MaybeRefOrGetter<boolean>`       | `true`     | Whether the click gesture is offered at all.                           |
+| `readOnly`  | `MaybeRefOrGetter<boolean>`       | `false`    | Freezes writes; reads still work.                                      |
+| `canSelect` | `(id: Id) => boolean`             | —          | Per-item veto.                                                         |
+| `click`     | `'replace' \| 'toggle'`           | `'toggle'` | What an unmodified click does.                                         |
+| `store`     | `SelectableStore<Id>`             | local Set  | Where the selection lives.                                             |
+
+`ids` must be in the order the user actually sees — sorted and paged — because a
+shift-range is "everything between these two positions on screen".
+
+## Click modes
+
+The one real behavioural difference between the two call sites, so it's a
+parameter rather than two composables:
+
+- **`'toggle'`** — flips the clicked item, leaves the rest alone. What a
+  checkbox-driven list wants; the element index uses it.
+- **`'replace'`** — collapses the selection to the clicked item, the way a file
+  list behaves. `ElementSelectControl`'s chips use it.
+
+Ctrl/cmd-click adds to the selection in either mode, and shift-click always
+ranges from the anchor.
+
+## The anchor
+
+The anchor is the last **individually** toggled item. A shift-click applies to
+the inclusive range between it and the clicked item and deliberately leaves the
+anchor where it was, so the range can be re-dragged from the same origin —
+shift-clicking 5, then 3, then 7 all range from the original anchor rather than
+walking it forward.
+
+With no anchor set yet, a range is just the clicked item.
+
+## Bringing your own store
+
+By default the selection lives in a local `Set`. Pass a `store` when something
+else is already the source of truth:
+
+```ts
+const selection = useSelectable({
+  ids: () => rows().map((row) => row.original.id),
+  store: {
+    isSelected: (id) => rowFor(id)?.getIsSelected() ?? false,
+    setSelected: (id, selected) => rowFor(id)?.toggleSelected(selected),
+    selectedIds: () => table.getSelectedRowModel().rows.map((r) => r.original.id),
+    clear: () => table.resetRowSelection(),
+  },
+});
+```
+
+That's what `useElementIndexSelection` does. Selection state stays in the
+TanStack table rather than being mirrored into the composable, so the checkboxes,
+the row model and the composable can't drift apart. The composable stays the
+*algorithm* — anchors, ranges, gestures — without also trying to own the state.
+
+## Clicks that aren't selections
+
+`handleClick` ignores clicks that land on a control inside the item — a link, a
+button, an action menu — by walking the event's composed path (which pierces open
+shadow DOM) out to the boundary element. The boundary defaults to
+`event.currentTarget`, which is right when the handler is bound to the row
+itself; pass a third argument when it isn't.
+
+A shift-click also drops the browser's text selection, so ranges don't leave
+stray highlighted text behind.
+
+## Checkboxes
+
+`setChecked(id, checked, {shiftKey})` is the path for a checkbox reporting its
+own new state, and it exists because `craft-checkbox` needs two accommodations:
+
+```html
+<craft-checkbox
+  .checked="isSelected(id)"
+  .disabled="readOnly"
+  @click="rememberShift"
+  @model-value-changed="
+    setChecked(id, $event.target.checked, {shiftKey: pendingShiftKey})
+  "
+/>
+```
+
+- Lion re-fires `model-value-changed` when `.checked` is set **programmatically**,
+  so a value that already matches is ignored rather than pointlessly moving the
+  anchor.
+- Modifier keys never reach that event, so `shiftKey` has to be captured from the
+  native click that preceded it — hence the `@click="rememberShift"` alongside.
+
+Clicks on the checkbox don't also reach an enclosing row's click handler:
+`handleClick` walks the composed path, which pierces shadow DOM and finds the
+checkbox's focusable inner input.
+
+## Pruning
+
+`prune()` drops ids that have left the list, so a selection can't go stale as
+items are removed, and clears the anchor — its index no longer means anything.
+
+It takes an optional explicit list for the case where you're working *ahead* of
+the list actually changing. A removal that emits a new value and prunes in the
+same breath hasn't seen the prop round-trip yet, so `ids` still holds the
+outgoing items:
+
+```ts
+function removeIds(remove: Set<number>): void {
+  const next = ids.value.filter((id) => !remove.has(id));
+
+  selection.prune(next); // `ids` still has the outgoing chips
+  emit('update:value', next, 'discrete');
+}
+```
+
+## Returned API
+
+| Member                        | Notes                                                     |
+| ----------------------------- | --------------------------------------------------------- |
+| `selectedIds`                 | `ComputedRef<readonly Id[]>`                               |
+| `hasSelection`                | `ComputedRef<boolean>`                                     |
+| `anchorIndex`                 | `Ref<number \| null>`                                      |
+| `enabled` / `readOnly`        | Resolved `ComputedRef<boolean>`s                           |
+| `isSelected(id)`              |                                                            |
+| `indexOf(id)`                 | Position in `ids`, or `-1`                                 |
+| `select(id, selected)`        | Sets the anchor                                            |
+| `toggle(id)`                  | Sets the anchor                                            |
+| `selectRange(id, selected)`   | Anchor → `id`, inclusive; keeps the anchor                 |
+| `extendTo(id)`                | `selectRange(id, true)`                                    |
+| `setChecked(id, checked, …)`  | Checkbox path; ignores no-op re-fires                      |
+| `selectAll(selected)`         |                                                            |
+| `clear()`                     | Clears the selection and the anchor                        |
+| `prune(available?)`           | Drops departed ids                                         |
+| `handleClick(id, event, ...)` | Turns a click into the matching change                     |
+
+Every write goes through `readOnly` and `canSelect` first, so a frozen or vetoed
+item can't be selected through any path — including being swept up in a range or
+a select-all.
