@@ -121,7 +121,11 @@ class ImageTransformsController extends BaseAssetSettingsController
                 ]);
             }
 
-            $parameters = Arr::except($parameters, ImageTransform::CORE_PARAMETERS);
+            $parameterRules = $this->assetTransformDrivers
+                ->driver($assetTransformer->driver)
+                ->definition()
+                ->parameterRules;
+            $parameters = Arr::only($parameters, array_keys($parameterRules));
 
             if ($parameters !== []) {
                 $parameterBuckets[$assetTransformer->uid] = $parameters;

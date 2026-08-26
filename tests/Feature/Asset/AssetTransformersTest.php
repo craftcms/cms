@@ -22,6 +22,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Validation\Rule;
 
 it('resolves the Craft transformer without writing project config', function () {
     $projectConfig = app(ProjectConfig::class);
@@ -179,6 +180,24 @@ it('passes undeclared parameters without validating them', function () {
         'blur' => 5,
         'unknown' => 'passed-through',
     ]);
+});
+
+it('uses driver rules in place of conflicting core rules', function () {
+    $driver = registerTransformer('remote', parameterRules: [
+        'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],
+    ]);
+    $asset = Asset::factory()->createElement();
+
+    app(AssetTransformers::class)->transform($asset, [
+        'transformer' => 'remote',
+        'quality' => 'high',
+    ]);
+
+    expect($driver->request->parameters['quality'])->toBe('high')
+        ->and(fn () => app(AssetTransformers::class)->transform($asset, [
+            'transformer' => 'remote',
+            'quality' => 'maximum',
+        ]))->toThrow(InvalidAssetTransformException::class);
 });
 
 it('rejects invalid parameters and missing transformer handles', function () {

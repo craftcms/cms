@@ -81,7 +81,7 @@ $result = $asset->transform([
 Craft normalizes the definition, merges overrides, selects the transformer, and validates the parameters before invoking
 the driver. The core parameters are:
 
-| Parameter | Accepted value |
+| Parameter | Default accepted value |
 | --- | --- |
 | `fill` | String |
 | `format` | An `ImageTransformFormat` value |
@@ -93,8 +93,10 @@ the driver. The core parameters are:
 | `upscale` | Boolean |
 | `width` | Integer greater than zero |
 
-A driver can declare further parameters. Craft validates core and declared parameters, passes undeclared parameters
-through without validation, and sorts all parameters by handle before invoking the driver.
+A driver can declare further parameters or replace a core parameter’s validation rules. Craft validates core and declared
+parameters, passes undeclared parameters through without validation, and sorts all parameters by handle before invoking
+the driver. For example, a Cloudflare driver can redeclare `quality` to accept integers and provider-specific presets such
+as `high`.
 
 Named Image Transforms store custom parameter values against the transformer UUID. This keeps values for transformers that
 use different parameter sets separate, even if the transformers share a driver.
@@ -219,15 +221,16 @@ production driver should use the service’s authenticated source-upload or sign
 
 ### The driver definition
 
-`AssetTransformDriverDefinition` describes the driver’s Control Panel and validation surface:
+`AssetTransformDriverDefinition` describes the driver’s Control Panel fields and validation behavior:
 
 - `name` is the human-readable driver name.
-- `parameterRules` maps custom parameter handles to Laravel validation rules.
+- `parameterRules` maps parameter handles to Laravel validation rules.
 - `settingsFields` contains `Field` nodes for configuring each transformer profile.
 - `parameterFields` maps parameter handles to `Field` nodes shown in named Image Transform forms.
 
-Core parameters are already available to every driver and should not be redeclared. A custom parameter that uses a core
-handle must use exactly the core validation rules; conflicting rules cause an `InvalidAssetTransformException`.
+Core rules are defaults. When a driver declares a core parameter handle, its rules replace the defaults for that driver.
+Named Image Transform values entered through a driver’s parameter field are stored against the transformer UUID and
+override the core value when that transformer is selected.
 The driver is responsible for validating any undeclared parameters it uses or passes to a remote service.
 
 Each settings field must use a single-segment Control path. The Control Panel only persists submitted settings declared

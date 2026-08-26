@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\Rule;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
@@ -278,7 +280,10 @@ it('rejects save when both width and height are missing', function () {
 it('saves custom parameters under the Asset Transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
     $payload = validTransformData([
-        'parameters' => [$transformer->uid => ['blur' => '5']],
+        'parameters' => [$transformer->uid => [
+            'blur' => '5',
+            'quality' => 'high',
+        ]],
     ]);
 
     postJson(action([ImageTransformsController::class, 'store']), $payload)->assertOk();
@@ -287,8 +292,11 @@ it('saves custom parameters under the Asset Transformer UUID', function () {
     $transform = app(ImageTransforms::class)->getTransformByHandle($payload['handle']);
 
     expect($transform->getCustomParameters())->toBe([
-        $transformer->uid => ['blur' => '5'],
-    ]);
+        $transformer->uid => [
+            'blur' => '5',
+            'quality' => 'high',
+        ],
+    ])->and($transform->getParameters($transformer->uid)['quality'])->toBe('high');
 });
 
 it('preserves parameters for a configured unavailable driver', function () {
@@ -354,9 +362,13 @@ class ControllerAssetTransformDriver implements AssetTransformDriver
     {
         return new AssetTransformDriverDefinition(
             'Custom',
-            parameterRules: ['blur' => ['integer', 'min:1']],
+            parameterRules: [
+                'blur' => ['integer', 'min:1'],
+                'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],
+            ],
             parameterFields: [
                 'blur' => Field::make(t('Blur'), Number::make('blur')->min(1)),
+                'quality' => Field::make(t('Remote Quality'), Text::make('quality')),
             ],
         );
     }

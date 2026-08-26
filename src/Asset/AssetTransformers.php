@@ -296,10 +296,6 @@ class AssetTransformers
                 throw new InvalidAssetTransformException('Asset Transform parameter handles must be non-empty strings.');
             }
 
-            if (isset($parameterRules[$handle]) && $parameterRules[$handle] != $rules) {
-                throw new InvalidAssetTransformException("Asset Transform parameter [{$handle}] conflicts with a core parameter.");
-            }
-
             $parameterRules[$handle] = $rules;
         }
 
@@ -322,7 +318,7 @@ class AssetTransformers
             $path = $field->getControl()?->path();
             $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
 
-            if (! is_string($handle) || ! isset($rules[$handle]) || $path !== $handle) {
+            if (! is_string($handle) || ! isset($definition->parameterRules[$handle], $rules[$handle]) || $path !== $handle) {
                 throw new InvalidAssetTransformException('Asset Transform parameter fields must match a declared parameter handle.');
             }
         }
