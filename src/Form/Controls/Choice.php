@@ -83,10 +83,43 @@ class Choice extends Control
         ];
     }
 
+    /**
+     * The options a single `<select>` offers, with somewhere to represent
+     * "nothing chosen" when the control permits it.
+     *
+     * A `<select>` with no selected option shows its first one, so an optional
+     * setting that has never been set looks set — and because nothing changed,
+     * saving posts nothing and it stays unset. A leading blank makes the empty
+     * state visible, and re-selectable once something has been chosen.
+     *
+     * A required control has no valid empty state to offer, and options that
+     * already carry an empty value supply their own.
+     *
+     * `ChoiceControl.vue`'s `selectOptions` mirrors this for the Vue renderer.
+     *
+     * @param  list<array<string, mixed>>  $options
+     * @return list<array<string, mixed>>
+     */
+    private static function selectOptions(array $options, bool $required): array
+    {
+        if ($required) {
+            return $options;
+        }
+
+        foreach ($options as $option) {
+            if (($option['value'] ?? null) === '') {
+                return $options;
+            }
+        }
+
+        return [['label' => '', 'value' => ''], ...$options];
+    }
+
     /** @param array<string, mixed> $attributes */
     private static function selectHtml(ControlPayload $control, mixed $value, array $attributes): string
     {
         return self::select($control, $attributes)
+            ->options(self::selectOptions($control->props['options'], (bool) $attributes['required']))
             ->name($attributes['name'])
             ->value(self::values($value)[0] ?? null)
             ->toHtml();
