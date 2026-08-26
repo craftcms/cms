@@ -282,13 +282,27 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ? []
             : $this->serializeValue($context->value, $context->element);
 
-        return ElementSelect::make($context->path)
+        return $this->selectControl($context)
             ->elementType(static::elementType())
             ->sources($sources)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
+            ->viewMode($this->viewMode())
             ->value($value);
+    }
+
+    /**
+     * The select Control this field relates through.
+     *
+     * Override to return an {@see ElementSelect} subclass carrying whatever
+     * the element type can do beyond plain relating — {@see Assets} returns an
+     * {@see AssetSelect}, which can also upload. Configure it here; the shared
+     * relation settings are applied by {@see formControl()} afterwards.
+     */
+    protected function selectControl(FieldContext $context): ElementSelect
+    {
+        return ElementSelect::make($context->path);
     }
 
     /**
@@ -528,6 +542,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                     ->value($selectionCondition->getConfig())));
         }
 
+        // @TODO this is showing for assets where it doesn't make sense
         $form->add(FormField::make(t('Maintain hierarchy'))
             ->instructions(t('Whether the structure of the related {type} should be maintained.', [
                 'type' => $elementType::pluralLowerDisplayName(),
@@ -546,6 +561,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         $form->add(
+            // @TODO This is showing for assets where it doesn't make sense
             FormField::make(t('Branch Limit'))
                 ->instructions(t('Limit the number of selectable {type} branches.', ['type' => $elementType::lowerDisplayName()]))
                 ->control(Number::make('branchLimit')->min(0)->value($this->branchLimit)),

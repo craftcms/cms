@@ -34,7 +34,12 @@ it('resolves and renders ordered element relationships', function () {
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($control->component)->toBe('craft:element-select')
-        ->and($control->props['elements'])->toMatchArray([
+        // Identity only; the payload also carries what the chip's own action
+        // menu needs (`url`, `canEdit`, `canCopy`, …), covered separately.
+        ->and(array_map(
+            fn (array $element) => array_intersect_key($element, array_flip(['id', 'label', 'siteId'])),
+            $control->props['elements'],
+        ))->toBe([
             ['id' => $second->id, 'label' => 'Second entry', 'siteId' => 1],
             ['id' => $first->id, 'label' => 'First entry', 'siteId' => 1],
         ])
