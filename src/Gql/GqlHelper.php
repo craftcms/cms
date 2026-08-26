@@ -290,7 +290,7 @@ class GqlHelper
             'format' => File::getExtensionByMimeType($asset->transform($definition, $immediately, $transformer)->mimeType),
             'height' => $asset->transform($definition, $immediately, $transformer)->height,
             'mimeType' => $asset->transform($definition, $immediately, $transformer)->mimeType,
-            'url' => $asset->getUrl($definition, $immediately, $transformer),
+            'url' => $asset->transform($definition, $immediately, $transformer)->url,
             'width' => $asset->transform($definition, $immediately, $transformer)->width,
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };

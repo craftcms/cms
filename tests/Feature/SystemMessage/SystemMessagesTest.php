@@ -42,7 +42,7 @@ it('generates asset transforms immediately while rendering system messages', fun
         'key' => 'asset-transform',
         'heading' => 'Asset transform',
         'subject' => 'Asset transform',
-        'body' => '{{ asset.getUrl({ width: 320 }) }}',
+        'body' => '{{ asset.transform({ width: 320 }).url }}',
     ]));
 
     $message = app(RenderSystemMessageAction::class)->handle('asset-transform', ['asset' => $asset]);

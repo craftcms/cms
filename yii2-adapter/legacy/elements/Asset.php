@@ -125,13 +125,13 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     }
 
     #[Override]
-    public function getUrl(mixed $transform = null, ?bool $immediately = null, ?string $transformer = null): ?string
+    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
         $previous = $this->_immediately;
         $this->_immediately = $immediately;
 
         try {
-            return parent::getUrl($transform ?? $this->_transform, $immediately, $transformer);
+            return parent::getUrl($transform ?? $this->_transform, $immediately);
         } finally {
             $this->_immediately = $previous;
         }
@@ -141,12 +141,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     protected function _tryTransform(
         #[\SensitiveParameter] mixed $definition,
         ?bool $immediately = null,
-        ?string $transformer = null,
     ): ?AssetTransformResult {
-        if ($transformer !== null) {
-            return parent::_tryTransform($definition, $immediately, $transformer);
-        }
-
         $immediately ??= $this->_immediately ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         try {
             return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $immediately);

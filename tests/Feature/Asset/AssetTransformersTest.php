@@ -21,6 +21,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -54,15 +55,18 @@ it('executes the selected configured transformer', function () {
         ->and($driver->request->immediately)->toBeTrue();
 });
 
-it('selects a transformer separately from URL transform parameters', function () {
+it('keeps getUrl transform arguments with a deprecation warning', function () {
     $driver = registerTransformer('remote');
+    Cms::config()->defaultAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
 
-    $url = $asset->getUrl(['width' => 320], transformer: 'remote');
+    $url = $asset->getUrl(['width' => 320]);
+    $deprecation = collect(Deprecator::getRequestLogs())->firstWhere('key', 'Asset::getUrl($transform)');
 
     expect($url)->toBe('/transforms/hero.webp')
         ->and($driver->request->transformer->handle)->toBe('remote')
-        ->and($driver->request->parameters)->toBe(['width' => 320]);
+        ->and($driver->request->parameters)->toBe(['width' => 320])
+        ->and($deprecation?->message)->toBe('Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.');
 });
 
 it('selects explicit, volume, and default transformers in that order', function () {

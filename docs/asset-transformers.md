@@ -23,7 +23,7 @@ saved with that missing driver.
 
 Craft selects one transformer for every transform request, in this order:
 
-1. The `transformer` handle in the transform definition.
+1. The `transformer` argument passed to `transform()`.
 2. The transformer assigned to the Asset’s volume.
 3. The [`defaultAssetTransformer`](../src/Config/GeneralConfig.php) general config setting, which defaults to `craft`.
 
@@ -38,13 +38,13 @@ $result = $asset->transform([
 $url = $result->url;
 ```
 
-The same override is available through `getUrl()` and Twig:
+The same override is available in Twig:
 
 ```twig
-<img src="{{ asset.getUrl({
+<img src="{{ asset.transform({
     width: 1200,
     format: 'webp',
-}, transformer: 'remote-images') }}" alt="">
+}, transformer: 'remote-images').url }}" alt="">
 ```
 
 GraphQL transform arguments also accept `transformer`:

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+
+#[AllowedInSandbox]
 readonly class AssetTransformResult
 {
     public function __construct(
