@@ -56,6 +56,21 @@ export const baseInputWrapperStyles = css`
   }
 `;
 
+/**
+ * @deprecated Use {@link baseFormControlStyles} on the control and
+ * {@link baseInputWrapperStyles} on its wrapper instead. This combined mixin
+ * predates that split and is kept only so existing imports of
+ * `baseInputStyles` keep working — it composes the two split mixins, so it
+ * still picks up fixes made to either of them (e.g. the removed
+ * `overflow: clip` that was clipping focus outlines), but applying one mixin
+ * to two different elements no longer reflects how the styles are actually
+ * structured. Migrate to the split versions when you can.
+ */
+export const baseInputStyles = css`
+  ${baseFormControlStyles}
+  ${baseInputWrapperStyles}
+`;
+
 export const baseComboboxStyles = css`
   ${baseFormControlStyles}
   width: 100%;
