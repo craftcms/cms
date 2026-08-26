@@ -1,11 +1,10 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {html} from 'lit';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { html } from 'lit';
 import type CraftIcon from './icon.js';
 import './icon.js';
-import {defaultIconResolver, setIconResolver} from '../../utilities/icons.js';
+import { defaultIconResolver, setIconResolver } from '../../utilities/icons.js';
 
-const SVG_BODY =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 0h448v512H0z"/></svg>';
+const SVG_BODY = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 0h448v512H0z"/></svg>';
 
 function stubFetch(body = SVG_BODY, ok = true) {
   const mock = vi.fn().mockResolvedValue({
@@ -16,9 +15,7 @@ function stubFetch(body = SVG_BODY, ok = true) {
   return mock;
 }
 
-async function createIcon(
-  attrs: Record<string, string> = {}
-): Promise<CraftIcon> {
+async function createIcon(attrs: Record<string, string> = {}): Promise<CraftIcon> {
   const element = document.createElement('craft-icon') as CraftIcon;
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);
@@ -43,25 +40,23 @@ afterEach(() => {
 describe('craft-icon', () => {
   it('fetches the icon from the solid folder by default', async () => {
     const fetchMock = stubFetch();
-    await createIcon({name: 'pencil'});
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/vendor/craft/icons/solid/pencil.svg',
-      {mode: 'cors'}
-    );
+    await createIcon({ name: 'pencil' });
+    expect(fetchMock).toHaveBeenCalledWith('/vendor/craft/icons/solid/pencil.svg', {
+      mode: 'cors',
+    });
   });
 
   it('resolves variant-prefixed names', async () => {
     const fetchMock = stubFetch();
-    await createIcon({name: 'custom-icons/graphql'});
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/vendor/craft/icons/custom-icons/graphql.svg',
-      {mode: 'cors'}
-    );
+    await createIcon({ name: 'custom-icons/graphql' });
+    expect(fetchMock).toHaveBeenCalledWith('/vendor/craft/icons/custom-icons/graphql.svg', {
+      mode: 'cors',
+    });
   });
 
   it('renders the fetched svg with fill=currentColor', async () => {
     stubFetch();
-    const element = await createIcon({name: 'house'});
+    const element = await createIcon({ name: 'house' });
     const svg = element.shadowRoot!.querySelector('svg');
     expect(svg).not.toBeNull();
     expect(svg!.getAttribute('fill')).toBe('currentColor');
@@ -70,13 +65,7 @@ describe('craft-icon', () => {
   it('resolves icons through the configured Lion icon resolver', async () => {
     const fetchMock = stubFetch();
     setIconResolver(
-      (name, family, variant) => html`
-        <svg
-          data-name=${name}
-          data-family=${family}
-          data-variant=${variant}
-        ></svg>
-      `
+      (name, family, variant) => html` <svg data-name=${name} data-family=${family} data-variant=${variant}></svg> `,
     );
 
     const element = await createIcon({
@@ -94,21 +83,21 @@ describe('craft-icon', () => {
 
   it('only fetches once per URL', async () => {
     const fetchMock = stubFetch();
-    await createIcon({name: 'clock'});
-    await createIcon({name: 'clock'});
+    await createIcon({ name: 'clock' });
+    await createIcon({ name: 'clock' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('is aria-hidden without a label', async () => {
     stubFetch();
-    const element = await createIcon({name: 'house'});
+    const element = await createIcon({ name: 'house' });
     expect(element.getAttribute('aria-hidden')).toBe('true');
     expect(element.hasAttribute('role')).toBe(false);
   });
 
   it('exposes role=img and aria-label with a label', async () => {
     stubFetch();
-    const element = await createIcon({name: 'house', label: 'Home'});
+    const element = await createIcon({ name: 'house', label: 'Home' });
     expect(element.getAttribute('role')).toBe('img');
     expect(element.getAttribute('aria-label')).toBe('Home');
     expect(element.hasAttribute('aria-hidden')).toBe(false);
@@ -129,7 +118,7 @@ describe('craft-icon', () => {
 
   it('defaults badges to the warning color', async () => {
     stubFetch();
-    const element = await createIcon({name: 'house', appearance: 'badge'});
+    const element = await createIcon({ name: 'house', appearance: 'badge' });
     expect(element.getAttribute('data-color')).toBe('warning');
   });
 });
