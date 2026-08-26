@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {watch} from 'vue';
+  import {watch, computed} from 'vue';
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import BaseElementIndex from '@/modules/elements/components/BaseElementIndex.vue';
   import DataTable from '@/modules/elements/components/DataTable.vue';
@@ -67,12 +67,19 @@
   );
 
   defineExpose({selectedElements, hasSelection, clearSelection});
+
+  const showSidebar = computed(() => elementIndex.sources.length > 1);
 </script>
 
 <template>
-  <div class="modal-element-index">
+  <div
+    :class="{
+      'modal-element-index': true,
+      'modal-element-index--sidebar': showSidebar,
+    }"
+  >
     <nav
-      v-if="elementIndex.sources.length > 1"
+      v-if="showSidebar"
       class="modal-element-index__sidebar"
       :aria-label="t('Sources')"
     >
@@ -119,19 +126,19 @@
             @reorder="reorder"
           />
         </template>
-        <template #body>
+        <template #body="{selection}">
           <!-- Double-click chooses, matching the legacy modal's doubletap. -->
           <div @dblclick="emit('choose', selectedElements)">
             <ElementCards
               v-if="mode === 'cards'"
-              :table="table"
+              :selection="selection"
               :data="elementIndex.data"
               :selectable="true"
               :loading="loading"
             />
             <ElementThumbs
               v-else-if="mode === 'thumbs'"
-              :table="table"
+              :selection="selection"
               :data="elementIndex.data"
               :selectable="true"
               :loading="loading"
@@ -153,9 +160,12 @@
 <style lang="scss" scoped>
   .modal-element-index {
     display: grid;
-    grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
     background-color: var(--c-color-neutral-fill-quiet);
     height: 100%;
+  }
+
+  .modal-element-index--sidebar {
+    grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
   }
 
   .modal-element-index__sidebar {

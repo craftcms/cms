@@ -11,7 +11,7 @@
   const props = withDefaults(
     defineProps<{
       /** The ids of the elements currently selected in the index. */
-      selectedIds: Array<string | number>;
+      selectedIds: ReadonlyArray<string | number>;
       /** The serialized bulk action descriptors for the active source. */
       actions?: Array<BulkActionItem> | null;
       /** The element type class string, posted to the perform endpoint. */
