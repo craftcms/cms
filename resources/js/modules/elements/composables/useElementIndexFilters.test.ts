@@ -1,20 +1,27 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {ref} from 'vue';
+import {shallowRef} from 'vue';
 import {useElementIndexFilters} from './useElementIndexFilters';
 import type {ConditionConfig} from './useConditionBuilder';
 import type {ViewState} from '@/modules/elements/types/view-state';
+import type {IndexQueryParams} from './useElementIndexVisits';
+
+interface FilterData {
+  search?: string;
+  status?: string | null;
+  condition?: ConditionConfig;
+}
 
 // Capture the form's transform callback and submit arguments so the test can
 // assert what would actually go over the wire.
 const {submitSpy, transformState} = vi.hoisted(() => ({
   submitSpy: vi.fn(),
-  transformState: {callback: (data: object): object => data},
+  transformState: {callback: (data: FilterData): FilterData => data},
 }));
 
 vi.mock('@inertiajs/vue3', () => ({
-  useForm: (data: object) => ({
+  useForm: (data: FilterData) => ({
     ...data,
-    transform(callback: (data: object) => object) {
+    transform(callback: (data: FilterData) => FilterData) {
       transformState.callback = callback;
       return this;
     },
@@ -23,10 +30,21 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 const stubRoute = {
-  url: (query: Record<string, unknown> = {}) =>
+  url: (query: IndexQueryParams = {}) =>
     '/cp/content/entries' +
     (Object.keys(query).length
-      ? '?' + new URLSearchParams(query as Record<string, string>)
+      ? '?' +
+        new URLSearchParams(
+          Object.entries(query).map(([key, value]) => {
+            const encoded = JSON.stringify(value);
+            return [
+              key,
+              Object(value).constructor === String
+                ? encoded.slice(1, -1)
+                : encoded,
+            ];
+          })
+        )
       : ''),
 };
 
@@ -37,7 +55,7 @@ function makeViewState(): ViewState {
     nestedInputNamespace: null,
     showHeaderColumn: true,
     static: false,
-  } as ViewState;
+  };
 }
 
 describe('useElementIndexFilters', () => {
@@ -59,17 +77,14 @@ describe('useElementIndexFilters', () => {
 
     const {submit} = useElementIndexFilters(
       {status: null},
-      ref(makeViewState()),
+      shallowRef<ViewState>(makeViewState()),
       stubRoute,
-      ref(condition)
+      shallowRef(condition)
     );
 
     submit();
 
-    const data = transformState.callback({search: '', status: ''}) as Record<
-      string,
-      unknown
-    >;
+    const data = transformState.callback({search: '', status: ''});
     expect(data.condition).toEqual(condition);
   });
 
@@ -81,9 +96,9 @@ describe('useElementIndexFilters', () => {
     // rule's fields grouped under a stable numeric key.
     const {submit} = useElementIndexFilters(
       {status: null},
-      ref(makeViewState()),
+      shallowRef<ViewState>(makeViewState()),
       stubRoute,
-      ref({class: 'SomeCondition', conditionRules: []})
+      shallowRef({class: 'SomeCondition', conditionRules: []})
     );
 
     submit();

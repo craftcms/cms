@@ -1,4 +1,10 @@
 <script setup lang="ts">
+  /**
+   * The element editor without page chrome: it configures the surrounding
+   * layout through `useAppLayout()` and `LayoutSlot` rather than rendering one,
+   * so a host owns the header, form and footer. `ElementEditScreen` is the
+   * full-page counterpart.
+   */
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
@@ -7,15 +13,16 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import {useElementEditPage} from '@/modules/elements/composables/useElementEditPage';
+  import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
     /**
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => Record<string, unknown>;
+    saveData?: () => FormValues;
   }>();
 
   const {
@@ -34,7 +41,7 @@
     sidebarPayload,
     sidebarRenderer,
     submitAction,
-  } = useElementEditPage({saveData: props.saveData});
+  } = useElementEditor({saveData: props.saveData});
 
   // Alternate saves in the Save button's menu, and the buttons beside it.
   const formActionItems = computed(() =>
@@ -57,7 +64,7 @@
   const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
     // The entry type can be switched in the sidebar without saving, so the
     // settings slideout should follow the field rather than the stored value.
-    currentEntryTypeId: () => form.typeId,
+    currentEntryTypeId: () => form.typeId ?? null,
   });
 
   // "View" opens the element on the front end. The hrefs arrive ready to
@@ -108,6 +115,13 @@
     }
   });
 
+  const autosaveErrorCode = computed(() =>
+    autosave.status.value === 'failed' ? autosave.httpStatus.value : null
+  );
+
+  // 400 from a draft save means the session expired; reloading restores it.
+  const autosaveExpired = computed(() => autosaveErrorCode.value === 400);
+
   useAppLayout(() => ({
     title: payload.title,
     form,
@@ -147,7 +161,20 @@
       :class="{'text-danger-text': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
+      <code v-if="autosaveErrorCode" class="text-xs">{{
+        autosaveErrorCode
+      }}</code>
     </span>
+
+    <craft-button
+      v-if="autosaveExpired"
+      type="button"
+      appearance="outline"
+      size="small"
+      @click="reload"
+    >
+      {{ t('Refresh') }}
+    </craft-button>
   </LayoutSlot>
 
   <!-- Who else is working on this element, beside the save controls. -->
@@ -168,69 +195,71 @@
     </div>
   </LayoutSlot>
 
-  <craft-pane appearance="raised">
-    <craft-callout
-      v-if="activity.isStale.value"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
+  <craft-callout
+    v-if="activity.isStale.value"
+    variant="warning"
+    icon="triangle-exclamation"
+    class="mb-4"
+    appearance="fill"
+    rounded="none"
+  >
+    {{ staleMessage }}
+
+    <craft-button
+      slot="action"
+      type="button"
+      variant="outline"
+      size="small"
+      @click="reload"
+      inherit
     >
-      {{ staleMessage }}
+      {{ t('Reload') }}
+    </craft-button>
+  </craft-callout>
 
-      <craft-button
-        slot="action"
-        type="button"
-        appearance="outline"
-        size="small"
-        @click="reload"
-      >
-        {{ t('Reload') }}
-      </craft-button>
-    </craft-callout>
+  <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
+    {{ t('This is a read-only view.') }}
+  </craft-callout>
 
-    <craft-callout v-if="payload.readOnly" variant="neutral" icon="lock">
-      {{ t('This is a read-only view.') }}
-    </craft-callout>
+  <craft-callout
+    v-if="payload.notice"
+    variant="neutral"
+    icon="edit"
+    class="mb-4"
+  >
+    {{ payload.notice }}
 
-    <craft-callout
-      v-if="payload.notice"
-      variant="neutral"
-      icon="edit"
-      class="mb-4"
+    <craft-button
+      v-if="payload.canDiscardDraft"
+      slot="action"
+      type="button"
+      appearance="outline"
+      size="small"
+      @click="discardDraft"
     >
-      {{ payload.notice }}
+      {{ t('Discard changes') }}
+    </craft-button>
+  </craft-callout>
 
-      <craft-button
-        v-if="payload.canDiscardDraft"
-        slot="action"
-        type="button"
-        appearance="outline"
-        size="small"
-        @click="discardDraft"
-      >
-        {{ t('Discard changes') }}
-      </craft-button>
-    </craft-callout>
+  <craft-callout
+    v-if="payload.mergeNotice"
+    variant="warning"
+    icon="triangle-exclamation"
+    class="mb-4"
+  >
+    {{ payload.mergeNotice }}
+  </craft-callout>
 
-    <craft-callout
-      v-if="payload.mergeNotice"
-      variant="warning"
-      icon="triangle-exclamation"
-      class="mb-4"
-    >
-      {{ payload.mergeNotice }}
-    </craft-callout>
+  <FormRenderer
+    v-if="formPayload"
+    ref="renderer"
+    :payload="formPayload"
+    :errors="errors"
+    :modified="autosave.modified.value"
+    @update:mutation="onMutation"
+  />
 
-    <FormRenderer
-      v-if="formPayload"
-      ref="renderer"
-      :payload="formPayload"
-      :errors="errors"
-      @update:mutation="onMutation"
-    />
-
-    <slot :payload="payload" />
-  </craft-pane>
+  <slot :payload="payload" />
 
   <LayoutSlot
     v-if="sidebarPayload || payload.metadataHtml || $slots['details-header']"
@@ -249,6 +278,7 @@
       ref="sidebarRenderer"
       :payload="sidebarPayload"
       :errors="sidebarErrors"
+      :modified="autosave.modified.value"
       @update:mutation="onSidebarMutation"
     />
 

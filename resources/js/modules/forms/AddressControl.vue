@@ -86,11 +86,20 @@
     event: Event,
     kind: FormChangeKind
   ): void {
-    if ((event as CustomEvent).detail?.initialize) {
+    if (event instanceof CustomEvent && event.detail?.initialize) {
       return;
     }
 
-    const target = event.target as CraftInput | CraftSelect;
+    if (
+      !(
+        event.target instanceof CraftInput ||
+        event.target instanceof CraftSelect
+      )
+    ) {
+      throw new TypeError('Expected an address input event target.');
+    }
+
+    const target = event.target;
     const fieldValue = String(target.modelValue ?? '');
     if (value.value[field.name] === fieldValue) {
       return;
@@ -146,20 +155,17 @@
   function refreshParams(
     changedField: AddressFieldName,
     changedValue: AddressValue
-  ): Record<string, unknown> {
-    const params: Record<string, unknown> = {
+  ) {
+    return {
       namespace: inputName(props.control.path),
       countryCode: props.control.props.countryCode,
+      administrativeArea: ['administrativeArea', 'locality'].includes(
+        changedField
+      )
+        ? changedValue.administrativeArea
+        : undefined,
+      locality: changedField === 'locality' ? changedValue.locality : undefined,
     };
-
-    if (['administrativeArea', 'locality'].includes(changedField)) {
-      params.administrativeArea = changedValue.administrativeArea;
-    }
-    if (changedField === 'locality') {
-      params.locality = changedValue.locality;
-    }
-
-    return params;
   }
 
   function clearInvalidDownstreamValues(

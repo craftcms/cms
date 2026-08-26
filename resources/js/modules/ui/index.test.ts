@@ -12,7 +12,7 @@ it('creates text inputs without the legacy Garnish behavior', async () => {
 
   await import('./index');
 
-  const input = (window.Craft as any).ui.createTextInput({
+  const input = window.Craft.ui.createTextInput({
     name: 'label',
     value: 'Option',
   })[0];

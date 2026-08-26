@@ -1,10 +1,18 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
+  import {t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {computed, reactive, ref, useId} from 'vue';
   import {CraftElementSelectInput} from '@/modules/element-select-input';
-  import type {FormChangeKind, FormControlPayload} from './types';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItem} from '@/common/types';
+  import type {
+    FormChangeKind,
+    FormControlPayload,
+    FormProperties,
+  } from './types';
   import {inputName} from './runtime';
+  import VarDump from '@/common/components/VarDump.vue';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -16,7 +24,7 @@
     siteId?: number | string | null;
   };
   type ElementInfo = ElementPresentation & {
-    $element?: {data?: (key: string) => unknown};
+    $element?: {data?: (key: string) => string | number | null | undefined};
   };
   type ElementSelectElement =
     | 'craft-element-select-input'
@@ -27,7 +35,7 @@
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
     sources: string[] | null;
-    criteria: Record<string, unknown>;
+    criteria: FormProperties;
     selectionLabel: string;
     limit: number | null;
     showSiteMenu: boolean;
@@ -63,6 +71,7 @@
       limit: props.control.props.limit,
       showSiteMenu: props.control.props.showSiteMenu,
       sortable: false,
+      showActionMenu: false,
       modalSettings: {modalTitle: props.control.props.selectionLabel},
     })
   );
@@ -85,9 +94,47 @@
     );
   }
 
+  /**
+   * The chip's action menu items — the Vue equivalent of the Replace/Remove
+   * actions `BaseElementSelectInput::defineElementActions()` injects into the
+   * Twig stack's chips, under the same conditions (`allowRemove`, which is
+   * `editable` here, plus an element type for Replace). Move forward/backward
+   * are omitted because this control isn't sortable.
+   *
+   * Both hand off to `<craft-element-select-input>`, so the modal flow and the
+   * multi-select-aware removal stay in the input where they already live.
+   */
+  function chipActions(value: number | string): ActionItem[] {
+    if (!props.editable) {
+      return [];
+    }
+
+    const id = elementId(value);
+    const actions: ActionItem[] = [];
+
+    if (props.control.props.elementType) {
+      actions.push({
+        icon: 'arrows-rotate',
+        label: t('Replace'),
+        onClick: () => elementSelect.value?.replaceElement(id),
+      });
+    }
+
+    actions.push({
+      icon: 'remove',
+      label: t('Remove'),
+      onClick: () => elementSelect.value?.removeElement(id),
+    });
+
+    return actions;
+  }
+
   function selected(event: Event): void {
-    const elements = (event as CustomEvent<{elements?: ElementInfo[]}>)?.detail
-      ?.elements;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+
+    const elements: ElementInfo[] | undefined = event.detail?.elements;
     elements?.forEach((element) => {
       const selectedId = Number(element.id);
       presentations.set(selectedId, {
@@ -149,6 +196,12 @@
               :name="`${inputName(control.path)}[]`"
               :value="String(elementId(selectedValue))"
             />
+            <div slot="suffix">
+              <ActionMenu
+                v-if="editable"
+                :actions="chipActions(selectedValue)"
+              />
+            </div>
           </craft-chip>
         </li>
       </ul>

@@ -5,6 +5,8 @@ import './types/globals.js';
 import './types/events.js';
 import './types/index.js';
 
+export type {ActionFeedback, BaseAction} from './actions/index.js';
+
 export {default as CraftActionItem} from './components/action-item/action-item.js';
 export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
@@ -90,6 +92,7 @@ export {
   type TextExpanderOption,
   type TextExpanderSelectDetail,
   type TextExpanderTrigger,
+  type TextExpanderTriggerBoundary,
   type TextExpanderTriggers,
 } from './components/text-expander/text-expander.js';
 export {default as CraftTooltip} from './components/tooltip/tooltip.js';
@@ -133,7 +136,10 @@ export * from './types/index.js';
 // Web component styles
 export * from './styles/form.styles.js';
 export {default as hostStyles} from './styles/host.styles.js';
-export {default as variantStyles} from './styles/variants.styles.js';
+export {
+  default as variantStyles,
+  paletteStyles,
+} from './styles/variants.styles.js';
 export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.js';
 
 // Constants

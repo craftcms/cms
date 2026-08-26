@@ -7,7 +7,7 @@
  * it, and the former shouldn't have to pull in `@craftcms/ui` for a helper.
  */
 export function firstMessages(
-  errors: Record<string, unknown>
+  errors: Record<string, string | string[] | null>
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(errors).map(([field, value]) => [

@@ -178,7 +178,7 @@ function headingButton(level: 4 | 5 | 6, title: string): CraftToolbarButton {
 function customizeToolbarButton(
   button: ToolbarButton,
   title: string,
-  icon: string,
+  icon: keyof typeof customIcons,
   optionName = button.name,
   isActive?: ToolbarActiveState
 ): CraftToolbarButton {
@@ -193,7 +193,7 @@ function customizeToolbarButton(
 
 function customToolbarButton(
   name: string,
-  icon: string,
+  icon: keyof typeof customIcons,
   title: string,
   action: ToolbarAction,
   actionId?: string,

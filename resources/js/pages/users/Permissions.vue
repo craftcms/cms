@@ -3,22 +3,20 @@
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import PermissionTree from '@craftcms/ui/vue/CraftPermissionTree.vue';
   import UserGroupSelect from '@/modules/user/components/UserGroupSelect.vue';
   import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PermissionsController';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
   });
 
   type UserPermissionsPageProps =
-    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel & {
-      details?: string | null;
-    };
+    CraftCms.Cms.Http.ViewModels.UserPermissionsViewModel;
 
   const props = usePage<UserPermissionsPageProps>().props;
 
@@ -69,14 +67,18 @@
 </script>
 
 <template>
-  <input type="hidden" data-user-groups-input :value="form.groups.join(',')" />
-  <input
-    type="hidden"
-    data-user-permissions-input
-    :value="form.permissions.join(',')"
-  />
+  <UserScreen>
+    <input
+      type="hidden"
+      data-user-groups-input
+      :value="form.groups.join(',')"
+    />
+    <input
+      type="hidden"
+      data-user-permissions-input
+      :value="form.permissions.join(',')"
+    />
 
-  <craft-pane appearance="raised">
     <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
       <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
@@ -141,9 +143,5 @@
         />
       </craft-field-group>
     </craft-field-group>
-  </craft-pane>
-
-  <LayoutSlot v-if="props.details" name="details">
-    <div v-html="props.details"></div>
-  </LayoutSlot>
+  </UserScreen>
 </template>

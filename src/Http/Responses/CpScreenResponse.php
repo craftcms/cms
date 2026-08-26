@@ -7,12 +7,9 @@ namespace CraftCms\Cms\Http\Responses;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\MenuHtml;
-use CraftCms\Cms\Cp\Icons;
-use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -91,20 +88,6 @@ class CpScreenResponse implements Responsable
      * @see selectedSubnavItem()
      */
     public ?string $selectedSubnavItem = null;
-
-    /**
-     * @var Site|null The site that should be displayed within the breadcrumbs.
-     *
-     * @see Site()
-     */
-    public ?Site $site = null;
-
-    /**
-     * @var array<Site|array{site:Site,status?:string}>|null The sites that should be selectable by the site breadcrumb menu.
-     *
-     * @see selectableSites()
-     */
-    public ?array $selectableSites = null;
 
     /**
      * @var list<array<string, mixed>>|callable|null Breadcrumbs.
@@ -339,14 +322,24 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the breadcrumbs.
      *
-     * Breadcrumbs should be defined by arrays with the following keys:
+     * A breadcrumb is shaped like a link action item, so the same array can be
+     * used as a crumb and as an entry in another crumb's menu:
      *
      * - `label` – The breadcrumb label, to be HTML-encoded
-     * - `url` – The URL that the breadcrumb should link to
-     * - `icon` – The icon which should be displayed beside the label
-     * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
-     * - `current` – Whether the breadcrumb represents the current page
+     * - `href` – The URL the breadcrumb links to. Absolute: nothing normalizes
+     *   it downstream, so build it with [[\CraftCms\Cms\Support\Url::cpUrl()]]
+     * - `icon` – The icon displayed beside the label
+     *
+     * Plus three keys only a crumb uses:
+     *
+     * - `html` – Server-rendered crumb content (e.g. an element chip), used
+     *   instead of `label`
+     * - `attrs` – Extra HTML attributes for the crumb
+     * - `actions` – A dropdown of link action items shown alongside the crumb
+     *   (e.g. the other sections available from an entry's section crumb)
+     *
+     * The last crumb is treated as the current page — `aria-current` is derived
+     * from position, so there is no `current` key.
      *
      * This will only be used by full-page screens.
      */
@@ -371,30 +364,8 @@ class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => $url ? Url::cpUrl($url) : null,
+            'href' => $url ? Url::cpUrl($url) : null,
         ];
-
-        return $this;
-    }
-
-    /**
-     * Sets the site that should be displayed within the breadcrumbs.
-     */
-    public function site(?Site $value): self
-    {
-        $this->site = $value;
-
-        return $this;
-    }
-
-    /**
-     * Sets the sites that should be selectable by the site breadcrumb menu.
-     *
-     * @param  array<Site|array{site:Site,status?:string}>|null  $value
-     */
-    public function selectableSites(?array $value): self
-    {
-        $this->selectableSites = $value;
 
         return $this;
     }
@@ -990,22 +961,6 @@ class CpScreenResponse implements Responsable
         $pageSidebar = is_callable($this->pageSidebarHtml) ? call_user_func($this->pageSidebarHtml) : $this->pageSidebarHtml;
         $errorSummary = is_callable($this->errorSummary) ? call_user_func($this->errorSummary) : $this->errorSummary;
 
-        if (isset($this->site) && Sites::isMultiSite()) {
-            array_unshift($crumbs, [
-                'id' => 'site-crumb',
-                'icon' => Icons::earth(),
-                'label' => t($this->site->getName(), category: 'site'),
-                'menu' => [
-                    'label' => t('Select site'),
-                    'items' => ! empty($this->selectableSites)
-                        ? app(MenuHtml::class)->siteMenuItems($this->selectableSites, $this->site, [
-                            'includeOmittedSites' => true,
-                        ])
-                        : null,
-                ],
-            ]);
-        }
-
         if ($this->action) {
             $content .= Html::actionInput($this->action, [
                 'class' => 'action-input',
@@ -1028,13 +983,7 @@ class CpScreenResponse implements Responsable
             'docTitle' => $docTitle,
             'title' => $this->title,
             'selectedSubnavItem' => $this->selectedSubnavItem,
-            'crumbs' => array_map(function (array $crumb): array {
-                if (isset($crumb['url'])) {
-                    $crumb['url'] = Url::cpUrl($crumb['url']);
-                }
-
-                return $crumb;
-            }, $crumbs ?? []),
+            'crumbs' => $crumbs,
             'contextMenu' => $this->contextMenu(),
             'toolbar' => $toolbar,
             'actionMenuItems' => $this->actionMenuItemProps(),

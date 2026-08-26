@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Form;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Address;
+use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -16,6 +17,8 @@ use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Form\Controls\FieldSelect;
+use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Hidden;
@@ -47,6 +50,7 @@ class FormControlTypes extends TypeRegistry
 
     protected const array DEFAULT_TYPES = [
         Address::class,
+        Checkbox::class,
         Choice::class,
         ConditionBuilder::class,
         Color::class,
@@ -56,6 +60,8 @@ class FormControlTypes extends TypeRegistry
         DateTime::class,
         ElementSelect::class,
         FieldLayoutDesigner::class,
+        FieldSelect::class,
+        FilesystemSelect::class,
         GroupedEntryTypeManager::class,
         Handle::class,
         Hidden::class,

@@ -12,6 +12,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
   import {
     creationOptions,
     verifyCreation,
@@ -30,7 +31,7 @@
   // survives the browser's WebAuthn prompt during registration.
   const ELEVATED_SETUP_SECONDS = 300;
 
-  const craft = (window as any).Craft;
+  const craft = window.Craft;
 
   const supported = ref(true);
   const adding = ref(false);
@@ -194,37 +195,39 @@
 </script>
 
 <template>
-  <craft-pane>
-    <div class="grid gap-4">
-      <div>
-        <h2>{{ t('Passkeys') }}</h2>
-        <p>
-          {{
-            t(
-              'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
-            )
-          }}
-        </p>
+  <UserScreen>
+    <craft-pane>
+      <div class="grid gap-4">
+        <div>
+          <h2>{{ t('Passkeys') }}</h2>
+          <p>
+            {{
+              t(
+                'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
+              )
+            }}
+          </p>
+        </div>
+
+        <craft-callout v-if="!supported" variant="warning">
+          {{ t('This browser doesn’t support passkeys.') }}
+        </craft-callout>
+
+        <craft-pane :padding="0" appearance="raised">
+          <AdminTable :table="table" />
+        </craft-pane>
+
+        <div v-if="supported">
+          <craft-button
+            type="button"
+            icon="plus"
+            :loading="adding"
+            @click="addPasskey"
+          >
+            {{ t('Add a passkey') }}
+          </craft-button>
+        </div>
       </div>
-
-      <craft-callout v-if="!supported" variant="warning">
-        {{ t('This browser doesn’t support passkeys.') }}
-      </craft-callout>
-
-      <craft-pane :padding="0" appearance="raised">
-        <AdminTable :table="table" />
-      </craft-pane>
-
-      <div v-if="supported">
-        <craft-button
-          type="button"
-          icon="plus"
-          :loading="adding"
-          @click="addPasskey"
-        >
-          {{ t('Add a passkey') }}
-        </craft-button>
-      </div>
-    </div>
-  </craft-pane>
+    </craft-pane>
+  </UserScreen>
 </template>

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands\Concerns;
 
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
 use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
+use CraftCms\Cms\Asset\Models\AssetIndexingSession;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
@@ -138,7 +138,7 @@ trait IndexesAssets
         Volume $volume,
         string $path,
         int $startAt,
-        IndexingSession $session,
+        AssetIndexingSession $session,
     ): array {
         $this->components->twoColumnDetail("Indexing assets in <fg=cyan>{$volume->name}</>");
 

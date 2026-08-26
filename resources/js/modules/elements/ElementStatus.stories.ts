@@ -1,6 +1,13 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import ElementStatus from './ElementStatus.vue';
 
+interface ElementStatusArgs {
+  label?: string;
+  value: string | number;
+  mode?: 'badge' | 'inline';
+  color?: string | {value: string};
+}
+
 const meta = {
   title: 'Elements/ElementStatus',
   component: ElementStatus,
@@ -15,10 +22,10 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof ElementStatus>;
+} satisfies Meta<ElementStatusArgs>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<ElementStatusArgs>;
 
 export const Default: Story = {
   args: {value: 'live'},

@@ -1,19 +1,34 @@
 import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
 import {uiLayerManager} from '@/modules/slideout/slideout';
+import type {FormValues} from '@/modules/forms/types';
+import type {AxiosRequestConfig} from 'axios';
 
 declare const Craft: any;
 declare const $: any;
 declare const axios: any;
 
 interface CpModalSettings {
-  params: Record<string, unknown>;
+  params: FormValues;
   containerElement: string;
-  containerAttributes: Record<string, unknown>;
-  requestOptions: Record<string, unknown>;
+  containerAttributes: Record<string, string>;
+  requestOptions: AxiosRequestConfig;
   closeOnSubmit: boolean;
   showSubmitButton: boolean;
-  onSubmit: (ev?: unknown) => void;
+  onSubmit: (event?: CpModalSubmitEvent) => void;
   onCancel: () => void;
+}
+
+interface CpModalSubmitEvent {
+  response: {data?: FormValues};
+  data: FormValues;
+}
+
+interface CpModalRequestError extends Error {
+  isAxiosError?: boolean;
+  response?: {
+    status?: number;
+    data?: {message?: string; errors?: Record<string, string[]>};
+  };
 }
 
 // Module-level (not a `static defaults`, which would collide with the base
@@ -159,7 +174,7 @@ export class CpModal extends Modal {
     this.load();
   }
 
-  load(data?: unknown, refreshInitialData?: boolean): Promise<void> {
+  load(data?: FormValues, refreshInitialData?: boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       this.trigger('beforeLoad');
       this.showLoadSpinner();
@@ -205,11 +220,11 @@ export class CpModal extends Modal {
               }
               resolve();
             })
-            .catch((e: unknown) => {
+            .catch((e: Error) => {
               reject(e);
             });
         })
-        .catch((e: unknown) => {
+        .catch((e: Error) => {
           if (!this.#ignoreFailedRequest) {
             Craft.cp.displayError();
             reject(e);
@@ -224,7 +239,7 @@ export class CpModal extends Modal {
     });
   }
 
-  getParams(): Record<string, unknown> {
+  getParams(): FormValues {
     return {};
   }
 
@@ -306,7 +321,7 @@ export class CpModal extends Modal {
       .then((response: any) => {
         this.handleSubmitResponse(response);
       })
-      .catch((error: unknown) => {
+      .catch((error: CpModalRequestError) => {
         this.handleSubmitError(error);
       })
       .finally(() => {
@@ -335,7 +350,7 @@ export class CpModal extends Modal {
     }
   }
 
-  handleSubmitError(error: any): void {
+  handleSubmitError(error: CpModalRequestError): void {
     if (
       !error.isAxiosError ||
       !error.response ||
@@ -374,7 +389,7 @@ export class CpModal extends Modal {
 
   isDirty(): boolean {
     const initialValue = this.#$container.data('initialSerializedValue');
-    if (typeof initialValue === 'undefined') {
+    if (initialValue === undefined) {
       return false;
     }
 

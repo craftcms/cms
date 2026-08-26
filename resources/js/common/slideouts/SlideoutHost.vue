@@ -17,12 +17,16 @@
   import {slideoutPanels} from './store';
   import {setAssetVersion} from './request';
 
+  const props = defineProps<{
+    assetVersion?: string;
+  }>();
+
   const panels = slideoutPanels();
-  const page = usePage();
+  const page = props.assetVersion === undefined ? usePage() : null;
 
   // Keep the version a slideout fetch sends in step with the loaded page.
   watch(
-    () => page.version,
+    () => props.assetVersion ?? page?.version,
     (version) => setAssetVersion(version ?? ''),
     {immediate: true}
   );

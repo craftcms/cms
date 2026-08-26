@@ -2,6 +2,7 @@ import '@craftcms/ui';
 import '../../packages/craftcms-legacy/cp/src/js/UI.js';
 import Cp from './bootstrap/cp.js';
 import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
+import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
 
@@ -50,5 +51,6 @@ import './modules/uploader';
 import './modules/nested-element-manager';
 import './modules/ui';
 
-window.Cp = Cp as unknown as typeof window.Cp;
+window.Cp = Cp;
 defineEntryFieldLayoutFormHost(Cp.$components);
+defineLayoutComponentSettingsFormHost(Cp.$components);

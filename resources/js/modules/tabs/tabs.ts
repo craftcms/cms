@@ -8,10 +8,17 @@ interface TabsSettings extends GarnishBaseSettings {
   handleCtrlClicks: boolean;
 }
 
+interface TabsEvent {
+  currentTarget: EventTarget | null;
+  key?: string;
+  originalEvent?: {metaKey?: boolean; ctrlKey?: boolean};
+  preventDefault(): void;
+}
+
+type TabsModifierEvent = NonNullable<TabsEvent['originalEvent']>;
+
 /** Cross-platform ctrl/⌘ check (Garnish.isCtrlKeyPressed equivalent). */
-function isCtrlKeyPressed(
-  ev: {metaKey?: boolean; ctrlKey?: boolean} | null
-): boolean {
+function isCtrlKeyPressed(ev: TabsModifierEvent | null | undefined): boolean {
   return !!(ev && (ev.metaKey || ev.ctrlKey));
 }
 
@@ -23,8 +30,8 @@ function siblingMatch(
 ): HTMLElement | null {
   let sib = dir === 'prev' ? el.previousElementSibling : el.nextElementSibling;
   while (sib) {
-    if (sib.matches(selector)) {
-      return sib as HTMLElement;
+    if (sib instanceof HTMLElement && sib.matches(selector)) {
+      return sib;
     }
     sib = dir === 'prev' ? sib.previousElementSibling : sib.nextElementSibling;
   }
@@ -91,7 +98,11 @@ export class Tabs extends Base<TabsSettings> {
     this.#menuBtnEl =
       this.container.querySelector<HTMLElement>(':scope > .menubtn');
     if ($ && this.#menuBtnEl) {
-      const $menuBtn = $(this.#menuBtnEl).disclosureMenu();
+      // SAFETY: CP pages install the disclosureMenu jQuery plugin before Tabs boots.
+      const $menuBtn = $(this.#menuBtnEl) as JQuery<HTMLElement> & {
+        disclosureMenu(): JQuery<HTMLElement>;
+      };
+      $menuBtn.disclosureMenu();
       this.#trigger = $menuBtn.data('trigger');
       this.#menuEl = this.#trigger?.$container?.[0] ?? null;
     }
@@ -136,14 +147,30 @@ export class Tabs extends Base<TabsSettings> {
     });
 
     for (const option of this.getMenuOptions()) {
-      this.addListener(option, 'activate', (ev: any) => {
-        const el = ev.currentTarget as HTMLElement;
+      this.addListener(option, 'activate', (ev) => {
+        if (!(ev.currentTarget instanceof HTMLElement)) {
+          return;
+        }
+        const el = ev.currentTarget;
         const href = el.getAttribute('href');
         if (this.settings!.handleCtrlClicks && href?.charAt(0) === '#') {
-          if (isCtrlKeyPressed(ev.originalEvent)) {
+          const originalEvent =
+            'originalEvent' in ev && ev.originalEvent instanceof Object
+              ? {
+                  metaKey:
+                    'metaKey' in ev.originalEvent &&
+                    ev.originalEvent.metaKey === true,
+                  ctrlKey:
+                    'ctrlKey' in ev.originalEvent &&
+                    ev.originalEvent.ctrlKey === true,
+                }
+              : undefined;
+          if (isCtrlKeyPressed(originalEvent)) {
             return;
           }
-          ev.preventDefault();
+          if ('preventDefault' in ev && ev.preventDefault instanceof Function) {
+            ev.preventDefault();
+          }
         }
 
         this.selectTab(el.dataset.id ?? null);
@@ -152,8 +179,11 @@ export class Tabs extends Base<TabsSettings> {
     }
   }
 
-  #handleNavKeydown(ev: any): void {
-    const current = ev.currentTarget as HTMLElement;
+  #handleNavKeydown(ev: TabsEvent): void {
+    if (!(ev.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const current = ev.currentTarget;
     let tab: HTMLElement | null = null;
 
     if (
@@ -239,7 +269,8 @@ export class Tabs extends Base<TabsSettings> {
     }
     this.#selectedTab = null;
 
-    this.trigger('deselectTab', {$tab: jq()?.(tabEl ?? undefined)});
+    const $ = jq();
+    this.trigger('deselectTab', {$tab: $ && tabEl ? $(tabEl) : undefined});
   }
 
   makeTabFocusable(tab: TabArg): void {
@@ -309,8 +340,8 @@ export class Tabs extends Base<TabsSettings> {
   }
 
   #getTab(tab: TabArg): HTMLElement | null {
-    if (typeof tab === 'number') {
-      return this.#tabs[tab] ?? null;
+    if (Number.isInteger(tab)) {
+      return this.#tabs[Number(tab)] ?? null;
     }
 
     if (tab instanceof HTMLElement) {
@@ -318,23 +349,27 @@ export class Tabs extends Base<TabsSettings> {
     }
 
     // jQuery object / array-like
-    if (tab && typeof tab === 'object' && tab[0] instanceof HTMLElement) {
+    if (tab instanceof Object && tab[0] instanceof HTMLElement) {
       return tab[0];
     }
 
-    if (typeof tab !== 'string') {
+    if (Object(tab).constructor !== String) {
       throw 'Invalid tab ID';
     }
 
-    const found = this.#tabs.find((t) => t.dataset.id === tab);
+    const tabId = String(tab);
+    const found = this.#tabs.find((t) => t.dataset.id === tabId);
     if (!found) {
-      throw `Invalid tab ID: ${tab}`;
+      throw `Invalid tab ID: ${tabId}`;
     }
     return found;
   }
 
   override destroy(): void {
-    jq()?.(this.container).removeData('tabs');
+    const $ = jq();
+    if ($ && this.container) {
+      $(this.container).removeData('tabs');
+    }
     super.destroy();
   }
 }

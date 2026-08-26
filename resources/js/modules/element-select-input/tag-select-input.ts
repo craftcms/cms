@@ -6,6 +6,7 @@ declare const Garnish: any;
 declare const $: any;
 
 const DEFAULTS = {
+  // SAFETY: The tag group ID remains nullable until supplied by the server-rendered field.
   tagGroupId: null as number | null,
 };
 
@@ -23,7 +24,7 @@ const DEFAULTS = {
  *   remain consistent with the legacy code and to rely on the compat alias.
  */
 export class TagSelectInput extends BaseElementSelectInput {
-  static override defaults: Record<string, any> = DEFAULTS;
+  static override defaults = {...BaseElementSelectInput.defaults, ...DEFAULTS};
 
   override searchTimeout: ReturnType<typeof setTimeout> | null = null;
   override searchMenu: any = null;
@@ -41,9 +42,9 @@ export class TagSelectInput extends BaseElementSelectInput {
     // Legacy compat: positional arguments (id, name, tagGroupId, sourceElementId)
     if (!$.isPlainObject(settings)) {
       const argNames = ['id', 'name', 'tagGroupId', 'sourceElementId'];
-      const normalized: Record<string, any> = {};
+      const normalized: Record<string, string | number | null | undefined> = {};
       for (let i = 0; i < argNames.length; i++) {
-        if (typeof restArgs[i] !== 'undefined') {
+        if (restArgs[i] !== undefined) {
           normalized[argNames[i]!] = restArgs[i];
         } else {
           break;
@@ -71,6 +72,7 @@ export class TagSelectInput extends BaseElementSelectInput {
       this.searchTimeout = setTimeout(this.searchForTags.bind(this), 500);
     });
 
+    // SAFETY: This listener is registered specifically for native keydown events.
     this.addListener(this.$addTagInput[0], 'keydown', ((ev: KeyboardEvent) => {
       if (ev.keyCode === RETURN_KEY) {
         ev.preventDefault();
@@ -159,7 +161,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     return $([]);
   }
 
-  override getElementSortAxis(): string | null {
+  override getElementSortAxis(): 'x' | 'y' | null {
     if (this.$container.parents('.inline-editing').length === 1) {
       return 'y';
     }

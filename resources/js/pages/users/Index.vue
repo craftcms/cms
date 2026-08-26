@@ -3,12 +3,20 @@
   import {usePage} from '@inertiajs/vue3';
   import CpLink from '@/common/components/CpLink.vue';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
-  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import {
+    appendIndexQuery,
+    type ElementIndexRoute,
+  } from '@/modules/elements/composables/useElementIndexVisits';
   import type {Source} from '@/modules/elements/types/sources';
   import {index} from '@routes/cp/users';
   import {create} from '@actions/Users/UsersController';
 
-  const page = usePage<CraftCms.Cms.Http.ViewModels.UserIndexViewModel>();
+  type UserIndexPage = Omit<
+    CraftCms.Cms.Http.ViewModels.UserIndexViewModel,
+    'sources'
+  > & {sources: Source[]};
+
+  const page = usePage<UserIndexPage>();
 
   // Every user source publishes a URL slug (`all`, `admins`, `credentialed`,
   // `inactive`, and each group's handle), keyed here by source key so switching
@@ -27,7 +35,7 @@
       }
     };
 
-    collect((page.props.sources ?? []) as Source[]);
+    collect(page.props.sources ?? []);
 
     return slugs;
   });
@@ -38,7 +46,7 @@
   // keeps riding along as `?source=` on the bare `users` URL.
   const route: ElementIndexRoute = {
     url: (query = {}) => {
-      const {source, ...rest} = query as Record<string, unknown>;
+      const {source, ...rest} = query;
       const slug =
         source != null
           ? sourceSlugs.value.get(String(source))
@@ -48,7 +56,7 @@
         rest.source = source;
       }
 
-      return index.url({slug}, {query: rest as Record<string, string>});
+      return appendIndexQuery(index.url({slug}), rest);
     },
   };
 </script>

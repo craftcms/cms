@@ -2,7 +2,7 @@ import type {DefineComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
 
-export type InertiaPageComponent = DefineComponent;
+export type InertiaPageComponent = DefineComponent<any, any, any>;
 
 export type InertiaPageModule = {
   default: InertiaPageComponent;
@@ -15,6 +15,16 @@ export type InertiaPageLoader = () => MaybePromise<
 export type InertiaPageRegistration = InertiaPageComponent | InertiaPageLoader;
 
 export type InertiaPageGlob = Record<string, InertiaPageLoader>;
+
+function isPageLoader(
+  registration: InertiaPageRegistration
+): registration is InertiaPageLoader {
+  return (
+    registration instanceof Function &&
+    !('render' in registration) &&
+    !('setup' in registration)
+  );
+}
 
 const coreInertiaPages = import.meta.glob<InertiaPageModule>(
   '../pages/**/*.vue'
@@ -46,8 +56,7 @@ export function createInertiaPageRegistry(): InertiaPageRegistry {
         return undefined;
       }
 
-      const resolvedPage =
-        typeof page === 'function' ? await (page as InertiaPageLoader)() : page;
+      const resolvedPage = isPageLoader(page) ? await page() : page;
 
       if ('default' in resolvedPage) {
         return resolvedPage.default;

@@ -17,6 +17,7 @@
 
 import {ref, shallowRef, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {SlideoutController} from './types';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- the legacy CP globals
    are untyped, and typing them here would only describe one caller's slice. */
@@ -34,7 +35,7 @@ export interface ElementEditorRegions {
 
 export interface UseElementEditorOptions {
   /** `screen.elementEditorSettings`, absent on every other kind of screen. */
-  settings: () => Record<string, any> | null | undefined;
+  settings: () => ScreenPageProps | null | undefined;
   /** The panel's input namespace, which the editor sends with every save. */
   namespace: () => string | null | undefined;
   regions: ElementEditorRegions;
@@ -77,8 +78,14 @@ export interface ElementEditorBridge {
   destroy: () => void;
 }
 
-const craft = (): any => (window as any).Craft;
-const jquery = (): any => (window as any).jQuery;
+const craft = () => window.Craft;
+const jquery = (): JQueryStatic => {
+  if (!window.jQuery) {
+    throw new Error('ElementEditor requires jQuery.');
+  }
+
+  return window.jQuery;
+};
 
 export function useElementEditor(
   options: UseElementEditorOptions
@@ -181,7 +188,7 @@ export function useElementEditor(
    * markup it decorates is the same server HTML, so the same jQuery does the
    * job — the only difference is where the regions come from.
    */
-  function showErrors(errors: Record<string, unknown>): void {
+  function showErrors(errors: Record<string, string[]>): void {
     const Craft = craft();
     const form = toValue(options.regions.form);
 
@@ -275,7 +282,7 @@ export function useElementEditor(
       $summary.find('ul.errors li').each((_j: number, error: HTMLElement) => {
         const uid = $(error).find('a').data('layout-tab');
 
-        if (typeof uid !== 'undefined' && uid !== paneUid) {
+        if (uid !== undefined && uid !== paneUid) {
           $(error).remove();
           count--;
         }
@@ -354,7 +361,7 @@ export function useElementEditor(
     const form = toValue(options.regions.form);
     const Craft = craft();
 
-    if (!settings || !form || !Craft?.ElementEditor || !jquery()) {
+    if (!settings || !form || !Craft?.ElementEditor || !window.jQuery) {
       return;
     }
 

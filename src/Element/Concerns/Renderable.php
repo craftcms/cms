@@ -81,7 +81,7 @@ trait Renderable
         if ($providerHandle = $this->getFieldLayout()?->provider?->getHandle()) {
             $templates[] = [
                 'template' => sprintf('%s/%s/%s', Cms::config()->partialTemplatesPath, $refHandle, $providerHandle),
-                'priority' => 1,
+                'priority' => 2,
             ];
         }
 

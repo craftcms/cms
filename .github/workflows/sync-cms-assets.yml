@@ -12,6 +12,14 @@ on:
 permissions:
   contents: read
 
+# A tag push and its accompanying branch push (e.g. cutting a release) can trigger two runs for the same
+# commit at the same instant. Queue same-commit runs instead of letting them install frontend dependencies
+# concurrently, since simultaneous installs hit the private FontAwesome kit registry with the same token
+# and can come back with an incomplete package.
+concurrency:
+  group: sync-cms-assets-${{ github.sha }}
+  cancel-in-progress: false
+
 jobs:
   sync:
     name: Sync CMS assets

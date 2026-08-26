@@ -94,25 +94,35 @@
               elementIds: props.selectedIds,
             },
           },
-        } as ActionItem;
+        } satisfies ActionItem;
+      }
+
+      if (item.action.type === 'http' || item.action.type === 'download') {
+        return {
+          type: 'button',
+          label: item.label,
+          variant,
+          action: {
+            ...item.action,
+            body: {
+              ...item.action.body,
+              elementType: props.elementType,
+              source: props.source,
+              context: props.context,
+              elementIds: props.selectedIds,
+            },
+          },
+          feedback: {success: {message: t('Done')}},
+        } satisfies ActionItem;
       }
 
       return {
         type: 'button',
         label: item.label,
         variant,
-        action: {
-          ...item.action,
-          body: {
-            ...item.action.body,
-            elementType: props.elementType,
-            source: props.source,
-            context: props.context,
-            elementIds: props.selectedIds,
-          },
-        },
+        action: item.action,
         feedback: {success: {message: t('Done')}},
-      } as ActionItem;
+      } satisfies ActionItem;
     })
   );
 
@@ -124,7 +134,10 @@
    * so no refresh/`performed` is emitted.
    */
   function onCopyElements(event: Event) {
-    const detail = (event as CustomEvent).detail ?? {};
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const detail = event.detail ?? {};
     const ids: Array<string | number> = detail.elementIds ?? props.selectedIds;
 
     Craft.cp?.copyElements?.(
@@ -149,7 +162,10 @@
    * table + clear selection. (Other states drive the item's own spinner/feedback.)
    */
   function onChangeState(event: Event) {
-    const detail = (event as CustomEvent).detail;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const detail = event.detail;
     if (detail?.state === 'success' && detail?.actionType === 'http') {
       emit('performed');
     }

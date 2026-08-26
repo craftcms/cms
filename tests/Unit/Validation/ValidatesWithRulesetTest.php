@@ -6,6 +6,7 @@ use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
 use CraftCms\Cms\Validation\ValidatableRules;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 
 function createValidatableComponent(array $attributes, ?string $rulesetClass = null): Validatable
@@ -98,14 +99,15 @@ class PlainValidatable implements Validatable
 {
     use Validates;
 
-    public bool $prepareForValidationCalled = false;
+    public int $prepareForValidationCalls = 0;
 
-    public bool $passedValidationCalled = false;
+    public int $passedValidationCalls = 0;
 
-    public bool $afterValidateCalled = false;
+    public int $afterValidateCalls = 0;
 
     public function __construct(
         private array $testAttributes,
+        private bool $throwAfterValidation = false,
     ) {}
 
     public function setAttributes(array $values): void
@@ -125,19 +127,30 @@ class PlainValidatable implements Validatable
         ];
     }
 
+    public function getMessages(): array
+    {
+        return [
+            'title.required' => 'Title is required.',
+        ];
+    }
+
     public function prepareForValidation(): void
     {
-        $this->prepareForValidationCalled = true;
+        $this->prepareForValidationCalls++;
     }
 
     public function passedValidation(): void
     {
-        $this->passedValidationCalled = true;
+        $this->passedValidationCalls++;
     }
 
     public function afterValidate(?Validator $validator = null): void
     {
-        $this->afterValidateCalled = true;
+        $this->afterValidateCalls++;
+
+        if ($this->throwAfterValidation) {
+            throw new RuntimeException('After validation failed.');
+        }
     }
 }
 
@@ -187,9 +200,9 @@ describe('validate', function () {
 
         expect($component->ruleset)->toBeFalse();
         expect($result)->toBeTrue();
-        expect($component->prepareForValidationCalled)->toBeTrue();
-        expect($component->passedValidationCalled)->toBeTrue();
-        expect($component->afterValidateCalled)->toBeTrue();
+        expect($component->prepareForValidationCalls)->toBe(1);
+        expect($component->passedValidationCalls)->toBe(1);
+        expect($component->afterValidateCalls)->toBe(1);
     });
 
     test('stores errors from fallback ruleset when no ruleset is configured', function () {
@@ -200,9 +213,9 @@ describe('validate', function () {
         expect($component->ruleset)->toBeFalse();
         expect($result)->toBeFalse();
         expect($component->errors()->has('title'))->toBeTrue();
-        expect($component->prepareForValidationCalled)->toBeTrue();
-        expect($component->passedValidationCalled)->toBeFalse();
-        expect($component->afterValidateCalled)->toBeTrue();
+        expect($component->prepareForValidationCalls)->toBe(1);
+        expect($component->passedValidationCalls)->toBe(0);
+        expect($component->afterValidateCalls)->toBe(1);
     });
 
     test('passes attribute names to prepareForValidation', function () {
@@ -251,6 +264,45 @@ describe('validate', function () {
         $component->validate();
 
         expect($component->afterValidateCalled)->toBeTrue();
+    });
+
+    test('runs the validation lifecycle once when throwing validation passes', function () {
+        $component = new PlainValidatable(['title' => 'Test']);
+
+        $result = $component->validate(throw: true);
+
+        expect($result)->toBeTrue();
+        expect($component->prepareForValidationCalls)->toBe(1);
+        expect($component->passedValidationCalls)->toBe(1);
+        expect($component->afterValidateCalls)->toBe(1);
+    });
+
+    test('runs the validation lifecycle once and preserves errors when throwing validation fails', function () {
+        $component = new PlainValidatable(['title' => null]);
+        $errors = null;
+
+        try {
+            $component->validate(throw: true);
+        } catch (ValidationException $caught) {
+            $errors = $caught->errors();
+        }
+
+        expect($errors)->toBe([
+            'title' => ['Title is required.'],
+        ]);
+        expect($component->prepareForValidationCalls)->toBe(1);
+        expect($component->passedValidationCalls)->toBe(0);
+        expect($component->afterValidateCalls)->toBe(1);
+    });
+
+    test('propagates exceptions from validation hooks after one lifecycle', function () {
+        $component = new PlainValidatable(['title' => 'Test'], throwAfterValidation: true);
+
+        expect(fn () => $component->validate(throw: true))
+            ->toThrow(RuntimeException::class, 'After validation failed.');
+        expect($component->prepareForValidationCalls)->toBe(1);
+        expect($component->passedValidationCalls)->toBe(0);
+        expect($component->afterValidateCalls)->toBe(1);
     });
 });
 

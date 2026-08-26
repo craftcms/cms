@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,7 +42,7 @@ readonly class PluginsController
         return new CpScreenResponse()
             ->title(t('Plugins'))
             ->crumbs([
-                ['label' => t('Settings'), 'url' => 'settings'],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
                 ['label' => t('Plugins')],
             ])
             ->inertiaPage('settings/Plugins', [

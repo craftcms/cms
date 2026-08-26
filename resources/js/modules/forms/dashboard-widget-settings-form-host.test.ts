@@ -14,10 +14,11 @@ it('mounts widget settings into the light DOM for native submission', async () =
   components.register('craft:combobox', ComboboxControl);
   defineDashboardWidgetSettingsFormHost(components);
 
+  // SAFETY: The definition above registers the tested host API for this tag.
   const host = document.createElement(
     'craft-dashboard-widget-settings-form'
-  ) as HTMLElement & {payload: FormPayload};
-  host.payload = {
+  ) as HTMLElement & {payload: FormPayload | null};
+  const payload: FormPayload = {
     scope: ['settings'],
     refreshable: false,
     nodes: [
@@ -40,7 +41,8 @@ it('mounts widget settings into the light DOM for native submission', async () =
     values: {settings: {placeholder: 'Submitted placeholder'}},
     errors: [],
     globalErrors: [],
-  } as FormPayload;
+  };
+  host.payload = payload;
   document.body.append(host);
   await nextTick();
 

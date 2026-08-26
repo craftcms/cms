@@ -5,7 +5,13 @@ import EntryTypeSelect from './EntryTypeSelect.vue';
 
 const state = vi.hoisted(() => ({
   readOnly: false,
-  newEntryType: {id: 2, name: 'News', handle: 'news'},
+  newEntryType: {
+    id: 2,
+    name: 'News',
+    handle: 'news',
+    color: null,
+    description: null,
+  },
   open: vi.fn(),
   reload: vi.fn(),
 }));
@@ -31,14 +37,33 @@ vi.mock('@/common/slideouts', () => ({
   useSlideoutOpener: () => ({open: state.open}),
 }));
 
-const existingEntryType = {
-  id: 1,
-  name: 'Article',
-  handle: 'article',
-  color: null,
-  description: null,
-} as EntryType;
-const newEntryType = state.newEntryType as EntryType;
+function entryType(id: number, name: string, handle: string): EntryType {
+  return {
+    id,
+    name,
+    handle,
+    description: null,
+    color: null,
+    uiLabelFormat: '{title}',
+    hasTitleField: true,
+    titleTranslationMethod: {name: 'Site', value: 'site'},
+    titleTranslationKeyFormat: null,
+    titleFormat: null,
+    allowLineBreaksInTitles: false,
+    showSlugField: true,
+    slugTranslationMethod: {name: 'Site', value: 'site'},
+    slugTranslationKeyFormat: null,
+    showStatusField: true,
+    uid: `entry-type-${id}`,
+    validateHandleUniqueness: true,
+    group: null,
+    original: null,
+    idAttribute: null,
+  };
+}
+
+const existingEntryType = entryType(1, 'Article', 'article');
+const newEntryType = entryType(2, 'News', 'news');
 const container = document.createElement('div');
 let app: ReturnType<typeof createApp>;
 
@@ -75,10 +100,13 @@ it('selects an entry type created from the picker', async () => {
 
   const createButton = [...container.querySelectorAll('craft-button')].find(
     (button) => button.textContent?.trim() === 'Create'
-  )!;
+  );
+  if (!createButton) throw new Error('Expected the create entry type button.');
   createButton.click();
   await nextTick();
-  state.open.mock.calls[0]![1].onSaved({
+  const openCall = state.open.mock.calls[0];
+  if (!openCall) throw new Error('Expected the entry type slideout to open.');
+  openCall[1].onSaved({
     data: {entryType: newEntryType},
   });
   await nextTick();

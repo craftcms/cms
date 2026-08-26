@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Controls\Address;
+use CraftCms\Cms\Form\Controls\Checkbox;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Color;
 use CraftCms\Cms\Form\Controls\Combobox;
@@ -14,6 +15,8 @@ use CraftCms\Cms\Form\Controls\Date;
 use CraftCms\Cms\Form\Controls\DateTime;
 use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Form\Controls\FieldSelect;
+use CraftCms\Cms\Form\Controls\FilesystemSelect;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Hidden as HiddenControl;
@@ -39,6 +42,7 @@ use CraftCms\Cms\Form\FormNodeTypes;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Form\Nodes\Action;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Container;
 use CraftCms\Cms\Form\Nodes\Field;
@@ -60,9 +64,10 @@ it('registers core and plugin Node and Control types separately', function () {
     $nodeTypes = app(FormNodeTypes::class);
     $controlTypes = app(FormControlTypes::class);
 
-    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
+    expect($nodeTypes->types()->all())->toBe([Action::class, Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
+            Checkbox::class,
             Choice::class,
             ConditionBuilder::class,
             Color::class,
@@ -72,6 +77,8 @@ it('registers core and plugin Node and Control types separately', function () {
             DateTime::class,
             ElementSelect::class,
             FieldLayoutDesigner::class,
+            FieldSelect::class,
+            FilesystemSelect::class,
             GroupedEntryTypeManager::class,
             Handle::class,
             HiddenControl::class,
@@ -93,7 +100,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
-    expect($nodeTypes->types()->all())->toBe([Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
+    expect($nodeTypes->types()->all())->toBe([Action::class, Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
         ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);
@@ -146,6 +153,25 @@ it('renders collapsible groups through the shared payload and PHP renderer', fun
         'collapsible' => true,
     ])->and($crawler->filter('craft-disclosure[data-form-node="links"][label="Links"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-disclosure craft-field-group[slot="content"] input[name="settings[url]"]'))->toHaveCount(1);
+});
+
+it('renders filesystem selects through the shared payload and PHP renderer', function () {
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/filesystem-select'),
+    ]);
+
+    $payload = app(FormResolver::class)->resolve(Form::make([
+        Field::make('Filesystem', FilesystemSelect::make('filesystem')
+            ->emptyOption('Select a filesystem')
+            ->create()),
+    ]), new FormContext(namespace: 'settings'));
+    $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
+    $filesystemSelect = $crawler->filter('craft-filesystem-select[name="settings[filesystem]"][create-url]');
+
+    expect($filesystemSelect)->toHaveCount(1)
+        ->and($filesystemSelect->attr('options'))->toContain('Select a filesystem')
+        ->and($filesystemSelect->attr('options'))->toContain('Create a new filesystem');
 });
 
 it('renders and submits test plugin types through the PHP renderer', function () {

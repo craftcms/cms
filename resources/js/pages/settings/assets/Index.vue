@@ -108,7 +108,7 @@
       header: t('Name'),
       props: ({row}) => ({
         href: edit({volumeId: row.original.id}).url,
-        inertia: false,
+        inertia: true,
       }),
     }),
     columnHelper.handle('handle'),
@@ -133,7 +133,7 @@
     getCoreRowModel: getCoreRowModel<VolumeData>(),
   });
 
-  useAppLayout({title: props.title, fullWidth: true});
+  useAppLayout({title: props.title});
 </script>
 
 <template>
@@ -142,7 +142,6 @@
       appearance="button"
       :href="create().url"
       variant="accent"
-      :inertia="false"
       icon="plus"
     >
       {{ t('New volume') }}

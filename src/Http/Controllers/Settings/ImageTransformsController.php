@@ -41,8 +41,8 @@ class ImageTransformsController
     {
         return Inertia::render('settings/assets/transforms/Index', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-                ['label' => t('Assets'), 'url' => Url::cpUrl('settings/assets/transforms')],
+                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Assets'), 'href' => Url::cpUrl('settings/assets/transforms')],
                 ['label' => t('Image Transforms')],
             ],
             'subnav' => [

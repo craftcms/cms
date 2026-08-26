@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\UpdatesFieldLayout;
@@ -166,7 +168,14 @@ class ElementDraftsController
         if ($this->request->isCpRequest()) {
             [$docTitle, $title] = $this->editElementTitles($element);
             $previewTargets = $element->getPreviewTargets();
-            $data += $this->fieldLayoutData($element);
+            // Compiled once and shared: the edit screen payload adopts it as
+            // its own, and `fieldLayoutData()` scopes it for the response.
+            $form = $this->compileFieldLayout($element);
+            // Built before `fieldLayoutData()` drains the HTML stack, so
+            // whatever the sidebar and metadata register still lands in
+            // `headHtml`/`bodyHtml`.
+            $screen = $this->editScreenData($element, $form);
+            $data += $this->fieldLayoutData($element, $form);
             $data += [
                 'docTitle' => $docTitle,
                 'title' => $title,
@@ -176,6 +185,7 @@ class ElementDraftsController
                 'initialDeltaValues' => DeltaRegistry::getInitialValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                 'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
+                'screen' => $screen,
             ];
         }
 
@@ -185,6 +195,45 @@ class ElementDraftsController
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => t('Draft'),
         ]), $data, true);
+    }
+
+    /**
+     * The element edit screen's payload, as a fresh page load would render it.
+     *
+     * Autosaving turns a canonical element into a provisional draft partway
+     * through editing, and that changes the screen around the form: the
+     * “Showing your unsaved changes” notice appears, so does the Discard
+     * changes button, the Save button starts applying a draft, and the drafts
+     * menu gains an entry. Rebuilding the screen's own view model is what lets
+     * the client adopt all of that without a page load, instead of inferring it
+     * from the handful of loose keys the response has always carried.
+     *
+     * Nested under its own key rather than merged in: the legacy element editor
+     * reads this response too, and several of its keys (`form`,
+     * `previewTargets`) mean something different there.
+     *
+     * `form` is dropped — the compiled layout is already on the response at the
+     * top level, scoped to whatever the request asked for, and shipping it
+     * twice would double the size of every keystroke's autosave.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function editScreenData(ElementInterface $element, ?FormPayload $form): ?array
+    {
+        $viewModel = $element::editViewModelClass();
+
+        if ($viewModel === null) {
+            return null;
+        }
+
+        // Saving got this far, so the user can save this element.
+        $data = new $viewModel($element, $this->request, true)
+            ->withForm($form)
+            ->toArray();
+
+        unset($data['form']);
+
+        return $data;
     }
 
     public function ensure(): Response

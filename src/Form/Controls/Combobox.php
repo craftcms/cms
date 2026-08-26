@@ -25,11 +25,13 @@ class Combobox extends Control
 
     private bool $showAllOnEmpty = false;
 
+    private bool $showSelectedHint = false;
+
     private ?string $dir = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
-        return ComboboxComponent::make()
+        return static::htmlComponent($control)
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->value($value === null ? null : (string) $value)
@@ -39,6 +41,7 @@ class Combobox extends Control
             ->clearable((bool) ($control->props['clearable'] ?? false))
             ->requireOptionMatch((bool) ($control->props['requireOptionMatch'] ?? false))
             ->showAllOnEmpty((bool) ($control->props['showAllOnEmpty'] ?? false))
+            ->showSelectedHint((bool) ($control->props['showSelectedHint'] ?? false))
             ->orientation($control->props['dir'] ?? null)
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
@@ -48,6 +51,11 @@ class Combobox extends Control
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
             ])
             ->toHtml();
+    }
+
+    protected static function htmlComponent(ControlPayload $_control): ComboboxComponent
+    {
+        return ComboboxComponent::make();
     }
 
     public function component(): string
@@ -102,6 +110,13 @@ class Combobox extends Control
         return $this;
     }
 
+    public function showSelectedHint(bool $showSelectedHint = true): static
+    {
+        $this->showSelectedHint = $showSelectedHint;
+
+        return $this;
+    }
+
     public function dir(?string $dir): static
     {
         $this->dir = $dir;
@@ -119,6 +134,7 @@ class Combobox extends Control
             'clearable' => $this->clearable ?: null,
             'requireOptionMatch' => $this->requireOptionMatch ?: null,
             'showAllOnEmpty' => $this->showAllOnEmpty ?: null,
+            'showSelectedHint' => $this->showSelectedHint ?: null,
             'dir' => $this->dir,
         ]);
     }

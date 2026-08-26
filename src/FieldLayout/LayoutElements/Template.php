@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Form\Controls\Combobox;
+use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Callout;
+use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\TemplateContent;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -90,18 +93,17 @@ class Template extends BaseUiElement
         return true;
     }
 
-    protected function settingsHtml(): ?string
+    #[Override]
+    protected function settingsNodes(FormContext $context): array
     {
-        return FormFields::autosuggestFieldHtml([
-            'label' => t('Template'),
-            'instructions' => t('The path to a template file within your `templates/` folder.'),
-            'tip' => t('The template receives `element` and `static` variables. Its output is sanitized and displayed as non-interactive content; form controls, scripts, and registered assets are not supported.'),
-            'class' => 'code',
-            'id' => 'template',
-            'name' => 'template',
-            'suggestTemplates' => true,
-            'value' => $this->template,
-        ]);
+        return [
+            Field::make(t('Template'), Combobox::make('template')
+                ->options(SelectOptions::getTemplateSuggestions())
+                ->showAllOnEmpty()
+                ->value($this->template))
+                ->instructions(t('The path to a template file within your `templates/` folder.'))
+                ->tip(t('The template receives `element` and `static` variables. Its output is sanitized and displayed as non-interactive content; form controls, scripts, and registered assets are not supported.')),
+        ];
     }
 
     #[Override]

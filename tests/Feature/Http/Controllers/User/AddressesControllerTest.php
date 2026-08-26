@@ -58,8 +58,8 @@ test('index renders the Inertia addresses page', function () {
             ->component('users/Addresses')
             ->where('userId', auth()->id())
             ->where('showIndex', false)
-            ->where('title', t('My Account'))
-            ->has('crumbs', 2)
+            ->where('title', t('Addresses'))
+            ->has('crumbs', 3)
             // A list, not an object keyed by screen name: the shell hides the
             // secondary nav when it can't count the items.
             ->where('subnav.0.label', t('Profile'))

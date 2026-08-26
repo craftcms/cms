@@ -119,6 +119,7 @@ export default class CraftLoginForm extends LitElement {
         }),
       });
 
+      // SAFETY: The login action returns the documented two-factor response envelope.
       const data = (await response.json()) as TwoFactorData & {
         message?: string;
       };
@@ -178,8 +179,8 @@ export default class CraftLoginForm extends LitElement {
     this._view = 'reset-password';
   }
 
-  #onResetBack(event: CustomEvent) {
-    const username = (event.detail?.username as string) ?? '';
+  #onResetBack(event: CustomEvent<{username?: string}>) {
+    const username = event.detail?.username ?? '';
     this._view = 'login';
     this.updateComplete.then(() => {
       if (username && this._usernameInput) this._usernameInput.value = username;
@@ -187,12 +188,12 @@ export default class CraftLoginForm extends LitElement {
     });
   }
 
-  #onLoginSuccess(event: CustomEvent) {
-    this.#handleSuccess((event.detail as {returnUrl: string}).returnUrl);
+  #onLoginSuccess(event: CustomEvent<{returnUrl: string}>) {
+    this.#handleSuccess(event.detail.returnUrl);
   }
 
-  #onLoginError(event: CustomEvent) {
-    const message = (event.detail as {message: string}).message;
+  #onLoginError(event: CustomEvent<{message: string}>) {
+    const {message} = event.detail;
     const errorEvent = new CustomEvent('craft:login:error', {
       bubbles: true,
       composed: true,
@@ -333,7 +334,7 @@ export default class CraftLoginForm extends LitElement {
           <div class="auth-form__actions">
             <craft-button
               type="submit"
-              variant="accent"
+              variant="primary"
               ?loading="${this._loginBusy}"
               style="width: 100%"
             >

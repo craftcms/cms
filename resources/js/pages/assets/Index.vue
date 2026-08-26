@@ -2,9 +2,11 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import ElementIndexPage from '@/modules/elements/components/ElementIndexPage.vue';
-  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import {
+    appendIndexQuery,
+    type ElementIndexRoute,
+  } from '@/modules/elements/composables/useElementIndexVisits';
   import {usePage} from '@inertiajs/vue3';
   import {index} from '@routes/cp/assets';
   import Breadcrumbs, {
@@ -15,6 +17,7 @@
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
   import {useAssetMoveDrag} from '@/modules/elements/composables/useAssetMoveDrag';
   import {useNewSubfolder} from '@/modules/elements/composables/useNewSubfolder';
+  import AssetUploadButton from './AssetUploadButton.vue';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
 
@@ -26,18 +29,30 @@
   // filter, pagination) stay in the same folder instead of bouncing to the root.
   const route: ElementIndexRoute = {
     url: (query = {}) =>
-      index.url(
-        {defaultSource: page.props.defaultSource ?? undefined},
-        {query: query as Record<string, string>}
+      appendIndexQuery(
+        index.url({defaultSource: page.props.defaultSource ?? undefined}),
+        query
       ),
   };
 
   // The breadcrumb trail is built server-side (labels, folder links, drop-target
   // attrs, and the current folder's action menu) — see
   // AssetIndexViewModel::breadcrumbs(). We render it as-is.
-  const breadcrumbs = computed(
-    () => (page.props.breadcrumbs ?? []) as BreadcrumbItem[]
+  const breadcrumbs = computed<BreadcrumbItem[]>(
+    () => page.props.breadcrumbs ?? []
   );
+
+  const uploadSource = computed(() => {
+    const data = page.props.source?.data as
+      | Record<string, boolean | number | string>
+      | undefined;
+
+    return {
+      canUpload: data?.['can-upload'] === true,
+      folderId: data?.['folder-id'] as number | undefined,
+      fsType: data?.['fs-type'] as string | undefined,
+    };
+  });
 
   // "New subfolder" prompt for the current folder. Its breadcrumb menu item is a
   // server-driven `event` action (AssetIndexViewModel::NEW_SUBFOLDER_EVENT); we
@@ -54,15 +69,16 @@
   } = useNewSubfolder();
 
   useEventListener(window, 'assets:new-subfolder', (event: Event) => {
-    const {folderId} = (event as CustomEvent<{folderId?: number}>).detail ?? {};
-    if (typeof folderId === 'number') {
-      openNewFolder(folderId);
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const folderId = event.detail?.folderId;
+    if (Object(folderId).constructor === Number) {
+      openNewFolder(Number(folderId));
     }
   });
 
   const {conflictPrompt, resolveConflictChoice} = useAssetMoveDrag();
-
-  useAppLayout({fullWidth: true});
 </script>
 
 <template>
@@ -71,11 +87,7 @@
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>
     <template #actions>
-      <form action="">
-        <craft-button icon="upload">
-          {{ t('Upload files') }}
-        </craft-button>
-      </form>
+      <AssetUploadButton v-bind="uploadSource" />
     </template>
   </ElementIndexPage>
 

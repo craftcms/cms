@@ -1,12 +1,17 @@
 import {Base, hasAttr} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
 import {
+  canUseVueSlideout,
+  openLayoutComponentSettings,
+} from './settings-slideout';
+import {
   firstFocusableInSiblings,
   fldElementData,
   htmlToElement,
 } from './support';
 import type {Tab} from './tab';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem, t} from '@craftcms/ui';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 
@@ -30,11 +35,9 @@ export class Element extends Base {
   thumbable = false;
   hasCustomWidth = false;
   hasSettings = false;
-  settingsNamespace: any = null;
   slideout: any = null;
   defaultHandle: any = null;
   fieldId: any = null;
-  fieldsWithErrors: any[] = [];
 
   constructor(tab: Tab, $container: any) {
     super();
@@ -42,8 +45,6 @@ export class Element extends Base {
     this.$container = $container;
     this.uid = $container.dataset.uid;
     this.fieldId = $container.dataset.id;
-
-    this.fieldsWithErrors = [];
 
     // New element?
     const isNew = !this.uid;
@@ -110,7 +111,10 @@ export class Element extends Base {
       }
 
       widthSlider.addEventListener('value-change', (event: Event) => {
-        const width = (event as CustomEvent<{value: number}>).detail.value;
+        if (!(event instanceof CustomEvent)) {
+          return;
+        }
+        const width = Number(event.detail?.value);
         this.updateConfig((config: any) => {
           config.width = width;
           return config;
@@ -256,6 +260,14 @@ export class Element extends Base {
     return label !== '' ? label : this.$container.dataset.attribute;
   }
 
+  private settingsRequestData() {
+    return {
+      uid: this.uid,
+      layoutConfig: this.tab.designer.config,
+      elementType: this.tab.designer.settings!.elementType,
+    };
+  }
+
   async createSettings(): Promise<void> {
     let data;
     try {
@@ -264,9 +276,8 @@ export class Element extends Base {
         'fields/render-layout-component-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
+            config: this.config,
           },
         }
       );
@@ -276,9 +287,28 @@ export class Element extends Base {
       throw e;
     }
 
-    this.settingsNamespace = data.namespace;
+    const requestData = () => ({
+      ...this.settingsRequestData(),
+      config: this.config,
+    });
+
+    if (canUseVueSlideout()) {
+      await openLayoutComponentSettings(data, {
+        title: this.settingsTitle(),
+        triggerElement: this.$actionBtn,
+        requestData,
+        // The panel owns Save/Cancel and reports errors from the rejection.
+        apply: (settings) => this.applyConfig(() => this.config, settings),
+      });
+
+      this.trigger('createSettings');
+
+      return;
+    }
+
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
+      requestData,
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -295,17 +325,10 @@ export class Element extends Base {
       this.slideout.$container[0].querySelector('.fields');
 
     this.addListener($fieldsContainer, 'field-saved', (event) => {
-      this.refreshField((event as unknown as CustomEvent).detail.selectorHtml);
-    });
-
-    if (this.isField) {
-      const $handleInput = $fieldsContainer?.querySelector(
-        'input[name$="[handle]"]'
-      );
-      if ($handleInput) {
-        $handleInput.value = this.config.handle || '';
+      if (event instanceof CustomEvent && event.detail?.selectorHtml) {
+        this.refreshField(String(event.detail.selectorHtml));
       }
-    }
+    });
 
     this.trigger('createSettings');
   }
@@ -318,10 +341,24 @@ export class Element extends Base {
     $submitBtn?.classList.add('loading');
 
     try {
-      await this.applyConfig(() => this.config, true);
+      await this.applyConfig(
+        () => this.config,
+        this.slideout.settingsForm?.currentValues() ?? {}
+      );
+    } catch {
+      // Errors are already shown in the slideout.
     } finally {
       $submitBtn?.classList.remove('loading');
     }
+  }
+
+  /** The label shown in the settings panel's title bar. */
+  private settingsTitle(): string {
+    return this.getLabel()
+      ? t('{label} Settings', {
+          label: this.getLabel(),
+        })
+      : t('Settings');
   }
 
   async showFieldEditor(): Promise<void> {
@@ -388,7 +425,7 @@ export class Element extends Base {
 
   async applyConfig(
     callback: (config: any) => any,
-    withSettings = false,
+    settings: FormValues | null = null,
     closeSlideout = true
   ): Promise<void> {
     const config = callback(this.config);
@@ -396,10 +433,11 @@ export class Element extends Base {
       return;
     }
 
-    // Craft.ui error helpers require jQuery fields — keep them at the seam.
-    this.fieldsWithErrors.forEach(($field: any) => {
-      Craft.ui.clearErrorsFromField($field);
-    });
+    const settingsForm = this.slideout?.settingsForm;
+
+    if (settings && settingsForm) {
+      settingsForm.errors = {};
+    }
 
     let data;
 
@@ -409,33 +447,19 @@ export class Element extends Base {
         'fields/apply-layout-element-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.tab.designer.config,
-            elementType: this.tab.designer.settings!.elementType,
+            ...this.settingsRequestData(),
             config,
-            settingsNamespace: this.settingsNamespace,
-            settings: withSettings
-              ? serializeFormInputs(this.slideout.$container[0])
-              : null,
+            settings,
           },
         }
       );
       data = response.data;
     } catch (e: any) {
-      if (withSettings) {
-        const errors = e?.response?.data?.errors;
-        if (errors) {
-          Object.entries(errors).forEach(([name, fieldErrors]) => {
-            // Craft.ui.addErrorsToField needs a jQuery field — seam.
-            const $field = this.slideout.$container.find(
-              `[data-error-key="${name}"]`
-            );
-            if ($field.length) {
-              Craft.ui.addErrorsToField($field, fieldErrors);
-              this.fieldsWithErrors.push($field);
-            }
-          });
-        }
+      const errors = e?.response?.data?.errors;
+
+      // The Vue panel renders its own errors from the rejection.
+      if (settings && settingsForm && errors) {
+        settingsForm.errors = errors;
       }
 
       Craft.cp.displayError(e?.response?.data?.message);
@@ -498,12 +522,12 @@ export class Element extends Base {
   }
 
   async refresh(): Promise<void> {
-    await this.applyConfig((config: any) => config, false, false);
+    await this.applyConfig((config: any) => config, null, false);
   }
 
   get index(): number {
     const tabConfig = this.tab.config;
-    if (typeof tabConfig === 'undefined') {
+    if (tabConfig === undefined) {
       return -1;
     }
     return tabConfig.elements.findIndex((c: any) => c.uid === this.uid);

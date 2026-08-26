@@ -3,19 +3,18 @@
   import {router, usePage} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
   import {attrs, t} from '@craftcms/ui';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {openSlideout} from '@/common/slideouts';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import axios from 'axios';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
   });
 
   type UserAddressesPageProps =
-    CraftCms.Cms.Http.ViewModels.UserAddressesViewModel & {
-      details?: string | null;
-    };
+    CraftCms.Cms.Http.ViewModels.UserAddressesViewModel;
 
   // Read props through the page object (not a captured `page.props`
   // reference) so partial reloads — which replace `page.props` wholesale —
@@ -65,23 +64,24 @@
     creating.value = true;
 
     try {
+      const requestData = {
+        elementType: data.elementType,
+        ownerId: data.ownerId,
+        fieldId: data.fieldId,
+        siteId: data.ownerSiteId,
+      };
+      if (
+        data.createAttributes instanceof Object &&
+        !Array.isArray(data.createAttributes)
+      ) {
+        Object.assign(requestData, data.createAttributes);
+      }
+
       const {data: response} = await Craft.sendActionRequest(
         'POST',
         'elements/create',
         {
-          data: {
-            elementType: data.elementType,
-            ownerId: data.ownerId,
-            fieldId: data.fieldId,
-            siteId: data.ownerSiteId,
-            // Grouped create attributes (arrays) drive a disclosure menu in
-            // the legacy manager; only a plain attributes object applies here.
-            ...(typeof data.createAttributes === 'object' &&
-            data.createAttributes !== null &&
-            !Array.isArray(data.createAttributes)
-              ? data.createAttributes
-              : {}),
-          },
+          data: requestData,
         }
       );
 
@@ -113,8 +113,9 @@
       // Prefer the server's message; fall back to the thrown one so a local
       // failure doesn't surface as an empty notification.
       Craft.cp?.displayError?.(
-        (error as {response?: {data?: {message?: string}}})?.response?.data
-          ?.message ?? (error as Error)?.message
+        (axios.isAxiosError(error)
+          ? error.response?.data?.message
+          : undefined) ?? (error instanceof Error ? error.message : undefined)
       );
     } finally {
       creating.value = false;
@@ -135,7 +136,10 @@
   // bubbling `action:change-state` events — refresh the cards once one
   // succeeds.
   useEventListener(cardsContainer, 'action:change-state', (event: Event) => {
-    const detail = (event as CustomEvent).detail;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+    const detail = event.detail;
 
     if (detail?.state === 'success' && detail?.actionType === 'http') {
       router.reload({only: ['data']});
@@ -144,55 +148,55 @@
 </script>
 
 <template>
-  <craft-pane appearance="raised">
-    <div ref="cardsContainer" class="grid gap-3">
-      <h2 v-if="!props.showIndex" class="text-lg m-0!">{{ t('Addresses') }}</h2>
+  <UserScreen>
+    <craft-pane appearance="raised">
+      <div ref="cardsContainer" class="grid gap-3">
+        <h2 v-if="!props.showIndex" class="text-lg m-0!">
+          {{ t('Addresses') }}
+        </h2>
 
-      <HtmlFragmentRenderer v-if="indexFragment" :fragment="indexFragment" />
+        <HtmlFragmentRenderer v-if="indexFragment" :fragment="indexFragment" />
 
-      <craft-empty v-if="cardsData && !cardsData.elements.length">
-        {{ t('Nothing yet.') }}
-      </craft-empty>
+        <craft-empty v-if="cardsData && !cardsData.elements.length">
+          {{ t('Nothing yet.') }}
+        </craft-empty>
 
-      <div v-if="cardsData?.elements.length" class="card-grid">
-        <template v-for="element in cardsData?.elements" :key="element.id">
-          <craft-card
-            v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
-            :thumb-alignment="element.thumbAlignment"
+        <div v-if="cardsData?.elements.length" class="card-grid">
+          <template v-for="element in cardsData?.elements" :key="element.id">
+            <craft-card
+              v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
+              :thumb-alignment="element.thumbAlignment"
+            >
+              <div slot="label">
+                <DynamicHtmlRenderer :html="element.cardLabelHtml" />
+              </div>
+              <div slot="actions">
+                <DynamicHtmlRenderer :html="element.cardActionsHtml" />
+              </div>
+              <div v-if="element.cardThumbHtml" slot="thumbnail">
+                <DynamicHtmlRenderer :html="element.cardThumbHtml" />
+              </div>
+              <DynamicHtmlRenderer :html="element.cardContentHtml" />
+            </craft-card>
+          </template>
+        </div>
+
+        <div v-if="cardsData?.canCreate" class="flex">
+          <craft-button
+            ref="createBtn"
+            class="add-btn"
+            icon="plus"
+            appearance="outline"
+            :loading="creating"
+            :disabled="!canCreateMore"
+            @click="createNestedElement"
           >
-            <div slot="label">
-              <DynamicHtmlRenderer :html="element.cardLabelHtml" />
-            </div>
-            <div slot="actions">
-              <DynamicHtmlRenderer :html="element.cardActionsHtml" />
-            </div>
-            <div v-if="element.cardThumbHtml" slot="thumbnail">
-              <DynamicHtmlRenderer :html="element.cardThumbHtml" />
-            </div>
-            <DynamicHtmlRenderer :html="element.cardContentHtml" />
-          </craft-card>
-        </template>
+            {{ cardsData.createButtonLabel }}
+          </craft-button>
+        </div>
       </div>
-
-      <div v-if="cardsData?.canCreate" class="flex">
-        <craft-button
-          ref="createBtn"
-          class="add-btn"
-          icon="plus"
-          appearance="outline"
-          :loading="creating"
-          :disabled="!canCreateMore"
-          @click="createNestedElement"
-        >
-          {{ cardsData.createButtonLabel }}
-        </craft-button>
-      </div>
-    </div>
-  </craft-pane>
-
-  <LayoutSlot v-if="props.details" name="details">
-    <div v-html="props.details"></div>
-  </LayoutSlot>
+    </craft-pane>
+  </UserScreen>
 </template>
 
 <style scoped lang="scss">

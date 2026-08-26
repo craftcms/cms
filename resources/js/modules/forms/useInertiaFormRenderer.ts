@@ -7,18 +7,16 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue';
-import type {FormChangeKind, FormPayload} from './types';
+import type {FormChangeKind, FormPayload, FormValue} from './types';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
   currentValues(): FormPayload['values'];
-  setValue(path: string[], value: unknown, kind?: FormChangeKind): void;
+  resetValues(): void;
+  setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
 }
 
-interface Options<
-  T extends Record<string, any>,
-  Key extends Extract<keyof T, string>,
-> {
+interface Options<T extends object, Key extends Extract<keyof T, string>> {
   mutationKey?: Key;
   mapErrorPath?: (path: string) => string[] | null;
 }
@@ -28,7 +26,7 @@ interface Options<
  * contains the editable mutation; `values` contains the full current values.
  */
 export function useInertiaFormRenderer<
-  T extends Record<string, any>,
+  T extends object,
   Key extends Extract<keyof T, string> = Extract<keyof T, string>,
 >(
   form: InertiaForm<T>,
@@ -37,7 +35,7 @@ export function useInertiaFormRenderer<
 ) {
   const renderer = shallowRef<FormRendererInstance | null>(null);
   const values = shallowRef(clone(toValue(payload)?.values ?? {}));
-  const formData = form as T;
+  const formData: T = form;
   const rootKeys = new Set(Object.keys(form.data()));
 
   replaceMutation({});
@@ -79,7 +77,9 @@ export function useInertiaFormRenderer<
 
   function replaceMutation(mutation: FormPayload['values']): void {
     if (mutationKey !== undefined) {
-      formData[mutationKey] = clone(mutation[mutationKey] ?? {}) as T[Key];
+      Object.assign(formData, {
+        [mutationKey]: clone(mutation[mutationKey] ?? {}),
+      });
 
       return;
     }
@@ -90,14 +90,11 @@ export function useInertiaFormRenderer<
 
     for (const [key, value] of Object.entries(mutation)) {
       if (!rootKeys.has(key)) {
-        form.defaults({[key]: undefined} as unknown as Partial<T>);
+        form.defaults({...form.data(), [key]: undefined});
         rootKeys.add(key);
       }
 
-      formData[key as Extract<keyof T, string>] = clone(value) as T[Extract<
-        keyof T,
-        string
-      >];
+      Object.assign(formData, {[key]: clone(value)});
     }
   }
 
@@ -106,7 +103,23 @@ export function useInertiaFormRenderer<
     form.defaults();
   }
 
-  return {advanceBaseline, errors, onMutation, renderer, values};
+  /**
+   * Throws away the unsaved values and takes the currently loaded payload as
+   * the new baseline, leaving the Inertia form clean.
+   *
+   * Only for the case where the user has explicitly abandoned their edits —
+   * discarding a provisional draft. An ordinary refresh must keep them.
+   */
+  function resetValues(): void {
+    renderer.value?.resetValues();
+    // The renderer's reset emits an empty mutation of its own, but the bridge
+    // has to hold up on its own when nothing is mounted to emit one.
+    replaceMutation({});
+    values.value = clone(toValue(payload)?.values ?? {});
+    form.defaults();
+  }
+
+  return {advanceBaseline, errors, onMutation, renderer, resetValues, values};
 }
 
 function defaultErrorPath(path: string, scope: string[]): string[] | null {

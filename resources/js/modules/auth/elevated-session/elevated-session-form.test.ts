@@ -13,20 +13,24 @@ describe('ElevatedSessionForm', () => {
         <input class="permission" name="permissions[]" value="edit">
       </form>
     `;
-    const form = document.querySelector<HTMLFormElement>('#settings')!;
+    const form = document.querySelector<HTMLFormElement>('#settings');
+    if (!form) throw new Error('Expected the settings form fixture.');
     const elevatedForm = new ElevatedSessionForm(form, [
       '[name="name"]',
       '.permission',
     ]);
 
     expect(elevatedForm.inputsChanged()).toBe(false);
-    form.querySelector<HTMLInputElement>('[name="name"]')!.value = 'Changed';
+    const name = form.querySelector<HTMLInputElement>('[name="name"]');
+    if (!name) throw new Error('Expected the name input fixture.');
+    name.value = 'Changed';
     expect(elevatedForm.inputsChanged()).toBe(true);
   });
 
   it('detects inputs added after initialization', () => {
     document.body.innerHTML = '<form id="settings"></form>';
-    const form = document.querySelector<HTMLFormElement>('#settings')!;
+    const form = document.querySelector<HTMLFormElement>('#settings');
+    if (!form) throw new Error('Expected the settings form fixture.');
     const elevatedForm = new ElevatedSessionForm(form, '.permission');
 
     expect(elevatedForm.inputsChanged()).toBe(false);
@@ -43,11 +47,14 @@ describe('ElevatedSessionForm', () => {
         <input name="name" value="Original">
       </form>
     `;
-    const form = document.querySelector<HTMLFormElement>('#settings')!;
+    const form = document.querySelector<HTMLFormElement>('#settings');
+    if (!form) throw new Error('Expected the settings form fixture.');
     form.addEventListener('submit', (event) => event.preventDefault());
     const manager = {require: vi.fn().mockResolvedValue(true)};
     new ElevatedSessionForm(form, '[name="name"]', manager);
-    form.querySelector<HTMLInputElement>('[name="name"]')!.value = 'Changed';
+    const name = form.querySelector<HTMLInputElement>('[name="name"]');
+    if (!name) throw new Error('Expected the name input fixture.');
+    name.value = 'Changed';
 
     form.requestSubmit();
     await Promise.resolve();
@@ -62,16 +69,22 @@ describe('ElevatedSessionForm', () => {
         <button type="submit" name="redirect" value="1">Save</button>
       </form>
     `;
-    const form = document.querySelector<HTMLFormElement>('#settings')!;
-    const button = form.querySelector<HTMLButtonElement>('button')!;
+    const form = document.querySelector<HTMLFormElement>('#settings');
+    if (!form) throw new Error('Expected the settings form fixture.');
+    const button = form.querySelector<HTMLButtonElement>('button');
+    if (!button) throw new Error('Expected the submit button fixture.');
     const manager = {require: vi.fn().mockResolvedValue(true)};
     new ElevatedSessionForm(form, '[name="name"]', manager);
     const submitted = vi.fn();
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      submitted((event as SubmitEvent).submitter);
+      if (!(event instanceof SubmitEvent))
+        throw new Error('Expected a submit event.');
+      submitted(event.submitter);
     });
-    form.querySelector<HTMLInputElement>('[name="name"]')!.value = 'Changed';
+    const name = form.querySelector<HTMLInputElement>('[name="name"]');
+    if (!name) throw new Error('Expected the name input fixture.');
+    name.value = 'Changed';
 
     form.requestSubmit(button);
     await Promise.resolve();

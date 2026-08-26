@@ -92,7 +92,7 @@ export function useElementIndexSelection(
   // the range from the anchor exactly like shift-clicking the checkbox does.
   function selectRowFromEvent(row: Row<any> | undefined, event: MouseEvent) {
     if (!selectable.value || readOnly.value || !row) return;
-    if (typeof row.getCanSelect === 'function' && !row.getCanSelect()) return;
+    if (!row.getCanSelect()) return;
     if (isInteractiveClick(event)) return;
 
     selectRow(row, {

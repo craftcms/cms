@@ -9,6 +9,7 @@ import type {
   ActionMenuActions,
   ActionMenuItem,
   ActionMenuItemButton,
+  ActionMenuItemGroup,
   ActionMenuItemLink,
 } from './action-menu.types.js';
 
@@ -389,6 +390,16 @@ export default class CraftActionMenu extends CraftPopover {
         return action;
       }
 
+      // Groups are one level deep, so normalizing their members is enough.
+      if (action.type === 'group') {
+        return {
+          ...action,
+          items: this._normalizeActions(
+            action.items
+          ) as ActionMenuItemGroup['items'],
+        };
+      }
+
       if ('href' in action && action.href) {
         return {
           ...action,
@@ -409,7 +420,20 @@ export default class CraftActionMenu extends CraftPopover {
    * Sort so `variant === 'danger'` items move to the bottom (stable).
    */
   private _sortActions(actions: ActionMenuItem[]): ActionMenuItem[] {
-    return [...actions].sort((a, b) => {
+    // A group sorts within itself: pulling a danger item out of its group and
+    // down to the menu's end would file it under the wrong heading.
+    const sorted = actions.map((action) =>
+      action.type === 'group'
+        ? {
+            ...action,
+            items: this._sortActions(
+              action.items
+            ) as ActionMenuItemGroup['items'],
+          }
+        : action
+    );
+
+    return sorted.sort((a, b) => {
       const aDanger = 'variant' in a && a.variant === Variant.Danger ? 1 : 0;
       const bDanger = 'variant' in b && b.variant === Variant.Danger ? 1 : 0;
       return aDanger - bDanger;
@@ -436,6 +460,37 @@ export default class CraftActionMenu extends CraftPopover {
   }
 
   private _renderItem(action: ActionMenuItem): Node | null {
+    if (action.type === 'group') {
+      // A fragment, not a wrapper element: members stay siblings of ungrouped
+      // items so roving focus and the search filter keep treating them alike.
+      const fragment = document.createDocumentFragment();
+
+      if (action.heading) {
+        const heading = document.createElement('div');
+        heading.className = 'action-menu__heading';
+        heading.textContent = action.heading;
+        // Presentational: it labels the items visually but must never take
+        // focus or be matched by the item selector.
+        heading.setAttribute('role', 'presentation');
+        Object.assign(heading.style, {
+          padding: 'var(--c-spacing-xs) var(--c-spacing-md)',
+          color: 'var(--c-text-subtle)',
+          fontSize: 'var(--c-text-xs)',
+          fontWeight: '600',
+        });
+        fragment.appendChild(heading);
+      }
+
+      for (const member of action.items) {
+        const node = this._renderItem(member);
+        if (node) {
+          fragment.appendChild(node);
+        }
+      }
+
+      return fragment;
+    }
+
     if (action.type === 'hr') {
       const hr = document.createElement('hr');
       hr.className = 'action-menu__separator';
@@ -522,8 +577,8 @@ export default class CraftActionMenu extends CraftPopover {
         invoker.setAttribute('type', 'button');
         invoker.setAttribute('icon', '');
         invoker.setAttribute('size', 'small');
-        invoker.setAttribute('variant', 'inherit');
-        invoker.setAttribute('appearance', 'plain');
+        invoker.setAttribute('inherit', 'true');
+        invoker.setAttribute('variant', 'plain');
         this._generatedInvoker = invoker;
         this.appendChild(invoker);
       }
@@ -577,6 +632,7 @@ export default class CraftActionMenu extends CraftPopover {
     if (this._cachedOverlayContentNode) {
       return this._cachedOverlayContentNode;
     }
+
     return (
       (Array.from(this.children).find((child) => child.slot === 'content') as
         | HTMLElement

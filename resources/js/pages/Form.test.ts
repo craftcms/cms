@@ -5,28 +5,48 @@ import {
   nextTick,
   onMounted,
   reactive,
+  shallowRef,
+  type ComponentPublicInstance,
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import type {FormChange, FormPayload} from '@/modules/forms/types';
+import type {FormChange, FormPayload, FormValue} from '@/modules/forms/types';
 import FormPage from './Form.vue';
 
-const state = vi.hoisted(() => ({
+const state = vi.hoisted<{
+  layout: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  refresh?: (
+    values: FormPayload['values'],
+    scope: string[]
+  ) => Promise<FormPayload>;
+  submit: ReturnType<
+    typeof vi.fn<
+      (action: FormSubmitAction, values: FormPayload['values']) => void
+    >
+  >;
+  setValue: ReturnType<typeof vi.fn>;
+  change?: (change: FormChange, values: FormPayload['values']) => void;
+  currentValues: FormPayload['values'];
+  confirmElevation: ReturnType<typeof vi.fn>;
+}>(() => ({
   layout: vi.fn(),
   post: vi.fn(),
-  refresh: undefined as
-    | ((values: FormPayload['values'], scope: string[]) => Promise<FormPayload>)
-    | undefined,
+  refresh: undefined,
   submit: vi.fn(),
   setValue: vi.fn(),
-  change: undefined as
-    | ((change: FormChange, values: FormPayload['values']) => void)
-    | undefined,
-  currentValues: {siteId: 42, name: 'Changed', live: '1'} as Record<
-    string,
-    unknown
-  >,
+  change: undefined,
+  currentValues: {siteId: 42, name: 'Changed', live: '1'},
   confirmElevation: vi.fn(),
 }));
+
+interface FormSubmitAction {
+  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+  url: string;
+}
+
+type FormPageExposed = ComponentPublicInstance & {
+  setValue(path: string[], value: FormValue, kind?: FormChange['kind']): void;
+};
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -36,22 +56,26 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
 vi.mock('@inertiajs/vue3', () => ({
   usePage: () => ({props: {}}),
   useForm: () => {
-    let transform = (data: Record<string, unknown>) => data;
-    const form: Record<string, any> = {
+    let transform = (data: FormPayload['values']) => data;
+    const form = {
       errors: {},
       isDirty: false,
+      name: undefined,
       data: () => (form.name === undefined ? {} : {name: form.name}),
       defaults: vi.fn(),
+      clearErrors: vi.fn(),
+      transform: vi.fn((callback: typeof transform) => {
+        transform = callback;
+        return form;
+      }),
+      submit: vi.fn(
+        (action: FormSubmitAction, options: {onSuccess?: () => void}) => {
+          state.submit(action, transform(form.data()));
+          options.onSuccess?.();
+        }
+      ),
     };
-    form.clearErrors = vi.fn(() => form);
-    form.transform = vi.fn((callback) => {
-      transform = callback;
-      return form;
-    });
-    form.submit = vi.fn((action, options) => {
-      state.submit(action, transform(form.data()));
-      options.onSuccess?.();
-    });
+    form.clearErrors.mockImplementation(() => form);
 
     return form;
   },
@@ -124,7 +148,9 @@ it('submits complete current values after a partial mutation', async () => {
 
   expect(container.querySelector('form')).not.toBeNull();
 
-  state.layout.mock.calls[0]![0].onSave({redirect: false});
+  const layoutCall = state.layout.mock.calls[0];
+  if (!layoutCall) throw new Error('Expected the layout registration.');
+  layoutCall[0].onSave({redirect: false});
 
   expect(state.submit).toHaveBeenCalledWith(
     {method: 'post', url: '/settings/general'},
@@ -172,10 +198,12 @@ it('confirms elevated field changes once per saved baseline', async () => {
   app.mount(container);
   await nextTick();
 
-  state.layout.mock.calls[0]![0].onSave();
+  const layoutCall = state.layout.mock.calls[0];
+  if (!layoutCall) throw new Error('Expected the layout registration.');
+  layoutCall[0].onSave();
   await vi.waitFor(() => expect(state.submit).toHaveBeenCalledTimes(1));
 
-  state.layout.mock.calls[0]![0].onSave();
+  layoutCall[0].onSave();
 
   expect(state.confirmElevation).toHaveBeenCalledTimes(1);
   expect(state.submit).toHaveBeenCalledTimes(2);
@@ -192,7 +220,8 @@ it('refreshes the form through the configured endpoint', async () => {
   app.mount(container);
   await nextTick();
 
-  const result = await state.refresh!({hasUrls: true}, []);
+  if (!state.refresh) throw new Error('Expected the form refresh callback.');
+  const result = await state.refresh({hasUrls: true}, []);
 
   expect(state.post).toHaveBeenCalledWith('/settings/sites/form', {
     values: {hasUrls: true},
@@ -203,19 +232,25 @@ it('refreshes the form through the configured endpoint', async () => {
 
 it('forwards control changes and external value updates', async () => {
   const onChange = vi.fn();
-  app = createApp(FormPage, {
-    form: payload,
-    submit: {method: 'post', url: '/settings/sites'},
-    onChange,
+  const page = shallowRef<FormPageExposed | null>(null);
+  app = createApp({
+    setup: () => () =>
+      h(FormPage, {
+        ref: page,
+        form: payload,
+        submit: {method: 'post', url: '/settings/sites'},
+        onChange,
+      }),
   });
-  const page = app.mount(container) as unknown as {
-    setValue(path: string[], value: unknown, kind?: FormChange['kind']): void;
-  };
+  app.mount(container);
   await nextTick();
+  if (!page.value) throw new Error('Expected FormPage to mount.');
 
   const change: FormChange = {kind: 'typing', path: ['name']};
-  state.change!(change, {name: 'My Site'});
-  page.setValue(['baseUrl'], '$MY_SITE_URL', 'typing');
+  if (!state.change)
+    throw new Error('Expected the FormRenderer change callback.');
+  state.change(change, {name: 'My Site'});
+  page.value.setValue(['baseUrl'], '$MY_SITE_URL', 'typing');
 
   expect(onChange).toHaveBeenCalledWith(change, {name: 'My Site'});
   expect(state.setValue).toHaveBeenCalledWith(

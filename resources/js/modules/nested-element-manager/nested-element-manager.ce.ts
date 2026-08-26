@@ -32,6 +32,7 @@ export default class CraftNestedElementManager extends ControllerElement<NestedE
   protected readonly rootSelector = ':scope > div';
 
   protected create(root: HTMLElement): NestedElementManager {
+    // SAFETY: PHP renders the settings attribute from NestedElementManagerSettings.
     const settings = this.jsonAttr(
       'settings'
     ) as Partial<NestedElementManagerSettings>;

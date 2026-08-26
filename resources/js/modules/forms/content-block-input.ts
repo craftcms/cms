@@ -19,7 +19,11 @@ class CraftContentBlockInput extends HTMLElement {
   }
 
   private onClick = (event: Event): void => {
-    const target = event.target as Element;
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+
+    const target = event.target;
 
     if (target.closest('[data-content-block-add]')) {
       this.add();

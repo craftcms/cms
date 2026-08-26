@@ -38,6 +38,7 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
   }
 
   protected create(root: HTMLElement): MatrixInput {
+    // SAFETY: PHP renders `entry-types` from the Matrix entry type descriptor schema.
     const entryTypes = JSON.parse(
       this.getAttribute('entry-types') ?? '[]'
     ) as MatrixEntryType[];
@@ -58,7 +59,10 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
   }
 
   private onClick = (event: Event): void => {
-    const target = event.target as Element;
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const target = event.target;
     const add = target.closest<HTMLElement>('[data-form-matrix-add]');
     const remove = target.closest('[data-form-matrix-remove]');
 
@@ -86,12 +90,12 @@ export default class CraftMatrixInput extends ControllerElement<MatrixInput> {
   };
 
   private onReorder = (event: Event): void => {
-    const entry = (event.target as Element).closest<HTMLElement>(
-      '.matrixblock'
-    );
+    if (!(event instanceof CustomEvent) || !(event.target instanceof Element)) {
+      return;
+    }
+    const entry = event.target.closest<HTMLElement>('.matrixblock');
     const controller = entry ? MatrixEntry.forContainer(entry) : undefined;
-    const direction = (event as CustomEvent<{direction: 'up' | 'down'}>).detail
-      .direction;
+    const direction = event.detail.direction;
 
     if (direction === 'up') {
       controller?.moveUp();

@@ -1,5 +1,4 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import type {Table} from '@tanstack/vue-table';
 import ElementCards from './ElementCards.vue';
 import {
   createSampleTable,
@@ -26,14 +25,15 @@ const meta = {
 } satisfies Meta<typeof ElementCards>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+interface ElementCardsStoryArgs {
+  selectable?: boolean;
+  loading?: boolean;
+}
 
-// Each story builds its real table inside setup(); this satisfies the
-// required `table` prop in `args`, which the template's :table overrides.
-const tablePlaceholder = null as unknown as Table<any>;
+type Story = StoryObj<ElementCardsStoryArgs>;
 
-function render(extraProps: Record<string, unknown> = {}) {
-  return (args: Record<string, unknown>) => ({
+function render(extraProps: Record<string, boolean> = {}) {
+  return (args: NonNullable<Story['args']>) => ({
     components: {ElementCards},
     setup() {
       const table = createSampleTable({
@@ -47,17 +47,14 @@ function render(extraProps: Record<string, unknown> = {}) {
 
 export const Default: Story = {
   render: render(),
-  args: {table: tablePlaceholder},
 };
 
 export const Selectable: Story = {
   render: render({selectable: true}),
-  args: {table: tablePlaceholder},
 };
 
 export const Loading: Story = {
   render: render({loading: true}),
-  args: {table: tablePlaceholder},
 };
 
 export const Empty: Story = {
@@ -69,5 +66,4 @@ export const Empty: Story = {
     },
     template: '<ElementCards v-bind="args" :table="table" :data="[]" />',
   }),
-  args: {table: tablePlaceholder},
 };

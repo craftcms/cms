@@ -2,7 +2,24 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+it('isolates CSRF cache headers to the request scope', function () {
+    app()->instance('request', Request::create('/'));
+
+    Html::csrfInput();
+    app()->forgetScopedInstances();
+
+    $response = app(SetHeaders::class)->handle(
+        request(),
+        fn () => new Response(headers: ['Cache-Control' => 'public, max-age=3600']),
+    );
+
+    expect($response->headers->hasCacheControlDirective('no-cache'))->toBeFalse();
+});
 
 test('EncodeParams', function (string $expected, string $html, array $variables) {
     $this->assertSame($expected, Html::encodeParams($html, $variables));

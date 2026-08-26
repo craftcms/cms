@@ -52,7 +52,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static addSelect($column)
  * @method static join($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
  * @method static leftJoin($table, $first, $operator = null, $second = null)
- * @method static orderBy($column)
+ * @method static orderBy($column, $direction = 'asc')
  * @method static orderByDesc($column)
  * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)
@@ -1003,8 +1003,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public function __get($key): mixed
     {
-        if (array_key_exists($key, $this->customFieldValues)) {
-            return $this->customFieldValues[$key];
+        if ($this->isCustomFieldHandle($key)) {
+            return $this->customFieldValues[$key] ?? null;
         }
 
         if (in_array($key, $this->propertyPassthru)) {
@@ -1017,7 +1017,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public function __set(string $name, mixed $value): void
     {
-        if (array_key_exists($name, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($name)) {
             $this->customFieldValues[$name] = $value;
 
             return;
@@ -1038,6 +1038,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         throw new Exception("Property [{$name}] does not exist on the Element query instance.");
     }
 
+    #[Override]
+    public function canSetProperty(string $name): bool
+    {
+        return parent::canSetProperty($name)
+            || $this->isCustomFieldHandle($name)
+            || method_exists($this, $name)
+            || in_array($name, $this->propertyPassthru);
+    }
+
     /**
      * Dynamically handle calls into the query instance.
      *
@@ -1053,7 +1062,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return null;
         }
 
-        if (array_key_exists($method, $this->customFieldValues)) {
+        if ($this->isCustomFieldHandle($method)) {
             $this->customFieldValues[$method] = $parameters[0];
 
             return $this;

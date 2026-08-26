@@ -24,7 +24,7 @@ export default class CraftFieldLayoutDesigner extends ControllerElement<FieldLay
 
   protected override booted(): void {
     // Upgrade any nested Craft UI elements, scoped to this host.
-    (window as any).Craft?.initUiElements?.(this);
+    window.Craft?.initUiElements?.(this);
   }
 
   /**

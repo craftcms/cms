@@ -4,10 +4,12 @@ import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import Edit from './Edit.vue';
 
-const state = vi.hoisted(() => ({
-  change: undefined as
-    | ((change: FormChange, values: FormPayload['values']) => void)
-    | undefined,
+const state = vi.hoisted<{
+  change?: (change: FormChange, values: FormPayload['values']) => void;
+  setValue: ReturnType<typeof vi.fn>;
+  setEntryTypes: ReturnType<typeof vi.fn>;
+}>(() => ({
+  change: undefined,
   setValue: vi.fn(),
   setEntryTypes: vi.fn(),
 }));
@@ -54,10 +56,35 @@ vi.mock('@/modules/entry-types/components/EntryTypeSelect.vue', () => ({
   }),
 }));
 
+function entryType(id: number, name: string, handle: string): EntryType {
+  return {
+    id,
+    name,
+    handle,
+    description: null,
+    color: null,
+    uiLabelFormat: '{title}',
+    hasTitleField: true,
+    titleTranslationMethod: {name: 'Site', value: 'site'},
+    titleTranslationKeyFormat: null,
+    titleFormat: null,
+    allowLineBreaksInTitles: false,
+    showSlugField: true,
+    slugTranslationMethod: {name: 'Site', value: 'site'},
+    slugTranslationKeyFormat: null,
+    showStatusField: true,
+    uid: `entry-type-${id}`,
+    validateHandleUniqueness: true,
+    group: null,
+    original: null,
+    idAttribute: null,
+  };
+}
+
 const entryTypes = [
-  {id: 1, name: 'Article'},
-  {id: 2, name: 'News'},
-] as EntryType[];
+  entryType(1, 'Article', 'article'),
+  entryType(2, 'News', 'news'),
+];
 const values = {
   sectionId: null,
   name: '',

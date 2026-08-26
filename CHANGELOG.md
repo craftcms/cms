@@ -2,12 +2,42 @@
 
 ## Unreleased
 
+- Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
+- Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
+- Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
+- Element edit screens now indicate which fields a draft has unapplied changes to.
+- Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
+- Fixed a bug where field layout changes weren’t saved on entry type settings screens.
+- Fixed a bug where Typecast would throw when trying to set properties that didn't exist. [#19492](https://github.com/craftcms/cms/pull/19492)
+
+## 6.0.0-alpha.17 - 2026-08-18
+
+- Improved template resource cache collection by replaying structured HTML stack entries without parsing rendered tags.
+- Changed `CraftCms\Cms\Auth\Passkeys\Passkeys::verifyPasskey()` to return the updated credential record on success.
+- Changed GraphQL AST value decoding to use `webonyx/graphql-php` while preserving Craft-specific query condition validation.
+- Improved element queries to retain only explicitly supplied custom-field criteria.
+- Improved `CraftCms\Cms\Form\FormResolver` performance by indexing control paths and node UIDs for membership checks.
+- Added `CraftCms\Cms\Http\ResponseHeaders` and `CraftCms\Cms\Support\Facades\ResponseHeaders` for accumulating response headers within the current request scope.
+- Improved job progress persistence by using an atomic upsert.
+- Changed `CraftCms\Cms\Support\Json::decode()` to use exception-based JSON decoding.
+- Changed `craft:db:drop-all-tables` to use Laravel’s schema API.
+- Replaced the asset index lifecycle flags with `CraftCms\Cms\Asset\Enums\AssetIndexStatus` and explicit status transitions.
 - Added `CraftCms\Cms\Plugin\Plugin::settingsForm()` for defining standard plugin settings pages with the Control Panel Form system. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Removed `CraftCms\Cms\Plugin\Plugin::settingsHtml()`. `settingsForm()` should be used instead; Yii-era plugin settings HTML remains supported by `craftcms/yii2-adapter`. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Safe HTML elements are now allowed within Markdown field layout elements. ([#19426](https://github.com/craftcms/cms/pull/19426))
 - Added a slideout system for the Inertia/Vue Control Panel, which renders any `CpScreenResponse`-based screen as an in-page panel from a normal Inertia response, alongside the existing legacy `Craft.CpScreenSlideout`. ([#19354](https://github.com/craftcms/cms/pull/19354))
 - Added `CraftCms\Cms\Http\Responses\CpScreenResponse::screenData()`. ([#19354](https://github.com/craftcms/cms/pull/19354))
 - Removed the `Pane.vue` Vue component in favor of the `craft-pane` web component. ([#19398](https://github.com/craftcms/cms/pull/19398))
+- Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Improved structure mutation reliability by representing each pending change as a single immutable operation.
+- Improved Project Config change event handler registration by keeping callbacks and ordering metadata together.
+- Fixed a bug where Table field column handles became arrays after failed validation.
+- Fixed a bug where nested or concurrent searches could overwrite another search’s parser state.
+- Fixed a bug where cached user permission trees could become stale after permission changes or be modified by assignability filtering.
+- Fixed inconsistent handling of forced-disabled plugin configuration values.
+- Fixed a bug where `CraftCms\Cms\Edition` capability checks could report capabilities from the configured edition rather than the receiver.
+- Fixed a bug where throwing validation could run the validation lifecycle twice.
+- Fixed a bug where `CraftCms\Cms\Element\ElementCollection::with()` could pass incompatible element classes into eager loading.
 - Fixed a bug where cache options and tags registered via `CraftCms\Cms\Utility\Utilities\ClearCaches::add()` and `addTag()` were unavailable as Artisan commands.
 - Fixed a JavaScript error that occurred on non-Inertial pages that rendered field layout designers. ([#19380](https://github.com/craftcms/cms/discussions/19380))
 - Fixed a bug where Yii asset bundles registered with `craft\web\View::registerAssetBundle()` during plugin initialization were not included in rendered pages. ([#19393](https://github.com/craftcms/cms/pull/19393))
@@ -17,7 +47,9 @@
 - Fixed a bug where Addresses fields weren’t reading the value posted by the Control Panel form, so removing every address didn’t stick and blank addresses could be created. ([#19432](https://github.com/craftcms/cms/pull/19432))
 - Fixed a bug where newly-added Matrix entries and addresses showed a spinner indefinitely in the Inertia/Vue element editor, rather than their fields.
 - Fixed a bug where opening an element edit page with a Money field immediately created a provisional draft, before anything had been edited.
-- Element edit screens now autosave when the form’s values actually differ from the server’s, rather than whenever a control reports a change.
+- Fixed a bug where the `jobprogress` table was missing `dateCompleted` and `dateFailed` columns for installs that were upgraded from Craft 5.
+- Fixed a bug where failed queue jobs were losing their descriptions. ([#19444](https://github.com/craftcms/cms/issues/19444))
+- Fixed a bug where queue job details in the Queue Manager utility included “Error” and timestamp values even if they were null.
 
 ## 6.0.0-alpha.16 - 2026-08-05
 
@@ -693,8 +725,8 @@ Craft’s Mutex classes have been deprecated. [Laravel’s atomic locking](https
 - Deprecated `\craft\records\VolumeFolder`. `\CraftCms\Cms\Asset\Models\VolumeFolder` should be used instead.
 - Deprecated `\craft\controllers\AssetIndexesController`. `\CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController` should be used instead.
 - Deprecated `craft\services\AssetIndexer`. `CraftCms\Cms\Asset\AssetIndexer` should be used instead.
-- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Data\AssetIndexEntry` should be used instead.
-- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Data\IndexingSession` should be used instead.
+- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Models\AssetIndexData` should be used instead.
+- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
 - Deprecated `craft\errors\AssetException`. `CraftCms\Cms\Asset\Exceptions\AssetException` should be used instead.
 - Deprecated `craft\errors\AssetDisallowedExtensionException`. `CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException` should be used instead.
 - Deprecated `craft\errors\AssetNotIndexableException`. `CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException` should be used instead.

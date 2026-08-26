@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -91,10 +92,8 @@ class Plugins
      */
     private array $storedPluginInfo;
 
-    /**
-     * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
-     */
-    private string|array|null $forceDisabledPlugins;
+    /** @var array<string, true> Plugin handles that must be disabled per the `disabledPlugins` config setting */
+    private array $forceDisabledPlugins;
 
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
@@ -117,11 +116,8 @@ class Plugins
         GeneralConfig $generalConfig,
         private readonly PackageManifest $packageManifest,
     ) {
-        if ($generalConfig->safeMode) {
-            $this->forceDisabledPlugins = '*';
-        } else {
-            $this->forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
-        }
+        $forceDisabledPlugins = $generalConfig->safeMode ? '*' : $generalConfig->disabledPlugins;
+        $this->forceDisabledPlugins = array_fill_keys(is_string($forceDisabledPlugins) ? str($forceDisabledPlugins)->explode(',')->all() : ($forceDisabledPlugins ?? []), true);
 
         $this->composerPluginInfo = [];
 
@@ -160,7 +156,7 @@ class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true) {
+        if ($this->pluginsLoaded || $this->loadingPlugins) {
             return;
         }
 
@@ -992,7 +988,7 @@ class Plugins
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
         $info['isEnabled'] = $plugin !== null;
-        $info['isForceDisabled'] = ! ($this->forceDisabledPlugins === null) && ($this->forceDisabledPlugins === '*' || in_array($handle, $this->forceDisabledPlugins, true));
+        $info['isForceDisabled'] = $this->isPluginForceDisabled($handle);
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
@@ -1136,7 +1132,7 @@ class Plugins
         );
 
         if ($iconPath === null) {
-            $iconPath = Aliases::get('@appicons/default-plugin.svg');
+            $iconPath = Icons::resolveIconPath('default-plugin');
         } else {
             $iconPath .= '/icon.svg';
         }
@@ -1353,13 +1349,15 @@ class Plugins
         }
 
         // Force disable it?
-        if (
-            $this->forceDisabledPlugins === '*' ||
-            (is_array($this->forceDisabledPlugins) && isset($this->forceDisabledPlugins[$handle]))
-        ) {
+        if ($this->isPluginForceDisabled($handle)) {
             $data['enabled'] = false;
         }
 
         return $data;
+    }
+
+    private function isPluginForceDisabled(string $handle): bool
+    {
+        return isset($this->forceDisabledPlugins['*']) || isset($this->forceDisabledPlugins[$handle]);
     }
 }

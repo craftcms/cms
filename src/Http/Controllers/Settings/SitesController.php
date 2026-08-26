@@ -12,6 +12,7 @@ use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
@@ -65,15 +66,16 @@ readonly class SitesController
         $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
         $crumbs = array_filter([
-            ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
-            ['label' => t('Sites'), 'url' => isset($group) ? Url::cpUrl('settings/sites') : null],
+            ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+            ['label' => t('Sites'), 'href' => isset($group) ? Url::cpUrl('settings/sites') : null],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
         return Inertia::render('settings/sites/Index', [
+            'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
             'newSiteUrl' => Url::cpUrl('settings/sites/new'),
-            'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
+            'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
             'groups' => $groups,
             'subnav' => [
@@ -115,16 +117,15 @@ readonly class SitesController
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => t('Create site'),
-                    'url' => Url::url('settings/sites/new'),
-                    'active' => true,
+                    'href' => Url::url('settings/sites/new'),
                 ],
             ])
             ->inertiaPage('settings/sites/Edit', [
@@ -148,15 +149,15 @@ readonly class SitesController
             ->crumbs([
                 [
                     'label' => t('Settings'),
-                    'url' => Url::url('settings'),
+                    'href' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => Url::url('settings/sites'),
+                    'href' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => $siteData->getGroup()->getName(),
-                    'url' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
+                    'href' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
                 ],
                 [
                     'label' => $siteData->getName(),
@@ -294,12 +295,12 @@ readonly class SitesController
         $nodes = [
             HiddenField::make('siteId'),
             $group,
-            Field::make(t('Name'), Combobox::make('name')
-                ->options(SelectOptions::getEnvSuggestions()))
+            Field::make(t('Name'), Text::make('name')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
                 ->required()
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable.'),
+                    t('Type `$` to choose an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
@@ -356,12 +357,12 @@ readonly class SitesController
         $nodes[] = Field::make(t('This site has its own base URL'), Lightswitch::make('hasUrls'));
 
         if ($values['hasUrls'] ?? false) {
-            $nodes[] = Field::make(t('Base URL'), Combobox::make('baseUrl')
-                ->options(SelectOptions::getEnvSuggestions(true, Str::isUrl(...))))
+            $nodes[] = Field::make(t('Base URL'), Text::make('baseUrl')
+                ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers(true, Str::isUrl(...))))
                 ->instructions(t('The base URL for the site.'))
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('This can begin with an environment variable or alias.'),
+                    t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 ));

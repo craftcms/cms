@@ -89,20 +89,21 @@ function bridgeLegacyClasses(button: CraftButton): CraftButton {
 
 type LegacyCreator = (config?: CreateButtonConfig) => any;
 
-function patchUi(
-  ui: Record<string, unknown> & {
-    createButton?: LegacyCreator;
-    createSubmitButton?: LegacyCreator;
-    createPasteButton?: LegacyCreator;
-  }
-): void {
+interface LegacyUi {
+  createButton?: LegacyCreator;
+  createSubmitButton?: LegacyCreator;
+  createPasteButton?: LegacyCreator;
+  createTextInput?: (config?: Parameters<typeof createTextInput>[0]) => any;
+}
+
+function patchUi(ui: LegacyUi): void {
   ui.createButton = (config = {}) =>
     $(bridgeLegacyClasses(createButton(config)));
   ui.createSubmitButton = (config = {}) =>
     $(bridgeLegacyClasses(createSubmitButton(config)));
   ui.createPasteButton = (config = {}) =>
     $(bridgeLegacyClasses(createPasteButton(config)));
-  (ui as any).createTextInput = (config = {}) => $(createTextInput(config));
+  ui.createTextInput = (config = {}) => $(createTextInput(config));
 }
 
 declare global {

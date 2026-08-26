@@ -1,21 +1,17 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient} from '@craftcms/ui';
-  import type {FormControlPayload} from './types';
+  import type {FormControlPayload, FormValues} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   const props = defineProps<{
     control: FormControlPayload;
-    value: Array<Record<string, unknown>>;
+    value: FormValues[];
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (
-      event: 'update:value',
-      value: Array<Record<string, unknown>>,
-      kind: 'discrete'
-    ): void;
+    (event: 'update:value', value: FormValues[], kind: 'discrete'): void;
   }>();
   const {host, html} = useServerRenderedControl({
     value: () => props.value,
@@ -38,7 +34,11 @@
         .filter((input) => input.name === name)
         .map((input) => input.value)
         .filter(Boolean)
-        .map((value) => JSON.parse(value) as Record<string, unknown>);
+        .map((value) => {
+          // SAFETY: These hidden values are JSON objects rendered by the same
+          // grouped-entry-type control.
+          return JSON.parse(value) as FormValues;
+        });
 
       return values;
     },

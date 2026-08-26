@@ -1,5 +1,9 @@
 import {Base, HUD} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
+import {
+  canUseVueSlideout,
+  openLayoutComponentSettings,
+} from './settings-slideout';
 import {Element as FldElement} from './element';
 import {
   firstFocusableInSiblings,
@@ -7,7 +11,8 @@ import {
   fldTabData,
   hudData,
 } from './support';
-import {serializeFormInputs, type ActionMenuItem} from '@craftcms/ui';
+import {type ActionMenuItem} from '@craftcms/ui';
+import type {FormValues} from '@/modules/forms/types';
 
 declare const Craft: any;
 declare const $: any;
@@ -25,7 +30,6 @@ export class Tab extends Base {
   $addBtn: any = null;
   $actionBtn: any = null;
   slideout: any = null;
-  settingsNamespace: any = null;
   hud: any = null;
   destroyed = false;
 
@@ -71,7 +75,16 @@ export class Tab extends Base {
     }));
     // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
     // with the FLD WeakMap so `designer.getActiveHud()` can find it.
-    hudData.set(hud.$hud!, hud);
+    if (
+      !(hud.$hud instanceof Element) ||
+      !(hud.$trigger instanceof HTMLElement)
+    ) {
+      throw new Error('Field layout HUD requires a trigger and container.');
+    }
+    hudData.set(hud.$hud, {
+      $trigger: hud.$trigger,
+      hide: () => hud.hide(),
+    });
     hud.on('show', () => {
       hud.$main!.appendChild(this.designer.$libraryContainer);
       this.designer.libraryPicker?.select(0);
@@ -87,9 +100,10 @@ export class Tab extends Base {
       hud.show();
     });
 
-    const $elements = (
-      Array.from($tabContent.children) as HTMLElement[]
-    ).filter((el) => el !== this.$addBtn);
+    const $elements = Array.from($tabContent.children).filter(
+      (element): element is HTMLElement =>
+        element instanceof HTMLElement && element !== this.$addBtn
+    );
 
     for (const el of $elements) {
       this.initElement(el);
@@ -171,6 +185,14 @@ export class Tab extends Base {
     $tab.appendChild(menu);
   }
 
+  private settingsRequestData() {
+    return {
+      uid: this.uid,
+      layoutConfig: this.designer.config,
+      elementType: this.designer.settings!.elementType,
+    };
+  }
+
   async createSettings(): Promise<void> {
     let data;
     try {
@@ -179,9 +201,7 @@ export class Tab extends Base {
         'fields/render-layout-component-settings',
         {
           data: {
-            uid: this.uid,
-            layoutConfig: this.designer.config,
-            elementType: this.designer.settings!.elementType,
+            ...this.settingsRequestData(),
           },
         }
       );
@@ -191,9 +211,20 @@ export class Tab extends Base {
       throw e;
     }
 
-    this.settingsNamespace = data.namespace;
+    if (canUseVueSlideout()) {
+      await openLayoutComponentSettings(data, {
+        title: this.config?.name || Craft.t('app', 'Settings'),
+        triggerElement: this.$actionBtn,
+        requestData: () => this.settingsRequestData(),
+        apply: (settings) => this.applyTabSettings(settings),
+      });
+
+      return;
+    }
+
     this.slideout = await FieldLayoutDesigner.createSlideout(data, {
       triggerElement: this.$actionBtn,
+      requestData: () => this.settingsRequestData(),
     });
 
     // slideout.$container is a Craft jQuery object; bind on the native form.
@@ -209,51 +240,68 @@ export class Tab extends Base {
 
   applySettings(): void {
     const $container = this.slideout.$container[0];
-    const $nameInput = $container.querySelector('[name$="[name]"]');
-    if (!$nameInput?.value) {
-      Craft.cp.displayError(Craft.t('app', 'You must specify a tab name.'));
-      return;
-    }
+    const settingsForm = this.slideout.settingsForm;
+    const settings = settingsForm?.currentValues() ?? {};
 
     // update the UI
     const $submitBtn = $container.querySelector('button[type=submit]');
     $submitBtn?.classList.add('loading');
 
-    const config = Object.assign({}, this.config);
-    delete config.elements;
-
-    Craft.sendActionRequest('POST', 'fields/apply-layout-tab-settings', {
-      data: {
-        uid: this.uid,
-        layoutConfig: this.designer.config,
-        elementType: this.designer.settings!.elementType,
-        config,
-        settingsNamespace: this.settingsNamespace,
-        settings: serializeFormInputs(this.slideout.$container[0]),
-      },
-    })
-      .then((response: any) => {
-        this.updateConfig((config) =>
-          Object.assign(response.data.config, {elements: config.elements})
-        );
-        // Preserve the action menu across the label re-render.
-        const $label = this.$container.querySelector('.tabs .tab');
-        const $menu = $label.querySelector(':scope > craft-action-menu');
-        $menu?.remove();
-        $label.innerHTML = response.data.labelHtml;
-        if ($menu) {
-          $label.appendChild($menu);
-        }
-        this.slideout.close();
-      })
+    this.applyTabSettings(settings)
       .catch((e: any) => {
-        Craft.cp.displayError();
-        console.error(e);
+        Craft.cp.displayError(
+          e?.name === 'TabNameRequired' ? e.message : undefined
+        );
       })
       .finally(() => {
         $submitBtn?.classList.remove('loading');
-        this.slideout.close();
+        this.slideout?.close();
       });
+  }
+
+  /**
+   * Persists the tab's settings and re-renders its label.
+   *
+   * Rejects on failure so the Vue settings panel can surface the errors
+   * against the fields they belong to.
+   */
+  async applyTabSettings(settings: FormValues): Promise<void> {
+    if (!settings.name) {
+      const message = Craft.t('app', 'You must specify a tab name.');
+
+      throw Object.assign(new Error(message), {
+        name: 'TabNameRequired',
+        response: {data: {errors: {name: message}}},
+      });
+    }
+
+    const config = Object.assign({}, this.config);
+    delete config.elements;
+
+    const response = await Craft.sendActionRequest(
+      'POST',
+      'fields/apply-layout-tab-settings',
+      {
+        data: {
+          ...this.settingsRequestData(),
+          config,
+          settings,
+        },
+      }
+    );
+
+    this.updateConfig((config) =>
+      Object.assign(response.data.config, {elements: config.elements})
+    );
+
+    // Preserve the action menu across the label re-render.
+    const $label = this.$container.querySelector('.tabs .tab');
+    const $menu = $label.querySelector(':scope > craft-action-menu');
+    $menu?.remove();
+    $label.innerHTML = response.data.labelHtml;
+    if ($menu) {
+      $label.appendChild($menu);
+    }
   }
 
   moveLeft(): void {

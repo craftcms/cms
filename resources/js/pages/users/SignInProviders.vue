@@ -8,6 +8,7 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import Badge from '@/common/components/Badge.vue';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
+  import UserScreen from '@/modules/user/components/UserScreen.vue';
 
   defineOptions({
     inheritAttrs: false,
@@ -23,7 +24,7 @@
   const connectRequest = useHttp<Record<string, never>, ConnectResponse>({});
   const disconnectRequest = useHttp<
     Record<string, never>,
-    Record<string, unknown>
+    Record<string, never>
   >({});
 
   async function connectProvider(provider: Provider) {
@@ -144,7 +145,9 @@
 </script>
 
 <template>
-  <craft-pane padding="0" appearance="raised">
-    <AdminTable :table="table" />
-  </craft-pane>
+  <UserScreen>
+    <craft-pane padding="0" appearance="raised">
+      <AdminTable :table="table" />
+    </craft-pane>
+  </UserScreen>
 </template>

@@ -215,7 +215,7 @@ export class ElementDeletionManager extends Base {
       onFadeOut: () => {
         this.destroy();
       },
-    } as any);
+    });
 
     $closeBtn.on('activate', () => {
       this.modal.hide();
@@ -407,4 +407,4 @@ class Blocker extends Base {
 }
 
 // Legacy static exposure (`new Craft.ElementDeletionManager.Blocker(...)`).
-(ElementDeletionManager as any).Blocker = Blocker;
+Object.assign(ElementDeletionManager, {Blocker});

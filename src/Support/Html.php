@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Support;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -40,6 +40,15 @@ use function CraftCms\Cms\template;
 class Html
 {
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
+
+    /**
+     * Matches an SVG's leading XML declaration.
+     *
+     * Worth stripping from anything bound for the CP: an XML processing
+     * instruction is not valid HTML, and Vue's runtime template compiler
+     * throws on it in a production build.
+     */
+    public const string XML_DECLARATION_RE = '/<\?xml.*?\?>\s*/';
 
     /**
      * @var string[] List of tag attributes that should be specially handled when their values are of array type.
@@ -180,7 +189,7 @@ class Html
             ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            SetHeaders::noCache();
+            ResponseHeaders::noCache();
 
             return (string) csrf_field();
         }
@@ -1364,7 +1373,7 @@ class Html
         }
 
         // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
+        $svg = preg_replace(self::XML_DECLARATION_RE, '', $svg);
 
         // Namespace class names and IDs
         if ($namespace) {

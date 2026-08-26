@@ -32,6 +32,7 @@
   import {
     ScreenContentReadyKey,
     ScreenShellKey,
+    type ScreenPageProps as GenericScreenPageProps,
     useScreenPageProps,
     useScreenPropsStore,
   } from '@/common/composables/screen';
@@ -65,7 +66,7 @@
   // passed to an inline `<AppLayout>` arrive directly. Either can configure
   // this shell, so merge them with the direct props winning.
   const props = computed<ScreenProps>(() => ({
-    ...(store?.props as ScreenProps | undefined),
+    ...store?.props,
     ...Object.fromEntries(
       Object.entries(ownProps).filter(([, value]) => value !== undefined)
     ),
@@ -85,11 +86,11 @@
       action?: string | null;
       namespace?: string | null;
       /** Present only on the element-edit screen. See `useElementEditor()`. */
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      elementEditorSettings?: Record<string, any> | null;
+      elementEditorSettings?: GenericScreenPageProps | null;
     };
   }
 
+  // SAFETY: CP screen responses provide this documented chrome payload.
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
@@ -174,8 +175,7 @@
       (elementEditor.isStatic.value ? t('Close') : t('Cancel'))
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const craft = (): any => (window as any).Craft;
+  const craft = () => window.Craft;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleElementSaved(response: any): void {
@@ -418,7 +418,9 @@
 
         <CalloutReadOnly v-if="readOnly" />
 
-        <slot></slot>
+        <craft-field-group>
+          <slot></slot>
+        </craft-field-group>
 
         <LayoutSlotOutlet name="content-footer">
           <slot name="content-footer"></slot>

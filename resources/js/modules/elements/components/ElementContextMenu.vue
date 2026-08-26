@@ -2,7 +2,7 @@
   import {computed, h} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
-  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditPage';
+  import type {ElementContextMenuItem} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     label: string;
@@ -39,9 +39,7 @@
         type: 'link',
         href: item.href!,
         label: item.label!,
-        // Shown beneath the label — who saved it and when.
-        description: item.description,
-        selected: item.selected,
+        variant: item.selected ? 'accent' : undefined,
       };
     })
   );

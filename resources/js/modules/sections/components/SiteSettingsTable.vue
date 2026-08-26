@@ -6,13 +6,7 @@
   import {useEditableTable} from '@/modules/admin-table/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
 
-  type SitesData = Record<
-    string,
-    {
-      enabled: boolean;
-      [key: string]: any;
-    }
-  >;
+  type SitesData = Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: SitesData): void;
@@ -30,7 +24,7 @@
 
   const page = usePage<{
     homepageUri?: string;
-    templateOptions: Array<any>;
+    templateOptions: Array<import('@/common/types').SelectItem>;
   }>();
 
   const homepageUri = computed(() => page.props.homepageUri);
@@ -49,15 +43,25 @@
   });
 
   const {table} = useEditableTable<SectionSiteSettingsData>({
+    // SAFETY: useEditableTable injects each record key as the configured handle property.
     data: () => props.modelValue as Record<string, SectionSiteSettingsData>,
     key: 'handle',
     name: 'sites',
     columnVisibility: () => columnVisibility.value,
-    onChange: (data) => emit('update:modelValue', data as SitesData),
+    onChange: (data) => {
+      if (Array.isArray(data)) {
+        throw new Error(
+          'Section site settings must remain keyed by site handle.'
+        );
+      }
+      // SAFETY: useEditableTable removes its injected handle before returning keyed records.
+      emit('update:modelValue', data as SitesData);
+    },
     columns: ({columnHelper}) => [
-      columnHelper.accessor('name', {
+      columnHelper.display({
+        id: 'name',
         header: t('Site'),
-        cell: ({getValue}) => getValue(),
+        cell: ({row}) => row.original.name,
         meta: {
           cellTag: 'th',
           trackSize: '0.25fr',

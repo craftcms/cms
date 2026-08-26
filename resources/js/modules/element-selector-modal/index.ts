@@ -18,9 +18,9 @@ registerCraftGlobals({
 });
 
 if (
-  typeof Craft._elementSelectorModalClasses?.[
+  Craft._elementSelectorModalClasses?.[
     'CraftCms\\Cms\\Asset\\Elements\\Asset'
-  ] === 'undefined'
+  ] === undefined
 ) {
   Craft.registerElementSelectorModalClass?.(
     'CraftCms\\Cms\\Asset\\Elements\\Asset',

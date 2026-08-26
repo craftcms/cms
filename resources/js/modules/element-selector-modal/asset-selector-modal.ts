@@ -6,6 +6,7 @@ declare const Garnish: any;
 
 const DEFAULTS = {
   canSelectImageTransforms: false,
+  // SAFETY: The empty default establishes this modal's transform descriptor list.
   transforms: [] as Array<{handle: string; name: string}>,
 };
 
@@ -19,6 +20,7 @@ const DEFAULTS = {
  * the legacy class static property.
  */
 export class AssetSelectorModal extends BaseElementSelectorModal {
+  // SAFETY: These defaults extend the base modal settings without changing existing keys.
   static override defaults =
     DEFAULTS as typeof BaseElementSelectorModal.defaults & typeof DEFAULTS;
 
@@ -98,12 +100,13 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
   }
 
   onSelectTransform(option: Element): void {
+    // SAFETY: Transform menu items are rendered above with string data-transform values.
     const transform = $(option).data('transform') as string;
     this.selectImagesWithTransform(transform);
   }
 
   selectImagesWithTransform(transform: string): void {
-    if (typeof AssetSelectorModal.transformUrls[transform] === 'undefined') {
+    if (AssetSelectorModal.transformUrls[transform] === undefined) {
       AssetSelectorModal.transformUrls[transform] = {};
     }
 
@@ -114,8 +117,7 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
       const $item = $($selectedElements[i]);
       const elementId: number = Craft.getElementInfo($item).id;
       if (
-        typeof AssetSelectorModal.transformUrls[transform][elementId] ===
-        'undefined'
+        AssetSelectorModal.transformUrls[transform][elementId] === undefined
       ) {
         missingIds.push(elementId);
       }
@@ -170,8 +172,8 @@ export class AssetSelectorModal extends BaseElementSelectorModal {
       const cache =
         AssetSelectorModal.transformUrls[this._selectedTransform] ?? {};
       for (const item of info) {
-        const url = cache[item.id as number];
-        if (typeof url !== 'undefined' && url !== false) {
+        const url = cache[Number(item.id)];
+        if (url !== undefined && url !== false) {
           item.url = url;
         }
       }

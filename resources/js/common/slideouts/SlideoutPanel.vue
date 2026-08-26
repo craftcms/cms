@@ -73,7 +73,8 @@
    * panels slide in from, so `Craft.slideoutPosition` flips it.
    */
   const positionProp = computed(() =>
-    (window as any).Craft?.slideoutPosition === 'start'
+    Object.getOwnPropertyDescriptor(window.Craft, 'slideoutPosition')?.value ===
+    'start'
       ? 'inset-inline-end'
       : 'inset-inline-start'
   );
@@ -134,6 +135,12 @@
     // After `addLayer`, which the stack relies on to work out which container
     // to leave visible to assistive technology.
     registerPanel(stackPanel);
+
+    // A locally-built panel (see `openSlideoutWith`) arrives with its component
+    // already set, so the watcher below never fires for it.
+    if (props.instance.component) {
+      setFocusWithin(el);
+    }
   });
 
   onBeforeUnmount(() => {

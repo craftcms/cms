@@ -1,4 +1,4 @@
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
@@ -62,6 +62,37 @@ export default class CraftChip extends LitElement {
 
   #thumbLoader = new ThumbnailLoader();
 
+  /**
+   * Bumped whenever the light DOM changes, so the slot checks in `render()`
+   * run again.
+   *
+   * Those checks are plain `querySelector()` calls rather than `slotchange`
+   * listeners: a `<slot>` that isn't rendered can't report a change, so the
+   * first thing slotted into an empty prefix or suffix would never appear.
+   * Chips are commonly filled in after their first render — `addActionsToChip()`
+   * injects an action menu into `[slot="suffix"]` long after the chip mounts.
+   */
+  @state() private lightDom = 0;
+
+  #observer = new MutationObserver(() => this.lightDom++);
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // Attributes included: content moves between slots by having its `slot`
+    // attribute set, not only by being added or removed.
+    this.#observer.observe(this, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['slot'],
+    });
+  }
+
+  override disconnectedCallback(): void {
+    this.#observer.disconnect();
+    super.disconnectedCallback();
+  }
+
   renderPrefix() {
     return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
@@ -86,6 +117,9 @@ export default class CraftChip extends LitElement {
   }
 
   override render() {
+    // Read so Lit re-renders when the light DOM changes; see `lightDom`.
+    void this.lightDom;
+
     // query the element Light DOM children for slotted elements
     const renderPrefix =
       !!this.querySelector('[slot="prefix"]') ||
@@ -112,13 +146,13 @@ export default class CraftChip extends LitElement {
       >
         ${this.selectable ? html` <input type="checkbox" />` : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
-        <div class="cp-chip__body">
-          <slot></slot>
-        </div>
+        <slot class="cp-chip__body"></slot>
         ${renderSuffix
-          ? html` <div class="cp-chip__suffix" part="suffix">
-              <slot name="suffix"></slot>
-            </div>`
+          ? html`<slot
+              name="suffix"
+              class="cp-chip__suffix"
+              part="suffix"
+            ></slot>`
           : nothing}
       </div>
     `;
