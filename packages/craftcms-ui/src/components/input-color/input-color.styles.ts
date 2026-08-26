@@ -69,7 +69,7 @@ export default css`
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 43%);
+    box-shadow: inset 0 0 0 1px var(--c-color-border-translucent);
   }
 
   .input-color__picker {

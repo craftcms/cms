@@ -28,6 +28,13 @@
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
 
+  /* Transparent tokens */
+  --c-color-border-translucent: color-mix(
+    in srgb,
+    var(--color-slate-900),
+    transparent 39%
+  );
+
   /* Shadows */
   --c-shadow-sunken: var(--inset-shadow-sm);
   --c-shadow-raised: var(--shadow-sm);
