@@ -15,6 +15,11 @@ Boost's `search-docs` covers Laravel ecosystem documentation. Use Craft's source
 
 This is a large codebase with some large files. Search narrowly before reading full files.
 
+## Inferring conventions
+
+- When using `infer-conventions`, treat `src/`, `database/`, `yii2-adapter/`, `packages/`, `resources/js/`, `resources/templates/`, `tests/`, and `yii2-adapter/tests-laravel/` as the application roots. Adapt checklist references to `app/**` to the matching Craft path.
+- Scope candidates using the boundaries in `.ai/rules/index.md`. Keep core, adapter, frontend-stack, package, and test-suite conventions separate.
+
 ## Commands
 
 - Use `composer fix-cs`, `composer phpstan`, and `composer ci` for repository-wide PHP checks.
