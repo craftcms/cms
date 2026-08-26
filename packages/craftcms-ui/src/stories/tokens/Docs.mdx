@@ -230,3 +230,32 @@ appearance: AppearanceKey = Appearance.Fill;
 - **Use `~=` selectors** - appearance selectors in existing components use `[appearance~='value']` (word matching) rather than `[appearance='value']` (exact matching).
 - **Default to neutral** - set sensible defaults (`Variant.Neutral` / the most common appearance) so components look correct without explicit attributes.
 - **Define custom subsets when needed** - if the standard `Variant` or `Appearance` type doesn't fit (like Button's `primary` variant), define component-specific values instead of forcing the shared types.
+
+---
+
+## Using tokens from Tailwind
+
+Every color token is republished into Tailwind's `--color-*` namespace by
+`@craftcms/ui/tailwind.css`, so each one has a matching set of utility classes.
+The token name _is_ the utility name — drop the `--c-color-` (or `--c-`)
+prefix, and what's left is what you type:
+
+| Token                            | Utilities                                                      |
+| -------------------------------- | -------------------------------------------------------------- |
+| `--c-color-neutral-border-quiet` | `border-neutral-border-quiet`, `divide-…`, `ring-…`            |
+| `--c-color-danger-fill-normal`   | `bg-danger-fill-normal`                                        |
+| `--c-color-accent-on-loud`       | `text-accent-on-loud`                                          |
+| `--c-surface-raised`             | `bg-surface-raised`                                            |
+| `--c-text-quiet`                 | `text-text-quiet`                                              |
+| `--c-status-live-fill`           | `bg-status-live-fill`                                          |
+
+The mapping is `@theme inline`, so the utilities reference the custom
+properties rather than snapshotting their values. `[data-theme='dark']` and
+`[data-color]` both keep working through them — including the generic
+contextual tokens, where `bg-fill-normal` / `border-border-normal` /
+`text-on-normal` paint with whatever color the nearest `[data-color]` or
+`variant` resolved to.
+
+`tailwind.css` is generated from `src/constants/colors.data.ts` by
+`scripts/generate-colors.js` alongside `shared/colorable.css`, so adding a
+color there gives you its utilities for free. Don't edit it by hand.

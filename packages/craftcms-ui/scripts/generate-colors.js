@@ -7,6 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUT_FILE = resolve(ROOT, 'src/styles/shared/colorable.css');
 const OUT_LIT_FILE = resolve(ROOT, 'src/styles/colorable.styles.ts');
+const OUT_TAILWIND_FILE = resolve(ROOT, 'tailwind.css');
 const DATA_FILE = resolve(ROOT, 'src/constants/colors.data.ts');
 
 /*
@@ -230,6 +231,194 @@ ${variants}
 `;
 }
 
+/**
+ * Foundational tokens that aren't derived from the palette, so they can't be
+ * generated from `colors.data.ts`. Kept in step with
+ * `src/styles/shared/tokens.css` by hand — the shape there is hand-authored
+ * too (and `--c-text-*` is overloaded: `--c-text-quiet` is a color while
+ * `--c-text-sm` is a font size), so there's nothing mechanical to read.
+ *
+ * Each entry is `[section heading, [[tailwind key, craft token], …]]`. The
+ * tailwind key lands in the `--color-*` namespace, which is what names the
+ * utility: `surface-raised` → `bg-surface-raised`, `text-quiet` →
+ * `text-text-quiet`.
+ */
+const foundationalTokens = [
+  [
+    'Surfaces',
+    [
+      ['surface-default', '--c-surface-default'],
+      ['surface-raised', '--c-surface-raised'],
+      ['surface-sunken', '--c-surface-sunken'],
+      ['surface-overlay', '--c-surface-overlay'],
+      ['surface-form', '--c-surface-form'],
+      ['surface-shade', '--c-surface-shade'],
+    ],
+  ],
+  [
+    'Text',
+    [
+      ['text-default', '--c-text-default'],
+      ['text-quiet', '--c-text-quiet'],
+      ['text-link', '--c-text-link'],
+      ['text-white', '--c-text-white'],
+      ['text-black', '--c-text-black'],
+    ],
+  ],
+  [
+    "Contextual — whatever the nearest [data-color] / variant resolved to",
+    [
+      ['fill-quiet', '--c-color-fill-quiet'],
+      ['fill-normal', '--c-color-fill-normal'],
+      ['fill-loud', '--c-color-fill-loud'],
+      ['border-quiet', '--c-color-border-quiet'],
+      ['border-normal', '--c-color-border-normal'],
+      ['border-loud', '--c-color-border-loud'],
+      ['on-quiet', '--c-color-on-quiet'],
+      ['on-normal', '--c-color-on-normal'],
+      ['on-loud', '--c-color-on-loud'],
+    ],
+  ],
+  [
+    'Form controls',
+    [
+      ['form-fill', '--c-form-control-fill'],
+      ['form-text', '--c-form-control-text'],
+      ['form-border', '--c-form-control-border-color'],
+      ['input-fill', '--c-input-fill'],
+      ['input-text', '--c-input-text'],
+      ['input-border', '--c-input-border-color'],
+      ['select-fill', '--c-select-fill'],
+      ['select-text', '--c-select-text'],
+      ['select-border', '--c-select-border-color'],
+    ],
+  ],
+  [
+    'Surfaces — panes and modals',
+    [
+      ['pane-fill', '--c-pane-fill'],
+      ['pane-text', '--c-pane-text'],
+      ['pane-border', '--c-pane-border-color'],
+      ['modal-fill', '--c-modal-fill'],
+      ['modal-text', '--c-modal-text'],
+      ['modal-border', '--c-modal-border-color'],
+    ],
+  ],
+  ['Focus', [['focus-outline', '--c-color-focus-outline']]],
+];
+
+/** Status tokens in `tokens.css`, each with a fill / border / text. */
+const statusNames = ['live', 'enabled', 'pending', 'expired', 'disabled'];
+
+/**
+ * Static (theme-invariant) semantic colors in `tokens.css`. Deliberately not
+ * `semanticColors` — `--c-color-static-*` covers `brand`, which has no
+ * theme-aware counterpart.
+ */
+const staticNames = [
+  'neutral',
+  'brand',
+  'accent',
+  'info',
+  'success',
+  'warning',
+  'danger',
+];
+
+const colorableRoles = [
+  ['fill', ['quiet', 'normal', 'loud']],
+  ['border', ['quiet', 'normal', 'loud']],
+  ['on', ['quiet', 'normal', 'loud']],
+];
+
+function themeSection(heading, entries) {
+  return [
+    `  /* ——— ${heading} ——— */`,
+    ...entries.map(([key, token]) => `  --color-${key}: var(${token});`),
+  ].join('\n');
+}
+
+/** The nine colorable tokens a `--c-color-<name>-*` group exposes. */
+function colorableSection(name) {
+  return themeSection(
+    name,
+    colorableRoles.flatMap(([role, strengths]) =>
+      strengths.map((strength) => [
+        `${name}-${role}-${strength}`,
+        `--c-color-${name}-${role}-${strength}`,
+      ])
+    )
+  );
+}
+
+/**
+ * Craft's design tokens, republished in Tailwind's `--color-*` namespace so
+ * every one of them gets `bg-*` / `text-*` / `border-*` / `ring-*` / … utility
+ * classes generated for it.
+ *
+ * The mapping is mechanical: drop the `--c-color-` (or `--c-`) prefix, and
+ * what's left names the utility. `--c-color-neutral-border-quiet` becomes
+ * `--color-neutral-border-quiet`, i.e. `border-neutral-border-quiet`,
+ * `bg-neutral-border-quiet`, and so on.
+ */
+function generateTailwindTheme(paletteColors, semanticColors) {
+  const sections = [
+    ...foundationalTokens.map(([heading, entries]) =>
+      themeSection(heading, entries)
+    ),
+    themeSection(
+      'Status',
+      statusNames.flatMap((name) =>
+        ['fill', 'border', 'text'].map((role) => [
+          `status-${name}-${role}`,
+          `--c-status-${name}-${role}`,
+        ])
+      )
+    ),
+    themeSection(
+      'Static — same value in every theme',
+      staticNames.flatMap((name) =>
+        ['fill', 'border', 'on'].map((role) => [
+          `static-${name}-${role}`,
+          `--c-color-static-${name}-${role}`,
+        ])
+      )
+    ),
+    ...Object.keys(semanticColors).map((name) => colorableSection(name)),
+    ...paletteColors.map((name) => colorableSection(name)),
+  ];
+
+  return `/* Auto-generated by scripts/generate-colors.js — do not edit manually */
+
+/**
+ * Craft CMS Control Panel — Tailwind v4 theme integration.
+ *
+ * Publishes Craft's design tokens into Tailwind's \`--color-*\` namespace so
+ * that utility classes are generated for every one of them. The token name is
+ * the utility name: \`--c-color-neutral-border-quiet\` becomes
+ * \`border-neutral-border-quiet\`, \`--c-surface-raised\` becomes
+ * \`bg-surface-raised\`.
+ *
+ * Usage in a CSS entry file:
+ *
+ *     @import 'tailwindcss/theme.css' layer(theme);
+ *     @import 'tailwindcss/utilities.css' layer(utilities);
+ *     @import '@craftcms/ui/styles/cp.css' layer(cp);  // :root token values
+ *     @import '@craftcms/ui/tailwind.css' layer(theme);
+ *
+ * The \`--c-*\` variables have to be in scope (via \`cp.css\`) for the
+ * \`var()\`s below to resolve at render time. \`@theme inline\` makes the
+ * generated utilities reference those custom properties directly rather than
+ * snapshotting their values, so \`[data-theme='dark']\` overrides and
+ * \`[data-color]\` context both flow through untouched.
+ */
+
+@theme inline {
+${sections.join('\n\n')}
+}
+`;
+}
+
 export default async function main() {
   const {paletteColors, semanticColors} = await loadColorData();
   const css = generateStyles(paletteColors, semanticColors);
@@ -238,6 +427,12 @@ export default async function main() {
 
   writeFileSync(OUT_LIT_FILE, generateLitStyles(paletteColors, semanticColors));
   console.log(`Generated ${OUT_LIT_FILE}`);
+
+  writeFileSync(
+    OUT_TAILWIND_FILE,
+    generateTailwindTheme(paletteColors, semanticColors)
+  );
+  console.log(`Generated ${OUT_TAILWIND_FILE}`);
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

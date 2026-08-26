@@ -32,7 +32,7 @@ class Heading implements Node
         $description = $node->props['description'] === null
             ? ''
             : Html::tag('p', Html::encode($node->props['description']), [
-                'class' => ['my-0', 'text-sm', 'text-neutral-text-quiet'],
+                'class' => ['my-0', 'text-sm', 'text-text-quiet'],
             ]);
 
         return Html::tag('div', $heading.$description, [
