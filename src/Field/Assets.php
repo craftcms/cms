@@ -26,7 +26,9 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Form\Controls\AssetSelect;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\ElementSelect;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Form;
@@ -776,6 +778,83 @@ class Assets extends BaseRelationField
         }
 
         return $sources;
+    }
+
+    /**
+     * Carries the field's upload affordance through to the Vue control.
+     *
+     * The same three facts {@see inputTemplateVariables()} hands the legacy
+     * Twig input, on the same terms: uploads have to be enabled on the field,
+     * there has to be a volume to put them in, and the user needs permission
+     * to save assets there. The upload folder is resolved without creating
+     * dynamic folders — rendering a field should not have the side effect of
+     * creating one — so a field pointed at an as-yet-unmade dynamic subfolder
+     * reports no folder, and the button renders disabled rather than absent.
+     */
+    #[Override]
+    protected function selectControl(FieldContext $context): ElementSelect
+    {
+        $control = AssetSelect::make($context->path);
+        $uploadVolume = $this->_uploadVolume();
+
+        $canUpload = (
+            $this->allowUploads &&
+            $uploadVolume &&
+            Gate::check("saveAssets:$uploadVolume->uid")
+        );
+
+        if (! $canUpload) {
+            return $control;
+        }
+
+        try {
+            $uploadFolderId = $this->_uploadFolder($context->element, false)->id;
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // A misconfigured location costs the field its upload affordance,
+            // not its ability to relate what's already there. What went wrong
+            // reaches the author through {@see formWarning()}.
+            return $control;
+        }
+
+        return $control
+            ->canUpload()
+            ->fsType($uploadVolume->sourceFilesystemType())
+            ->uploadFolderId($uploadFolderId);
+    }
+
+    /**
+     * Reports a broken asset location as the field's warning.
+     *
+     * `_uploadFolder()` throws with a message written for the author — which
+     * volume setting is wrong, on which field — so it is passed through as-is.
+     * Craft 5 surfaced the same text by replacing the whole input with a
+     * warning paragraph; here the field keeps working and carries the warning
+     * alongside it.
+     *
+     * Only asked when a location is actually load-bearing: a field that
+     * neither uploads nor restricts never resolves a folder, so a missing
+     * default upload location is not a misconfiguration to complain about.
+     */
+    #[Override]
+    public function formWarning(?ElementInterface $element = null): ?string
+    {
+        if (! $this->allowUploads && ! $this->restrictLocation) {
+            return null;
+        }
+
+        try {
+            $this->_uploadFolder($element, false);
+        } catch (InvalidFsException $e) {
+            return $e->getMessage();
+        } catch (InvalidSubpathException) {
+            return t('This field’s target subfolder path is invalid: {path}', [
+                'path' => $this->restrictLocation
+                    ? $this->restrictedLocationSubpath
+                    : $this->defaultUploadLocationSubpath,
+            ]);
+        }
+
+        return null;
     }
 
     /** @return array<string, mixed> */
