@@ -130,9 +130,15 @@ class FieldLayoutDesigner
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
 
-        if ($fieldLayout->type) {
-            $fieldLayoutConfig['type'] = $fieldLayout->type;
-        }
+        // The element type deliberately stays out of the config input. That
+        // input carries the control's *value*, and the form's value has no
+        // `type` — so writing one here makes the value the control reads back
+        // differ from the value the form holds, on the very first read. The
+        // form then treats an unedited layout as changed and re-renders the
+        // control, throwing away the designer's DOM along with any open HUD or
+        // menu. Consumers get the type from `$settings['elementType']`, and
+        // every path that rebuilds a layout from this config assigns `type`
+        // itself (see `Form\Controls\FieldLayoutDesigner::designerHtml()`).
 
         return view('c::forms.fld.designer', [
             'designer' => $this,
