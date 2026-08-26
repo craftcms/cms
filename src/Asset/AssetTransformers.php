@@ -537,8 +537,13 @@ class AssetTransformers
             asset: $asset,
             transformer: $transformer,
             parameters: $this->validateParameters($transformer, $parameters),
-            immediately: $immediately ?? Cms::config()->generateTransformsBeforePageLoad,
+            immediately: $immediately ?? $this->defaultImmediately(),
         );
+    }
+
+    protected function defaultImmediately(): bool
+    {
+        return Cms::config()->generateTransformsBeforePageLoad;
     }
 
     /** @return array<string, mixed> */

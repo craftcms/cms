@@ -41,6 +41,7 @@ use CraftCms\Cms\Utility\UtilityTypes;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
+use CraftCms\Yii2Adapter\Asset\LegacyAssetTransformers;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
@@ -125,6 +126,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
         new FilesystemCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
+        $this->app->singleton(AssetTransformers::class, LegacyAssetTransformers::class);
         $this->app->singleton(Settings::class, LegacySettings::class);
         $this->app->singleton(GqlArguments::class, LegacyGqlArguments::class);
         $this->app->singleton(GqlDirectives::class, LegacyGqlDirectives::class);
