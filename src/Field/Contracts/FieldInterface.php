@@ -267,6 +267,15 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function formControl(FieldContext $context): Control;
 
     /**
+     * Returns a warning the field itself needs to show, on top of any the
+     * field layout author wrote, or `null` when it has nothing to say.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string;
+
+    /**
      * Prepare the field value for validation.
      *
      * Use this method to normalize or transform the value before
