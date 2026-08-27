@@ -670,7 +670,7 @@
             </template>
           </ActionMenu>
         </div>
-        <div class="p-(--c-spacing-md)">
+        <div class="elements-stage">
           <ElementList
             :data="listData"
             :view-mode="viewMode"
@@ -724,3 +724,9 @@
     </component>
   </div>
 </template>
+
+<style lang="scss" scoped>
+  .elements-stage {
+    padding: clamp(0.25em, 1%, 1em);
+  }
+</style>

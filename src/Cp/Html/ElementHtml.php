@@ -794,7 +794,7 @@ readonly class ElementHtml
                     '--custom-sel-bg-color' => $color?->cssVar(800),
                 ]),
                 'data' => array_filter([
-                    'color' => $color?->value,
+                    'color' => $color?->value ?? 'white',
                     'settings' => $config['autoReload'] ? [
                         'hyperlink' => $config['hyperlink'],
                         'returnUrl' => $config['returnUrl'],
