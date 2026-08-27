@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Activity\EventTypes\RevisionRestored;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -208,12 +209,11 @@ readonly class Revisions
                 'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
             ]);
 
-            Activities::record(
-                'craft.revision.restored',
+            Activities::record(new RevisionRestored(
                 subject: $newSource,
                 site: Sites::getSiteById($newSource->siteId),
-                data: ['revisionNum' => $revision->revisionNum],
-            );
+                revisionNum: $revision->revisionNum,
+            ));
 
             event(new RevertedToRevision(
                 canonical: $canonical,

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\ElementDeleted as ElementDeletedActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementRestored as ElementRestoredActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementSiteAdded;
+use CraftCms\Cms\Activity\EventTypes\ElementSiteRemoved;
+use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementDeleted;
@@ -47,9 +52,9 @@ it('records trash restore and permanent deletion with durable snapshots', functi
     $events = $this->activities->query()->subject($subject)->get()->reverse()->values();
 
     expect($events->pluck('eventType')->all())->toBe([
-        'craft.element.trashed',
-        'craft.element.restored',
-        'craft.element.deleted',
+        ElementTrashed::class,
+        ElementRestoredActivity::class,
+        ElementDeletedActivity::class,
     ])->and($events->pluck('siteId')->unique()->all())->toBe([$entry->siteId])
         ->and($events->pluck('snapshots.subject.label')->unique()->all())->toBe(['Release notes'])
         ->and(Entry::find()->id($entry->id)->status(null)->trashed(null)->exists())->toBeFalse();
@@ -96,26 +101,21 @@ it('does not record cancelled no-op or rolled-back lifecycle actions', function 
         ->and($this->activities->query()->get())->toBeEmpty();
 });
 
-it('dispatches the post-delete event after committing deletion activity', function () {
+it('dispatches the post-delete event within a surrounding transaction', function () {
     $entry = EntryModel::factory()->createElement();
     DB::table(Table::ACTIVITYEVENTS)->delete();
-    $transactionLevel = DB::transactionLevel();
-    $eventTransactionLevel = null;
 
-    Event::listen(function (ElementDeleted $event) use ($entry, &$eventTransactionLevel) {
+    Event::listen(function (ElementDeleted $event) use ($entry) {
         if ($event->element === $entry) {
-            $eventTransactionLevel = DB::transactionLevel();
-
             throw new RuntimeException('Deletion failed.');
         }
     });
 
-    expect(fn () => Elements::deleteElement($entry))
+    expect(fn () => DB::transaction(fn () => Elements::deleteElement($entry)))
         ->toThrow(RuntimeException::class, 'Deletion failed.');
 
-    expect($eventTransactionLevel)->toBe($transactionLevel)
-        ->and($this->activities->query()->eventTypes('craft.element.trashed')->count())->toBe(1)
-        ->and(Entry::find()->id($entry->id)->siteId($entry->siteId)->trashed()->exists())->toBeTrue();
+    expect($this->activities->query()->eventTypes(ElementTrashed::class)->count())->toBe(0)
+        ->and(Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->exists())->toBeTrue();
 });
 
 it('records one event per restored element', function () {
@@ -138,7 +138,7 @@ it('records one event per restored element', function () {
 
     expect(Elements::restoreElements($entries))->toBeTrue();
 
-    $events = $this->activities->query()->eventTypes('craft.element.restored')->get();
+    $events = $this->activities->query()->eventTypes(ElementRestoredActivity::class)->get();
 
     expect($events)->toHaveCount(2)
         ->and($events->pluck('subjectId')->unique())->toHaveCount(2);
@@ -156,11 +156,11 @@ it('records site removal and addition without generic propagation events', funct
     Elements::deleteElementForSite($secondaryEntry);
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
 
-    $events = $this->activities->query()->subject($entry)->get()->reverse()->values();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get()->reverse()->values();
 
     expect($events->pluck('eventType')->all())->toBe([
-        'craft.element.site-removed',
-        'craft.element.site-added',
+        ElementSiteRemoved::class,
+        ElementSiteAdded::class,
     ])->and($events->pluck('siteId')->all())->toBe([
         $secondarySite->id,
         $secondarySite->id,
@@ -188,7 +188,7 @@ it('keeps actor labels after the actor is permanently deleted', function () {
     expect($event->snapshots['actor']['label'])->toBe('Ada Lovelace');
 });
 
-it('rolls back site removal activity when the action fails', function () {
+it('rolls back site removal when its post-delete event fails', function () {
     [$entry, $secondarySite] = createLifecycleMultiSiteEntry();
     $secondaryEntry = Entry::find()
         ->id($entry->id)
@@ -199,19 +199,35 @@ it('rolls back site removal activity when the action fails', function () {
 
     Event::listen(function (ElementDeletedForSite $event) use ($secondaryEntry) {
         if ($event->element === $secondaryEntry) {
-            throw new RuntimeException('Site removal failed.');
+            throw new RuntimeException('Site deletion failed.');
         }
     });
 
     expect(fn () => Elements::deleteElementForSite($secondaryEntry))
-        ->toThrow(RuntimeException::class, 'Site removal failed.');
+        ->toThrow(RuntimeException::class, 'Site deletion failed.');
 
-    expect($this->activities->query()->get())->toBeEmpty()
-        ->and(Entry::find()->id($entry->id)->siteId($secondarySite->id)->status(null)->exists())
-        ->toBeTrue();
+    expect(Entry::find()->id($secondaryEntry->id)->siteId($secondaryEntry->siteId)->status(null)->exists())->toBeTrue()
+        ->and($this->activities->query()->eventTypes(ElementSiteRemoved::class)->count())->toBe(0);
 });
 
-it('dispatches the post-save event after committing site addition activity', function () {
+it('rolls back single-site deletion when its post-delete event fails', function () {
+    $entry = EntryModel::factory()->createElement();
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    Event::listen(function (ElementDeleted $event) use ($entry) {
+        if ($event->element === $entry) {
+            throw new RuntimeException('Site deletion failed.');
+        }
+    });
+
+    expect(fn () => Elements::deleteElementForSite($entry))
+        ->toThrow(RuntimeException::class, 'Site deletion failed.');
+
+    expect(Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->exists())->toBeTrue()
+        ->and($this->activities->query()->eventTypes(ElementDeletedActivity::class)->count())->toBe(0);
+});
+
+it('dispatches the post-save event within a surrounding transaction', function () {
     [$entry, $secondarySite] = createLifecycleMultiSiteEntry();
     $secondaryEntry = Entry::find()
         ->id($entry->id)
@@ -220,23 +236,18 @@ it('dispatches the post-save event after committing site addition activity', fun
         ->one();
     Elements::deleteElementForSite($secondaryEntry);
     DB::table(Table::ACTIVITYEVENTS)->delete();
-    $transactionLevel = DB::transactionLevel();
-    $eventTransactionLevel = null;
 
-    Event::listen(function (ElementSaved $event) use ($entry, &$eventTransactionLevel) {
+    Event::listen(function (ElementSaved $event) use ($entry) {
         if ($event->element === $entry) {
-            $eventTransactionLevel = DB::transactionLevel();
-
             throw new RuntimeException('Save failed.');
         }
     });
 
-    expect(fn () => Elements::saveElement($entry, updateSearchIndex: false))
+    expect(fn () => DB::transaction(fn () => Elements::saveElement($entry, updateSearchIndex: false)))
         ->toThrow(RuntimeException::class, 'Save failed.');
 
-    expect($eventTransactionLevel)->toBe($transactionLevel)
-        ->and($this->activities->query()->eventTypes('craft.element.site-added')->count())->toBe(1)
-        ->and(Entry::find()->id($entry->id)->siteId($secondarySite->id)->status(null)->exists())->toBeTrue();
+    expect($this->activities->query()->eventTypes(ElementSiteAdded::class)->count())->toBe(0)
+        ->and(Entry::find()->id($entry->id)->siteId($secondarySite->id)->status(null)->exists())->toBeFalse();
 });
 
 function createLifecycleMultiSiteEntry(): array

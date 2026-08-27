@@ -9,16 +9,13 @@ use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Enums\ActivityActorType;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\User\Elements\User;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use InvalidArgumentException;
-use LogicException;
 
 /**
  * @property string $id
@@ -42,13 +39,6 @@ class ActivityEvent extends BaseModel
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected static function booted(): void
-    {
-        static::updating(fn () => throw new LogicException('Activity events cannot be updated.'));
-        static::deleting(fn () => throw new LogicException('Activity events cannot be deleted.'));
-    }
 
     #[\Override]
     protected function casts(): array
@@ -86,12 +76,8 @@ class ActivityEvent extends BaseModel
      * @return Builder<ActivityEvent>
      */
     #[Scope]
-    protected function subject(Builder $query, ElementInterface|ActivitySubject $subject): Builder
+    protected function subject(Builder $query, ActivitySubject $subject): Builder
     {
-        $subject = $subject instanceof ElementInterface
-            ? ActivitySubject::fromElement($subject)
-            : $subject;
-
         return $query
             ->where('subjectType', $subject->type)
             ->where('subjectId', $subject->id);
@@ -137,10 +123,8 @@ class ActivityEvent extends BaseModel
      * @return Builder<ActivityEvent>
      */
     #[Scope]
-    protected function actor(Builder $query, User|ActivityActor $actor): Builder
+    protected function actor(Builder $query, ActivityActor $actor): Builder
     {
-        $actor = $actor instanceof User ? ActivityActor::user($actor) : $actor;
-
         return $query
             ->where('actorType', $actor->type)
             ->where('actorId', $actor->id);

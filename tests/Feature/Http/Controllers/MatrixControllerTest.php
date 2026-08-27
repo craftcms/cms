@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -242,7 +243,7 @@ it('creates a new matrix entry draft and renders its block html', function () {
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class)) extends Drafts
     {
         public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
         {

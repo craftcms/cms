@@ -3,9 +3,20 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied;
+use CraftCms\Cms\Activity\EventTypes\DraftCreated;
+use CraftCms\Cms\Activity\EventTypes\DraftDiscarded;
+use CraftCms\Cms\Activity\EventTypes\DraftSaved;
+use CraftCms\Cms\Activity\EventTypes\ElementCreated;
+use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
+use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
+use CraftCms\Cms\Activity\EventTypes\RevisionRestored;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -48,8 +59,8 @@ it('records entry creation once for each supported site', function () {
     $entry = Entry::find()->sectionId($section->id)->title('New entry')->status(null)->one();
 
     $events = $this->activities->query()
-        ->subject($entry)
-        ->eventTypes('craft.element.created')
+        ->subject(ActivitySubject::fromElement($entry))
+        ->eventTypes(ElementCreated::class)
         ->get();
 
     expect($events)->toHaveCount(2)
@@ -71,11 +82,11 @@ it('records normalized entry content changes', function () {
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
 
     $event = $this->activities->query()
-        ->subject($entry)
-        ->eventTypes('craft.element.updated')
+        ->subject(ActivitySubject::fromElement($entry))
+        ->eventTypes(ElementUpdated::class)
         ->firstOrFail();
 
-    expect($event->changes)->toBe([
+    expect($event->changes)->toEqualCanonicalizing([
         [
             'type' => 'attribute',
             'id' => 'title',
@@ -106,10 +117,10 @@ it('records a status change instead of a generic update', function () {
 
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
 
-    $events = $this->activities->query()->subject($entry)->get();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get();
 
     expect($events)->toHaveCount(1)
-        ->and($events->first()->eventType)->toBe('craft.element.status-changed')
+        ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
         ->and($events->first()->data)->toBe(['oldStatus' => 'live', 'newStatus' => 'disabled'])
         ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled.')
         ->and($events->first()->changes)->toContain([
@@ -133,9 +144,9 @@ it('records an update while omitting unsafe field values', function () {
 
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
 
-    $event = $this->activities->query()->subject($entry)->firstOrFail();
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
 
-    expect($event->eventType)->toBe('craft.element.updated')
+    expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->changes)->toBeEmpty();
 });
 
@@ -150,7 +161,7 @@ it('does not record cancelled saves', function () {
     });
 
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeFalse()
-        ->and($this->activities->query()->subject($entry)->get())->toBeEmpty();
+        ->and($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty();
 });
 
 it('does not record no-op, draft, resave, or rolled-back work', function () {
@@ -162,14 +173,16 @@ it('does not record no-op, draft, resave, or rolled-back work', function () {
     $entry->setDirtyAttributes(['expiryDate']);
 
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue()
-        ->and($this->activities->query()->subject($entry)->get())->toBeEmpty();
+        ->and($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty();
 
     app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty();
 
-    $entry->resaving = true;
-    $entry->title = 'Resaved title';
-    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue()
-        ->and($this->activities->query()->subject($entry)->get())->toBeEmpty();
+    Elements::resaveElements(
+        Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null),
+        updateSearchIndex: false,
+    );
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty();
 
     $entry = Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one();
     $entry->title = 'Rolled back title';
@@ -178,9 +191,9 @@ it('does not record no-op, draft, resave, or rolled-back work', function () {
     expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
     DB::rollBack();
 
-    expect($this->activities->query()->subject($entry)->get())->toBeEmpty()
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty()
         ->and(Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one()->title)
-        ->toBe('Resaved title');
+        ->toBe('Original title');
 });
 
 it('records draft work against the canonical entry', function () {
@@ -194,12 +207,12 @@ it('records draft work against the canonical entry', function () {
 
     app(Drafts::class)->applyDraft($draft);
 
-    $events = $this->activities->query()->subject($entry)->get();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get();
 
     expect($events->pluck('eventType')->all())->toBe([
-        'craft.draft.applied',
-        'craft.draft.saved',
-        'craft.draft.created',
+        DraftApplied::class,
+        DraftSaved::class,
+        DraftCreated::class,
     ])->and($events->pluck('siteId')->unique()->all())->toBe([$entry->siteId]);
 });
 
@@ -213,9 +226,9 @@ it('records applying a provisional draft as an entry update', function () {
 
     app(Drafts::class)->applyDraft($draft);
 
-    $event = $this->activities->query()->subject($entry)->sole();
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->sole();
 
-    expect($event->eventType)->toBe('craft.element.updated')
+    expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->snapshots['subject']['label'])->toBe('Updated title')
         ->and($event->changes)->toContain([
             'type' => 'attribute',
@@ -237,27 +250,46 @@ it('records draft creation and its initial save', function () {
         'title' => 'Draft title',
     ])->assertOk();
 
-    $events = $this->activities->query()->subject($entry)->get();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get();
 
-    expect($events->pluck('eventType')->all())->toBe(['craft.draft.saved', 'craft.draft.created']);
+    expect($events->pluck('eventType')->all())->toBe([DraftSaved::class, DraftCreated::class]);
 });
 
-it('ignores provisional creation and autosave but records its discard', function () {
+it('records named draft discard through the endpoint', function () {
     $entry = EntryModel::factory()->createElement();
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
     $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, name: 'Discard me');
-    expect(app(Drafts::class)->discardDraft($draft))->toBeTrue();
+    postJson(action([ElementDraftsController::class, 'destroy']), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+        'draftId' => $draft->draftId,
+    ])->assertOk();
+
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->pluck('eventType')->all())->toBe([
+        DraftDiscarded::class,
+        DraftCreated::class,
+    ]);
+});
+
+it('ignores provisional creation and autosave but records its endpoint discard', function () {
+    $entry = EntryModel::factory()->createElement();
+    DB::table(Table::ACTIVITYEVENTS)->delete();
 
     $provisional = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
     $provisional->title = 'Autosaved title';
     expect(Elements::saveElement($provisional, updateSearchIndex: false))->toBeTrue();
-    expect(app(Drafts::class)->discardDraft($provisional))->toBeTrue();
+    postJson(action([ElementDraftsController::class, 'destroy']), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+        'draftId' => $provisional->draftId,
+        'provisional' => 1,
+    ])->assertOk();
 
-    expect($this->activities->query()->subject($entry)->pluck('eventType')->all())->toBe([
-        'craft.draft.discarded',
-        'craft.draft.discarded',
-        'craft.draft.created',
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->pluck('eventType')->all())->toBe([
+        DraftDiscarded::class,
     ]);
 });
 
@@ -267,9 +299,9 @@ it('records an explicitly saved unpublished draft as created', function () {
 
     expect(app(Drafts::class)->saveElementAsDraft($entry, User::findOne()->id))->toBeTrue();
 
-    $event = $this->activities->query()->subject($entry)->firstOrFail();
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
 
-    expect($event->eventType)->toBe('craft.draft.created')
+    expect($event->eventType)->toBe(DraftCreated::class)
         ->and($event->siteId)->toBe($entry->siteId);
 });
 
@@ -278,16 +310,26 @@ it('records provisional draft promotion as creation and ignores no-op saves', fu
     $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
-    $draft->isProvisionalDraft = false;
-    expect(Elements::saveElement($draft, updateSearchIndex: false))->toBeTrue();
+    $payload = [
+        'elementType' => Entry::class,
+        'draftId' => $draft->draftId,
+        'siteId' => $draft->siteId,
+        'title' => 'Saved draft',
+    ];
 
-    $event = $this->activities->query()->subject($entry)->sole();
+    postJson(action([ElementDraftsController::class, 'store']), [
+        ...$payload,
+        'dropProvisional' => true,
+    ])->assertOk();
 
-    expect($event->eventType)->toBe('craft.draft.created');
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->sole();
+
+    expect($event->eventType)->toBe(DraftCreated::class);
 
     DB::table(Table::ACTIVITYEVENTS)->delete();
-    expect(Elements::saveElement($draft, updateSearchIndex: false))->toBeTrue()
-        ->and($this->activities->query()->subject($entry)->get())->toBeEmpty();
+    postJson(action([ElementDraftsController::class, 'store']), $payload)->assertOk();
+
+    expect($this->activities->query()->subject(ActivitySubject::fromElement($entry))->get())->toBeEmpty();
 });
 
 it('records revision restoration without a generic update', function () {
@@ -298,11 +340,32 @@ it('records revision restoration without a generic update', function () {
 
     app(Revisions::class)->revertToRevision($revision, User::findOne()->id);
 
-    $events = $this->activities->query()->subject($entry)->get();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->get();
 
     expect($events)->toHaveCount(1)
-        ->and($events->first()->eventType)->toBe('craft.revision.restored')
+        ->and($events->first()->eventType)->toBe(RevisionRestored::class)
         ->and($events->first()->data)->toBe(['revisionNum' => $revision->revisionNum])
         ->and($events->first()->siteId)->toBe($entry->siteId)
         ->and($this->activities->format($events->first()))->toBe("Restored revision {$revision->revisionNum}.");
 });
+
+it('rolls back revision restoration when a post-save event fails', function (string $eventType) {
+    $entry = EntryModel::factory()->createElement(['title' => 'Original title']);
+    $revisionId = app(Revisions::class)->createRevision($entry, User::findOne()->id, force: true);
+    $revision = Entry::find()->id($revisionId)->revisions()->status(null)->one();
+    $entry->title = 'Current title';
+    Elements::saveElement($entry, updateSearchIndex: false);
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    Event::listen($eventType, function (object $event) use ($entry) {
+        if (! $event instanceof ElementSaved || $event->element->id === $entry->id) {
+            throw new RuntimeException('Post-save event failed.');
+        }
+    });
+
+    expect(fn () => app(Revisions::class)->revertToRevision($revision, User::findOne()->id))
+        ->toThrow(RuntimeException::class, 'Post-save event failed.');
+
+    expect(Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one()->title)->toBe('Current title')
+        ->and($this->activities->query()->eventTypes(RevisionRestored::class)->count())->toBe(0);
+})->with([ElementSaved::class, RevertedToRevision::class]);

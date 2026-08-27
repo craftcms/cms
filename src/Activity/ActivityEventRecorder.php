@@ -5,57 +5,43 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity;
 
 use Closure;
+use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
-use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
-use InvalidArgumentException;
 use JsonException;
 
 use function CraftCms\Cms\currentUserElement;
+use function CraftCms\Cms\t;
 
 #[Scoped]
 class ActivityEventRecorder
 {
     public function __construct(
-        private readonly ActivityEventTypes $eventTypes,
         private readonly Impersonation $impersonation,
     ) {}
 
-    /**
-     * @param  array<string, mixed>  $data
-     * @param  list<array<string, mixed>>  $changes
-     */
-    public function record(
-        string $eventType,
-        ElementInterface|ActivitySubject|null $subject = null,
-        User|ActivityActor|null $actor = null,
-        ?Site $site = null,
-        array $data = [],
-        array $changes = [],
-    ): ActivityEvent {
-        $registration = $this->eventTypes->get($eventType);
+    public function record(ActivityEventTypeInterface $event): ActivityEvent
+    {
+        $data = $event->data();
+        $changes = $event->changes();
 
-        $this->validatePayload($data, $changes, $registration['rules']);
+        $this->validatePayload($data, $changes, $event::rules());
 
-        $subject = $subject instanceof ElementInterface ? ActivitySubject::fromElement($subject) : $subject;
-        $actor = $this->resolveActor($actor);
+        $subject = $event->subject();
+        $actor = $this->resolveActor($event->actor());
+        $site = $event->site();
 
-        if ($site !== null && $site->id === null) {
-            throw new InvalidArgumentException('Activity sites must be saved.');
-        }
+        $source = $event::source();
 
         $snapshots = [
             'actor' => ['label' => $actor->label],
-            'source' => ['label' => $registration['source']->label],
-            'event' => ['label' => $this->eventTypes->label($eventType, app()->getLocale())],
+            'source' => ['label' => $source->label],
+            'event' => ['label' => t($event::label(), category: $source->translationCategory)],
         ];
 
         if ($subject !== null) {
@@ -71,8 +57,8 @@ class ActivityEventRecorder
         }
 
         return ActivityEvent::query()->create([
-            'eventType' => $eventType,
-            'source' => $registration['source']->id,
+            'eventType' => $event::class,
+            'source' => $source->id,
             'actorType' => $actor->type->value,
             'actorId' => $actor->id,
             'subjectType' => $subject?->type,
@@ -87,12 +73,8 @@ class ActivityEventRecorder
         ]);
     }
 
-    private function resolveActor(User|ActivityActor|null $actor): ActivityActor
+    private function resolveActor(?ActivityActor $actor): ActivityActor
     {
-        if ($actor instanceof User) {
-            return ActivityActor::user($actor);
-        }
-
         if ($actor !== null) {
             return $actor;
         }
@@ -101,7 +83,12 @@ class ActivityEventRecorder
             return ActivityActor::user($user);
         }
 
-        return ActivityActor::system();
+        $isHttpRequest = ! app()->runningInConsole()
+            || (app()->bound('request') && request()->route() !== null);
+
+        return $isHttpRequest
+            ? ActivityActor::anonymous()
+            : ActivityActor::system();
     }
 
     /**

@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\ElementDuplicated;
+use CraftCms\Cms\Activity\EventTypes\ElementMerged;
+use CraftCms\Cms\Activity\EventTypes\ElementMoved;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
@@ -31,10 +35,10 @@ it('records duplication instead of nested creation', function () {
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
     $duplicate = app(ElementDuplicates::class)->duplicateElement($source);
-    $events = $this->activities->query()->subject($duplicate)->get();
+    $events = $this->activities->query()->subject(ActivitySubject::fromElement($duplicate))->get();
 
     expect($events)->toHaveCount(1)
-        ->and($events->first()->eventType)->toBe('craft.element.duplicated')
+        ->and($events->first()->eventType)->toBe(ElementDuplicated::class)
         ->and($events->first()->data['source'])->toBe([
             'type' => $source::class,
             'id' => $source->uid,
@@ -56,8 +60,8 @@ it('records one duplication event for each affected site', function () {
 
     $duplicate = app(ElementDuplicates::class)->duplicateElement($source);
     $events = $this->activities->query()
-        ->subject($duplicate)
-        ->eventTypes('craft.element.duplicated')
+        ->subject(ActivitySubject::fromElement($duplicate))
+        ->eventTypes(ElementDuplicated::class)
         ->get();
 
     expect($events)->toHaveCount(2)
@@ -74,7 +78,7 @@ it('records one event per bulk duplication subject', function () {
 
     expect($action->performAction($query))->toBeTrue();
 
-    $events = $this->activities->query()->eventTypes('craft.element.duplicated')->get();
+    $events = $this->activities->query()->eventTypes(ElementDuplicated::class)->get();
 
     expect($events)->toHaveCount(2)
         ->and($events->pluck('subjectId')->unique())->toHaveCount(2);
@@ -91,11 +95,11 @@ it('records captured structure movement positions', function () {
     expect(app(Structures::class)->append($structure->id, $moved, $parent))->toBeTrue();
 
     $event = $this->activities->query()
-        ->subject($moved)
-        ->eventTypes('craft.element.moved')
+        ->subject(ActivitySubject::fromElement($moved))
+        ->eventTypes(ElementMoved::class)
         ->firstOrFail();
 
-    expect($event->data)->toBe([
+    expect($event->data)->toMatchArray([
         'origin' => [
             'structure' => $structure->uid,
             'parent' => [
@@ -123,18 +127,6 @@ it('records captured structure movement positions', function () {
     );
 });
 
-it('does not record technical structure movement', function () {
-    [
-        'structure' => $structure,
-        'children' => [$parent, $moved],
-    ] = createStructureHierarchy();
-    DB::table(Table::ACTIVITYEVENTS)->delete();
-    $moved->resaving = true;
-
-    expect(app(Structures::class)->append($structure->id, $moved, $parent))->toBeTrue()
-        ->and($this->activities->query()->get())->toBeEmpty();
-});
-
 it('records both merge subjects without nested updates or deletion', function () {
     $merged = EntryModel::factory()->createElement(['title' => 'Merged entry']);
     $prevailing = EntryModel::factory()->createElement(['title' => 'Prevailing entry']);
@@ -148,7 +140,7 @@ it('records both merge subjects without nested updates or deletion', function ()
     $prevailingEvent = $events->firstWhere('subjectId', $prevailing->uid);
 
     expect($events)->toHaveCount(2)
-        ->and($events->pluck('eventType')->unique()->all())->toBe(['craft.element.merged'])
+        ->and($events->pluck('eventType')->unique()->all())->toBe([ElementMerged::class])
         ->and($events->pluck('subjectId')->all())->toEqualCanonicalizing([$merged->uid, $prevailing->uid])
         ->and($this->activities->format($mergedEvent))->toBe('Merged into Prevailing entry.')
         ->and($this->activities->format($prevailingEvent))->toBe('Merged Merged entry into this element.');

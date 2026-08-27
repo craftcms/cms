@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity;
 
 use BackedEnum;
+use CraftCms\Cms\Activity\EventTypes\ElementCreated;
+use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
+use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -42,11 +45,10 @@ class EntryActivity
 
     public static function recordCreated(Entry $entry): void
     {
-        Activities::record(
-            'craft.element.created',
+        Activities::record(new ElementCreated(
             subject: $entry,
             site: Sites::getSiteById($entry->siteId),
-        );
+        ));
     }
 
     /**
@@ -67,13 +69,18 @@ class EntryActivity
             return;
         }
 
-        Activities::record(
-            $oldStatus === $newStatus ? 'craft.element.updated' : 'craft.element.status-changed',
-            subject: $entry,
-            site: Sites::getSiteById($entry->siteId),
-            data: $oldStatus === $newStatus ? [] : compact('oldStatus', 'newStatus'),
-            changes: $changes,
-        );
+        $site = Sites::getSiteById($entry->siteId);
+        $event = $oldStatus === $newStatus
+            ? new ElementUpdated(subject: $entry, site: $site, changes: $changes)
+            : new ElementStatusChanged(
+                subject: $entry,
+                site: $site,
+                oldStatus: $oldStatus,
+                newStatus: $newStatus,
+                changes: $changes,
+            );
+
+        Activities::record($event);
     }
 
     /**
@@ -97,31 +104,7 @@ class EntryActivity
 
             $old = self::attributeValue($original, $attribute);
             $new = self::attributeValue($entry, $attribute);
-
-            if ($old === $new) {
-                continue;
-            }
-
-            $oldSafe = self::normalizeSafeValue($old);
-            $newSafe = self::normalizeSafeValue($new);
-
-            if ($oldSafe && $newSafe && $old === $new) {
-                continue;
-            }
-
-            $contentChanged = true;
-
-            if (! $oldSafe || ! $newSafe) {
-                continue;
-            }
-
-            $changes[] = [
-                'type' => 'attribute',
-                'id' => $attribute,
-                'label' => t($label),
-                'old' => $old,
-                'new' => $new,
-            ];
+            self::appendChange($changes, $contentChanged, 'attribute', $attribute, t($label), $old, $new);
         }
 
         foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
@@ -131,34 +114,48 @@ class EntryActivity
 
             $old = $field->serializeValue($original->getFieldValue($field->handle), $original);
             $new = $field->serializeValue($entry->getFieldValue($field->handle), $entry);
-
-            if ($old === $new) {
-                continue;
-            }
-
-            $oldSafe = self::normalizeSafeValue($old);
-            $newSafe = self::normalizeSafeValue($new);
-
-            if ($oldSafe && $newSafe && $old === $new) {
-                continue;
-            }
-
-            $contentChanged = true;
-
-            if (! $oldSafe || ! $newSafe) {
-                continue;
-            }
-
-            $changes[] = [
-                'type' => 'field',
-                'id' => $field->layoutElement->uid,
-                'label' => t($field->name, category: 'site'),
-                'old' => $old,
-                'new' => $new,
-            ];
+            self::appendChange(
+                $changes,
+                $contentChanged,
+                'field',
+                $field->layoutElement->uid,
+                t($field->name, category: 'site'),
+                $old,
+                $new,
+            );
         }
 
         return [$changes, $contentChanged];
+    }
+
+    /** @param list<array{type:string, id:string, label:string, old:mixed, new:mixed}> $changes */
+    private static function appendChange(
+        array &$changes,
+        bool &$contentChanged,
+        string $type,
+        string $id,
+        string $label,
+        mixed $old,
+        mixed $new,
+    ): void {
+        if ($old === $new) {
+            return;
+        }
+
+        $oldSafe = self::normalizeSafeValue($old);
+        $newSafe = self::normalizeSafeValue($new);
+
+        if ($oldSafe && $newSafe && $old === $new) {
+            return;
+        }
+
+        $contentChanged = true;
+
+        if (! $oldSafe || ! $newSafe) {
+            return;
+        }
+
+        $changes[] = compact('type', 'id', 'label', 'old', 'new');
     }
 
     private static function attributeValue(Entry $entry, string $attribute): mixed

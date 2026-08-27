@@ -6,6 +6,10 @@ namespace CraftCms\Cms\Element\Operations;
 
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\ElementActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementDeleted as ElementDeletedActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementRestored as ElementRestoredActivity;
+use CraftCms\Cms\Activity\EventTypes\ElementSiteRemoved;
+use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
 use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -308,11 +312,17 @@ readonly class ElementDeletions
                 $element->afterDelete();
 
                 if ($recordActivity) {
-                    Activities::record(
-                        $element->hardDelete ? 'craft.element.deleted' : 'craft.element.trashed',
-                        subject: $element,
-                        site: Sites::getSiteById($element->siteId),
-                    );
+                    $event = $element->hardDelete
+                        ? new ElementDeletedActivity(
+                            subject: $element,
+                            site: Sites::getSiteById($element->siteId),
+                        )
+                        : new ElementTrashed(
+                            subject: $element,
+                            site: Sites::getSiteById($element->siteId),
+                        );
+
+                    Activities::record($event);
                 }
 
                 if (! $element->hardDelete) {
@@ -424,11 +434,10 @@ readonly class ElementDeletions
                     $element->afterDeleteForSite();
 
                     if ($this->shouldRecordLifecycleActivity($element)) {
-                        Activities::record(
-                            'craft.element.site-removed',
+                        Activities::record(new ElementSiteRemoved(
                             subject: $element,
                             site: Sites::getSiteById($element->siteId),
-                        );
+                        ));
                     }
                 }
 
@@ -552,11 +561,10 @@ readonly class ElementDeletions
                 $element->deletedWithOwner = null;
 
                 if ($recordActivity[spl_object_id($element)]) {
-                    Activities::record(
-                        'craft.element.restored',
+                    Activities::record(new ElementRestoredActivity(
                         subject: $element,
                         site: Sites::getSiteById($element->siteId),
-                    );
+                    ));
                 }
 
                 event(new ElementRestored($element));

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\ElementDuplicated;
+use CraftCms\Cms\Activity\EventTypes\ElementMerged;
+use CraftCms\Cms\Activity\EventTypes\ElementMoved;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -28,12 +31,11 @@ class StructuralElementActivity
             return;
         }
 
-        Activities::record(
-            'craft.element.duplicated',
+        Activities::record(new ElementDuplicated(
             subject: $duplicate,
             site: $duplicate->siteId ? Sites::getSiteById($duplicate->siteId) : null,
-            data: ['source' => self::reference($source)],
-        );
+            source: $source,
+        ));
     }
 
     /**
@@ -46,33 +48,27 @@ class StructuralElementActivity
             return;
         }
 
-        Activities::record(
-            'craft.element.moved',
+        Activities::record(new ElementMoved(
             subject: $element,
             site: $element->siteId ? Sites::getSiteById($element->siteId) : null,
-            data: compact('origin', 'destination'),
-        );
+            origin: $origin,
+            destination: $destination,
+        ));
     }
 
     public static function recordMerged(ActivitySubject $merged, ActivitySubject $prevailing): void
     {
-        Activities::record(
-            'craft.element.merged',
+        Activities::record(new ElementMerged(
             subject: $merged,
-            data: [
-                'role' => 'merged',
-                'other' => self::subjectReference($prevailing),
-            ],
-        );
+            role: 'merged',
+            other: $prevailing,
+        ));
 
-        Activities::record(
-            'craft.element.merged',
+        Activities::record(new ElementMerged(
             subject: $prevailing,
-            data: [
-                'role' => 'prevailing',
-                'other' => self::subjectReference($merged),
-            ],
-        );
+            role: 'prevailing',
+            other: $merged,
+        ));
     }
 
     /** @return array{structure: string, parent: array{type: string, id: string, label: string}|null, previousSibling: array{type: string, id: string, label: string}|null} */

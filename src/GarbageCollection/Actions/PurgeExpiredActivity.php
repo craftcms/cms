@@ -25,9 +25,9 @@ class PurgeExpiredActivity extends GarbageCollectionAction
                     ->orderBy('id')
                     ->chunkById(
                         $this->garbageCollection::CHUNK_SIZE,
-                        fn (Collection $events) => DB::transaction(fn () => DB::table(Table::ACTIVITYEVENTS)
+                        fn (Collection $events) => DB::table(Table::ACTIVITYEVENTS)
                             ->whereIn('id', $events->pluck('id'))
-                            ->delete()),
+                            ->delete(),
                     );
             },
         );

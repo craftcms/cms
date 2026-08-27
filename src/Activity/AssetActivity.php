@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
+use CraftCms\Cms\Activity\EventTypes\AssetFileReplaced;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Support\Facades\Activities;
@@ -33,18 +34,15 @@ class AssetActivity
 
     public static function recordReplaced(Asset $asset, Asset $original): void
     {
-        Activities::record(
-            'craft.asset.file-replaced',
+        Activities::record(new AssetFileReplaced(
             subject: $asset,
             site: Sites::getSiteById($asset->siteId),
-            data: [
-                'oldFilename' => $original->getFilename(),
-                'newFilename' => $asset->getFilename(),
-                'oldMimeType' => $original->getMimeType(),
-                'newMimeType' => $asset->getMimeType(),
-                'oldSize' => $original->size,
-                'newSize' => $asset->size,
-            ],
-        );
+            oldFilename: $original->getFilename(),
+            newFilename: $asset->getFilename(),
+            oldMimeType: $original->getMimeType(),
+            newMimeType: $asset->getMimeType(),
+            oldSize: $original->size,
+            newSize: $asset->size,
+        ));
     }
 }

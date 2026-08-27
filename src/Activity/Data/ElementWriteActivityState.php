@@ -10,15 +10,11 @@ use CraftCms\Cms\Entry\Elements\Entry;
 /** @internal */
 class ElementWriteActivityState
 {
-    public bool $draftContentChanged = false;
-
     public function __construct(
         public readonly bool $recordActivity,
         public readonly bool $recordEntry,
         public readonly ?Entry $originalEntry,
         public readonly ?Asset $originalAsset,
-        public readonly bool $recordDraft,
-        public readonly bool $isNewDraft,
-        public readonly bool $draftMetadataChanged,
+        public readonly ?DraftWriteActivityState $draft,
     ) {}
 }

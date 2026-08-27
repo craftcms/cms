@@ -3,39 +3,39 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
-use CraftCms\Cms\Activity\ActivityEventRecorder;
-use CraftCms\Cms\Activity\ActivityEventTypes;
+use CraftCms\Cms\Activity\ActivityEventType;
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\Data\ActivitySource;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Enums\ActivityActorType;
+use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Site\Data\Site as SiteData;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Activities as ActivitiesFacade;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 
+use function CraftCms\Cms\t;
+use function Pest\Laravel\get;
+
 beforeEach(function () {
     loadTestPlugin();
-    $this->source = ActivitySource::fromPlugin(TestPlugin::getInstance());
     $this->activities = app(Activities::class);
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.updated',
-        source: $this->source,
-        label: 'Entry updated',
-        rules: ['reason' => ['required', 'string']],
-    );
 });
 
 afterEach(function () {
@@ -50,11 +50,10 @@ it('records durable actor subject site and payload snapshots', function () {
 
     $this->actingAs($actor);
 
-    $event = $this->activities->record(
-        eventType: 'test-plugin.entry.updated',
+    $event = $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Published',
         subject: $draft,
         site: $site,
-        data: ['reason' => 'Published'],
         changes: [[
             'type' => 'field',
             'id' => 'summary',
@@ -62,10 +61,10 @@ it('records durable actor subject site and payload snapshots', function () {
             'old' => null,
             'new' => 'Ready',
         ]],
-    );
+    ));
 
     expect($event->id)->toBeString()
-        ->and($event->eventType)->toBe('test-plugin.entry.updated')
+        ->and($event->eventType)->toBe(TestPluginEntryUpdated::class)
         ->and($event->source)->toBe('test-plugin')
         ->and($event->actorType)->toBe(ActivityActorType::User)
         ->and($event->actorId)->toBe($actor->id)
@@ -90,19 +89,18 @@ it('records durable actor subject site and payload snapshots', function () {
 });
 
 it('distinguishes system anonymous and known user actors and captures impersonation', function () {
-    $system = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'System']);
-    $anonymous = $this->activities->record(
-        'test-plugin.entry.updated',
+    $system = $this->activities->record(new TestPluginEntryUpdated(reason: 'System'));
+    $anonymous = $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Public form',
         actor: ActivityActor::anonymous(),
-        data: ['reason' => 'Public form'],
-    );
+    ));
 
     $operator = User::factory()->createElement(['fullName' => 'Operator', 'admin' => true]);
     $actor = User::factory()->createElement(['fullName' => 'Editor']);
     $this->actingAs($actor);
     app(Impersonation::class)->setImpersonatorId($operator->id);
 
-    $user = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Edited']);
+    $user = $this->activities->record(new TestPluginEntryUpdated(reason: 'Edited'));
 
     expect($system->actorType)->toBe(ActivityActorType::System)
         ->and($anonymous->actorType)->toBe(ActivityActorType::Anonymous)
@@ -113,22 +111,41 @@ it('distinguishes system anonymous and known user actors and captures impersonat
         ]);
 });
 
-it('rejects unregistered types and invalid payload sections', function () {
-    expect(fn () => $this->activities->record('test.unknown.happened'))
-        ->toThrow(InvalidArgumentException::class)
-        ->and(fn () => $this->activities->record('test-plugin.entry.updated', data: []))
+it('attributes unauthenticated HTTP activity to an anonymous actor', function () {
+    Route::get('test/activity-actor', fn () => ActivitiesFacade::record(
+        new TestPluginEntryUpdated(reason: 'Public request'),
+    )->actorType->value);
+
+    get('test/activity-actor')
+        ->assertOk()
+        ->assertSeeText(ActivityActorType::Anonymous->value);
+});
+
+it('rejects invalid payload sections', function () {
+    expect(fn () => $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Edited',
+        changes: [['type' => 'field', 'id' => 'summary']],
+    )))->toThrow(ValidationException::class)
+        ->and(fn () => $this->activities->record(new TestPluginPayload(['value'])))
         ->toThrow(ValidationException::class)
-        ->and(fn () => $this->activities->record(
-            'test-plugin.entry.updated',
-            data: ['reason' => 'Edited'],
-            changes: [['type' => 'field', 'id' => 'summary']],
-        ))->toThrow(ValidationException::class);
+        ->and(fn () => $this->activities->record(new TestPluginPayload(['value' => NAN])))
+        ->toThrow(ValidationException::class)
+        ->and(fn () => $this->activities->record(new TestPluginEntryUpdated(
+            reason: 'Edited',
+            changes: [[
+                'type' => 'field',
+                'id' => 'summary',
+                'label' => 'Summary',
+                'old' => NAN,
+                'new' => null,
+            ]],
+        )))->toThrow(ValidationException::class);
 });
 
 it('rolls records back with their semantic action', function () {
     DB::beginTransaction();
 
-    $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Edited']);
+    $this->activities->record(new TestPluginEntryUpdated(reason: 'Edited'));
 
     DB::rollBack();
 
@@ -140,14 +157,28 @@ it('queries fixed criteria and paginates equal timestamps without gaps', functio
 
     $subject = new ActivitySubject('document', 'one', 'Document one');
     $otherSubject = new ActivitySubject('document', 'two', 'Document two');
+    $craftSubject = Entry::factory()->createElement();
+    DB::table(Table::ACTIVITYEVENTS)->delete();
 
-    $first = $this->activities->record('test-plugin.entry.updated', subject: $subject, data: ['reason' => 'First']);
-    $second = $this->activities->record('test-plugin.entry.updated', subject: $subject, data: ['reason' => 'Second']);
-    $this->activities->record('test-plugin.entry.updated', subject: $otherSubject, data: ['reason' => 'Other']);
+    $craftEvent = $this->activities->record(new ElementStatusChanged(
+        subject: $craftSubject,
+        site: null,
+        oldStatus: 'pending',
+        newStatus: 'disabled',
+    ));
+    $first = $this->activities->record(new TestPluginEntryUpdated(reason: 'First', subject: $subject));
+    $second = $this->activities->record(new TestPluginEntryUpdated(reason: 'Second', subject: $subject));
+    $this->activities->record(new TestPluginEntryUpdated(reason: 'Other', subject: $otherSubject));
+    $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Anonymous',
+        subject: $subject,
+        actor: ActivityActor::anonymous(),
+    ));
+    $this->activities->record(new TestPluginEntryFeatured(subject: $subject));
 
     $page = $this->activities->query()
         ->subject($subject)
-        ->eventTypes('test-plugin.entry.updated')
+        ->eventTypes(TestPluginEntryUpdated::class)
         ->actor(ActivityActor::system())
         ->source('test-plugin')
         ->occurredFrom(Date::parse('2026-08-25 00:00:00'))
@@ -155,30 +186,27 @@ it('queries fixed criteria and paginates equal timestamps without gaps', functio
         ->cursorPaginate(1);
     $nextPage = $this->activities->query()
         ->subject($subject)
+        ->eventTypes(TestPluginEntryUpdated::class)
+        ->actor(ActivityActor::system())
+        ->source('test-plugin')
+        ->occurredFrom(Date::parse('2026-08-25 00:00:00'))
+        ->occurredUntil(Date::parse('2026-08-25 23:59:59'))
         ->cursorPaginate(1, cursor: $page->nextCursor());
 
     expect($page->items())->toHaveCount(1)
         ->and($page->items()[0]->id)->toBe($second->id)
         ->and($nextPage->items())->toHaveCount(1)
         ->and($nextPage->items()[0]->id)->toBe($first->id)
-        ->and($nextPage->nextCursor())->toBeNull();
-});
-
-it('blocks updates and deletions through model instances', function () {
-    $event = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Recorded']);
-
-    expect(fn () => $event->update(['source' => 'changed']))
-        ->toThrow(LogicException::class)
-        ->and(fn () => $event->delete())
-        ->toThrow(LogicException::class);
+        ->and($nextPage->nextCursor())->toBeNull()
+        ->and($this->activities->query()->source('craft')->sole()->id)->toBe($craftEvent->id);
 });
 
 it('applies occurrence bounds', function () {
     Date::setTestNow('2026-08-25 12:00:00');
-    $early = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Early']);
+    $early = $this->activities->record(new TestPluginEntryUpdated(reason: 'Early'));
 
     Date::setTestNow('2026-08-25 12:00:02');
-    $late = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Late']);
+    $late = $this->activities->record(new TestPluginEntryUpdated(reason: 'Late'));
 
     $bound = Date::parse('2026-08-25 12:00:01');
     $from = $this->activities->query()->occurredFrom($bound)->get();
@@ -194,15 +222,12 @@ it('keeps site-neutral events in site-scoped queries', function () {
     $site = Sites::getSiteById(Site::factory()->create()->id);
     $otherSite = Sites::getSiteById(Site::factory()->create()->id);
 
-    $neutral = $this->activities->record('test-plugin.entry.updated', data: ['reason' => 'Neutral']);
-    $matching = $this->activities->record('test-plugin.entry.updated', site: $site, data: ['reason' => 'Matching']);
-    $this->activities->record('test-plugin.entry.updated', site: $otherSite, data: ['reason' => 'Other']);
+    $neutral = $this->activities->record(new TestPluginEntryUpdated(reason: 'Neutral'));
+    $matching = $this->activities->record(new TestPluginEntryUpdated(reason: 'Matching', site: $site));
+    $this->activities->record(new TestPluginEntryUpdated(reason: 'Other', site: $otherSite));
 
-    expect($this->activities->query()->site($site)->get())
-        ->sequence(
-            fn ($event) => $event->id->toBe($matching->id),
-            fn ($event) => $event->id->toBe($neutral->id),
-        );
+    expect($this->activities->query()->site($site)->pluck('id')->all())
+        ->toEqualCanonicalizing([$matching->id, $neutral->id]);
 });
 
 it('does not bind retained events to mutable Craft records', function () {
@@ -210,101 +235,165 @@ it('does not bind retained events to mutable Craft records', function () {
     $subject = Entry::factory()->createElement();
     $siteModel = Site::factory()->create();
 
-    $event = $this->activities->record(
-        'test-plugin.entry.updated',
+    $event = $this->activities->record(new TestPluginEntryUpdated(
+        reason: 'Edited',
         subject: $subject,
         actor: $actor,
         site: Sites::getSiteById($siteModel->id),
-        data: ['reason' => 'Edited'],
-    );
+    ));
 
     DB::table(Table::USERS)->where('id', $actor->id)->delete();
     DB::table(Table::ELEMENTS)->where('id', $subject->id)->delete();
     DB::table(Table::SITES)->where('id', $siteModel->id)->delete();
 
-    expect($this->activities->query()->first()->id)->toBe($event->id);
+    $retained = $this->activities->query()->firstOrFail();
+
+    expect($retained->id)->toBe($event->id)
+        ->and($retained->snapshots)->toMatchArray([
+            'actor' => ['label' => $actor->name],
+            'subject' => ['label' => $subject->getUiLabel()],
+            'site' => ['name' => $siteModel->name],
+        ]);
 });
 
-it('rejects duplicate plugin event registrations', function () {
-    expect(fn () => ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.updated',
-        source: $this->source,
-        label: 'Entry updated',
-    ))->toThrow(LogicException::class);
-});
+it('formats plugin events in the application locale as text or safe HTML', function () {
+    app()->setLocale('nl');
 
-it('formats plugin events for the requested locale as text or safe HTML', function () {
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.published',
-        source: $this->source,
-        label: 'Entry published',
-        formatter: fn (ActivityEvent $event, string $locale): string => "$locale: {$event->data['reason']}",
-        rules: ['reason' => ['required', 'string']],
-        icon: 'bullhorn',
-    );
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.featured',
-        source: $this->source,
-        label: 'Entry featured',
-        formatter: fn (): HtmlString => new HtmlString('<strong>Entry featured</strong><script>alert(1)</script>'),
-    );
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.translated',
-        source: new ActivitySource('test-plugin', 'Test Plugin', 'app'),
-        label: 'Save',
-    );
+    $textEvent = ActivitiesFacade::record(new TestPluginEntryPublished(
+        reason: 'Klaar<script>alert(1)</script>',
+    ));
+    $htmlEvent = ActivitiesFacade::record(new TestPluginEntryFeatured);
+    $translatedEvent = ActivitiesFacade::record(new TestPluginEntryTranslated);
 
-    $textEvent = ActivitiesFacade::record('test-plugin.entry.published', data: ['reason' => 'Klaar']);
-    $htmlEvent = ActivitiesFacade::record('test-plugin.entry.featured');
-    $translatedEvent = ActivitiesFacade::record('test-plugin.entry.translated');
-
-    expect(ActivitiesFacade::format($textEvent, 'nl'))->toBe('nl: Klaar')
+    expect(ActivitiesFacade::format($textEvent))->toBe('Klaar')
         ->and(ActivitiesFacade::icon($textEvent))->toBe('bullhorn')
-        ->and(ActivitiesFacade::format($htmlEvent, 'en'))->toBeInstanceOf(HtmlString::class)
-        ->and(ActivitiesFacade::format($htmlEvent, 'en')->toHtml())->toBe('<strong>Entry featured</strong>')
+        ->and(ActivitiesFacade::format($htmlEvent))->toBeInstanceOf(Htmlable::class)
+        ->and(ActivitiesFacade::format($htmlEvent)->toHtml())->toBe('<strong>Entry featured</strong>')
         ->and(ActivitiesFacade::format(
-            ActivitiesFacade::record('test-plugin.entry.updated', data: ['reason' => 'Klaar']),
-            'nl',
+            ActivitiesFacade::record(new TestPluginEntryUpdated(reason: 'Klaar')),
         ))->toBe('Entry updated')
-        ->and(ActivitiesFacade::format($translatedEvent, 'nl'))->toBe('Bewaren');
+        ->and(ActivitiesFacade::format($translatedEvent))->toBe('Bewaren');
 });
 
-it('reports formatter failures and keeps retained plugin events readable without registration', function () {
-    Exceptions::fake();
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.failed',
-        source: $this->source,
-        label: 'Entry formatting failed',
-        formatter: fn () => throw new RuntimeException('Formatter failed.'),
-    );
+it('translates status labels for the application locale', function () {
+    app()->setLocale('nl');
 
-    $event = ActivitiesFacade::record('test-plugin.entry.failed');
-    $eventTypes = new ActivityEventTypes;
-    $htmlSanitizers = app(HtmlSanitizerManager::class);
-    $events = new ActivityEventRecorder($eventTypes, app(Impersonation::class));
-    $retainedActivities = new Activities(
-        $eventTypes,
-        $htmlSanitizers,
-        $events,
-    );
+    $event = ActivitiesFacade::record(new ElementStatusChanged(
+        subject: Entry::factory()->createElement(),
+        site: null,
+        oldStatus: 'pending',
+        newStatus: 'disabled',
+    ));
+
+    expect(ActivitiesFacade::format($event))
+        ->toContain(t('Pending'))
+        ->toContain(t('Disabled'))
+        ->not->toContain('Pending')
+        ->not->toContain('Disabled');
+});
+
+it('reports formatter failures and keeps retained events readable when their class is unavailable', function () {
+    Exceptions::fake();
+
+    $event = ActivitiesFacade::record(new TestPluginEntryFailed);
+    $retainedEvent = clone $event;
+    $retainedEvent->eventType = 'Missing\\ActivityEventType';
 
     expect(ActivitiesFacade::format($event))->toBe('Entry formatting failed')
-        ->and($retainedActivities->format($event))->toBe('Entry formatting failed')
-        ->and($retainedActivities->icon($event))->toBe('wave-pulse');
+        ->and(ActivitiesFacade::format($retainedEvent))->toBe('Entry formatting failed')
+        ->and(ActivitiesFacade::icon($retainedEvent))->toBe('wave-pulse');
     Exceptions::assertReported(RuntimeException::class);
 });
 
-it('reports invalid formatter output and uses the captured fallback', function () {
-    Exceptions::fake();
-    ActivitiesFacade::extend(
-        eventType: 'test-plugin.entry.invalid',
-        source: $this->source,
-        label: 'Entry formatter invalid',
-        formatter: fn (): int => 42,
-    );
+abstract class TestPluginActivityEventType extends ActivityEventType
+{
+    public static function source(): ActivitySource
+    {
+        return ActivitySource::fromPlugin(TestPlugin::getInstance());
+    }
+}
 
-    $event = ActivitiesFacade::record('test-plugin.entry.invalid');
+class TestPluginPayload extends TestPluginActivityEventType
+{
+    public function __construct(private readonly array $payload)
+    {
+        parent::__construct();
+    }
 
-    expect(ActivitiesFacade::format($event))->toBe('Entry formatter invalid');
-    Exceptions::assertReported(UnexpectedValueException::class);
-});
+    public function data(): array
+    {
+        return $this->payload;
+    }
+}
+
+class TestPluginEntryUpdated extends TestPluginActivityEventType
+{
+    protected const string LABEL = 'Entry updated';
+
+    public function __construct(
+        private readonly string $reason,
+        ElementInterface|ActivitySubject|null $subject = null,
+        UserElement|ActivityActor|null $actor = null,
+        ?SiteData $site = null,
+        array $changes = [],
+    ) {
+        parent::__construct($subject, $actor, $site, $changes);
+    }
+
+    public function data(): array
+    {
+        return ['reason' => $this->reason];
+    }
+
+    public static function rules(): array
+    {
+        return ['reason' => ['required', 'string']];
+    }
+}
+
+class TestPluginEntryPublished extends TestPluginEntryUpdated
+{
+    protected const string LABEL = 'Entry published';
+
+    protected const string ICON = 'bullhorn';
+
+    public static function rules(): array
+    {
+        return ['reason' => ['required', 'string']];
+    }
+
+    public static function format(ActivityEvent $event): string
+    {
+        return $event->data['reason'];
+    }
+}
+
+class TestPluginEntryFeatured extends TestPluginActivityEventType
+{
+    protected const string LABEL = 'Entry featured';
+
+    public static function format(ActivityEvent $event): HtmlString
+    {
+        return new HtmlString('<strong>Entry featured</strong><script>alert(1)</script>');
+    }
+}
+
+class TestPluginEntryTranslated extends TestPluginActivityEventType
+{
+    protected const string LABEL = 'Save';
+
+    public static function source(): ActivitySource
+    {
+        return new ActivitySource('test-plugin', 'Test Plugin', 'app');
+    }
+}
+
+class TestPluginEntryFailed extends TestPluginActivityEventType
+{
+    protected const string LABEL = 'Entry formatting failed';
+
+    public static function format(ActivityEvent $event): never
+    {
+        throw new RuntimeException('Formatter failed.');
+    }
+}

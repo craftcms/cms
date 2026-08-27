@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -122,6 +123,7 @@ beforeEach(function () {
         $this->elementCaches,
         Mockery::mock(Search::class),
         app(SitesService::class),
+        Mockery::mock(ElementWriteActivity::class),
     );
     $this->writes = $this->action;
 });

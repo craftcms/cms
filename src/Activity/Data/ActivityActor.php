@@ -12,8 +12,8 @@ readonly class ActivityActor
 {
     public function __construct(
         public ActivityActorType $type,
-        public ?int $id,
         public string $label,
+        public ?int $id = null,
     ) {
         if ($this->type === ActivityActorType::User && $this->id === null) {
             throw new InvalidArgumentException('User activity actors require an ID.');
@@ -34,16 +34,16 @@ readonly class ActivityActor
             throw new InvalidArgumentException('Activity actors must be saved users.');
         }
 
-        return new self(ActivityActorType::User, $user->id, $user->name);
+        return new self(ActivityActorType::User, $user->name, $user->id);
     }
 
     public static function system(): self
     {
-        return new self(ActivityActorType::System, null, 'Craft CMS');
+        return new self(ActivityActorType::System, 'Craft CMS');
     }
 
     public static function anonymous(): self
     {
-        return new self(ActivityActorType::Anonymous, null, 'Anonymous');
+        return new self(ActivityActorType::Anonymous, 'Anonymous');
     }
 }

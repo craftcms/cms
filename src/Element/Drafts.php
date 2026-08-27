@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Activity\EntryActivity;
+use CraftCms\Cms\Activity\DraftActivity;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied as DraftAppliedActivityEvent;
+use CraftCms\Cms\Activity\EventTypes\DraftCreated as DraftCreatedActivityEvent;
+use CraftCms\Cms\Activity\EventTypes\DraftDiscarded as DraftDiscardedActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -43,6 +46,7 @@ readonly class Drafts
 
     public function __construct(
         private Elements $elements,
+        private DraftActivity $activity,
     ) {}
 
     /**
@@ -149,11 +153,10 @@ readonly class Drafts
             );
 
             if (! $provisional) {
-                Activities::record(
-                    'craft.draft.created',
+                Activities::record(new DraftCreatedActivityEvent(
                     subject: $canonical,
                     site: Sites::getSiteById($canonical->siteId),
-                );
+                ));
             }
 
             DB::commit();
@@ -303,13 +306,12 @@ readonly class Drafts
             }
 
             if ($entryActivity !== null && $newCanonical instanceof Entry) {
-                EntryActivity::recordUpdated($newCanonical, ...$entryActivity);
+                $this->activity->recordProvisionalApplied($newCanonical, ...$entryActivity);
             } elseif (! $draft->isProvisionalDraft) {
-                Activities::record(
-                    'craft.draft.applied',
+                Activities::record(new DraftAppliedActivityEvent(
                     subject: $newCanonical,
                     site: Sites::getSiteById($newCanonical->siteId),
-                );
+                ));
             }
 
             DB::commit();
@@ -350,11 +352,10 @@ readonly class Drafts
                 return false;
             }
 
-            Activities::record(
-                'craft.draft.discarded',
+            Activities::record(new DraftDiscardedActivityEvent(
                 subject: $canonical,
                 site: Sites::getSiteById($canonical->siteId),
-            );
+            ));
 
             return true;
         });

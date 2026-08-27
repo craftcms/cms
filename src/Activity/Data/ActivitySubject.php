@@ -27,6 +27,12 @@ readonly class ActivitySubject
             throw new InvalidArgumentException('Activity subjects must be saved elements.');
         }
 
-        return new self($canonical::class, $canonical->uid, $canonical->getUiLabel());
+        $label = $canonical->getUiLabel();
+
+        return new self(
+            $canonical::class,
+            $canonical->uid,
+            $label !== '' ? $label : sprintf('%s %s', $canonical::displayName(), $canonical->id),
+        );
     }
 }

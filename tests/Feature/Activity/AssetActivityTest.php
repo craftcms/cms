@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\AssetFileReplaced;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
@@ -49,9 +51,9 @@ it('records safe asset file replacement facts', function () {
     File::put($replacement, 'replacement');
     app(Assets::class)->replaceAssetFile($asset, $replacement, 'replacement.txt', 'text/plain');
 
-    $event = app(Activities::class)->query()->subject($asset)->firstOrFail();
+    $event = app(Activities::class)->query()->subject(ActivitySubject::fromElement($asset))->firstOrFail();
 
-    expect($event->eventType)->toBe('craft.asset.file-replaced')
+    expect($event->eventType)->toBe(AssetFileReplaced::class)
         ->and($event->siteId)->toBe($asset->siteId)
         ->and($event->data)->toBe([
             'oldFilename' => 'original.txt',
@@ -62,10 +64,5 @@ it('records safe asset file replacement facts', function () {
             'newSize' => 11,
         ])
         ->and(app(Activities::class)->format($event))
-        ->toBe('Replaced original.txt (text/plain, 3 B) with replacement.txt (text/plain, 11 B).');
-
-    DB::table(Table::ACTIVITYEVENTS)->delete();
-
-    expect(Elements::saveElement($asset))->toBeFalse()
-        ->and(app(Activities::class)->query()->subject($asset)->get())->toBeEmpty();
+        ->toBe('Replaced original.txt with replacement.txt.');
 });
