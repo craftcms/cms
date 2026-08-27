@@ -412,7 +412,7 @@ body:not(.dragging) .fld-element {
   padding-inline: var(--padding);
   box-shadow: var(--c-pane-shadow);
   background-color: var(--c-color-neutral-fill-quiet);
-  z-index: 3;
+  z-index: var(--c-z-floating);
 }
 
 .fld-element-settings-footer > .ee-site-select {

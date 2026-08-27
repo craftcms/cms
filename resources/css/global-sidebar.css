@@ -13,7 +13,10 @@
   border-inline-end: 1px solid var(--border-hairline);
   width: var(--global-sidebar-width);
   isolation: isolate;
-  z-index: 1;
+  /* Local, not `--c-z-nav`: this is the sidebar as rendered inside the legacy
+     CP shell, whose modals and HUDs still sit at 100/101. The Inertia shell's
+     sidebar is `CpSidebar.vue`, which is on the ladder. */
+  z-index: var(--c-z-raised);
 
   @media only screen and (width <= 1999px) {
     --is-always-visible: false;

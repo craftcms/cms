@@ -7,7 +7,7 @@ the shade, the positioned container, the panel itself, and the generic
 sidebar, preview thumb, image actions) are not included here.
  */
 .slideout-shade {
-  z-index: 100;
+  z-index: var(--c-z-slideout-shade);
   position: fixed;
   inset-block-start: 0;
   inset-inline-start: 0;
@@ -31,7 +31,7 @@ sidebar, preview thumb, image actions) are not included here.
 }
 
 .slideout-container {
-  z-index: 100;
+  z-index: var(--c-z-slideout);
   box-sizing: border-box;
   position: fixed;
   inset-block-start: 0;
@@ -55,7 +55,7 @@ body.has-debug-toolbar .slideout-container {
 }
 
 .slideout {
-  z-index: 100;
+  z-index: var(--c-z-slideout);
   box-sizing: border-box;
   position: absolute;
   background-color: var(--c-modal-fill);
@@ -153,7 +153,8 @@ body.has-debug-toolbar .slideout-container {
   padding-inline: var(--c-spacing-md);
   border-block-start: var(--c-color-neutral-border-quiet);
   background: var(--c-modal-fill);
-  z-index: 3;
+  /* Above the scrolled body it overlaps, inside the slideout's own context. */
+  z-index: var(--c-z-floating);
 }
 
 .slideout__footer > .so-notice {

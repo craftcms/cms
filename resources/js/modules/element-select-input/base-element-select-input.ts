@@ -13,6 +13,7 @@ import {
   UP_KEY,
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
+import {ZLayer} from '@craftcms/ui';
 import {elementSelectInputData} from './support';
 
 declare const Craft: any;
@@ -1007,7 +1008,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     const width = $element.width();
 
     $element.appendTo($(bod)).css({
-      'z-index': 0,
+      'z-index': ZLayer.Base,
       position: 'absolute',
       top: offset.top,
       left: offset.left,
@@ -1350,7 +1351,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       $helper.css({
         position: 'absolute',
-        zIndex: 10000,
+        zIndex: ZLayer.Drag,
         top: oldOffset.top,
         left: oldOffset.left,
       });

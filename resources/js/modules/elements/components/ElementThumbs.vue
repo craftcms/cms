@@ -229,7 +229,7 @@
     position: absolute;
     inset-block-start: var(--c-spacing-sm);
     inset-inline-start: var(--c-spacing-sm);
-    z-index: 1;
+    z-index: var(--c-z-raised);
   }
 
   .thumb-tile {

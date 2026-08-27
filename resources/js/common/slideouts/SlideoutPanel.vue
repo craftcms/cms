@@ -212,8 +212,8 @@
     background: var(--c-surface-default, #fff);
     box-shadow: 0 0 16px rgb(0 0 0 / 15%);
     overflow: hidden;
-    /* Same as the legacy `.slideout-container`. */
-    z-index: 100;
+    /* Same as the legacy `.slideout-container`, one rung above the shade. */
+    z-index: var(--c-z-slideout);
     /* Leading corners only — the trailing edge meets the viewport. */
     border-start-start-radius: var(--c-radius-lg, 0.5rem);
     border-end-start-radius: var(--c-radius-lg, 0.5rem);

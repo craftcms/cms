@@ -225,7 +225,7 @@
   .element-index__footer {
     position: sticky;
     bottom: 0;
-    z-index: 1;
+    z-index: var(--c-z-sticky);
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);

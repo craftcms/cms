@@ -86,7 +86,7 @@
   }
 
   .cp-modal {
-    z-index: 10002;
+    z-index: var(--c-z-modal);
     display: grid;
     justify-content: center;
     align-items: center;
@@ -94,11 +94,7 @@
   }
 
   .cp-overlay {
-    /**
-    Action menu items are z-index 10000, so we want to be above that
-    @TODO make this less fragile/weird
-     */
-    z-index: 10001;
+    z-index: var(--c-z-modal-shade);
     background-color: rgba(0, 0, 0, 0.5);
   }
 

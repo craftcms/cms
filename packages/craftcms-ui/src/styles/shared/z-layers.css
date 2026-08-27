@@ -1,0 +1,94 @@
+/**
+ * Z-layers — the CP's stacking ladder.
+ *
+ * Every surface that escapes normal flow picks a rung here instead of inventing
+ * a number. Mirrored one-for-one by `constants/z-layers.ts` for the places that
+ * need the value in JS (Lion overlay configs, inline styles); a unit test keeps
+ * the two in sync, so change both together.
+ *
+ * Two bands, and the distinction matters:
+ *
+ * - **Local** (`behind`…`sticky`) is for stacking *inside* a component's own
+ *   stacking context — a check overlay on a thumbnail, a sticky footer inside a
+ *   scroll pane. These are deliberately tiny and are safe to use anywhere,
+ *   because they only ever compete with their own siblings.
+ *
+ * - **Page-level** (`page-header` and up) is for surfaces that compete with the
+ *   rest of the CP. Reaching for one of these from inside a component is almost
+ *   always the wrong call: it only wins if no ancestor has created a stacking
+ *   context, so it works until someone adds a `transform` or an `opacity` above
+ *   it. Use these on things attached to `<body>` (or to the CP shell).
+ *
+ * Two things live outside the ladder entirely and can't be ordered against it:
+ *
+ * - **The top layer.** `craft-dialog` is a Lion modal dialog, which opens via
+ *   `HTMLDialogElement.showModal()`. Top-layer content paints above every
+ *   z-indexed element no matter how large the number, so no rung here will ever
+ *   cover it. Order between top-layer elements is order-of-entry, not z-index.
+ * - **The legacy CP bundle** (`packages/craftcms-legacy/cp/src/css`), which
+ *   still uses raw numbers topping out at 1001. That's why the page-level band
+ *   starts at 2000 rather than at 1 — every rung clears legacy without legacy
+ *   having to be renumbered first. See `docs/z-layers.md`.
+ *
+ * Rungs are spaced by 1000 (100 within a pair) so a new layer can be slotted
+ * between two existing ones without a renumber.
+ */
+:root,
+:host {
+  /* --- Local: within a component's own stacking context --- */
+
+  /** Decorative fill painted behind its own content. */
+  --c-z-behind: -1;
+
+  /** Explicitly on the flow's baseline — mostly for resetting a lift. */
+  --c-z-base: 0;
+
+  /** Lifted above sibling content (a check overlay, a focus ring). */
+  --c-z-raised: 1;
+
+  /** Above a sibling that's already `--c-z-raised`. */
+  --c-z-floating: 2;
+
+  /** Sticky headers/footers/toolbars pinned inside a scroll container. */
+  --c-z-sticky: 10;
+
+  /* --- Page-level: competing with the rest of the CP --- */
+
+  /** Sticky page and editor headers, above the content they scroll over. */
+  --c-z-page-header: 2000;
+
+  /** Persistent CP chrome — the global sidebar. Above page headers, because a
+      collapsed rail's labels overflow across them. */
+  --c-z-nav: 2100;
+
+  /** Drag helpers and drop indicators, which follow the pointer over chrome. */
+  --c-z-drag: 3000;
+
+  /** The shade behind a slideout. */
+  --c-z-slideout-shade: 4000;
+
+  /** Slideout panels and their container. */
+  --c-z-slideout: 4100;
+
+  /** The shade behind a modal. */
+  --c-z-modal-shade: 5000;
+
+  /** Modal panels. */
+  --c-z-modal: 5100;
+
+  /** Anchored overlays — menus, comboboxes, selects, popovers, HUDs. Above
+      modals on purpose: an overlay is opened *from* a surface, so it has to
+      paint above whichever surface opened it, and a menu inside a modal is
+      ordinary. */
+  --c-z-overlay: 6000;
+
+  /** Toasts and notifications, which have to stay readable over an overlay. */
+  --c-z-notification: 7000;
+
+  /** Tooltips. Above everything else that's addressable, since anything at all
+      can have one. */
+  --c-z-tooltip: 8000;
+
+  /** Dev-only chrome (the debug toolbar). Nothing ships above this. */
+  --c-z-debug: 9000;
+}

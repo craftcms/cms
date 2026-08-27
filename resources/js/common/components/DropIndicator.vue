@@ -35,7 +35,9 @@
     height: calc(2rem / 16);
     background-color: var(--c-color-accent-fill-loud, #2563eb);
     pointer-events: none;
-    z-index: 10;
+    /* Local, not `--c-z-drag`: the indicator is drawn inside the list it's
+       marking a position in, so it only needs to clear that list's rows. */
+    z-index: var(--c-z-sticky);
   }
 
   .drop-indicator--contained {

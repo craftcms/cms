@@ -461,8 +461,9 @@ Two things to know if you touch this area:
 
 - **Don't reuse legacy class names.** The legacy stylesheet owns `.slideout-shade` and hides it with
   `:not(.visible) { display: none }`. The shared shade is `.cp-slideout-shade` for that reason, and
-  it sits at `z-index: 99` — one below both kinds of panel, so it stays underneath them regardless
-  of the order they were appended to `<body>` in.
+  it sits at `--c-z-slideout-shade` — one rung below `--c-z-slideout`, which both kinds of panel
+  use, so it stays underneath them regardless of the order they were appended to `<body>` in. See
+  [z-layers.md](z-layers.md).
 - The legacy payload's key order is pinned by `tests/Feature/Http/Responses/CpScreenSlideoutTest.php`.
   If that test goes red, the jQuery slideout stack is broken.
 

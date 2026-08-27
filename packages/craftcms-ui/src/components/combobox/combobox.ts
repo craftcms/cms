@@ -1,4 +1,5 @@
 import {LionCombobox} from '@lion/ui/combobox.js';
+import {ZLayer} from '@src/constants/z-layers.js';
 import {html, nothing, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './combobox.styles.js';
@@ -62,6 +63,12 @@ interface VisibleEntry {
 export default class CraftCombobox extends LionCombobox {
   static override get styles() {
     return [...super.styles, styles];
+  }
+
+  /** Puts the listbox on the CP's stacking ladder instead of Lion's 9999. */
+  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
+  override _defineOverlayConfig() {
+    return {...super._defineOverlayConfig(), zIndex: ZLayer.Overlay};
   }
 
   /** Options to render. Groups are supported via `type: 'optgroup'`. */
