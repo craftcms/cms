@@ -1,5 +1,21 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
+- Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
+- Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
+
+## 5.10.14 - 2026-08-18
+
+- Fixed a bug where entries could deadlock when saving their authors. ([#15768](https://github.com/craftcms/cms/issues/15768))
+- Fixed an error that could occur when upgrading to Craft 5. ([craftcms/commerce#4309](https://github.com/craftcms/commerce/pull/4309))
+- Fixed a bug where overridden entry type handles weren’t being prioritized when rendering partial templates. ([#18968](https://github.com/craftcms/cms/issues/18968))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-5m2g-hhqr-84pc, GHSA-vfcw-xv8p-8rj2)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-4wfw-q5w3-jh42)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-w5rh-mhxj-wr8r)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j5wg-m2pr-35qc)
+
 ## 5.10.13.2 - 2026-08-05
 
 - Fixed a SQL error that could occur when viewing an element with an empty Categories field. ([#19372](https://github.com/craftcms/cms/issues/19372))
@@ -45,11 +61,11 @@
 - Fixed an error that could occur when reassigning entries to a new author when deleting a user. ([#19154](https://github.com/craftcms/cms/issues/19154))
 - Fixed a bug where `craft\web\twig\variables\CraftVariable::$rebrand` was getting defined for Craft Team installs. ([#19249](https://github.com/craftcms/cms/issues/19249))
 - Fixed a bug where “All entries” and “All users” sources could be listed above other sources in relation field settings. ([#19185](https://github.com/craftcms/cms/discussions/19185))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-6qw4-cjqw-fj72, GHSA-3wcr-p33w-528f)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-329j-cx85-8r56, GHSA-4w9w-3x96-7ghp, GHSA-2f55-h4xr-92p2, GHSA-242m-9wq7-vhwq, GHSA-9xvf-7w97-83mv, GHSA-ccpq-mw3m-wwg2)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-5fh8-74j8-mvcp)
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-5fjj-496j-2qqf)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-5mjc-jqcw-6vrp)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-6qw4-cjqw-fj72](https://github.com/craftcms/cms/security/advisories/GHSA-6qw4-cjqw-fj72), [GHSA-3wcr-p33w-528f](https://github.com/craftcms/cms/security/advisories/GHSA-3wcr-p33w-528f))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-329j-cx85-8r56](https://github.com/craftcms/cms/security/advisories/GHSA-329j-cx85-8r56), [GHSA-4w9w-3x96-7ghp](https://github.com/craftcms/cms/security/advisories/GHSA-4w9w-3x96-7ghp), [GHSA-2f55-h4xr-92p2](https://github.com/craftcms/cms/security/advisories/GHSA-2f55-h4xr-92p2), [GHSA-242m-9wq7-vhwq](https://github.com/craftcms/cms/security/advisories/GHSA-242m-9wq7-vhwq), [GHSA-9xvf-7w97-83mv](https://github.com/craftcms/cms/security/advisories/GHSA-9xvf-7w97-83mv), [GHSA-ccpq-mw3m-wwg2](https://github.com/craftcms/cms/security/advisories/GHSA-ccpq-mw3m-wwg2))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-5fh8-74j8-mvcp](https://github.com/craftcms/cms/security/advisories/GHSA-5fh8-74j8-mvcp))
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-5fjj-496j-2qqf](https://github.com/craftcms/cms/security/advisories/GHSA-5fjj-496j-2qqf))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-5mjc-jqcw-6vrp](https://github.com/craftcms/cms/security/advisories/GHSA-5mjc-jqcw-6vrp))
 
 ## 5.10.10 - 2026-07-08
 

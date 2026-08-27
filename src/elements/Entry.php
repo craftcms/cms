@@ -3147,7 +3147,7 @@ JS;
             $this->_oldAuthorIds = array_map(fn($id) => (int)$id, $oldAuthorIds);
         }
 
-        Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
+        Db::deleteIfExists(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
 
         if (!empty($this->_authorIds)) {
             $data = [];
@@ -3402,17 +3402,14 @@ JS;
 
         $entryType = $this->getType();
         if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
-            return [
-                [
-                    'template' => sprintf(
-                        '%s/%s/%s',
-                        Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
-                        static::refHandle(),
-                        $entryType->handle,
-                    ),
-                    'priority' => 5,
-                ],
-                ...$templates,
+            $templates[] = [
+                'template' => sprintf(
+                    '%s/%s/%s',
+                    Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
+                    static::refHandle(),
+                    $entryType->handle,
+                ),
+                'priority' => 1,
             ];
         }
 

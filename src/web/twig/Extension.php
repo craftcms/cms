@@ -67,12 +67,19 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use DirectoryIterator;
+use DOMDocument;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Imagick;
 use IteratorAggregate;
 use Money\Money;
+use mysqli;
+use PDO;
+use Reflector;
 use SimpleXMLElement;
+use SoapClient;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -87,6 +94,8 @@ use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+use XMLReader;
+use XSLTProcessor;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -1550,9 +1559,18 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $blocklist = [
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
+            DOMDocument::class,
+            XMLReader::class,
+            XSLTProcessor::class,
+            SoapClient::class,
+            GuzzleClient::class,
+            PDO::class,
+            mysqli::class,
+            Imagick::class,
             FnStream::class,
             Process::class,
             SimpleXMLElement::class,
+            Reflector::class,
         ];
 
         foreach ($blocklist as $c) {
