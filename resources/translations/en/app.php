@@ -1687,6 +1687,7 @@ return [
     'Sort by' => 'Sort by',
     'Sort descending' => 'Sort descending',
     'Sort direction' => 'Sort direction',
+    'Sorting' => 'Sorting',
     'Sorting Code' => 'Sorting Code',
     'Source actions' => 'Source actions',
     'Source settings saved' => 'Source settings saved',
