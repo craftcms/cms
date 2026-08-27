@@ -1525,7 +1525,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Duplicates an array and sorts it with [[\craft\helpers\ArrayHelper::multisort()]].
      *
-     * @param bool $eisSandboxedv
+     * @param bool $isSandboxed
      * @param mixed $array the array to be sorted. The array will be modified after calling this method.
      * @param string|callable|array $key the key(s) to be sorted by. This refers to a key name of the sub-array
      * elements, a property name of the objects, or an anonymous function returning the values for comparison
@@ -1542,10 +1542,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * correct number of elements as that of $key.
      * @throws RuntimeError
      */
-    public function multisortFilter(bool $eisSandboxedv, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
+    public function multisortFilter(bool $isSandboxed, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
         foreach (is_array($key) ? $key : [$key] as $k) {
-            $this->preventDottedNameInSandbox($eisSandboxedv, $k, 'multisort');
+            $this->preventDottedNameInSandbox($isSandboxed, $k, 'multisort');
         }
 
         // Prevent multisort() from modifying the original array
