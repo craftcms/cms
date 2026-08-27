@@ -517,9 +517,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return;
         }
 
-        foreach (['.', '[', ']'] as $str) {
-            if (str_contains($name, '.')) {
-                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $str));
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains($name, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
             }
         }
     }
