@@ -21,6 +21,7 @@ class PurgeExpiredActivity extends GarbageCollectionAction
             function () {
                 DB::table(Table::ACTIVITYEVENTS)
                     ->select('id')
+                    ->whereNull('rootEventId')
                     ->where('occurredAt', '<', now()->subSeconds($this->generalConfig->activityRetentionDuration))
                     ->orderBy('id')
                     ->chunkById(

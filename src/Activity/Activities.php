@@ -6,7 +6,10 @@ namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,11 +24,45 @@ class Activities
     public function __construct(
         private readonly HtmlSanitizerManager $htmlSanitizers,
         private readonly ActivityEventRecorder $events,
+        private readonly ActivityComments $comments,
     ) {}
 
     public function record(ActivityEventTypeInterface $event): ActivityEvent
     {
         return $this->events->record($event);
+    }
+
+    public function createComment(
+        ElementInterface $subject,
+        User $author,
+        Site $site,
+        string $markdown,
+    ): ActivityEvent {
+        return $this->comments->create($subject, $author, $site, $markdown);
+    }
+
+    public function editComment(
+        ActivityEvent $comment,
+        User $author,
+        string $markdown,
+        ?ElementInterface $subject = null,
+    ): ActivityEvent {
+        return $this->comments->edit($comment, $author, $markdown, $subject);
+    }
+
+    public function deleteComment(ActivityEvent $comment, User $actor): ActivityEvent
+    {
+        return $this->comments->delete($comment, $actor);
+    }
+
+    public function canMention(User $user, ElementInterface $subject): bool
+    {
+        return $this->comments->canMention($user, $subject);
+    }
+
+    public function renderComment(ActivityEvent $version): HtmlString
+    {
+        return $this->comments->render($version);
     }
 
     /** @return Builder<ActivityEvent> */

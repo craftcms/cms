@@ -26,6 +26,7 @@ use InvalidArgumentException;
  * @property string|null $subjectType
  * @property string|null $subjectId
  * @property int|null $siteId
+ * @property string|null $rootEventId
  * @property array{snapshots: array<string, array<string, int|string>>, changes: list<array<string, mixed>>, data: array<string, mixed>} $payload
  * @property array<string, array<string, int|string>> $snapshots
  * @property list<ActivityChange> $changes
@@ -47,6 +48,7 @@ class ActivityEvent extends BaseModel
             'id' => 'string',
             'actorId' => 'integer',
             'siteId' => 'integer',
+            'rootEventId' => 'string',
             'payload' => 'array',
             'occurredAt' => 'immutable_datetime',
         ];

@@ -20,7 +20,7 @@ class ActivityEventRecorder
         private readonly Impersonation $impersonation,
     ) {}
 
-    public function record(ActivityEventTypeInterface $event): ActivityEvent
+    public function record(ActivityEventTypeInterface $event, ?string $rootEventId = null): ActivityEvent
     {
         $data = $event->data();
 
@@ -56,6 +56,7 @@ class ActivityEventRecorder
             'subjectType' => $subject?->type,
             'subjectId' => $subject?->id,
             'siteId' => $site?->id,
+            'rootEventId' => $rootEventId,
             'payload' => [
                 'snapshots' => $snapshots,
                 'changes' => collect($event->changes())->toArray(),
