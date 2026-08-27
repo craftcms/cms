@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Form\Enums\ControlMode;
@@ -384,7 +385,7 @@ abstract class ElementEditViewModel extends ViewModel
         $hidesView = $this->element->getPreviewTargets() !== [];
 
         return array_values(array_filter(
-            $this->element->actionMenuDescriptors(),
+            $this->element->actionMenuDescriptors(ElementActionContext::Editor),
             fn (array $item): bool => ! (
                 $hidesView && ($item['behavior']['type'] ?? null) === 'link'
             ),

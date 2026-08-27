@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Form\ControlPayload;
@@ -237,6 +238,7 @@ class ElementSelect extends Control
             'autoReload' => false,
             'selectable' => false,
             'sortable' => false,
+            'withThumb' => false,
         ];
 
         return [
@@ -244,6 +246,8 @@ class ElementSelect extends Control
             'cardHeaderHtml' => $elementHtml->elementCardHeaderHtml($element, $cardConfig),
             'cardContentHtml' => $elementHtml->elementCardContentHtml($element, $cardConfig),
             'cardFooterHtml' => $elementHtml->elementCardFooterHtml($element, $cardConfig),
+            'cardThumbHtml' => $elementHtml->elementCardThumbHtml($element),
+            'thumbAlignment' => $elementHtml->elementCardThumbAlignment($element),
         ];
     }
 
@@ -271,6 +275,7 @@ class ElementSelect extends Control
             'draftId' => $element->draftId,
             'revisionId' => $element->revisionId,
             'status' => self::statusPayload($element),
+            'actions' => $element->actionMenuDescriptors(ElementActionContext::Field),
         ];
     }
 

@@ -171,19 +171,6 @@
         @dblclick="(event: MouseEvent) => onDoubleClick(element, event)"
       >
         <div slot="prefix" class="flex items-center px-1 gap-1">
-          <span
-            v-if="sortable"
-            :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
-            class="drag-handle"
-          >
-            <craft-reorder-button
-              :position="getRowPosition(index)"
-              @reorder="
-                (event: CustomEvent<{direction: 'up' | 'down'}>) =>
-                  move(index, event.detail.direction === 'up' ? -1 : 1)
-              "
-            ></craft-reorder-button>
-          </span>
           <slot name="prefix" :element="element" :index="index"></slot>
         </div>
 
@@ -212,6 +199,21 @@
 
         <div slot="suffix" class="flex gap-0.5 items-center">
           <slot name="suffix" :element="element" :index="index"></slot>
+
+          <span
+            v-if="sortable"
+            :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
+            class="drag-handle"
+          >
+            <craft-reorder-button
+              :position="getRowPosition(index)"
+              :orientation="inline ? 'horizontal' : 'vertical'"
+              @reorder="
+                (event: CustomEvent<{direction: 'up' | 'down'}>) =>
+                  move(index, event.detail.direction === 'up' ? -1 : 1)
+              "
+            ></craft-reorder-button>
+          </span>
         </div>
       </craft-chip>
 

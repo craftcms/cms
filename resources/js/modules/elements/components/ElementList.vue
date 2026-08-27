@@ -21,6 +21,8 @@
       string | number | boolean | null | undefined
     >;
     cardHeaderHtml?: string;
+    cardThumbHtml?: string;
+    thumbAlignment?: string;
     cardContentHtml?: string;
     cardFooterHtml?: string;
     thumbHtml?: string;
@@ -34,14 +36,15 @@
       /** Selection, usually from `useElementList`. */
       selection: Selectable<any>;
       selectable?: boolean;
+      selectAll?: boolean;
       readOnly?: boolean;
       loading?: boolean;
-      /** Chip modes only: offer drag-and-drop and the reorder button. */
       sortable?: boolean;
     }>(),
     {
       data: () => [],
       selectable: false,
+      selectAll: true,
       readOnly: false,
       loading: false,
       sortable: false,
@@ -54,25 +57,24 @@
   }>();
 </script>
 
-<!--
-  Picks a body for the active view mode, so callers don't repeat the same
-  five-way branch. All three bodies take a `selection` rather than a table, so
-  they work for a relation field, an index, or anything else with an ordered list
-  of ids.
-
-  The chip body's own slots are forwarded, so a host can put its furniture inside
-  the chips without this component knowing what any of it is.
--->
 <template>
   <ElementCards
     v-if="viewMode === 'cards' || viewMode === 'cards-grid'"
     :data="data"
     :selection="selection"
     :selectable="selectable"
+    :select-all="selectAll"
     :read-only="readOnly"
     :loading="loading"
-    :class="{'card-grid--single-column': viewMode === 'cards'}"
+    :single-column="viewMode === 'cards'"
+    :sortable="sortable"
+    @reorder="
+      (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
+    "
   >
+    <template #actions="slotProps"
+      ><slot name="actions" v-bind="slotProps"></slot
+    ></template>
     <template #empty><slot name="empty"></slot></template>
   </ElementCards>
 
@@ -81,9 +83,17 @@
     :data="data"
     :selection="selection"
     :selectable="selectable"
+    :select-all="selectAll"
     :read-only="readOnly"
     :loading="loading"
+    :sortable="sortable"
+    @reorder="
+      (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
+    "
   >
+    <template #actions="slotProps"
+      ><slot name="actions" v-bind="slotProps"></slot
+    ></template>
     <template #empty><slot name="empty"></slot></template>
   </ElementThumbs>
 
@@ -107,7 +117,7 @@
       ><slot name="append" v-bind="slotProps"></slot
     ></template>
     <template #suffix="slotProps"
-      ><slot name="suffix" v-bind="slotProps"></slot
+      ><slot name="actions" v-bind="slotProps"></slot
     ></template>
   </ElementChips>
 </template>
