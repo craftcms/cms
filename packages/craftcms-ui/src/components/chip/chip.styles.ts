@@ -112,6 +112,5 @@ export default css`
   .cp-chip__thumbnail {
     position: relative;
     padding: var(--c-spacing-sm);
-    /*border-radius: calc(var(--_radius) - var(--c-spacing-xs));*/
   }
 `;
