@@ -176,3 +176,13 @@ it('renders a thumbnail only for the thumbs view mode', function (string $viewMo
     'thumbs' => [ElementSelect::VIEW_MODE_THUMBS, true],
     'cards' => [ElementSelect::VIEW_MODE_CARDS, false],
 ]);
+
+// The card component has its own thumbnail slot, so the thumb is provided apart
+// from the content rather than baked into it and rendered twice.
+it('provides a card thumbnail apart from the card content', function () {
+    fakeElementHtml();
+    $method = new ReflectionMethod(ElementSelect::class, 'cardPayload');
+    $payload = $method->invoke(null, new Entry);
+
+    expect($payload)->toHaveKeys(['cardThumbHtml', 'thumbAlignment']);
+});

@@ -108,3 +108,30 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);
+
+/**
+ * The control's props are serialized to the client, so the resolver rejects
+ * anything that isn't a JSON-safe scalar or array. The action descriptors are
+ * the easiest place to trip that: an enum case reads naturally in PHP but is an
+ * object by the time it gets here.
+ */
+it('resolves JSON-safe props for every element type', function (Closure $createElement) {
+    $this->actingAs(UserModel::first());
+    $element = $createElement();
+    $form = Form::make([
+        Field::make()->control(
+            ElementSelect::make('related')->elementType($element::class),
+        ),
+    ]);
+
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+        namespace: 'settings',
+        values: ['settings' => ['related' => [$element->getId()]]],
+    ));
+
+    expect(json_encode($payload->nodes[0]->control->props, JSON_THROW_ON_ERROR))->toBeString();
+})->with([
+    'assets' => fn () => AssetModel::factory()->createElement(),
+    'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
+    'users' => fn () => UserModel::factory()->createElement(),
+]);

@@ -171,10 +171,47 @@
   .modal-element-index__sidebar {
     padding-block: var(--c-spacing-lg);
     padding-inline: var(--c-spacing-sm);
+    // Long source lists scroll on their own rather than stretching the modal.
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .modal-element-index__main {
     background: var(--c-surface-overlay);
     border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+
+    // Grid items don't shrink below their content by default, so a wide table
+    // widens the column and a long one grows the row — pushing the pane out of
+    // the modal. Zeroing the minimums hands sizing back to the grid track.
+    min-width: 0;
+    min-height: 0;
+
+    // Everything past the track is the index's to scroll, not the modal's to
+    // spill. Kept here rather than on the container so menus anchored outside
+    // the pane aren't clipped.
+    display: grid;
+    overflow: hidden;
+  }
+
+  // The index fills the pane and only its body scrolls, so the toolbar and the
+  // pagination footer stay put — matching a full-page index. Flex rather than
+  // explicit grid rows because the header, navbar and footer are all optional.
+  .modal-element-index__main :deep(.element-index) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .modal-element-index__main :deep(.element-index__body) {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .modal-element-index__main :deep(.element-index__header),
+  .modal-element-index__main :deep(.element-index__navbar),
+  .modal-element-index__main :deep(.element-index__footer) {
+    flex: none;
   }
 </style>

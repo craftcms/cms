@@ -5,6 +5,10 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
+  import {
+    createElementActionMenu,
+    type ElementActionMenuItem,
+  } from '@/modules/elements/composables/useElementActionMenu';
   import type {ActionItem} from '@/common/types';
   import type {
     FormChangeKind,
@@ -39,6 +43,12 @@
      * concern. `null` for types that don't show one.
      */
     status?: {fill: string; label: string; draft: boolean} | null;
+    /**
+     * The element's own action menu, as the server describes it — including the
+     * extras an element type adds (an asset's Preview file, Download, Show in
+     * folder, Open in Image Editor).
+     */
+    actions?: ElementActionMenuItem[];
     /**
      * View-mode extras, rendered server-side for the active mode only — the
      * control asks for card parts in card modes and a thumbnail in thumbs mode,
@@ -329,29 +339,26 @@
     emit('update:value', next, 'discrete');
   }
 
+  /** One dispatcher for every chip's menu, rather than one per element. */
+  const toActionItems = createElementActionMenu();
+
   /**
-   * The chip's action menu — the Craft 5 set from
-   * `BaseElementSelectInput::defineElementActions()`: move forward/backward when
-   * the field is sortable, then Replace (which needs an element type to pick
-   * from) and Remove.
+   * The element's own actions.
    *
-   * Removing a chip that's part of the current selection removes the whole
-   * selection, as it does in Craft 5.
-   */
-  /**
-   * The element's own actions, mirroring the safe half of
-   * `Element::safeActionMenuItems()`: view it on the front end, edit it in a
-   * slideout, copy it to the CP clipboard.
-   *
-   * Each is gated on what the server decided — `url`, `canEdit`, `canCopy` —
-   * because they depend on permissions and element state the client can't see.
-   * These are dispatched the same way `useElementActionMenu` dispatches its
-   * `link`/`slideout`/`copy` behaviors; the descriptors are built here rather
-   * than sent, since the field already knows the element type and id.
+   * The server describes these per element, so an element type's extras arrive
+   * without the field knowing what any of them are. Elements picked since the
+   * last render have no descriptors yet — the selector reports only the common
+   * few — so those fall back to what can be derived client-side until the next
+   * server render fills them in.
    */
   function elementActions(value: number | string): ActionItem[] {
     const element = presentation(value);
     const type = props.control.props.elementDisplayName;
+
+    if (element.actions?.length) {
+      return toActionItems(element.actions);
+    }
+
     const actions: ActionItem[] = [];
 
     if (element.url) {
@@ -359,14 +366,6 @@
         icon: 'share',
         label: t('View in a new tab'),
         onClick: () => window.open(element.url!, '_blank', 'noopener'),
-      });
-    }
-
-    if (element.canEdit) {
-      actions.push({
-        icon: 'edit',
-        label: t('Edit {type}', {type}),
-        onClick: () => openEditor(value),
       });
     }
 
@@ -438,33 +437,107 @@
     return actions;
   });
 
-  function chipActions(value: number | string, index: number): ActionItem[] {
-    const actions: ActionItem[] = elementActions(value);
+  /**
+   * Opening the element's editor.
+   *
+   * The field's own affordance rather than one of the element's: the server's
+   * descriptors never include an edit item, because they're written for the
+   * editor itself, where you're already editing the thing.
+   */
+  const editLabel = computed(() =>
+    t('Edit {type}', {type: props.control.props.elementDisplayName})
+  );
 
-    // A read-only field still offers the element's own actions — you can view,
-    // edit and copy what you can't detach.
-    if (!props.editable) {
-      return actions;
+  function canEditElement(value: number | string): boolean {
+    return presentation(value).canEdit === true;
+  }
+
+  function editAction(value: number | string): ActionItem | null {
+    if (!canEditElement(value)) {
+      return null;
     }
 
+    return {
+      icon: 'edit',
+      label: editLabel.value,
+      onClick: () => openEditor(value),
+    };
+  }
+
+  /** The menu for a chip or card, with the edit item where it belongs. */
+  function menuActions(value: number | string, index: number): ActionItem[] {
+    return chipActions(value, index, {withEdit: !list.isCards.value});
+  }
+
+  /**
+   * Joins menu sections with a separator between each.
+   *
+   * Empty sections drop out, so a menu never opens or closes on a rule, and two
+   * adjacent empty sections can't produce a double one.
+   */
+  function withSeparators(sections: ActionItem[][]): ActionItem[] {
+    return sections
+      .filter((section) => section.length > 0)
+      .flatMap((section, index) =>
+        index === 0 ? section : [{type: 'hr'} as ActionItem, ...section]
+      );
+  }
+
+  /**
+   * A chip or card's menu, in three sections: what the element itself offers,
+   * what the field offers for it, and detaching it.
+   *
+   * This is the place to regroup the menu — move an item between the arrays, or
+   * merge two sections into one, and the separators follow.
+   *
+   * `withEdit` is off in the card modes, where the pencil button beside the menu
+   * already opens the editor.
+   */
+  function chipActions(
+    value: number | string,
+    index: number,
+    {withEdit = true}: {withEdit?: boolean} = {}
+  ): ActionItem[] {
     const id = elementId(value);
 
-    if (props.control.props.elementType) {
-      actions.push({
-        icon: 'arrows-rotate',
-        label: t('Replace'),
-        onClick: () => void openSelector(id),
+    // What the element itself offers — server-described, so an element type's
+    // own actions (an asset's Preview file, Download, …) arrive here.
+    const elementSection = elementActions(value);
+
+    // What the field offers for that element.
+    const fieldSection: ActionItem[] = [];
+    const edit = withEdit ? editAction(value) : null;
+
+    if (edit) {
+      fieldSection.push(edit);
+    }
+
+    // Detaching it from the field. Separated because it's the one that changes
+    // the field's value.
+    const removeSection: ActionItem[] = [];
+
+    // A read-only field still offers the element's own actions and its editor —
+    // you can view, edit and copy what you can't detach.
+    if (props.editable) {
+      if (props.control.props.elementType) {
+        fieldSection.push({
+          icon: 'arrows-rotate',
+          label: t('Replace'),
+          onClick: () => void openSelector(id),
+        });
+      }
+
+      removeSection.push({
+        icon: 'remove',
+        label: t('Remove'),
+        onClick: () =>
+          removeIds(
+            isSelected(id) ? new Set(selectedIds.value) : new Set([id])
+          ),
       });
     }
 
-    actions.push({
-      icon: 'remove',
-      label: t('Remove'),
-      onClick: () =>
-        removeIds(isSelected(id) ? new Set(selectedIds.value) : new Set([id])),
-    });
-
-    return actions;
+    return withSeparators([elementSection, fieldSection, removeSection]);
   }
 
   /**
@@ -601,6 +674,7 @@
             :view-mode="viewMode"
             :selection="list.selection"
             :selectable="selectable"
+            :select-all="false"
             :read-only="!editable"
             :sortable="sortable"
             @edit="(element) => openEditor(element.id)"
@@ -614,10 +688,23 @@
                 :value="String(element.id)"
               />
             </template>
-            <template #suffix="{element, index}">
+            <!--
+              Cards get a pencil straight to the editor, so their menu leaves
+              the edit item out; a chip keeps it in the menu.
+            -->
+            <template #actions="{element, index}">
+              <craft-button
+                v-if="list.isCards.value && canEditElement(element.id)"
+                type="button"
+                size="small"
+                variant="plain"
+                icon="edit"
+                :aria-label="editLabel"
+                @click="openEditor(element.id)"
+              ></craft-button>
               <ActionMenu
-                v-if="chipActions(element.id, index).length"
-                :actions="chipActions(element.id, index)"
+                v-if="menuActions(element.id, index).length"
+                :actions="menuActions(element.id, index)"
               />
             </template>
           </ElementList>

@@ -3,6 +3,11 @@
   import {computed, ref} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import Empty from '@/common/components/Empty.vue';
+  import DragShadow from '@/common/components/DragShadow.vue';
+  import {
+    useReorderableItems,
+    type DropState,
+  } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
@@ -18,6 +23,8 @@
       string | number | boolean | null | undefined
     >;
     cardHeaderHtml?: string;
+    cardThumbHtml?: string;
+    thumbAlignment?: string;
     cardContentHtml?: string;
     cardFooterHtml?: string;
   }
@@ -27,10 +34,20 @@
       selection: Selectable<any>;
       data?: Array<CardElement>;
       selectable?: boolean;
+      selectAll?: boolean;
+      singleColumn?: boolean;
+      sortable?: boolean;
       readOnly?: boolean;
       loading?: boolean;
     }>(),
-    {data: () => [], selectable: false, loading: false}
+    {
+      data: () => [],
+      selectable: false,
+      selectAll: true,
+      singleColumn: false,
+      sortable: false,
+      loading: false,
+    }
   );
 
   const page = usePage<{readOnly: boolean}>();
@@ -43,6 +60,47 @@
   const pendingShiftKey = ref(false);
   function rememberShift(event: MouseEvent) {
     pendingShiftKey.value = event.shiftKey;
+  }
+
+  const emit = defineEmits<{
+    (event: 'reorder', startIndex: number, finishIndex: number): void;
+  }>();
+
+  const ids = computed(() => props.data.map((element) => element.id));
+
+  const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
+    useReorderableItems({
+      getItemIds: () => ids.value,
+      onReorder: (startIndex, finishIndex) =>
+        emit('reorder', startIndex, finishIndex),
+      enabled: () => props.sortable,
+    });
+
+  /**
+   * A grid wraps, so its cards run in reading order rather than straight down —
+   * the reorder button says "Move forward"/"Move backward" there, and
+   * "Move up"/"Move down" in the single-column layout.
+   */
+  const reorderOrientation = computed(() =>
+    props.singleColumn ? 'vertical' : 'horizontal'
+  );
+
+  function overDropState(
+    id: string | number
+  ): Extract<DropState, {type: 'is-over'}> | null {
+    const state = getDropState(id);
+
+    return state.type === 'is-over' ? state : null;
+  }
+
+  function move(index: number, delta: number): void {
+    const target = index + delta;
+
+    if (target < 0 || target >= props.data.length) {
+      return;
+    }
+
+    emit('reorder', index, target);
   }
 
   const {navigateToFolder, isFolderRow, rowMoveAttrs} = useFolderNavigation();
@@ -127,7 +185,7 @@
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
-    <div class="card-grid-header" v-if="selectable">
+    <div class="card-grid-header" v-if="selectable && selectAll">
       <craft-checkbox
         label-sr-only
         .checked="selection.allSelected.value"
@@ -139,10 +197,11 @@
       </craft-checkbox>
     </div>
 
-    <ul class="card-grid">
+    <ul class="card-grid" :class="{'card-grid--single': singleColumn}">
       <li
         v-for="(element, cardIdx) in data"
         :key="element.id"
+        :ref="(el) => setItemRef(el as HTMLElement, element.id)"
         v-bind="rowMoveAttrs(element)"
         :tabindex="selectable ? 0 : undefined"
         @click="onCardClick(element, $event)"
@@ -151,13 +210,29 @@
           element: true,
           'element--folder': isFolderRow(element),
           sel: selection.isSelected(element.id),
+          'element--dragging': getDragState(element.id).type === 'is-dragging',
+          'element--hidden':
+            getDragState(element.id).type === 'is-dragging-and-left-self',
         }"
       >
+        <DragShadow
+          v-if="overDropState(element.id)?.closestEdge === 'top'"
+          :height="overDropState(element.id)?.draggingRect?.height"
+        />
+
         <craft-card
           v-bind="attrs(element.cardAttributes, {exclude: ['class']})"
           :active="selection.isSelected(element.id)"
+          :thumb-alignment="element.thumbAlignment ?? undefined"
         >
-          <div slot="header">
+          <div v-if="element.cardThumbHtml" slot="thumbnail">
+            <DynamicHtmlRenderer :html="element.cardThumbHtml" />
+          </div>
+
+          <div
+            slot="header"
+            class="flex gap-2 items-center justify-between w-full"
+          >
             <div class="flex gap-2 items-center">
               <craft-checkbox
                 v-if="selectable"
@@ -175,6 +250,24 @@
               </craft-checkbox>
               <DynamicHtmlRenderer :html="element.cardHeaderHtml ?? ''" />
             </div>
+
+            <div class="flex gap-1 items-center">
+              <slot name="actions" :element="element" :index="cardIdx"></slot>
+              <span
+                v-if="sortable"
+                :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
+                class="drag-handle"
+              >
+                <craft-reorder-button
+                  :position="getRowPosition(cardIdx)"
+                  :orientation="reorderOrientation"
+                  @reorder="
+                    (event: CustomEvent<{direction: 'up' | 'down'}>) =>
+                      move(cardIdx, event.detail.direction === 'up' ? -1 : 1)
+                  "
+                ></craft-reorder-button>
+              </span>
+            </div>
           </div>
           <DynamicHtmlRenderer :html="element.cardContentHtml ?? ''" />
           <DynamicHtmlRenderer
@@ -182,6 +275,11 @@
             slot="footer"
           />
         </craft-card>
+
+        <DragShadow
+          v-if="overDropState(element.id)?.closestEdge === 'bottom'"
+          :height="overDropState(element.id)?.draggingRect?.height"
+        />
       </li>
     </ul>
   </template>
@@ -201,8 +299,13 @@
 
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    padding: var(--c-spacing-md);
+    align-items: stretch;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  }
+
+  // One card per row, however wide the container gets.
+  .card-grid--single {
+    grid-template-columns: 1fr;
   }
 
   .card-grid > li {
@@ -211,6 +314,18 @@
 
   .card-grid > li.element--folder {
     cursor: pointer;
+  }
+
+  // Dragging, but still over itself — dim rather than remove, so the grid
+  // doesn't reflow under the cursor.
+  .card-grid > li.element--dragging {
+    opacity: 0.4;
+  }
+
+  // Dragged away from itself: collapse but keep the footprint, so the grid
+  // doesn't reshuffle around the gap.
+  .card-grid > li.element--hidden {
+    visibility: hidden;
   }
 
   // craft-thumbnail defaults its own size via :host, so the card thumbnail
