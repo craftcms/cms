@@ -5,7 +5,7 @@
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
 - Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 - Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc)
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-g48f-wc2q-4rrv, GHSA-wr79-9v6x-5rfq, GHSA-qm9x-rmcj-h2rc, GHSA-xmwr-88vw-5ghh)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-7rr3-4jcm-x526)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) account hijack vulnerability. (GHSA-xh42-494x-2xgv)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j697-8x93-7mp2)
