@@ -3,7 +3,7 @@ import {css} from 'lit';
 export default css`
   :host {
     /* Overall size of the thumbnail box. */
-    --c-thumbnail-size: calc(34rem / 16);
+    --c-thumbnail-size: calc(30rem / 16);
     /* Corner radius applied when [rounded] is set. Defaults to a full circle. */
     --c-thumbnail-radius: var(--c-radius-full);
     /* Size of a single checker square. */
@@ -13,7 +13,7 @@ export default css`
 
     --_checker-half: calc(var(--c-thumbnail-checker-size) / 2);
 
-    display: inline-flex;
+    display: contents;
   }
 
   .thumbnail {
@@ -39,36 +39,29 @@ export default css`
   }
 
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
-  .thumbnail--checkered .thumbnail__image,
-  .thumbnail--checkered ::slotted(img) {
-    background-image:
-      linear-gradient(
-        45deg,
-        var(--c-thumbnail-checker-color) 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        135deg,
-        var(--c-thumbnail-checker-color) 25%,
-        transparent 25%
-      ),
-      linear-gradient(
-        45deg,
-        transparent 75%,
-        var(--c-thumbnail-checker-color) 75%
-      ),
-      linear-gradient(
-        135deg,
-        transparent 75%,
-        var(--c-thumbnail-checker-color) 75%
-      );
-    background-size: var(--c-thumbnail-checker-size)
-      var(--c-thumbnail-checker-size);
-    background-position:
-      0 0,
-      var(--_checker-half) 0,
-      var(--_checker-half) calc(-1 * var(--_checker-half)),
-      0 var(--_checker-half);
+  .thumbnail--checkered {
+    background-image: linear-gradient(
+      45deg,
+      var(--c-thumbnail-checker-color) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      var(--c-thumbnail-checker-color) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      var(--c-thumbnail-checker-color) 75%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 75%,
+      var(--c-thumbnail-checker-color) 75%
+    );
+    background-size: var(--c-thumbnail-checker-size) var(--c-thumbnail-checker-size);
+    background-position: 0 0, var(--_checker-half) 0, var(--_checker-half) calc(-1 * var(--_checker-half)), 0 var(--_checker-half);
   }
 
   .thumbnail--rounded .thumbnail__image,
