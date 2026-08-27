@@ -58,6 +58,23 @@ it('creates a missing filesystem if type is not recognized', function () {
         ->and($filesystem->expectedType)->toBe('some\\missing\\FilesystemType');
 });
 
+it('ignores unsupported legacy filesystem settings', function () {
+    $filesystem = $this->service->createFilesystem([
+        'type' => Local::class,
+        'name' => 'Legacy Filesystem',
+        'handle' => 'legacyFilesystem',
+        'settings' => [
+            'path' => sys_get_temp_dir().'/legacy-filesystem',
+        ],
+        'assetTransform' => [
+            'driver' => 'craft',
+        ],
+    ]);
+
+    expect($filesystem)->toBeInstanceOf(Local::class)
+        ->and($filesystem->handle)->toBe('legacyFilesystem');
+});
+
 it('can save and fetch filesystems by handle through the new service', function () {
     $filesystem = createServiceLocalFilesystem($this->service, 'service-save');
 
