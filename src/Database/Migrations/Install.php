@@ -224,13 +224,6 @@ class Install extends Migration
             $table->dateTime('occurredAt');
         });
 
-        $logger?->subLabel('activitynotifications');
-        Schema::create(Table::ACTIVITYNOTIFICATIONS, function (Blueprint $table) {
-            $table->unsignedBigInteger('activityEventId');
-            $table->unsignedBigInteger('userId');
-            $table->unsignedBigInteger('versionEventId');
-        });
-
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
             $table->integer('id', true);
@@ -1046,7 +1039,6 @@ class Install extends Migration
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
-        Schema::createIndex(Table::ACTIVITYNOTIFICATIONS, ['activityEventId', 'userId'], unique: true);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
@@ -1193,8 +1185,6 @@ class Install extends Migration
     public function addForeignKeys(): void
     {
         Schema::table(Table::ACTIVITYEVENTS, fn (Blueprint $table) => $table->foreign('rootEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
-        Schema::table(Table::ACTIVITYNOTIFICATIONS, fn (Blueprint $table) => $table->foreign('activityEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
-        Schema::table(Table::ACTIVITYNOTIFICATIONS, fn (Blueprint $table) => $table->foreign('versionEventId')->references('id')->on(Table::ACTIVITYEVENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());

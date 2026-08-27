@@ -91,7 +91,7 @@ class Markdown
 
         $options = new MarkdownOptions(flavor: $flavor);
         $environment = $this->converter($options)->getEnvironment();
-        $document = new MarkdownParser($environment)->parse($this->normalize($markdown));
+        $document = new MarkdownParser($environment)->parse($markdown);
 
         $transform($document);
 
@@ -105,13 +105,8 @@ class Markdown
         }
 
         return $this->converter($options)
-            ->convert($this->normalize($markdown))
+            ->convert($markdown)
             ->getContent();
-    }
-
-    private function normalize(string $markdown): string
-    {
-        return str_replace(["\r\n", "\n\r", "\r"], "\n", $markdown);
     }
 
     private function converter(MarkdownOptions $options): MarkdownConverter
