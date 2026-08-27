@@ -435,6 +435,8 @@
       });
     }
 
+    // @TODO Provide a way for plugins to register bulk actions for asset fields
+
     return actions;
   });
 
