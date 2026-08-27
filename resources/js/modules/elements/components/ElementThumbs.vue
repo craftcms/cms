@@ -194,6 +194,7 @@
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
+        data-color="white"
         :class="{
           element: true,
           'element--folder': isFolderRow(element),
@@ -289,7 +290,6 @@
     display: grid;
     gap: var(--c-spacing-sm);
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    padding: var(--c-spacing-md);
   }
 
   .thumbsview > li {
@@ -348,6 +348,12 @@
     border-radius: var(--c-radius-lg);
     text-decoration: none;
     color: inherit;
+  }
+
+  .element {
+    background-color: var(--c-color-fill-quiet);
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-color-on-quiet);
   }
 
   .element--selected {
