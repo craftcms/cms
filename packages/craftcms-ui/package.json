@@ -99,6 +99,7 @@
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "4.1.10",
     "@wc-toolkit/storybook-helpers": "^10.3.0",
+    "@wc-toolkit/type-parser": "^1.3.1",
     "del": "^8.0.1",
     "dom-accessibility-api": "^0.7.1",
     "esbuild": "^0.28.0",
