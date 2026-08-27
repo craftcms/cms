@@ -127,6 +127,7 @@ JS, [
                 $duplicate = Elements::duplicateElement(
                     $element,
                     $attributes,
+                    placeInStructure: false,
                     asUnpublishedDraft: $this->asDrafts,
                 );
             } catch (Throwable) {

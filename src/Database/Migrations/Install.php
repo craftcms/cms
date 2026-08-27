@@ -206,6 +206,20 @@ class Install extends Migration
     {
         $this->dropEmptyStarterTable(Table::USERS);
 
+        $logger?->subLabel('activityevents');
+        Schema::create(Table::ACTIVITYEVENTS, function (Blueprint $table) {
+            $table->id();
+            $table->string('eventType');
+            $table->string('source');
+            $table->string('actorType');
+            $table->unsignedBigInteger('actorId')->nullable();
+            $table->string('subjectType')->nullable();
+            $table->string('subjectId')->nullable();
+            $table->unsignedBigInteger('siteId')->nullable();
+            $table->jsonb('payload');
+            $table->dateTime('occurredAt');
+        });
+
         $logger?->subLabel('addresses');
         Schema::create('addresses', function (Blueprint $table) {
             $table->integer('id', true);
@@ -1030,6 +1044,8 @@ class Install extends Migration
 
     public function createIndexes(): void
     {
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
         Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);

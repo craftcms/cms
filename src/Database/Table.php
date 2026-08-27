@@ -9,6 +9,8 @@ namespace CraftCms\Cms\Database;
  */
 readonly class Table
 {
+    public const string ACTIVITYEVENTS = 'activityevents';
+
     public const string ADDRESSES = 'addresses';
 
     public const string ANNOUNCEMENTS = 'announcements';

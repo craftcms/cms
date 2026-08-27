@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Activity\EntryActivity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -15,7 +16,10 @@ use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
 use Exception;
@@ -144,6 +148,14 @@ readonly class Drafts
                     }),
             );
 
+            if (! $provisional) {
+                Activities::record(
+                    'craft.draft.created',
+                    subject: $canonical,
+                    site: Sites::getSiteById($canonical->siteId),
+                );
+            }
+
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
@@ -252,11 +264,24 @@ readonly class Drafts
 
         DB::beginTransaction();
         try {
+            $entryActivity = null;
+
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
                 if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
                     $this->elements->mergeCanonicalChanges($draft);
                 }
+
+                $entryActivity = (
+                    $draft instanceof Entry &&
+                    $draft->isProvisionalDraft &&
+                    $draft->getPrimaryOwnerId() === null &&
+                    $canonical instanceof Entry
+                ) ? [
+                    $canonical,
+                    $draft->getModifiedAttributes(),
+                    $draft->getModifiedFields(),
+                ] : null;
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
@@ -275,6 +300,16 @@ readonly class Drafts
                 $draft->setRevisionNotes($draftNotes);
                 $this->removeDraftData($draft);
                 $newCanonical = $draft;
+            }
+
+            if ($entryActivity !== null && $newCanonical instanceof Entry) {
+                EntryActivity::recordUpdated($newCanonical, ...$entryActivity);
+            } elseif (! $draft->isProvisionalDraft) {
+                Activities::record(
+                    'craft.draft.applied',
+                    subject: $newCanonical,
+                    site: Sites::getSiteById($newCanonical->siteId),
+                );
             }
 
             DB::commit();
@@ -304,6 +339,25 @@ readonly class Drafts
         }
 
         return $newCanonical;
+    }
+
+    public function discardDraft(ElementInterface $draft): bool
+    {
+        return DB::transaction(function () use ($draft) {
+            $canonical = $draft->getCanonical();
+
+            if (! $this->elements->deleteElement($draft, true)) {
+                return false;
+            }
+
+            Activities::record(
+                'craft.draft.discarded',
+                subject: $canonical,
+                site: Sites::getSiteById($canonical->siteId),
+            );
+
+            return true;
+        });
     }
 
     /**

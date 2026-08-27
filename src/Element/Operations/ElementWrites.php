@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Activity\ElementWriteActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -66,6 +67,7 @@ readonly class ElementWrites
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
+        private ElementWriteActivity $activity,
     ) {}
 
     public function saveElement(
@@ -86,7 +88,7 @@ readonly class ElementWrites
         $element->isNewForSite = false;
 
         try {
-            return $this->save(
+            return $this->saveInternal(
                 $element,
                 $runValidation,
                 $propagate,
@@ -94,6 +96,7 @@ readonly class ElementWrites
                 forceTouch: $forceTouch,
                 crossSiteValidate: $crossSiteValidate ?? false,
                 saveContent: $saveContent,
+                recordActivity: $duplicateOf === null,
             );
         } finally {
             $element->duplicateOf = $duplicateOf;
@@ -125,6 +128,7 @@ readonly class ElementWrites
             $crossSiteValidate,
             $saveContent,
             $siteSettingsRecord,
+            recordActivity: $element->duplicateOf === null,
         );
     }
 
@@ -316,11 +320,13 @@ readonly class ElementWrites
         bool $saveContent = false,
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
+        bool $recordActivity = true,
     ): bool {
         $originalScenario = $element->ruleset->getScenario();
         try {
             $isNewElement = ! $element->id;
             $trackChanges = ElementHelper::shouldTrackChanges($element);
+            $activityState = $this->activity->capture($element, $recordActivity, $isNewElement);
 
             $propagate = $propagate && $element::isLocalized() && $this->sites->isMultiSite();
             $originalPropagateAll = $element->propagateAll;
@@ -377,6 +383,7 @@ readonly class ElementWrites
 
             $fieldLayout = $element->getFieldLayout();
             $dirtyFields = $element->getDirtyFields();
+            $this->activity->captureContentChanges($activityState, $element, $dirtyFields);
 
             if (! $isNewElement && ! $element->isNewForSite) {
                 $siteSettingsRecord = ElementSiteSettings::query()
@@ -428,6 +435,7 @@ readonly class ElementWrites
                 $originalPropagateAll,
                 $originalDateUpdated,
                 $inheritedUpdateSearchIndex,
+                $activityState,
                 &$dirtyAttributes,
                 &$siteSettingsRecord,
             ) {
@@ -625,6 +633,15 @@ readonly class ElementWrites
                         $element->afterPropagate($isNewElement);
                         BulkOps::trackElement($element);
                     }
+
+                    $this->activity->record(
+                        $activityState,
+                        $element,
+                        $isNewElement,
+                        $dirtyAttributes,
+                        $dirtyFields,
+                        $siteElements,
+                    );
 
                     DB::commit();
                 } catch (Throwable $throwable) {

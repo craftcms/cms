@@ -184,6 +184,7 @@
       ],
       "aliases": {
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
+        "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Announcements": "CraftCms\\Cms\\Support\\Facades\\Announcements",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
