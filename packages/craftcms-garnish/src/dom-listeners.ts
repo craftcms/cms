@@ -11,14 +11,18 @@
  * working.
  */
 
-import { parseEvents } from './events';
-import type { GarnishEvent, GarnishEventHandler } from './events';
-import type { ElementInput } from './types';
-import { coerceElements } from './utils/dom';
-import { globals } from './globals';
-import { installActivate, installResize, installTextchange } from './custom-events';
+import {parseEvents} from './events';
+import type {GarnishEvent, GarnishEventHandler} from './events';
+import type {ElementInput} from './types';
+import {coerceElements} from './utils/dom';
+import {globals} from './globals';
+import {
+  installActivate,
+  installResize,
+  installTextchange,
+} from './custom-events';
 
-export type { ElementInput } from './types';
+export type {ElementInput} from './types';
 
 export interface DomListenerOptions {
   /** Delegated target selector; handler fires only when the event target matches/closests this. */
@@ -64,7 +68,12 @@ export class DomListenerRegistry {
    * The handler runs with the host's `this` already applied by the caller, and
    * is short-circuited while `host.disabled` is true.
    */
-  add(elements: ElementInput, events: string, handler: GarnishEventHandler, options: DomListenerOptions = {}): void {
+  add(
+    elements: ElementInput,
+    events: string,
+    handler: GarnishEventHandler,
+    options: DomListenerOptions = {}
+  ): void {
     const targets = coerceElements(elements);
     if (targets.length === 0) {
       return;
@@ -79,7 +88,14 @@ export class DomListenerRegistry {
         if (CUSTOM_EVENT_TYPES.has(ev.type)) {
           this.bindCustom(target, ev.type, ev.namespace, handler, options);
         } else {
-          this.bindNative(target, ev.type, ev.namespace, handler, options, capture);
+          this.bindNative(
+            target,
+            ev.type,
+            ev.namespace,
+            handler,
+            options,
+            capture
+          );
         }
       }
     }
@@ -89,7 +105,7 @@ export class DomListenerRegistry {
     target: EventTarget,
     type: string,
     handler: GarnishEventHandler,
-    options: DomListenerOptions,
+    options: DomListenerOptions
   ): EventListener {
     return (nativeEvent: Event): void => {
       // Disabled gate (legacy `_disabled`).
@@ -110,7 +126,12 @@ export class DomListenerRegistry {
       }
 
       // Build a Garnish-style event object that also exposes native props.
-      const garnishEvent = this.toGarnishEvent(nativeEvent, type, currentTarget, options);
+      const garnishEvent = this.toGarnishEvent(
+        nativeEvent,
+        type,
+        currentTarget,
+        options
+      );
       handler(garnishEvent);
     };
   }
@@ -119,7 +140,7 @@ export class DomListenerRegistry {
     nativeEvent: Event,
     type: string,
     currentTarget: EventTarget | null,
-    options: DomListenerOptions,
+    options: DomListenerOptions
   ): GarnishEvent {
     // Pass through the real DOM event; only define fields that are missing so we
     // never write to read-only native getters (`type`/`target` already exist).
@@ -167,7 +188,7 @@ export class DomListenerRegistry {
     namespace: string | null,
     handler: GarnishEventHandler,
     options: DomListenerOptions,
-    capture: boolean,
+    capture: boolean
   ): void {
     const wrapped = this.wrap(target, type, handler, options);
     target.addEventListener(type, wrapped, {
@@ -188,7 +209,7 @@ export class DomListenerRegistry {
     type: string,
     namespace: string | null,
     handler: GarnishEventHandler,
-    options: DomListenerOptions,
+    options: DomListenerOptions
   ): void {
     const el = target as HTMLElement;
 
@@ -197,9 +218,12 @@ export class DomListenerRegistry {
     if (type === 'activate') {
       installerDispose = installActivate(el);
     } else if (type === 'textchange') {
-      installerDispose = installTextchange(el as HTMLElement & { value: string }, {
-        delay: (options.data?.delay as number | null | undefined) ?? null,
-      });
+      installerDispose = installTextchange(
+        el as HTMLElement & {value: string},
+        {
+          delay: (options.data?.delay as number | null | undefined) ?? null,
+        }
+      );
     } else if (type === 'resize') {
       installerDispose = installResize(el);
     }
@@ -218,7 +242,9 @@ export class DomListenerRegistry {
     binding.dispose = () => {
       target.removeEventListener(type, wrapped);
       // Only tear down the installer if this was the last listener of its type.
-      const stillBound = this.bindings.some((b) => b !== binding && b.element === target && b.type === type);
+      const stillBound = this.bindings.some(
+        (b) => b !== binding && b.element === target && b.type === type
+      );
       if (!stillBound) {
         installerDispose();
       }
@@ -238,7 +264,7 @@ export class DomListenerRegistry {
             b.element === target &&
             // An empty type with a namespace removes all of that namespace.
             (ev.type === '' || b.type === ev.type) &&
-            (!ev.namespace || b.namespace === ev.namespace),
+            (!ev.namespace || b.namespace === ev.namespace)
         );
       }
     }
@@ -267,9 +293,13 @@ export class DomListenerRegistry {
       if (binding.dispose) {
         binding.dispose();
       } else {
-        binding.element.removeEventListener(binding.type, binding.wrappedHandler, {
-          capture: binding.capture,
-        });
+        binding.element.removeEventListener(
+          binding.type,
+          binding.wrappedHandler,
+          {
+            capture: binding.capture,
+          }
+        );
       }
       this.bindings.splice(i, 1);
     }

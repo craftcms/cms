@@ -145,7 +145,10 @@ export class MenuBtn extends Base<MenuBtnSettings> {
     // If no label is set on the listbox, set one based on the combobox label
     const comboboxLabel = this.$btn.getAttribute('aria-labelledby');
 
-    if (!this.menu.$container.getAttribute('aria-labelledby') && comboboxLabel) {
+    if (
+      !this.menu.$container.getAttribute('aria-labelledby') &&
+      comboboxLabel
+    ) {
       this.menu.$container.setAttribute('aria-labelledby', comboboxLabel);
     }
 
@@ -397,7 +400,10 @@ export class MenuBtn extends Base<MenuBtnSettings> {
   }
 
   onMouseDown(ev: MouseEvent): void {
-    if (!isPrimaryClick(ev) || (ev.target as HTMLElement).nodeName === 'INPUT') {
+    if (
+      !isPrimaryClick(ev) ||
+      (ev.target as HTMLElement).nodeName === 'INPUT'
+    ) {
       return;
     }
 

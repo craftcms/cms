@@ -1,4 +1,4 @@
-import { css } from 'lit';
+import {css} from 'lit';
 
 export default css`
   :host {
@@ -25,7 +25,10 @@ export default css`
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     border-width: var(--c-chip-border-width, 1px);
     border-style: var(--c-chip-border-style, solid);
-    border-color: var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+    border-color: var(
+      --c-color-border-quiet,
+      var(--c-color-neutral-border-quiet)
+    );
     background-color: var(--c-surface-raised);
     overflow: clip;
   }

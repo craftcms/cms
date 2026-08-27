@@ -1,4 +1,4 @@
-import type { LitElement, PropertyValues } from 'lit';
+import type {LitElement, PropertyValues} from 'lit';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -32,7 +32,11 @@ interface ChoiceInputInternals {
  * Returns `Base`'s own type so the subclass keeps Lion's statics and member
  * visibility; the mixin only adds lifecycle behavior.
  */
-export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInputHost>>(Base: T): T => {
+export const SsrChoiceInputMixin = <
+  T extends Constructor<LitElement & ChoiceInputHost>,
+>(
+  Base: T
+): T => {
   class SsrChoiceInput extends Base {
     private __ssrStateAdopted = false;
 
@@ -45,7 +49,11 @@ export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInp
      * `undefined` (treated as not-yet-adopted) when the guard matters.
      */
     override set value(value: string) {
-      if (value === '' && !this.__ssrStateAdopted && this.__slottedInput()?.hasAttribute('value')) {
+      if (
+        value === '' &&
+        !this.__ssrStateAdopted &&
+        this.__slottedInput()?.hasAttribute('value')
+      ) {
         return;
       }
 
@@ -92,7 +100,10 @@ export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInp
 
       if (!(input instanceof HTMLInputElement)) {
         // Nothing to read from — leave Lion's own behavior in place.
-        Object.getPrototypeOf(SsrChoiceInput.prototype)._toggleChecked?.call(this, ev);
+        Object.getPrototypeOf(SsrChoiceInput.prototype)._toggleChecked?.call(
+          this,
+          ev
+        );
 
         return;
       }
@@ -121,7 +132,7 @@ export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInp
     protected override updated(changedProperties: PropertyValues) {
       super.updated(changedProperties);
 
-      const { _inputNode } = this as unknown as ChoiceInputInternals;
+      const {_inputNode} = this as unknown as ChoiceInputInternals;
       const choiceValue = this.choiceValue;
 
       if (
@@ -136,7 +147,8 @@ export const SsrChoiceInputMixin = <T extends Constructor<LitElement & ChoiceInp
 
     private __slottedInput(): HTMLInputElement | undefined {
       return Array.from(this.children).find(
-        (child): child is HTMLInputElement => child instanceof HTMLInputElement && child.slot === 'input',
+        (child): child is HTMLInputElement =>
+          child instanceof HTMLInputElement && child.slot === 'input'
       );
     }
 

@@ -40,28 +40,34 @@ export default css`
 
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
   .thumbnail--checkered {
-    background-image: linear-gradient(
-      45deg,
-      var(--c-thumbnail-checker-color) 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      var(--c-thumbnail-checker-color) 25%,
-      transparent 25%
-    ),
-    linear-gradient(
-      45deg,
-      transparent 75%,
-      var(--c-thumbnail-checker-color) 75%
-    ),
-    linear-gradient(
-      135deg,
-      transparent 75%,
-      var(--c-thumbnail-checker-color) 75%
-    );
-    background-size: var(--c-thumbnail-checker-size) var(--c-thumbnail-checker-size);
-    background-position: 0 0, var(--_checker-half) 0, var(--_checker-half) calc(-1 * var(--_checker-half)), 0 var(--_checker-half);
+    background-image:
+      linear-gradient(
+        45deg,
+        var(--c-thumbnail-checker-color) 25%,
+        transparent 25%
+      ),
+      linear-gradient(
+        135deg,
+        var(--c-thumbnail-checker-color) 25%,
+        transparent 25%
+      ),
+      linear-gradient(
+        45deg,
+        transparent 75%,
+        var(--c-thumbnail-checker-color) 75%
+      ),
+      linear-gradient(
+        135deg,
+        transparent 75%,
+        var(--c-thumbnail-checker-color) 75%
+      );
+    background-size: var(--c-thumbnail-checker-size)
+      var(--c-thumbnail-checker-size);
+    background-position:
+      0 0,
+      var(--_checker-half) 0,
+      var(--_checker-half) calc(-1 * var(--_checker-half)),
+      0 var(--_checker-half);
   }
 
   .thumbnail--rounded .thumbnail__image,
