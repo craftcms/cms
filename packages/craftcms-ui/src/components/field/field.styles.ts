@@ -1,4 +1,4 @@
-import { css } from "lit";
+import {css} from 'lit';
 
 export default css`
   :host {
@@ -10,14 +10,14 @@ export default css`
      the field to the control's width instead of spanning the column.
      width="full" spans despite a maxlength; width="auto" shrinks without
      one. */
-  :host([has-maxlength]:not([width="full"])),
-  :host([width="auto"]) {
+  :host([has-maxlength]:not([width='full'])),
+  :host([width='auto']) {
     width: fit-content;
   }
 
   /* Stop the input chrome from flexing back out to the available space. */
-  :host([has-maxlength]:not([width="full"])) .input-group__input,
-  :host([width="auto"]) .input-group__input {
+  :host([has-maxlength]:not([width='full'])) .input-group__input,
+  :host([width='auto']) .input-group__input {
     flex: 0 0 auto;
   }
 
@@ -73,7 +73,7 @@ export default css`
     align-items: center;
   }
 
-  ::slotted([slot="label"]) {
+  ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;
     gap: var(--c-spacing-xs);
@@ -146,12 +146,12 @@ export default css`
   }
 
   /* Error styling hook, mirroring .field.has-errors / .input.errors */
-  :host([has-errors="true"]) {
-    ::slotted([slot="label"]) {
+  :host([has-errors='true']) {
+    ::slotted([slot='label']) {
       color: var(--c-color-danger-on-quiet);
     }
 
-    ::slotted([slot="input"]) {
+    ::slotted([slot='input']) {
       border-color: var(--c-color-danger-border-loud);
     }
 

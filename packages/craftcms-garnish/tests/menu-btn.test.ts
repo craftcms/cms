@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import { MenuBtn } from '../src/menu-btn';
+import {MenuBtn} from '../src/menu-btn';
 
 function buildMenuBtn(labels = ['Apple', 'Banana', 'Cherry']): {
   btn: HTMLButtonElement;
@@ -23,7 +23,7 @@ function buildMenuBtn(labels = ['Apple', 'Banana', 'Cherry']): {
   wrapper.appendChild(btn);
   wrapper.appendChild(menu);
   document.body.appendChild(wrapper);
-  return { btn, wrapper };
+  return {btn, wrapper};
 }
 
 describe('MenuBtn init / ARIA', () => {
@@ -32,7 +32,7 @@ describe('MenuBtn init / ARIA', () => {
   });
 
   it('adopts the sibling .menu and wires combobox ARIA', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
 
     expect(btn.getAttribute('role')).toBe('combobox');
@@ -57,7 +57,7 @@ describe('MenuBtn disabled state', () => {
   });
 
   it('reads the initial disabled attribute', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     btn.setAttribute('disabled', 'disabled');
     const menuBtn = new MenuBtn(btn);
     expect(menuBtn.disabled).toBe(true);
@@ -65,13 +65,13 @@ describe('MenuBtn disabled state', () => {
   });
 
   it('treats a bare button as enabled', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
     expect(menuBtn.disabled).toBe(false);
   });
 
   it('enable()/disable() toggle the button attribute', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
     menuBtn.disable();
     expect(btn.hasAttribute('disabled')).toBe(true);
@@ -86,16 +86,18 @@ describe('MenuBtn keyboard focus', () => {
   });
 
   it('focusFirstOption sets .hover + aria-activedescendant', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
     menuBtn.focusFirstOption();
     const first = menuBtn.menu.$options[0]!;
     expect(first.classList.contains('hover')).toBe(true);
-    expect(btn.getAttribute('aria-activedescendant')).toBe(first.parentElement!.getAttribute('id'));
+    expect(btn.getAttribute('aria-activedescendant')).toBe(
+      first.parentElement!.getAttribute('id')
+    );
   });
 
   it('moveFocusDown advances to the next option', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
     menuBtn.focusFirstOption();
     menuBtn.moveFocusDown(1);
@@ -104,7 +106,7 @@ describe('MenuBtn keyboard focus', () => {
   });
 
   it('moveFocusUp from the first option stays clamped', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const menuBtn = new MenuBtn(btn);
     menuBtn.focusFirstOption();
     menuBtn.moveFocusUp(1);
@@ -118,9 +120,9 @@ describe('MenuBtn option selection', () => {
   });
 
   it('propagates the menu optionselect to onOptionSelect + optionSelect', () => {
-    const { btn } = buildMenuBtn();
+    const {btn} = buildMenuBtn();
     const onOptionSelect = vi.fn();
-    const menuBtn = new MenuBtn(btn, { onOptionSelect });
+    const menuBtn = new MenuBtn(btn, {onOptionSelect});
     const onEvent = vi.fn();
     menuBtn.on('optionSelect', onEvent);
 
