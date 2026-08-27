@@ -24,14 +24,14 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    private const CACHE_TAG = 'assetmanager';
+
     /**
      * @var bool Whether asset source paths should be cached for subsequent requests.
      * @see hash()
      * @since 4.5.10
      */
     public bool $cacheSourcePaths = true;
-
-    private const CACHE_TAG = 'assetmanager';
 
     /**
      * @inheritdoc
