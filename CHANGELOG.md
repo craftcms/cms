@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-j697-8x93-7mp2)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-w643-x88w-6wcm)
 
 ## 4.18.7 - 2026-08-18
