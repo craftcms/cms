@@ -50,7 +50,6 @@ export default class CraftBadge extends LitElement {
   }
 
   override render() {
-    console.log({ noPrefix: this.noPrefix });
     return html`
       <span
         part="badge"
