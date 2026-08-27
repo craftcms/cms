@@ -246,7 +246,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('filterByValue', [$this, 'filterByValueFilter'], ['needs_is_sandboxed' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
-            new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
+            new TwigFilter('firstWhere', [$this, 'firstWhereFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$this, 'hashFilter']),
@@ -545,6 +545,21 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $this->preventDottedNameInSandbox($isSandboxed, $key, 'contains');
         return ArrayHelper::contains($array, $key, $value, $strict);
+    }
+
+    /**
+     * @param bool $isSandboxed
+     * @param iterable $array
+     * @param callable|string $key
+     * @param mixed $value
+     * @param bool $strict
+     * @return mixed
+     * @throws RuntimeError
+     */
+    public function firstWhereFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'firstWhere');
+        return ArrayHelper::firstWhere($array, $key, $value, $strict);
     }
 
     /**
