@@ -244,7 +244,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [$this, 'filterByValueFilter'], ['needs_environment' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
-            new TwigFilter('group', [$this, 'groupFilter']),
+            new TwigFilter('group', [$this, 'groupFilter'], ['needs_environment' => true]),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
@@ -1329,19 +1329,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Groups an array by the results of an arrow function, or value of a property.
      *
+     * @param TwigEnvironment $env
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
      * @return array[] The grouped items
      * @throws RuntimeError if $arr is not of type array or Traversable
      */
-    public function groupFilter(iterable $arr, callable|string $arrow): array
+    public function groupFilter(TwigEnvironment $env, iterable $arr, callable|string $arrow): array
     {
-        // No need to call checkArrow() here since strings are always interpreted as nested fields,
-        // which should be passed to renderObjectTemplate() as `{name}`
-
         $groups = [];
 
         if (is_string($arrow)) {
+            // No need to call checkArrow() here since strings are always interpreted as nested fields,
+            // which should be passed to renderObjectTemplate() as `{name}`
             $template = '{' . $arrow . '}';
             $view = Craft::$app->getView();
             foreach ($arr as $item) {
@@ -1349,6 +1349,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $groups[$groupKey][] = $item;
             }
         } else {
+            CoreExtension::checkArrow($env, $arrow, 'group', 'filter');
             foreach ($arr as $key => $item) {
                 $groupKey = (string)$arrow($item, $key);
                 $groups[$groupKey][] = $item;
