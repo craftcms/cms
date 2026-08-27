@@ -11,8 +11,6 @@ readonly class Table
 {
     public const string ACTIVITYEVENTS = 'activityevents';
 
-    public const string ACTIVITYNOTIFICATIONS = 'activitynotifications';
-
     public const string ADDRESSES = 'addresses';
 
     public const string ASSETINDEXDATA = 'assetindexdata';

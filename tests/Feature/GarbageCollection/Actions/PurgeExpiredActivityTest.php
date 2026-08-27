@@ -3,19 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\ActivityComments;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\EventTypes\ElementCreated;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\GarbageCollection\Actions\PurgeExpiredActivity;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
 
 afterEach(fn () => Date::setTestNow());
 
@@ -34,27 +33,22 @@ it('leaves activity intact when retention is unlimited', function () {
 it('purges eligible standalone events and complete comment groups', function () {
     Cms::config()->activityRetentionDuration(3600);
     $activities = app(Activities::class);
+    $comments = app(ActivityComments::class);
     $author = User::factory()->createElement();
     $entry = Entry::factory()->createElement();
     $site = Sites::getSiteById(Site::factory()->create()->id);
 
     Date::setTestNow('2026-08-26 10:00:00');
     $expired = $activities->record(new ElementCreated(subject: $entry));
-    $comment = $activities->createComment($entry, $author, $site, 'Original comment');
+    $comment = $comments->create($entry, $author, $site, 'Original comment');
 
     Date::setTestNow('2026-08-26 12:00:00');
-    $edit = $activities->editComment($comment, $author, 'Edited comment', $entry);
+    $comments->edit($comment, $author, 'Edited comment', $entry);
     $retained = $activities->record(new ElementUpdated(subject: $entry));
-    DB::table(Table::ACTIVITYNOTIFICATIONS)->insert([
-        'activityEventId' => $comment->id,
-        'userId' => $author->id,
-        'versionEventId' => $edit->id,
-    ]);
 
     app(PurgeExpiredActivity::class)();
 
     expect(ActivityEvent::query()->pluck('id')->all())->toBe([$retained->id])
-        ->and(DB::table(Table::ACTIVITYNOTIFICATIONS)->count())->toBe(0)
         ->and(ActivityEvent::query()->whereKey($expired->id)->exists())->toBeFalse();
 });
 

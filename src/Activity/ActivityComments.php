@@ -10,7 +10,6 @@ use CraftCms\Cms\Activity\EventTypes\CommentDeleted;
 use CraftCms\Cms\Activity\EventTypes\CommentEdited;
 use CraftCms\Cms\Activity\EventTypes\CommentEvent;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Markdown\Markdown;
 use CraftCms\Cms\Site\Data\Site;
@@ -18,16 +17,17 @@ use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivityMentionNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
+use League\CommonMark\Extension\Mention\Mention;
 use League\CommonMark\Node\Block\Document;
 use League\CommonMark\Node\Inline\Text;
 use League\CommonMark\Node\NodeIterator;
 use LogicException;
-use Throwable;
 use UnexpectedValueException;
 
 use function CraftCms\Cms\t;
@@ -59,7 +59,7 @@ class ActivityComments
                 mentions: $this->resolveMentions($markdown, $subject),
             ));
 
-            $this->scheduleMentionNotifications($event, $event);
+            $this->scheduleMentionNotifications($event, $event->data['mentions']);
 
             return $event;
         });
@@ -69,7 +69,7 @@ class ActivityComments
         ActivityEvent $comment,
         User $author,
         string $markdown,
-        ?ElementInterface $subject = null,
+        ElementInterface $subject,
     ): ActivityEvent {
         $this->validate($markdown);
 
@@ -88,15 +88,9 @@ class ActivityComments
             && Gate::forUser($user)->allows('view', $subject);
     }
 
-    public function render(ActivityEvent $version): HtmlString
+    public function render(ActivityEvent $version, User $viewer): HtmlString
     {
-        $mentionData = $version->data['mentions'] ?? [];
-
-        if (! is_array($mentionData)) {
-            throw new UnexpectedValueException('Activity comment mentions must be an array.');
-        }
-
-        $mentions = collect($mentionData)->keyBy('id');
+        $mentions = $this->mentions($version);
         $users = User::find()
             ->id($mentions->keys()->all())
             ->status(null)
@@ -104,21 +98,20 @@ class ActivityComments
             ->keyBy('id');
         $html = $this->markdown->transform(
             $version->data['markdown'],
-            function (Document $document) use ($mentions, $users): void {
-                foreach ($this->mentionLinks($document) as [$node, $reference]) {
-                    if (! ctype_digit($reference)) {
+            function (Document $document) use ($mentions, $users, $viewer): void {
+                foreach ($this->mentionNodes($document) as $node) {
+                    $reference = $node->getIdentifier();
+                    $mention = ctype_digit($reference) ? $mentions->get((int) $reference) : null;
+
+                    if ($mention === null) {
+                        $node->replaceWith(new Text($node->getLabel() ?? "@$reference"));
+
                         continue;
                     }
 
                     $id = (int) $reference;
-                    $mention = $mentions->get($id);
-
-                    if ($mention === null) {
-                        continue;
-                    }
-
                     $user = $users->get($id);
-                    $canView = $user !== null && Gate::check('view', $user);
+                    $canView = $user !== null && Gate::forUser($viewer)->allows('view', $user);
                     $username = $canView ? ($user->username ?? $mention['username']) : $mention['username'];
 
                     $node->replaceWith($canView && $user->getCpEditUrl() !== null
@@ -132,6 +125,13 @@ class ActivityComments
         return new HtmlString($this->htmlSanitizers->sanitize($html));
     }
 
+    public function notificationText(ActivityEvent $version, User $viewer): string
+    {
+        $html = $this->render($version, $viewer)->toHtml();
+
+        return trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+
     /** @param class-string<CommentEvent> $eventType */
     private function mutate(
         ActivityEvent $comment,
@@ -142,11 +142,10 @@ class ActivityComments
     ): ActivityEvent {
         return DB::transaction(function () use ($comment, $actor, $eventType, $markdown, $liveSubject): ActivityEvent {
             $root = ActivityEvent::query()
-                ->whereKey($comment->id)
-                ->where('eventType', CommentCreated::class)
+                ->eventTypes(CommentCreated::class)
                 ->whereNull('rootEventId')
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->findOrFail($comment->id);
             $current = ActivityEvent::query()
                 ->where('rootEventId', $root->id)
                 ->newestFirst()
@@ -169,6 +168,9 @@ class ActivityComments
                 throw new LogicException('Activity comments require a current site.');
             }
 
+            $mentions = $markdown === null
+                ? ($current->data['mentions'] ?? [])
+                : $this->resolveMentions($markdown, $liveSubject);
             $event = $this->events->record(new $eventType(
                 subject: $subject,
                 actor: $actor,
@@ -176,49 +178,30 @@ class ActivityComments
                 markdown: $markdown ?? $current->data['markdown'],
                 authorId: $root->data['author']['id'],
                 authorLabel: $root->data['author']['label'],
-                mentions: $markdown === null
-                    ? ($current->data['mentions'] ?? [])
-                    : $this->resolveMentions($markdown, $liveSubject),
+                mentions: $mentions,
             ), rootEventId: $root->id);
 
             if ($markdown !== null) {
-                $this->scheduleMentionNotifications($root, $event);
+                $previousMentionIds = array_column($current->data['mentions'] ?? [], 'id');
+                $addedMentions = array_values(array_filter(
+                    $mentions,
+                    fn (array $mention): bool => ! in_array($mention['id'], $previousMentionIds, true),
+                ));
+
+                $this->scheduleMentionNotifications($event, $addedMentions);
             }
 
             return $event;
         });
     }
 
-    private function scheduleMentionNotifications(ActivityEvent $comment, ActivityEvent $version): void
+    /** @param list<array{id: int, username: string}> $mentions */
+    private function scheduleMentionNotifications(ActivityEvent $version, array $mentions): void
     {
-        foreach ($version->data['mentions'] as $mention) {
-            $pair = [
-                'activityEventId' => $comment->id,
-                'userId' => $mention['id'],
-            ];
-
-            if (DB::table(Table::ACTIVITYNOTIFICATIONS)->where($pair)->exists()) {
-                continue;
-            }
-
-            DB::table(Table::ACTIVITYNOTIFICATIONS)->insert([
-                ...$pair,
-                'versionEventId' => $version->id,
-            ]);
-
-            DB::afterCommit(function () use ($mention, $pair, $version): void {
-                try {
-                    UserModel::query()
-                        ->findOrFail($mention['id'])
-                        ->notify(new ActivityMentionNotification($version->id));
-                } catch (Throwable $exception) {
-                    DB::table(Table::ACTIVITYNOTIFICATIONS)
-                        ->where($pair)
-                        ->where('versionEventId', $version->id)
-                        ->delete();
-                    report($exception);
-                }
-            });
+        foreach ($mentions as $mention) {
+            UserModel::query()
+                ->findOrFail($mention['id'])
+                ->notify(new ActivityMentionNotification($version->id));
         }
     }
 
@@ -229,8 +212,8 @@ class ActivityComments
         $this->markdown->transform(
             $markdown,
             function (Document $document) use (&$references): void {
-                foreach ($this->mentionLinks($document) as [, $reference]) {
-                    $references[] = $reference;
+                foreach ($this->mentionNodes($document) as $node) {
+                    $references[] = $node->getIdentifier();
                 }
             },
             Markdown::FLAVOR_GFM_COMMENT,
@@ -271,14 +254,26 @@ class ActivityComments
         })->all();
     }
 
-    /** @return iterable<int, array{Link, string}> */
-    private function mentionLinks(Document $document): iterable
+    /** @return iterable<int, Mention> */
+    private function mentionNodes(Document $document): iterable
     {
         foreach (new NodeIterator($document) as $node) {
-            if ($node instanceof Link && str_starts_with($node->getUrl(), 'craft-user:')) {
-                yield [$node, substr($node->getUrl(), strlen('craft-user:'))];
+            if ($node instanceof Mention) {
+                yield $node;
             }
         }
+    }
+
+    /** @return Collection<int|string, array{id: int, username: string}> */
+    private function mentions(ActivityEvent $version): Collection
+    {
+        $mentions = $version->data['mentions'] ?? [];
+
+        if (! is_array($mentions)) {
+            throw new UnexpectedValueException('Activity comment mentions must be an array.');
+        }
+
+        return collect($mentions)->keyBy('id');
     }
 
     private function validate(string $markdown): void

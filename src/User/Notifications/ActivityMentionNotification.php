@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Notifications;
 
+use CraftCms\Cms\Activity\ActivityComments;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -15,14 +16,12 @@ use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Gate;
 use LogicException;
-use UnexpectedValueException;
 
-class ActivityMentionNotification extends Notification implements ShouldQueue
+class ActivityMentionNotification extends Notification implements ShouldQueueAfterCommit
 {
     use Queueable;
 
@@ -49,7 +48,7 @@ class ActivityMentionNotification extends Notification implements ShouldQueue
 
         return $recipient !== null
             && $subject !== null
-            && Gate::forUser($recipient)->allows('view', $subject);
+            && app(ActivityComments::class)->canMention($recipient, $subject);
     }
 
     public function toMail(CraftUser $notifiable): SystemMessageMailable
@@ -62,13 +61,14 @@ class ActivityMentionNotification extends Notification implements ShouldQueue
             throw new LogicException('Activity mention notification subjects must have a control panel edit URL.');
         }
 
+        $recipient = $notifiable->asElement();
         $mailable = app(SystemMessages::class)->mailable(
             key: 'comment_mention',
-            user: $notifiable->asElement(),
+            user: $recipient,
             variables: [
                 'author' => $version->data['author']['label'],
                 'subject' => $version->snapshots['subject']['label'],
-                'comment' => $this->notificationComment($version),
+                'comment' => app(ActivityComments::class)->notificationText($version, $recipient),
                 'link' => Template::raw(Url::cpUrl($editUrl)),
             ],
         );
@@ -95,24 +95,5 @@ class ActivityMentionNotification extends Notification implements ShouldQueue
             $version->subjectType,
             $version->siteId,
         );
-    }
-
-    private function notificationComment(ActivityEvent $version): string
-    {
-        $mentionData = $version->data['mentions'] ?? [];
-
-        if (! is_array($mentionData)) {
-            throw new UnexpectedValueException('Activity comment mentions must be an array.');
-        }
-
-        $mentions = collect($mentionData)->keyBy('id');
-
-        return preg_replace_callback(
-            '/\[((?:\\\\.|[^]\\\\])*)]\(craft-user:(\d+)\)/',
-            fn (array $match): string => isset($mentions[$match[2]])
-                ? "@{$mentions[$match[2]]['username']}"
-                : $match[0],
-            $version->data['markdown'],
-        ) ?? $version->data['markdown'];
     }
 }
