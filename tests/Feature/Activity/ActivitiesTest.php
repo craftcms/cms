@@ -73,13 +73,9 @@ it('records durable actor subject site and payload snapshots', function () {
             'source' => ['label' => 'Test Plugin'],
             'event' => ['label' => 'Entry updated'],
         ])
-        ->and($event->changes)->toBe([[
-            'type' => 'field',
-            'id' => 'summary',
-            'label' => 'Summary',
-            'old' => null,
-            'new' => 'Ready',
-        ]])
+        ->and($event->changes)->toEqual([
+            new ActivityChange('field', 'summary', 'Summary', null, 'Ready'),
+        ])
         ->and($event->data)->toBe(['reason' => 'Published']);
 });
 

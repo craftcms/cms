@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\EventTypes\DraftApplied;
 use CraftCms\Cms\Activity\EventTypes\DraftCreated;
@@ -87,20 +88,8 @@ it('records normalized entry content changes', function () {
         ->firstOrFail();
 
     expect($event->changes)->toEqualCanonicalizing([
-        [
-            'type' => 'attribute',
-            'id' => 'title',
-            'label' => 'Title',
-            'old' => 'Old title',
-            'new' => 'New title',
-        ],
-        [
-            'type' => 'field',
-            'id' => $field->layoutElement->uid,
-            'label' => $field->name,
-            'old' => 'Old body',
-            'new' => 'New body',
-        ],
+        new ActivityChange('attribute', 'title', 'Title', 'Old title', 'New title'),
+        new ActivityChange('field', $field->layoutElement->uid, $field->name, 'Old body', 'New body'),
     ]);
 });
 
@@ -123,13 +112,9 @@ it('records a status change instead of a generic update', function () {
         ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
         ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
         ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled.')
-        ->and($events->first()->changes)->toContainEqual([
-            'type' => 'field',
-            'id' => $field->layoutElement->uid,
-            'label' => $field->name,
-            'old' => 'Old body',
-            'new' => 'New body',
-        ]);
+        ->and($events->first()->changes)->toContainEqual(
+            new ActivityChange('field', $field->layoutElement->uid, $field->name, 'Old body', 'New body'),
+        );
 });
 
 it('records an update while omitting unsafe field values', function () {
@@ -230,13 +215,9 @@ it('records applying a provisional draft as an entry update', function () {
 
     expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->snapshots['subject']['label'])->toBe('Updated title')
-        ->and($event->changes)->toContainEqual([
-            'type' => 'attribute',
-            'id' => 'title',
-            'label' => 'Title',
-            'old' => 'Original title',
-            'new' => 'Updated title',
-        ]);
+        ->and($event->changes)->toContainEqual(
+            new ActivityChange('attribute', 'title', 'Title', 'Original title', 'Updated title'),
+        );
 });
 
 it('records draft creation and its initial save', function () {

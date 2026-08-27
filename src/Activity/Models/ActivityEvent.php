@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Activity\Models;
 
 use Carbon\CarbonImmutable;
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Enums\ActivityActorType;
 use CraftCms\Cms\Database\Table;
@@ -28,7 +29,7 @@ use InvalidArgumentException;
  * @property int|null $siteId
  * @property array{snapshots: array<string, array<string, int|string>>, changes: list<array<string, mixed>>, data: array<string, mixed>} $payload
  * @property array<string, array<string, int|string>> $snapshots
- * @property list<array<string, mixed>> $changes
+ * @property list<ActivityChange> $changes
  * @property array<string, mixed> $data
  * @property CarbonImmutable $occurredAt
  */
@@ -59,10 +60,13 @@ class ActivityEvent extends BaseModel
         return Attribute::get(fn () => $this->payload['snapshots']);
     }
 
-    /** @return Attribute<list<array<string, mixed>>, never> */
+    /** @return Attribute<list<ActivityChange>, never> */
     protected function changes(): Attribute
     {
-        return Attribute::get(fn () => $this->payload['changes']);
+        return Attribute::get(fn () => array_map(
+            ActivityChange::fromArray(...),
+            $this->payload['changes'],
+        ));
     }
 
     /** @return Attribute<array<string, mixed>, never> */

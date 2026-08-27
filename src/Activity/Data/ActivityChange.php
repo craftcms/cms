@@ -38,4 +38,16 @@ readonly class ActivityChange
             'new' => $this->new,
         ];
     }
+
+    /** @param array{type: string, id: string, label: string, old: mixed, new: mixed} $change */
+    public static function fromArray(array $change): self
+    {
+        return new self(
+            $change['type'],
+            $change['id'],
+            $change['label'],
+            $change['old'],
+            $change['new'],
+        );
+    }
 }
