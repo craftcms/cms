@@ -631,7 +631,7 @@
         -->
         <div
           v-if="selectable"
-          class="flex justify-between items-center border-b border-b-(--c-color-neutral-border-quiet) p-(--c-spacing-sm)"
+          class="flex justify-between items-center border-b border-b-(--c-color-neutral-border-quiet) p-(--c-spacing-sm) shadow-sm"
         >
           <div class="flex items-center gap-2">
             <craft-checkbox
