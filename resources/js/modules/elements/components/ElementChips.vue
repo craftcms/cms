@@ -9,6 +9,7 @@
   } from '@/common/composables/useReorderableItems';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   /**
    * The element data a chip draws. Everything past `id` and `label` is optional,
@@ -23,6 +24,7 @@
      * they're called, is an element-type concern the server settles.
      */
     status?: {fill: string; label: string; draft: boolean} | null;
+    thumbHtml?: string;
   }
 
   const props = withDefaults(
@@ -172,6 +174,10 @@
       >
         <div slot="prefix" class="flex items-center px-1 gap-1">
           <slot name="prefix" :element="element" :index="index"></slot>
+          <DynamicHtmlRenderer
+            v-if="element.thumbHtml"
+            :html="element.thumbHtml"
+          />
         </div>
 
         <!--

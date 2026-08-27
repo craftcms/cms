@@ -215,6 +215,10 @@ class ElementSelect extends Control
             return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE)];
         }
 
+        if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
+            return ['thumbHtml' => $element->getThumbHtml(30)];
+        }
+
         return [];
     }
 
