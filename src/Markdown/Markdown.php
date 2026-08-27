@@ -11,6 +11,9 @@ use CraftCms\Cms\Markdown\Flavors\GfmFlavor;
 use Illuminate\Container\Attributes\Singleton;
 use InvalidArgumentException;
 use League\CommonMark\MarkdownConverter;
+use League\CommonMark\Node\Block\Document;
+use League\CommonMark\Parser\MarkdownParser;
+use League\CommonMark\Renderer\HtmlRenderer;
 
 #[Singleton]
 class Markdown
@@ -79,6 +82,22 @@ class Markdown
         )), "\n");
     }
 
+    /** @param callable(Document): void $transform */
+    public function transform(string $markdown, callable $transform, ?string $flavor = null): string
+    {
+        if (ltrim($markdown) === '') {
+            return '';
+        }
+
+        $options = new MarkdownOptions(flavor: $flavor);
+        $environment = $this->converter($options)->getEnvironment();
+        $document = new MarkdownParser($environment)->parse($this->normalize($markdown));
+
+        $transform($document);
+
+        return new HtmlRenderer($environment)->renderDocument($document)->getContent();
+    }
+
     public function convert(string $markdown, MarkdownOptions $options): string
     {
         if (ltrim($markdown) === '') {
@@ -86,8 +105,13 @@ class Markdown
         }
 
         return $this->converter($options)
-            ->convert(str_replace(["\r\n", "\n\r", "\r"], "\n", $markdown))
+            ->convert($this->normalize($markdown))
             ->getContent();
+    }
+
+    private function normalize(string $markdown): string
+    {
+        return str_replace(["\r\n", "\n\r", "\r"], "\n", $markdown);
     }
 
     private function converter(MarkdownOptions $options): MarkdownConverter
