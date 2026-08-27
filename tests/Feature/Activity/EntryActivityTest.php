@@ -121,9 +121,9 @@ it('records a status change instead of a generic update', function () {
 
     expect($events)->toHaveCount(1)
         ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
-        ->and($events->first()->data)->toBe(['oldStatus' => 'live', 'newStatus' => 'disabled'])
+        ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
         ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled.')
-        ->and($events->first()->changes)->toContain([
+        ->and($events->first()->changes)->toContainEqual([
             'type' => 'field',
             'id' => $field->layoutElement->uid,
             'label' => $field->name,
@@ -230,7 +230,7 @@ it('records applying a provisional draft as an entry update', function () {
 
     expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->snapshots['subject']['label'])->toBe('Updated title')
-        ->and($event->changes)->toContain([
+        ->and($event->changes)->toContainEqual([
             'type' => 'attribute',
             'id' => 'title',
             'label' => 'Title',

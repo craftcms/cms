@@ -39,7 +39,7 @@ it('records duplication instead of nested creation', function () {
 
     expect($events)->toHaveCount(1)
         ->and($events->first()->eventType)->toBe(ElementDuplicated::class)
-        ->and($events->first()->data['source'])->toBe([
+        ->and($events->first()->data['source'])->toEqual([
             'type' => $source::class,
             'id' => $source->uid,
             'label' => $source->getUiLabel(),

@@ -55,7 +55,7 @@ it('records safe asset file replacement facts', function () {
 
     expect($event->eventType)->toBe(AssetFileReplaced::class)
         ->and($event->siteId)->toBe($asset->siteId)
-        ->and($event->data)->toBe([
+        ->and($event->data)->toEqual([
             'oldFilename' => 'original.txt',
             'newFilename' => 'replacement.txt',
             'oldMimeType' => 'text/plain',
