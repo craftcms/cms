@@ -32,7 +32,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('firstWhere', $this->firstWhereFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('flatten', Arr::flatten(...)),
-            new TwigFilter('group', $this->groupFilter(...)),
+            new TwigFilter('group', $this->groupFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
             new TwigFilter('intersect', 'array_intersect'),
             new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
@@ -189,17 +189,21 @@ class ArrayTwigExtension extends AbstractExtension
      *
      * @throws RuntimeError
      */
-    public function groupFilter(iterable $arr, callable|string $arrow): array
+    public function groupFilter(bool $isSandboxed, iterable $arr, callable|string $arrow): array
     {
         $groups = [];
 
         if (is_string($arrow)) {
+            // No need to call checkArrow() here since strings are always interpreted as nested fields,
+            // which get passed to renderObjectTemplate() as `{name}`
             $template = '{'.$arrow.'}';
             foreach ($arr as $item) {
                 $groupKey = renderObjectTemplate($template, $item);
                 $groups[$groupKey][] = $item;
             }
         } else {
+            CoreExtension::checkArrow($isSandboxed, $arrow, 'group', 'filter');
+
             foreach ($arr as $key => $item) {
                 $groupKey = (string) $arrow($item, $key);
                 $groups[$groupKey][] = $item;

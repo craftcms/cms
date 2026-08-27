@@ -56,6 +56,36 @@ describe('ArrayTwigExtension', function () {
         expect($mapped)->toBe([2, 4, 6]);
     });
 
+    describe('groupFilter', function () {
+        it('groups by a property name string', function () {
+            $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
+
+            $array = [['status' => 'live'], ['status' => 'draft'], ['status' => 'live']];
+
+            expect($extension->groupFilter(false, $array, 'status'))->toBe([
+                'live' => [['status' => 'live'], ['status' => 'live']],
+                'draft' => [['status' => 'draft']],
+            ]);
+        });
+
+        it('groups using a closure arrow when sandboxed', function () {
+            $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
+
+            $array = [1, 2, 3, 4];
+
+            expect($extension->groupFilter(true, $array, fn (int $v) => $v % 2 === 0 ? 'even' : 'odd'))->toBe([
+                'odd' => [1, 3],
+                'even' => [2, 4],
+            ]);
+        });
+
+        it('throws when the arrow is a non-Closure callable while sandboxed', function () {
+            $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
+
+            $extension->groupFilter(true, [1, 2], $extension->indexOfFilter(...));
+        })->throws(RuntimeError::class);
+    });
+
     describe('whereFilter', function () {
         it('filters to elements matching the given key/value, preserving keys by default', function () {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
