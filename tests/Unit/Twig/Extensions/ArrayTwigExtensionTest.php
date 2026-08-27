@@ -96,16 +96,24 @@ describe('ArrayTwigExtension', function () {
             expect($extension->whereFilter(false, $array, 'enabled', keepKeys: false))->toBe([['enabled' => true]]);
         });
 
-        it('throws when the key contains a "." while sandboxed', function () {
+        it('throws when the key contains a disallowed character while sandboxed', function (string $key) {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
-            $extension->whereFilter(true, [], 'foo.bar');
-        })->throws(RuntimeError::class);
+            $extension->whereFilter(true, [], $key);
+        })->with([
+            'dot' => ['foo.bar'],
+            'opening bracket' => ['foo[bar'],
+            'closing bracket' => ['foo]bar'],
+        ])->throws(RuntimeError::class);
 
-        it('allows dotted keys when not sandboxed', function () {
+        it('allows keys with those characters when not sandboxed', function (string $key) {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
-            expect($extension->whereFilter(false, [], 'foo.bar'))->toBe([]);
-        });
+            expect($extension->whereFilter(false, [], $key))->toBe([]);
+        })->with([
+            'dot' => ['foo.bar'],
+            'opening bracket' => ['foo[bar'],
+            'closing bracket' => ['foo]bar'],
+        ]);
     });
 });

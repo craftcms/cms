@@ -141,8 +141,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     private function preventDottedNameInSandbox(bool $isSandboxed, mixed $name, string $filterName): void
     {
-        if ($isSandboxed && is_string($name) && str_contains($name, '.')) {
-            throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "." characters in sandbox mode.', $filterName));
+        if (!$isSandboxed || !is_string($name)) {
+            return;
+        }
+
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains($name, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
+            }
         }
     }
 }
