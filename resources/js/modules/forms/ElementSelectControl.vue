@@ -430,6 +430,7 @@
       actions.push({
         icon: 'remove',
         label: t('Remove selected'),
+        variant: 'danger',
         onClick: () => removeIds(new Set(selectedIds.value)),
       });
     }
@@ -530,6 +531,7 @@
       removeSection.push({
         icon: 'remove',
         label: t('Remove'),
+        variant: 'danger',
         onClick: () =>
           removeIds(
             isSelected(id) ? new Set(selectedIds.value) : new Set([id])

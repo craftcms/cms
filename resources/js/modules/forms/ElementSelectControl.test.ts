@@ -1370,4 +1370,62 @@ describe('ElementSelectControl', () => {
       expect(orientations(root)).toEqual(['vertical', 'vertical']);
     });
   });
+  describe('destructive actions', () => {
+    function variantOf(actions: Array<any>, label: string): string | undefined {
+      return actions.find((action) => action.label === label)?.variant;
+    }
+
+    it('marks the chip’s Remove as danger', async () => {
+      const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+      expect(variantOf(menus(root)[0].actions, 'Remove')).toBe('danger');
+    });
+
+    it('leaves the chip’s other actions unstyled', async () => {
+      const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+      expect(variantOf(menus(root)[0].actions, 'Replace')).toBeUndefined();
+    });
+
+    it('marks the toolbar’s Remove selected as danger', async () => {
+      const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+      root.querySelector('craft-chip')!.dispatchEvent(
+        new CustomEvent('selected-change', {
+          detail: {selected: true, shiftKey: false},
+        })
+      );
+      await nextTick();
+
+      const bar =
+        root.querySelector('craft-checkbox')!.parentElement?.parentElement;
+      const menu = bar?.querySelector(':scope > craft-action-menu') as any;
+
+      expect(variantOf(menu.actions, 'Remove selected')).toBe('danger');
+    });
+
+    // The server flags its own; the mapper turns that into the same variant.
+    it('marks a server-described destructive action as danger', async () => {
+      const root = await mount({
+        props: {
+          elements: [
+            {
+              id: 5,
+              label: 'photo.jpg',
+              actions: [
+                {
+                  label: 'Delete asset',
+                  destructive: true,
+                  behavior: {type: 'link', href: '/x'},
+                },
+              ],
+            },
+          ],
+        },
+        value: [5],
+      });
+
+      expect(variantOf(menus(root)[0].actions, 'Delete asset')).toBe('danger');
+    });
+  });
 });
