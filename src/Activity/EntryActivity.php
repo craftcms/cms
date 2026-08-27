@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity;
 
 use BackedEnum;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\EventTypes\ElementCreated;
 use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
@@ -86,7 +87,7 @@ class EntryActivity
     /**
      * @param  string[]  $dirtyAttributes
      * @param  string[]  $dirtyFields
-     * @return array{list<array{type:string, id:string, label:string, old:mixed, new:mixed}>, bool}
+     * @return array{list<ActivityChange>, bool}
      */
     private static function changes(
         Entry $entry,
@@ -128,7 +129,7 @@ class EntryActivity
         return [$changes, $contentChanged];
     }
 
-    /** @param list<array{type:string, id:string, label:string, old:mixed, new:mixed}> $changes */
+    /** @param list<ActivityChange> $changes */
     private static function appendChange(
         array &$changes,
         bool &$contentChanged,
@@ -155,7 +156,7 @@ class EntryActivity
             return;
         }
 
-        $changes[] = compact('type', 'id', 'label', 'old', 'new');
+        $changes[] = new ActivityChange($type, $id, $label, $old, $new);
     }
 
     private static function attributeValue(Entry $entry, string $attribute): mixed

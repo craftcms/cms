@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity\Contracts;
 
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySource;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
@@ -22,7 +23,7 @@ interface ActivityEventTypeInterface
     /** @return array<string, mixed> */
     public function data(): array;
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<ActivityChange> */
     public function changes(): array;
 
     public static function source(): ActivitySource;

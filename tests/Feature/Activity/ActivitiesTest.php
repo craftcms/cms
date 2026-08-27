@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Activity\Activities;
 use CraftCms\Cms\Activity\ActivityEventType;
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySource;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Enums\ActivityActorType;
@@ -54,13 +55,7 @@ it('records durable actor subject site and payload snapshots', function () {
         reason: 'Published',
         subject: $draft,
         site: $site,
-        changes: [[
-            'type' => 'field',
-            'id' => 'summary',
-            'label' => 'Summary',
-            'old' => null,
-            'new' => 'Ready',
-        ]],
+        changes: [new ActivityChange('field', 'summary', 'Summary', null, 'Ready')],
     ));
 
     expect($event->id)->toBeString()
@@ -132,23 +127,15 @@ it('attributes unauthenticated HTTP activity to an anonymous actor', function ()
 });
 
 it('rejects invalid payload sections', function () {
-    expect(fn () => $this->activities->record(new TestPluginEntryUpdated(
-        reason: 'Edited',
-        changes: [['type' => 'field', 'id' => 'summary']],
-    )))->toThrow(ValidationException::class)
+    expect(fn () => new ActivityChange('field', 'summary', '', null, 'Ready'))
+        ->toThrow(InvalidArgumentException::class)
         ->and(fn () => $this->activities->record(new TestPluginPayload(['value'])))
         ->toThrow(ValidationException::class)
         ->and(fn () => $this->activities->record(new TestPluginPayload(['value' => NAN])))
         ->toThrow(ValidationException::class)
         ->and(fn () => $this->activities->record(new TestPluginEntryUpdated(
             reason: 'Edited',
-            changes: [[
-                'type' => 'field',
-                'id' => 'summary',
-                'label' => 'Summary',
-                'old' => NAN,
-                'new' => null,
-            ]],
+            changes: [new ActivityChange('field', 'summary', 'Summary', NAN, null)],
         )))->toThrow(ValidationException::class);
 });
 

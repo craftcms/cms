@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity\EventTypes;
 
 use CraftCms\Cms\Activity\ActivityEventType;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Site\Data\Site;
@@ -19,7 +20,7 @@ class ElementStatusChanged extends ActivityEventType
     protected const string ICON = 'circle-half-stroke';
 
     /**
-     * @param  list<array<string, mixed>>  $changes
+     * @param  list<ActivityChange>  $changes
      */
     public function __construct(
         ElementInterface $subject,

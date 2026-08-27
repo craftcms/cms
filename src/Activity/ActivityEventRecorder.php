@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Activity;
 use Closure;
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Support\Json;
@@ -28,7 +29,10 @@ class ActivityEventRecorder
     public function record(ActivityEventTypeInterface $event): ActivityEvent
     {
         $data = $event->data();
-        $changes = $event->changes();
+        $changes = array_map(
+            fn (ActivityChange $change) => $change->toArray(),
+            $event->changes(),
+        );
 
         $this->validatePayload($data, $changes, $event::rules());
 
@@ -117,10 +121,6 @@ class ActivityEventRecorder
                 $validJson,
             ],
             'changes' => ['list', $validJson],
-            'changes.*' => ['array:type,id,label,old,new'],
-            'changes.*.type' => ['required', 'string'],
-            'changes.*.id' => ['required', 'string'],
-            'changes.*.label' => ['required', 'string'],
             ...Arr::prependKeysWith($rules, 'data.'),
         ])->validate();
     }

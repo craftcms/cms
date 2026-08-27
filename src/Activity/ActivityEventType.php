@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\Data\ActivitySource;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
@@ -21,7 +22,7 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
     protected const string ICON = 'wave-pulse';
 
     /**
-     * @param  list<array<string, mixed>>  $changes
+     * @param  list<ActivityChange>  $changes
      */
     public function __construct(
         private readonly ElementInterface|ActivitySubject|null $subject = null,
