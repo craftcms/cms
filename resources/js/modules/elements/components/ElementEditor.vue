@@ -16,6 +16,7 @@
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {FormValues} from '@/modules/forms/types';
+  import ElementDetailsTabs from '@/modules/elements/components/ElementDetailsTabs.vue';
 
   const props = defineProps<{
     /**
@@ -27,6 +28,7 @@
 
   const {
     activity,
+    activityTimelineVersion,
     autosave,
     discardDraft,
     errors,
@@ -262,29 +264,41 @@
   <slot :payload="payload" />
 
   <LayoutSlot
-    v-if="sidebarPayload || payload.metadataHtml || $slots['details-header']"
+    v-if="
+      sidebarPayload ||
+      payload.metadataHtml ||
+      payload.activityTimelineUrl ||
+      $slots['details-header']
+    "
     name="details"
   >
-    <!-- Anything the element type shows above its meta fields, e.g. an
-      asset's file preview. -->
-    <slot name="details-header" :payload="payload" />
+    <ElementDetailsTabs
+      :payload="payload"
+      :activity-timeline-version="activityTimelineVersion"
+    >
+      <template #info>
+        <!-- Anything the element type shows above its meta fields, e.g. an
+          asset's file preview. -->
+        <slot name="details-header" :payload="payload" />
 
-    <!--
-      The meta fields render as their own Form, bridged into the same Inertia
-      form as the field layout above, so they submit as ordinary inputs.
-    -->
-    <FormRenderer
-      v-if="sidebarPayload"
-      ref="sidebarRenderer"
-      :payload="sidebarPayload"
-      :errors="sidebarErrors"
-      :modified="autosave.modified.value"
-      @update:mutation="onSidebarMutation"
-    />
+        <!--
+          The meta fields render as their own Form, bridged into the same Inertia
+          form as the field layout above, so they submit as ordinary inputs.
+        -->
+        <FormRenderer
+          v-if="sidebarPayload"
+          ref="sidebarRenderer"
+          :payload="sidebarPayload"
+          :errors="sidebarErrors"
+          :modified="autosave.modified.value"
+          @update:mutation="onSidebarMutation"
+        />
 
-    <DynamicHtmlRenderer
-      v-if="payload.metadataHtml"
-      :html="payload.metadataHtml"
-    />
+        <DynamicHtmlRenderer
+          v-if="payload.metadataHtml"
+          :html="payload.metadataHtml"
+        />
+      </template>
+    </ElementDetailsTabs>
   </LayoutSlot>
 </template>

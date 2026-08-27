@@ -9,9 +9,12 @@ use CraftCms\Cms\Activity\Data\ActivityChange;
 use CraftCms\Cms\Activity\EventTypes\ElementCreated;
 use CraftCms\Cms\Activity\EventTypes\ElementStatusChanged;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Elements\User;
 use DateTimeInterface;
 
 use function CraftCms\Cms\t;
@@ -61,7 +64,12 @@ class EntryActivity
         Entry $original,
         array $dirtyAttributes,
         array $dirtyFields,
+        bool $authorChanged = true,
     ): void {
+        if (! $authorChanged) {
+            $dirtyAttributes = array_values(array_diff($dirtyAttributes, ['authorIds']));
+        }
+
         [$changes, $contentChanged] = self::changes($entry, $original, $dirtyAttributes, $dirtyFields);
         $oldStatus = $original->getStatus();
         $newStatus = $entry->getStatus();
@@ -103,8 +111,9 @@ class EntryActivity
                 continue;
             }
 
-            $old = self::attributeValue($original, $attribute);
-            $new = self::attributeValue($entry, $attribute);
+            [$old, $new] = $attribute === 'authorIds'
+                ? self::authorValues($entry, $original)
+                : [self::attributeValue($original, $attribute), self::attributeValue($entry, $attribute)];
             self::appendChange($changes, $contentChanged, t($label), $old, $new);
         }
 
@@ -113,8 +122,14 @@ class EntryActivity
                 continue;
             }
 
-            $old = $field->serializeValue($original->getFieldValue($field->handle), $original);
-            $new = $field->serializeValue($entry->getFieldValue($field->handle), $entry);
+            if ($field instanceof BaseRelationField) {
+                $old = self::elementValues($original->getFieldValue($field->handle)->all());
+                $new = self::elementValues($entry->getFieldValue($field->handle)->all());
+            } else {
+                $old = $field->serializeValue($original->getFieldValue($field->handle), $original);
+                $new = $field->serializeValue($entry->getFieldValue($field->handle), $entry);
+            }
+
             self::appendChange(
                 $changes,
                 $contentChanged,
@@ -159,9 +174,38 @@ class EntryActivity
     {
         return match ($attribute) {
             'enabledForSite' => $entry->getEnabledForSite(),
-            'authorIds' => $entry->getAuthorIds(),
             default => $entry->{$attribute},
         };
+    }
+
+    /** @return array{list<array<string, mixed>>, list<array<string, mixed>>} */
+    private static function authorValues(Entry $entry, Entry $original): array
+    {
+        $oldIds = $original->getAuthorIds();
+        $newIds = $entry->getAuthorIds();
+        $ids = array_values(array_unique([...$oldIds, ...$newIds]));
+        $authors = $ids === []
+            ? collect()
+            : User::find()->id($ids)->status(null)->collect()->keyBy('id');
+
+        return [
+            self::elementValues(collect($oldIds)->map($authors->get(...))->filter()->all()),
+            self::elementValues(collect($newIds)->map($authors->get(...))->filter()->all()),
+        ];
+    }
+
+    /**
+     * @param  list<ElementInterface>  $elements
+     * @return list<array<string, mixed>>
+     */
+    private static function elementValues(array $elements): array
+    {
+        return array_map(fn (ElementInterface $element): array => [
+            'elementType' => $element::class,
+            'id' => $element->id,
+            'label' => $element->getUiLabel(),
+            'siteId' => $element->siteId,
+        ], $elements);
     }
 
     private static function normalizeSafeValue(mixed &$value): bool

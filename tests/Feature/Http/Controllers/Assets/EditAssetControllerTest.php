@@ -69,6 +69,8 @@ it('renders the asset edit screen as an Inertia page', function () {
             ->where('folderId', $this->folder->id)
             ->where('title', 'Current Title')
             ->where('readOnly', false)
+            ->where('activityTimelineUrl', fn (?string $url) => is_string($url)
+                && str_contains($url, 'elements/activity'))
         );
 });
 

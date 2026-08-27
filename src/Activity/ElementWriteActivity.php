@@ -22,7 +22,7 @@ readonly class ElementWriteActivity
     /** @var WeakMap<ElementInterface, bool> */
     private WeakMap $writes;
 
-    /** @var WeakMap<ElementInterface, Entry> */
+    /** @var WeakMap<ElementInterface, array{entry: Entry, authorChanged: bool}> */
     private WeakMap $originalEntries;
 
     /** @var WeakMap<ElementInterface, Asset> */
@@ -59,7 +59,10 @@ readonly class ElementWriteActivity
             $original = EntryActivity::original($element);
 
             if ($original !== null) {
-                $this->originalEntries[$element] = $original;
+                $this->originalEntries[$element] = [
+                    'entry' => $original,
+                    'authorChanged' => $element->getAuthorIds() !== $original->getAuthorIds(),
+                ];
             }
         }
 
@@ -99,9 +102,10 @@ readonly class ElementWriteActivity
             } elseif ($originalEntry !== null) {
                 EntryActivity::recordUpdated(
                     $element,
-                    $originalEntry,
+                    $originalEntry['entry'],
                     $element->getDirtyAttributes(),
                     $element->getDirtyFields(),
+                    $originalEntry['authorChanged'],
                 );
             }
         }

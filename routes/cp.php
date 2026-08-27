@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRedirectController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
@@ -185,6 +186,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('content/{page}/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where([
+        ...$idSlugParams,
+        'page' => '[^\/]+',
+    ]);
+    Route::get('entries/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where($idSlugParams);
+    Route::get('content/{page}/{section}/{id}{slug?}/activity', [ElementActivityController::class, 'index'])->where([
         ...$idSlugParams,
         'page' => '[^\/]+',
     ]);

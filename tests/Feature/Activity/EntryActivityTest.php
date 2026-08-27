@@ -22,7 +22,9 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Section\Models\Section;
@@ -30,6 +32,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -91,6 +94,56 @@ it('records normalized entry content changes', function () {
         new ActivityChange('Title', 'Old title', 'New title'),
         new ActivityChange($field->name, 'Old body', 'New body'),
     ]);
+});
+
+it('shows author and relational changes in the activity timeline', function () {
+    $oldAuthor = User::findOne();
+    $author = UserModel::factory()->createElement(['fullName' => 'Ada Lovelace']);
+    $oldTarget = EntryModel::factory()->createElement(['title' => 'Old target']);
+    $newTarget = EntryModel::factory()->createElement(['title' => 'New target']);
+    $result = EntryModel::factory()
+        ->withField('relatedEntries', EntriesField::class, value: [$oldTarget->id])
+        ->createElementWithFields();
+    $entry = $result->element;
+    $field = $result->fields->get('relatedEntries');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setAuthorIds([$author->id]);
+    $entry->setFieldValue($field->handle, [$newTarget->id]);
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
+
+    $changes = collect(postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ])->assertOk()->json('events.0.changes'))
+        ->keyBy('label');
+
+    expect($changes['Authors']['old'])->toBe([[
+        'elementType' => User::class,
+        'id' => $oldAuthor->id,
+        'label' => $oldAuthor->getUiLabel(),
+        'siteId' => $oldAuthor->siteId,
+    ]])
+        ->and($changes['Authors']['new'])->toBe([[
+            'elementType' => User::class,
+            'id' => $author->id,
+            'label' => 'Ada Lovelace',
+            'siteId' => $author->siteId,
+        ]])
+        ->and($changes[$field->name]['old'])->toBe([[
+            'elementType' => Entry::class,
+            'id' => $oldTarget->id,
+            'label' => 'Old target',
+            'siteId' => $oldTarget->siteId,
+        ]])
+        ->and($changes[$field->name]['new'])->toBe([[
+            'elementType' => Entry::class,
+            'id' => $newTarget->id,
+            'label' => 'New target',
+            'siteId' => $newTarget->siteId,
+        ]]);
 });
 
 it('records a status change instead of a generic update', function () {
@@ -218,6 +271,63 @@ it('records applying a provisional draft as an entry update', function () {
         ->and($event->changes)->toContainEqual(
             new ActivityChange('Title', 'Original title', 'Updated title'),
         );
+});
+
+it('shows author and relational changes applied from provisional drafts', function () {
+    $firstTarget = EntryModel::factory()->createElement(['title' => 'First target']);
+    $secondTarget = EntryModel::factory()->createElement(['title' => 'Second target']);
+    $result = EntryModel::factory()
+        ->withField('relatedEntries', EntriesField::class)
+        ->createElementWithFields();
+    $entry = $result->element;
+    $field = $result->fields->get('relatedEntries');
+    $oldAuthor = User::findOne();
+    $entry->setAuthorIds([$oldAuthor->id]);
+    Elements::saveElement($entry, updateSearchIndex: false);
+    $newAuthor = UserModel::factory()->createElement(['fullName' => 'Ada Lovelace']);
+    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $draft->setAuthorIds([$newAuthor->id]);
+    $draft->setFieldValue($field->handle, [$firstTarget->id, $secondTarget->id]);
+    expect(Elements::saveElement($draft, updateSearchIndex: false))->toBeTrue();
+
+    app(Drafts::class)->applyDraft($draft);
+
+    $changes = collect(postJson(action(ActivityTimelineController::class), [
+        'elementType' => Entry::class,
+        'elementId' => $entry->id,
+        'siteId' => $entry->siteId,
+    ])->assertOk()->json('events.0.changes'))
+        ->keyBy('label');
+
+    expect($changes['Authors']['old'])->toBe([[
+        'elementType' => User::class,
+        'id' => $oldAuthor->id,
+        'label' => $oldAuthor->getUiLabel(),
+        'siteId' => $oldAuthor->siteId,
+    ]])
+        ->and($changes['Authors']['new'])->toBe([[
+            'elementType' => User::class,
+            'id' => $newAuthor->id,
+            'label' => 'Ada Lovelace',
+            'siteId' => $newAuthor->siteId,
+        ]])
+        ->and($changes[$field->name]['old'])->toBe([])
+        ->and($changes[$field->name]['new'])->toBe([
+            [
+                'elementType' => Entry::class,
+                'id' => $firstTarget->id,
+                'label' => 'First target',
+                'siteId' => $firstTarget->siteId,
+            ],
+            [
+                'elementType' => Entry::class,
+                'id' => $secondTarget->id,
+                'label' => 'Second target',
+                'siteId' => $secondTarget->siteId,
+            ],
+        ]);
 });
 
 it('records draft creation and its initial save', function () {
