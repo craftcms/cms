@@ -44,7 +44,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', $this->unshiftFilter(...)),
             new TwigFilter('values', 'array_values'),
-            new TwigFilter('where', Arr::where(...)),
+            new TwigFilter('where', $this->whereFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('without', $this->withoutFilter(...)),
             new TwigFilter('withoutKey', $this->withoutKeyFilter(...)),
         ];
@@ -146,6 +146,22 @@ class ArrayTwigExtension extends AbstractExtension
         $this->preventDottedNameInSandbox($isSandboxed, $key, 'contains');
 
         return Arr::contains($array, $key, $value, $strict);
+    }
+
+    /**
+     * Filters an array to only the values where a given key (the name of a sub-array key or sub-object property)
+     * is set to a given value. Array keys are preserved by default.
+     *
+     * @param  iterable<array-key, mixed>  $array
+     * @return array<array-key, mixed>
+     */
+    public function whereFilter(bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
+    {
+        $this->preventDottedNameInSandbox($isSandboxed, $key, 'where');
+
+        $filtered = collect($array)->where($key, $strict ? '===' : '==', $value);
+
+        return $keepKeys ? $filtered->all() : $filtered->values()->all();
     }
 
     /**
