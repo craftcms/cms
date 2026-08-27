@@ -34,7 +34,7 @@ readonly class ActivityActor
             throw new InvalidArgumentException('Activity actors must be saved users.');
         }
 
-        return new self(ActivityActorType::User, $user->name, $user->id);
+        return new self(ActivityActorType::User, $user->name ?: $user->email ?: "User #{$user->id}", $user->id);
     }
 
     public static function system(): self

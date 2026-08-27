@@ -111,6 +111,16 @@ it('distinguishes system anonymous and known user actors and captures impersonat
         ]);
 });
 
+it('uses the email for unnamed user actors', function () {
+    $actor = User::factory()->createElement(['email' => 'editor@example.com']);
+    $actor->setName('');
+    $this->actingAs($actor);
+
+    $event = $this->activities->record(new TestPluginEntryUpdated(reason: 'Edited'));
+
+    expect($event->snapshots['actor']['label'])->toBe('editor@example.com');
+});
+
 it('attributes unauthenticated HTTP activity to an anonymous actor', function () {
     Route::get('test/activity-actor', fn () => ActivitiesFacade::record(
         new TestPluginEntryUpdated(reason: 'Public request'),
