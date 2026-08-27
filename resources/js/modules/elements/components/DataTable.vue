@@ -1,7 +1,15 @@
 <script setup lang="ts">
   import {type Column, FlexRender, type Table} from '@tanstack/vue-table';
   import {t} from '@craftcms/ui';
-  import {computed, type HTMLAttributes, ref, useId} from 'vue';
+  import {
+    computed,
+    type HTMLAttributes,
+    nextTick,
+    ref,
+    useId,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {useReorderableRows} from '@/modules/admin-table/composables/useReorderableRows';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import ColumnHeaderTitle from '@/modules/admin-table/components/ColumnHeaderTitle.vue';
@@ -36,6 +44,7 @@
   }>();
 
   const page = usePage<{readOnly: boolean}>();
+  const loadingRef = useTemplateRef<HTMLDivElement>('loading-ref');
   const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   const {
@@ -102,6 +111,46 @@
   function resolveMetaClasses(value: HTMLAttributes['class']) {
     return value;
   }
+
+  // Re-sorting reloads the index's data, and `loading` swaps the whole
+  // <table> out for the spinner while that happens (see `v-if="loading"`
+  // below), tearing down the sort button the user just pressed along with
+  // it. Move focus onto the (tabindex="-1") spinner once it mounts, then
+  // return it to the same column's sort button once the table remounts
+  // with the new data.
+  const pendingSortFocusHeaderId = ref<string | null>(null);
+
+  function onSortColumn(
+    column: Column<any>,
+    headerId: string,
+    event: MouseEvent
+  ) {
+    pendingSortFocusHeaderId.value = headerId;
+    column.getToggleSortingHandler()?.(event);
+  }
+
+  watch(
+    () => props.loading,
+    async (isLoading, wasLoading) => {
+      if (!pendingSortFocusHeaderId.value) return;
+
+      if (isLoading) {
+        await nextTick();
+        loadingRef.value?.focus();
+        return;
+      }
+
+      if (wasLoading) {
+        const headerId = pendingSortFocusHeaderId.value;
+        pendingSortFocusHeaderId.value = null;
+        await nextTick();
+        document
+          .getElementById(`header-${headerId}`)
+          ?.querySelector<HTMLButtonElement>('button')
+          ?.focus();
+      }
+    }
+  );
 
   function getAriaSortAttribute(
     column: Column<any>
@@ -226,7 +275,12 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-20" v-if="loading">
+  <div
+    v-if="loading"
+    ref="loading-ref"
+    class="grid place-items-center min-h-20"
+    tabindex="-1"
+  >
     <craft-spinner></craft-spinner>
   </div>
   <table
@@ -296,7 +350,7 @@
             <ColumnHeaderTitle
               :is-sortable="header.column.getCanSort()"
               :sort-instructions-id="columnSortInstructionId"
-              @sort-column="header.column.getToggleSortingHandler()?.($event)"
+              @sort-column="onSortColumn(header.column, header.id, $event)"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
