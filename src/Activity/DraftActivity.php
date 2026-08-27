@@ -130,13 +130,23 @@ readonly class DraftActivity
     /**
      * @param  string[]  $dirtyAttributes
      * @param  string[]  $dirtyFields
+     * @param  array<string, mixed>|null  $moveOrigin
      */
     public function recordProvisionalApplied(
         Entry $entry,
         Entry $original,
         array $dirtyAttributes,
         array $dirtyFields,
+        ?array $moveOrigin,
     ): void {
+        if ($moveOrigin !== null) {
+            StructuralElementActivity::recordMoved(
+                $entry,
+                $moveOrigin,
+                StructuralElementActivity::position($moveOrigin['structure'], $entry),
+            );
+        }
+
         EntryActivity::recordUpdated($entry, $original, $dirtyAttributes, $dirtyFields);
     }
 }

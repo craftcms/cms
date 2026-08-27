@@ -44,7 +44,7 @@ class StructuralElementActivity
      */
     public static function recordMoved(ElementInterface $element, array $origin, array $destination): void
     {
-        if (! self::shouldRecordMovement($element) || $origin === $destination) {
+        if ($origin === $destination) {
             return;
         }
 

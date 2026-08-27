@@ -86,17 +86,19 @@ class ActivityComments
             && Gate::forUser($user)->allows('view', $subject);
     }
 
-    public function render(ActivityEvent $version, User $viewer): HtmlString
-    {
+    /**
+     * @param  Collection<int|string, User>|null  $mentionedUsers
+     */
+    public function render(
+        ActivityEvent $version,
+        User $viewer,
+        ?Collection $mentionedUsers = null,
+    ): HtmlString {
         $mentions = $this->mentions($version);
-        $users = User::find()
-            ->id($mentions->keys()->all())
-            ->status(null)
-            ->collect()
-            ->keyBy('id');
+        $mentionedUsers ??= $this->mentionedUsers(collect([$version]));
         $html = $this->markdown->transform(
             $version->data['markdown'],
-            function (Document $document) use ($mentions, $users, $viewer): void {
+            function (Document $document) use ($mentions, $mentionedUsers, $viewer): void {
                 foreach ($this->mentionNodes($document) as $node) {
                     $reference = $node->getIdentifier();
                     $mention = ctype_digit($reference) ? $mentions->get((int) $reference) : null;
@@ -108,7 +110,7 @@ class ActivityComments
                     }
 
                     $id = (int) $reference;
-                    $user = $users->get($id);
+                    $user = $mentionedUsers->get($id);
                     $canView = $user !== null && Gate::forUser($viewer)->allows('view', $user);
                     $username = $canView ? ($user->username ?? $mention['username']) : $mention['username'];
 
@@ -121,6 +123,31 @@ class ActivityComments
         );
 
         return new HtmlString($this->htmlSanitizers->sanitize($html));
+    }
+
+    /**
+     * @param  Collection<array-key, ActivityEvent>  $versions
+     * @return Collection<int|string, User>
+     */
+    public function mentionedUsers(Collection $versions): Collection
+    {
+        $ids = $versions
+            ->filter(fn (ActivityEvent $version): bool => $version->eventType !== CommentDeleted::class
+                && is_a($version->eventType, CommentEvent::class, true))
+            ->flatMap(fn (ActivityEvent $version): Collection => $this->mentions($version)->keys())
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return User::find()
+            ->id($ids)
+            ->status(null)
+            ->collect()
+            ->keyBy('id');
     }
 
     public function notificationText(ActivityEvent $version, User $viewer): string

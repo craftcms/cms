@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Activity\EventTypes\DraftDiscarded as DraftDiscardedActivityEvent;
+use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -266,16 +268,42 @@ readonly class Drafts
                     $this->elements->mergeCanonicalChanges($draft);
                 }
 
-                $entryActivity = (
+                if (
                     $draft instanceof Entry &&
                     $draft->isProvisionalDraft &&
                     $draft->getPrimaryOwnerId() === null &&
                     $canonical instanceof Entry
-                ) ? [
-                    $canonical,
-                    $draft->getModifiedAttributes(),
-                    $draft->getModifiedFields(),
-                ] : null;
+                ) {
+                    $modifiedAttributes = $draft->getModifiedAttributes();
+                    $modifiedFields = $draft->getModifiedFields();
+                    if (in_array('authorIds', $modifiedAttributes, true)) {
+                        $canonical->getAuthorIds();
+                    }
+
+                    foreach ($canonical->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+                        if ($field instanceof BaseRelationField && in_array($field->handle, $modifiedFields, true)) {
+                            $value = $canonical->getFieldValue($field->handle);
+
+                            if ($value instanceof ElementQueryInterface) {
+                                $canonical->setFieldValue($field->handle, $value->collect());
+                            }
+                        }
+                    }
+
+                    $moveOrigin = $canonical->structureId !== null && $canonical->getParentId() !== $draft->getParentId()
+                        ? StructuralElementActivity::position(
+                            Structures::getStructureById($canonical->structureId)->uid,
+                            $canonical,
+                        )
+                        : null;
+
+                    $entryActivity = [
+                        $canonical,
+                        $modifiedAttributes,
+                        $modifiedFields,
+                        $moveOrigin,
+                    ];
+                }
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $this->elements->updateCanonicalElement($draft, array_merge($newAttributes, [
