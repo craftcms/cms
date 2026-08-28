@@ -581,7 +581,22 @@ class Gql extends Component
      */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return Craft::$app->getCache()->get($cacheKey) ?: null;
+        $data = Craft::$app->getCache()->get($cacheKey);
+
+        if (!isset($data['result'], $data['cacheInfo']['tags'])) {
+            return null;
+        }
+
+        // If we're actively collecting element cache info, register this cache's tags and duration
+        $elementsService = Craft::$app->getElements();
+        if ($elementsService->getIsCollectingCacheInfo()) {
+            $elementsService->collectCacheTags($data['cacheInfo']['tags']);
+            if (isset($data['cacheInfo']['expiryDate'])) {
+                $elementsService->setCacheExpiryDate(DateTimeHelper::toDateTime($data['cacheInfo']['expiryDate']));
+            }
+        }
+
+        return $data['result'];
     }
 
     /**
@@ -602,7 +617,19 @@ class Gql extends Component
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        Craft::$app->getCache()->set($cacheKey, $result, $duration, $dependency);
+        $cacheInfo = [
+            'tags' => $dependency->tags,
+        ];
+
+        if ($duration) {
+            $expiryDate = DateTimeHelper::now()->modify("+$duration seconds");
+            $cacheInfo['expiryDate'] = DateTimeHelper::toIso8601($expiryDate);
+        }
+
+        Craft::$app->getCache()->set($cacheKey, [
+            'result' => $result,
+            'cacheInfo' => $cacheInfo,
+        ], $duration, $dependency);
     }
 
     /**
