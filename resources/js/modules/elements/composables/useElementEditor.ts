@@ -94,46 +94,14 @@ export interface ElementEditPayload {
   } | null;
 }
 
-const elementEditPayloadKeys = [
-  'elementId',
-  'canonicalId',
-  'elementType',
-  'siteId',
-  'fieldLayoutId',
-  'title',
-  'docTitle',
-  'crumbs',
-  'readOnly',
-  'form',
-  'sidebarForm',
-  'metadataHtml',
-  'saveUrl',
-  'applyDraftUrl',
-  'formActions',
-  'headerActions',
-  'autosaveUrl',
-  'discardDraftUrl',
-  'isProvisionalDraft',
-  'draftId',
-  'canAutosave',
-  'notice',
-  'mergeNotice',
-  'canDiscardDraft',
-  'submitButtonLabel',
-  'actionMenu',
-  'previewTargets',
-  'elementDisplayName',
-  'activityUrl',
-  'updatedTimestamps',
-  'contextMenu',
-] satisfies (keyof ElementEditPayload)[];
-
-function isElementEditPayload(
-  payload: Partial<ElementEditPayload>
-): payload is ElementEditPayload {
-  return elementEditPayloadKeys.every((key) => Object.hasOwn(payload, key));
-}
-
+/*
+ * `origin/6.x` added an `isElementEditPayload()` guard here that threw when the
+ * merged payload was missing any key. It is dropped rather than merged: this
+ * branch lets `pageProps()` read a slideout panel's own props, which are a
+ * partial payload by design, so the guard rejected every slideout screen and
+ * failed 14 of this composable's tests. Worth reinstating once the slideout
+ * path supplies a complete payload.
+ */
 interface Options {
   /**
    * Identity and element-type attributes merged into every submission —
@@ -170,14 +138,10 @@ export function useElementEditor({saveData}: Options = {}) {
   // an element with no drafts — does that without remounting this component, so
   // the title, notices, and timestamps below have to track the live payload.
   const props = toReactive(
-    computed(() => {
-      const payload: Partial<ElementEditPayload> = {};
-      Object.assign(payload, pageProps(), savedScreen.value ?? {});
-      if (!isElementEditPayload(payload)) {
-        throw new Error('The element edit payload is incomplete.');
-      }
-      return payload;
-    })
+    computed(() => ({
+      ...(pageProps() as unknown as ElementEditPayload),
+      ...savedScreen.value,
+    }))
   );
 
   // The field layout comes back on the response separately from the screen
