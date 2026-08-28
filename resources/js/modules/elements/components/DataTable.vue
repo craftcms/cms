@@ -489,11 +489,11 @@
     white-space: nowrap;
   }
 
-  :deep(.cell--header) {
+  :deep(.cp-table-cell--header) {
     white-space: nowrap;
   }
 
-  :deep(.cell--header[aria-sort]) {
+  :deep(.cp-table-cell--header[aria-sort]) {
     &:hover,
     &:focus-within {
       background-color: var(--c-color-neutral-fill-loud);
