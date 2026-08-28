@@ -241,17 +241,19 @@ describe('craft-pane padding', () => {
     expect(spacing(element)).toBe('0');
   });
 
-  it('treats numeric values as pixels', async () => {
-    const element = await createPane({padding: '24'});
+  /**
+   * The attribute is closed to the spacing scale. An off-scale value writes
+   * nothing, so `--c-pane-padding` and the stylesheet default still apply —
+   * which is the escape hatch for arbitrary spacing.
+   */
+  it.each(['24', '2rem', 'var(--my-spacing)'])(
+    'ignores %s, which is off the spacing scale',
+    async (padding) => {
+      const element = await createPane({padding});
 
-    expect(spacing(element)).toBe('calc(24rem / 16)');
-  });
-
-  it('passes any other value through verbatim', async () => {
-    const element = await createPane({padding: 'var(--my-spacing)'});
-
-    expect(spacing(element)).toBe('var(--my-spacing)');
-  });
+      expect(spacing(element)).toBe('');
+    }
+  );
 
   it('re-renders when the padding property changes', async () => {
     const element = await createPane();

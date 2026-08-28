@@ -17,13 +17,12 @@ export const SPACING_STEPS = ['sm', 'md', 'lg', 'xl'] as const;
 
 export type SpacingStep = (typeof SPACING_STEPS)[number];
 
-/** Everything the `padding` property accepts. */
-export type PaddingValue = SpacingStep | 'none' | string | number;
-
-/** Whether a value is a plain number (or a numeric string like `"12"`). */
-function isNumeric(value: PaddingValue): boolean {
-  return !isNaN(parseFloat(String(value))) && isFinite(Number(value));
-}
+/**
+ * Everything the `padding` property accepts: a step on the spacing scale, or
+ * zero. The attribute is deliberately closed to arbitrary lengths — reach for
+ * the component's own custom properties when you need a value off the scale.
+ */
+export type PaddingValue = SpacingStep | 'none' | '0' | 0;
 
 /**
  * Resolves a padding value to a CSS length.
@@ -33,15 +32,20 @@ function isNumeric(value: PaddingValue): boolean {
  *   bare `none` is not a valid length, so passing it through would drop the
  *   declaration and silently leave the default padding in place.
  * - `sm`/`md`/`lg`/`xl` map onto `--c-spacing-*`.
- * - A unitless number (or numeric string) is read as pixels.
- * - Anything else is passed through verbatim, so a consumer can hand over a
- *   token, a `calc()`, or any other CSS length.
  * - Nothing at all (`undefined`, `null`, or an empty attribute) resolves to
  *   `undefined`, which callers should treat as "write nothing and let the
  *   stylesheet's own fallback stand".
+ * - Anything else resolves to `undefined` as well. An arbitrary length is not
+ *   a spelling this attribute supports, and ignoring it leaves the
+ *   stylesheet's default in place rather than writing a value the design
+ *   system does not define. Set the component's padding custom properties
+ *   instead.
  */
 export function resolvePadding(
-  value: PaddingValue | null | undefined
+  // Wider than `PaddingValue` on purpose: this is the runtime boundary, and an
+  // attribute can carry any string at all. Rejecting what is off the scale is
+  // the function's job.
+  value: PaddingValue | string | number | null | undefined
 ): string | undefined {
   if (value === null || value === undefined || value === '') {
     return undefined;
@@ -51,15 +55,11 @@ export function resolvePadding(
     return '0';
   }
 
-  if (isNumeric(value)) {
-    return `calc(${value}rem / 16)`;
-  }
-
   if (SPACING_STEPS.includes(value as SpacingStep)) {
     return `var(--c-spacing-${value})`;
   }
 
-  return String(value);
+  return undefined;
 }
 
 /** How a host wires the shared `padding` behavior onto its own CSS. */
@@ -102,9 +102,10 @@ export interface PaddableHost {
 
 /**
  * Adds a declarative `padding` attribute to any Lit element: the consumer
- * writes `padding="md"` (or `0`, `none`, `24`, `2rem`, …) and the mixin
- * resolves it to a CSS length and hands it back keyed by the custom
- * properties the component nominated.
+ * writes `padding="md"` (or `0`/`none`) and the mixin resolves it to a CSS
+ * length and hands it back keyed by the custom properties the component
+ * nominated. Values off the spacing scale are ignored; a consumer who needs
+ * one sets the component's custom properties directly.
  *
  * The mixin deliberately carries only the behavior — the reactive property
  * and the value resolution. The custom property name, its fallback chain, and
