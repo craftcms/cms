@@ -25,6 +25,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Matrix as MatrixControl;
@@ -714,7 +715,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     /** @return list<array<string, mixed>> */
     #[Override]
-    protected function actionMenuItems(): array
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
         $items = [];
 
@@ -722,7 +723,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $items[] = $this->copyAction();
         }
 
-        $parentItems = parent::actionMenuItems();
+        $parentItems = parent::fieldLayoutActionMenuItems($context);
 
         if (! empty($items) && ! empty($parentItems)) {
             return [

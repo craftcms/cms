@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -476,16 +476,23 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function resolveActionMenuItems(FieldLayoutElementContext $context): array
     {
-        $static = $context->mode !== ControlMode::Editable;
-
-        event($event = new FieldLayoutActionMenuItemsResolving(
-            $context->element,
-            $this->actionMenuItems($context->element, $static),
-            $static,
-            $this,
+        event($event = new FieldLayoutComponentActionMenuItemsResolving(
+            fieldLayoutComponent: $this,
+            items: $this->actionMenuItemsForContext($context),
+            element: $context->element,
+            mode: $context->mode,
         ));
 
         return $event->items;
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
+    {
+        return $this->actionMenuItems(
+            $context->element,
+            $context->mode !== ControlMode::Editable,
+        );
     }
 
     /**
@@ -511,7 +518,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         $user = currentUser();
 
-        return (bool) ($user?->isAdmin() && $user->getPreference('showFieldHandles'));
+        return $user?->isAdmin() && $user->getPreference('showFieldHandles');
     }
 
     protected function formControl(FieldLayoutElementContext $context): ?Control

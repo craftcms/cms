@@ -41,8 +41,10 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
+use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Shared\Contracts\Serializable;
@@ -463,6 +465,19 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         event($event = new FieldActionMenuItemsResolving($this, $items));
 
         return $event->items;
+    }
+
+    public function getFieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        $this->static = $context->mode !== ControlMode::Editable;
+
+        return $this->fieldLayoutActionMenuItems($context);
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        return $this->actionMenuItems();
     }
 
     /** @return list<array<string, mixed>> */

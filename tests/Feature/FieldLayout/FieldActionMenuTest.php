@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving;
+use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
-use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\ActionMenu;
@@ -19,7 +22,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 function fieldActionNodes(
-    \CraftCms\Cms\FieldLayout\LayoutElements\BaseField $field,
+    BaseField $field,
     ControlMode $mode = ControlMode::Editable,
 ): array {
     return $field->formNode(new FieldLayoutElementContext(null, new FormContext, $mode))->children();
@@ -94,9 +97,9 @@ it('swaps Copy field handle for the inline chip when the preference is on', func
 });
 
 it('lets a listener amend the items', function () {
-    Event::listen(function (FieldLayoutActionMenuItemsResolving $event) {
+    Event::listen(function (FieldLayoutComponentActionMenuItemsResolving $event) {
         expect($event->element)->toBeNull()
-            ->and($event->static)->toBeFalse()
+            ->and($event->mode)->toBe(ControlMode::Editable)
             ->and($event->fieldLayoutComponent)->toBeInstanceOf(TitleField::class);
 
         $event->items[] = ['label' => 'From a plugin', 'icon' => 'gear'];
@@ -107,9 +110,48 @@ it('lets a listener amend the items', function () {
     expect($labels)->toContain('From a plugin');
 });
 
-it('reports a static form to listeners', function () {
-    Event::listen(function (FieldLayoutActionMenuItemsResolving $event) {
-        expect($event->static)->toBeTrue();
+it('keeps field and field layout component listeners separate', function () {
+    Event::listen(function (FieldActionMenuItemsResolving $event) {
+        $event->items[] = ['label' => 'From a field listener'];
+    });
+    Event::listen(function (FieldLayoutComponentActionMenuItemsResolving $event) {
+        $event->items[] = ['label' => 'From a field layout component listener'];
+    });
+
+    $field = new PlainText(['id' => 1, 'handle' => 'body', 'name' => 'Body']);
+    $fieldLabels = array_column($field->getActionMenuItems(), 'label');
+    $componentLabels = array_column(fieldActionNodes(new CustomField($field))[0]->props()['items'], 'label');
+
+    expect($fieldLabels)
+        ->toContain('From a field listener')
+        ->not->toContain('From a field layout component listener')
+        ->and($componentLabels)
+        ->toContain('From a field layout component listener')
+        ->not->toContain('From a field listener');
+});
+
+it('only contributes input actions in a field layout context', function () {
+    $field = new Matrix([
+        'id' => 1,
+        'handle' => 'content',
+        'name' => 'Content',
+        'viewMode' => Matrix::VIEW_MODE_BLOCKS,
+    ]);
+    $context = new FieldLayoutElementContext(null, new FormContext);
+
+    $fieldLabels = array_column($field->getActionMenuItems(), 'label');
+    $componentLabels = array_column($field->getFieldLayoutActionMenuItems($context), 'label');
+
+    expect($fieldLabels)
+        ->toContain('Field settings')
+        ->not->toContain('Expand all blocks')
+        ->and($componentLabels)
+        ->toContain('Field settings', 'Expand all blocks');
+});
+
+it('reports the control mode to listeners', function () {
+    Event::listen(function (FieldLayoutComponentActionMenuItemsResolving $event) {
+        expect($event->mode)->toBe(ControlMode::ReadOnly);
     });
 
     fieldActionNodes(new TitleField, ControlMode::ReadOnly);

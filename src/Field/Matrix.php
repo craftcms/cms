@@ -33,6 +33,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\GroupedEntryTypeManager;
@@ -868,7 +869,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
     /** @return list<array<string,mixed>> */
     #[Override]
-    protected function actionMenuItems(): array
+    protected function fieldLayoutActionMenuItems(FieldLayoutElementContext $context): array
     {
         if ($this->maxEntries !== 1) {
             $items = match ($this->viewMode) {
@@ -880,7 +881,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $items = [];
         }
 
-        $parentItems = parent::actionMenuItems();
+        $parentItems = parent::fieldLayoutActionMenuItems($context);
 
         if (! empty($items) && ! empty($parentItems)) {
             return [
