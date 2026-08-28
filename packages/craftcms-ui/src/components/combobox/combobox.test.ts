@@ -153,6 +153,56 @@ describe('craft-combobox', () => {
     expect(emitted).toBe(true);
   });
 
+  it('shows the selected option’s icon in the textbox', async () => {
+    const combobox = await createFixture((c) => {
+      c.options = [
+        {label: 'Plain Text', value: 'plain-text', icon: 'i-cursor'},
+        {label: 'Money', value: 'money', icon: 'euro-sign'},
+      ];
+      c.modelValue = 'money';
+    });
+
+    const icon = combobox.shadowRoot?.querySelector('craft-icon.prefix');
+    expect(icon?.getAttribute('name')).toBe('euro-sign');
+    expect(combobox.hasAttribute('has-prefix-icon')).toBe(true);
+  });
+
+  it('swaps the textbox icon when another option is chosen', async () => {
+    const combobox = await createFixture((c) => {
+      c.options = [
+        {label: 'Plain Text', value: 'plain-text', icon: 'i-cursor'},
+        {label: 'Money', value: 'money', icon: 'euro-sign'},
+      ];
+      c.modelValue = 'plain-text';
+    });
+
+    const money = optionEls(combobox).find(
+      (el) => el.textContent?.trim() === 'Money'
+    ) as HTMLElement;
+    money.click();
+    await combobox.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(
+      combobox.shadowRoot
+        ?.querySelector('craft-icon.prefix')
+        ?.getAttribute('name')
+    ).toBe('euro-sign');
+  });
+
+  it('drops the textbox icon while the value is free text', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [{label: 'Money', value: 'money', icon: 'euro-sign'}];
+      c.modelValue = 'money';
+    });
+
+    await typeQuery(combobox, 'Mon');
+
+    expect(combobox.shadowRoot?.querySelector('craft-icon.prefix')).toBeNull();
+    expect(combobox.hasAttribute('has-prefix-icon')).toBe(false);
+  });
+
   it('passes through custom text that matches no option label', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
