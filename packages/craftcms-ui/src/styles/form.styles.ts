@@ -58,40 +58,6 @@ export const baseFieldStyles = css`
   ::slotted([slot='after']) {
     margin-block-start: var(--c-spacing-sm);
   }
-
-  /* label-position: start — render the label beside the control instead of
-     stacked above it. Guarded by :not([has-help-text]) — a component sets
-     that attribute itself whenever help text/instructions are present, so
-     the combination automatically falls back to the normal stacked layout
-     instead of producing a broken hybrid.
-
-     The negation lives INSIDE the :host() argument
-     (:host([a]:not([b]))), matching the :host(:not([label-sr-only]))
-     pattern above — chaining :not() AFTER :host(...) instead
-     (:host([a]):not([b])) does not reliably match. */
-  :host([label-position='start']:not([has-help-text])) {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-  }
-
-  :host([label-position='start']:not([has-help-text]))
-    .form-field__group-one {
-    flex: 0 0 auto;
-  }
-
-  :host([label-position='start']:not([has-help-text]))
-    .form-field__group-one
-    .form-field__label
-    slot:not(:empty) {
-    margin-block-end: 0; /* the :host gap handles spacing instead */
-  }
-
-  :host([label-position='start']:not([has-help-text])) ::slotted(label) {
-    font-weight: var(--c-field-label-font-weight-inline, normal);
-    font-size: var(--c-field-label-font-size-inline, inherit);
-    line-height: inherit;
-  }
 `;
 
 export const inputStyles = css`

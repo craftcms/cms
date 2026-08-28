@@ -189,12 +189,14 @@
         </div>
         <div class="flex gap-2 items-center">
           <template v-if="showPageSize && !bulkActionsActive">
+            <span aria-hidden="true">{{ pageSizeLabel }}</span>
             <Select
               small
               :label="pageSizeLabel"
-              label-position="start"
+              label-sr-only
               :options="pageSizeOptions!"
               v-model="pageSizeProxy"
+              class="w-auto"
             />
           </template>
         </div>
