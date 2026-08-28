@@ -1,6 +1,7 @@
 import {LionSwitchButton} from '@lion/ui/switch.js';
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {baseFormControlStyles} from '@src/styles/form.styles';
 
 export default class CraftSwitchButton extends LionSwitchButton {
   /**
@@ -48,12 +49,12 @@ export default class CraftSwitchButton extends LionSwitchButton {
         }
 
         .switch-button__track {
+          ${baseFormControlStyles}
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
           background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
-          border: 1px solid var(--c-form-control-border-color);
-          box-shadow: var(--c-input-shadow);
+          min-height: unset;
         }
 
         .switch-button__thumb {
