@@ -779,7 +779,7 @@ class Elements extends Component
         if (!empty($this->_cacheTagBuffers)) {
             $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
 
-            // Override the parent duration if ours is shorter
+            // Preserve the shortest duration across nested collections
             $this->_cacheDuration = array_pop($this->_cacheDurationBuffers);
             if ($duration && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
                 $this->_cacheDuration = $duration;
