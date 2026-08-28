@@ -1,0 +1,100 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CardStories from './card.stories';
+
+<Meta of={CardStories} name="Docs" />
+
+# Card
+
+`<craft-card>` is a bordered, rounded surface that groups related content into a standalone block.
+It holds an optional header, an optional thumbnail column, body content, and an optional footer.
+
+<Canvas of={CardStories.Default} sourceState="shown" />
+
+Use a card when the content is a block a person reads or acts on as a unit — an element in an index view, a settings group, a summary panel.
+For a compact reference to a single entity in a list, use [Chip](?path=/docs/components-chip--docs) instead.
+
+## Regions
+
+A card has four regions, and each one is only rendered when there is something to put in it.
+A card with body content alone is a plain bordered surface with no header or footer chrome.
+
+The header appears as soon as the `label` attribute is set, or the `header`, `label`, or `actions` slot is filled:
+
+<Canvas of={CardStories.WithLabel} sourceState="shown" />
+
+The `actions` slot sits at the end of the header:
+
+<Canvas of={CardStories.WithActions} sourceState="shown" />
+
+The footer appears only when the `footer` slot is filled:
+
+<Canvas of={CardStories.WithFooter} sourceState="shown" />
+
+## Replacing the Header
+
+There are two levels of override, depending on how much of the default layout you want to keep.
+
+Fill the `label` slot to replace the label text while keeping the header's layout, so slotted actions still sit at the end:
+
+<Canvas of={CardStories.CustomLabel} sourceState="shown" />
+
+Fill the `header` slot to replace the region outright.
+The default `label`/`actions` layout is not rendered at all, so anything you slot is responsible for its own arrangement:
+
+<Canvas of={CardStories.CustomHeader} sourceState="shown" />
+
+## The Thumbnail
+
+Content in the `thumbnail` slot renders in a fixed column beside the body:
+
+<Canvas of={CardStories.WithThumbnail} sourceState="shown" />
+
+Two attributes govern it.
+`show-thumb` is on by default and gates the column entirely — set it to `false` to drop the thumbnail without removing the slotted content.
+`thumb-alignment` puts the column at the `start` or the `end` of the body:
+
+<Canvas of={CardStories.ThumbnailAlignment} sourceState="shown" />
+
+## Active State
+
+`active` marks a card as selected, and is reflected to the host so it can be styled from outside the component.
+Element index views bind it to row selection:
+
+<Canvas of={CardStories.Active} sourceState="shown" />
+
+`active` is presentational.
+It does not make the card focusable or announce a selection, so a selectable list is responsible for its own control and its own semantics.
+
+## Styling
+
+The card exposes one CSS part, `label`, and four `--c-card-*` custom properties for radius, shadow, and the two padding axes.
+Both are listed in full under [Properties](#properties).
+
+<Canvas of={CardStories.CustomProperties} sourceState="shown" />
+
+```css
+craft-card {
+  --c-card-radius: 0;
+  --c-card-shadow: none;
+  --c-card-padding-inline: 2rem;
+}
+```
+
+The card draws its own chrome but leaves attributes on the host alone, so an `id`, `style` custom properties, and `data-*` metadata can all be set on it directly.
+
+## Everything at Once
+
+<Canvas of={CardStories.KitchenSink} sourceState="shown" />
+
+## Accessibility
+
+A card is a container, not a control.
+It has no implicit role and does not receive focus, so the content decides the semantics.
+
+- **Give the card a heading if it is one.** The `label` renders as plain text, not a heading element. When a card is a section of a page, slot a real heading into `label` so it lands in the document outline.
+- **Name the header actions.** An icon-only button in the `actions` slot needs an `aria-label`; the card's label does not name it.
+- **Keep a decorative thumbnail decorative.** Artwork that only repeats the label takes `alt=""` or `aria-hidden`. If it carries meaning the text does not, give it a name of its own.
+
+## Properties
+
+<ArgTypes of={CardStories} />
