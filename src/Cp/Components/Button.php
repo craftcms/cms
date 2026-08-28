@@ -153,7 +153,7 @@ class Button extends ViewComponent
         return $this;
     }
 
-    /** Accessible name override, for icon-only buttons. */
+    /** Accessible name for an icon-only button. Rendered as `aria-label`. */
     public function accessibleName(?string $accessibleName): static
     {
         $this->accessibleName = $accessibleName;
@@ -245,7 +245,7 @@ class Button extends ViewComponent
             'active' => $this->active ? 'true' : null,
             'value' => $this->value,
             'disabled' => $this->isDisabled(),
-            'accessible-name' => $this->accessibleName,
+            'aria-label' => $this->accessibleName,
             'align' => $this->align,
             'href' => $this->href,
             'target' => $this->target,

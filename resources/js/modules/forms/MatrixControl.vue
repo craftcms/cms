@@ -186,7 +186,7 @@
                 value.sortOrder.length <= (control.props.minEntries ?? 0)
               "
               data-form-matrix-remove
-              :accessible-name="
+              :aria-label="
                 t('Remove {type}', {type: entryType(uid)?.label ?? uid})
               "
             />

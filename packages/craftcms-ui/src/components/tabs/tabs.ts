@@ -891,10 +891,10 @@ export default class CraftTabs extends LionTabs {
               size="small"
             >
               <!--
-                The name has to come from the icon: craft-button's
-                \`accessible-name\` only records the name it computed, it doesn't
-                put one in the DOM, so an icon-only button with nothing else to
-                read is nameless.
+                The name has to come from the icon: craft-button does not
+                name itself, so an icon-only button with nothing else to read
+                is nameless. A label on the icon (or aria-label on the host)
+                is what supplies one.
               -->
               <craft-icon
                 name="ellipsis"

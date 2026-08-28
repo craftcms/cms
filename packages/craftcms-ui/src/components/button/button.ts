@@ -159,22 +159,16 @@ export default class CraftButton extends LionButtonSubmit {
       Array.from(childComponents).map((child: any) => child.updateComplete)
     );
 
-    if (!this.accessibleName) {
-      // In link mode the host is role="presentation" (name not computable on
-      // it); the real accessible element is the inner anchor.
-      const nameTarget = this.isLink
-        ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
-          this)
-        : this;
-      this.accessibleName = computeAccessibleName(nameTarget);
-    }
+    // In link mode the host is role="presentation" (name not computable on
+    // it); the real accessible element is the inner anchor.
+    const nameTarget = this.isLink
+      ? ((this.shadowRoot?.querySelector('a.link') as HTMLElement | null) ??
+        this)
+      : this;
+    this._accessibleName = computeAccessibleName(nameTarget);
 
-    this._hasAccessibilityError =
-      !this.accessibleName || this.accessibleName.trim() === '';
+    this._hasAccessibilityError = this._accessibleName.trim() === '';
   }
-
-  /** The computed accessible name */
-  @property({attribute: 'accessible-name'}) accessibleName: string;
 
   /**
    * The button's visual style. Defaults to "fill" (neutral fill).
@@ -233,6 +227,19 @@ export default class CraftButton extends LionButtonSubmit {
     'prefix';
 
   @query('[data-live-region]') liveRegion: HTMLElement;
+
+  /**
+   * The name the button actually computes to, kept only so a button that ends
+   * up nameless can be flagged.
+   *
+   * Deliberately internal: it records a name, it does not apply one. Exposing
+   * it as an attribute invited consumers to "name" a button by setting it,
+   * which silenced the warning below while leaving nothing in the DOM for a
+   * screen reader. Name an icon-only button with `aria-label` on the host, or
+   * with a `label` on the icon it contains.
+   */
+  @state()
+  private _accessibleName: string = '';
 
   @state()
   private _hasAccessibilityError: boolean = false;

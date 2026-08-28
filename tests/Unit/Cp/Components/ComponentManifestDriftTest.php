@@ -202,8 +202,10 @@ function cpDriftWcOnlyAllowlist(): array
 function cpDriftExpectedPhpOnly(): array
 {
     return [
-        // Global / structural HTML attributes the WC does not declare in the manifest.
-        '*' => ['id', 'class', 'style', 'role', 'aria', 'data', 'slot'],
+        // Global / structural HTML attributes the WC does not declare in the
+        // manifest. `aria-label` is here because naming an element is the
+        // consumer's job — no component declares an attribute for it.
+        '*' => ['id', 'class', 'style', 'role', 'aria', 'aria-label', 'data', 'slot'],
 
         // craft-button: `type`/`disabled` are native/global; `active` and `command`
         // are PHP conveniences (pressed state, Invoker Commands API).
