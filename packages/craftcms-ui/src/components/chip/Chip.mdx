@@ -91,7 +91,7 @@ The content you place in it carries its own semantics, which makes two things yo
 - **Decorative prefixes must remain decorative.** A thumbnail that only repeats the label takes `alt=""`. A status indicator that conveys meaning the label does not should be given a `label` of its own.
 
 Setting `selectable` renders a checkbox before the prefix, for chips within a multi-select list.
-That checkbox has no label of its own, so the chip must provide an accessible name.
+Name it with `select-label` so a list of chips does not read as a run of identically labelled checkboxes; it falls back to a generic "Select".
 
 ## Properties
 

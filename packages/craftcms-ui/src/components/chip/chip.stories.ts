@@ -293,7 +293,13 @@ export const KitchenSink: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center">
-      <craft-chip selectable show-thumb show-status icon="file">
+      <craft-chip
+        selectable
+        select-label="Select Homepage"
+        show-thumb
+        show-status
+        icon="file"
+      >
         <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
         <craft-icon slot="icon" name="lightbulb"></craft-icon>
         <craft-status slot="status" status="live"></craft-status>
@@ -312,7 +318,12 @@ export const KitchenSink: Story = {
       </craft-chip>
 
       <craft-chip>
-        <craft-badge fill="info" slot="prefix" style="margin-inline: var(--_chip-spacing)">Badge</craft-badge>
+        <craft-badge
+          fill="info"
+          slot="prefix"
+          style="margin-inline: var(--_chip-spacing)"
+          >Badge</craft-badge
+        >
         Custom prefix
         <craft-action-menu slot="suffix">
           <craft-button

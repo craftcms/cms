@@ -7,6 +7,7 @@ import {Appearance, type AppearanceValue} from '@src/constants/appearances';
 import {Variant, type VariantValue} from '@src/constants/variants';
 import type {SizeValue} from '@src/constants/size';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
+import {t} from '@src/utilities/translate';
 import variantsStyles from '@src/styles/variants.styles.js';
 
 /**
@@ -97,10 +98,17 @@ export default class CraftChip extends LitElement {
 
   /**
    * Renders a checkbox before the prefix, for chips within a multi-select
-   * list. The checkbox has no label of its own, so the chip must provide an
-   * accessible name.
+   * list. The checkbox is named by `select-label`, falling back to a generic
+   * "Select".
    */
   @property({type: Boolean}) selectable: boolean = false;
+
+  /**
+   * Accessible name for the `selectable` checkbox. Set it to name the entity
+   * the chip stands for, so a list of chips does not read as a run of
+   * identically labelled checkboxes.
+   */
+  @property({attribute: 'select-label'}) selectLabel: string | null = null;
 
   #thumbLoader = new ThumbnailLoader();
 
@@ -194,7 +202,12 @@ export default class CraftChip extends LitElement {
           'cp-chip--show-status': this.showStatus,
         })}"
       >
-        ${this.selectable ? html` <input type="checkbox" />` : nothing}
+        ${this.selectable
+          ? html` <input
+              type="checkbox"
+              aria-label="${this.selectLabel ?? t('Select')}"
+            />`
+          : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
         <slot class="cp-chip__body"></slot>
         ${renderSuffix
