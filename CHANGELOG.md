@@ -8,7 +8,7 @@
 - Element edit screens now indicate which fields a draft has unapplied changes to.
 - Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
-- Fixed a bug where Typecast would throw when trying to set properties that didn't exist. [#19492](https://github.com/craftcms/cms/pull/19492)
+- Fixed a bug where Typecast would throw when trying to set properties that didn’t exist. ([#19492](https://github.com/craftcms/cms/pull/19492))
 
 ## 6.0.0-alpha.17 - 2026-08-18
 
@@ -58,7 +58,7 @@
 
 ## 6.0.0-alpha.15 - 2026-08-04
 
-- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
+- Added support for Markdown-based custom Dashboard widgets in the application’s `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
@@ -290,7 +290,7 @@
 - Login attempts are now rate limited.
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
-- Fixed a bug where site routes weren't being registered for each localized site value.
+- Fixed a bug where site routes weren’t being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where requests to the `loginPath`, `setPasswordPath`, and `verifyEmailPath` were getting redirected to the control panel. ([#19229](https://github.com/craftcms/cms/pull/19229))
