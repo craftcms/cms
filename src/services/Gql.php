@@ -1322,7 +1322,7 @@ class Gql extends Component
         }
 
         try {
-            $cacheKey = self::CACHE_TAG .
+            $cacheKey = self::CACHE_TAG . '::cacheInfo' .
                 '::' . Craft::$app->getSites()->getCurrentSite()->id .
                 '::' . $schema->uid .
                 '::' . md5($query) .
