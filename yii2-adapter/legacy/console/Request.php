@@ -39,10 +39,7 @@ class Request extends \yii\console\Request
             Aliases::set('@webroot', $dir);
             $this->isWebrootAliasSetDynamically = true;
         }
-        if (Aliases::get('@web', false) === false) {
-            Aliases::set('@web', '/');
-            $this->isWebAliasSetDynamically = true;
-        }
+        $this->setWebAlias('/');
     }
 
     /**

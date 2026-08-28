@@ -2225,38 +2225,6 @@ class GeneralConfig extends BaseConfig
     public mixed $rememberUsernameDuration = 31536000;
 
     /**
-     * @var string The path to the root directory that should store published control panel resources.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBasePath = '@webroot/cpresources';
-
-    /**
-     * @var string The URL to the root directory where control panel resources are published.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBaseUrl = '@web/cpresources';
-
-    /**
      * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql`, `psql`, or `sqlite3`, provided those libraries are in the `$PATH` variable for the user the web
@@ -5445,42 +5413,6 @@ class GeneralConfig extends BaseConfig
     public function rememberUsernameDuration(mixed $value): self
     {
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The path to the root directory that should store published control panel resources.
-     *
-     * ```php
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBasePath
-     */
-    public function resourceBasePath(string $value): self
-    {
-        $this->resourceBasePath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URL to the root directory where control panel resources are published.
-     *
-     * ```php
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBaseUrl
-     */
-    public function resourceBaseUrl(string $value): self
-    {
-        $this->resourceBaseUrl = $value;
 
         return $this;
     }

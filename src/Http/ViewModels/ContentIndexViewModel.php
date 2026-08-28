@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -182,13 +183,15 @@ abstract class ContentIndexViewModel extends ViewModel
 
     public function showStatusMenu(): bool
     {
-        return $this->elementType::hasStatuses()
-            && count($this->elementType::statuses()) >= 2;
+        return $this->indexState()->showStatusMenu($this->elementType);
     }
 
     public function showSiteMenu(): bool
     {
-        return Sites::isMultiSite() && $this->elementType::isLocalized();
+        // The shared resolution is just "is the element type localized?"; the
+        // Inertia index additionally only ever offers the menu on multi-site
+        // installs, where there's something to switch between.
+        return Sites::isMultiSite() && $this->indexState()->showSiteMenu($this->elementType);
     }
 
     /**
@@ -211,7 +214,10 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return list<array<string, mixed>> */
     public function sources(): array
     {
-        return $this->resolvedSources ??= ElementSources::getSources(
+        // The context is deliberately left at ElementSources' `index` default,
+        // which is what this method has always resolved under. (sourceState()
+        // passes static::RENDER_CONTEXT explicitly — the same value today.)
+        return $this->resolvedSources ??= $this->indexState()->sources(
             $this->elementType,
             withDisabled: true,
             page: $this->page,
@@ -272,40 +278,32 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
+        $indexState = $this->indexState();
         $options = [];
 
-        foreach ($this->elementType::sortOptions() as $attribute => $option) {
-            if (! is_array($option)) {
-                $options[$attribute] = [
-                    'label' => $option,
-                    'value' => $attribute,
-                    'defaultDir' => 'asc',
-                ];
+        foreach ($indexState->sortOptions($this->elementType) as $option) {
+            $value = self::addressableSortAttribute($option);
 
-                continue;
-            }
-
-            $value = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
-
-            if (is_string($value) && $value !== '') {
+            if ($value !== null) {
                 $options[$value] = [
                     'label' => $option['label'] ?? $value,
                     'value' => $value,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                    'defaultDir' => $option['defaultDir'],
                 ];
             }
         }
 
-        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey) as $option) {
-            $value = $option['attribute']
-                ?? (is_string($option['orderBy'] ?? null) ? $option['orderBy'] : null);
+        // The element type's own options win over a source's field-layout
+        // options that happen to sort on the same attribute.
+        foreach (ElementSources::getSourceSortOptions($this->elementType, $sourceKey) as $key => $option) {
+            $option = $indexState->normalizeSortOption($option, $key);
+            $value = self::addressableSortAttribute($option);
 
-            if (is_string($value) && $value !== '' && ! isset($options[$value])) {
+            if ($value !== null && ! isset($options[$value])) {
                 $options[$value] = [
                     'label' => $option['label'] ?? $value,
                     'value' => $value,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                    'defaultDir' => $option['defaultDir'],
                 ];
             }
         }
@@ -326,8 +324,8 @@ abstract class ContentIndexViewModel extends ViewModel
             return [];
         }
 
-        return ElementSources::getAvailableTableAttributes($this->elementType)
-            ->merge(ElementSources::getSourceTableAttributes($this->elementType, $sourceKey))
+        return $this->indexState()
+            ->tableColumns($this->elementType, $sourceKey)
             ->map(fn (array $attribute, string $key) => [
                 'label' => $attribute['label'],
                 'value' => $key,
@@ -492,6 +490,28 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->resolvedSource = $resolved;
+    }
+
+    /**
+     * The shared server-side index state — source, column, sort-option and
+     * menu resolution, shared with the server-rendered index shell.
+     */
+    protected function indexState(): ElementIndexState
+    {
+        return app(ElementIndexState::class);
+    }
+
+    /**
+     * The client addresses sort options by attribute name, so options that only
+     * sort by a query expression or closure aren't offered.
+     *
+     * @param  array{attribute: mixed, ...}  $option
+     */
+    private static function addressableSortAttribute(array $option): ?string
+    {
+        $attribute = $option['attribute'];
+
+        return is_string($attribute) && $attribute !== '' ? $attribute : null;
     }
 
     /**

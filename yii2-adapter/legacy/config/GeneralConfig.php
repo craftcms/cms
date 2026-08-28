@@ -98,6 +98,38 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public mixed $verificationCodeDuration = 86400;
 
     /**
+     * @var string The path to the root directory that should store published control panel resources.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->resourceBasePath('@webroot/craft-resources')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
+     * ```
+     * :::
+     *
+     * @group Environment
+     */
+    public string $resourceBasePath = '@webroot/cpresources';
+
+    /**
+     * @var string The URL to the root directory where control panel resources are published.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->resourceBaseUrl('@web/craft-resources')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
+     * ```
+     * :::
+     *
+     * @group Environment
+     */
+    public string $resourceBaseUrl = '@web/cpresources';
+
+    /**
      * {@inheritdoc}
      */
     protected ?string $filename = Config::CATEGORY_GENERAL;
@@ -1207,6 +1239,42 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         if (!empty($value)) {
             TrustProxies::at($value);
         }
+
+        return $this;
+    }
+
+    /**
+     * The path to the root directory that should store published control panel resources.
+     *
+     * ```php
+     * ->resourceBasePath('@webroot/craft-resources')
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $resourceBasePath
+     */
+    public function resourceBasePath(string $value): self
+    {
+        $this->resourceBasePath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the root directory where control panel resources are published.
+     *
+     * ```php
+     * ->resourceBaseUrl('@web/craft-resources')
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $resourceBaseUrl
+     */
+    public function resourceBaseUrl(string $value): self
+    {
+        $this->resourceBaseUrl = $value;
 
         return $this;
     }

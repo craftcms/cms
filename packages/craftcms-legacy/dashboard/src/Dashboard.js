@@ -53,7 +53,9 @@ import './dashboard.scss';
 
     getTypeInfo: function (type, property, defaultValue) {
       if (property) {
-        if (typeof this.widgetTypes[type][property] === 'undefined') {
+        // Some type info properties (e.g. settingsHtml/settingsJs) are sent as `null`
+        // rather than omitted, so treat null the same as undefined here.
+        if (!this.widgetTypes[type][property]) {
           return defaultValue;
         } else {
           return this.widgetTypes[type][property];

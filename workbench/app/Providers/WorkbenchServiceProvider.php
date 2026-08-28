@@ -9,14 +9,26 @@ use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Forms\FormKitchenSink;
+
+use function Orchestra\Testbench\package_path;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        Event::listen(function (CommandStarting $event): void {
+            if (! str_starts_with($event->command, 'boost:')) {
+                return;
+            }
+
+            app()->setBasePath(package_path());
+            app()->useAppPath(package_path('src'));
+        });
+
         app(Plugins::class)->addViteConfig('workbench', [
             'hotFile' => CmsAssets::resourcesPath('hot'),
             'buildDirectory' => 'vendor/craft/build',

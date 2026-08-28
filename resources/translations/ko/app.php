@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => '플러그인 스토어를 사용할 수 없습니다. 나중에 다시 시도하십시오.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Craft CMS가 이메일을 보낼 때 사용할 회신 대상 이메일 주소.',
     'The URI can’t begin with the {setting} config setting.' => 'URIsms {setting} 구성 설정을 시작할 수 없습니다.',
-    'The `@web` alias is not recommended.' => '`@web` 별칭은 권장되지 않습니다.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => '이 토큰을 사용하기 위해 GraphQL API 요청과 함께 전송해야 하는 `Authorization` 헤더입니다.',
     'The allowed values are [{values}]' => '허용된 값은 [{values}]입니다.',
     'The asset you’re trying to download does not exist.' => '다운로드하려는 에셋이 존재하지 않습니다.',

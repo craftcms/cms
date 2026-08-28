@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use CraftCms\Cms\Component\Component;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
@@ -79,6 +80,10 @@ class Typecast
                     $object->$setter($value);
                 }
 
+                continue;
+            }
+
+            if ($object instanceof Component && ! $object->canSetProperty($name)) {
                 continue;
             }
 

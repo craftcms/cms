@@ -221,11 +221,6 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        // Don't save @web even if they chose it
-        if ($siteUrl === '@web') {
-            $siteUrl = Aliases::get($siteUrl);
-        }
-
         if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);

@@ -601,8 +601,8 @@ class App
 
         return [
             'class' => AssetManager::class,
-            'basePath' => $generalConfig->resourceBasePath,
-            'baseUrl' => $generalConfig->resourceBaseUrl,
+            'basePath' => $generalConfig->resourceBasePath ?? '@webroot/cpresources',
+            'baseUrl' => $generalConfig->resourceBaseUrl ?? '@web/cpresources',
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'appendTimestamp' => true,

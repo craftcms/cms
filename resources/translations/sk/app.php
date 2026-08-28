@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'Úložisko doplnkov Plugin Store je dočasne nedostupné. Skúste to znova neskôr.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'E-mailová adresa pre odoslanie odpovede, ktorú Craft CMS použije pri posielaní e-mailu.',
     'The URI can’t begin with the {setting} config setting.' => 'URI nemôže začínať nastavením konfigurácie {setting}.',
-    'The `@web` alias is not recommended.' => 'Alias `@web` sa neodporúča.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Záhlavie `Authorization`, ktoré sa má posielať spolu s API GraphQL, vyžaduje použitie tohto tokenu.',
     'The allowed values are [{values}]' => 'Povolené hodnoty sú [{values}]',
     'The asset you’re trying to download does not exist.' => 'Prostriedok, ktorý sa pokúšate stiahnuť, neexistuje.',
