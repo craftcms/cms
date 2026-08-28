@@ -6,6 +6,8 @@ import variantsStyles from '@src/styles/variants.styles';
 import {classMap} from 'lit/directives/class-map.js';
 
 import '../shortcut/shortcut.js';
+import '../icon/icon.js';
+import '../spinner/spinner.js';
 import {
   type ActionFeedback,
   type BaseAction,
@@ -16,7 +18,24 @@ import {
 import {Variant, type VariantValue} from '@src/constants/variants';
 
 /**
- * @summary Either a link or button typically used in a menu.
+ * @summary A single entry in a menu, rendered as a button or — when `href` is
+ * set — as a link. Action items carry an optional leading icon, a label, an
+ * optional trailing shortcut or suffix, and can run an action on click.
+ *
+ * When `action` is set the item runs it on click and reports progress in
+ * place: a spinner while an HTTP action is in flight, then a check or a cross,
+ * before returning to its label. `feedback` supplies the messages and
+ * `feedback-duration` controls how long they stay.
+ *
+ * @slot - The item's label.
+ * @slot icon - Leading artwork, replacing the icon `icon` would render.
+ * @slot checkmark - The checked indicator, shown when `type` is `checkbox`.
+ *   Defaults to a check icon while `checked` is set.
+ * @slot suffix - Trailing content, shown before the shortcut.
+ *
+ * @fires {CustomEvent} action:change-state - Emitted whenever the item's
+ *   action moves between idle, loading, success, and error. `detail` carries
+ *   the new `state`, the action's `actionType`, and any feedback data.
  */
 export default class CraftActionItem extends LitElement {
   static override styles = [variantsStyles, styles];
@@ -31,28 +50,65 @@ export default class CraftActionItem extends LitElement {
     delegatesFocus: true,
   };
 
+  /** Name of the icon to render before the label. */
   @property() icon: string | null = null;
+
   /**
    * Optional Craft color name used to tint the item's icon. The icon renders
    * with `currentColor`, so we set the icon element's `color` to a matching
    * `--c-color-*` token.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
+
+  /** Renders the item as a link to this URL instead of as a button. */
   @property() href: string | null = null;
+
+  /** Prevents the item from being activated, and dims it. */
   @property({type: Boolean}) disabled: boolean = false;
+
+  /**
+   * The semantic color group the item draws its tokens from. `danger` is the
+   * one to reach for on a destructive entry.
+   */
   @property({reflect: true}) variant: VariantValue = Variant.Neutral;
+
+  /** Whether a `checkbox` item is checked. Ignored for a `button` item. */
   @property({type: Boolean}) checked: boolean = false;
-  @property({type: Boolean}) active: boolean = false;
+
+  /**
+   * Marks the item as the current one — the entry a menu opens onto, or the
+   * option already in effect. Reflected so it can be styled from outside.
+   */
+  @property({type: Boolean, reflect: true}) active: boolean = false;
+
+  /**
+   * `checkbox` reserves room for a checkmark before the icon, so a list of
+   * options stays aligned whether or not each one is checked.
+   */
   @property() type: 'button' | 'checkbox' = 'button';
+
+  /**
+   * The action to run when the item is activated. Accepts an action
+   * descriptor or a URL string. A descriptor's own `confirm` prompts before
+   * the action runs.
+   */
   @property({type: Object}) action: BaseAction | string | null = null;
+
+  /** Messages shown in place of the label after an action succeeds or fails. */
   @property({type: Object}) feedback: ActionFeedback | null = null;
+
+  /** How long feedback stays before the item returns to idle, in milliseconds. */
   @property({type: Number, attribute: 'feedback-duration'})
   feedbackDuration: number = 1000;
-  @property() confirm: string | null = null;
 
   @state() private state: AsyncState = AsyncStates.Idle;
   @state() private feedbackMessage: string | null = null;
 
+  /**
+   * A keyboard shortcut shown at the end of the item. Either a plain string
+   * (`"S"`, `"ctrl+k"`) or an object naming the modifiers. Display only — the
+   * item does not bind the key.
+   */
   @property({
     converter: {
       fromAttribute(value: string | null) {
