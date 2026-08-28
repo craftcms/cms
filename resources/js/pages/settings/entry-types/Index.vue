@@ -28,21 +28,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteEntryType(entryType: EntryTypeRow) {
-    if (
-      confirm(
-        t(
-          'Are you sure you want to delete “{name}” and all entries of that type?',
-          {
-            name: entryType.title,
-          }
-        )
-      )
-    ) {
-      router.delete(destroy({entryType: entryType.id}));
-    }
-  }
-
   const searchTerm = ref(props.searchTerm ?? '');
   const entryTypes = computed(() => props.data);
   const columnHelper = createCraftColumnHelper<EntryTypeRow>();
@@ -74,7 +59,11 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteEntryType(row.original),
+        confirm: t(
+          'Are you sure you want to delete “{name}” and all entries of that type?',
+          {name: row.original.title}
+        ),
+        onClick: () => router.delete(destroy({entryType: row.original.id})),
       }),
     ]),
   ]);
