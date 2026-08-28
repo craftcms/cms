@@ -166,3 +166,23 @@ export const WithSlottedContent: Story = {
     </craft-input-date-time>
   `,
 };
+
+/**
+ * Wrapping in `craft-field` is what supplies the label, help text, and error
+ * handling. Every example on this page is wrapped the same way.
+ */
+export const InAField: Story = {
+  parameters: {controls: {disable: true}, ownField: true},
+  render: () => html`
+    <craft-field>
+      <label slot="label">Post Date</label>
+      <span slot="help-text">When the entry should go live.</span>
+      <craft-input-date-time
+        slot="input"
+        name="postDate"
+        date-value="2026-08-28"
+        time-value="09:30"
+      ></craft-input-date-time>
+    </craft-field>
+  `,
+};
