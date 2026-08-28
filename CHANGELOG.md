@@ -10,6 +10,7 @@
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
 - Fixed a bug where Typecast would throw when trying to set properties that didn’t exist. ([#19492](https://github.com/craftcms/cms/pull/19492))
 - Fixed a bug where POST requests to legacy action URLs weren’t getting routed properly. ([#19478](https://github.com/craftcms/cms/issues/19478))
+- Fixed a JavaScript error that occurred when creating a new Dashboard widget. ([#19479](https://github.com/craftcms/cms/issues/19479))
 
 ## 6.0.0-alpha.17 - 2026-08-18
 
