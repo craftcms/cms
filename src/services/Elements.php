@@ -781,7 +781,7 @@ class Elements extends Component
 
             // Override the parent duration if ours is shorter
             $this->_cacheDuration = array_pop($this->_cacheDurationBuffers);
-            if ($duration && $duration < $this->_cacheDuration) {
+            if ($duration && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
                 $this->_cacheDuration = $duration;
             }
         } else {
