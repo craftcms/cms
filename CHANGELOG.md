@@ -8,6 +8,7 @@
 - Element edit screens now indicate which fields a draft has unapplied changes to.
 - Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
+- Fixed a bug where Typecast would throw when trying to set properties that didn't exist. [#19492](https://github.com/craftcms/cms/pull/19492)
 
 ## 6.0.0-alpha.17 - 2026-08-18
 
