@@ -1,6 +1,6 @@
 import styles from './select.styles.js';
 import {LionSelect} from '@lion/ui/select.js';
-import {html} from 'lit';
+import {html, type PropertyValues} from 'lit';
 import '../option/option.js';
 import '../icon/icon.js';
 import {property} from 'lit/decorators.js';
@@ -11,6 +11,19 @@ export default class CraftSelect extends LionSelect {
   }
 
   @property({reflect: true, type: Boolean}) small = false;
+
+  /**
+   * Renders the label beside the control instead of stacked above it.
+   * No-op when combined with `label-sr-only`, or when help text/instructions
+   * are present (falls back to the normal stacked layout automatically).
+   */
+  @property({type: String, reflect: true, attribute: 'label-position'})
+  labelPosition?: 'top' | 'start';
+
+  protected override updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
+    this.toggleAttribute('has-help-text', !!this.helpText);
+  }
 
   // oxlint-disable-next-line class-methods-use-this
   override _inputGroupInputTemplate() {

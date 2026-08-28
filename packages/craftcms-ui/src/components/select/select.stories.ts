@@ -35,3 +35,33 @@ type Story = StoryObj<any>;
 export const Default: Story = {
   args: {},
 };
+
+export const InlineLabel: Story = {
+  render: () => html`
+    <craft-select label="Items per page" label-position="start" small>
+      <select slot="input">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+      </select>
+    </craft-select>
+  `,
+};
+
+// Demonstrates the automatic fallback: help text present + label-position
+// set still renders the normal stacked layout, not a broken hybrid.
+export const InlineLabelWithHelpText: Story = {
+  render: () => html`
+    <craft-select
+      label="Items per page"
+      label-position="start"
+      help-text="Applies to every source in this index."
+    >
+      <select slot="input">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="250">250</option>
+      </select>
+    </craft-select>
+  `,
+};
