@@ -29,21 +29,39 @@ type InputDateTimeArgs = CraftInputDateTime & typeof args;
  * has to be a parameter the shared decorator checks; returning `story()` from
  * a story's own decorator would still leave this one wrapping it.
  */
-const inField: Decorator = (story, context) =>
-  context.parameters.ownField
-    ? story()
-    : html`
-        <craft-field>
-          <label slot="label">Post Date</label>
-          ${story()}
-        </craft-field>
-      `;
+const inField: Decorator = (story, context) => html`
+  <craft-field>
+    <label slot="label">Post Date</label>
+    ${story()}
+  </craft-field>
+`;
+
+/**
+ * `show-date` and `show-time` cannot be driven from args.
+ *
+ * They are default-on string flags — only the literal `"false"` turns them
+ * off, which is what the PHP builder emits. The manifest types them as
+ * booleans, and the helpers map a `"false"` arg onto boolean `false`, which
+ * *removes* the attribute; an absent attribute reads as on. So the stories
+ * that turn them off write the attribute themselves, and the controls are
+ * disabled rather than offering a knob that cannot work.
+ */
+const showFlagArgType = {control: {disable: true}} as const;
 
 const meta = {
   title: 'Controls/Input Date Time',
   component: 'craft-input-date-time',
-  args: {...args, name: 'postDate', 'date-value': '2026-08-28', slot: 'input'},
-  argTypes,
+  args: {
+    ...args,
+    name: 'postDate',
+    'date-value': '2026-08-28',
+    slot: 'input',
+  },
+  argTypes: {
+    ...argTypes,
+    'show-date': showFlagArgType,
+    'show-time': showFlagArgType,
+  },
   decorators: [inField],
   parameters: {
     // The date and time inputs have no accessible name of their own: each is a
@@ -70,12 +88,28 @@ export const WithValues: Story = {
 
 /** `show-time="false"` drops the time input, leaving a date-only field. */
 export const DateOnly: Story = {
-  args: {'show-time': 'false'},
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <craft-input-date-time
+      slot="input"
+      name="postDate"
+      date-value="2026-08-28"
+      show-time="false"
+    ></craft-input-date-time>
+  `,
 };
 
 /** `show-date="false"` drops the date input, leaving a time-only field. */
 export const TimeOnly: Story = {
-  args: {'show-date': 'false', 'time-value': '09:30'},
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <craft-input-date-time
+      slot="input"
+      name="postDate"
+      time-value="09:30"
+      show-date="false"
+    ></craft-input-date-time>
+  `,
 };
 
 /**
@@ -130,25 +164,5 @@ export const WithSlottedContent: Story = {
         Clear
       </craft-button>
     </craft-input-date-time>
-  `,
-};
-
-/**
- * Wrapping in `craft-field` is what supplies the label, help text, and error
- * handling. Every example on this page is wrapped the same way.
- */
-export const InAField: Story = {
-  parameters: {controls: {disable: true}, ownField: true},
-  render: () => html`
-    <craft-field>
-      <label slot="label">Post Date</label>
-      <span slot="help-text">When the entry should go live.</span>
-      <craft-input-date-time
-        slot="input"
-        name="postDate"
-        date-value="2026-08-28"
-        time-value="09:30"
-      ></craft-input-date-time>
-    </craft-field>
   `,
 };

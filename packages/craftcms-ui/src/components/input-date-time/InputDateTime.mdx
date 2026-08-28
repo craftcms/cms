@@ -41,7 +41,15 @@ Without a `name`, nothing is submitted — the component is then a pair of input
 <Canvas of={InputDateTimeStories.TimeOnly} sourceState="shown" />
 
 These two are deliberately default-on, so **only the exact value `"false"` turns them off**.
-Any other value — including `"0"` — leaves the input in place.
+Any other value — including `"0"` — leaves the input in place, and so does removing the attribute.
+
+That makes them string flags rather than boolean attributes, which matters when you are not writing the markup by hand.
+A boolean binding cannot express them: `?show-time="${false}"` in a Lit template removes the attribute, and an absent attribute reads as on.
+Write the literal string instead.
+
+```html
+<craft-input-date-time show-time="false"></craft-input-date-time>
+```
 
 `show-timezone` is the opposite: an ordinary boolean attribute that is absent by default, and on when present.
 
