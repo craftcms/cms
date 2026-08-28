@@ -94,6 +94,11 @@ it('prefers fixed routes over matched elements', function () {
         ->assertSeeText('fixed-route');
 });
 
+it('accepts POST requests to the site fallback instead of throwing a method not allowed exception', function () {
+    $this->post('/some-unmatched-path')
+        ->assertNotFound();
+});
+
 it('keeps matched element state out of dehydrated queue context', function () {
     $entry = createRoutableEntry('dehydrated-context-entry', 'entries/show');
 
