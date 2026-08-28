@@ -1154,33 +1154,15 @@ ul.icons {
   gap: var(--s);
 }
 
-.gap-0 {
-  gap: 0;
-}
+/*
+The gap utilities that lived here are gone; use the `cp:gap-*` utilities from
+`resources/css/utilities.css`, which both CP shells now load. Note the scales
+are named differently — legacy `--xs` is `--c-spacing-sm`, not `-xs` — so the
+mapping shifts by one step:
 
-.gap-2xs {
-  gap: var(--2xs);
-}
-
-.gap-xs {
-  gap: var(--xs);
-}
-
-.gap-s {
-  gap: var(--s);
-}
-
-.gap-m {
-  gap: var(--m);
-}
-
-.gap-l {
-  gap: var(--l);
-}
-
-.gap-xl {
-  gap: var(--xl);
-}
+  gap-2xs -> cp:gap-xs    gap-s -> cp:gap-md    gap-l  -> cp:gap-lg
+  gap-xs  -> cp:gap-sm    gap-m -> cp:gap-lg    gap-xl -> cp:gap-xl
+*/
 
 .spacer {
   width: 14px;

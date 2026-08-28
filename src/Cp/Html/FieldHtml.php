@@ -81,7 +81,7 @@ readonly class FieldHtml
             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 
             $labelHtml = Html::beginTag('span', [
-                'class' => ['cp:flex', 'cp:flex-nowrap', 'gap-s'],
+                'class' => ['cp:flex', 'cp:flex-nowrap', 'cp:gap-md'],
             ]);
             if ($icon) {
                 $labelHtml .= Html::tag('div', Icons::svg($icon), [

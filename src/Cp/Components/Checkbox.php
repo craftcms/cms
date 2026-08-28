@@ -381,7 +381,7 @@ class Checkbox extends ViewComponent
             ]), ['class' => 'color small']);
 
         return Html::tag('div', $chip.Html::tag('span', $labelHtml), [
-            'class' => 'cp:flex cp:flex-nowrap gap-xs',
+            'class' => 'cp:flex cp:flex-nowrap cp:gap-sm',
         ]);
     }
 

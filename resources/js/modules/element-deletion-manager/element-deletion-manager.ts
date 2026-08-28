@@ -168,7 +168,7 @@ export class ElementDeletionManager extends Base {
     const $body = $('<div/>', {class: 'body'}).appendTo($container);
 
     $('<h1/>', {
-      class: 'cp:flex flex-inline cp:items-center gap-xs',
+      class: 'cp:flex flex-inline cp:items-center cp:gap-sm',
       html: Craft.t(
         'app',
         'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',

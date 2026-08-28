@@ -530,7 +530,7 @@ readonly class ElementHtml
         if (! empty($labels)) {
             $bodyContent .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
-                ->class('cp:flex gap-xs')
+                ->class('cp:flex cp:gap-sm')
                 ->render();
         }
 
@@ -1229,7 +1229,7 @@ readonly class ElementHtml
         }
 
         return Html::tag('span', $labelHtml.$secondaryHtml, [
-            'class' => ['inline-flex', 'cp:flex-col', 'cp:items-start', 'gap-2xs'],
+            'class' => ['inline-flex', 'cp:flex-col', 'cp:items-start', 'cp:gap-xs'],
         ]);
     }
 

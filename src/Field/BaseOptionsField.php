@@ -597,7 +597,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 : (string) $value->value
             );
 
-            return Html::beginTag('div', ['class' => ['cp:flex', 'flex-inline', 'gap-xs']])
+            return Html::beginTag('div', ['class' => ['cp:flex', 'flex-inline', 'cp:gap-sm']])
                 .implode('', $parts)
                 .Html::endTag('div');
         }

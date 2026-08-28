@@ -108,7 +108,7 @@ class CardDesigner
         if (! empty(array_filter($labels))) {
             $bodyHtml .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
-                ->class('cp:flex', 'gap-xs')
+                ->class('cp:flex', 'cp:gap-sm')
                 ->render();
         }
 
