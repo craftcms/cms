@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'De Plugin Store is niet beschikbaar. Probeer het later opnieuw.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Het e-mailadres voor antwoord dat Craft CMS gebruikt bij het verzenden van e-mails.',
     'The URI can’t begin with the {setting} config setting.' => 'De URI mag niet beginnen met de configuratie-instelling {setting}.',
-    'The `@web` alias is not recommended.' => 'De alias `@web` wordt niet aanbevolen.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'De autorisatiekop (`Authorization`) die met GraphQL-API-verzoeken moet worden meegezonden om dit token te gebruiken.',
     'The allowed values are [{values}]' => 'De toegestane waarden zijn [{values}]',
     'The asset you’re trying to download does not exist.' => 'Het bestand dat u wilt downloaden bestaat niet.',

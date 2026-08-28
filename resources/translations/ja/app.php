@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'プラグインストアを利用できません。後でもう一度お試しください。',
     'The Reply-To email address Craft CMS should use when sending email.' => 'メール送信の際にCraft CMSが使用する返信先のメールアドレス',
     'The URI can’t begin with the {setting} config setting.' => 'URIは{setting}構成設定から始めることはできません。',
-    'The `@web` alias is not recommended.' => '`@web` エイリアスはお勧めできません。',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'このトークンを使用するためにGraphQL APIリクエストと共に送信すべき `Authorization` ヘッダーです。',
     'The allowed values are [{values}]' => '許可された値は [{values}] です',
     'The asset you’re trying to download does not exist.' => 'ダウンロードしようとしているアセットは存在しません。',

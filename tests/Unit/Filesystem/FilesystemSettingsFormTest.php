@@ -13,7 +13,7 @@ use CraftCms\Cms\Form\FormResolver;
 it('exposes the complete local filesystem settings as a typed form', function () {
     $filesystem = new Local([
         'hasUrls' => true,
-        'url' => '@web/uploads',
+        'url' => 'https://example.test/uploads',
         'path' => '@webroot/uploads',
     ]);
 
@@ -34,7 +34,7 @@ it('exposes the complete local filesystem settings as a typed form', function ()
         ->and($payload->values)->toBe([
             'settings' => [
                 'hasUrls' => true,
-                'url' => '@web/uploads',
+                'url' => 'https://example.test/uploads',
                 'path' => '@webroot/uploads',
             ],
         ]);

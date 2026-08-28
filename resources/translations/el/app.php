@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'Το Plugin Store δεν είναι διαθέσιμο αυτή τη στιγμή, δοκιμάστε ξανά αργότερα.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Η διεύθυνση email απάντησης που πρέπει να χρησιμοποιεί το Craft CMS κατά την αποστολή email.',
     'The URI can’t begin with the {setting} config setting.' => 'Το URI δεν μπορεί να ξεκινά με τη ρύθμιση διαμόρφωσης {setting}.',
-    'The `@web` alias is not recommended.' => 'The `@web` alias is not recommended.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Η επικεφαλίδα `Authorization` που πρέπει να αποστέλλεται με τα αιτήματα GraphQL API για να χρησιμοποιηθεί αυτό το token.',
     'The allowed values are [{values}]' => 'Οι επιτρεπτές τιμές είναι [{values}]',
     'The asset you’re trying to download does not exist.' => 'Το αρχείο που προσπαθείτε να κατεβάσετε δεν υπάρχει.',
