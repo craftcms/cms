@@ -155,10 +155,10 @@
   -->
   <LayoutSlot v-if="autosaveMessage" name="toolbar">
     <span
-      class="text-sm text-neutral-on-quiet"
+      class="text-sm c-text-on-neutral-quiet"
       role="status"
       aria-live="polite"
-      :class="{'text-danger-on-normal': autosave.status.value === 'failed'}"
+      :class="{'c-text-on-danger-normal': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
       <code v-if="autosaveErrorCode" class="text-xs">{{

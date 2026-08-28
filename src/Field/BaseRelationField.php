@@ -1513,7 +1513,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).
                     Html::img("$baseIconsUrl/$key.svg", '', [
-                        'class' => 'mb-xs',
+                        'class' => 'c-mb-xs',
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
                     ]).

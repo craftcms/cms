@@ -5,7 +5,7 @@ CP Styles
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import '@craftcms/ui/styles/cp.css' layer(cp);
-@import '@craftcms/ui/tailwind.css' layer(theme);
+@import '@craftcms/ui/tailwind.css';
 
 @import './fld.css';
 @import './cvd.css';

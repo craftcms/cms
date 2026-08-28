@@ -98,7 +98,7 @@
 <template>
   <div class="absolute w-full z-10" style="inset-block-start: calc(100% + 4px)">
     <div
-      class="bg-white p-4 border-neutral-border-quiet shadow-lg rounded w-full min-h-20"
+      class="bg-white p-4 c-border-neutral-quiet shadow-lg rounded w-full min-h-20"
     >
       <!-- .stop keeps the submit from bubbling to the toolbar's own form,
         which would trigger a second index submit alongside @apply -->

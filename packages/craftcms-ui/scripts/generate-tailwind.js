@@ -8,121 +8,177 @@ const ROOT = resolve(__dirname, '..');
 const OUT_FILE = resolve(ROOT, 'tailwind.css');
 
 /**
- * The generic colorable tokens — `--c-color-fill-quiet` and friends, which
- * hold whatever the nearest `[data-color]` / `variant` resolved to. Mapping
- * them means `bg-fill-quiet` paints with the current context's quiet fill
- * rather than naming a color up front.
+ * The namespace every Craft utility carries, echoing the `--c-*` token prefix.
+ *
+ * These are deliberately *not* Tailwind's own `prefix()` option: that applies
+ * to a whole build, and the CP writes plain Tailwind (`flex`, `gap-2`, `p-4`)
+ * everywhere. Prefixing the class names themselves is what lets both live in
+ * one stylesheet, and makes `c-bg-loud` legible as a Craft token utility next
+ * to a raw `bg-white`.
  */
-const contextualTokens = ['fill', 'border', 'on'].flatMap((role) =>
-  ['quiet', 'normal', 'loud'].map((strength) => [
-    `${role}-${strength}`,
-    `--c-color-${role}-${strength}`,
-  ])
-);
+const PREFIX = 'c';
+
+/** The three intensities every colorable token group exposes. */
+const strengths = ['quiet', 'normal', 'loud'];
 
 /**
- * The named steps on Craft's spacing scale, in Tailwind's `--spacing-*`
- * namespace: `p-sm`, `gap-lg`, `mt-2xl`, and every other spacing utility.
+ * The named steps on Craft's spacing scale.
  *
- * The scale's `--c-spacing` base is deliberately left out. In Tailwind v4 a
- * bare `--spacing` is what generates the *numeric* scale (`p-4` is
- * `calc(var(--spacing) * 4)`), so mapping it would quietly rewrite every
- * numeric spacing utility in the CP rather than adding to them.
+ * The scale's `--c-spacing` base is deliberately left out: it's the unit the
+ * other steps multiply, not a step you'd reach for on an element.
  */
 const spacingSteps = ['1px', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'];
 
-const colorableRoles = ['fill', 'border', 'on'];
-const colorableStrengths = ['quiet', 'normal', 'loud'];
+/**
+ * Utility stem → property, matching Tailwind's own spacing utilities so
+ * `c-px-md` means what `px-4` means: `x`/`y` are logical (`padding-inline`),
+ * `s`/`e` are the logical edges, and `t`/`r`/`b`/`l` stay physical.
+ */
+const spacingProperties = [
+  ['p', 'padding'],
+  ['px', 'padding-inline'],
+  ['py', 'padding-block'],
+  ['ps', 'padding-inline-start'],
+  ['pe', 'padding-inline-end'],
+  ['pt', 'padding-top'],
+  ['pr', 'padding-right'],
+  ['pb', 'padding-bottom'],
+  ['pl', 'padding-left'],
+  ['m', 'margin'],
+  ['mx', 'margin-inline'],
+  ['my', 'margin-block'],
+  ['ms', 'margin-inline-start'],
+  ['me', 'margin-inline-end'],
+  ['mt', 'margin-top'],
+  ['mr', 'margin-right'],
+  ['mb', 'margin-bottom'],
+  ['ml', 'margin-left'],
+  ['gap', 'gap'],
+  ['gap-x', 'column-gap'],
+  ['gap-y', 'row-gap'],
+];
 
-function section(heading, entries) {
+function utility(name, declarations) {
   return [
-    `  /* ——— ${heading} ——— */`,
-    ...entries.map(([property, token]) => `  ${property}: var(${token});`),
+    `@utility ${PREFIX}-${name} {`,
+    ...declarations.map(([property, value]) => `  ${property}: ${value};`),
+    '}',
   ].join('\n');
 }
 
-function colorSection(heading, entries) {
-  return section(
-    heading,
-    entries.map(([key, token]) => [`--color-${key}`, token])
-  );
+function section(heading, rules) {
+  return [`/* ——— ${heading} ——— */`, '', rules.join('\n\n')].join('\n');
 }
 
-/** The nine colorable tokens a `--c-color-<name>-*` group exposes. */
-function colorableSection(name) {
-  return colorSection(
-    name,
-    colorableRoles.flatMap((role) =>
-      colorableStrengths.map((strength) => [
-        `${name}-${role}-${strength}`,
-        `--c-color-${name}-${role}-${strength}`,
-      ])
+/**
+ * The four color utilities a token group exposes, at each strength.
+ *
+ * `group` is a semantic name (`danger`) or `null` for the generic tokens,
+ * which hold whatever the nearest `[data-color]` / `variant` resolved to.
+ * The role is implied by the property rather than spelled in the class:
+ * `fill` paints backgrounds, `border` paints borders, `on` paints the text
+ * that sits *on* a fill. Text gets both — `c-text-loud` uses the fill color
+ * as ink, `c-text-on-loud` uses the color meant to be legible against it.
+ */
+function colorUtilities(group) {
+  const token = (role, strength) =>
+    `var(--c-color-${group ? `${group}-` : ''}${role}-${strength})`;
+  const name = (stem, strength) =>
+    `${stem}-${group ? `${group}-` : ''}${strength}`;
+
+  return strengths.flatMap((strength) => [
+    utility(name('bg', strength), [
+      ['background-color', token('fill', strength)],
+    ]),
+    utility(name('text', strength), [['color', token('fill', strength)]]),
+    utility(name('text-on', strength), [['color', token('on', strength)]]),
+    utility(name('border', strength), [
+      ['border-color', token('border', strength)],
+    ]),
+  ]);
+}
+
+function spacingUtilities() {
+  return spacingProperties.flatMap(([stem, property]) =>
+    spacingSteps.map((step) =>
+      utility(`${stem}-${step}`, [[property, `var(--c-spacing-${step})`]])
     )
   );
 }
 
 /**
- * Craft's design tokens, republished in the Tailwind namespaces that generate
- * utilities for them — `--color-*` and `--spacing-*`.
+ * Craft's design tokens, republished as prefixed Tailwind utility classes.
  *
- * The mapping is mechanical: drop the `--c-color-` / `--c-spacing-` prefix,
- * and what's left names the utility. `--c-color-neutral-border-quiet` becomes
- * `border-neutral-border-quiet`; `--c-spacing-sm` becomes `p-sm`, `gap-sm`,
- * `mx-sm`, and the rest of the spacing family.
- *
- * Colors are deliberately limited to the semantic groups plus the generic
- * contextual tokens. The raw palette (`--c-color-red-*` and friends) is
- * reachable from CSS and from `[data-color]`, but isn't worth ~200 utility
- * classes here.
+ * Colors cover the generic contextual tokens plus the semantic groups. The
+ * raw palette (`--c-color-red-*` and friends) stays reachable from CSS and
+ * from `[data-color]`, but isn't worth ~750 utility classes here.
  */
-function generateTailwindTheme(semanticColors) {
+function generateUtilities(semanticColors) {
   const sections = [
-    section(
-      'Spacing',
-      spacingSteps.map((step) => [`--spacing-${step}`, `--c-spacing-${step}`])
+    section('Colors — current context', colorUtilities(null)),
+    ...Object.keys(semanticColors).map((group) =>
+      section(`Colors — ${group}`, colorUtilities(group))
     ),
-    colorSection('Current context', contextualTokens),
-    ...Object.keys(semanticColors).map((name) => colorableSection(name)),
+    section('Spacing', spacingUtilities()),
   ];
 
   return `/* Auto-generated by scripts/generate-tailwind.js — do not edit manually */
 
 /**
- * Craft CMS Control Panel — Tailwind v4 theme integration.
+ * Craft CMS Control Panel — Tailwind v4 utilities.
  *
- * Publishes Craft's design tokens into the Tailwind namespaces that generate
- * utility classes for them. The token name is the utility name:
- * \`--c-color-neutral-border-quiet\` becomes \`border-neutral-border-quiet\`,
- * \`--c-spacing-sm\` becomes \`p-sm\` / \`gap-sm\` / \`mx-sm\`.
+ * Craft's design tokens as utility classes, all under a \`c-\` prefix so a
+ * Craft utility is never mistaken for a stock Tailwind one — and so the two
+ * can coexist in a single build, which Tailwind's own \`prefix()\` option
+ * would not allow.
  *
- * The "Current context" block maps the generic color tokens, which hold
- * whatever the nearest \`[data-color]\` / \`variant\` resolved to — so
- * \`bg-fill-quiet\` paints with the current context's quiet fill instead of
- * naming a color.
+ * Colors read as \`c-<property>-[group-]<strength>\`. The token's *role* is
+ * implied by the property rather than repeated in the class name:
+ *
+ *     c-bg-loud                background-color: --c-color-fill-loud
+ *     c-bg-danger-normal       background-color: --c-color-danger-fill-normal
+ *     c-border-accent-quiet    border-color:     --c-color-accent-border-quiet
+ *     c-text-loud              color:            --c-color-fill-loud
+ *     c-text-on-loud           color:            --c-color-on-loud
+ *     c-text-on-neutral-loud   color:            --c-color-neutral-on-loud
+ *
+ * Text is the one property that takes two roles: \`c-text-*\` inks with the
+ * fill color, \`c-text-on-*\` inks with the color meant to stay legible on
+ * top of that fill.
+ *
+ * Omitting the group targets the generic tokens, which hold whatever the
+ * nearest \`[data-color]\` / \`variant\` resolved to — so \`c-bg-quiet\`
+ * paints with the current context's quiet fill instead of naming a color.
+ *
+ * Spacing reads as \`c-<stem>-<step>\` across padding, margin, and gap:
+ * \`c-p-md\`, \`c-gap-lg\`, \`c-mt-2xl\`. Stems match Tailwind's own, so
+ * \`c-px-*\` is logical (\`padding-inline\`) and \`c-pl-*\` is physical.
  *
  * Usage in a CSS entry file:
  *
+ *     @layer theme, base, components, cp, utilities;
  *     @import 'tailwindcss/theme.css' layer(theme);
  *     @import 'tailwindcss/utilities.css' layer(utilities);
  *     @import '@craftcms/ui/styles/cp.css' layer(cp);  // :root token values
- *     @import '@craftcms/ui/tailwind.css' layer(theme);
+ *     @import '@craftcms/ui/tailwind.css';
+ *
+ * That last import takes no \`layer()\`: \`@utility\` is only valid at the
+ * top level of a stylesheet, and a \`layer()\` import would nest it. Tailwind
+ * places what it generates into the \`utilities\` layer either way.
  *
  * The \`--c-*\` variables have to be in scope (via \`cp.css\`) for the
- * \`var()\`s below to resolve at render time. \`@theme inline\` makes the
- * generated utilities reference those custom properties directly rather than
- * snapshotting their values, so \`[data-theme='dark']\` overrides and
- * \`[data-color]\` context both flow through untouched.
+ * \`var()\`s below to resolve. Referencing them rather than their values is
+ * what lets \`[data-theme='dark']\` overrides and \`[data-color]\` context
+ * flow through untouched.
  */
 
-@theme inline {
 ${sections.join('\n\n')}
-}
 `;
 }
 
 export default async function main() {
   const {semanticColors} = await loadColorData();
-  writeFileSync(OUT_FILE, generateTailwindTheme(semanticColors));
+  writeFileSync(OUT_FILE, generateUtilities(semanticColors));
   console.log(`Generated ${OUT_FILE}`);
 }
 

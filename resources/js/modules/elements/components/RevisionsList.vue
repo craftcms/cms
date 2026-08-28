@@ -89,7 +89,7 @@
 </script>
 
 <template>
-  <p v-if="isEmpty" class="text-sm text-neutral-on-quiet">
+  <p v-if="isEmpty" class="text-sm c-text-on-neutral-quiet">
     {{ t('No drafts or revisions.') }}
   </p>
 

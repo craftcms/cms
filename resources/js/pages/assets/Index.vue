@@ -97,7 +97,7 @@
     width="sm"
     @close="resolveConflictChoice('cancel')"
   >
-    <div class="p-lg flex flex-col gap-4">
+    <div class="c-p-lg flex flex-col gap-4">
       <p>
         {{
           t(
@@ -125,7 +125,7 @@
 
   <!-- New subfolder prompt, opened from the current folder's breadcrumb menu. -->
   <Modal :is-active="newFolderOpen" width="sm" @close="closeNewFolder">
-    <form class="p-lg flex flex-col gap-4" @submit.prevent="createSubfolder">
+    <form class="c-p-lg flex flex-col gap-4" @submit.prevent="createSubfolder">
       <label class="flex flex-col gap-2">
         <span class="font-medium">{{ t('Folder name') }}</span>
         <CraftInput
