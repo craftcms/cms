@@ -111,18 +111,49 @@ function buildSemanticTokens(semanticColors) {
   return declarations.join('\n\n');
 }
 
+/**
+ * The generic tokens, remapped to one color group.
+ *
+ * Anything carrying a palette selector paints in that group, and so does
+ * everything under it: components author against the generic tokens, so they
+ * inherit the group without knowing which one is active.
+ */
+function buildDeclarations(color, indent = '  ') {
+  return ['fill', 'border', 'on']
+    .flatMap((role) =>
+      ['quiet', 'normal', 'loud'].map(
+        (strength) =>
+          `${indent}--c-color-${role}-${strength}: var(--c-color-${color}-${role}-${strength});`
+      )
+    )
+    .join('\n');
+}
+
+/**
+ * The selectors that put an element in a color group.
+ *
+ * `.c-palette-*` and `[data-palette]` are the current spellings — the class
+ * matches the `c-` utility prefix, and the attribute matches the class, so the
+ * two read as one idea rather than two.
+ *
+ * `.cp-color-*` and `[data-color]` are the Craft 5 spellings. They stay on the
+ * same rule so existing markup and plugins keep working; new code should reach
+ * for the palette spellings. Note that `[data-color]` is *not* the same axis as
+ * `[data-theme='dark']`, which selects the light/dark color scheme — which is
+ * why this one couldn't simply become `data-theme`.
+ */
+function paletteSelectors(color) {
+  return [
+    `.c-palette-${color}`,
+    `[data-palette='${color}']`,
+    `.cp-color-${color}`,
+    `[data-color='${color}']`,
+  ];
+}
+
 function buildStyleBlock(color) {
-  return `.cp-color-${color},
-[data-color='${color}'] {
-  --c-color-fill-quiet: var(--c-color-${color}-fill-quiet);
-  --c-color-border-quiet: var(--c-color-${color}-border-quiet);
-  --c-color-on-quiet: var(--c-color-${color}-on-quiet);
-  --c-color-fill-normal: var(--c-color-${color}-fill-normal);
-  --c-color-border-normal: var(--c-color-${color}-border-normal);
-  --c-color-on-normal: var(--c-color-${color}-on-normal);
-  --c-color-fill-loud: var(--c-color-${color}-fill-loud);
-  --c-color-border-loud: var(--c-color-${color}-border-loud);
-  --c-color-on-loud: var(--c-color-${color}-on-loud);
+  return `${paletteSelectors(color).join(',\n')} {
+${buildDeclarations(color)}
 }`;
 }
 
@@ -148,15 +179,7 @@ ${[...paletteColors, ...Object.keys(semanticColors)]
  */
 function buildLitBlock(selectors, color) {
   return `  ${selectors.join(',\n  ')} {
-    --c-color-fill-quiet: var(--c-color-${color}-fill-quiet);
-    --c-color-border-quiet: var(--c-color-${color}-border-quiet);
-    --c-color-on-quiet: var(--c-color-${color}-on-quiet);
-    --c-color-fill-normal: var(--c-color-${color}-fill-normal);
-    --c-color-border-normal: var(--c-color-${color}-border-normal);
-    --c-color-on-normal: var(--c-color-${color}-on-normal);
-    --c-color-fill-loud: var(--c-color-${color}-fill-loud);
-    --c-color-border-loud: var(--c-color-${color}-border-loud);
-    --c-color-on-loud: var(--c-color-${color}-on-loud);
+${buildDeclarations(color, '    ')}
   }`;
 }
 
@@ -164,7 +187,12 @@ function generateLitStyles(paletteColors, semanticColors) {
   const palette = [...paletteColors, ...Object.keys(semanticColors)]
     .map((color) =>
       buildLitBlock(
-        [`:host([data-color='${color}'])`, `[data-color='${color}']`],
+        [
+          `:host([data-palette='${color}'])`,
+          `[data-palette='${color}']`,
+          `:host([data-color='${color}'])`,
+          `[data-color='${color}']`,
+        ],
         color
       )
     )
@@ -188,9 +216,9 @@ import {css} from 'lit';
  * chip, a badge, an icon). Most components want {@link variantStyles} instead
  * — this is every color in the system, so adopting it isn't free.
  *
- * Matches a host carrying \`data-color\`, or any element inside the shadow
- * root that carries it, mirroring the \`[data-color]\` rules in
- * \`shared/colorable.css\`.
+ * Matches a host carrying \`data-palette\` (or its deprecated \`data-color\`
+ * spelling), or any element inside the shadow root that carries it, mirroring
+ * the palette rules in \`shared/colorable.css\`.
  */
 export const paletteStyles = css\`
 ${palette}

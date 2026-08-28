@@ -7,359 +7,413 @@ import {css} from 'lit';
  * chip, a badge, an icon). Most components want {@link variantStyles} instead
  * — this is every color in the system, so adopting it isn't free.
  *
- * Matches a host carrying `data-color`, or any element inside the shadow
- * root that carries it, mirroring the `[data-color]` rules in
- * `shared/colorable.css`.
+ * Matches a host carrying `data-palette` (or its deprecated `data-color`
+ * spelling), or any element inside the shadow root that carries it, mirroring
+ * the palette rules in `shared/colorable.css`.
  */
 export const paletteStyles = css`
+  :host([data-palette='red']),
+  [data-palette='red'],
   :host([data-color='red']),
   [data-color='red'] {
     --c-color-fill-quiet: var(--c-color-red-fill-quiet);
-    --c-color-border-quiet: var(--c-color-red-border-quiet);
-    --c-color-on-quiet: var(--c-color-red-on-quiet);
     --c-color-fill-normal: var(--c-color-red-fill-normal);
-    --c-color-border-normal: var(--c-color-red-border-normal);
-    --c-color-on-normal: var(--c-color-red-on-normal);
     --c-color-fill-loud: var(--c-color-red-fill-loud);
+    --c-color-border-quiet: var(--c-color-red-border-quiet);
+    --c-color-border-normal: var(--c-color-red-border-normal);
     --c-color-border-loud: var(--c-color-red-border-loud);
+    --c-color-on-quiet: var(--c-color-red-on-quiet);
+    --c-color-on-normal: var(--c-color-red-on-normal);
     --c-color-on-loud: var(--c-color-red-on-loud);
   }
 
+  :host([data-palette='orange']),
+  [data-palette='orange'],
   :host([data-color='orange']),
   [data-color='orange'] {
     --c-color-fill-quiet: var(--c-color-orange-fill-quiet);
-    --c-color-border-quiet: var(--c-color-orange-border-quiet);
-    --c-color-on-quiet: var(--c-color-orange-on-quiet);
     --c-color-fill-normal: var(--c-color-orange-fill-normal);
-    --c-color-border-normal: var(--c-color-orange-border-normal);
-    --c-color-on-normal: var(--c-color-orange-on-normal);
     --c-color-fill-loud: var(--c-color-orange-fill-loud);
+    --c-color-border-quiet: var(--c-color-orange-border-quiet);
+    --c-color-border-normal: var(--c-color-orange-border-normal);
     --c-color-border-loud: var(--c-color-orange-border-loud);
+    --c-color-on-quiet: var(--c-color-orange-on-quiet);
+    --c-color-on-normal: var(--c-color-orange-on-normal);
     --c-color-on-loud: var(--c-color-orange-on-loud);
   }
 
+  :host([data-palette='amber']),
+  [data-palette='amber'],
   :host([data-color='amber']),
   [data-color='amber'] {
     --c-color-fill-quiet: var(--c-color-amber-fill-quiet);
-    --c-color-border-quiet: var(--c-color-amber-border-quiet);
-    --c-color-on-quiet: var(--c-color-amber-on-quiet);
     --c-color-fill-normal: var(--c-color-amber-fill-normal);
-    --c-color-border-normal: var(--c-color-amber-border-normal);
-    --c-color-on-normal: var(--c-color-amber-on-normal);
     --c-color-fill-loud: var(--c-color-amber-fill-loud);
+    --c-color-border-quiet: var(--c-color-amber-border-quiet);
+    --c-color-border-normal: var(--c-color-amber-border-normal);
     --c-color-border-loud: var(--c-color-amber-border-loud);
+    --c-color-on-quiet: var(--c-color-amber-on-quiet);
+    --c-color-on-normal: var(--c-color-amber-on-normal);
     --c-color-on-loud: var(--c-color-amber-on-loud);
   }
 
+  :host([data-palette='yellow']),
+  [data-palette='yellow'],
   :host([data-color='yellow']),
   [data-color='yellow'] {
     --c-color-fill-quiet: var(--c-color-yellow-fill-quiet);
-    --c-color-border-quiet: var(--c-color-yellow-border-quiet);
-    --c-color-on-quiet: var(--c-color-yellow-on-quiet);
     --c-color-fill-normal: var(--c-color-yellow-fill-normal);
-    --c-color-border-normal: var(--c-color-yellow-border-normal);
-    --c-color-on-normal: var(--c-color-yellow-on-normal);
     --c-color-fill-loud: var(--c-color-yellow-fill-loud);
+    --c-color-border-quiet: var(--c-color-yellow-border-quiet);
+    --c-color-border-normal: var(--c-color-yellow-border-normal);
     --c-color-border-loud: var(--c-color-yellow-border-loud);
+    --c-color-on-quiet: var(--c-color-yellow-on-quiet);
+    --c-color-on-normal: var(--c-color-yellow-on-normal);
     --c-color-on-loud: var(--c-color-yellow-on-loud);
   }
 
+  :host([data-palette='lime']),
+  [data-palette='lime'],
   :host([data-color='lime']),
   [data-color='lime'] {
     --c-color-fill-quiet: var(--c-color-lime-fill-quiet);
-    --c-color-border-quiet: var(--c-color-lime-border-quiet);
-    --c-color-on-quiet: var(--c-color-lime-on-quiet);
     --c-color-fill-normal: var(--c-color-lime-fill-normal);
-    --c-color-border-normal: var(--c-color-lime-border-normal);
-    --c-color-on-normal: var(--c-color-lime-on-normal);
     --c-color-fill-loud: var(--c-color-lime-fill-loud);
+    --c-color-border-quiet: var(--c-color-lime-border-quiet);
+    --c-color-border-normal: var(--c-color-lime-border-normal);
     --c-color-border-loud: var(--c-color-lime-border-loud);
+    --c-color-on-quiet: var(--c-color-lime-on-quiet);
+    --c-color-on-normal: var(--c-color-lime-on-normal);
     --c-color-on-loud: var(--c-color-lime-on-loud);
   }
 
+  :host([data-palette='green']),
+  [data-palette='green'],
   :host([data-color='green']),
   [data-color='green'] {
     --c-color-fill-quiet: var(--c-color-green-fill-quiet);
-    --c-color-border-quiet: var(--c-color-green-border-quiet);
-    --c-color-on-quiet: var(--c-color-green-on-quiet);
     --c-color-fill-normal: var(--c-color-green-fill-normal);
-    --c-color-border-normal: var(--c-color-green-border-normal);
-    --c-color-on-normal: var(--c-color-green-on-normal);
     --c-color-fill-loud: var(--c-color-green-fill-loud);
+    --c-color-border-quiet: var(--c-color-green-border-quiet);
+    --c-color-border-normal: var(--c-color-green-border-normal);
     --c-color-border-loud: var(--c-color-green-border-loud);
+    --c-color-on-quiet: var(--c-color-green-on-quiet);
+    --c-color-on-normal: var(--c-color-green-on-normal);
     --c-color-on-loud: var(--c-color-green-on-loud);
   }
 
+  :host([data-palette='emerald']),
+  [data-palette='emerald'],
   :host([data-color='emerald']),
   [data-color='emerald'] {
     --c-color-fill-quiet: var(--c-color-emerald-fill-quiet);
-    --c-color-border-quiet: var(--c-color-emerald-border-quiet);
-    --c-color-on-quiet: var(--c-color-emerald-on-quiet);
     --c-color-fill-normal: var(--c-color-emerald-fill-normal);
-    --c-color-border-normal: var(--c-color-emerald-border-normal);
-    --c-color-on-normal: var(--c-color-emerald-on-normal);
     --c-color-fill-loud: var(--c-color-emerald-fill-loud);
+    --c-color-border-quiet: var(--c-color-emerald-border-quiet);
+    --c-color-border-normal: var(--c-color-emerald-border-normal);
     --c-color-border-loud: var(--c-color-emerald-border-loud);
+    --c-color-on-quiet: var(--c-color-emerald-on-quiet);
+    --c-color-on-normal: var(--c-color-emerald-on-normal);
     --c-color-on-loud: var(--c-color-emerald-on-loud);
   }
 
+  :host([data-palette='teal']),
+  [data-palette='teal'],
   :host([data-color='teal']),
   [data-color='teal'] {
     --c-color-fill-quiet: var(--c-color-teal-fill-quiet);
-    --c-color-border-quiet: var(--c-color-teal-border-quiet);
-    --c-color-on-quiet: var(--c-color-teal-on-quiet);
     --c-color-fill-normal: var(--c-color-teal-fill-normal);
-    --c-color-border-normal: var(--c-color-teal-border-normal);
-    --c-color-on-normal: var(--c-color-teal-on-normal);
     --c-color-fill-loud: var(--c-color-teal-fill-loud);
+    --c-color-border-quiet: var(--c-color-teal-border-quiet);
+    --c-color-border-normal: var(--c-color-teal-border-normal);
     --c-color-border-loud: var(--c-color-teal-border-loud);
+    --c-color-on-quiet: var(--c-color-teal-on-quiet);
+    --c-color-on-normal: var(--c-color-teal-on-normal);
     --c-color-on-loud: var(--c-color-teal-on-loud);
   }
 
+  :host([data-palette='cyan']),
+  [data-palette='cyan'],
   :host([data-color='cyan']),
   [data-color='cyan'] {
     --c-color-fill-quiet: var(--c-color-cyan-fill-quiet);
-    --c-color-border-quiet: var(--c-color-cyan-border-quiet);
-    --c-color-on-quiet: var(--c-color-cyan-on-quiet);
     --c-color-fill-normal: var(--c-color-cyan-fill-normal);
-    --c-color-border-normal: var(--c-color-cyan-border-normal);
-    --c-color-on-normal: var(--c-color-cyan-on-normal);
     --c-color-fill-loud: var(--c-color-cyan-fill-loud);
+    --c-color-border-quiet: var(--c-color-cyan-border-quiet);
+    --c-color-border-normal: var(--c-color-cyan-border-normal);
     --c-color-border-loud: var(--c-color-cyan-border-loud);
+    --c-color-on-quiet: var(--c-color-cyan-on-quiet);
+    --c-color-on-normal: var(--c-color-cyan-on-normal);
     --c-color-on-loud: var(--c-color-cyan-on-loud);
   }
 
+  :host([data-palette='sky']),
+  [data-palette='sky'],
   :host([data-color='sky']),
   [data-color='sky'] {
     --c-color-fill-quiet: var(--c-color-sky-fill-quiet);
-    --c-color-border-quiet: var(--c-color-sky-border-quiet);
-    --c-color-on-quiet: var(--c-color-sky-on-quiet);
     --c-color-fill-normal: var(--c-color-sky-fill-normal);
-    --c-color-border-normal: var(--c-color-sky-border-normal);
-    --c-color-on-normal: var(--c-color-sky-on-normal);
     --c-color-fill-loud: var(--c-color-sky-fill-loud);
+    --c-color-border-quiet: var(--c-color-sky-border-quiet);
+    --c-color-border-normal: var(--c-color-sky-border-normal);
     --c-color-border-loud: var(--c-color-sky-border-loud);
+    --c-color-on-quiet: var(--c-color-sky-on-quiet);
+    --c-color-on-normal: var(--c-color-sky-on-normal);
     --c-color-on-loud: var(--c-color-sky-on-loud);
   }
 
+  :host([data-palette='blue']),
+  [data-palette='blue'],
   :host([data-color='blue']),
   [data-color='blue'] {
     --c-color-fill-quiet: var(--c-color-blue-fill-quiet);
-    --c-color-border-quiet: var(--c-color-blue-border-quiet);
-    --c-color-on-quiet: var(--c-color-blue-on-quiet);
     --c-color-fill-normal: var(--c-color-blue-fill-normal);
-    --c-color-border-normal: var(--c-color-blue-border-normal);
-    --c-color-on-normal: var(--c-color-blue-on-normal);
     --c-color-fill-loud: var(--c-color-blue-fill-loud);
+    --c-color-border-quiet: var(--c-color-blue-border-quiet);
+    --c-color-border-normal: var(--c-color-blue-border-normal);
     --c-color-border-loud: var(--c-color-blue-border-loud);
+    --c-color-on-quiet: var(--c-color-blue-on-quiet);
+    --c-color-on-normal: var(--c-color-blue-on-normal);
     --c-color-on-loud: var(--c-color-blue-on-loud);
   }
 
+  :host([data-palette='indigo']),
+  [data-palette='indigo'],
   :host([data-color='indigo']),
   [data-color='indigo'] {
     --c-color-fill-quiet: var(--c-color-indigo-fill-quiet);
-    --c-color-border-quiet: var(--c-color-indigo-border-quiet);
-    --c-color-on-quiet: var(--c-color-indigo-on-quiet);
     --c-color-fill-normal: var(--c-color-indigo-fill-normal);
-    --c-color-border-normal: var(--c-color-indigo-border-normal);
-    --c-color-on-normal: var(--c-color-indigo-on-normal);
     --c-color-fill-loud: var(--c-color-indigo-fill-loud);
+    --c-color-border-quiet: var(--c-color-indigo-border-quiet);
+    --c-color-border-normal: var(--c-color-indigo-border-normal);
     --c-color-border-loud: var(--c-color-indigo-border-loud);
+    --c-color-on-quiet: var(--c-color-indigo-on-quiet);
+    --c-color-on-normal: var(--c-color-indigo-on-normal);
     --c-color-on-loud: var(--c-color-indigo-on-loud);
   }
 
+  :host([data-palette='violet']),
+  [data-palette='violet'],
   :host([data-color='violet']),
   [data-color='violet'] {
     --c-color-fill-quiet: var(--c-color-violet-fill-quiet);
-    --c-color-border-quiet: var(--c-color-violet-border-quiet);
-    --c-color-on-quiet: var(--c-color-violet-on-quiet);
     --c-color-fill-normal: var(--c-color-violet-fill-normal);
-    --c-color-border-normal: var(--c-color-violet-border-normal);
-    --c-color-on-normal: var(--c-color-violet-on-normal);
     --c-color-fill-loud: var(--c-color-violet-fill-loud);
+    --c-color-border-quiet: var(--c-color-violet-border-quiet);
+    --c-color-border-normal: var(--c-color-violet-border-normal);
     --c-color-border-loud: var(--c-color-violet-border-loud);
+    --c-color-on-quiet: var(--c-color-violet-on-quiet);
+    --c-color-on-normal: var(--c-color-violet-on-normal);
     --c-color-on-loud: var(--c-color-violet-on-loud);
   }
 
+  :host([data-palette='purple']),
+  [data-palette='purple'],
   :host([data-color='purple']),
   [data-color='purple'] {
     --c-color-fill-quiet: var(--c-color-purple-fill-quiet);
-    --c-color-border-quiet: var(--c-color-purple-border-quiet);
-    --c-color-on-quiet: var(--c-color-purple-on-quiet);
     --c-color-fill-normal: var(--c-color-purple-fill-normal);
-    --c-color-border-normal: var(--c-color-purple-border-normal);
-    --c-color-on-normal: var(--c-color-purple-on-normal);
     --c-color-fill-loud: var(--c-color-purple-fill-loud);
+    --c-color-border-quiet: var(--c-color-purple-border-quiet);
+    --c-color-border-normal: var(--c-color-purple-border-normal);
     --c-color-border-loud: var(--c-color-purple-border-loud);
+    --c-color-on-quiet: var(--c-color-purple-on-quiet);
+    --c-color-on-normal: var(--c-color-purple-on-normal);
     --c-color-on-loud: var(--c-color-purple-on-loud);
   }
 
+  :host([data-palette='fuchsia']),
+  [data-palette='fuchsia'],
   :host([data-color='fuchsia']),
   [data-color='fuchsia'] {
     --c-color-fill-quiet: var(--c-color-fuchsia-fill-quiet);
-    --c-color-border-quiet: var(--c-color-fuchsia-border-quiet);
-    --c-color-on-quiet: var(--c-color-fuchsia-on-quiet);
     --c-color-fill-normal: var(--c-color-fuchsia-fill-normal);
-    --c-color-border-normal: var(--c-color-fuchsia-border-normal);
-    --c-color-on-normal: var(--c-color-fuchsia-on-normal);
     --c-color-fill-loud: var(--c-color-fuchsia-fill-loud);
+    --c-color-border-quiet: var(--c-color-fuchsia-border-quiet);
+    --c-color-border-normal: var(--c-color-fuchsia-border-normal);
     --c-color-border-loud: var(--c-color-fuchsia-border-loud);
+    --c-color-on-quiet: var(--c-color-fuchsia-on-quiet);
+    --c-color-on-normal: var(--c-color-fuchsia-on-normal);
     --c-color-on-loud: var(--c-color-fuchsia-on-loud);
   }
 
+  :host([data-palette='pink']),
+  [data-palette='pink'],
   :host([data-color='pink']),
   [data-color='pink'] {
     --c-color-fill-quiet: var(--c-color-pink-fill-quiet);
-    --c-color-border-quiet: var(--c-color-pink-border-quiet);
-    --c-color-on-quiet: var(--c-color-pink-on-quiet);
     --c-color-fill-normal: var(--c-color-pink-fill-normal);
-    --c-color-border-normal: var(--c-color-pink-border-normal);
-    --c-color-on-normal: var(--c-color-pink-on-normal);
     --c-color-fill-loud: var(--c-color-pink-fill-loud);
+    --c-color-border-quiet: var(--c-color-pink-border-quiet);
+    --c-color-border-normal: var(--c-color-pink-border-normal);
     --c-color-border-loud: var(--c-color-pink-border-loud);
+    --c-color-on-quiet: var(--c-color-pink-on-quiet);
+    --c-color-on-normal: var(--c-color-pink-on-normal);
     --c-color-on-loud: var(--c-color-pink-on-loud);
   }
 
+  :host([data-palette='rose']),
+  [data-palette='rose'],
   :host([data-color='rose']),
   [data-color='rose'] {
     --c-color-fill-quiet: var(--c-color-rose-fill-quiet);
-    --c-color-border-quiet: var(--c-color-rose-border-quiet);
-    --c-color-on-quiet: var(--c-color-rose-on-quiet);
     --c-color-fill-normal: var(--c-color-rose-fill-normal);
-    --c-color-border-normal: var(--c-color-rose-border-normal);
-    --c-color-on-normal: var(--c-color-rose-on-normal);
     --c-color-fill-loud: var(--c-color-rose-fill-loud);
+    --c-color-border-quiet: var(--c-color-rose-border-quiet);
+    --c-color-border-normal: var(--c-color-rose-border-normal);
     --c-color-border-loud: var(--c-color-rose-border-loud);
+    --c-color-on-quiet: var(--c-color-rose-on-quiet);
+    --c-color-on-normal: var(--c-color-rose-on-normal);
     --c-color-on-loud: var(--c-color-rose-on-loud);
   }
 
+  :host([data-palette='white']),
+  [data-palette='white'],
   :host([data-color='white']),
   [data-color='white'] {
     --c-color-fill-quiet: var(--c-color-white-fill-quiet);
-    --c-color-border-quiet: var(--c-color-white-border-quiet);
-    --c-color-on-quiet: var(--c-color-white-on-quiet);
     --c-color-fill-normal: var(--c-color-white-fill-normal);
-    --c-color-border-normal: var(--c-color-white-border-normal);
-    --c-color-on-normal: var(--c-color-white-on-normal);
     --c-color-fill-loud: var(--c-color-white-fill-loud);
+    --c-color-border-quiet: var(--c-color-white-border-quiet);
+    --c-color-border-normal: var(--c-color-white-border-normal);
     --c-color-border-loud: var(--c-color-white-border-loud);
+    --c-color-on-quiet: var(--c-color-white-on-quiet);
+    --c-color-on-normal: var(--c-color-white-on-normal);
     --c-color-on-loud: var(--c-color-white-on-loud);
   }
 
+  :host([data-palette='gray']),
+  [data-palette='gray'],
   :host([data-color='gray']),
   [data-color='gray'] {
     --c-color-fill-quiet: var(--c-color-gray-fill-quiet);
-    --c-color-border-quiet: var(--c-color-gray-border-quiet);
-    --c-color-on-quiet: var(--c-color-gray-on-quiet);
     --c-color-fill-normal: var(--c-color-gray-fill-normal);
-    --c-color-border-normal: var(--c-color-gray-border-normal);
-    --c-color-on-normal: var(--c-color-gray-on-normal);
     --c-color-fill-loud: var(--c-color-gray-fill-loud);
+    --c-color-border-quiet: var(--c-color-gray-border-quiet);
+    --c-color-border-normal: var(--c-color-gray-border-normal);
     --c-color-border-loud: var(--c-color-gray-border-loud);
+    --c-color-on-quiet: var(--c-color-gray-on-quiet);
+    --c-color-on-normal: var(--c-color-gray-on-normal);
     --c-color-on-loud: var(--c-color-gray-on-loud);
   }
 
+  :host([data-palette='black']),
+  [data-palette='black'],
   :host([data-color='black']),
   [data-color='black'] {
     --c-color-fill-quiet: var(--c-color-black-fill-quiet);
-    --c-color-border-quiet: var(--c-color-black-border-quiet);
-    --c-color-on-quiet: var(--c-color-black-on-quiet);
     --c-color-fill-normal: var(--c-color-black-fill-normal);
-    --c-color-border-normal: var(--c-color-black-border-normal);
-    --c-color-on-normal: var(--c-color-black-on-normal);
     --c-color-fill-loud: var(--c-color-black-fill-loud);
+    --c-color-border-quiet: var(--c-color-black-border-quiet);
+    --c-color-border-normal: var(--c-color-black-border-normal);
     --c-color-border-loud: var(--c-color-black-border-loud);
+    --c-color-on-quiet: var(--c-color-black-on-quiet);
+    --c-color-on-normal: var(--c-color-black-on-normal);
     --c-color-on-loud: var(--c-color-black-on-loud);
   }
 
+  :host([data-palette='slate']),
+  [data-palette='slate'],
   :host([data-color='slate']),
   [data-color='slate'] {
     --c-color-fill-quiet: var(--c-color-slate-fill-quiet);
-    --c-color-border-quiet: var(--c-color-slate-border-quiet);
-    --c-color-on-quiet: var(--c-color-slate-on-quiet);
     --c-color-fill-normal: var(--c-color-slate-fill-normal);
-    --c-color-border-normal: var(--c-color-slate-border-normal);
-    --c-color-on-normal: var(--c-color-slate-on-normal);
     --c-color-fill-loud: var(--c-color-slate-fill-loud);
+    --c-color-border-quiet: var(--c-color-slate-border-quiet);
+    --c-color-border-normal: var(--c-color-slate-border-normal);
     --c-color-border-loud: var(--c-color-slate-border-loud);
+    --c-color-on-quiet: var(--c-color-slate-on-quiet);
+    --c-color-on-normal: var(--c-color-slate-on-normal);
     --c-color-on-loud: var(--c-color-slate-on-loud);
   }
 
+  :host([data-palette='neutral']),
+  [data-palette='neutral'],
   :host([data-color='neutral']),
   [data-color='neutral'] {
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-    --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-border-normal: var(--c-color-neutral-border-normal);
     --c-color-border-loud: var(--c-color-neutral-border-loud);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+    --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-on-loud: var(--c-color-neutral-on-loud);
   }
 
+  :host([data-palette='accent']),
+  [data-palette='accent'],
   :host([data-color='accent']),
   [data-color='accent'] {
     --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
-    --c-color-border-quiet: var(--c-color-accent-border-quiet);
-    --c-color-on-quiet: var(--c-color-accent-on-quiet);
     --c-color-fill-normal: var(--c-color-accent-fill-normal);
-    --c-color-border-normal: var(--c-color-accent-border-normal);
-    --c-color-on-normal: var(--c-color-accent-on-normal);
     --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
     --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
     --c-color-on-loud: var(--c-color-accent-on-loud);
   }
 
+  :host([data-palette='info']),
+  [data-palette='info'],
   :host([data-color='info']),
   [data-color='info'] {
     --c-color-fill-quiet: var(--c-color-info-fill-quiet);
-    --c-color-border-quiet: var(--c-color-info-border-quiet);
-    --c-color-on-quiet: var(--c-color-info-on-quiet);
     --c-color-fill-normal: var(--c-color-info-fill-normal);
-    --c-color-border-normal: var(--c-color-info-border-normal);
-    --c-color-on-normal: var(--c-color-info-on-normal);
     --c-color-fill-loud: var(--c-color-info-fill-loud);
+    --c-color-border-quiet: var(--c-color-info-border-quiet);
+    --c-color-border-normal: var(--c-color-info-border-normal);
     --c-color-border-loud: var(--c-color-info-border-loud);
+    --c-color-on-quiet: var(--c-color-info-on-quiet);
+    --c-color-on-normal: var(--c-color-info-on-normal);
     --c-color-on-loud: var(--c-color-info-on-loud);
   }
 
+  :host([data-palette='success']),
+  [data-palette='success'],
   :host([data-color='success']),
   [data-color='success'] {
     --c-color-fill-quiet: var(--c-color-success-fill-quiet);
-    --c-color-border-quiet: var(--c-color-success-border-quiet);
-    --c-color-on-quiet: var(--c-color-success-on-quiet);
     --c-color-fill-normal: var(--c-color-success-fill-normal);
-    --c-color-border-normal: var(--c-color-success-border-normal);
-    --c-color-on-normal: var(--c-color-success-on-normal);
     --c-color-fill-loud: var(--c-color-success-fill-loud);
+    --c-color-border-quiet: var(--c-color-success-border-quiet);
+    --c-color-border-normal: var(--c-color-success-border-normal);
     --c-color-border-loud: var(--c-color-success-border-loud);
+    --c-color-on-quiet: var(--c-color-success-on-quiet);
+    --c-color-on-normal: var(--c-color-success-on-normal);
     --c-color-on-loud: var(--c-color-success-on-loud);
   }
 
+  :host([data-palette='warning']),
+  [data-palette='warning'],
   :host([data-color='warning']),
   [data-color='warning'] {
     --c-color-fill-quiet: var(--c-color-warning-fill-quiet);
-    --c-color-border-quiet: var(--c-color-warning-border-quiet);
-    --c-color-on-quiet: var(--c-color-warning-on-quiet);
     --c-color-fill-normal: var(--c-color-warning-fill-normal);
-    --c-color-border-normal: var(--c-color-warning-border-normal);
-    --c-color-on-normal: var(--c-color-warning-on-normal);
     --c-color-fill-loud: var(--c-color-warning-fill-loud);
+    --c-color-border-quiet: var(--c-color-warning-border-quiet);
+    --c-color-border-normal: var(--c-color-warning-border-normal);
     --c-color-border-loud: var(--c-color-warning-border-loud);
+    --c-color-on-quiet: var(--c-color-warning-on-quiet);
+    --c-color-on-normal: var(--c-color-warning-on-normal);
     --c-color-on-loud: var(--c-color-warning-on-loud);
   }
 
+  :host([data-palette='danger']),
+  [data-palette='danger'],
   :host([data-color='danger']),
   [data-color='danger'] {
     --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
-    --c-color-border-quiet: var(--c-color-danger-border-quiet);
-    --c-color-on-quiet: var(--c-color-danger-on-quiet);
     --c-color-fill-normal: var(--c-color-danger-fill-normal);
-    --c-color-border-normal: var(--c-color-danger-border-normal);
-    --c-color-on-normal: var(--c-color-danger-on-normal);
     --c-color-fill-loud: var(--c-color-danger-fill-loud);
+    --c-color-border-quiet: var(--c-color-danger-border-quiet);
+    --c-color-border-normal: var(--c-color-danger-border-normal);
     --c-color-border-loud: var(--c-color-danger-border-loud);
+    --c-color-on-quiet: var(--c-color-danger-on-quiet);
+    --c-color-on-normal: var(--c-color-danger-on-normal);
     --c-color-on-loud: var(--c-color-danger-on-loud);
   }
 `;
@@ -380,78 +434,78 @@ export const variantStyles = css`
   :host([variant~='neutral']),
   [data-variant~='neutral'] {
     --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
-    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
-    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
     --c-color-fill-normal: var(--c-color-neutral-fill-normal);
-    --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-border-normal: var(--c-color-neutral-border-normal);
     --c-color-border-loud: var(--c-color-neutral-border-loud);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+    --c-color-on-normal: var(--c-color-neutral-on-normal);
     --c-color-on-loud: var(--c-color-neutral-on-loud);
   }
 
   :host([variant~='accent']),
   [data-variant~='accent'] {
     --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
-    --c-color-border-quiet: var(--c-color-accent-border-quiet);
-    --c-color-on-quiet: var(--c-color-accent-on-quiet);
     --c-color-fill-normal: var(--c-color-accent-fill-normal);
-    --c-color-border-normal: var(--c-color-accent-border-normal);
-    --c-color-on-normal: var(--c-color-accent-on-normal);
     --c-color-fill-loud: var(--c-color-accent-fill-loud);
+    --c-color-border-quiet: var(--c-color-accent-border-quiet);
+    --c-color-border-normal: var(--c-color-accent-border-normal);
     --c-color-border-loud: var(--c-color-accent-border-loud);
+    --c-color-on-quiet: var(--c-color-accent-on-quiet);
+    --c-color-on-normal: var(--c-color-accent-on-normal);
     --c-color-on-loud: var(--c-color-accent-on-loud);
   }
 
   :host([variant~='info']),
   [data-variant~='info'] {
     --c-color-fill-quiet: var(--c-color-info-fill-quiet);
-    --c-color-border-quiet: var(--c-color-info-border-quiet);
-    --c-color-on-quiet: var(--c-color-info-on-quiet);
     --c-color-fill-normal: var(--c-color-info-fill-normal);
-    --c-color-border-normal: var(--c-color-info-border-normal);
-    --c-color-on-normal: var(--c-color-info-on-normal);
     --c-color-fill-loud: var(--c-color-info-fill-loud);
+    --c-color-border-quiet: var(--c-color-info-border-quiet);
+    --c-color-border-normal: var(--c-color-info-border-normal);
     --c-color-border-loud: var(--c-color-info-border-loud);
+    --c-color-on-quiet: var(--c-color-info-on-quiet);
+    --c-color-on-normal: var(--c-color-info-on-normal);
     --c-color-on-loud: var(--c-color-info-on-loud);
   }
 
   :host([variant~='success']),
   [data-variant~='success'] {
     --c-color-fill-quiet: var(--c-color-success-fill-quiet);
-    --c-color-border-quiet: var(--c-color-success-border-quiet);
-    --c-color-on-quiet: var(--c-color-success-on-quiet);
     --c-color-fill-normal: var(--c-color-success-fill-normal);
-    --c-color-border-normal: var(--c-color-success-border-normal);
-    --c-color-on-normal: var(--c-color-success-on-normal);
     --c-color-fill-loud: var(--c-color-success-fill-loud);
+    --c-color-border-quiet: var(--c-color-success-border-quiet);
+    --c-color-border-normal: var(--c-color-success-border-normal);
     --c-color-border-loud: var(--c-color-success-border-loud);
+    --c-color-on-quiet: var(--c-color-success-on-quiet);
+    --c-color-on-normal: var(--c-color-success-on-normal);
     --c-color-on-loud: var(--c-color-success-on-loud);
   }
 
   :host([variant~='warning']),
   [data-variant~='warning'] {
     --c-color-fill-quiet: var(--c-color-warning-fill-quiet);
-    --c-color-border-quiet: var(--c-color-warning-border-quiet);
-    --c-color-on-quiet: var(--c-color-warning-on-quiet);
     --c-color-fill-normal: var(--c-color-warning-fill-normal);
-    --c-color-border-normal: var(--c-color-warning-border-normal);
-    --c-color-on-normal: var(--c-color-warning-on-normal);
     --c-color-fill-loud: var(--c-color-warning-fill-loud);
+    --c-color-border-quiet: var(--c-color-warning-border-quiet);
+    --c-color-border-normal: var(--c-color-warning-border-normal);
     --c-color-border-loud: var(--c-color-warning-border-loud);
+    --c-color-on-quiet: var(--c-color-warning-on-quiet);
+    --c-color-on-normal: var(--c-color-warning-on-normal);
     --c-color-on-loud: var(--c-color-warning-on-loud);
   }
 
   :host([variant~='danger']),
   [data-variant~='danger'] {
     --c-color-fill-quiet: var(--c-color-danger-fill-quiet);
-    --c-color-border-quiet: var(--c-color-danger-border-quiet);
-    --c-color-on-quiet: var(--c-color-danger-on-quiet);
     --c-color-fill-normal: var(--c-color-danger-fill-normal);
-    --c-color-border-normal: var(--c-color-danger-border-normal);
-    --c-color-on-normal: var(--c-color-danger-on-normal);
     --c-color-fill-loud: var(--c-color-danger-fill-loud);
+    --c-color-border-quiet: var(--c-color-danger-border-quiet);
+    --c-color-border-normal: var(--c-color-danger-border-normal);
     --c-color-border-loud: var(--c-color-danger-border-loud);
+    --c-color-on-quiet: var(--c-color-danger-on-quiet);
+    --c-color-on-normal: var(--c-color-danger-on-normal);
     --c-color-on-loud: var(--c-color-danger-on-loud);
   }
 `;
