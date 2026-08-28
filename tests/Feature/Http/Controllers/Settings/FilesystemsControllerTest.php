@@ -150,7 +150,7 @@ test('edit loads existing filesystem by handle', function () {
         'settings' => [
             'path' => sys_get_temp_dir().'/test-filesystem',
             'hasUrls' => false,
-            'url' => '@web/uploads',
+            'url' => 'https://example.test/uploads',
         ],
     ]);
 
@@ -164,7 +164,7 @@ test('edit loads existing filesystem by handle', function () {
             ->where('form.values.handle', 'testFilesystem')
             ->where('form.values.oldHandle', 'testFilesystem')
             ->where('form.values.settings.path', File::normalizePath(sys_get_temp_dir().'/test-filesystem', '/'))
-            ->where('form.values.settings.url', '@web/uploads')
+            ->where('form.values.settings.url', 'https://example.test/uploads')
             ->where('form.nodes', fn ($nodes): bool => collect(filesystemFormControls(collect($nodes)->all()))
                 ->pluck('path')
                 ->doesntContain(['settings', 'url'])));
@@ -214,7 +214,7 @@ test('refreshes filesystem settings without saving', function () {
             'oldHandle' => null,
             'settings' => [
                 'hasUrls' => true,
-                'url' => '@web/uploads',
+                'url' => 'https://example.test/uploads',
                 'path' => sys_get_temp_dir().'/uploads',
             ],
         ],
@@ -222,7 +222,7 @@ test('refreshes filesystem settings without saving', function () {
     ])->assertOk()
         ->assertJsonPath('form.scope', [])
         ->assertJsonPath('form.values.name', 'Uploads')
-        ->assertJsonPath('form.values.settings.url', '@web/uploads');
+        ->assertJsonPath('form.values.settings.url', 'https://example.test/uploads');
 
     expect(Filesystems::getFilesystemByHandle('uploads'))->toBeNull();
 });
@@ -235,7 +235,7 @@ test('refresh omits controls that do not apply to the current settings', functio
         'oldHandle' => null,
         'settings' => [
             'hasUrls' => false,
-            'url' => '@web/uploads',
+            'url' => 'https://example.test/uploads',
             'path' => sys_get_temp_dir().'/uploads',
         ],
     ];

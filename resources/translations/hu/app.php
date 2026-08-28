@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'A Beépülőmodul-áruház nem érhető el, próbálkozz később újra.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'A válaszadás e-mail címe, amelyet a Craft CMS használjon az e-mail küldéséhez.',
     'The URI can’t begin with the {setting} config setting.' => 'Az URI nem kezdődhet {setting} konfigurációs beállítással.',
-    'The `@web` alias is not recommended.' => 'A „@web” alias nem ajánlott.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'A GraphQL API-vel küldendő `Authorization` fejléc igényli a token használatát.',
     'The allowed values are [{values}]' => 'Engedélyezett értékek: [{values}]',
     'The asset you’re trying to download does not exist.' => 'A letölteni kívánt tartalom nem létezik.',

@@ -51,6 +51,15 @@ it('supports moved deprecated config settings', function(): void {
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
 
+it('supports adapter resource settings', function(): void {
+    $config = GeneralConfig::create()
+        ->resourceBasePath('@custom/cpresources')
+        ->resourceBaseUrl('https://example.test/cpresources');
+
+    expect($config->resourceBasePath)->toBe('@custom/cpresources')
+        ->and($config->resourceBaseUrl)->toBe('https://example.test/cpresources');
+});
+
 it('converts callable general config and application type overlays', function(): void {
     $config = new GeneralConfigCompatibility()->convert(
         fn(GeneralConfig $config) => $config->cpTrigger('control'),

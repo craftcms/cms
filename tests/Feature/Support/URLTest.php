@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Url;
 
 beforeEach(function () {
-    Aliases::set('@web', 'https://localhost');
-
     swapUrlRequest('https://localhost/news');
 });
 
@@ -326,6 +323,7 @@ describe('base and control panel helpers', function () {
 
         expect(Url::baseUrl())->toBe('https://localhost/')
             ->and(Url::baseSiteUrl())->toBe('https://localhost/')
+            ->and(Url::baseCpUrl())->toBe('https://localhost/')
             ->and(Url::host())->toBe('https://localhost')
             ->and(Url::siteHost())->toBe('https://localhost');
 
