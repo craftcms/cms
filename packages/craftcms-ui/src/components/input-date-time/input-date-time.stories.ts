@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/web-components-vite';
+import type {Decorator, Meta, StoryObj} from '@storybook/web-components';
 
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
@@ -21,15 +21,23 @@ type InputDateTimeArgs = CraftInputDateTime & typeof args;
 
 /**
  * The component carries no label of its own, so every example sits in a
- * `craft-field` — which is how it is always used, and what gives the date and
- * time inputs an accessible name.
+ * `craft-field` — which is how it is always used, and what gives the pair a
+ * name.
+ *
+ * A story that renders its own field sets `parameters.ownField` to opt out.
+ * Story-level decorators are additive rather than overriding, so opting out
+ * has to be a parameter the shared decorator checks; returning `story()` from
+ * a story's own decorator would still leave this one wrapping it.
  */
-const inField = (story: () => unknown) => html`
-  <craft-field>
-    <label slot="label">Post Date</label>
-    ${story()}
-  </craft-field>
-`;
+const inField: Decorator = (story, context) =>
+  context.parameters.ownField
+    ? story()
+    : html`
+        <craft-field>
+          <label slot="label">Post Date</label>
+          ${story()}
+        </craft-field>
+      `;
 
 const meta = {
   title: 'Controls/Input Date Time',
@@ -130,8 +138,7 @@ export const WithSlottedContent: Story = {
  * handling. Every example on this page is wrapped the same way.
  */
 export const InAField: Story = {
-  parameters: {controls: {disable: true}},
-  decorators: [(story) => story()],
+  parameters: {controls: {disable: true}, ownField: true},
   render: () => html`
     <craft-field>
       <label slot="label">Post Date</label>
