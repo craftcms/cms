@@ -193,7 +193,7 @@ your shadow root can ask for by attribute:
 html`<div class="callout__action" data-variant=${this.variant}></div>`;
 ```
 
-That's the shadow-DOM twin of the `[data-color]` rules in
+That's the shadow-DOM twin of the `[data-palette]` rules in
 `shared/colorable.css`, which only reach light DOM. The tokens are ordinary
 custom properties, so a region set this way overrides the palette it inherits
 from the host — and a region that should stay neutral while the host is
@@ -235,47 +235,107 @@ appearance: AppearanceKey = Appearance.Fill;
 
 ## Using tokens from Tailwind
 
-The semantic color tokens are republished into Tailwind's `--color-*` namespace
-by `@craftcms/ui/tailwind.css`, so each one has a matching set of utility
-classes. The token name _is_ the utility name — drop the `--c-color-` prefix,
-and what's left is what you type:
+`@craftcms/ui/tailwind.css` publishes the design tokens as utility classes,
+every one of them under a `c-` prefix. The prefix is what lets Craft's
+utilities and stock Tailwind share a stylesheet: Tailwind's own `prefix()`
+option applies to an entire build, and the CP writes plain Tailwind (`flex`,
+`gap-2`, `p-4`) everywhere, so the prefix lives in the class names instead. It
+also means `c-bg-loud` reads unmistakably as a Craft token utility sitting next
+to a raw `bg-white`.
 
-| Token                            | Utilities                                           |
-| -------------------------------- | --------------------------------------------------- |
-| `--c-color-neutral-border-quiet` | `border-neutral-border-quiet`, `divide-…`, `ring-…` |
-| `--c-color-danger-fill-normal`   | `bg-danger-fill-normal`                             |
-| `--c-color-accent-on-loud`       | `text-accent-on-loud`                               |
+### Colors
 
-The generic tokens are mapped too, which is usually what you want inside a
-component: `bg-fill-quiet`, `border-border-normal`, and `text-on-loud` paint
-with whatever the nearest `[data-color]` or `variant` resolved to, rather than
-naming a color up front.
+Color utilities read as `c-<property>-[group-]<strength>`. A token's _role_
+is implied by the property rather than repeated in the class name — `fill`
+paints backgrounds, `border` paints borders, and `on` paints the text that sits
+_on_ a fill:
 
-The mapping is `@theme inline`, so the utilities reference the custom
-properties rather than snapshotting their values — `[data-theme='dark']` and
-`[data-color]` both keep working through them.
+| Utility                  | Token                           |
+| ------------------------ | ------------------------------- |
+| `c-bg-danger-normal`     | `--c-color-danger-fill-normal`  |
+| `c-border-accent-quiet`  | `--c-color-accent-border-quiet` |
+| `c-text-on-neutral-loud` | `--c-color-neutral-on-loud`     |
+| `c-text-neutral-loud`    | `--c-color-neutral-fill-loud`   |
+
+Text is the one property that takes two roles. `c-text-*` inks with the fill
+color, for text that carries the color itself; `c-text-on-*` inks with the
+color meant to stay legible _against_ that fill, for text sitting on top of it:
+
+```html
+<!-- danger-colored text on the page background -->
+<p class="c-text-danger-loud">Something went wrong</p>
+
+<!-- text on a danger-colored fill -->
+<div class="c-bg-danger-loud c-text-on-danger-loud">Something went wrong</div>
+```
+
+Omit the group and you get the generic tokens, which is usually what you want
+inside a component: `c-bg-quiet`, `c-border-normal`, and `c-text-on-loud` paint
+with whatever the nearest palette or `variant` resolved to, rather than naming
+a color up front.
+
+`c-border-*` sets `border-color` only, exactly as Tailwind's own color
+utilities do — pair it with `border` for a width.
 
 Scope is deliberately narrow: the six semantic groups plus the generic tokens.
 The raw palette (`--c-color-red-*` and friends) is still reachable from CSS and
-from `[data-color]`, it just doesn't get utility classes.
+from a palette selector, it just doesn't get utility classes.
+
+### Palette selectors
+
+`c-palette-*` puts an element — and everything under it — into a color group,
+remapping the generic tokens to that group's:
+
+```html
+<div class="c-palette-danger">
+  <!-- c-bg-quiet is now danger's quiet fill -->
+  <span class="c-bg-quiet c-text-on-quiet">…</span>
+</div>
+```
+
+`[data-palette='danger']` does the same thing from an attribute, for markup
+that is easier to set programmatically. The Craft 5 spellings `.cp-color-*` and
+`[data-color]` still work and resolve to the same rule.
+
+This is a different axis from `[data-theme='dark']`, which selects the
+light/dark color scheme — which is why the palette attribute isn't called
+`data-theme`.
 
 ### Spacing
 
-The named steps on the spacing scale are mapped into Tailwind's `--spacing-*`
-namespace, so they work everywhere a spacing utility does — `p-sm`, `gap-md`,
-`mt-lg`, `-mx-xs`, `size-xl`, `space-y-2xl`:
+Spacing reads as `c-<stem>-<step>` across padding, margin, and gap. The stems
+match Tailwind's own, so `c-px-*` is logical (`padding-inline`) and `c-pl-*` is
+physical:
 
-| Token              | Utilities                    |
-| ------------------ | ---------------------------- |
-| `--c-spacing-sm`   | `p-sm`, `gap-sm`, `mx-sm`, … |
-| `--c-spacing-2xl`  | `p-2xl`, `mt-2xl`, …         |
-| `--c-spacing-1px`  | `p-1px`, `gap-1px`, …        |
+| Token             | Utilities                          |
+| ----------------- | ---------------------------------- |
+| `--c-spacing-sm`  | `c-p-sm`, `c-gap-sm`, `c-mx-sm`, … |
+| `--c-spacing-2xl` | `c-p-2xl`, `c-mt-2xl`, …           |
+| `--c-spacing-1px` | `c-p-1px`, `c-gap-1px`, …          |
 
 The numeric scale is untouched — `p-4` still resolves through Tailwind's own
-`--spacing` base. That base is deliberately *not* mapped: in Tailwind v4 a bare
-`--spacing` is what generates the numeric utilities, so pointing it at
-`--c-spacing` would rewrite every numeric spacing utility in the CP rather than
-adding to them.
+`--spacing` base. The scale's `--c-spacing` base gets no utilities of its own:
+it's the unit the named steps multiply, not a step you'd reach for on an
+element.
+
+### How it's wired up
+
+The utilities are `@utility` rules that reference the `--c-*` custom properties
+rather than snapshotting their values, so `[data-theme='dark']` overrides and
+palette context both flow through them untouched. That does mean the token
+values have to be in scope — `styles/cp.css` provides them — and that
+`tailwind.css` has to be imported _outside_ a layer, since `@utility` is only
+valid at the top level of a stylesheet:
+
+```css
+@layer theme, base, components, cp, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import '@craftcms/ui/styles/cp.css' layer(cp);
+@import '@craftcms/ui/tailwind.css';
+```
+
+Tailwind places what it generates into the `utilities` layer either way.
 
 `tailwind.css` is generated by `scripts/generate-tailwind.js` (colors come
 from `src/constants/colors.data.ts`, the same source as `shared/colorable.css`),
