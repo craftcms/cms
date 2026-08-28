@@ -113,12 +113,12 @@
     :submit-label="hasMissingItems ? t('Delete them') : t('OK')"
     @submit="handleSubmit"
   >
-    <div class="grid gap-3">
+    <div class="cp:grid cp:gap-3">
       <template v-if="reviewSession.skippedEntries">
         <div>
-          <h2 class="mb-2">{{ t('Skipped files') }}</h2>
+          <h2 class="cp:mb-2">{{ t('Skipped files') }}</h2>
           <p>{{ t('The following items were not indexed.') }}</p>
-          <ul class="my-2">
+          <ul class="cp:my-2">
             <li v-for="entry in reviewSession.skippedEntries" :key="entry">
               <code>{{ entry }}</code>
             </li>
@@ -132,7 +132,7 @@
             <h2>{{ missingItemsHeading('folders', {items: 'folders'}) }}</h2>
             <p>{{ missingItemsCopy('folders', {items: 'folders'}) }}</p>
             <CheckboxGroup
-              class="my-2"
+              class="cp:my-2"
               :label="t('Delete folders')"
               :model-value="formData.deleteFolder?.map(String) ?? []"
               :options="deleteFolderOptions"
@@ -147,7 +147,7 @@
             <h2>{{ missingItemsHeading('files', {items: 'files'}) }}</h2>
             <p>{{ missingItemsCopy('files', {items: 'files'}) }}</p>
             <CheckboxGroup
-              class="my-2"
+              class="cp:my-2"
               :label="t('Delete assets')"
               :model-value="formData.deleteAsset?.map(String) ?? []"
               :options="deleteAssetOptions"

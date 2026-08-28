@@ -10,7 +10,7 @@
   } %}
     {% block input %}
       {% import '_includes/forms.twig' as forms %}
-      <div class="flex flex-nowrap">
+      <div class="cp:flex cp:flex-nowrap">
         {{ forms.text({
           class: 'code auth-totp-code',
           id: 'verification-code',

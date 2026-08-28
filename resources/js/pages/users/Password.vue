@@ -43,9 +43,9 @@
 <template>
   <UserScreen>
     <craft-pane appearance="raised" :padding="0">
-      <div class="grid gap-6 p-4 min-w-0">
-        <section class="grid gap-3 min-w-0">
-          <h2 class="text-base">{{ t('Change your Password') }}</h2>
+      <div class="cp:grid cp:gap-6 cp:p-4 cp:min-w-0">
+        <section class="cp:grid cp:gap-3 cp:min-w-0">
+          <h2 class="cp:text-base">{{ t('Change your Password') }}</h2>
 
           <craft-field-group>
             <CraftInputPassword
@@ -61,9 +61,9 @@
 
         <hr />
 
-        <section class="grid gap-3 min-w-0">
+        <section class="cp:grid cp:gap-3 cp:min-w-0">
           <div>
-            <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
+            <h2 class="cp:text-base">{{ t('Two-Step Verification') }}</h2>
             <p>
               {{
                 t(

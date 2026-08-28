@@ -8,15 +8,15 @@ const ROOT = resolve(__dirname, '..');
 const OUT_FILE = resolve(ROOT, 'tailwind.css');
 
 /**
- * The namespace every Craft utility carries, echoing the `--c-*` token prefix.
+ * Utility names are written bare here. The CP's CSS entry sets Tailwind's
+ * `prefix(cp)`, which stamps `cp:` onto every class it generates — Craft's
+ * and Tailwind's alike — so `bg-loud` below is typed as `cp:bg-loud`.
  *
- * These are deliberately *not* Tailwind's own `prefix()` option: that applies
- * to a whole build, and the CP writes plain Tailwind (`flex`, `gap-2`, `p-4`)
- * everywhere. Prefixing the class names themselves is what lets both live in
- * one stylesheet, and makes `c-bg-loud` legible as a Craft token utility next
- * to a raw `bg-white`.
+ * The prefix deliberately isn't `c`: under `prefix(c)` Tailwind renames its
+ * own theme variables into `--c-*`, which is Craft's token namespace, and
+ * eight of them (`--c-text-sm`, `--c-radius-sm`, …) would land on Craft
+ * tokens of the same name carrying different values.
  */
-const PREFIX = 'c';
 
 /** The three intensities every colorable token group exposes. */
 const strengths = ['quiet', 'normal', 'loud'];
@@ -60,7 +60,7 @@ const spacingProperties = [
 
 function utility(name, declarations) {
   return [
-    `@utility ${PREFIX}-${name} {`,
+    `@utility ${name} {`,
     ...declarations.map(([property, value]) => `  ${property}: ${value};`),
     '}',
   ].join('\n');
@@ -127,49 +127,37 @@ function generateUtilities(semanticColors) {
 /**
  * Craft CMS Control Panel — Tailwind v4 utilities.
  *
- * Craft's design tokens as utility classes, all under a \`c-\` prefix so a
- * Craft utility is never mistaken for a stock Tailwind one — and so the two
- * can coexist in a single build, which Tailwind's own \`prefix()\` option
- * would not allow.
+ * Craft's design tokens as utility classes. The names are written bare; the
+ * CP's CSS entry sets Tailwind's \`prefix(cp)\`, so every class here is typed
+ * with a \`cp:\` prefix — \`cp:bg-loud\`, \`cp:p-md\` — alongside stock
+ * Tailwind, which the same prefix covers (\`cp:flex\`, \`cp:gap-2\`).
  *
- * Colors read as \`c-<property>-[group-]<strength>\`. The token's *role* is
+ * Colors read as \`<property>-[group-]<strength>\`. The token's *role* is
  * implied by the property rather than repeated in the class name:
  *
- *     c-bg-loud                background-color: --c-color-fill-loud
- *     c-bg-danger-normal       background-color: --c-color-danger-fill-normal
- *     c-border-accent-quiet    border-color:     --c-color-accent-border-quiet
- *     c-text-loud              color:            --c-color-fill-loud
- *     c-text-on-loud           color:            --c-color-on-loud
- *     c-text-on-neutral-loud   color:            --c-color-neutral-on-loud
+ *     cp:bg-loud                background-color: --c-color-fill-loud
+ *     cp:bg-danger-normal       background-color: --c-color-danger-fill-normal
+ *     cp:border-accent-quiet    border-color:     --c-color-accent-border-quiet
+ *     cp:text-loud              color:            --c-color-fill-loud
+ *     cp:text-on-loud           color:            --c-color-on-loud
+ *     cp:text-on-neutral-loud   color:            --c-color-neutral-on-loud
  *
- * Text is the one property that takes two roles: \`c-text-*\` inks with the
- * fill color, \`c-text-on-*\` inks with the color meant to stay legible on
- * top of that fill.
+ * Text is the one property that takes two roles: \`text-*\` inks with the
+ * fill color, \`text-on-*\` with the color meant to stay legible on top of
+ * that fill.
  *
  * Omitting the group targets the generic tokens, which hold whatever the
- * nearest \`[data-color]\` / \`variant\` resolved to — so \`c-bg-quiet\`
- * paints with the current context's quiet fill instead of naming a color.
+ * nearest palette or \`variant\` resolved to — so \`cp:bg-quiet\` paints
+ * with the current context's quiet fill instead of naming a color.
  *
- * Spacing reads as \`c-<stem>-<step>\` across padding, margin, and gap:
- * \`c-p-md\`, \`c-gap-lg\`, \`c-mt-2xl\`. Stems match Tailwind's own, so
- * \`c-px-*\` is logical (\`padding-inline\`) and \`c-pl-*\` is physical.
+ * Spacing reads as \`<stem>-<step>\` across padding, margin, and gap:
+ * \`cp:p-md\`, \`cp:gap-lg\`, \`cp:mt-2xl\`. Stems match Tailwind's own,
+ * so \`px-*\` is logical (\`padding-inline\`) and \`pl-*\` is physical.
  *
- * Usage in a CSS entry file:
- *
- *     @layer theme, base, components, cp, utilities;
- *     @import 'tailwindcss/theme.css' layer(theme);
- *     @import 'tailwindcss/utilities.css' layer(utilities);
- *     @import '@craftcms/ui/styles/cp.css' layer(cp);  // :root token values
- *     @import '@craftcms/ui/tailwind.css';
- *
- * That last import takes no \`layer()\`: \`@utility\` is only valid at the
- * top level of a stylesheet, and a \`layer()\` import would nest it. Tailwind
- * places what it generates into the \`utilities\` layer either way.
- *
- * The \`--c-*\` variables have to be in scope (via \`cp.css\`) for the
- * \`var()\`s below to resolve. Referencing them rather than their values is
- * what lets \`[data-theme='dark']\` overrides and \`[data-color]\` context
- * flow through untouched.
+ * This file is imported by \`resources/css/utilities.css\`, which is where
+ * the prefix and the token values it resolves against are set up. It has to
+ * be imported *outside* a layer: \`@utility\` may not be nested, and
+ * Tailwind places what it generates into the \`utilities\` layer regardless.
  */
 
 ${sections.join('\n\n')}

@@ -75,7 +75,7 @@ class Matrix extends Control
                 ? $renderer->renderNestedForm($form)
                 : Html::tag('craft-spinner', '', ['label' => t('Loading')]);
             $titlebar = Html::tag('div',
-                Html::tag('div', Html::encode($label), ['class' => ['blocktype', 'flex', 'flex-nowrap', 'flex-gap-xs']])
+                Html::tag('div', Html::encode($label), ['class' => ['blocktype', 'cp:flex', 'cp:flex-nowrap', 'flex-gap-xs']])
                 .Html::tag('div', '', ['class' => 'preview']),
                 ['class' => 'titlebar'],
             );

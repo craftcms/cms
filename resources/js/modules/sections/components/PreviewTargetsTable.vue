@@ -35,7 +35,7 @@
       }),
       columnHelper.text('urlFormat', {
         header: t('URL Format'),
-        class: 'font-mono text-xs',
+        class: 'cp:font-mono cp:text-xs',
         disabled: () => props.disabled,
       }),
       columnHelper.lightswitch('refresh', {
@@ -52,7 +52,7 @@
           h(
             'div',
             {
-              class: 'flex justify-end gap-2',
+              class: 'cp:flex cp:justify-end cp:gap-2',
             },
             [
               h(DeleteButton, {
@@ -87,13 +87,13 @@
   </craft-pane>
   <div
     v-if="!disabled"
-    class="border border-dashed c-border-neutral-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
+    class="cp:border cp:border-dashed cp:border-neutral-quiet cp:rounded-bl-md cp:rounded-br-md cp:border-t-0 cp:p-1 cp:pt-2 cp:-mt-1"
   >
     <craft-button
       type="button"
       size="small"
       @click="addPreviewTarget"
-      class="w-full"
+      class="cp:w-full"
       variant="plain"
     >
       {{ t('Add a target') }}

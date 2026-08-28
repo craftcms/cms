@@ -183,7 +183,7 @@
           .choiceValue="option.value"
           :disabled="!editable || (value === 'all' && option.value !== 'all')"
         >
-          <label slot="label" :class="{'font-bold': option.value === 'all'}">
+          <label slot="label" :class="{'cp:font-bold': option.value === 'all'}">
             {{ option.label }}
           </label>
         </craft-checkbox>

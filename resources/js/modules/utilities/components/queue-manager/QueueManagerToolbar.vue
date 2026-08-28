@@ -72,7 +72,7 @@
       <craft-icon name="arrow-left" slot="prefix"></craft-icon>
       {{ t('Back') }}
     </CpLink>
-    <div class="grow"></div>
+    <div class="cp:grow"></div>
     <RetryJobButton v-if="isRetryable" :job="activeJob" size="default" />
     <ReleaseJobButton
       :job="activeJob"

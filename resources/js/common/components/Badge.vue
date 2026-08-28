@@ -18,7 +18,7 @@
 </script>
 
 <template>
-  <craft-callout :variant="variant" size="small" class="items-center" inline>
+  <craft-callout :variant="variant" size="small" class="cp:items-center" inline>
     <craft-indicator slot="icon" :variant="indicatorVariant"></craft-indicator>
     <span><slot></slot></span>
   </craft-callout>

@@ -60,7 +60,7 @@
 </script>
 
 <template>
-  <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
+  <craft-breadcrumbs :label="t('Breadcrumbs')" class="cp:text-xs">
     <craft-breadcrumb-item
       v-for="(item, idx) in items"
       :key="idx"

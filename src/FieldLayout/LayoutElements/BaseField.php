@@ -230,14 +230,14 @@ abstract class BaseField extends FieldLayoutElement
                 'class' => 'fld-attribute',
             ]).
             Html::tag('div', $this->attribute(), [
-                'class' => ['text-xs', 'font-light', 'font-mono', 'fld-attribute-label'],
+                'class' => ['cp:text-xs', 'cp:font-light', 'cp:font-mono', 'fld-attribute-label'],
                 'title' => $this->attribute(),
             ]).
             Html::endTag('div'); // .fld-attribute
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-1', 'mt-1'],
+                'class' => ['fld-field-indicators', 'cp:flex', 'cp:flex-nowrap', 'cp:gap-1', 'cp:mt-1'],
             ]);
         }
 

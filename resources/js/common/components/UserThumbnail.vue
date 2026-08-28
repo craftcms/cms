@@ -30,7 +30,7 @@
     data-color="white"
     :class="{
       'user-thumbnail': true,
-      'rounded-full': true,
+      'cp:rounded-full': true,
       [sizeClass]: true,
     }"
   />

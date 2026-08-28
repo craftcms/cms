@@ -27,16 +27,16 @@ class Heading implements Node
     public static function renderHtml(NodePayload $node, FormPayload $payload, FormHtmlRenderer $renderer): string
     {
         $heading = Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
-            'class' => ['my-0'],
+            'class' => ['cp:my-0'],
         ]);
         $description = $node->props['description'] === null
             ? ''
             : Html::tag('p', Html::encode($node->props['description']), [
-                'class' => ['my-0', 'text-sm', 'c-text-on-neutral-quiet'],
+                'class' => ['cp:my-0', 'cp:text-sm', 'cp:text-on-neutral-quiet'],
             ]);
 
         return Html::tag('div', $heading.$description, [
-            'class' => ['grid', 'gap-1', "width-{$node->props['width']}"],
+            'class' => ['cp:grid', 'cp:gap-1', "width-{$node->props['width']}"],
             'data-form-node' => $node->uid,
         ]);
     }

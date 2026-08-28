@@ -41,7 +41,7 @@
           v-if="callouts?.includes('envVars')"
           variant="info"
           appearance="plain"
-          class="p-0"
+          class="cp:p-0"
           icon="lightbulb"
         >
           {{ t('This can begin with an environment variable.') }}

@@ -11,14 +11,14 @@
 
 <template>
   <div
-    class="flex flex-col items-center justify-center py-4 px-2 text-quiet gap-1"
+    class="cp:flex cp:flex-col cp:items-center cp:justify-center cp:py-4 cp:px-2 text-quiet cp:gap-1"
   >
-    <div lang="en" class="flex items-center gap-2">
+    <div lang="en" class="cp:flex cp:items-center cp:gap-2">
       Craft CMS {{ app.version }}
     </div>
     <a :href="`${cpUrl}/plugin-store/upgrade-craft`" class="edition-logo">
       <span aria-hidden="true">{{ app.edition.name }}</span>
-      <span class="sr-only">{{ fullEditionName }}</span>
+      <span class="cp:sr-only">{{ fullEditionName }}</span>
     </a>
   </div>
 </template>

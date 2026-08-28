@@ -122,7 +122,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="cp:grid cp:place-items-center cp:min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">

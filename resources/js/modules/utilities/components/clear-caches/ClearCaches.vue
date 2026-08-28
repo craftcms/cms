@@ -35,8 +35,8 @@
 </script>
 
 <template>
-  <div class="p-4">
-    <h2 class="mb-3">{{ t('Clear Caches') }}</h2>
+  <div class="cp:p-4">
+    <h2 class="cp:mb-3">{{ t('Clear Caches') }}</h2>
 
     <Form
       method="post"
@@ -61,7 +61,7 @@
         :allow-select-all="true"
       />
 
-      <div class="mt-4 flex gap-2 items-center">
+      <div class="cp:mt-4 cp:flex cp:gap-2 cp:items-center">
         <craft-button type="submit" :loading="processing">
           {{ t('Clear caches') }}
         </craft-button>
@@ -71,7 +71,7 @@
               variant="success"
               icon="circle-check"
               appearance="plain"
-              class="p-0"
+              class="cp:p-0"
             >
               {{ t('Caches cleared.') }}
             </craft-callout>
@@ -83,8 +83,8 @@
 
   <hr />
 
-  <div class="p-4">
-    <h2 class="mb-3">{{ t('Invalidate Data Caches') }}</h2>
+  <div class="cp:p-4">
+    <h2 class="cp:mb-3">{{ t('Invalidate Data Caches') }}</h2>
 
     <Form
       method="post"
@@ -109,8 +109,8 @@
         :allow-select-all="true"
       />
 
-      <div class="mt-4">
-        <div class="flex gap-2 items-center">
+      <div class="cp:mt-4">
+        <div class="cp:flex cp:gap-2 cp:items-center">
           <craft-button type="submit" :loading="processing">
             {{ t('Invalidate caches') }}
           </craft-button>
@@ -120,7 +120,7 @@
                 variant="success"
                 icon="circle-check"
                 appearance="plain"
-                class="p-0"
+                class="cp:p-0"
               >
                 {{ t('Data caches invalidated.') }}
               </craft-callout>

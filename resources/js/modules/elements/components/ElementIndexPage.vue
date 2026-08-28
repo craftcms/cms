@@ -65,7 +65,7 @@
 
     <slot name="sidebar-after" :element-index="elementIndex" />
 
-    <div class="mt-4">
+    <div class="cp:mt-4">
       <ActionMenu
         :actions="[
           {

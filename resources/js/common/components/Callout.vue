@@ -18,7 +18,7 @@
       'callout--warning': variant === 'warning',
       'callout--emphasis': appearance === 'emphasis',
       'callout--default': appearance === 'default',
-      'callout--outline': appearance === 'outline',
+      'callout--outline': appearance === 'cp:outline',
       'callout--plain': appearance === 'plain',
     }"
   >

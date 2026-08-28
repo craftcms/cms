@@ -101,7 +101,7 @@
       }),
       columnHelper.text('singleUri', {
         header: t('URI'),
-        class: 'font-mono text-xs',
+        class: 'cp:font-mono cp:text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) =>
           props.disabled ||
@@ -115,7 +115,7 @@
       }),
       columnHelper.text('uriFormat', {
         header: t('Entry URI Format'),
-        class: 'font-mono text-xs',
+        class: 'cp:font-mono cp:text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => props.disabled || !row.original.enabled,
         meta: {
@@ -126,7 +126,8 @@
       }),
       columnHelper.autocomplete('template', {
         header: t('Template'),
-        class: 'w-full flex-1 font-mono text-xs !px-[var(--_cell-spacing)]',
+        class:
+          'cp:w-full cp:flex-1 cp:font-mono cp:text-xs !px-[var(--_cell-spacing)]',
         options: templateOptions.value,
         disabled: (row) => props.disabled || !row.original.enabled,
         meta: {

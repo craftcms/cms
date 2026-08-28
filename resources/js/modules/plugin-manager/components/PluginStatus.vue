@@ -16,7 +16,7 @@
     <Badge>{{ t('Missing') }}</Badge>
   </template>
   <template v-else-if="plugin.isInstalled">
-    <div class="flex gap-1 items-center">
+    <div class="cp:flex cp:gap-1 cp:items-center">
       <Badge variant="warning">{{ t('Disabled') }}</Badge>
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>
@@ -31,7 +31,7 @@
     </div>
   </template>
   <template v-else>
-    <div class="flex gap-1 items-center">
+    <div class="cp:flex cp:gap-1 cp:items-center">
       <Badge>{{ t('Not Installed') }}</Badge>
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>

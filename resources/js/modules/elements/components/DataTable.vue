@@ -226,7 +226,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-20" v-if="loading">
+  <div class="cp:grid cp:place-items-center cp:min-h-20" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <table
@@ -240,7 +240,7 @@
     }"
     :style="tableStyles"
   >
-    <caption class="sr-only">
+    <caption class="cp:sr-only">
       {{
         titleString
       }}
@@ -252,7 +252,7 @@
       <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
         <template v-if="!readOnly && reorderable">
           <th class="cell cell--header">
-            <span class="sr-only">Reorder</span>
+            <span class="cp:sr-only">Reorder</span>
           </th>
         </template>
         <th
@@ -281,7 +281,7 @@
             {
               'cp-table-cell': true,
               'cp-table-cell--header': true,
-              'cursor-pointer select-none': header.column.getCanSort(),
+              'cp:cursor-pointer cp:select-none': header.column.getCanSort(),
             },
             resolveMetaClasses(header.column.columnDef.meta?.columnClass),
             resolveMetaClasses(header.column.columnDef.meta?.headerClass),
@@ -290,8 +290,8 @@
           :aria-sort="getAriaSortAttribute(header.column)"
         >
           <div
-            class="flex gap-1 items-center"
-            :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
+            class="cp:flex cp:gap-1 cp:items-center"
+            :class="{'cp:sr-only': header.column.columnDef.meta?.headerSrOnly}"
           >
             <ColumnHeaderTitle
               :is-sortable="header.column.getCanSort()"

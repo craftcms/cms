@@ -41,8 +41,8 @@
 </script>
 
 <template>
-  <form @submit="emit('submit')" class="w-full">
-    <div class="flex gap-2 items-center">
+  <form @submit="emit('submit')" class="cp:w-full">
+    <div class="cp:flex cp:gap-2 cp:items-center">
       <div v-if="statusOptions?.length">
         <CraftSelectRich
           v-model="status"
@@ -63,14 +63,14 @@
         </CraftSelectRich>
       </div>
 
-      <div class="relative flex-1">
+      <div class="cp:relative cp:flex-1">
         <CraftInput
           name="search"
           :label="t('Search term')"
           v-model="search"
           label-sr-only
         >
-          <div slot="suffix" class="flex">
+          <div slot="suffix" class="cp:flex">
             <craft-button
               type="button"
               icon

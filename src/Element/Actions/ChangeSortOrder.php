@@ -43,7 +43,7 @@ class ChangeSortOrder extends ElementAction
     activate: (selectedItems, elementIndex) => {
       const totalPages = Math.ceil(elementIndex.totalResults / elementIndex.settings.batchSize);
       const container = $('<div/>');
-      const flex = $('<div/>', {class: 'flex flex-nowrap'});
+      const flex = $('<div/>', {class: 'cp:flex cp:flex-nowrap'});
       const select = Craft.ui.createSelect({
         options: [...Array(totalPages).keys()].map(num => ({label: num + 1, value: num + 1})),
         value: elementIndex.page === totalPages ? elementIndex.page - 1 : elementIndex.page + 1,

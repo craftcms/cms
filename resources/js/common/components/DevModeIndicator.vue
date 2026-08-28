@@ -3,7 +3,7 @@
 <template>
   <div class="dev-mode">
     <div
-      class="inline-flex py-1 px-2 bg-slate-900 text-slate-100 font-mono text-xs rounded-lg"
+      class="inline-flex cp:py-1 cp:px-2 cp:bg-slate-900 cp:text-slate-100 cp:font-mono cp:text-xs cp:rounded-lg"
     >
       Dev Mode is enabled
     </div>

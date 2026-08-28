@@ -56,11 +56,11 @@
 </script>
 
 <template>
-  <div class="flex flex-col justify-center">
+  <div class="cp:flex cp:flex-col cp:justify-center">
     <InlineFlash :is-active="form.recentlySuccessful || form.hasErrors" />
   </div>
 
-  <div v-if="!readOnly" class="flex items-center justify-end gap-2">
+  <div v-if="!readOnly" class="cp:flex cp:items-center cp:justify-end cp:gap-2">
     <craft-button
       v-for="button in additionalButtons"
       :key="button.label"

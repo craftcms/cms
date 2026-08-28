@@ -88,6 +88,22 @@ readonly class Cp
     }
 
     /**
+     * The token + utility stylesheet, without the CP's reset or component styles.
+     *
+     * The legacy Twig shell renders its own document and never calls
+     * {@see static::viteScripts()}, so it would otherwise have neither the
+     * `cp:` utilities nor the `--c-*` tokens that the legacy stylesheet's
+     * compatibility aliases resolve against. This is the subset that is safe
+     * to drop onto a legacy page: no preflight, so nothing gets re-reset.
+     */
+    public static function viteUtilities(): Vite
+    {
+        return static::vite()->withEntryPoints([
+            'resources/css/utilities.css',
+        ]);
+    }
+
+    /**
      * Builds the Control Panel config data.
      *
      * The shape mirrors the legacy `window.Craft` object: a base set of keys is

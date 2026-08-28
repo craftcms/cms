@@ -263,7 +263,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #title>
-          <h1 class="text-xl">Summer sale: up to 40% off</h1>
+          <h1 class="cp:text-xl">Summer sale: up to 40% off</h1>
         </template>
 
         <template #title-badge>
@@ -287,7 +287,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #subnav-actions>
-          <div class="mt-4">
+          <div class="cp:mt-4">
             <craft-button type="button" size="small" appearance="outline">
               <craft-icon name="plus" slot="prefix"></craft-icon>
               New entry
@@ -360,27 +360,27 @@ export const AllExtensionPointsInContext: Story = {
         <template #details>
           <dl class="cp-metadata-list">
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Status</dt>
+              <dt class="cp:font-bold cp:text-xs">Status</dt>
               <dd>Draft</dd>
             </div>
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Author</dt>
+              <dt class="cp:font-bold cp:text-xs">Author</dt>
               <dd>Priya Raman</dd>
             </div>
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Post Date</dt>
+              <dt class="cp:font-bold cp:text-xs">Post Date</dt>
               <dd>7/14/2026, 9:00 AM</dd>
             </div>
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Expiry Date</dt>
+              <dt class="cp:font-bold cp:text-xs">Expiry Date</dt>
               <dd>9/1/2026, 12:00 AM</dd>
             </div>
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Slug</dt>
+              <dt class="cp:font-bold cp:text-xs">Slug</dt>
               <dd>summer-sale-up-to-40-off</dd>
             </div>
             <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">ID</dt>
+              <dt class="cp:font-bold cp:text-xs">ID</dt>
               <dd>4821</dd>
             </div>
           </dl>
@@ -478,7 +478,7 @@ export const SecondaryNavigation: Story = {
     template: `
       <AppLayout v-bind="args">
         <template #subnav-actions>
-          <div class="mt-4">
+          <div class="cp:mt-4">
             <craft-button type="button" size="small">New Group</craft-button>
           </div>
         </template>

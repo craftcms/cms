@@ -9,13 +9,13 @@
 </script>
 
 <template>
-  <div class="grid md:grid-cols-2 gap-4 items-center">
-    <div class="aspect-[352/455] w-1/2 md:w-3/4 mx-auto">
+  <div class="cp:grid cp:md:grid-cols-2 cp:gap-4 cp:items-center">
+    <div class="aspect-[352/455] cp:w-1/2 cp:md:w-3/4 cp:mx-auto">
       <img loading="lazy" :src="illustrationSrc" alt="" width="368" />
     </div>
     <div>
-      <h2 class="mb-4">{{ heading }}</h2>
-      <div class="grid gap-3 md:pr-6">
+      <h2 class="cp:mb-4">{{ heading }}</h2>
+      <div class="cp:grid cp:gap-3 cp:md:pr-6">
         <slot></slot>
       </div>
     </div>

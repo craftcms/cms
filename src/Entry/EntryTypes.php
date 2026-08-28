@@ -594,7 +594,7 @@ class EntryTypes
 
         foreach ($entryTypes as $entryType) {
             $label = Html::encode($entryType->getUiLabel());
-            $chipCellContent = Html::beginTag('div', ['class' => 'flex gap-1 items-center row-wrap']).
+            $chipCellContent = Html::beginTag('div', ['class' => 'cp:flex cp:gap-1 cp:items-center row-wrap']).
                 app(ElementHtml::class)->chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl()),
                 ]);

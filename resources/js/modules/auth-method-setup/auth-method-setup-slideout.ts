@@ -35,8 +35,8 @@ export class AuthMethodSetupSlideout extends Slideout {
     const contents = `
 <div class="slideout__body">${data.html}</div>
 <div class="slideout__footer">
-  <div class="flex-grow"></div>
-  <div class="flex flex-nowrap">
+  <div class="cp:flex-grow"></div>
+  <div class="cp:flex cp:flex-nowrap">
     <craft-button type="button" class="auth-method-close-btn">${Craft.t(
       'app',
       'Cancel'

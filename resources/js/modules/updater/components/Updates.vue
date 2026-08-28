@@ -223,7 +223,7 @@
         v-if="allowUpdates && installableUpdates.length > 1"
         class="updates-header"
       >
-        <h1 class="text-2xl font-semibold">{{ headingText }}</h1>
+        <h1 class="cp:text-2xl cp:font-semibold">{{ headingText }}</h1>
         <craft-button
           type="button"
           variant="accent"

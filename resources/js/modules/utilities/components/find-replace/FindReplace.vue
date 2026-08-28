@@ -21,9 +21,9 @@
 </script>
 
 <template>
-  <div class="p-4">
+  <div class="cp:p-4">
     <form @submit.prevent="submit" method="post">
-      <div class="grid gap-3">
+      <div class="cp:grid cp:gap-3">
         <CraftInput
           :label="t('Find Text')"
           v-model="form.find"
@@ -37,8 +37,8 @@
           :error="form.errors.replace"
         />
       </div>
-      <div class="mt-4">
-        <div class="flex gap-2 items-center">
+      <div class="cp:mt-4">
+        <div class="cp:flex cp:gap-2 cp:items-center">
           <craft-button
             type="submit"
             :loading="form.processing"

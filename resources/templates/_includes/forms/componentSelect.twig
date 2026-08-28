@@ -105,7 +105,7 @@
     {% endapply -%}
   {% endtag %}
 
-  <div data-id="component-select-footer" class="flex flex-nowrap pt-2">
+  <div data-id="component-select-footer" class="cp:flex cp:flex-nowrap cp:pt-2">
     {% set valueIds = values|map(component => component.getId()) %}
 
     {% if legacy %}
@@ -145,7 +145,7 @@
         disabled,
       }) }}
     {% else %}
-      <craft-action-menu {% if withSearchInput %}searchable{% endif %} class="mr-1">
+      <craft-action-menu {% if withSearchInput %}searchable{% endif %} class="cp:mr-1">
         <craft-button
           type="button"
           slot="invoker"
@@ -175,7 +175,7 @@
               },
             } %}
               {%- apply spaceless %}
-                <span class="inline-flex flex-col items-start gap-2xs">
+                <span class="inline-flex cp:flex-col cp:items-start gap-2xs">
                   <span>{{ component.getUiLabel() }}</span>
                   {% if optionHandle %}
                     <span class="menu-item-description mt-2xs smalltext light code">{{ optionHandle }}</span>

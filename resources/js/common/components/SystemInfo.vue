@@ -25,7 +25,7 @@
         :html="system.icon"
       ></DynamicHtmlRenderer>
     </div>
-    <div class="system-info__name" :class="{'sr-only': iconOnly}">
+    <div class="system-info__name" :class="{'cp:sr-only': iconOnly}">
       {{ system.name }}
     </div>
   </component>

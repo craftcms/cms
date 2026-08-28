@@ -33,12 +33,12 @@
 </script>
 
 <template>
-  <div class="p-4" v-if="hasSessions">
+  <div class="cp:p-4" v-if="hasSessions">
     <IndexingSessions />
   </div>
 
   <template v-if="volumeOptions">
-    <div class="p-4">
+    <div class="cp:p-4">
       <form @submit.prevent="handleSubmit">
         <CheckboxGroup
           name="volumes[]"
@@ -48,8 +48,8 @@
           :allow-select-all="true"
         />
 
-        <h2 class="text-sm mb-2 mt-6">{{ t('Options') }}</h2>
-        <div class="grid gap-3">
+        <h2 class="cp:text-sm cp:mb-2 cp:mt-6">{{ t('Options') }}</h2>
+        <div class="cp:grid cp:gap-3">
           <template v-if="!isEphemeral">
             <craft-switch
               name="cacheImages"
@@ -90,7 +90,7 @@
           </craft-switch>
         </div>
 
-        <div class="mt-4 flex gap-2 items-center">
+        <div class="cp:mt-4 cp:flex cp:gap-2 cp:items-center">
           <craft-button
             type="submit"
             variant="accent"

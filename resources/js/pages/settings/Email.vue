@@ -26,13 +26,13 @@
 </script>
 
 <template>
-  <div class="grid gap-3">
+  <div class="cp:grid cp:gap-3">
     <FormPage :form="form" :submit="submit" />
 
     <craft-pane appearance="raised">
-      <h2 class="mb-3">{{ t('Send a test email') }}</h2>
+      <h2 class="cp:mb-3">{{ t('Send a test email') }}</h2>
 
-      <div class="grid gap-3">
+      <div class="cp:grid cp:gap-3">
         <CraftInput
           :label="t('To')"
           v-model="testForm.to"
@@ -40,7 +40,7 @@
           :error="testForm.errors.to"
         />
 
-        <div class="flex gap-2 items-center">
+        <div class="cp:flex cp:gap-2 cp:items-center">
           <craft-button
             type="button"
             :variant="ButtonVariant.Solid"

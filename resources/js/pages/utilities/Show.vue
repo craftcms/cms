@@ -54,7 +54,7 @@
     </SecondaryNav>
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="@container">
+  <craft-pane appearance="raised" padding="0" class="cp:@container">
     <div class="content-pane">
       <DynamicHtmlRenderer v-if="contentHtml" :html="contentHtml" />
       <DynamicHtmlRenderer v-if="footerHtml" :html="footerHtml" />

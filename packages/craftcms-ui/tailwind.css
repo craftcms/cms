@@ -3,987 +3,975 @@
 /**
  * Craft CMS Control Panel — Tailwind v4 utilities.
  *
- * Craft's design tokens as utility classes, all under a `c-` prefix so a
- * Craft utility is never mistaken for a stock Tailwind one — and so the two
- * can coexist in a single build, which Tailwind's own `prefix()` option
- * would not allow.
+ * Craft's design tokens as utility classes. The names are written bare; the
+ * CP's CSS entry sets Tailwind's `prefix(cp)`, so every class here is typed
+ * with a `cp:` prefix — `cp:bg-loud`, `cp:p-md` — alongside stock
+ * Tailwind, which the same prefix covers (`cp:flex`, `cp:gap-2`).
  *
- * Colors read as `c-<property>-[group-]<strength>`. The token's *role* is
+ * Colors read as `<property>-[group-]<strength>`. The token's *role* is
  * implied by the property rather than repeated in the class name:
  *
- *     c-bg-loud                background-color: --c-color-fill-loud
- *     c-bg-danger-normal       background-color: --c-color-danger-fill-normal
- *     c-border-accent-quiet    border-color:     --c-color-accent-border-quiet
- *     c-text-loud              color:            --c-color-fill-loud
- *     c-text-on-loud           color:            --c-color-on-loud
- *     c-text-on-neutral-loud   color:            --c-color-neutral-on-loud
+ *     cp:bg-loud                background-color: --c-color-fill-loud
+ *     cp:bg-danger-normal       background-color: --c-color-danger-fill-normal
+ *     cp:border-accent-quiet    border-color:     --c-color-accent-border-quiet
+ *     cp:text-loud              color:            --c-color-fill-loud
+ *     cp:text-on-loud           color:            --c-color-on-loud
+ *     cp:text-on-neutral-loud   color:            --c-color-neutral-on-loud
  *
- * Text is the one property that takes two roles: `c-text-*` inks with the
- * fill color, `c-text-on-*` inks with the color meant to stay legible on
- * top of that fill.
+ * Text is the one property that takes two roles: `text-*` inks with the
+ * fill color, `text-on-*` with the color meant to stay legible on top of
+ * that fill.
  *
  * Omitting the group targets the generic tokens, which hold whatever the
- * nearest `[data-color]` / `variant` resolved to — so `c-bg-quiet`
- * paints with the current context's quiet fill instead of naming a color.
+ * nearest palette or `variant` resolved to — so `cp:bg-quiet` paints
+ * with the current context's quiet fill instead of naming a color.
  *
- * Spacing reads as `c-<stem>-<step>` across padding, margin, and gap:
- * `c-p-md`, `c-gap-lg`, `c-mt-2xl`. Stems match Tailwind's own, so
- * `c-px-*` is logical (`padding-inline`) and `c-pl-*` is physical.
+ * Spacing reads as `<stem>-<step>` across padding, margin, and gap:
+ * `cp:p-md`, `cp:gap-lg`, `cp:mt-2xl`. Stems match Tailwind's own,
+ * so `px-*` is logical (`padding-inline`) and `pl-*` is physical.
  *
- * Usage in a CSS entry file:
- *
- *     @layer theme, base, components, cp, utilities;
- *     @import 'tailwindcss/theme.css' layer(theme);
- *     @import 'tailwindcss/utilities.css' layer(utilities);
- *     @import '@craftcms/ui/styles/cp.css' layer(cp);  // :root token values
- *     @import '@craftcms/ui/tailwind.css';
- *
- * That last import takes no `layer()`: `@utility` is only valid at the
- * top level of a stylesheet, and a `layer()` import would nest it. Tailwind
- * places what it generates into the `utilities` layer either way.
- *
- * The `--c-*` variables have to be in scope (via `cp.css`) for the
- * `var()`s below to resolve. Referencing them rather than their values is
- * what lets `[data-theme='dark']` overrides and `[data-color]` context
- * flow through untouched.
+ * This file is imported by `resources/css/utilities.css`, which is where
+ * the prefix and the token values it resolves against are set up. It has to
+ * be imported *outside* a layer: `@utility` may not be nested, and
+ * Tailwind places what it generates into the `utilities` layer regardless.
  */
 
 /* ——— Colors — current context ——— */
 
-@utility c-bg-quiet {
+@utility bg-quiet {
   background-color: var(--c-color-fill-quiet);
 }
 
-@utility c-text-quiet {
+@utility text-quiet {
   color: var(--c-color-fill-quiet);
 }
 
-@utility c-text-on-quiet {
+@utility text-on-quiet {
   color: var(--c-color-on-quiet);
 }
 
-@utility c-border-quiet {
+@utility border-quiet {
   border-color: var(--c-color-border-quiet);
 }
 
-@utility c-bg-normal {
+@utility bg-normal {
   background-color: var(--c-color-fill-normal);
 }
 
-@utility c-text-normal {
+@utility text-normal {
   color: var(--c-color-fill-normal);
 }
 
-@utility c-text-on-normal {
+@utility text-on-normal {
   color: var(--c-color-on-normal);
 }
 
-@utility c-border-normal {
+@utility border-normal {
   border-color: var(--c-color-border-normal);
 }
 
-@utility c-bg-loud {
+@utility bg-loud {
   background-color: var(--c-color-fill-loud);
 }
 
-@utility c-text-loud {
+@utility text-loud {
   color: var(--c-color-fill-loud);
 }
 
-@utility c-text-on-loud {
+@utility text-on-loud {
   color: var(--c-color-on-loud);
 }
 
-@utility c-border-loud {
+@utility border-loud {
   border-color: var(--c-color-border-loud);
 }
 
 /* ——— Colors — neutral ——— */
 
-@utility c-bg-neutral-quiet {
+@utility bg-neutral-quiet {
   background-color: var(--c-color-neutral-fill-quiet);
 }
 
-@utility c-text-neutral-quiet {
+@utility text-neutral-quiet {
   color: var(--c-color-neutral-fill-quiet);
 }
 
-@utility c-text-on-neutral-quiet {
+@utility text-on-neutral-quiet {
   color: var(--c-color-neutral-on-quiet);
 }
 
-@utility c-border-neutral-quiet {
+@utility border-neutral-quiet {
   border-color: var(--c-color-neutral-border-quiet);
 }
 
-@utility c-bg-neutral-normal {
+@utility bg-neutral-normal {
   background-color: var(--c-color-neutral-fill-normal);
 }
 
-@utility c-text-neutral-normal {
+@utility text-neutral-normal {
   color: var(--c-color-neutral-fill-normal);
 }
 
-@utility c-text-on-neutral-normal {
+@utility text-on-neutral-normal {
   color: var(--c-color-neutral-on-normal);
 }
 
-@utility c-border-neutral-normal {
+@utility border-neutral-normal {
   border-color: var(--c-color-neutral-border-normal);
 }
 
-@utility c-bg-neutral-loud {
+@utility bg-neutral-loud {
   background-color: var(--c-color-neutral-fill-loud);
 }
 
-@utility c-text-neutral-loud {
+@utility text-neutral-loud {
   color: var(--c-color-neutral-fill-loud);
 }
 
-@utility c-text-on-neutral-loud {
+@utility text-on-neutral-loud {
   color: var(--c-color-neutral-on-loud);
 }
 
-@utility c-border-neutral-loud {
+@utility border-neutral-loud {
   border-color: var(--c-color-neutral-border-loud);
 }
 
 /* ——— Colors — accent ——— */
 
-@utility c-bg-accent-quiet {
+@utility bg-accent-quiet {
   background-color: var(--c-color-accent-fill-quiet);
 }
 
-@utility c-text-accent-quiet {
+@utility text-accent-quiet {
   color: var(--c-color-accent-fill-quiet);
 }
 
-@utility c-text-on-accent-quiet {
+@utility text-on-accent-quiet {
   color: var(--c-color-accent-on-quiet);
 }
 
-@utility c-border-accent-quiet {
+@utility border-accent-quiet {
   border-color: var(--c-color-accent-border-quiet);
 }
 
-@utility c-bg-accent-normal {
+@utility bg-accent-normal {
   background-color: var(--c-color-accent-fill-normal);
 }
 
-@utility c-text-accent-normal {
+@utility text-accent-normal {
   color: var(--c-color-accent-fill-normal);
 }
 
-@utility c-text-on-accent-normal {
+@utility text-on-accent-normal {
   color: var(--c-color-accent-on-normal);
 }
 
-@utility c-border-accent-normal {
+@utility border-accent-normal {
   border-color: var(--c-color-accent-border-normal);
 }
 
-@utility c-bg-accent-loud {
+@utility bg-accent-loud {
   background-color: var(--c-color-accent-fill-loud);
 }
 
-@utility c-text-accent-loud {
+@utility text-accent-loud {
   color: var(--c-color-accent-fill-loud);
 }
 
-@utility c-text-on-accent-loud {
+@utility text-on-accent-loud {
   color: var(--c-color-accent-on-loud);
 }
 
-@utility c-border-accent-loud {
+@utility border-accent-loud {
   border-color: var(--c-color-accent-border-loud);
 }
 
 /* ——— Colors — info ——— */
 
-@utility c-bg-info-quiet {
+@utility bg-info-quiet {
   background-color: var(--c-color-info-fill-quiet);
 }
 
-@utility c-text-info-quiet {
+@utility text-info-quiet {
   color: var(--c-color-info-fill-quiet);
 }
 
-@utility c-text-on-info-quiet {
+@utility text-on-info-quiet {
   color: var(--c-color-info-on-quiet);
 }
 
-@utility c-border-info-quiet {
+@utility border-info-quiet {
   border-color: var(--c-color-info-border-quiet);
 }
 
-@utility c-bg-info-normal {
+@utility bg-info-normal {
   background-color: var(--c-color-info-fill-normal);
 }
 
-@utility c-text-info-normal {
+@utility text-info-normal {
   color: var(--c-color-info-fill-normal);
 }
 
-@utility c-text-on-info-normal {
+@utility text-on-info-normal {
   color: var(--c-color-info-on-normal);
 }
 
-@utility c-border-info-normal {
+@utility border-info-normal {
   border-color: var(--c-color-info-border-normal);
 }
 
-@utility c-bg-info-loud {
+@utility bg-info-loud {
   background-color: var(--c-color-info-fill-loud);
 }
 
-@utility c-text-info-loud {
+@utility text-info-loud {
   color: var(--c-color-info-fill-loud);
 }
 
-@utility c-text-on-info-loud {
+@utility text-on-info-loud {
   color: var(--c-color-info-on-loud);
 }
 
-@utility c-border-info-loud {
+@utility border-info-loud {
   border-color: var(--c-color-info-border-loud);
 }
 
 /* ——— Colors — success ——— */
 
-@utility c-bg-success-quiet {
+@utility bg-success-quiet {
   background-color: var(--c-color-success-fill-quiet);
 }
 
-@utility c-text-success-quiet {
+@utility text-success-quiet {
   color: var(--c-color-success-fill-quiet);
 }
 
-@utility c-text-on-success-quiet {
+@utility text-on-success-quiet {
   color: var(--c-color-success-on-quiet);
 }
 
-@utility c-border-success-quiet {
+@utility border-success-quiet {
   border-color: var(--c-color-success-border-quiet);
 }
 
-@utility c-bg-success-normal {
+@utility bg-success-normal {
   background-color: var(--c-color-success-fill-normal);
 }
 
-@utility c-text-success-normal {
+@utility text-success-normal {
   color: var(--c-color-success-fill-normal);
 }
 
-@utility c-text-on-success-normal {
+@utility text-on-success-normal {
   color: var(--c-color-success-on-normal);
 }
 
-@utility c-border-success-normal {
+@utility border-success-normal {
   border-color: var(--c-color-success-border-normal);
 }
 
-@utility c-bg-success-loud {
+@utility bg-success-loud {
   background-color: var(--c-color-success-fill-loud);
 }
 
-@utility c-text-success-loud {
+@utility text-success-loud {
   color: var(--c-color-success-fill-loud);
 }
 
-@utility c-text-on-success-loud {
+@utility text-on-success-loud {
   color: var(--c-color-success-on-loud);
 }
 
-@utility c-border-success-loud {
+@utility border-success-loud {
   border-color: var(--c-color-success-border-loud);
 }
 
 /* ——— Colors — warning ——— */
 
-@utility c-bg-warning-quiet {
+@utility bg-warning-quiet {
   background-color: var(--c-color-warning-fill-quiet);
 }
 
-@utility c-text-warning-quiet {
+@utility text-warning-quiet {
   color: var(--c-color-warning-fill-quiet);
 }
 
-@utility c-text-on-warning-quiet {
+@utility text-on-warning-quiet {
   color: var(--c-color-warning-on-quiet);
 }
 
-@utility c-border-warning-quiet {
+@utility border-warning-quiet {
   border-color: var(--c-color-warning-border-quiet);
 }
 
-@utility c-bg-warning-normal {
+@utility bg-warning-normal {
   background-color: var(--c-color-warning-fill-normal);
 }
 
-@utility c-text-warning-normal {
+@utility text-warning-normal {
   color: var(--c-color-warning-fill-normal);
 }
 
-@utility c-text-on-warning-normal {
+@utility text-on-warning-normal {
   color: var(--c-color-warning-on-normal);
 }
 
-@utility c-border-warning-normal {
+@utility border-warning-normal {
   border-color: var(--c-color-warning-border-normal);
 }
 
-@utility c-bg-warning-loud {
+@utility bg-warning-loud {
   background-color: var(--c-color-warning-fill-loud);
 }
 
-@utility c-text-warning-loud {
+@utility text-warning-loud {
   color: var(--c-color-warning-fill-loud);
 }
 
-@utility c-text-on-warning-loud {
+@utility text-on-warning-loud {
   color: var(--c-color-warning-on-loud);
 }
 
-@utility c-border-warning-loud {
+@utility border-warning-loud {
   border-color: var(--c-color-warning-border-loud);
 }
 
 /* ——— Colors — danger ——— */
 
-@utility c-bg-danger-quiet {
+@utility bg-danger-quiet {
   background-color: var(--c-color-danger-fill-quiet);
 }
 
-@utility c-text-danger-quiet {
+@utility text-danger-quiet {
   color: var(--c-color-danger-fill-quiet);
 }
 
-@utility c-text-on-danger-quiet {
+@utility text-on-danger-quiet {
   color: var(--c-color-danger-on-quiet);
 }
 
-@utility c-border-danger-quiet {
+@utility border-danger-quiet {
   border-color: var(--c-color-danger-border-quiet);
 }
 
-@utility c-bg-danger-normal {
+@utility bg-danger-normal {
   background-color: var(--c-color-danger-fill-normal);
 }
 
-@utility c-text-danger-normal {
+@utility text-danger-normal {
   color: var(--c-color-danger-fill-normal);
 }
 
-@utility c-text-on-danger-normal {
+@utility text-on-danger-normal {
   color: var(--c-color-danger-on-normal);
 }
 
-@utility c-border-danger-normal {
+@utility border-danger-normal {
   border-color: var(--c-color-danger-border-normal);
 }
 
-@utility c-bg-danger-loud {
+@utility bg-danger-loud {
   background-color: var(--c-color-danger-fill-loud);
 }
 
-@utility c-text-danger-loud {
+@utility text-danger-loud {
   color: var(--c-color-danger-fill-loud);
 }
 
-@utility c-text-on-danger-loud {
+@utility text-on-danger-loud {
   color: var(--c-color-danger-on-loud);
 }
 
-@utility c-border-danger-loud {
+@utility border-danger-loud {
   border-color: var(--c-color-danger-border-loud);
 }
 
 /* ——— Spacing ——— */
 
-@utility c-p-1px {
+@utility p-1px {
   padding: var(--c-spacing-1px);
 }
 
-@utility c-p-xs {
+@utility p-xs {
   padding: var(--c-spacing-xs);
 }
 
-@utility c-p-sm {
+@utility p-sm {
   padding: var(--c-spacing-sm);
 }
 
-@utility c-p-md {
+@utility p-md {
   padding: var(--c-spacing-md);
 }
 
-@utility c-p-lg {
+@utility p-lg {
   padding: var(--c-spacing-lg);
 }
 
-@utility c-p-xl {
+@utility p-xl {
   padding: var(--c-spacing-xl);
 }
 
-@utility c-p-2xl {
+@utility p-2xl {
   padding: var(--c-spacing-2xl);
 }
 
-@utility c-px-1px {
+@utility px-1px {
   padding-inline: var(--c-spacing-1px);
 }
 
-@utility c-px-xs {
+@utility px-xs {
   padding-inline: var(--c-spacing-xs);
 }
 
-@utility c-px-sm {
+@utility px-sm {
   padding-inline: var(--c-spacing-sm);
 }
 
-@utility c-px-md {
+@utility px-md {
   padding-inline: var(--c-spacing-md);
 }
 
-@utility c-px-lg {
+@utility px-lg {
   padding-inline: var(--c-spacing-lg);
 }
 
-@utility c-px-xl {
+@utility px-xl {
   padding-inline: var(--c-spacing-xl);
 }
 
-@utility c-px-2xl {
+@utility px-2xl {
   padding-inline: var(--c-spacing-2xl);
 }
 
-@utility c-py-1px {
+@utility py-1px {
   padding-block: var(--c-spacing-1px);
 }
 
-@utility c-py-xs {
+@utility py-xs {
   padding-block: var(--c-spacing-xs);
 }
 
-@utility c-py-sm {
+@utility py-sm {
   padding-block: var(--c-spacing-sm);
 }
 
-@utility c-py-md {
+@utility py-md {
   padding-block: var(--c-spacing-md);
 }
 
-@utility c-py-lg {
+@utility py-lg {
   padding-block: var(--c-spacing-lg);
 }
 
-@utility c-py-xl {
+@utility py-xl {
   padding-block: var(--c-spacing-xl);
 }
 
-@utility c-py-2xl {
+@utility py-2xl {
   padding-block: var(--c-spacing-2xl);
 }
 
-@utility c-ps-1px {
+@utility ps-1px {
   padding-inline-start: var(--c-spacing-1px);
 }
 
-@utility c-ps-xs {
+@utility ps-xs {
   padding-inline-start: var(--c-spacing-xs);
 }
 
-@utility c-ps-sm {
+@utility ps-sm {
   padding-inline-start: var(--c-spacing-sm);
 }
 
-@utility c-ps-md {
+@utility ps-md {
   padding-inline-start: var(--c-spacing-md);
 }
 
-@utility c-ps-lg {
+@utility ps-lg {
   padding-inline-start: var(--c-spacing-lg);
 }
 
-@utility c-ps-xl {
+@utility ps-xl {
   padding-inline-start: var(--c-spacing-xl);
 }
 
-@utility c-ps-2xl {
+@utility ps-2xl {
   padding-inline-start: var(--c-spacing-2xl);
 }
 
-@utility c-pe-1px {
+@utility pe-1px {
   padding-inline-end: var(--c-spacing-1px);
 }
 
-@utility c-pe-xs {
+@utility pe-xs {
   padding-inline-end: var(--c-spacing-xs);
 }
 
-@utility c-pe-sm {
+@utility pe-sm {
   padding-inline-end: var(--c-spacing-sm);
 }
 
-@utility c-pe-md {
+@utility pe-md {
   padding-inline-end: var(--c-spacing-md);
 }
 
-@utility c-pe-lg {
+@utility pe-lg {
   padding-inline-end: var(--c-spacing-lg);
 }
 
-@utility c-pe-xl {
+@utility pe-xl {
   padding-inline-end: var(--c-spacing-xl);
 }
 
-@utility c-pe-2xl {
+@utility pe-2xl {
   padding-inline-end: var(--c-spacing-2xl);
 }
 
-@utility c-pt-1px {
+@utility pt-1px {
   padding-top: var(--c-spacing-1px);
 }
 
-@utility c-pt-xs {
+@utility pt-xs {
   padding-top: var(--c-spacing-xs);
 }
 
-@utility c-pt-sm {
+@utility pt-sm {
   padding-top: var(--c-spacing-sm);
 }
 
-@utility c-pt-md {
+@utility pt-md {
   padding-top: var(--c-spacing-md);
 }
 
-@utility c-pt-lg {
+@utility pt-lg {
   padding-top: var(--c-spacing-lg);
 }
 
-@utility c-pt-xl {
+@utility pt-xl {
   padding-top: var(--c-spacing-xl);
 }
 
-@utility c-pt-2xl {
+@utility pt-2xl {
   padding-top: var(--c-spacing-2xl);
 }
 
-@utility c-pr-1px {
+@utility pr-1px {
   padding-right: var(--c-spacing-1px);
 }
 
-@utility c-pr-xs {
+@utility pr-xs {
   padding-right: var(--c-spacing-xs);
 }
 
-@utility c-pr-sm {
+@utility pr-sm {
   padding-right: var(--c-spacing-sm);
 }
 
-@utility c-pr-md {
+@utility pr-md {
   padding-right: var(--c-spacing-md);
 }
 
-@utility c-pr-lg {
+@utility pr-lg {
   padding-right: var(--c-spacing-lg);
 }
 
-@utility c-pr-xl {
+@utility pr-xl {
   padding-right: var(--c-spacing-xl);
 }
 
-@utility c-pr-2xl {
+@utility pr-2xl {
   padding-right: var(--c-spacing-2xl);
 }
 
-@utility c-pb-1px {
+@utility pb-1px {
   padding-bottom: var(--c-spacing-1px);
 }
 
-@utility c-pb-xs {
+@utility pb-xs {
   padding-bottom: var(--c-spacing-xs);
 }
 
-@utility c-pb-sm {
+@utility pb-sm {
   padding-bottom: var(--c-spacing-sm);
 }
 
-@utility c-pb-md {
+@utility pb-md {
   padding-bottom: var(--c-spacing-md);
 }
 
-@utility c-pb-lg {
+@utility pb-lg {
   padding-bottom: var(--c-spacing-lg);
 }
 
-@utility c-pb-xl {
+@utility pb-xl {
   padding-bottom: var(--c-spacing-xl);
 }
 
-@utility c-pb-2xl {
+@utility pb-2xl {
   padding-bottom: var(--c-spacing-2xl);
 }
 
-@utility c-pl-1px {
+@utility pl-1px {
   padding-left: var(--c-spacing-1px);
 }
 
-@utility c-pl-xs {
+@utility pl-xs {
   padding-left: var(--c-spacing-xs);
 }
 
-@utility c-pl-sm {
+@utility pl-sm {
   padding-left: var(--c-spacing-sm);
 }
 
-@utility c-pl-md {
+@utility pl-md {
   padding-left: var(--c-spacing-md);
 }
 
-@utility c-pl-lg {
+@utility pl-lg {
   padding-left: var(--c-spacing-lg);
 }
 
-@utility c-pl-xl {
+@utility pl-xl {
   padding-left: var(--c-spacing-xl);
 }
 
-@utility c-pl-2xl {
+@utility pl-2xl {
   padding-left: var(--c-spacing-2xl);
 }
 
-@utility c-m-1px {
+@utility m-1px {
   margin: var(--c-spacing-1px);
 }
 
-@utility c-m-xs {
+@utility m-xs {
   margin: var(--c-spacing-xs);
 }
 
-@utility c-m-sm {
+@utility m-sm {
   margin: var(--c-spacing-sm);
 }
 
-@utility c-m-md {
+@utility m-md {
   margin: var(--c-spacing-md);
 }
 
-@utility c-m-lg {
+@utility m-lg {
   margin: var(--c-spacing-lg);
 }
 
-@utility c-m-xl {
+@utility m-xl {
   margin: var(--c-spacing-xl);
 }
 
-@utility c-m-2xl {
+@utility m-2xl {
   margin: var(--c-spacing-2xl);
 }
 
-@utility c-mx-1px {
+@utility mx-1px {
   margin-inline: var(--c-spacing-1px);
 }
 
-@utility c-mx-xs {
+@utility mx-xs {
   margin-inline: var(--c-spacing-xs);
 }
 
-@utility c-mx-sm {
+@utility mx-sm {
   margin-inline: var(--c-spacing-sm);
 }
 
-@utility c-mx-md {
+@utility mx-md {
   margin-inline: var(--c-spacing-md);
 }
 
-@utility c-mx-lg {
+@utility mx-lg {
   margin-inline: var(--c-spacing-lg);
 }
 
-@utility c-mx-xl {
+@utility mx-xl {
   margin-inline: var(--c-spacing-xl);
 }
 
-@utility c-mx-2xl {
+@utility mx-2xl {
   margin-inline: var(--c-spacing-2xl);
 }
 
-@utility c-my-1px {
+@utility my-1px {
   margin-block: var(--c-spacing-1px);
 }
 
-@utility c-my-xs {
+@utility my-xs {
   margin-block: var(--c-spacing-xs);
 }
 
-@utility c-my-sm {
+@utility my-sm {
   margin-block: var(--c-spacing-sm);
 }
 
-@utility c-my-md {
+@utility my-md {
   margin-block: var(--c-spacing-md);
 }
 
-@utility c-my-lg {
+@utility my-lg {
   margin-block: var(--c-spacing-lg);
 }
 
-@utility c-my-xl {
+@utility my-xl {
   margin-block: var(--c-spacing-xl);
 }
 
-@utility c-my-2xl {
+@utility my-2xl {
   margin-block: var(--c-spacing-2xl);
 }
 
-@utility c-ms-1px {
+@utility ms-1px {
   margin-inline-start: var(--c-spacing-1px);
 }
 
-@utility c-ms-xs {
+@utility ms-xs {
   margin-inline-start: var(--c-spacing-xs);
 }
 
-@utility c-ms-sm {
+@utility ms-sm {
   margin-inline-start: var(--c-spacing-sm);
 }
 
-@utility c-ms-md {
+@utility ms-md {
   margin-inline-start: var(--c-spacing-md);
 }
 
-@utility c-ms-lg {
+@utility ms-lg {
   margin-inline-start: var(--c-spacing-lg);
 }
 
-@utility c-ms-xl {
+@utility ms-xl {
   margin-inline-start: var(--c-spacing-xl);
 }
 
-@utility c-ms-2xl {
+@utility ms-2xl {
   margin-inline-start: var(--c-spacing-2xl);
 }
 
-@utility c-me-1px {
+@utility me-1px {
   margin-inline-end: var(--c-spacing-1px);
 }
 
-@utility c-me-xs {
+@utility me-xs {
   margin-inline-end: var(--c-spacing-xs);
 }
 
-@utility c-me-sm {
+@utility me-sm {
   margin-inline-end: var(--c-spacing-sm);
 }
 
-@utility c-me-md {
+@utility me-md {
   margin-inline-end: var(--c-spacing-md);
 }
 
-@utility c-me-lg {
+@utility me-lg {
   margin-inline-end: var(--c-spacing-lg);
 }
 
-@utility c-me-xl {
+@utility me-xl {
   margin-inline-end: var(--c-spacing-xl);
 }
 
-@utility c-me-2xl {
+@utility me-2xl {
   margin-inline-end: var(--c-spacing-2xl);
 }
 
-@utility c-mt-1px {
+@utility mt-1px {
   margin-top: var(--c-spacing-1px);
 }
 
-@utility c-mt-xs {
+@utility mt-xs {
   margin-top: var(--c-spacing-xs);
 }
 
-@utility c-mt-sm {
+@utility mt-sm {
   margin-top: var(--c-spacing-sm);
 }
 
-@utility c-mt-md {
+@utility mt-md {
   margin-top: var(--c-spacing-md);
 }
 
-@utility c-mt-lg {
+@utility mt-lg {
   margin-top: var(--c-spacing-lg);
 }
 
-@utility c-mt-xl {
+@utility mt-xl {
   margin-top: var(--c-spacing-xl);
 }
 
-@utility c-mt-2xl {
+@utility mt-2xl {
   margin-top: var(--c-spacing-2xl);
 }
 
-@utility c-mr-1px {
+@utility mr-1px {
   margin-right: var(--c-spacing-1px);
 }
 
-@utility c-mr-xs {
+@utility mr-xs {
   margin-right: var(--c-spacing-xs);
 }
 
-@utility c-mr-sm {
+@utility mr-sm {
   margin-right: var(--c-spacing-sm);
 }
 
-@utility c-mr-md {
+@utility mr-md {
   margin-right: var(--c-spacing-md);
 }
 
-@utility c-mr-lg {
+@utility mr-lg {
   margin-right: var(--c-spacing-lg);
 }
 
-@utility c-mr-xl {
+@utility mr-xl {
   margin-right: var(--c-spacing-xl);
 }
 
-@utility c-mr-2xl {
+@utility mr-2xl {
   margin-right: var(--c-spacing-2xl);
 }
 
-@utility c-mb-1px {
+@utility mb-1px {
   margin-bottom: var(--c-spacing-1px);
 }
 
-@utility c-mb-xs {
+@utility mb-xs {
   margin-bottom: var(--c-spacing-xs);
 }
 
-@utility c-mb-sm {
+@utility mb-sm {
   margin-bottom: var(--c-spacing-sm);
 }
 
-@utility c-mb-md {
+@utility mb-md {
   margin-bottom: var(--c-spacing-md);
 }
 
-@utility c-mb-lg {
+@utility mb-lg {
   margin-bottom: var(--c-spacing-lg);
 }
 
-@utility c-mb-xl {
+@utility mb-xl {
   margin-bottom: var(--c-spacing-xl);
 }
 
-@utility c-mb-2xl {
+@utility mb-2xl {
   margin-bottom: var(--c-spacing-2xl);
 }
 
-@utility c-ml-1px {
+@utility ml-1px {
   margin-left: var(--c-spacing-1px);
 }
 
-@utility c-ml-xs {
+@utility ml-xs {
   margin-left: var(--c-spacing-xs);
 }
 
-@utility c-ml-sm {
+@utility ml-sm {
   margin-left: var(--c-spacing-sm);
 }
 
-@utility c-ml-md {
+@utility ml-md {
   margin-left: var(--c-spacing-md);
 }
 
-@utility c-ml-lg {
+@utility ml-lg {
   margin-left: var(--c-spacing-lg);
 }
 
-@utility c-ml-xl {
+@utility ml-xl {
   margin-left: var(--c-spacing-xl);
 }
 
-@utility c-ml-2xl {
+@utility ml-2xl {
   margin-left: var(--c-spacing-2xl);
 }
 
-@utility c-gap-1px {
+@utility gap-1px {
   gap: var(--c-spacing-1px);
 }
 
-@utility c-gap-xs {
+@utility gap-xs {
   gap: var(--c-spacing-xs);
 }
 
-@utility c-gap-sm {
+@utility gap-sm {
   gap: var(--c-spacing-sm);
 }
 
-@utility c-gap-md {
+@utility gap-md {
   gap: var(--c-spacing-md);
 }
 
-@utility c-gap-lg {
+@utility gap-lg {
   gap: var(--c-spacing-lg);
 }
 
-@utility c-gap-xl {
+@utility gap-xl {
   gap: var(--c-spacing-xl);
 }
 
-@utility c-gap-2xl {
+@utility gap-2xl {
   gap: var(--c-spacing-2xl);
 }
 
-@utility c-gap-x-1px {
+@utility gap-x-1px {
   column-gap: var(--c-spacing-1px);
 }
 
-@utility c-gap-x-xs {
+@utility gap-x-xs {
   column-gap: var(--c-spacing-xs);
 }
 
-@utility c-gap-x-sm {
+@utility gap-x-sm {
   column-gap: var(--c-spacing-sm);
 }
 
-@utility c-gap-x-md {
+@utility gap-x-md {
   column-gap: var(--c-spacing-md);
 }
 
-@utility c-gap-x-lg {
+@utility gap-x-lg {
   column-gap: var(--c-spacing-lg);
 }
 
-@utility c-gap-x-xl {
+@utility gap-x-xl {
   column-gap: var(--c-spacing-xl);
 }
 
-@utility c-gap-x-2xl {
+@utility gap-x-2xl {
   column-gap: var(--c-spacing-2xl);
 }
 
-@utility c-gap-y-1px {
+@utility gap-y-1px {
   row-gap: var(--c-spacing-1px);
 }
 
-@utility c-gap-y-xs {
+@utility gap-y-xs {
   row-gap: var(--c-spacing-xs);
 }
 
-@utility c-gap-y-sm {
+@utility gap-y-sm {
   row-gap: var(--c-spacing-sm);
 }
 
-@utility c-gap-y-md {
+@utility gap-y-md {
   row-gap: var(--c-spacing-md);
 }
 
-@utility c-gap-y-lg {
+@utility gap-y-lg {
   row-gap: var(--c-spacing-lg);
 }
 
-@utility c-gap-y-xl {
+@utility gap-y-xl {
   row-gap: var(--c-spacing-xl);
 }
 
-@utility c-gap-y-2xl {
+@utility gap-y-2xl {
   row-gap: var(--c-spacing-2xl);
 }

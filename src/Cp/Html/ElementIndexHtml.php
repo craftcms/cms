@@ -224,7 +224,7 @@ JS, [
             ], templateMode: TemplateMode::Cp)).
             Html::endTag('div').
             Html::beginTag('div', ['class' => 'main']).
-            Html::beginTag('div', ['class' => ['toolbar', 'flex']]).
+            Html::beginTag('div', ['class' => ['toolbar', 'cp:flex']]).
             template('_elements/toolbar', [
                 'elementType' => $elementType,
                 'context' => $config['context'],
@@ -240,7 +240,7 @@ JS, [
 
         if ($this->contextIsAdministrative($config['context'])) {
             $html .= Html::beginTag('div', [
-                'class' => ['footer', 'flex', 'flex-justify'],
+                'class' => ['footer', 'cp:flex', 'flex-justify'],
             ]).
                 template('_elements/footer', templateMode: TemplateMode::Cp).
                 Html::endTag('div'); // .footer

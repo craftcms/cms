@@ -20,7 +20,7 @@
 </script>
 
 <template>
-  <craft-pane class="max-w-4xl">
+  <craft-pane class="cp:max-w-4xl">
     <template v-if="http.processing">
       <craft-spinner></craft-spinner>
     </template>

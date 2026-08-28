@@ -336,6 +336,7 @@ export default defineConfig(({mode}) => {
                 'resources/js/cp.ts',
                 'resources/js/legacy.ts',
                 'resources/css/cp.css',
+                'resources/css/utilities.css',
                 'workbench/resources/js/cp.ts',
               ],
               publicDirectory,

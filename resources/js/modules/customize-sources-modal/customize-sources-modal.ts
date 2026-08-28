@@ -692,7 +692,7 @@ export class PageSettingsModal extends Modal {
       .appendTo($body);
 
     const $footer = $(
-      '<div class="footer flex rightalign flex-nowrap"/>'
+      '<div class="footer cp:flex rightalign cp:flex-nowrap"/>'
     ).appendTo(this.#$container);
 
     const $cancelBtn = Craft.ui
@@ -1449,7 +1449,7 @@ export class Source extends BaseSource {
   }
 
   createSortField($container: any): void {
-    const $inputContainer = $('<div class="flex"/>');
+    const $inputContainer = $('<div class="cp:flex"/>');
 
     const options = this.sourceData.sortOptions.sort((a: any, b: any) => {
       return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;

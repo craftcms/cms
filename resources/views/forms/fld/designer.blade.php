@@ -67,7 +67,7 @@
                         variant="outline"
                         size="small"
                         data-library="field"
-                        class="w-full"
+                        class="cp:w-full"
                         active
                         @disabled($disabled)
                     >{{ \CraftCms\Cms\t('Fields') }}</craft-button>
@@ -77,7 +77,7 @@
                         data-library="ui"
                         variant="outline"
                         size="small"
-                        class="w-full"
+                        class="cp:w-full"
                         @disabled($disabled)
                     >{{ \CraftCms\Cms\t('UI Elements') }}</craft-button>
                 </craft-button-group>

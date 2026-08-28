@@ -200,7 +200,7 @@ class EditElementController
                 // if we're in a slideout, we don't want to add the .flex-grow to the header toolbar
                 // as it'll mess with the width available for the tabs
                 // see https://github.com/craftcms/cms/issues/17260
-                ($this->isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'flex-grow'])).
+                ($this->isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'cp:flex-grow'])).
                 Html::tag('div', attributes: ['class' => 'activity-container']),
             )
             ->additionalButtonsHtml(fn () => $this->additionalButtons(

@@ -78,8 +78,8 @@ export class RecoveryCodesSetup extends LitElement {
 
   successTemplate = ({codes, message}: RecoveryCodeResponseData) => {
     return html`
-      <div class="grid gap-6 justify-items-center flex-1">
-        <div class="grid justify-items-center gap-2">
+      <div class="cp:grid cp:gap-6 cp:justify-items-center cp:flex-1">
+        <div class="cp:grid cp:justify-items-center cp:gap-2">
           <craft-icon
             name="circle-check"
             data-color="success"
@@ -89,14 +89,14 @@ export class RecoveryCodesSetup extends LitElement {
             ${message}
           </h1>
         </div>
-        <craft-pane class="w-3/4">
-          <div class="grid gap-4">
-            <ul class="text-center font-mono">
+        <craft-pane class="cp:w-3/4">
+          <div class="cp:grid cp:gap-4">
+            <ul class="cp:text-center cp:font-mono">
               ${codes.map((code) => html`<li>${code}</li>`)}
             </ul>
 
             <hr />
-            <div class="flex justify-center">
+            <div class="cp:flex cp:justify-center">
               <craft-button
                 type="button"
                 icon="download"
@@ -132,7 +132,7 @@ export class RecoveryCodesSetup extends LitElement {
   //         slideout.showSuccess();
   //         Craft.authMethodSetup.refresh();
   //
-  //         const $pane = $('<div class="pane fullwidth mt-0"/>').appendTo(
+  //         const $pane = $('<div class="pane fullwidth cp:mt-0"/>').appendTo(
   //           slideout.$container.find('.so-body')
   //         );
   //         const $ul = $(

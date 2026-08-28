@@ -50,7 +50,7 @@ export const Default: Story = {
         :page-size-options="[5, 10, 50]"
       >
         <template #header>
-          <div class="flex gap-2 items-center">
+          <div class="cp:flex cp:gap-2 cp:items-center">
             <craft-input label="Search" label-sr-only placeholder="Search…" />
           </div>
         </template>

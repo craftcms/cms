@@ -139,7 +139,7 @@
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
     <div :id="matrixId" class="matrix matrix-field">
       <span role="status" class="visually-hidden" data-status-message />
-      <div class="grid gap-1" role="list" data-matrix-blocks>
+      <div class="cp:grid cp:gap-1" role="list" data-matrix-blocks>
         <craft-card
           v-for="(uid, index) in value.sortOrder"
           :key="uid"

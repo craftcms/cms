@@ -87,7 +87,7 @@
 <template>
   <div class="update">
     <div class="update-header">
-      <h2 class="text-xl font-semibold">{{ name }}</h2>
+      <h2 class="cp:text-xl cp:font-semibold">{{ name }}</h2>
 
       <div class="update-actions">
         <!-- Primary CTA -->

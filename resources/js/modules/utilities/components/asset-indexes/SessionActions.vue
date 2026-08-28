@@ -27,7 +27,7 @@
 </script>
 
 <template>
-  <div class="flex gap-1">
+  <div class="cp:flex cp:gap-1">
     <craft-button
       v-if="actionRequired"
       type="button"

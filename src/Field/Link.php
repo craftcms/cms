@@ -512,7 +512,7 @@ JS;
                 'data' => ['link-field' => true],
             ]).
             Html::tag('div', $innerHtml, [
-                'class' => ['flex', 'flex-nowrap'],
+                'class' => ['cp:flex', 'cp:flex-nowrap'],
             ]).
             Html::endTag('div');
 
@@ -533,7 +533,7 @@ JS;
         if (! empty($this->advancedFields)) {
             $html .=
                 Html::button(t('Advanced'), attributes: [
-                    'class' => ['fieldtoggle', 'mb-0'],
+                    'class' => ['fieldtoggle', 'cp:mb-0'],
                     'data' => ['target' => "$id-advanced"],
                 ]).
                 Html::beginTag('div', [

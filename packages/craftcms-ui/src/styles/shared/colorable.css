@@ -298,7 +298,7 @@
   --c-color-danger-on-loud: var(--color-red-50);
 }
 
-.c-palette-red,
+.cp-palette-red,
 [data-palette='red'],
 .cp-color-red,
 [data-color='red'] {
@@ -312,7 +312,7 @@
   --c-color-on-normal: var(--c-color-red-on-normal);
   --c-color-on-loud: var(--c-color-red-on-loud);
 }
-.c-palette-orange,
+.cp-palette-orange,
 [data-palette='orange'],
 .cp-color-orange,
 [data-color='orange'] {
@@ -326,7 +326,7 @@
   --c-color-on-normal: var(--c-color-orange-on-normal);
   --c-color-on-loud: var(--c-color-orange-on-loud);
 }
-.c-palette-amber,
+.cp-palette-amber,
 [data-palette='amber'],
 .cp-color-amber,
 [data-color='amber'] {
@@ -340,7 +340,7 @@
   --c-color-on-normal: var(--c-color-amber-on-normal);
   --c-color-on-loud: var(--c-color-amber-on-loud);
 }
-.c-palette-yellow,
+.cp-palette-yellow,
 [data-palette='yellow'],
 .cp-color-yellow,
 [data-color='yellow'] {
@@ -354,7 +354,7 @@
   --c-color-on-normal: var(--c-color-yellow-on-normal);
   --c-color-on-loud: var(--c-color-yellow-on-loud);
 }
-.c-palette-lime,
+.cp-palette-lime,
 [data-palette='lime'],
 .cp-color-lime,
 [data-color='lime'] {
@@ -368,7 +368,7 @@
   --c-color-on-normal: var(--c-color-lime-on-normal);
   --c-color-on-loud: var(--c-color-lime-on-loud);
 }
-.c-palette-green,
+.cp-palette-green,
 [data-palette='green'],
 .cp-color-green,
 [data-color='green'] {
@@ -382,7 +382,7 @@
   --c-color-on-normal: var(--c-color-green-on-normal);
   --c-color-on-loud: var(--c-color-green-on-loud);
 }
-.c-palette-emerald,
+.cp-palette-emerald,
 [data-palette='emerald'],
 .cp-color-emerald,
 [data-color='emerald'] {
@@ -396,7 +396,7 @@
   --c-color-on-normal: var(--c-color-emerald-on-normal);
   --c-color-on-loud: var(--c-color-emerald-on-loud);
 }
-.c-palette-teal,
+.cp-palette-teal,
 [data-palette='teal'],
 .cp-color-teal,
 [data-color='teal'] {
@@ -410,7 +410,7 @@
   --c-color-on-normal: var(--c-color-teal-on-normal);
   --c-color-on-loud: var(--c-color-teal-on-loud);
 }
-.c-palette-cyan,
+.cp-palette-cyan,
 [data-palette='cyan'],
 .cp-color-cyan,
 [data-color='cyan'] {
@@ -424,7 +424,7 @@
   --c-color-on-normal: var(--c-color-cyan-on-normal);
   --c-color-on-loud: var(--c-color-cyan-on-loud);
 }
-.c-palette-sky,
+.cp-palette-sky,
 [data-palette='sky'],
 .cp-color-sky,
 [data-color='sky'] {
@@ -438,7 +438,7 @@
   --c-color-on-normal: var(--c-color-sky-on-normal);
   --c-color-on-loud: var(--c-color-sky-on-loud);
 }
-.c-palette-blue,
+.cp-palette-blue,
 [data-palette='blue'],
 .cp-color-blue,
 [data-color='blue'] {
@@ -452,7 +452,7 @@
   --c-color-on-normal: var(--c-color-blue-on-normal);
   --c-color-on-loud: var(--c-color-blue-on-loud);
 }
-.c-palette-indigo,
+.cp-palette-indigo,
 [data-palette='indigo'],
 .cp-color-indigo,
 [data-color='indigo'] {
@@ -466,7 +466,7 @@
   --c-color-on-normal: var(--c-color-indigo-on-normal);
   --c-color-on-loud: var(--c-color-indigo-on-loud);
 }
-.c-palette-violet,
+.cp-palette-violet,
 [data-palette='violet'],
 .cp-color-violet,
 [data-color='violet'] {
@@ -480,7 +480,7 @@
   --c-color-on-normal: var(--c-color-violet-on-normal);
   --c-color-on-loud: var(--c-color-violet-on-loud);
 }
-.c-palette-purple,
+.cp-palette-purple,
 [data-palette='purple'],
 .cp-color-purple,
 [data-color='purple'] {
@@ -494,7 +494,7 @@
   --c-color-on-normal: var(--c-color-purple-on-normal);
   --c-color-on-loud: var(--c-color-purple-on-loud);
 }
-.c-palette-fuchsia,
+.cp-palette-fuchsia,
 [data-palette='fuchsia'],
 .cp-color-fuchsia,
 [data-color='fuchsia'] {
@@ -508,7 +508,7 @@
   --c-color-on-normal: var(--c-color-fuchsia-on-normal);
   --c-color-on-loud: var(--c-color-fuchsia-on-loud);
 }
-.c-palette-pink,
+.cp-palette-pink,
 [data-palette='pink'],
 .cp-color-pink,
 [data-color='pink'] {
@@ -522,7 +522,7 @@
   --c-color-on-normal: var(--c-color-pink-on-normal);
   --c-color-on-loud: var(--c-color-pink-on-loud);
 }
-.c-palette-rose,
+.cp-palette-rose,
 [data-palette='rose'],
 .cp-color-rose,
 [data-color='rose'] {
@@ -536,7 +536,7 @@
   --c-color-on-normal: var(--c-color-rose-on-normal);
   --c-color-on-loud: var(--c-color-rose-on-loud);
 }
-.c-palette-white,
+.cp-palette-white,
 [data-palette='white'],
 .cp-color-white,
 [data-color='white'] {
@@ -550,7 +550,7 @@
   --c-color-on-normal: var(--c-color-white-on-normal);
   --c-color-on-loud: var(--c-color-white-on-loud);
 }
-.c-palette-gray,
+.cp-palette-gray,
 [data-palette='gray'],
 .cp-color-gray,
 [data-color='gray'] {
@@ -564,7 +564,7 @@
   --c-color-on-normal: var(--c-color-gray-on-normal);
   --c-color-on-loud: var(--c-color-gray-on-loud);
 }
-.c-palette-black,
+.cp-palette-black,
 [data-palette='black'],
 .cp-color-black,
 [data-color='black'] {
@@ -578,7 +578,7 @@
   --c-color-on-normal: var(--c-color-black-on-normal);
   --c-color-on-loud: var(--c-color-black-on-loud);
 }
-.c-palette-slate,
+.cp-palette-slate,
 [data-palette='slate'],
 .cp-color-slate,
 [data-color='slate'] {
@@ -592,7 +592,7 @@
   --c-color-on-normal: var(--c-color-slate-on-normal);
   --c-color-on-loud: var(--c-color-slate-on-loud);
 }
-.c-palette-neutral,
+.cp-palette-neutral,
 [data-palette='neutral'],
 .cp-color-neutral,
 [data-color='neutral'] {
@@ -606,7 +606,7 @@
   --c-color-on-normal: var(--c-color-neutral-on-normal);
   --c-color-on-loud: var(--c-color-neutral-on-loud);
 }
-.c-palette-accent,
+.cp-palette-accent,
 [data-palette='accent'],
 .cp-color-accent,
 [data-color='accent'] {
@@ -620,7 +620,7 @@
   --c-color-on-normal: var(--c-color-accent-on-normal);
   --c-color-on-loud: var(--c-color-accent-on-loud);
 }
-.c-palette-info,
+.cp-palette-info,
 [data-palette='info'],
 .cp-color-info,
 [data-color='info'] {
@@ -634,7 +634,7 @@
   --c-color-on-normal: var(--c-color-info-on-normal);
   --c-color-on-loud: var(--c-color-info-on-loud);
 }
-.c-palette-success,
+.cp-palette-success,
 [data-palette='success'],
 .cp-color-success,
 [data-color='success'] {
@@ -648,7 +648,7 @@
   --c-color-on-normal: var(--c-color-success-on-normal);
   --c-color-on-loud: var(--c-color-success-on-loud);
 }
-.c-palette-warning,
+.cp-palette-warning,
 [data-palette='warning'],
 .cp-color-warning,
 [data-color='warning'] {
@@ -662,7 +662,7 @@
   --c-color-on-normal: var(--c-color-warning-on-normal);
   --c-color-on-loud: var(--c-color-warning-on-loud);
 }
-.c-palette-danger,
+.cp-palette-danger,
 [data-palette='danger'],
 .cp-color-danger,
 [data-color='danger'] {

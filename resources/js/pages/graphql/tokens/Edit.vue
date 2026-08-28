@@ -91,7 +91,7 @@
 
 <template>
   <craft-pane appearance="raised">
-    <div class="grid gap-3">
+    <div class="cp:grid cp:gap-3">
       <CraftInput
         :label="t('Name')"
         :help-text="t('What this token will be called in the control panel.')"
@@ -125,7 +125,7 @@
 
       <hr />
 
-      <div class="flex items-end gap-1">
+      <div class="cp:flex cp:items-end cp:gap-1">
         <CraftInput
           :label="t('Authorization Header')"
           :help-text="
@@ -134,7 +134,7 @@
             )
           "
           id="auth-header"
-          class="code ltr flex-1"
+          class="code ltr cp:flex-1"
           :model-value="authorizationHeader"
           readonly
           :error="form.errors.accessToken"

@@ -154,16 +154,16 @@
     .modelValue="model"
     :disabled="disabled"
   >
-    <div class="flex gap-2 items-center" slot="before">
+    <div class="cp:flex cp:gap-2 cp:items-center" slot="before">
       <div class="icon-preview" :lang="contentLang">
         <craft-spinner
           v-if="previewState === 'fetching'"
           style="--size: 1em"
           visible
         ></craft-spinner>
-        <div v-else class="contents" v-html="previewHtml"></div>
+        <div v-else class="cp:contents" v-html="previewHtml"></div>
       </div>
-      <div class="flex gap-1 items-center">
+      <div class="cp:flex cp:gap-1 cp:items-center">
         <craft-button
           type="button"
           size="small"
@@ -189,15 +189,15 @@
     @close="modalActive = false"
     @opened="focusSearch"
   >
-    <craft-pane class="h-full">
+    <craft-pane class="cp:h-full">
       <form
         slot="header"
         role="search"
         @submit.prevent="loadIcons()"
-        class="sticky top-0 pt-4 px-4 pb-2 bg-white"
+        class="cp:sticky cp:top-0 cp:pt-4 cp:px-4 cp:pb-2 cp:bg-white"
       >
         <CraftInput :label="t('Search')" v-model="query" ref="searchInput">
-          <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
+          <div slot="suffix" class="cp:flex cp:self-center w-[1em] h-[1em]">
             <craft-spinner
               style="--size: 1em"
               :visible="http.processing && iconHtml !== null"
@@ -208,7 +208,7 @@
       <div>
         <!-- This only shows on the initial load -->
         <template v-if="http.processing && iconHtml === null">
-          <div class="flex justify-center p-4">
+          <div class="cp:flex cp:justify-center cp:p-4">
             <craft-spinner></craft-spinner>
           </div>
         </template>

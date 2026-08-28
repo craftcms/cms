@@ -74,10 +74,10 @@
 
 <template>
   <form @submit.prevent="updatePluginLicense()">
-    <div class="flex gap-1 items-start mb-1">
+    <div class="cp:flex cp:gap-1 cp:items-start cp:mb-1">
       <CraftInput
         v-model="form.key"
-        class="font-mono"
+        class="cp:font-mono"
         :label="t('License Key')"
         label-sr-only
         placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"

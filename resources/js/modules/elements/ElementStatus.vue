@@ -68,11 +68,12 @@
 <template>
   <div
     :class="{
-      'inline-flex border': true,
-      'gap-2 border-transparent': mode === 'inline',
+      'inline-flex cp:border': true,
+      'cp:gap-2 cp:border-transparent': mode === 'cp:inline',
       [`bg-${variant}-fill-quiet border-${variant}-border-quiet`]:
         mode === 'badge',
-      'gap-1 px-1.5 py-0.5 rounded-full text-xs': mode === 'badge',
+      'cp:gap-1 cp:px-1.5 cp:py-0.5 cp:rounded-full cp:text-xs':
+        mode === 'badge',
     }"
   >
     <craft-indicator

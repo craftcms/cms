@@ -7,8 +7,8 @@
 </script>
 
 <template>
-  <craft-callout variant="danger" icon="triangle-exclamation" class="mb-3">
-    <div slot="title" class="font-bold">
+  <craft-callout variant="danger" icon="triangle-exclamation" class="cp:mb-3">
+    <div slot="title" class="cp:font-bold">
       {{ t('Could not save settings') }}
     </div>
     <ul>

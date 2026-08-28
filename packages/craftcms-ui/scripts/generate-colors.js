@@ -132,9 +132,11 @@ function buildDeclarations(color, indent = '  ') {
 /**
  * The selectors that put an element in a color group.
  *
- * `.c-palette-*` and `[data-palette]` are the current spellings — the class
- * matches the `c-` utility prefix, and the attribute matches the class, so the
- * two read as one idea rather than two.
+ * `.cp-palette-*` and `[data-palette]` are the current spellings — the class
+ * follows the CP's `.cp-*` class convention, and the attribute matches the
+ * class, so the two read as one idea rather than two. It is a plain stylesheet
+ * rule, not a Tailwind utility, so it carries no `cp:` prefix and works in the
+ * legacy shell and inside shadow roots as well.
  *
  * `.cp-color-*` and `[data-color]` are the Craft 5 spellings. They stay on the
  * same rule so existing markup and plugins keep working; new code should reach
@@ -144,7 +146,7 @@ function buildDeclarations(color, indent = '  ') {
  */
 function paletteSelectors(color) {
   return [
-    `.c-palette-${color}`,
+    `.cp-palette-${color}`,
     `[data-palette='${color}']`,
     `.cp-color-${color}`,
     `[data-color='${color}']`,

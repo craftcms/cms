@@ -17,7 +17,7 @@
   <Form
     :action="action"
     v-slot="{processing, submit}"
-    class="w-full"
+    class="cp:w-full"
     :options="{
       preserveScroll: true,
       preserveState: true,
@@ -25,9 +25,9 @@
       ...options,
     }"
   >
-    <div class="flex gap-2 items-start">
+    <div class="cp:flex cp:gap-2 cp:items-start">
       <CraftInput
-        class="flex-1"
+        class="cp:flex-1"
         name="search"
         :label="t('Search term')"
         v-model="searchTerm"

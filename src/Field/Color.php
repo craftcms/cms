@@ -310,7 +310,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         $html =
             Html::beginTag('div', [
-                'class' => ['flex', 'flex-col', 'items-stretch'],
+                'class' => ['cp:flex', 'cp:flex-col', 'cp:items-stretch'],
                 'style' => [
                     'width' => '25em',
                     'max-width' => '100%',
@@ -392,7 +392,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return '';
         }
 
-        $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
+        $html = Html::beginTag('div', ['class' => ['color', 'small', 'cp:static']]).
             Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => [

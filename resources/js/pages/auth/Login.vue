@@ -37,7 +37,7 @@
       :use-email-as-username="general.useEmailAsUsername ? '' : null"
     >
       <div
-        class="grid gap-1 pt-1"
+        class="cp:grid cp:gap-1 cp:pt-1"
         v-if="oauthLoginButtonsHtml"
         slot="alternative-methods"
         v-html="oauthLoginButtonsHtml"

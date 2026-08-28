@@ -93,7 +93,7 @@ class CountryCodeField extends BaseNativeField
 
         return
             Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap'],
+                'class' => ['cp:flex', 'cp:flex-nowrap'],
             ]).
             FormFields::selectizeHtml([
                 'id' => 'countryCode',

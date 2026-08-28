@@ -240,9 +240,9 @@ export class CpScreenSlideout extends Slideout {
     this.$noticeContainer = $('<div/>', {class: 'so-notice'}).appendTo(
       this.$footer
     );
-    $('<div/>', {class: 'flex-grow'}).appendTo(this.$footer);
+    $('<div/>', {class: 'cp:flex-grow'}).appendTo(this.$footer);
     const $btnContainer = $('<div/>', {
-      class: 'flex flex-nowrap',
+      class: 'cp:flex cp:flex-nowrap',
     }).appendTo(this.$footer);
     this.$cancelBtn = $('<button/>', {
       type: 'button',

@@ -228,7 +228,7 @@
         <header>
           <!-- Focus lands here on Inertia navigation; see
             `handleAccessibleRouting` in bootstrap/cp.ts. -->
-          <span id="route-focus-anchor" tabindex="-1" class="sr-only"></span>
+          <span id="route-focus-anchor" tabindex="-1" class="cp:sr-only"></span>
           <a
             v-for="link in skipLinks"
             :key="link.url"
@@ -236,8 +236,10 @@
             class="skip-link skip-link--global"
             >{{ link.label }}</a
           >
-          <div class="container">
-            <div class="flex gap-4 py-1 items-center justify-between">
+          <div class="cp:container">
+            <div
+              class="cp:flex cp:gap-4 cp:py-1 cp:items-center cp:justify-between"
+            >
               <craft-button
                 v-if="
                   globalSidebar.mode === 'floating' &&
@@ -256,7 +258,7 @@
 
               <slot name="breadcrumbs">
                 <div
-                  class="py-1 flex flex-nowrap items-center gap-2"
+                  class="cp:py-1 cp:flex cp:flex-nowrap cp:items-center cp:gap-2"
                   v-show="crumbs || hasContextMenu"
                 >
                   <Breadcrumbs v-if="crumbs" :items="crumbs" />
@@ -268,8 +270,8 @@
                 </div>
               </slot>
 
-              <div class="ml-auto"></div>
-              <div class="flex gap-2 items-center">
+              <div class="cp:ml-auto"></div>
+              <div class="cp:flex cp:gap-2 cp:items-center">
                 <craft-button
                   icon
                   :variant="ButtonVariant.Plain"
@@ -295,11 +297,13 @@
             >
               <slot name="header">
                 <div id="cp-header">
-                  <div class="container">
-                    <div class="flex gap-2 items-center justify-between py-4">
+                  <div class="cp:container">
+                    <div
+                      class="cp:flex cp:gap-2 cp:items-center cp:justify-between cp:py-4"
+                    >
                       <LayoutSlotOutlet name="title">
                         <slot name="title">
-                          <h1 class="text-xl">{{ pageTitle }}</h1>
+                          <h1 class="cp:text-xl">{{ pageTitle }}</h1>
                         </slot>
                       </LayoutSlotOutlet>
                       <LayoutSlotOutlet name="title-badge">
@@ -308,14 +312,14 @@
                       <div
                         v-show="hasToolbar"
                         id="toolbar"
-                        class="flex items-center gap-2"
+                        class="cp:flex cp:items-center cp:gap-2"
                       >
                         <LayoutSlotOutlet name="toolbar">
                           <slot name="toolbar"></slot>
                         </LayoutSlotOutlet>
                       </div>
 
-                      <div class="flex gap-2 items-center">
+                      <div class="cp:flex cp:gap-2 cp:items-center">
                         <LayoutSlotOutlet name="actions">
                           <slot name="actions">
                             <slot name="additional-buttons"></slot>
@@ -343,7 +347,7 @@
                   </div>
                 </div>
               </slot>
-              <div class="container">
+              <div class="cp:container">
                 <LayoutSlotOutlet name="error-summary">
                   <slot name="error-summary">
                     <ErrorSummary
@@ -434,7 +438,7 @@
       </div>
       <div class="cp__footer">
         <footer>
-          <div class="container">
+          <div class="cp:container">
             <LayoutSlotOutlet name="footer">
               <slot name="footer"></slot>
             </LayoutSlotOutlet>

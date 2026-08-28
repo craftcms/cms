@@ -20,7 +20,7 @@
         @endforeach
         <craft-button
             type="button"
-            class="w-full fld-add-btn mt-2"
+            class="cp:w-full fld-add-btn cp:mt-2"
             variant="outline"
             size="small"
             command="--add-field"

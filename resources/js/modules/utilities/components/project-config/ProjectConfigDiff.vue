@@ -57,7 +57,7 @@
     <!-- Diff content -->
     <template v-else>
       <pre
-        class="py-2"
+        class="cp:py-2"
       ><template v-for="(line, index) in displayedLines" :key="index"
           ><code
             :class="{

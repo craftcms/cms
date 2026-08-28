@@ -1,0 +1,36 @@
+/**
+Craft CP utilities
+
+The design tokens, Tailwind, and Craft's token utilities — with no reset and
+no component styles. Both CP shells load this: the Inertia shell pulls it in
+through `cp.css`, and the legacy Twig shell loads it on its own (registered by
+`CpAsset`), so a `cp:` class means the same thing on either side and the
+`--c-*` tokens the legacy stylesheet aliases against are actually defined.
+
+Everything Tailwind generates is prefixed `cp:` — Craft's utilities and stock
+Tailwind alike, so `cp:bg-loud` and `cp:flex` read as one system, and anything
+unprefixed is a legacy class from the old SCSS bundle.
+
+The prefix is `cp` rather than `c` on purpose: `prefix(c)` renames Tailwind's
+own theme variables into `--c-*`, which is Craft's token namespace, and eight
+of them (`--c-text-sm`, `--c-radius-sm`, `--c-font-mono`, …) would collide with
+Craft tokens of the same name holding different values.
+ */
+
+@layer theme, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme) prefix(cp);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Token values — the `var()`s the utilities resolve against at render time. */
+@import '@craftcms/ui/styles/shared/variables.css' layer(theme);
+@import '@craftcms/ui/styles/shared/tokens.css' layer(theme);
+@import '@craftcms/ui/styles/shared/colorable.css' layer(theme);
+
+/**
+Craft's own utilities.
+
+No `layer()` here: `@utility` may not be nested, and a layered import would
+nest it. Tailwind places what it generates into the `utilities` layer anyway.
+ */
+@import '@craftcms/ui/tailwind.css';

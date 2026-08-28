@@ -42,6 +42,13 @@ class CpAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
+        // The design tokens and `cp:` utilities. The legacy Twig shell renders
+        // its own document rather than the Inertia one, so nothing else brings
+        // these in — without them the compatibility aliases in the stylesheet
+        // below (`--xs: var(--c-spacing-sm)`) have nothing to resolve against,
+        // and no `cp:` class does anything on a legacy page.
+        $htmlStack->html(Cp::viteUtilities()->toHtml(), Position::Head);
+
         // CP
         $htmlStack->cssFile(craftAsset('legacy/cp/dist/css/cp.css'));
         $htmlStack->jsFile(craftAsset('legacy/cp/dist/cp.js'));

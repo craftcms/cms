@@ -122,7 +122,7 @@
       <template v-if="source.type === 'heading'">
         <template v-if="!!source.heading">
           <craft-nav-item initial-state="open">
-            <span class="text-xs font-bold" v-if="source.heading">
+            <span class="cp:text-xs cp:font-bold" v-if="source.heading">
               {{ source.heading }}
             </span>
             <craft-nav-list slot="subnav">

@@ -75,12 +75,12 @@
 </script>
 
 <template>
-  <div class="grid gap-2">
+  <div class="cp:grid cp:gap-2">
     <div class="user-group-list">
       <craft-chip v-for="group in selectedGroups" :key="group.id">
-        <div class="grid gap-1">
-          <div class="flex gap-1">
-            <div class="font-bold">{{ groupLabel(group) }}</div>
+        <div class="cp:grid cp:gap-1">
+          <div class="cp:flex cp:gap-1">
+            <div class="cp:font-bold">{{ groupLabel(group) }}</div>
             <Tooltip v-if="group.description">{{ group.description }}</Tooltip>
           </div>
         </div>
@@ -98,7 +98,7 @@
       </craft-chip>
     </div>
 
-    <div class="flex gap-2 items-center">
+    <div class="cp:flex cp:gap-2 cp:items-center">
       <craft-action-menu v-if="groups.length">
         <craft-button
           type="button"
@@ -110,13 +110,13 @@
         </craft-button>
 
         <div slot="content">
-          <div class="p-2">
+          <div class="cp:p-2">
             <CraftInput :label="t('Search')" v-model="groupQuery" label-sr-only>
               <craft-icon name="search" slot="prefix"></craft-icon>
             </CraftInput>
           </div>
-          <hr class="m-0" />
-          <div v-if="selectableGroups.length < 1" class="p-2">
+          <hr class="cp:m-0" />
+          <div v-if="selectableGroups.length < 1" class="cp:p-2">
             <Text
               template="No user groups match “{query}”"
               :params="{query: groupQuery}"

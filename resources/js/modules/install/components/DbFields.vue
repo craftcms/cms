@@ -69,8 +69,8 @@
     </ul>
   </Callout>
 
-  <div class="grid grid-cols-5 gap-2">
-    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
+  <div class="cp:grid cp:grid-cols-5 cp:gap-2">
+    <div :class="isSqlite ? 'cp:col-span-3' : 'cp:col-span-2'">
       <Select
         :label="t('Driver')"
         name="driver"
@@ -82,7 +82,7 @@
       />
     </div>
 
-    <div class="col-span-2" v-if="!isSqlite">
+    <div class="cp:col-span-2" v-if="!isSqlite">
       <CraftInput
         :label="t('Host')"
         name="host"
@@ -105,12 +105,12 @@
       />
     </div>
 
-    <ul class="error-list col-span-5" v-if="errors?.server">
+    <ul class="error-list cp:col-span-5" v-if="errors?.server">
       <li>{{ errors?.server }}</li>
     </ul>
   </div>
 
-  <div class="grid grid-cols-2 gap-2" v-if="!isSqlite">
+  <div class="cp:grid cp:grid-cols-2 cp:gap-2" v-if="!isSqlite">
     <div>
       <CraftInput
         :label="t('Username')"
@@ -132,13 +132,13 @@
       />
     </div>
 
-    <ul class="error-list col-span-2" v-if="errors?.user">
+    <ul class="error-list cp:col-span-2" v-if="errors?.user">
       <li>{{ errors?.user }}</li>
     </ul>
   </div>
 
-  <div class="grid grid-cols-4 gap-2">
-    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
+  <div class="cp:grid cp:grid-cols-4 cp:gap-2">
+    <div :class="isSqlite ? 'cp:col-span-3' : 'cp:col-span-2'">
       <CraftInput
         :label="isSqlite ? t('Database File Path') : t('Database Name')"
         name="database"

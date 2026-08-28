@@ -148,7 +148,7 @@ export const sampleCards = sampleEntries.slice(0, 6).map((entry) => ({
     class: ['card'],
     data: {id: entry.id},
   },
-  cardHeaderHtml: `<span class="text-sm c-text-on-neutral-quiet">${entry.section}</span>`,
+  cardHeaderHtml: `<span class="cp:text-sm cp:text-on-neutral-quiet">${entry.section}</span>`,
   cardContentHtml: `<div><a href="#">${entry.title}</a></div>`,
   cardFooterHtml: '',
 }));

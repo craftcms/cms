@@ -582,7 +582,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ]),
                 ]);
             } elseif (isset($value->color)) {
-                $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
+                $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'cp:static']]).
                     Html::tag('div', attributes: [
                         'class' => 'color-preview',
                         'style' => [
@@ -597,7 +597,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 : (string) $value->value
             );
 
-            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']])
+            return Html::beginTag('div', ['class' => ['cp:flex', 'flex-inline', 'gap-xs']])
                 .implode('', $parts)
                 .Html::endTag('div');
         }

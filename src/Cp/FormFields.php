@@ -1421,7 +1421,7 @@ readonly class FormFields
         $input = Html::tag('div', self::selectizeHtml($config).Html::tag('div', '', [
             'id' => "{$field['name']}-spinner",
             'class' => ['spinner', 'hidden'],
-        ]), ['class' => ['flex', 'flex-nowrap']]);
+        ]), ['class' => ['cp:flex', 'cp:flex-nowrap']]);
 
         return self::fieldHtml($input, [
             'fieldClass' => $fieldClass,

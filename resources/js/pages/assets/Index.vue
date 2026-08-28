@@ -97,7 +97,7 @@
     width="sm"
     @close="resolveConflictChoice('cancel')"
   >
-    <div class="c-p-lg flex flex-col gap-4">
+    <div class="cp:p-lg cp:flex cp:flex-col cp:gap-4">
       <p>
         {{
           t(
@@ -106,7 +106,7 @@
           )
         }}
       </p>
-      <div class="flex gap-2 justify-end">
+      <div class="cp:flex cp:gap-2 cp:justify-end">
         <craft-button @click="resolveConflictChoice('cancel')">
           {{ t('Cancel') }}
         </craft-button>
@@ -125,9 +125,12 @@
 
   <!-- New subfolder prompt, opened from the current folder's breadcrumb menu. -->
   <Modal :is-active="newFolderOpen" width="sm" @close="closeNewFolder">
-    <form class="c-p-lg flex flex-col gap-4" @submit.prevent="createSubfolder">
-      <label class="flex flex-col gap-2">
-        <span class="font-medium">{{ t('Folder name') }}</span>
+    <form
+      class="cp:p-lg cp:flex cp:flex-col cp:gap-4"
+      @submit.prevent="createSubfolder"
+    >
+      <label class="cp:flex cp:flex-col cp:gap-2">
+        <span class="cp:font-medium">{{ t('Folder name') }}</span>
         <CraftInput
           v-model="newFolderName"
           :label="t('Folder name')"
@@ -135,7 +138,7 @@
           autofocus
         />
       </label>
-      <div class="flex gap-2 justify-end">
+      <div class="cp:flex cp:gap-2 cp:justify-end">
         <craft-button type="button" @click="closeNewFolder">
           {{ t('Cancel') }}
         </craft-button>

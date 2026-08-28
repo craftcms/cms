@@ -48,9 +48,9 @@
     <template v-if="icon">
       <craft-icon slot="icon" v-bind="icon" />
     </template>
-    <div class="grid gap-1 justify-items-start">
-      <div class="flex gap-1">
-        <div class="font-bold">
+    <div class="cp:grid cp:gap-1 cp:justify-items-start">
+      <div class="cp:flex cp:gap-1">
+        <div class="cp:font-bold">
           {{ name }}
         </div>
         <template v-if="description">
@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <div slot="suffix" class="flex gap-0.5 items-center">
+    <div slot="suffix" class="cp:flex cp:gap-0.5 cp:items-center">
       <ActionMenu v-if="actions" :actions="actions as ActionItem[]" />
       <span v-if="draggable" ref="handleRef" class="drag-handle">
         <slot name="drag-handle">
