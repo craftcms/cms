@@ -2,12 +2,7 @@
 
 namespace craft\base\imagetransforms;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface} instead.
-     */
-    interface EagerImageTransformerInterface extends \CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface
-    {
-    }
+interface EagerImageTransformerInterface
+{
+    public function eagerLoadTransforms(array $transforms, array $assets): void;
 }

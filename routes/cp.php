@@ -33,6 +33,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
@@ -422,6 +423,19 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             });
 
             Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
+        });
+
+        Route::prefix('settings/assets/transformers')->name('settings.assets.transformers.')->group(function () {
+            Route::get('/', [AssetTransformersController::class, 'index'])->name('index');
+
+            Route::middleware(RequireAdminChanges::class)->group(function () {
+                Route::get('new', [AssetTransformersController::class, 'create'])->name('create');
+                Route::post('/', [AssetTransformersController::class, 'store']);
+                Route::post('form', [AssetTransformersController::class, 'renderForm']);
+                Route::delete('{handle}', [AssetTransformersController::class, 'destroy'])->name('destroy');
+            });
+
+            Route::get('{handle}', [AssetTransformersController::class, 'edit'])->name('edit');
         });
 
         // Sites

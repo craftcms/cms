@@ -631,6 +631,22 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
+     * @var string The Asset Transformer to use when none is selected explicitly.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultAssetTransformer('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public string $defaultAssetTransformer = 'craft';
+
+    /**
      * @var string The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -1202,22 +1218,6 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public string|false $filenameWordSeparator = '-';
-
-    /**
-     * @var bool Whether image transforms should be generated before page load.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $generateTransformsBeforePageLoad = false;
 
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
@@ -3678,6 +3678,24 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The Asset Transformer to use when none is selected explicitly.
+     *
+     * @group Assets
+     *
+     * @see $defaultAssetTransformer
+     */
+    public function defaultAssetTransformer(string $value): self
+    {
+        if ($value === '') {
+            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
+        }
+
+        $this->defaultAssetTransformer = $value;
+
+        return $this;
+    }
+
+    /**
      * The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -4332,24 +4350,6 @@ class GeneralConfig extends BaseConfig
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether image transforms should be generated before page load.
-     *
-     * ```php
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $generateTransformsBeforePageLoad
-     */
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }

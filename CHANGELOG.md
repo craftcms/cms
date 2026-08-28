@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
+- Added `CraftCms\Cms\Asset\AssetTransformers` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
+- Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`.
+- Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.
+- Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
+- Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
 - Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
 - Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.

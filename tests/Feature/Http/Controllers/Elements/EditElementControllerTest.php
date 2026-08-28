@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 
@@ -143,6 +144,7 @@ it('renders the current entry edit screen for each control panel route', functio
 
 it('renders the asset edit screen', function () {
     $this->withoutExceptionHandling();
+    Queue::fake();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,

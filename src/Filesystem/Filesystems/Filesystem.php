@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Validation\Rule;
 use Override;
@@ -117,12 +118,12 @@ abstract class Filesystem extends Component implements FsInterface
                     'uid',
                 ]),
             ],
-            'url' => [
+            'url' => new EnvValueRule([
                 'nullable',
                 'string',
                 'max:255',
                 Rule::requiredIf(fn () => $this->hasUrls && $this->getShowUrlSetting()),
-            ],
+            ]),
         ];
     }
 }

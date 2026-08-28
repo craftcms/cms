@@ -183,6 +183,7 @@ test('config', function (mixed $expected, string $paramName, string $overrideNam
 })->with([
     [false, 'allowAdminChanges', 'CRAFT_ALLOW_ADMIN_CHANGES', 'false'],
     [null, 'allowAdminChanges', 'CRAFT_ALLOW_ADMIN_CHANGES', null],
+    ['remote', 'defaultAssetTransformer', 'CRAFT_DEFAULT_ASSET_TRANSFORMER', 'remote'],
     ['foo,bar', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', 'foo,bar'],
     ['*', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', '*'],
     [1, 'defaultWeekStartDay', 'CRAFT_DEFAULT_WEEK_START_DAY', '1'],
