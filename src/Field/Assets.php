@@ -29,9 +29,11 @@ use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\FieldWidth;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -256,22 +258,41 @@ class Assets extends BaseRelationField
         return Form::make(array_values(array_filter([
             FormField::make(t('Restrict assets to a single location'))
                 ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
-            FormField::make(t('Restricted Location Source'))
-                ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource)),
-            FormField::make(t('Restricted Location Subpath'))
-                ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
-                ->tip($objectTemplateTip),
+            Group::make('restricted-location', [
+                FormField::make()
+                    ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Asset Location'))
+                ->instructions(t('The location where assets can be selected from.'))
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation),
             FormField::make(t('Allow subfolders'))
-                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders)),
-            FormField::make(t('Restricted Default Upload Subpath'))
+                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders))
+                ->visible($this->restrictLocation),
+            FormField::make(t('Default Upload Subpath'))
                 ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
-                ->tip($objectTemplateTip),
-            $this->sourcesField(),
-            FormField::make(t('Default Upload Location Source'))
-                ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource)),
-            FormField::make(t('Default Upload Location Subpath'))
-                ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
-                ->tip($objectTemplateTip),
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation && $this->allowSubfolders),
+            $this->sourcesField()->visible(! $this->restrictLocation),
+
+            Group::make('default-upload-location', [
+                FormField::make()
+                    ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Default Upload Location'))
+                ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
+                ->tip($objectTemplateTip)
+                ->visible(! $this->restrictLocation),
             Separator::make('asset-location-separator'),
             $this->selectionConditionField(),
             FormField::make(t('Show unpermitted volumes'))
@@ -286,7 +307,8 @@ class Assets extends BaseRelationField
                 ->control(Choice::make('allowedKinds')
                     ->multiple()
                     ->options($this->getFileKindOptions())
-                    ->value($this->allowedKinds ?? [])),
+                    ->value($this->allowedKinds ?? []))
+                ->visible($this->restrictFiles),
             FormField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
@@ -294,7 +316,7 @@ class Assets extends BaseRelationField
             $this->defaultPlacementField(),
             $this->viewModeField(),
             $this->selectionLabelField(),
-            $this->showSearchInputField(),
+            $this->showSearchInputField()->visible($this->canSearchWithinSources()),
             $this->validateRelatedElementsField(),
             Separator::make('preview-mode-separator'),
             FormField::make(t('Preview Mode'))
@@ -307,6 +329,28 @@ class Assets extends BaseRelationField
                 ])->value($this->previewMode)),
             $this->advancedSettingsGroup(),
         ])));
+    }
+
+    /**
+     * Returns whether the “Show the search input” setting applies.
+     *
+     * The search input only makes sense when the field draws from one specific
+     * place: a single selected source, or a restricted location. Craft 5 drove
+     * this from JS in `elementfieldsettings.twig` and `AssetsFieldSettings.js`.
+     */
+    private function canSearchWithinSources(): bool
+    {
+        if ($this->restrictLocation) {
+            return true;
+        }
+
+        if (! $this->allowMultipleSources) {
+            return $this->source !== null;
+        }
+
+        return is_array($this->sources)
+            && count($this->sources) === 1
+            && $this->sources[0] !== '*';
     }
 
     /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */

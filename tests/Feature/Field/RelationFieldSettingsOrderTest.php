@@ -55,13 +55,16 @@ it('orders the Assets field settings the way Craft 5 did', function () {
     // Mirrors `_components/fieldtypes/Assets/settings.twig` in Craft 5.
     expect(settingsFormOrder(Assets::class))->toBe([
         'restrictLocation',
-        'restrictedLocationSource',
-        'restrictedLocationSubpath',
+        // Composed onto one row under an “Asset Location” label. The prefix is
+        // this test's tree notation — the setting names themselves are
+        // unchanged, since Group children resolve at the parent namespace.
+        'restricted-location/restrictedLocationSource',
+        'restricted-location/restrictedLocationSubpath',
         'allowSubfolders',
         'restrictedDefaultUploadSubpath',
         'sources',
-        'defaultUploadLocationSource',
-        'defaultUploadLocationSubpath',
+        'default-upload-location/defaultUploadLocationSource',
+        'default-upload-location/defaultUploadLocationSubpath',
         'asset-location-separator',
         'selectionCondition',
         'showUnpermittedVolumes',
