@@ -1400,6 +1400,7 @@ return [
     'Restoring database…' => 'Restoring database…',
     'Restrict allowed file types' => 'Restrict allowed file types',
     'Restrict assets to a single location' => 'Restrict assets to a single location',
+    'Retry Duration' => 'Retry Duration',
     'Retry all failed jobs' => 'Retry all failed jobs',
     'Retry' => 'Retry',
     'Retrying all failed jobs.' => 'Retrying all failed jobs.',

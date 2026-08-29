@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Prøv varighed igen',
     'Retry all failed jobs' => 'Prøv alle mislykkede jobs igen',
     'Retry' => 'Prøv igen',
     'Retrying all failed jobs.' => 'Forsøger alle mislykkede jobs igen.',

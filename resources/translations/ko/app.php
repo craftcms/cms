@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => '다시 시도 시간',
     'Retry all failed jobs' => '실패한 모든 작업 다시 시도',
     'Retry' => '다시 시도',
     'Retrying all failed jobs.' => '실패한 모든 작업을 다시 시도하는 중입니다.',

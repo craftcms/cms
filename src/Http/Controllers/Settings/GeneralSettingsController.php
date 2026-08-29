@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Lightswitch;
+use CraftCms\Cms\Form\Controls\Number;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -70,6 +71,7 @@ readonly class GeneralSettingsController
         if ($this->generalConfig->allowAdminChanges) {
             $rules += [
                 'name' => [new EnvValueRule(['required', 'string'])],
+                'retryDuration' => ['nullable', 'integer'],
                 'timeZone' => [new EnvValueRule(['required', 'string', new TimezoneRule])],
             ];
         }
@@ -79,6 +81,7 @@ readonly class GeneralSettingsController
         if ($this->generalConfig->allowAdminChanges) {
             $systemSettings = $this->projectConfig->get('system') ?? [];
             $systemSettings['name'] = $settings['name'];
+            $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
             $systemSettings['timeZone'] = $settings['timeZone'];
             $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
         }
@@ -99,6 +102,10 @@ readonly class GeneralSettingsController
         $form = Form::make([
             Field::make(t('Maintenance Mode'), Lightswitch::make('maintenanceMode'))
                 ->instructions(t('When enabled, site requests will return a service unavailable response and queued jobs will pause.')),
+            Field::make(t('Retry Duration'), Number::make('retryDuration')
+                ->mode($settingsMode)
+                ->size(4))
+                ->instructions(t('The number of seconds that the Retry-After HTTP header should be set to for maintenance mode responses.')),
             Field::make(t('System Name'), Text::make('name')
                 ->mode($settingsMode)
                 ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
@@ -129,20 +136,38 @@ readonly class GeneralSettingsController
 
     private function setMaintenanceMode(bool $enabled): void
     {
-        if ($enabled === $this->maintenanceMode->active()) {
+        $active = $this->maintenanceMode->active();
+
+        if (! $enabled) {
+            if (! $active) {
+                return;
+            }
+
+            $this->maintenanceMode->deactivate();
+            File::delete(storage_path('framework/maintenance.php'));
+            Event::dispatch(new MaintenanceModeDisabled);
+
             return;
         }
 
-        if ($enabled) {
-            $this->maintenanceMode->activate([]);
+        $payload = $active ? $this->maintenanceMode->data() : [];
+        $retryDuration = $this->projectConfig->get('system.retryDuration');
+
+        if ($retryDuration === null) {
+            unset($payload['retry']);
+        } else {
+            $payload['retry'] = (int) $retryDuration;
+        }
+
+        if ($active && $payload === $this->maintenanceMode->data()) {
+            return;
+        }
+
+        $this->maintenanceMode->activate($payload);
+
+        if (! $active) {
             Event::dispatch(new MaintenanceModeEnabled);
-
-            return;
         }
-
-        $this->maintenanceMode->deactivate();
-        File::delete(storage_path('framework/maintenance.php'));
-        Event::dispatch(new MaintenanceModeDisabled);
     }
 
     /** @return list<array<string, mixed>> */

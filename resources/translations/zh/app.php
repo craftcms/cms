@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => '重试持续时间',
     'Retry all failed jobs' => '重试所有失败的作业',
     'Retry' => '重试',
     'Retrying all failed jobs.' => '正在重试所有失败的作业。',

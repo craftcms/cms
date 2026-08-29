@@ -47,13 +47,16 @@ it('can show the settings screen', function () {
             ->component('Form')
             ->where('form.values.name', ProjectConfig::get('system.name'))
             ->where('form.values.maintenanceMode', false)
+            ->where('form.values.retryDuration', ProjectConfig::get('system.retryDuration'))
             ->where('form.nodes', function ($nodes): bool {
                 $maintenanceMode = collect($nodes)
                     ->first(fn (array $node): bool => $node['control']['path'] === ['maintenanceMode']);
+                $retryDuration = collect($nodes)
+                    ->first(fn (array $node): bool => $node['control']['path'] === ['retryDuration']);
 
                 return $maintenanceMode['control']['component'] === 'craft:lightswitch'
-                    && collect($nodes)->pluck('control.path')->doesntContain(['live'])
-                    && collect($nodes)->pluck('control.path')->doesntContain(['retryDuration']);
+                    && $retryDuration['control']['component'] === 'craft:number'
+                    && collect($nodes)->pluck('control.path')->doesntContain(['live']);
             })
             ->where('submit', [
                 'method' => 'post',
@@ -75,6 +78,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
                 ]);
 
                 return $controls->get('maintenanceMode') === 'editable'
+                    && $controls->get('retryDuration') === 'readOnly'
                     && $controls->get('name') === 'readOnly'
                     && $controls->get('timeZone') === 'readOnly';
             }))
@@ -118,14 +122,17 @@ it('can save settings', function () {
     date_default_timezone_set('UTC');
 
     post(action([GeneralSettingsController::class, 'store']), [
-        'maintenanceMode' => false,
+        'maintenanceMode' => true,
         'name' => 'A new app name',
+        'retryDuration' => 60,
         'timeZone' => 'America/New_York',
     ])->assertRedirectBack()
         ->assertSessionHasNoErrors();
 
     expect(ProjectConfig::get('system.name'))->toBe('A new app name')
+        ->and(ProjectConfig::get('system.retryDuration'))->toBe(60)
         ->and(ProjectConfig::get('system.timeZone'))->toBe('America/New_York')
+        ->and(app()->maintenanceMode()->data()['retry'])->toBe(60)
         ->and(date_default_timezone_get())->toBe('America/New_York');
 });
 
@@ -144,6 +151,15 @@ it('validates required fields', function (array $data, array $errors) {
             'timeZone' => 'Not/A_Timezone',
         ],
         'errors' => ['timeZone'],
+    ],
+    'invalid retry duration' => [
+        'data' => [
+            'maintenanceMode' => false,
+            'name' => 'App',
+            'retryDuration' => 'soon',
+            'timeZone' => 'UTC',
+        ],
+        'errors' => ['retryDuration'],
     ],
 ]);
 
@@ -202,18 +218,22 @@ it('shows and disables active maintenance mode', function () {
 
 it('toggles maintenance mode when admin changes are disabled', function () {
     Cms::config()->allowAdminChanges = false;
+    ProjectConfig::set('system.retryDuration', 60);
     $systemName = ProjectConfig::get('system.name');
     $timeZone = ProjectConfig::get('system.timeZone');
 
     post(action([GeneralSettingsController::class, 'store']), [
         'maintenanceMode' => true,
         'name' => 'Changed name',
+        'retryDuration' => 120,
         'timeZone' => 'America/New_York',
     ])
         ->assertRedirectBack();
 
     expect(app()->isDownForMaintenance())->toBeTrue()
+        ->and(app()->maintenanceMode()->data()['retry'])->toBe(60)
         ->and(ProjectConfig::get('system.name'))->toBe($systemName)
+        ->and(ProjectConfig::get('system.retryDuration'))->toBe(60)
         ->and(ProjectConfig::get('system.timeZone'))->toBe($timeZone);
 
     post(action([GeneralSettingsController::class, 'store']), [
@@ -226,14 +246,21 @@ it('toggles maintenance mode when admin changes are disabled', function () {
 
 it('preserves an existing maintenance mode payload', function () {
     Cms::config()->allowAdminChanges = false;
-    app()->maintenanceMode()->activate(['retry' => 60]);
+    ProjectConfig::set('system.retryDuration', 60);
+    app()->maintenanceMode()->activate([
+        'retry' => 30,
+        'secret' => 'maintenance-secret',
+    ]);
 
     post(action([GeneralSettingsController::class, 'store']), [
         'maintenanceMode' => true,
     ])
         ->assertRedirectBack();
 
-    expect(app()->maintenanceMode()->data())->toBe(['retry' => 60]);
+    expect(app()->maintenanceMode()->data())->toBe([
+        'retry' => 60,
+        'secret' => 'maintenance-secret',
+    ]);
 });
 
 it('dispatches maintenance mode events and removes the pre-rendered file', function () {

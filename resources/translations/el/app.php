@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Διάρκεια Επανάληψης',
     'Retry all failed jobs' => 'Επανάληψη όλων των αποτυχημένων εργασιών',
     'Retry' => 'Επανάληψη',
     'Retrying all failed jobs.' => 'Επανάληψη όλων των αποτυχημένων εργασιών.',

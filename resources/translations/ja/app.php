@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => '再試行時間',
     'Retry all failed jobs' => '失敗したすべてのジョブを再試行',
     'Retry' => '再試行',
     'Retrying all failed jobs.' => '失敗したすべてのジョブを再試行しています。',

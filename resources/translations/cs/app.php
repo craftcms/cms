@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Čas pro nový pokus',
     'Retry all failed jobs' => 'Znovu spustit všechny neúspěšné úlohy',
     'Retry' => 'Zkusit znovu',
     'Retrying all failed jobs.' => 'Opětovné spuštění všech neúspěšných úloh.',

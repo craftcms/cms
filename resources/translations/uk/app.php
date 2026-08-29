@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Тривалість повторної спроби',
     'Retry all failed jobs' => 'Перезапустити всі невдалі завдання',
     'Retry' => 'Повторити спробу',
     'Retrying all failed jobs.' => 'Повторно запустити всі невдалі завдання.',

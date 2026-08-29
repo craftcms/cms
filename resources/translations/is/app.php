@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Endurreyna Lengd',
     'Retry all failed jobs' => 'Reyndu aftur allar misheppnaðar keyrslur',
     'Retry' => 'Reyndu aftur',
     'Retrying all failed jobs.' => 'Reynir aftur allar misheppnaðar keyrslur.',

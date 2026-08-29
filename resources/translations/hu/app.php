@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Újrapróbálkozás időtartama',
     'Retry all failed jobs' => 'Újrapróbálni az összes sikertelen feladatot',
     'Retry' => 'Újrapróbálni',
     'Retrying all failed jobs.' => 'Összes sikertelen feladat újrapróbálása.',

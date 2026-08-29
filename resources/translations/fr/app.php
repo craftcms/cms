@@ -1485,6 +1485,7 @@ return [
     'Restricted Default Upload Subpath' => 'Restricted Default Upload Subpath',
     'Restricted Location Source' => 'Restricted Location Source',
     'Restricted Location Subpath' => 'Restricted Location Subpath',
+    'Retry Duration' => 'Durée des tentatives successives',
     'Retry all failed jobs' => 'Réessayer toutes les tâches échouées',
     'Retry' => 'Réessayer',
     'Retrying all failed jobs.' => 'Nouvelle tentative pour toutes les tâches échouées.',
