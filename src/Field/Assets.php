@@ -282,16 +282,18 @@ class Assets extends BaseRelationField
 
             Group::make('default-upload-location', [
                 FormField::make()
+                    ->label(t('Source'))
                     ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
                     ->width(FieldWidth::Third),
                 FormField::make()
+                    ->label(t('Subpath'))
                     ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                    ->tip($objectTemplateTip)
                     ->width(FieldWidth::TwoThirds),
             ])
                 ->asField()
                 ->label(t('Default Upload Location'))
                 ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
-                ->tip($objectTemplateTip)
                 ->visible(! $this->restrictLocation),
             Separator::make('asset-location-separator'),
             $this->selectionConditionField(),
