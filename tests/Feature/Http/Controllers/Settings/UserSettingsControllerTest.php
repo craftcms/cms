@@ -96,7 +96,7 @@ it('uses the control panel route for saving settings', function () {
         '/%s/%s/user-settings/save-user-settings',
         Cms::config()->cpTrigger,
         Cms::config()->actionTrigger,
-    ))->assertMethodNotAllowed();
+    ))->assertNotFound();
 });
 
 it('exposes all user photo volumes', function () {

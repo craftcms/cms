@@ -96,6 +96,7 @@ it('can save a new volume', function () {
         'name' => 'Test Volume',
         'handle' => 'testVolume',
         'fsHandle' => 'test-disk',
+        'assetTransformer' => '$ASSET_TRANSFORMER',
     ]));
 
     expect(Volume::count())->toBe(1);
@@ -103,7 +104,12 @@ it('can save a new volume', function () {
     tap(Volume::firstOrFail(), function ($volume) {
         expect($volume->name)->toBe('Test Volume');
         expect($volume->handle)->toBe('testVolume');
+        expect($volume->assetTransformer)->toBe('$ASSET_TRANSFORMER');
     });
+
+    app()->forgetInstance(Volumes::class);
+    expect(app(Volumes::class)->getVolumeByHandle('testVolume')?->getAssetTransformerHandle(false))
+        ->toBe('$ASSET_TRANSFORMER');
 
     Event::assertDispatchedOnce(VolumeSaving::class);
     Event::assertDispatchedOnce(VolumeSaved::class);

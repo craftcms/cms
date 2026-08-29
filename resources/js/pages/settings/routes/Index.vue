@@ -73,7 +73,11 @@
       return;
     }
 
-    router.delete(destroy({uid: route.uid}));
+    router
+      .optimistic<{routes: Array<RouteIndexData>}>(({routes}) => ({
+        routes: routes.filter(({uid}) => uid !== route.uid),
+      }))
+      .delete(destroy({uid: route.uid}));
   }
 
   useAppLayout({title: props.title});

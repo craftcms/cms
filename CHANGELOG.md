@@ -2,13 +2,21 @@
 
 ## Unreleased
 
+- Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
+- Added `CraftCms\Cms\Asset\AssetTransformers` and `CraftCms\Cms\Asset\AssetTransformDrivers`.
+- Added `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`.
+- Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.
+- Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
+- Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
 - Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
 - Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
 - Element edit screens now indicate which fields a draft has unapplied changes to.
 - Fixed a bug where the Control Panel loaded two copies of Lit, which could break rendering within legacy HTML controls.
 - Fixed a bug where field layout changes weren’t saved on entry type settings screens.
-- Fixed a bug where Typecast would throw when trying to set properties that didn't exist. [#19492](https://github.com/craftcms/cms/pull/19492)
+- Fixed a bug where Typecast would throw when trying to set properties that didn’t exist. ([#19492](https://github.com/craftcms/cms/pull/19492))
+- Fixed a bug where POST requests to legacy action URLs weren’t getting routed properly. ([#19478](https://github.com/craftcms/cms/issues/19478))
+- Fixed a JavaScript error that occurred when creating a new Dashboard widget. ([#19479](https://github.com/craftcms/cms/issues/19479))
 
 ## 6.0.0-alpha.17 - 2026-08-18
 
@@ -58,7 +66,7 @@
 
 ## 6.0.0-alpha.15 - 2026-08-04
 
-- Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
+- Added support for Markdown-based custom Dashboard widgets in the application’s `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
 - Added BMP, HEIC, ICO, JPEG 2000, JPEG XL, and TIFF image transform formats when supported by the active image driver.
@@ -290,7 +298,7 @@
 - Login attempts are now rate limited.
 - Updated core asset I/O to resolve Craft filesystem definitions and configured storage targets through Laravel filesystem disks.
 - Updated elevated session prompts to use the modern control panel frontend while preserving the legacy JavaScript APIs.
-- Fixed a bug where site routes weren't being registered for each localized site value.
+- Fixed a bug where site routes weren’t being registered for each localized site value.
 - Fixed a bug where POST requests to the `loginPath` weren’t being handled properly. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where users were redirected to the previous page on logout. ([#19220](https://github.com/craftcms/cms/pull/19220))
 - Fixed a bug where requests to the `loginPath`, `setPasswordPath`, and `verifyEmailPath` were getting redirected to the control panel. ([#19229](https://github.com/craftcms/cms/pull/19229))

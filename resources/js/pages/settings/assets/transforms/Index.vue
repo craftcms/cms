@@ -25,24 +25,6 @@
     name: string;
   };
 
-  function deleteTransform(transform: ExistingImageTransform) {
-    if (
-      confirm(
-        t('Are you sure you want to delete the “{name}” transform?', {
-          name: transform.name,
-        })
-      )
-    ) {
-      router
-        .optimistic<{transforms: Array<ExistingImageTransform>}>((props) => ({
-          transforms: props.transforms.filter(({id}) => id !== transform.id),
-        }))
-        .delete(destroy({transformId: transform.id}), {
-          preserveScroll: true,
-        });
-    }
-  }
-
   const props = defineProps<{
     transforms: Array<ExistingImageTransform>;
   }>();
@@ -84,7 +66,21 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteTransform(row.original),
+        confirm: t('Are you sure you want to delete the “{name}” transform?', {
+          name: row.original.name,
+        }),
+        onClick: () =>
+          router
+            .optimistic<{transforms: Array<ExistingImageTransform>}>(
+              (props) => ({
+                transforms: props.transforms.filter(
+                  ({id}) => id !== row.original.id
+                ),
+              })
+            )
+            .delete(destroy({transformId: row.original.id}), {
+              preserveScroll: true,
+            }),
       }),
     ]),
   ]);

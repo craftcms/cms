@@ -1,6 +1,7 @@
 import {computed, type Ref} from 'vue';
 import {
   createIndexVisitor,
+  type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
@@ -15,9 +16,11 @@ import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
  */
 export function useElementIndexViewMode(
   route: ElementIndexRoute,
-  viewState: Ref<ViewState>
+  viewState: Ref<ViewState>,
+  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
+  indexVisitor?: IndexVisitor
 ) {
-  const visitor = createIndexVisitor(route);
+  const visitor = indexVisitor ?? createIndexVisitor(route);
 
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,

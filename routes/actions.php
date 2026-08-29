@@ -143,7 +143,6 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
 
         // Asset Transforms (anonymous access)
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
-        Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
 
         // GQL API
         Route::any('graphql/api', GqlApiController::class);

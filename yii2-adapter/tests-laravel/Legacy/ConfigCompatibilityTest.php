@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 
 it('preserves callable config values', function(): void {
     $originalConfigPath = $this->app->configPath();
@@ -41,14 +44,36 @@ it('maps renamed general config settings in the adapter', function(): void {
 });
 
 it('supports moved deprecated config settings', function(): void {
-    $config = GeneralConfig::create()
+    $config = GeneralConfig::create();
+
+    expect($config->generateTransformsBeforePageLoad)->toBeFalse();
+
+    $config
         ->defaultCookieDomain('.example.test')
+        ->generateTransformsBeforePageLoad(true)
         ->rememberedUserSessionDuration(7200)
         ->verificationCodeDuration(1800);
+    expect(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeTrue();
+
+    $config->generateTransformsBeforePageLoad = false;
+    $deprecation = collect(Deprecator::getRequestLogs())
+        ->firstWhere('key', 'generalConfig.generateTransformsBeforePageLoad');
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
+        ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
+        ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
+        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
+});
+
+it('supports adapter resource settings', function(): void {
+    $config = GeneralConfig::create()
+        ->resourceBasePath('@custom/cpresources')
+        ->resourceBaseUrl('https://example.test/cpresources');
+
+    expect($config->resourceBasePath)->toBe('@custom/cpresources')
+        ->and($config->resourceBaseUrl)->toBe('https://example.test/cpresources');
 });
 
 it('converts callable general config and application type overlays', function(): void {

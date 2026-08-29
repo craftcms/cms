@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'Pluginbutikken er ikke tilgængelig. Prøv igen senere.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Svar til-e-mailadressen, som Craft CMS skal bruge ved afsendelse af e-mail.',
     'The URI can’t begin with the {setting} config setting.' => 'URI\'en må ikke starte med konfig-indstillingen {setting}.',
-    'The `@web` alias is not recommended.' => 'Aliaset `@web` anbefales ikke.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Overskriftet `Authorization`, som skal sendes med GraphQL API-anmodninger, der skal bruges denne token.',
     'The allowed values are [{values}]' => 'De tilladte værdier er [{values}]',
     'The asset you’re trying to download does not exist.' => 'Det aktiv, du prøver at hente, findes ikke.',
@@ -2236,11 +2235,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2334,11 +2333,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',
-    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',

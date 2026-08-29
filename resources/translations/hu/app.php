@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'A Beépülőmodul-áruház nem érhető el, próbálkozz később újra.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'A válaszadás e-mail címe, amelyet a Craft CMS használjon az e-mail küldéséhez.',
     'The URI can’t begin with the {setting} config setting.' => 'Az URI nem kezdődhet {setting} konfigurációs beállítással.',
-    'The `@web` alias is not recommended.' => 'A „@web” alias nem ajánlott.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'A GraphQL API-vel küldendő `Authorization` fejléc igényli a token használatát.',
     'The allowed values are [{values}]' => 'Engedélyezett értékek: [{values}]',
     'The asset you’re trying to download does not exist.' => 'A letölteni kívánt tartalom nem létezik.',
@@ -2236,11 +2235,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => "Hello {{user.friendlyName|e}},
+    'account_activation_body' => 'Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>",
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',
