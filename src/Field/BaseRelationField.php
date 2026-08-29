@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -635,7 +636,15 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         $viewModes = [];
         foreach ($this->supportedViewModes() as $value => $label) {
-            $viewModes[] = ['label' => $label, 'value' => $value];
+            $viewModes[] = [
+                'label' => $label,
+                'value' => $value,
+                // Illustrations live in Vite's publicDir; see Cp::publicAssetUrl().
+                'thumbSrc' => Cp::publicAssetUrl("images/view-modes/$value.svg"),
+                // The list illustration is narrower than the rest, as in Craft 5.
+                'thumbWidth' => $value === self::VIEW_MODE_LIST ? 48 : 80,
+                'thumbHeight' => 60,
+            ];
         }
 
         if (count($viewModes) <= 1) {

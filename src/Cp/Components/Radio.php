@@ -17,10 +17,30 @@ use function CraftCms\Cms\t;
  */
 class Radio extends Checkbox
 {
+    /** @var array{src: string, width: int|null, height: int|null}|null */
+    protected ?array $thumbnail = null;
+
     #[\Override]
     protected function tagName(): string
     {
         return 'craft-radio';
+    }
+
+    /**
+     * An illustration of what the option looks like, rendered above the radio
+     * by {@see RadioGroup}. Craft 5 built this by hand in the View Mode field.
+     */
+    public function thumbnail(?string $src, ?int $width = null, ?int $height = null): static
+    {
+        $this->thumbnail = $src === null ? null : ['src' => $src, 'width' => $width, 'height' => $height];
+
+        return $this;
+    }
+
+    /** @return array{src: string, width: int|null, height: int|null}|null */
+    public function getThumbnail(): ?array
+    {
+        return $this->thumbnail;
     }
 
     /** Radios have no indeterminate state, so drop the Checkbox host attribute. */

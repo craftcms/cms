@@ -16,6 +16,10 @@
     labelHtml?: string;
     value: ChoiceValue;
     disabled?: boolean;
+    /** Illustration of the choice, rendered above the radio. */
+    thumbSrc?: string;
+    thumbWidth?: number;
+    thumbHeight?: number;
   };
   type ChoiceControlProps = {
     options: ChoiceOption[];
@@ -107,6 +111,10 @@
   function optionId(index: number): string {
     return `form-${props.control.path.join('-')}-${index}`;
   }
+
+  function hasThumbnails(): boolean {
+    return props.control.props.options.some((option) => option.thumbSrc);
+  }
 </script>
 
 <template>
@@ -182,6 +190,7 @@
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
+    :thumbnails="hasThumbnails() || undefined"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
@@ -199,34 +208,49 @@
       :name="inputName(control.path)"
       value=""
     />
-    <component
-      :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+    <div
       v-for="(option, index) in control.props.options"
       :key="inputValue(option.value)"
-      :disabled="!editable || option.disabled"
-      .choiceValue="inputValue(option.value)"
-      .checked="selected(option.value)"
     >
-      <input
-        slot="input"
-        :id="optionId(index)"
-        :type="control.props.multiple ? 'checkbox' : 'radio'"
-        :name="
-          editable
-            ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-            : ''
-        "
-        :value="inputValue(option.value)"
-        :checked="selected(option.value)"
-        :disabled="!editable || option.disabled"
-        :required="editable && required && !control.props.multiple"
-        :aria-invalid="invalid ? 'true' : undefined"
-        @change="onOptionChanged"
-      />
-      <label slot="label" :for="optionId(index)">
-        <span v-if="option.labelHtml" v-html="option.labelHtml" />
-        <template v-else>{{ option.label }}</template>
+      <label
+        v-if="option.thumbSrc"
+        class="radio-thumbnail"
+        :for="optionId(index)"
+      >
+        <img
+          :src="option.thumbSrc"
+          :width="option.thumbWidth"
+          :height="option.thumbHeight"
+          alt=""
+        />
       </label>
-    </component>
+      <component
+        :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+        :disabled="!editable || option.disabled"
+        .choiceValue="inputValue(option.value)"
+        .checked="selected(option.value)"
+      >
+        <input
+          slot="input"
+          :id="optionId(index)"
+          :type="control.props.multiple ? 'checkbox' : 'radio'"
+          :name="
+            editable
+              ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+              : ''
+          "
+          :value="inputValue(option.value)"
+          :checked="selected(option.value)"
+          :disabled="!editable || option.disabled"
+          :required="editable && required && !control.props.multiple"
+          :aria-invalid="invalid ? 'true' : undefined"
+          @change="onOptionChanged"
+        />
+        <label slot="label" :for="optionId(index)">
+          <span v-if="option.labelHtml" v-html="option.labelHtml" />
+          <template v-else>{{ option.label }}</template>
+        </label>
+      </component>
+    </div>
   </component>
 </template>
