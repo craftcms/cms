@@ -1,0 +1,93 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputStories from './input.stories';
+
+<Meta of={InputStories} name="Docs" />
+
+# Input
+
+`<craft-input>` is a single-line text input, and the base every other `craft-input-*` control extends.
+It is built on [Lion's input](https://lion.js.org/components/input/overview/), so it brings a label, help text, validation, and a `modelValue` alongside the native field.
+
+<Canvas of={InputStories.Default} sourceState="shown" />
+
+Everything on this page applies to the controls that extend it — [Input Date](?path=/docs/controls-input-date--docs), [Input Time](?path=/docs/controls-input-time--docs), Input Money, Input Copy, and the rest — which add behaviour on top rather than replacing any of it.
+
+## Labelling
+
+A bare input is unlabelled.
+Give it a label one of two ways: the `label` attribute for plain text, or the `label` slot when it needs markup.
+The same pairing applies to `help-text`.
+
+```html
+<craft-input label="Handle" help-text="Used in templates."></craft-input>
+
+<craft-input>
+  <span slot="label">Handle <code>handle</code></span>
+</craft-input>
+```
+
+Inside a form, wrapping in `craft-field` is usually better than labelling the input directly — the field owns the label, instructions, and error presentation for the whole row.
+
+## Width
+
+By default the control spans its column.
+Setting `maxlength` caps the value _and_ shrinks the control to the expected character width, so a four-character field does not stretch across the page:
+
+<Canvas of={InputStories.WithMaxLength} sourceState="shown" />
+
+`width` overrides that inference in either direction.
+`full` spans the column despite a `maxlength`:
+
+<Canvas of={InputStories.FullWidthOverride} sourceState="shown" />
+
+`auto` shrinks to the input's intrinsic width without needing one:
+
+<Canvas of={InputStories.AutoWidth} sourceState="shown" />
+
+## Presentation
+
+`size` steps the control's height:
+
+<Canvas of={InputStories.Sizes} sourceState="shown" />
+
+`monospace` renders the value in a monospace font, which suits handles, keys, and anything else read character by character:
+
+<Canvas of={InputStories.Monospace} sourceState="shown" />
+
+`center` centre-aligns the value, for short numeric fields where a left-aligned value looks stranded:
+
+<Canvas of={InputStories.Centered} sourceState="shown" />
+
+`hidden-input` visually hides the control while keeping it in the DOM and form-bound, so its value still submits.
+Reach for it when a field is populated programmatically but has to round-trip with the form.
+
+## Slots
+
+The control has eight slots, four of which are Lion's own plumbing.
+`prefix` and `suffix` sit _inside_ the control, alongside the input:
+
+<Canvas of={InputStories.WithPrefix} sourceState="shown" />
+
+<Canvas of={InputStories.WithSuffix} sourceState="shown" />
+
+`before` and `after` sit outside it.
+All eight are listed under [Properties](#properties).
+
+## Types
+
+`type` takes any native input type, and the control renders whatever the browser provides for it:
+
+<Canvas of={InputStories.Types} sourceState="shown" />
+
+Two types have components of their own, because they need more than the native field: [Input Date](?path=/docs/controls-input-date--docs) and [Input Time](?path=/docs/controls-input-time--docs).
+
+## Accessibility
+
+Lion wires the label, help text, and validation feedback to the input with `aria-labelledby` and `aria-describedby`, so a labelled input is announced correctly without further work.
+
+The thing to watch is an input with no label at all.
+Nothing stops you rendering one, and it is not announced as anything — so either set `label`, slot one, or wrap the control in `craft-field`.
+
+## Properties
+
+<ArgTypes of={InputStories} />

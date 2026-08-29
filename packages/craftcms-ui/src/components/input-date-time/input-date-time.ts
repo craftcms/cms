@@ -96,8 +96,9 @@ export default class CraftInputDateTime extends LitElement {
   @property({type: Number, attribute: 'minute-increment'}) minuteIncrement = 30;
 
   /**
-   * Time ranges that cannot be chosen, as a JSON array of `{start, end}`
-   * pairs. Passed through to the time input.
+   * Time ranges that cannot be chosen, as a JSON array of `[start, end]`
+   * pairs of `HH:MM` times. Passed through to the time input, which enforces
+   * them with validation.
    */
   @property({
     attribute: 'disabled-time-ranges',

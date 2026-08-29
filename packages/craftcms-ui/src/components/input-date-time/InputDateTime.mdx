@@ -68,7 +68,8 @@ It keeps travelling in a hidden input, so a value entered in one zone is not sil
 
 <Canvas of={InputDateTimeStories.MinuteIncrement} sourceState="shown" />
 
-`disabled-time-ranges` takes a JSON array of `{start, end}` pairs that cannot be chosen.
+`disabled-time-ranges` takes a JSON array of `[start, end]` pairs of `HH:MM` times that cannot be chosen.
+It is forwarded straight to the time input — see [Input Time](?path=/docs/controls-input-time--docs) for how the ranges are enforced.
 
 ## States
 

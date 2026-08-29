@@ -1,0 +1,78 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputTimeStories from './input-time.stories';
+
+<Meta of={InputTimeStories} name="Docs" />
+
+# Input Time
+
+`<craft-input-time>` is a time input.
+It is [Input](?path=/docs/controls-input--docs) with its `type` fixed to `time`, so it carries the same label, help text, validation, and slots, and renders the browser's own time picker.
+
+<Canvas of={InputTimeStories.Default} sourceState="shown" />
+
+Everything on the Input page applies here.
+On top of the native field this adds a stepping interval, a set of unselectable ranges, and optional rounding.
+
+## Values
+
+Values are `HH:MM` on a 24-hour clock, which is what the native time input exchanges regardless of whether the browser shows a 12-hour picker.
+
+## Stepping
+
+`minute-increment` sets the spacing between the picker's suggestions, in minutes.
+It is applied to the native input as `step`, so the browser's own stepping honours it:
+
+<Canvas of={InputTimeStories.MinuteIncrement} sourceState="shown" />
+
+A step does not stop someone typing a time between two of them.
+`force-round-time` closes that gap by snapping the value onto the nearest step when the field changes:
+
+<Canvas of={InputTimeStories.ForceRoundTime} sourceState="shown" />
+
+## Unavailable Times
+
+`disabled-time-ranges` takes an array of `[start, end]` pairs of `HH:MM` times.
+The start is inclusive and the end exclusive, so `["12:00", "13:00"]` blocks noon up to but not including one o'clock.
+
+```js
+input.disabledTimeRanges = [
+  ['12:00', '13:00'],
+  ['17:30', '18:00'],
+];
+```
+
+The name is worth reading carefully: the ranges are enforced by **validation**, not by the picker.
+A time inside a range is still selectable, and then fails with "This time is unavailable." rather than being absent from the list:
+
+<Canvas of={InputTimeStories.DisabledRanges} sourceState="shown" />
+
+## Bounding the Range
+
+`min` and `max` bound the range outright, in `HH:MM`.
+Like the date input's, both are **properties rather than attributes**, so bind them with `.min` / `.max`:
+
+<Canvas of={InputTimeStories.Bounded} sourceState="shown" />
+
+Use these when the whole field has a floor and a ceiling, and `disabled-time-ranges` when the gaps are in the middle.
+
+## States
+
+<Canvas of={InputTimeStories.Disabled} sourceState="shown" />
+
+<Canvas of={InputTimeStories.Readonly} sourceState="shown" />
+
+## Pairing With a Date
+
+To edit a date and a time as a single value, use [Input Date Time](?path=/docs/controls-input-date-time--docs), which owns one of these and one [Input Date](?path=/docs/controls-input-date--docs) and submits them together.
+It forwards `minute-increment`, `disabled-time-ranges`, and `force-round-time` straight through to this control.
+
+## Accessibility
+
+The native time input brings its own keyboard support and picker.
+
+The custom validity message is set on the native input, so it is announced the way any constraint-validation message is.
+Because an unavailable time is only rejected after it is chosen, say so in the help text as well — a person should not have to discover the rule by failing it.
+
+## Properties
+
+<ArgTypes of={InputTimeStories} />

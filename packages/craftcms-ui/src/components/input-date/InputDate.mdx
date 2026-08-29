@@ -1,0 +1,52 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputDateStories from './input-date.stories';
+
+<Meta of={InputDateStories} name="Docs" />
+
+# Input Date
+
+`<craft-input-date>` is a date input.
+It is [Input](?path=/docs/controls-input--docs) with its `type` fixed to `date`, so it carries the same label, help text, validation, and slots, and renders the browser's own date picker.
+
+<Canvas of={InputDateStories.Default} sourceState="shown" />
+
+Everything on the Input page applies here — labelling, width, sizing, and the slot surface.
+This page covers only what is specific to dates.
+
+## Values
+
+Values are `YYYY-MM-DD`, which is what the native date input exchanges regardless of how the browser displays them.
+A person in a `dd/mm/yyyy` locale sees their own format; the value you read is still ISO.
+
+<Canvas of={InputDateStories.WithHelpText} sourceState="shown" />
+
+## Bounding the Range
+
+`min` and `max` take the same `YYYY-MM-DD` form and bound what the picker offers.
+
+Both are **properties rather than attributes** — they are declared with `attribute: false` and pushed onto the native input — so bind them with `.min` / `.max` rather than writing them as markup:
+
+<Canvas of={InputDateStories.Bounded} sourceState="shown" />
+
+## States
+
+<Canvas of={InputDateStories.Disabled} sourceState="shown" />
+
+<Canvas of={InputDateStories.Readonly} sourceState="shown" />
+
+<Canvas of={InputDateStories.Sizes} sourceState="shown" />
+
+## Pairing With a Time
+
+To edit a date and a time as a single value, use [Input Date Time](?path=/docs/controls-input-date-time--docs).
+It owns one of these and one [Input Time](?path=/docs/controls-input-time--docs), keeps them in step, and submits them together under one name — which is what you want whenever the two halves describe the same moment.
+
+## Accessibility
+
+The native date input brings its own keyboard support and its own picker, both of which are better understood by assistive technology than anything a custom widget would replace them with.
+
+As with any [Input](?path=/docs/controls-input--docs), the one thing to get right is the label: set `label`, slot one, or wrap the control in `craft-field`.
+
+## Properties
+
+<ArgTypes of={InputDateStories} />
