@@ -72,9 +72,7 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-// Route::fallback() only registers GET/HEAD, which would prevent POST (and other verb) action
-// requests to plugin controllers from ever reaching SiteRouteController/the legacy Yii action
-// dispatch, so this replicates it with all verbs allowed instead.
+// Route::fallback() only registers GET/HEAD by default
 Route::any('{fallbackPlaceholder}', SiteRouteController::class)
     ->where('fallbackPlaceholder', '.*')
     ->fallback()
