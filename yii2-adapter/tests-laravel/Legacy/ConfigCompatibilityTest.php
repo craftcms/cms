@@ -67,6 +67,29 @@ it('supports moved deprecated config settings', function(): void {
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
 
+it('accepts the deprecated system live setting without changing maintenance mode', function(): void {
+    $config = GeneralConfig::create()->isSystemLive(false);
+    $deprecation = collect(Deprecator::getRequestLogs())
+        ->firstWhere('key', 'generalConfig.isSystemLive');
+
+    expect($config->isSystemLive)->toBeFalse()
+        ->and(app()->isDownForMaintenance())->toBeFalse()
+        ->and($deprecation?->message)->toContain('Use Laravel maintenance mode instead.');
+});
+
+it('supports the deprecated application live status', function(): void {
+    app()->maintenanceMode()->activate([]);
+
+    try {
+        expect(Craft::$app->getIsLive())->toBeFalse()
+            ->and(collect(Deprecator::getRequestLogs())
+                ->firstWhere('key', 'Craft::$app->getIsLive()')?->message)
+            ->toContain('Use ! app()->isDownForMaintenance() instead.');
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
+});
+
 it('supports adapter resource settings', function(): void {
     $config = GeneralConfig::create()
         ->resourceBasePath('@custom/cpresources')

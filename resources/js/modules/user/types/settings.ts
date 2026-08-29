@@ -7,8 +7,6 @@ export const Edition = {
 
 export interface SystemData {
   name: string | null;
-  live: boolean;
   edition: (typeof Edition)[keyof typeof Edition];
-  retryDuration: number;
   timeZone: string;
 }

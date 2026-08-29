@@ -453,7 +453,7 @@ class AuthMethods
                     }
 
                     if (
-                        app()->isLive() === false &&
+                        app()->isDownForMaintenance() &&
                         $user->can('accessCpWhenSystemIsOff') === false
                     ) {
                         return AuthError::NoCpOfflineAccess;
@@ -463,7 +463,7 @@ class AuthMethods
                 }
 
                 if (
-                    app()->isLive() === false &&
+                    app()->isDownForMaintenance() &&
                     $user->can('accessSiteWhenSystemIsOff') === false
                 ) {
                     return AuthError::NoSiteOfflineAccess;
@@ -520,8 +520,8 @@ class AuthMethods
                 : t('You need to reset your password, but an error was encountered when sending the password reset email.'),
             AuthError::AccountSuspended => t('Account suspended.'),
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
-            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while the system is offline with that account.'),
-            AuthError::NoSiteOfflineAccess => t('You cannot access the site while the system is offline with that account.'),
+            AuthError::NoCpOfflineAccess => t('You cannot access the control panel while maintenance mode is enabled with that account.'),
+            AuthError::NoSiteOfflineAccess => t('You cannot access the site while maintenance mode is enabled with that account.'),
             default => $this->generalConfig->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),

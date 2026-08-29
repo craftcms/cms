@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Models\Authenticator;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -27,7 +26,7 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
-    Cms::config()->isSystemLive = true;
+    app()->maintenanceMode()->deactivate();
     ProjectConfig::set('users.allowPublicRegistration', true);
 
     FakeOAuthProvider::reset();

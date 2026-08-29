@@ -11,8 +11,13 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
+    app()->maintenanceMode()->deactivate();
     $this->auth = app(AuthMethods::class);
     Session::flush();
+});
+
+afterEach(function () {
+    app()->maintenanceMode()->deactivate();
 });
 
 test('getAuthError for inactive user', function () {
@@ -94,7 +99,7 @@ test('getAuthError for no CP offline access', function () {
 
     // Fake so ->isCpRequest() returns true
     Cms::config()->cpTrigger = '/';
-    Cms::config()->isSystemLive = false;
+    app()->maintenanceMode()->activate([]);
 
     $result = $this->auth->getAuthError($user);
 
@@ -106,7 +111,7 @@ test('getAuthError for no site offline access', function () {
 
     $user = UserModel::factory()->createElement(['admin' => false]);
 
-    Cms::config()->isSystemLive = false;
+    app()->maintenanceMode()->activate([]);
 
     $result = $this->auth->getAuthError($user);
 

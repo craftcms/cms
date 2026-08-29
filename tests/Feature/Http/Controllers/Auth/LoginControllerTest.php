@@ -321,7 +321,7 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 });
 
 test('login routes are registered for localized loginPath values', function () {
-    Cms::config()->isSystemLive = true;
+    app()->maintenanceMode()->deactivate();
     Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
 
     Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');

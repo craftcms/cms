@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
@@ -24,7 +25,9 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
+use CraftCms\Cms\Http\Middleware\RequireCpMaintenanceModeAccess;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
@@ -39,7 +42,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelPreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -61,11 +64,29 @@ class RouteServiceProvider extends ServiceProvider
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $hasMaintenanceMiddleware = false;
+        $globalMiddleware = array_map(
+            function (string $middleware) use (&$hasMaintenanceMiddleware): string {
+                if (is_a($middleware, LaravelPreventRequestsDuringMaintenance::class, true)) {
+                    $hasMaintenanceMiddleware = true;
+
+                    return PreventRequestsDuringMaintenance::class;
+                }
+
+                return $middleware;
+            },
+            $kernel->getGlobalMiddleware(),
+        );
+
+        if (! $hasMaintenanceMiddleware) {
+            $globalMiddleware[] = PreventRequestsDuringMaintenance::class;
+        }
+
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
             HandleActionRequest::class,
-        ], $kernel->getGlobalMiddleware()));
+        ], $globalMiddleware));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             require $this->app->getCachedRoutesPath();
@@ -99,7 +120,9 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router->view($route->getUri(), $route->template),
+                fn (Route $route) => $router
+                    ->view($route->getUri(), $route->template)
+                    ->middleware(['craft', 'craft.web']),
             );
         });
 
@@ -154,7 +177,11 @@ class RouteServiceProvider extends ServiceProvider
      */
     private function bootMaintenanceModeExceptions(): void
     {
-        PreventRequestsDuringMaintenance::except(collect([
+        $routes = app(Routes::class);
+        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpActionTrigger = $routes->cpActionTriggerUriPrefix();
+
+        $updatePaths = collect([
             [UpdaterController::class, 'precheck'],
             [UpdaterController::class, 'composerInstall'],
             [UpdaterController::class, 'finish'],
@@ -165,7 +192,33 @@ class RouteServiceProvider extends ServiceProvider
             [PluginStoreInstallController::class, 'finish'],
             [PluginStoreRemoveController::class, 'finish'],
             MigrateController::class,
-        ])->map(fn (array|string $action) => Uri::action($action)->path())->all());
+        ])->map(fn (array|string $action) => Uri::action($action)->path());
+
+        $cpAuthenticationPaths = collect([
+            ...array_map(
+                fn (CpAuthPath $path) => $routes->joinRoutePrefix([$cpTrigger, $path->value]),
+                [
+                    CpAuthPath::Login,
+                    CpAuthPath::TwoFactorChallenge,
+                    CpAuthPath::SetPassword,
+                    CpAuthPath::VerifyEmail,
+                ],
+            ),
+            $routes->joinRoutePrefix([$cpTrigger, 'oauth/*/redirect']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'auth/*']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/login']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/login-with-passkey']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/login-modal']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/redirect']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/session-info']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/set-password']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/verify-email']),
+            $routes->joinRoutePrefix([$cpActionTrigger, 'users/send-password-reset-email']),
+        ]);
+
+        PreventRequestsDuringMaintenance::except($updatePaths
+            ->merge($cpAuthenticationPaths)
+            ->all());
     }
 
     private function bootMiddleware(Router $router): void
@@ -187,6 +240,7 @@ class RouteServiceProvider extends ServiceProvider
 
         collect([
             RequireCpRequest::class,
+            RequireCpMaintenanceModeAccess::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,

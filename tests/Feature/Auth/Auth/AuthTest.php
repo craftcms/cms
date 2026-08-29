@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->auth = app(AuthMethods::class);
-    Cms::config()->isSystemLive = true;
+    app()->maintenanceMode()->deactivate();
+});
+
+afterEach(function () {
+    app()->maintenanceMode()->deactivate();
 });
 
 test('authenticate with valid password', function () {
@@ -169,7 +173,7 @@ test('authenticate with CP offline no access', function () {
     ]);
 
     Cms::config()->cpTrigger = '/';
-    Cms::config()->isSystemLive = false;
+    app()->maintenanceMode()->activate([]);
 
     $result = $this->auth->authenticate($user, ['password' => 'password']);
 
@@ -184,7 +188,7 @@ test('authenticate with site offline no access', function () {
         'admin' => false,
     ]);
 
-    Cms::config()->isSystemLive = false;
+    app()->maintenanceMode()->activate([]);
 
     $result = $this->auth->authenticate($user, ['password' => 'password']);
 

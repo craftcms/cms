@@ -1477,23 +1477,6 @@ class GeneralConfig extends BaseConfig
     public ?array $ipHeaders = null;
 
     /**
-     * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     *                in Settings → General.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->isSystemLive(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_IS_SYSTEM_LIVE=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?bool $isSystemLive = null;
-
-    /**
      * @var bool Whether GraphQL types should be generated lazily.
      *
      * ::: code
@@ -4626,25 +4609,6 @@ class GeneralConfig extends BaseConfig
     public function ipHeaders(?array $value): self
     {
         $this->ipHeaders = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     * in Settings → General.
-     *
-     * ```php
-     * ->isSystemLive(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $isSystemLive
-     */
-    public function isSystemLive(?bool $value): self
-    {
-        $this->isSystemLive = $value;
 
         return $this;
     }

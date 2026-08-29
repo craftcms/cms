@@ -296,7 +296,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('settings/general', [GeneralSettingsController::class, 'index'])
             ->name('settings.general.index');
         Route::post('settings/general', [GeneralSettingsController::class, 'store'])
-            ->middleware([RequireAdminChanges::class])
             ->name('settings.general.store');
 
         // Email

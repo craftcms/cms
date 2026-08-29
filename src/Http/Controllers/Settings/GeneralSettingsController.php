@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Number;
+use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\Form;
@@ -21,7 +21,12 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
+use Illuminate\Contracts\Foundation\MaintenanceMode;
+use Illuminate\Foundation\Events\MaintenanceModeDisabled;
+use Illuminate\Foundation\Events\MaintenanceModeEnabled;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -34,6 +39,7 @@ readonly class GeneralSettingsController
         private ProjectConfig $projectConfig,
         private GeneralConfig $generalConfig,
         private FormResolver $formResolver,
+        private MaintenanceMode $maintenanceMode,
     ) {}
 
     public function index(): CpScreenResponse
@@ -46,6 +52,7 @@ readonly class GeneralSettingsController
             ])
             ->redirectUrl('settings')
             ->inertiaPage('Form', [
+                'readOnly' => false,
                 'form' => $this->systemSettingsForm(),
                 'submit' => [
                     'method' => 'post',
@@ -56,19 +63,27 @@ readonly class GeneralSettingsController
 
     public function store(Request $request): Response
     {
-        $settings = $request->validate([
-            'name' => [new EnvValueRule(['required', 'string'])],
-            'live' => [new EnvValueRule(['required', 'boolean'])],
-            'retryDuration' => ['nullable', 'integer'],
-            'timeZone' => [new EnvValueRule(['required', 'string', new TimezoneRule])],
-        ]);
+        $rules = [
+            'maintenanceMode' => ['required', 'boolean'],
+        ];
 
-        $systemSettings = $this->projectConfig->get('system') ?? [];
-        $systemSettings['name'] = $settings['name'];
-        $systemSettings['live'] = $settings['live'];
-        $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
-        $systemSettings['timeZone'] = $settings['timeZone'];
-        $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
+        if ($this->generalConfig->allowAdminChanges) {
+            $rules += [
+                'name' => [new EnvValueRule(['required', 'string'])],
+                'timeZone' => [new EnvValueRule(['required', 'string', new TimezoneRule])],
+            ];
+        }
+
+        $settings = $request->validate($rules);
+
+        if ($this->generalConfig->allowAdminChanges) {
+            $systemSettings = $this->projectConfig->get('system') ?? [];
+            $systemSettings['name'] = $settings['name'];
+            $systemSettings['timeZone'] = $settings['timeZone'];
+            $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
+        }
+
+        $this->setMaintenanceMode($request->boolean('maintenanceMode'));
 
         return $this->asSuccess(t('System settings saved.'));
     }
@@ -76,16 +91,16 @@ readonly class GeneralSettingsController
     private function systemSettingsForm(): FormPayload
     {
         $system = $this->projectConfig->get('system') ?? [];
-        $system['live'] = match ($system['live'] ?? null) {
-            true => '1',
-            false => '0',
-            default => $system['live'] ?? '',
-        };
         $timezoneOptions = $this->timezoneOptions();
-        $statusOptions = $this->statusOptions();
+        $settingsMode = $this->generalConfig->allowAdminChanges
+            ? ControlMode::Editable
+            : ControlMode::ReadOnly;
 
         $form = Form::make([
+            Field::make(t('Maintenance Mode'), Lightswitch::make('maintenanceMode'))
+                ->instructions(t('When enabled, site requests will return a service unavailable response and queued jobs will pause.')),
             Field::make(t('System Name'), Text::make('name')
+                ->mode($settingsMode)
                 ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
                 ->required()
                 ->tip(sprintf(
@@ -94,28 +109,8 @@ readonly class GeneralSettingsController
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
-            Field::make(t('System Status'), Combobox::make('live')
-                ->options([
-                    [
-                        'value' => '1',
-                        'label' => t('Online'),
-                        'data' => ['indicator' => ['variant' => 'success']],
-                    ],
-                    [
-                        'value' => '0',
-                        'label' => t('Offline'),
-                        'data' => ['indicator' => ['variant' => 'empty']],
-                    ],
-                    ...$statusOptions,
-                ])
-                ->showAllOnEmpty())
-                ->required()
-                ->tip(t('This can be set to an environment variable with a boolean value ({examples})', [
-                    'examples' => '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
-                ])),
-            Field::make(t('Retry Duration'), Number::make('retryDuration')->size(4))
-                ->instructions(t('The number of seconds that the Retry-After HTTP header should be set to for 503 responses when the system is offline.')),
             Field::make(t('Time Zone'), Combobox::make('timeZone')
+                ->mode($settingsMode)
                 ->options($timezoneOptions)
                 ->showAllOnEmpty())
                 ->required()
@@ -125,9 +120,29 @@ readonly class GeneralSettingsController
         ]);
 
         return $this->formResolver->resolve($form, new FormContext(
-            values: $system,
-            mode: $this->generalConfig->allowAdminChanges ? ControlMode::Editable : ControlMode::ReadOnly,
+            values: [
+                ...$system,
+                'maintenanceMode' => $this->maintenanceMode->active(),
+            ],
         ));
+    }
+
+    private function setMaintenanceMode(bool $enabled): void
+    {
+        if ($enabled === $this->maintenanceMode->active()) {
+            return;
+        }
+
+        if ($enabled) {
+            $this->maintenanceMode->activate([]);
+            Event::dispatch(new MaintenanceModeEnabled);
+
+            return;
+        }
+
+        $this->maintenanceMode->deactivate();
+        File::delete(storage_path('framework/maintenance.php'));
+        Event::dispatch(new MaintenanceModeDisabled);
     }
 
     /** @return list<array<string, mixed>> */
@@ -136,29 +151,5 @@ readonly class GeneralSettingsController
         $options = SelectOptions::getTimeZoneOptions();
 
         return array_merge($options, SelectOptions::getEnvOptions(array_column($options, 'value')));
-    }
-
-    /** @return list<array<string, mixed>> */
-    private function statusOptions(): array
-    {
-        $groups = SelectOptions::getBooleanEnvOptions();
-        $groups[0]['options'] = $groups[0]['options']
-            ->map(function (array $option): array {
-                $online = $option['data']['boolean'] === '1';
-
-                return [
-                    ...$option,
-                    'data' => [
-                        ...$option['data'],
-                        'hint' => $online ? t('Online') : t('Offline'),
-                        'indicator' => [
-                            'variant' => $online ? 'success' : 'empty',
-                        ],
-                    ],
-                ];
-            })
-            ->all();
-
-        return $groups;
     }
 }

@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    Cms::config()->isSystemLive = true;
+    app()->maintenanceMode()->deactivate();
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
@@ -37,7 +37,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    Cms::config()->isSystemLive = null;
+    app()->maintenanceMode()->deactivate();
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
@@ -108,8 +108,8 @@ it('keeps matched element state out of dehydrated queue context', function () {
         ->and(fn () => Context::dehydrate())->not->toThrow(Throwable::class);
 });
 
-it('denies anonymous matched element template routes when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('denies anonymous matched element template routes during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     createRoutableEntry('offline-entry', 'entries/show');
 
@@ -117,15 +117,16 @@ it('denies anonymous matched element template routes when the system is offline'
         ->assertServiceUnavailable();
 });
 
-it('denies anonymous homepage requests when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('denies anonymous homepage requests during maintenance mode', function () {
+    app()->maintenanceMode()->activate(['retry' => 60]);
 
     $this->get('/')
-        ->assertServiceUnavailable();
+        ->assertServiceUnavailable()
+        ->assertHeader('Retry-After', '60');
 });
 
-it('allows matched element template routes with a site token when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('allows matched element template routes with a site token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     $entry = createRoutableEntry('offline-site-token-entry', 'entries/show');
 
@@ -136,8 +137,8 @@ it('allows matched element template routes with a site token when the system is 
         ->assertSeeText("entry-template:{$entry->id}:offline-site-token-entry", escape: false);
 });
 
-it('allows matched element template routes with a valid route token when the system is offline', function () {
-    Cms::config()->isSystemLive = false;
+it('allows matched element template routes with a valid route token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
 
     $entry = createRoutableEntry('offline-route-token-entry', 'entries/show');
 
@@ -148,8 +149,8 @@ it('allows matched element template routes with a valid route token when the sys
         ->assertSeeText("entry-template:{$entry->id}:offline-route-token-entry", escape: false);
 });
 
-it('denies matched element template routes for users without offline site access', function () {
-    Cms::config()->isSystemLive = false;
+it('denies matched element template routes for users without maintenance mode site access', function () {
+    app()->maintenanceMode()->activate([]);
 
     createRoutableEntry('offline-unpermitted-entry', 'entries/show');
     $user = UserModel::factory()->createElement();
@@ -160,8 +161,8 @@ it('denies matched element template routes for users without offline site access
         ->assertServiceUnavailable();
 });
 
-it('allows matched element template routes for users with offline site access', function () {
-    Cms::config()->isSystemLive = false;
+it('allows matched element template routes for users with maintenance mode site access', function () {
+    app()->maintenanceMode()->activate([]);
 
     $entry = createRoutableEntry('offline-permitted-entry', 'entries/show');
     $user = UserModel::factory()

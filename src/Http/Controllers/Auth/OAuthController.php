@@ -301,7 +301,7 @@ readonly class OAuthController extends AuthenticationController
         }
 
         if (
-            app()->isLive() === false &&
+            app()->isDownForMaintenance() &&
             $user->can('accessCpWhenSystemIsOff') === false
         ) {
             return AuthError::NoCpOfflineAccess;
