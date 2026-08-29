@@ -2307,9 +2307,9 @@ return [
     'six' => 'sześć',
     'tag' => 'znacznik',
     'tags' => 'tagi',
-    'test_email_body' => 'Cześć {{user.friendlyName|e}},
+    'test_email_body' => "Cześć {{user.friendlyName|e}},
 
-Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniższe ustawienia: {{ settings }}',
+Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniższe ustawienia: {{ settings }}",
     'test_email_heading' => 'Podczas testowania ustawień e-mail:',
     'test_email_subject' => 'To jest testowy e-mail od Craft',
     'three' => 'trzy',

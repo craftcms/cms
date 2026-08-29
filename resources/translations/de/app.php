@@ -2307,9 +2307,9 @@ return [
     'six' => 'sechs',
     'tag' => 'Schlagwort',
     'tags' => 'Schlagwörter',
-    'test_email_body' => 'Hallo {{user.friendlyName|e}},
+    'test_email_body' => "Hallo {{user.friendlyName|e}},
 
-Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von Ihnen verwendeten Einstellungen: {{ settings }}',
+Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von Ihnen verwendeten Einstellungen: {{ settings }}",
     'test_email_heading' => 'Wenn Sie Ihre E-Mail-Einstellungen testen:',
     'test_email_subject' => 'Dies ist eine Test-E-Mail von Craft.',
     'three' => 'drei',

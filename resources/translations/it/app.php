@@ -2307,9 +2307,9 @@ return [
     'six' => 'sei',
     'tag' => 'tag',
     'tags' => 'tag',
-    'test_email_body' => 'Ciao {{user.friendlyName|e}},
+    'test_email_body' => "Ciao {{user.friendlyName|e}},
 
-Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazioni da te usate: {{ settings }}',
+Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazioni da te usate: {{ settings }}",
     'test_email_heading' => 'Quando si stanno testando le impostazioni email:',
     'test_email_subject' => 'Questa è una email di prova da Craft',
     'three' => 'tre',

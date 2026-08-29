@@ -2307,9 +2307,9 @@ return [
     'six' => 'altı',
     'tag' => 'etiket',
     'tags' => 'etiketler',
-    'test_email_body' => 'Merhaba {{user.friendlyName|e}},
+    'test_email_body' => "Merhaba {{user.friendlyName|e}},
 
-Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ settings }}',
+Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ settings }}",
     'test_email_heading' => 'Eposta ayarlarınızı test ederken:',
     'test_email_subject' => 'Bu Craft\'tan bir test epostasıdır',
     'three' => 'üç',
