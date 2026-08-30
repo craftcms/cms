@@ -15,6 +15,11 @@ use CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait;
 interface FieldConditionRuleInterface extends ElementConditionRuleInterface
 {
     /**
+     * Returns the UUID of the custom field associated with this rule.
+     */
+    public function getFieldUid(): string;
+
+    /**
      * Sets the UUID of the custom field associated with this rule.
      */
     public function setFieldUid(string $uid): void;
