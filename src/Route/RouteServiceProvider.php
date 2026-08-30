@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
@@ -34,53 +35,45 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Routing\Router;
-use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Override;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    private const string ALLOW_DURING_MAINTENANCE_METADATA = 'craft.allowDuringMaintenance';
-
     #[Override]
     public function register(): void
     {
-        $allowDuringMaintenanceMetadata = self::ALLOW_DURING_MAINTENANCE_METADATA;
-
-        Router::macro('allowDuringMaintenance', function () use ($allowDuringMaintenanceMetadata): RouteRegistrar {
-            /** @var Router $this */
-            return new RouteRegistrar($this)->metadata([
-                $allowDuringMaintenanceMetadata => true,
-            ]);
-        });
+        CraftMaintenanceMiddleware::registerRouteMacro();
 
         /**
          * These middleware must run before all others
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $globalMiddleware = array_map(
+            fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
+                ? CraftMaintenanceMiddleware::class
+                : $middleware,
+            $kernel->getGlobalMiddleware(),
+        );
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
             HandleActionRequest::class,
-        ], $kernel->getGlobalMiddleware()));
+        ], $globalMiddleware));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             require $this->app->getCachedRoutesPath();
 
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         });
     }
@@ -98,7 +91,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
         if (! $this->app->routesAreCached()) {
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         }
 
@@ -161,57 +154,6 @@ class RouteServiceProvider extends ServiceProvider
         ])->all());
     }
 
-    /**
-     * Register routes that should remain accessible during maintenance mode.
-     */
-    private function bootMaintenanceModeExceptions(): void
-    {
-        $exceptions = collect(app(Router::class)->getRoutes()->getRoutes())
-            ->filter(fn (LaravelRoute $route) => $route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true)
-            ->map(fn (LaravelRoute $route) => $this->maintenanceModeExceptionPath($route))
-            ->unique()
-            ->values()
-            ->all();
-
-        PreventRequestsDuringMaintenance::except($exceptions);
-
-        PreventRequestsDuringMaintenance::skipWhen(function (Request $request): bool {
-            $router = app(Router::class);
-            $route = $request->route();
-
-            if (! $route instanceof LaravelRoute) {
-                try {
-                    $route = $router->getRoutes()->match($request);
-                } catch (HttpExceptionInterface) {
-                    return false;
-                }
-
-                return in_array(
-                    PreventRequestsDuringMaintenance::class,
-                    $router->gatherRouteMiddleware($route),
-                    true,
-                );
-            }
-
-            return $request->getHadToken()
-                || Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
-                || Gate::check($request->isCpRequest()
-                    ? 'accessCpWhenSystemIsOff'
-                    : 'accessSiteWhenSystemIsOff');
-        });
-    }
-
-    private function maintenanceModeExceptionPath(LaravelRoute $route): string
-    {
-        $path = str_replace(
-            ['{cpTrigger}', '{actionTrigger}'],
-            [trim((string) Cms::config()->cpTrigger, '/'), trim(Cms::config()->actionTrigger, '/')],
-            $route->uri(),
-        );
-
-        return preg_replace('/\{[^}]+}/', '*', $path) ?? $path;
-    }
-
     private function bootMiddleware(Router $router): void
     {
         $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
@@ -227,7 +169,7 @@ class RouteServiceProvider extends ServiceProvider
             Enforce2fa::class,
             SetHeaders::class,
             ShowBrokenImage::class,
-            PreventRequestsDuringMaintenance::class,
+            CraftMaintenanceMiddleware::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
