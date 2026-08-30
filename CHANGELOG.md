@@ -1128,7 +1128,7 @@ Craft 6 introduces a new validation system that uses Laravel’s Validator inste
 - Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving` should be used instead.
 - Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\NativeFieldsResolving` should be used instead.
 - Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving` should be used instead.
-- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutActionMenuItemsResolving` should be used instead.
+- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving` should be used instead.
 
 ### Fields
 

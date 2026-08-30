@@ -17,6 +17,7 @@ class ComponentRegistry
 {
     /** @var array<string, class-string<ViewComponent>> */
     private array $components = [
+        'action-menu' => ActionMenu::class,
         'button' => Button::class,
         'button-group' => ButtonGroup::class,
         'callout' => Callout::class,
