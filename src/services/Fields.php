@@ -1244,11 +1244,11 @@ class Fields extends Component
         $replacedFields = [];
 
         foreach ($layout->getCustomFieldElements() as $layoutElement) {
-            if (
-                isset($layoutElement->oldFieldUid) &&
-                $layoutElement->oldFieldUid !== $layoutElement->getFieldUid()
-            ) {
-                $replacedFields[$layoutElement->oldFieldUid] = [$layoutElement->getFieldUid(), $layoutElement->uid];
+            if (isset($layoutElement->oldFieldUid)) {
+                if ($layoutElement->oldFieldUid !== $layoutElement->getFieldUid()) {
+                    $replacedFields[$layoutElement->oldFieldUid] = [$layoutElement->getFieldUid(), $layoutElement->uid];
+                }
+
                 $layoutElement->oldFieldUid = null;
             }
         }
