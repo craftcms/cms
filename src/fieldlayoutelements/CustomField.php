@@ -72,6 +72,12 @@ class CustomField extends BaseField
      */
     public ?string $handle = null;
 
+    /**
+     * @var string|null The previously-selected field's UUID, if there was one
+     * @since 5.11.0
+     */
+    public ?string $oldFieldUid = null;
+
     private ?FieldInterface $_field = null;
     private ?string $_fieldUid = null;
     private ?string $_originalName = null;

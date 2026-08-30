@@ -9,6 +9,8 @@
 - Arrays created from `craft\fields\data\LinkData` objects now include `type`, `value`, `url`, `label`, `filename`, `link`, `attributes`, `defaultLabel`, `elementType`, `elementId`, `elementSiteId`, and `elementTitle` keys. ([craftcms/element-api#201](https://github.com/craftcms/element-api/issues/201)) 
 
 ### Extensibility
+- Added `craft\fieldlayoutelements\CustomField::$oldFieldUid`.
+- Added `craft\fields\conditions\FieldConditionRuleInterface::getFieldUid()`.
 - Added `craft\helpers\UrlHelper::removeAllParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
 - Added `craft\helpers\UrlHelper::removeParams()`. ([#19102](https://github.com/craftcms/cms/pull/19102))
 - Added `craft\services\Elements::reorderNestedElements()`. ([#19321](https://github.com/craftcms/cms/issues/19321))
@@ -22,3 +24,4 @@
 - Updated yii2-debug to 2.1.28.
 - Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
 - Fixed a bug where `getEagerLoadedElements()` wasn’t returning results for eager-loaded native fields, such as `authors`. ([#19471](https://github.com/craftcms/cms/pull/19471))
+- Fixed a bug where field condition rules within field layout components weren’t getting updated when a custom field was replaced within the layout. ([#19515](https://github.com/craftcms/cms/pull/19515))
