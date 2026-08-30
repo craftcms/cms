@@ -117,23 +117,40 @@ test('updater routes with query strings are accessible during maintenance mode',
     ])->assertOk();
 });
 
-test('only updater routes required by an active update remain accessible during maintenance mode', function (string $action, int $status) {
+test('active updater routes remain accessible to authenticated update users during maintenance mode', function () {
+    actingAs(UserModel::factory()
+        ->withPermissions(['accessCp', 'performUpdates'])
+        ->createElement(['admin' => false]));
+
+    $response = postJson(action([UpdaterController::class, 'backup']));
+
+    expect($response->getStatusCode())->not->toBe(503);
+});
+
+test('only updater routes required by an active update remain accessible during maintenance mode', function (string $action, bool $accessible) {
     auth()->logout();
 
-    postJson(action([UpdaterController::class, $action]))
-        ->assertStatus($status);
+    $response = postJson(action([UpdaterController::class, $action]));
+
+    if ($accessible) {
+        expect($response->getStatusCode())->not->toBe(503);
+
+        return;
+    }
+
+    $response->assertServiceUnavailable();
 })->with([
-    'index' => ['index', 503],
-    'force update' => ['forceUpdate', 503],
-    'backup' => ['backup', 422],
-    'server check' => ['serverCheck', 422],
-    'revert' => ['revert', 503],
-    'migrate' => ['migrate', 422],
-    'precheck' => ['precheck', 422],
-    'recheck Composer' => ['recheckComposer', 503],
-    'Composer install' => ['composerInstall', 422],
-    'Composer remove' => ['composerRemove', 503],
-    'finish' => ['finish', 422],
+    'index' => ['index', false],
+    'force update' => ['forceUpdate', false],
+    'backup' => ['backup', true],
+    'server check' => ['serverCheck', true],
+    'revert' => ['revert', false],
+    'migrate' => ['migrate', true],
+    'precheck' => ['precheck', true],
+    'recheck Composer' => ['recheckComposer', false],
+    'Composer install' => ['composerInstall', true],
+    'Composer remove' => ['composerRemove', false],
+    'finish' => ['finish', true],
 ]);
 
 test('config sync finish route is accessible during maintenance mode', function () {

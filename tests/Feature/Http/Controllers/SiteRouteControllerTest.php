@@ -17,14 +17,18 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
@@ -137,6 +141,15 @@ it('allows matched element template routes with a site token during maintenance 
         ->assertSeeText("entry-template:{$entry->id}:offline-site-token-entry", escape: false);
 });
 
+it('denies matched element template routes with an empty site token during maintenance mode', function () {
+    app()->maintenanceMode()->activate([]);
+
+    createRoutableEntry('offline-empty-site-token-entry', 'entries/show');
+
+    $this->get('/offline-empty-site-token-entry?'.Cms::config()->siteToken.'=')
+        ->assertServiceUnavailable();
+});
+
 it('allows matched element template routes with a valid route token during maintenance mode', function () {
     app()->maintenanceMode()->activate([]);
 
@@ -174,6 +187,33 @@ it('allows matched element template routes for users with maintenance mode site 
     $this->get('/offline-permitted-entry')
         ->assertOk()
         ->assertSeeText("entry-template:{$entry->id}:offline-permitted-entry", escape: false);
+});
+
+it('allows session-authenticated users with maintenance mode site access', function () {
+    $entry = createRoutableEntry('offline-session-permitted-entry', 'entries/show');
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp', 'accessSiteWhenSystemIsOff'])
+        ->createElement();
+
+    $this->post(cp_url('login'), [
+        'loginName' => $user->username,
+        'password' => 'password',
+    ])->assertRedirect();
+
+    $session = app(Session::class);
+    $session->save();
+    $this->withCookie(config('session.cookie'), $session->getId());
+    app(SessionManager::class)->extend(config('session.driver'), fn () => $session->getHandler());
+    app(SessionManager::class)->forgetDrivers();
+    app()->forgetInstance('session.store');
+    app()->forgetInstance(StartSession::class);
+    auth()->forgetGuards();
+    TemplateMode::set(TemplateMode::Site);
+    app()->maintenanceMode()->activate([]);
+
+    $this->get('/offline-session-permitted-entry')
+        ->assertOk()
+        ->assertSeeText("entry-template:{$entry->id}:offline-session-permitted-entry", escape: false);
 });
 
 function createRoutableEntry(string $uri, string $template): Entry

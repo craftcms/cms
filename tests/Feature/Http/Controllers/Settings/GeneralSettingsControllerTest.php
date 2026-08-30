@@ -289,6 +289,27 @@ it('dispatches maintenance mode events and removes the pre-rendered file', funct
     $this->assertFileDoesNotExist($maintenanceFile);
 });
 
+it('keeps maintenance mode active when the pre-rendered file cannot be removed', function () {
+    Cms::config()->allowAdminChanges = false;
+    app()->maintenanceMode()->activate([]);
+    Event::fake([MaintenanceModeDisabled::class]);
+
+    $maintenanceFile = storage_path('framework/maintenance.php');
+    File::put($maintenanceFile, '<?php return;');
+    File::partialMock()
+        ->shouldReceive('delete')
+        ->once()
+        ->with($maintenanceFile)
+        ->andReturnFalse();
+
+    post(action([GeneralSettingsController::class, 'store']), [
+        'maintenanceMode' => false,
+    ])->assertServerError();
+
+    expect(app()->isDownForMaintenance())->toBeTrue();
+    Event::assertNotDispatched(MaintenanceModeDisabled::class);
+});
+
 it('restricts maintenance mode changes to administrators', function (bool $initiallyActive) {
     actingAs(UserModel::factory()
         ->withPermissions(['accessCp', 'accessCpWhenSystemIsOff'])

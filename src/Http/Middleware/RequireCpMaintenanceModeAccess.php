@@ -9,24 +9,29 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as La
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Override;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 
 use function CraftCms\Cms\t;
 
-readonly class RequireCpMaintenanceModeAccess
+class RequireCpMaintenanceModeAccess extends LaravelPreventRequestsDuringMaintenance
 {
-    public function __construct(
-        private LaravelPreventRequestsDuringMaintenance $maintenanceMode,
-    ) {}
-
-    public function handle(Request $request, Closure $next): mixed
+    /**
+     * @param  Request  $request
+     */
+    #[Override]
+    public function handle($request, Closure $next): mixed
     {
+        if ($this->inExceptArray($request)) {
+            return $next($request);
+        }
+
         if (! app()->isDownForMaintenance() || Gate::check('accessCpWhenSystemIsOff')) {
             return $next($request);
         }
 
         if (Auth::guest()) {
-            return $this->maintenanceMode->handle($request, $next);
+            return parent::handle($request, $next);
         }
 
         throw new ServiceUnavailableHttpException(

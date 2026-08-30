@@ -341,6 +341,22 @@ describe('callback flow', function () {
         expect(Auth::id())->toBe($user->id)
             ->and(session('user.id'))->toBeNull();
     });
+
+    test('control panel callback remains accessible during maintenance mode', function () {
+        $user = User::findOne();
+
+        configureOAuthControllerProvider([
+            'trustsEmail' => true,
+        ]);
+        app()->maintenanceMode()->activate([]);
+
+        completeOAuthControllerCallback([
+            'id' => 'provider-user-maintenance',
+            'email' => $user->email,
+        ], true)->assertRedirect();
+
+        expect(Auth::id())->toBe($user->id);
+    });
 });
 
 describe('customization', function () {

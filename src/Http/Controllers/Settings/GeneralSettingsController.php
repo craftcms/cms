@@ -28,6 +28,7 @@ use Illuminate\Foundation\Events\MaintenanceModeEnabled;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -143,8 +144,13 @@ readonly class GeneralSettingsController
                 return;
             }
 
+            $maintenanceFile = storage_path('framework/maintenance.php');
+
+            if (File::isFile($maintenanceFile) && ! File::delete($maintenanceFile)) {
+                throw new RuntimeException("Unable to delete the pre-rendered maintenance file: $maintenanceFile");
+            }
+
             $this->maintenanceMode->deactivate();
-            File::delete(storage_path('framework/maintenance.php'));
             Event::dispatch(new MaintenanceModeDisabled);
 
             return;

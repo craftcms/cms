@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -99,6 +100,21 @@ it('runs one queued job after the response terminates', function () {
         ->assertContent('');
 
     expect(terminatingCallbacks())->toHaveCount($callbackCount + 1);
+});
+
+it('does not run the queue during maintenance mode', function () {
+    Cms::config()->runQueueAutomatically(true);
+    app(JobProgress::class)->queued('pending-job', 'Pending Job');
+    app()->maintenanceMode()->activate([]);
+    Artisan::shouldReceive('call')->never();
+
+    $callbackCount = count(terminatingCallbacks());
+
+    post(cp_url(Cms::config()->actionTrigger.'/queue/run'))
+        ->assertOk()
+        ->assertContent('');
+
+    expect(terminatingCallbacks())->toHaveCount($callbackCount);
 });
 
 it('deduplicates queue names and falls back to the default memory limit', function () {

@@ -67,13 +67,15 @@ class RouteServiceProvider extends ServiceProvider
         $hasMaintenanceMiddleware = false;
         $globalMiddleware = array_map(
             function (string $middleware) use (&$hasMaintenanceMiddleware): string {
-                if (is_a($middleware, LaravelPreventRequestsDuringMaintenance::class, true)) {
-                    $hasMaintenanceMiddleware = true;
-
-                    return PreventRequestsDuringMaintenance::class;
+                if (! is_a($middleware, LaravelPreventRequestsDuringMaintenance::class, true)) {
+                    return $middleware;
                 }
 
-                return $middleware;
+                $hasMaintenanceMiddleware = true;
+
+                return $middleware === LaravelPreventRequestsDuringMaintenance::class
+                    ? PreventRequestsDuringMaintenance::class
+                    : $middleware;
             },
             $kernel->getGlobalMiddleware(),
         );
@@ -205,6 +207,7 @@ class RouteServiceProvider extends ServiceProvider
                 ],
             ),
             $routes->joinRoutePrefix([$cpTrigger, 'oauth/*/redirect']),
+            'oauth/*/callback',
             $routes->joinRoutePrefix([$cpActionTrigger, 'auth/*']),
             $routes->joinRoutePrefix([$cpActionTrigger, 'users/login']),
             $routes->joinRoutePrefix([$cpActionTrigger, 'users/login-with-passkey']),
@@ -216,7 +219,7 @@ class RouteServiceProvider extends ServiceProvider
             $routes->joinRoutePrefix([$cpActionTrigger, 'users/send-password-reset-email']),
         ]);
 
-        PreventRequestsDuringMaintenance::except($updatePaths
+        LaravelPreventRequestsDuringMaintenance::except($updatePaths
             ->merge($cpAuthenticationPaths)
             ->all());
     }
@@ -250,6 +253,7 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             'web',
             AuthenticateSession::class,
+            PreventRequestsDuringMaintenance::class,
             RunQueue::class,
             HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
