@@ -9,6 +9,7 @@
 - Fixed a bug where asset bundles could be only partially published, if two requests attempted to publish and clear them concurrently. ([#19477](https://github.com/craftcms/cms/issues/19477))
 - Fixed a bug where propagated entries were getting URIs assigned based on their temporary slugs, if the section didn’t specify a URI format for the site the entry was initially saved in. ([#19495](https://github.com/craftcms/cms/issues/19495))
 - Fixed a bug where password managers could attempt to submit the TOTP 2FA form before the application was ready for it, causing the login page to reload. ([#19497](https://github.com/craftcms/cms/pull/19497))
+- Fixed an exception that was thrown if `null` was passed to an asset query’s `uploader` param. ([#19484](https://github.com/craftcms/cms/issues/19484))
 
 ## 5.10.14 - 2026-08-18
 
