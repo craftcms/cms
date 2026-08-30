@@ -1762,7 +1762,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'ร้านปลั๊กอินไม่พร้อมใช้งาน โปรดลองใหม่อีกครั้งในภายหลัง',
     'The Reply-To email address Craft CMS should use when sending email.' => 'ควรใช้ที่อยู่อีเมลตอบกลับที่ Craft CMS ขณะส่งอีเมล',
     'The URI can’t begin with the {setting} config setting.' => 'URI ห้ามเริ่มต้นด้วยการตั้งค่าคอนฟิก {setting}',
-    'The `@web` alias is not recommended.' => 'ไม่แนะนำให้ใช้นามแฝง `@web`',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'หัวข้อ `Authorization` ควรส่งพร้อมกับคำขอ GraphQL API เพื่อใช้โทเคนนี้',
     'The allowed values are [{values}]' => 'ค่าที่อนุญาตคือ [{values}]',
     'The asset you’re trying to download does not exist.' => 'ไม่พบแอสเซทที่คุณพยายามดาวน์โหลด',

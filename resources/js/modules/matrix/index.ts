@@ -29,15 +29,13 @@ class CraftMatrixEntryGlobal extends MatrixEntry {
   }
 }
 
-type MatrixInputGlobal = typeof MatrixInput & {
-  Entry: typeof CraftMatrixEntryGlobal;
-};
-
 // Assign onto the legacy `Craft` global so the PHP-emitted
 // `new Craft.MatrixInput(...)` and `Craft.MatrixInput.rememberCollapsedEntryId()`
 // keep working.
-registerCraftGlobals({MatrixInput: MatrixInput as MatrixInputGlobal});
-(MatrixInput as MatrixInputGlobal).Entry = CraftMatrixEntryGlobal;
+const MatrixInputGlobal = Object.assign(MatrixInput, {
+  Entry: CraftMatrixEntryGlobal,
+});
+registerCraftGlobals({MatrixInput: MatrixInputGlobal});
 
 defineElement('craft-matrix-input', CraftMatrixInput);
 

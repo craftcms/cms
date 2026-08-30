@@ -6,7 +6,11 @@
   import {CraftElementSelectInput} from '@/modules/element-select-input';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
-  import type {FormChangeKind, FormControlPayload} from './types';
+  import type {
+    FormChangeKind,
+    FormControlPayload,
+    FormProperties,
+  } from './types';
   import {inputName} from './runtime';
   import VarDump from '@/common/components/VarDump.vue';
 
@@ -20,7 +24,7 @@
     siteId?: number | string | null;
   };
   type ElementInfo = ElementPresentation & {
-    $element?: {data?: (key: string) => unknown};
+    $element?: {data?: (key: string) => string | number | null | undefined};
   };
   type ElementSelectElement =
     | 'craft-element-select-input'
@@ -31,7 +35,7 @@
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
     sources: string[] | null;
-    criteria: Record<string, unknown>;
+    criteria: FormProperties;
     selectionLabel: string;
     limit: number | null;
     showSiteMenu: boolean;
@@ -126,8 +130,11 @@
   }
 
   function selected(event: Event): void {
-    const elements = (event as CustomEvent<{elements?: ElementInfo[]}>)?.detail
-      ?.elements;
+    if (!(event instanceof CustomEvent)) {
+      return;
+    }
+
+    const elements: ElementInfo[] | undefined = event.detail?.elements;
     elements?.forEach((element) => {
       const selectedId = Number(element.id);
       presentations.set(selectedId, {
@@ -200,14 +207,17 @@
       </ul>
 
       <div v-if="editable" class="flex">
-        <button
+        <craft-button
           type="button"
-          class="btn add icon dashed wrap"
+          variant="dashed"
+          icon="plus"
+          command="--add-element"
           data-element-select-add
           :aria-label="control.props.selectionLabel"
+          @click=""
         >
           {{ control.props.selectionLabel }}
-        </button>
+        </craft-button>
         <div class="spinner hidden" />
       </div>
     </component>

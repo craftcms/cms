@@ -1,4 +1,5 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
+import type {DefineComponent} from 'vue';
 import axios from 'axios';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {setUrlDefaults} from '@/wayfinder';
@@ -9,9 +10,17 @@ import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
-let bootedCallbacks: Array<(instance: any) => void> = [];
-let bootingCallbacks: Array<(instance: any) => void> = [];
+type TranslationStore = Record<string, Record<string, string>>;
+
+interface CpInitialConfig {
+  translations?: TranslationStore;
+  [key: string]: ScreenPageProps[string] | TranslationStore;
+}
+
+let bootedCallbacks: Array<(instance: typeof window.Cp) => void> = [];
+let bootingCallbacks: Array<(instance: typeof window.Cp) => void> = [];
 
 /**
  * Pages under these prefixes render outside the CP shell: auth screens wrap
@@ -31,17 +40,15 @@ function defaultPageLayout(name: string) {
   return AppLayout;
 }
 
-function routeSegment(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
+function routeSegment(value: string): string {
   return value.toString().replace(/^\/+|\/+$/g, '');
 }
 
+const initialConfig: CpInitialConfig | typeof window.Craft = {};
+
 // Create our object
 const Cp = {
-  initialConfig: {} as Record<string, any>,
+  initialConfig,
 
   get $config() {
     return config;
@@ -63,15 +70,15 @@ const Cp = {
     return cpComponentRegistry;
   },
 
-  booted(callback: (instance: any) => void) {
+  booted(callback: (instance: typeof window.Cp) => void) {
     bootedCallbacks.push(callback);
   },
 
-  booting(callback: (instance: any) => void) {
+  booting(callback: (instance: typeof window.Cp) => void) {
     bootingCallbacks.push(callback);
   },
 
-  config(config: Record<any, any>) {
+  config(config: CpInitialConfig | typeof window.Craft) {
     this.initialConfig = config;
   },
 
@@ -80,8 +87,8 @@ const Cp = {
     configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
 
     setUrlDefaults(() => ({
-      cpTrigger: routeSegment(config.get('cpTrigger')),
-      actionTrigger: routeSegment(config.get('actionTrigger')),
+      cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),
+      actionTrigger: routeSegment(String(config.get('actionTrigger') ?? '')),
     }));
 
     queue.initialize({
@@ -91,7 +98,7 @@ const Cp = {
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
 
-    setTranslations(this.initialConfig.translations);
+    setTranslations(this.initialConfig.translations ?? {});
   },
 
   async start() {
@@ -105,7 +112,12 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      resolve: (name) => resolveInertiaPage(name),
+      resolve: async (name) => {
+        const page = await resolveInertiaPage(name);
+
+        // SAFETY: the registry only accepts Vue defineComponent/SFC pages.
+        return page as DefineComponent;
+      },
       layout: defaultPageLayout,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {

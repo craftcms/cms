@@ -9,9 +9,7 @@
   import {computed} from 'vue';
   import {router} from '@inertiajs/vue3';
   import AppLayout from '@/common/layouts/AppLayout.vue';
-  import Breadcrumbs, {
-    type BreadcrumbItem,
-  } from '@/common/components/Breadcrumbs.vue';
+  import {type BreadcrumbItem} from '@/common/components/Breadcrumbs.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import FormActions from '@/common/components/FormActions.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
@@ -20,13 +18,14 @@
   import {useElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
+  import type {FormValues} from '@/modules/forms/types';
 
   const props = defineProps<{
     /**
      * Identity attributes merged into every submission — the one per-type
      * piece of the pipeline (e.g. an entry's `entryId`/`sectionId`).
      */
-    saveData?: () => Record<string, unknown>;
+    saveData?: () => FormValues;
   }>();
 
   defineSlots<{
@@ -79,7 +78,7 @@
   const actionMenuItems = useElementActionMenu(() => payload.actionMenu, {
     // The entry type can be switched in the sidebar without saving, so the
     // settings slideout should follow the field rather than the stored value.
-    currentEntryTypeId: () => form.typeId,
+    currentEntryTypeId: () => form.typeId ?? null,
   });
 
   // "View" opens the element on the front end. The hrefs arrive ready to
@@ -260,7 +259,7 @@
           >
             <div class="element-editor__content">
               <craft-pane padding="none" appearance="plain">
-                <div class="py-1">
+                <div class="py-4">
                   <!-- Tabs are rendered by `FormNodeList` inside the form itself. -->
                   <div class="element-form">
                     <FormRenderer

@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -534,6 +535,7 @@ describe('store', function () {
     });
 
     it('can clear asset alt text', function () {
+        Queue::fake();
         config()->set('filesystems.disks.save-element-controller-test', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/save-element-controller-test'),

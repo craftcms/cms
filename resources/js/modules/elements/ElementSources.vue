@@ -1,8 +1,11 @@
 <script setup lang="ts">
-  import {computed, ref} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import {router} from '@inertiajs/vue3';
   import useCraftData from '@/common/composables/useCraftData';
-  import type {ElementIndexRoute} from '@/modules/elements/composables/useElementIndexVisits';
+  import type {
+    ElementIndexRoute,
+    IndexVisitor,
+  } from '@/modules/elements/composables/useElementIndexVisits';
   import type {Source, SourceHeading} from '@/modules/elements/types/sources';
 
   const props = defineProps<{
@@ -10,6 +13,13 @@
     route: ElementIndexRoute;
     activeSource?: string | null;
     viewMode?: string | null;
+    /**
+     * Supplied by indexes that aren't a page — the element selector modal.
+     *
+     * Without it, picking a source runs an Inertia visit, which in a modal
+     * navigates the page *behind* it. See {@link createIndexVisitor}.
+     */
+    indexVisitor?: IndexVisitor;
   }>();
 
   const {site} = useCraftData();
@@ -46,7 +56,7 @@
     return props.route.url({
       source: key,
       site: site?.handle,
-      ...(props.viewMode ? {viewMode: props.viewMode} : {}),
+      viewMode: props.viewMode || undefined,
     });
   }
 
@@ -66,8 +76,24 @@
   };
 
   function prefetchSource(key: string) {
+    // Prefetching is an Inertia notion; a non-page index fetches its own way.
+    if (props.indexVisitor) {
+      return;
+    }
+
     router.prefetch(sourceUrl(key), visitOptions, {cacheFor: 0});
   }
+
+  // A visitor-driven index has no `onFinish` to hook, so the optimistic
+  // highlight is released when the server's active source catches up.
+  watch(
+    () => props.activeSource,
+    (next) => {
+      if (pendingSource.value !== null && next === pendingSource.value) {
+        pendingSource.value = null;
+      }
+    }
+  );
 
   function visitSource(key: string) {
     if (key === activeKey.value) {
@@ -76,6 +102,15 @@
 
     // Reflect the selection right away, before the request goes out.
     pendingSource.value = key;
+
+    if (props.indexVisitor) {
+      props.indexVisitor.merge(
+        {source: key, viewMode: props.viewMode || null},
+        {resetPage: true}
+      );
+
+      return;
+    }
 
     router.visit(sourceUrl(key), {
       // Switching sources rebuilds the list view (data, columns, sort, actions,
@@ -98,21 +133,18 @@
   // Folder/volume sources double as drag-and-drop move targets: their `data`
   // carries the backend `folder-id` / `can-move-to` flags. Inert unless an
   // asset-move drag is set up on the page.
-  function sourceMoveAttrs(source: Source): Record<string, string> {
+  function sourceMoveAttrs(source: Source) {
     const data = 'data' in source ? source.data : undefined;
     const folderId = data?.['folder-id'];
     if (folderId == null || folderId === false) {
       return {};
     }
 
-    const attrs: Record<string, string> = {
+    return {
       'data-folder-drop-target': '',
       'data-folder-id': String(folderId),
+      'data-can-move-to': data?.['can-move-to'] ? '' : undefined,
     };
-    if (data?.['can-move-to']) {
-      attrs['data-can-move-to'] = '';
-    }
-    return attrs;
   }
 </script>
 

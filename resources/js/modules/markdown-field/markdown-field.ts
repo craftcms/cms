@@ -29,6 +29,18 @@ type RenderOptions = Options & {
   ) => void;
 };
 
+interface TextareaAttributes {
+  class: string;
+  rows: number;
+  id?: string;
+  name?: string;
+  'aria-describedby'?: string;
+  maxlength?: number;
+  disabled?: string;
+  required?: string;
+  'aria-invalid'?: string;
+}
+
 @customElement('craft-markdown-field')
 class MarkdownField extends LitElement {
   private assetController: AssetController | null = null;
@@ -336,8 +348,8 @@ class MarkdownField extends LitElement {
     return controls;
   }
 
-  private textareaProps(inputId: string): Record<string, string | number> {
-    const props: Record<string, string | number> = {
+  private textareaProps(inputId: string): TextareaAttributes {
+    const props: TextareaAttributes = {
       class: 'nicetext code',
       rows: this.rows,
     };
@@ -383,9 +395,7 @@ class MarkdownField extends LitElement {
     }
 
     const form = this.closest('form');
-    const jquery =
-      (window as Window & {jQuery?: any; $?: any}).jQuery ??
-      (window as Window & {jQuery?: any; $?: any}).$;
+    const jquery = window.jQuery ?? window.$;
 
     if (!form || !jquery) {
       return;
@@ -394,13 +404,13 @@ class MarkdownField extends LitElement {
     const $form = jquery(form);
     const initialValue = $form.data('initialSerializedValue');
 
-    if (typeof initialValue !== 'string') {
+    if (Object(initialValue).constructor !== String) {
       return;
     }
 
     const serializer = $form.data('serializer');
     const serialized =
-      typeof serializer === 'function' ? serializer() : $form.serialize();
+      serializer instanceof Function ? serializer() : $form.serialize();
 
     if (this.serializedWithoutInput(serialized, inputName) !== initialValue) {
       return;

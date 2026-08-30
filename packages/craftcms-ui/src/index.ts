@@ -5,6 +5,8 @@ import './types/globals.js';
 import './types/events.js';
 import './types/index.js';
 
+export type {ActionFeedback, BaseAction} from './actions/index.js';
+
 export {default as CraftActionItem} from './components/action-item/action-item.js';
 export {default as CraftActionMenu} from './components/action-menu/action-menu.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
@@ -26,6 +28,8 @@ export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftCopyAttribute} from './components/copy-attribute/copy-attribute.js';
 export {default as CraftCopyButton} from './components/copy-button/copy-button.js';
 export {default as CraftDialog} from './components/dialog/dialog.js';
+export {default as CraftElementSelectorModal} from './components/element-selector-modal/element-selector-modal.js';
+export {ElementSelectorHostController} from './components/element-selector-modal/controller-host.js';
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftEmpty} from './components/empty/empty.js';
 export {default as CraftField} from './components/field/field.js';
@@ -111,6 +115,8 @@ export * from './utilities/dom.js';
 export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
 export * from './utilities/create.js';
+export * from './utilities/focus-trap.js';
+export * from './core/element-selector/index.js';
 
 // Services
 export {ConfigService} from './services/Config.js';

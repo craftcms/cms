@@ -152,6 +152,7 @@ export class Grid extends Base<GridSettings> {
     }
 
     const settings = this.settings!;
+    // SAFETY: Grid construction normalizes `$container` around its HTMLElement root.
     const container = this.$container[0] as HTMLElement;
 
     // Check to see if the grid is actually visible
@@ -392,10 +393,10 @@ export class Grid extends Base<GridSettings> {
 
     // Set the item widths and left positions
     for (let i = 0; i < this.items.length; i++) {
-      const css: Record<string, string> = {
+      const css = {
         width: this.getItemWidthCss(this.layout.colspans[i]!),
+        [Craft.left]: this.getItemLeftPosCss(this.layout.positions[i]!),
       };
-      css[Craft.left] = this.getItemLeftPosCss(this.layout.positions[i]!);
       this.items[i].css(css);
     }
 
@@ -660,4 +661,4 @@ class GridLayoutGenerator {
 }
 
 // Legacy static exposure (`Craft.Grid.LayoutGenerator`).
-(Grid as any).LayoutGenerator = GridLayoutGenerator;
+Object.assign(Grid, {LayoutGenerator: GridLayoutGenerator});

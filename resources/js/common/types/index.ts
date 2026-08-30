@@ -1,5 +1,9 @@
-import type {VariantKey} from '@craftcms/ui';
+import type {ActionFeedback, BaseAction, VariantKey} from '@craftcms/ui';
+import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 import type {Component} from 'vue';
+import type {FormValues} from '@/modules/forms/types';
+
+export type OptionData = ComboboxOptionData;
 
 export interface BaseOption {
   label: string;
@@ -11,7 +15,7 @@ export interface CheckboxOption extends BaseOption {
   disabled?: boolean;
 }
 export interface SelectOption<
-  T = Record<string, any> | null | undefined,
+  T = OptionData | null | undefined,
 > extends BaseOption {
   type?: 'option';
   data?: T;
@@ -80,7 +84,10 @@ export interface ActionItemButton {
   disabled?: boolean;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
-  [key: string]: unknown;
+  action?: BaseAction;
+  feedback?: ActionFeedback;
+  keywords?: string;
+  iconColor?: string;
 }
 
 export interface ActionItemLink {
@@ -90,7 +97,10 @@ export interface ActionItemLink {
   variant?: VariantKey | string;
   onClick?: (event: Event) => void;
   shortcut?: ShortcutProps;
-  [key: string]: unknown;
+  action?: BaseAction;
+  feedback?: ActionFeedback;
+  keywords?: string;
+  iconColor?: string;
 }
 
 export type ActionItem =
@@ -103,7 +113,7 @@ export type ActionItems = Array<ActionItem>;
 
 export interface FormSaveOptions {
   redirect?: boolean;
-  data?: Record<string, any>;
+  data?: FormValues;
   preserveState?: boolean;
 }
 

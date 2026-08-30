@@ -10,13 +10,14 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 // Re-expose the sub-classes on the constructor, as the legacy bundle did
 // (`Craft.FieldLayoutDesigner.Tab`, `.Element`, `.CardViewDesigner`, etc.).
-const FLD = FieldLayoutDesigner as any;
-FLD.Tab = Tab;
-FLD.Element = Element;
-FLD.CardViewDesigner = CardViewDesigner;
-FLD.BaseDrag = BaseDrag;
-FLD.TabDrag = TabDrag;
-FLD.ElementDrag = ElementDrag;
+Object.assign(FieldLayoutDesigner, {
+  Tab,
+  Element,
+  CardViewDesigner,
+  BaseDrag,
+  TabDrag,
+  ElementDrag,
+});
 
 // Assign onto the legacy `Craft` global (created by the cp bundle) so the
 // PHP-emitted `new Craft.FieldLayoutDesigner("#id", settings)` keeps working.

@@ -76,4 +76,8 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
 // Signals support for passkeys without leaking the CP URL, per https://www.w3.org/TR/passkey-endpoints/.
 Route::get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
 
-Route::fallback(SiteRouteController::class)->name('siteFallback');
+// Route::fallback() only registers GET/HEAD by default
+Route::any('{fallbackPlaceholder}', SiteRouteController::class)
+    ->where('fallbackPlaceholder', '.*')
+    ->fallback()
+    ->name('siteFallback');

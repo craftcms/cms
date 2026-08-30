@@ -9,6 +9,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {nestedElementManagerData} from './support';
+import type {FormProperties, FormValues} from '@/modules/forms/types';
 
 // `Craft`, `Garnish` (legacy), and `$` (jQuery) remain page globals. This
 // class is an orchestrator of still-jQuery Craft widgets, so jQuery survives
@@ -39,7 +40,13 @@ export interface CreateAttributes {
   color?: string | null;
   group?: string | null;
   /** The element attributes posted to `elements/create`. */
-  attributes?: Record<string, unknown>;
+  attributes?: FormProperties;
+}
+
+interface CopiedElementInfo {
+  type: string;
+  id: string | number;
+  data?: Record<string, string | number>;
 }
 
 /**
@@ -62,13 +69,13 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
   selectable: boolean;
   sortable: boolean;
   /** Extra settings for the embedded element index (index mode). */
-  indexSettings: Record<string, unknown>;
+  indexSettings: FormProperties;
   canCreate: boolean;
   /**
    * Whether copied elements may be pasted here — a boolean, or a runtime
    * predicate supplied by JS callers.
    */
-  canPaste: boolean | ((elementInfo: any[]) => boolean);
+  canPaste: boolean | ((elementInfo: CopiedElementInfo[]) => boolean);
   /**
    * Declarative paste constraint from server settings: a pasted element is
    * only allowed when its `data[attribute]` is one of `values`. Lets PHP
@@ -82,9 +89,9 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
   /** Request param name the owner ID is sent under. */
   ownerIdParam: string | null;
   /** Attributes for created elements; an array renders a disclosure menu of options. */
-  createAttributes: CreateAttributes[] | Record<string, unknown> | null;
+  createAttributes: CreateAttributes[] | FormProperties | null;
   /** Extra params merged into paste requests. */
-  pasteAttributes: Record<string, unknown> | null;
+  pasteAttributes: FormProperties | null;
   fieldId: number | null;
   fieldHandle: string | null;
   /** Base input name used to mark the owner form dirty (delta tracking). */
@@ -188,16 +195,18 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
     // Legacy signature: (container, elementType, settings).
     let settings: Partial<NestedElementManagerSettings>;
-    if (typeof elementTypeOrSettings === 'string') {
+    if (elementTypeOrSettings instanceof Object) {
+      settings = elementTypeOrSettings ?? {};
+    } else if (elementTypeOrSettings !== undefined) {
       settings = {...legacySettings, elementType: elementTypeOrSettings};
     } else {
-      settings = elementTypeOrSettings ?? {};
+      settings = {};
     }
 
     const resolved =
-      typeof container === 'string'
-        ? document.querySelector<HTMLElement>(container)
-        : container;
+      container instanceof HTMLElement
+        ? container
+        : document.querySelector<HTMLElement>(container);
     if (!resolved) {
       throw new Error('NestedElementManager: container not found.');
     }
@@ -415,8 +424,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       const onActivate = async (ev: any) => {
         ev.preventDefault();
         $createBtn.addClass('loading');
+        const createAttributes = this.settings.createAttributes;
         await this.createElement(
-          this.settings.createAttributes as Record<string, unknown> | null
+          Array.isArray(createAttributes) ? null : createAttributes
         );
         $createBtn.removeClass('loading');
       };
@@ -517,11 +527,8 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         filter: this.settings.selectable
           ? () => {
               // Only return all the selected items if the target item is selected
-              const target = this.elementSort!.$targetItem as unknown as
-                | HTMLElement
-                | HTMLElement[]
-                | null;
-              const targetItem = Array.isArray(target) ? target[0] : target;
+              const target = this.elementSort!.$targetItem;
+              const targetItem = target instanceof HTMLElement ? target : null;
               if (
                 targetItem
                   ?.querySelector(':scope > .element')
@@ -543,13 +550,14 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         onSortChange: () => {
           void this.onSortChange(this.elementSort!.$draggee);
         },
-      } as any);
+      });
     }
 
     for (const li of Array.from(this.$elements[0].children)) {
-      const element = (li as HTMLElement).querySelector<HTMLElement>(
-        ':scope > .element'
-      );
+      if (!(li instanceof HTMLElement)) {
+        continue;
+      }
+      const element = li.querySelector<HTMLElement>(':scope > .element');
       if (element) {
         this.initElement(element);
       }
@@ -643,7 +651,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     );
   }
 
-  async getBaseActionData(): Promise<Record<string, unknown>> {
+  async getBaseActionData(): Promise<FormValues> {
     // this could end up updating this.settings.ownerId
     await this.markAsDirty();
 
@@ -768,7 +776,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       }
     }
 
-    if (typeof this.settings.canPaste === 'function') {
+    if (this.settings.canPaste instanceof Function) {
       return this.settings.canPaste(elementInfo);
     }
 
@@ -814,9 +822,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
   // --- Element CRUD ----------------------------------------------------------
 
-  async createElement(
-    attributes?: Record<string, unknown> | null
-  ): Promise<void> {
+  async createElement(attributes?: FormProperties | null): Promise<void> {
     if (this.creatingElement) {
       return;
     }
@@ -1121,7 +1127,9 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
           // manager opens the editor itself, with nested-draft handling the
           // generic listener doesn't have.
           $editBtn.removeAttr('action');
-          ($editBtn[0] as any).action = null;
+          if ($editBtn[0] instanceof HTMLElement) {
+            Object.assign($editBtn[0], {action: null});
+          }
           $editBtn.off('activate');
           $editBtn.on('activate', (ev: any) => {
             // focus on the button so that when the slideout is closed, it's returned to the button
@@ -1281,7 +1289,10 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       return;
     }
 
-    const list = this.$elements[0] as HTMLElement;
+    const list = this.$elements[0];
+    if (!(list instanceof HTMLElement)) {
+      return;
+    }
     const canCreate = this.canCreate();
     const copiedElements = Craft.cp.getCopiedElements();
     const showPaste =
@@ -1334,8 +1345,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         // then ensure we're working with a draft and save the nested element changes to the draft
         // note: this workflow doesn't apply to elements nested directly in global sets as globals don't use element editor
         if (
-          typeof this.elementEditor !== 'undefined' &&
-          this.elementEditor !== null &&
+          this.elementEditor &&
           hasAttr(element, 'data-owner-is-canonical') &&
           !hasAttr(element, 'data-is-unpublished-draft') &&
           !this.elementEditor.settings.isUnpublishedDraft

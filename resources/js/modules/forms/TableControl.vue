@@ -3,8 +3,12 @@
   import {t} from '@craftcms/ui';
   import {useEventListener, useMutationObserver} from '@vueuse/core';
   import {EditableTable} from '../editable-table';
-  import type {EditableTableColumns} from '../editable-table/types';
-  import type {FormControlPayload} from './types';
+  import type {
+    EditableTableColumns,
+    EditableTableRow,
+    EditableTableValue,
+  } from '../editable-table/types';
+  import type {FormControlPayload, FormValue} from './types';
   import {inputName} from './runtime';
 
   type TableControlProps = {
@@ -17,8 +21,11 @@
     keyed?: boolean;
     errors?: Record<string, Record<string, true>>;
   };
-  type TableRow = Record<string, unknown>;
-  type TableValue = TableRow[] | Record<string, TableRow>;
+  type TableRow = EditableTableRow;
+  interface TableRows {
+    [key: string]: TableRow;
+  }
+  type TableValue = TableRow[] | TableRows;
 
   const props = defineProps<{
     control: FormControlPayload<TableControlProps>;
@@ -91,7 +98,10 @@
         !props.editable
       ).appendTo(bodyElement);
 
-      const rowElement = bodyElement.lastElementChild as HTMLTableRowElement;
+      const rowElement = bodyElement.lastElementChild;
+      if (!(rowElement instanceof HTMLTableRowElement)) {
+        throw new TypeError('Expected the editable table to append a row.');
+      }
       Object.keys(props.control.props.columns).forEach((column, index) => {
         rowElement.cells[index]?.classList.toggle(
           'error',
@@ -163,7 +173,7 @@
     cell: HTMLTableCellElement,
     column: string,
     data: FormData
-  ): unknown {
+  ): EditableTableValue {
     const rowId = row.dataset.id!;
     const name = `${inputName(props.control.path)}[${rowId}][${column}]`;
     const type = props.control.props.columns[column]?.type ?? '';

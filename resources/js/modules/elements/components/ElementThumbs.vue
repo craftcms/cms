@@ -8,7 +8,16 @@
   import {useElementIndexSelection} from '@/modules/elements/composables/useElementIndexSelection';
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
 
-  type ThumbElement = Record<any, any>;
+  interface ThumbElement {
+    id: string | number;
+    isFolder?: boolean;
+    folderUrl?: string;
+    folderId?: string | number;
+    canMoveTo?: boolean;
+    url?: string;
+    thumbHtml?: string;
+    label?: string;
+  }
 
   const props = withDefaults(
     defineProps<{
@@ -47,9 +56,8 @@
   function onTileClick(element: ThumbElement, event: MouseEvent) {
     if (!isFolderRow(element)) return;
     if (
-      (event.target as HTMLElement).closest(
-        'a[href], button, input, craft-checkbox'
-      )
+      event.target instanceof HTMLElement &&
+      event.target.closest('a[href], button, input, craft-checkbox')
     ) {
       return;
     }
@@ -68,13 +76,14 @@
     event: KeyboardEvent
   ) {
     if (!props.selectable) return;
-    const target = event.currentTarget as HTMLElement;
-    const last = props.data!.length - 1;
+    if (!(event.currentTarget instanceof HTMLElement)) return;
+    const target = event.currentTarget;
+    const last = props.data.length - 1;
     switch (event.key) {
       case ' ':
       case 'Enter': {
         event.preventDefault();
-        const element = props.data!.find((el) => el.id === id);
+        const element = props.data.find((el) => el.id === id);
         if (element && isFolderRow(element)) {
           navigateToFolder(element.folderUrl);
           break;
@@ -90,7 +99,7 @@
       case 'ArrowDown': {
         event.preventDefault();
         const nextIndex = Math.min(index + 1, last);
-        const nextEl = props.data![nextIndex];
+        const nextEl = props.data[nextIndex];
         if (event.shiftKey && nextEl) extendSelectionTo(rowFor(nextEl.id));
         focusTileByIndex(nextIndex, target);
         break;
@@ -99,12 +108,16 @@
       case 'ArrowUp': {
         event.preventDefault();
         const prevIndex = Math.max(index - 1, 0);
-        const prevEl = props.data![prevIndex];
+        const prevEl = props.data[prevIndex];
         if (event.shiftKey && prevEl) extendSelectionTo(rowFor(prevEl.id));
         focusTileByIndex(prevIndex, target);
         break;
       }
     }
+  }
+
+  function checkboxValue(event: Event): boolean {
+    return event.target instanceof HTMLInputElement && event.target.checked;
   }
 </script>
 
@@ -112,16 +125,14 @@
   <div class="grid place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
-  <template v-else-if="data!.length > 0">
+  <template v-else-if="data.length > 0">
     <div class="thumbsview-header" v-if="selectable">
       <craft-checkbox
         label-sr-only
         .checked="table.getIsAllRowsSelected()"
         .indeterminate="table.getIsSomeRowsSelected()"
         .disabled="readOnly"
-        @model-value-changed="
-          onToggleAllSelected(($event.target as HTMLInputElement).checked)
-        "
+        @model-value-changed="onToggleAllSelected(checkboxValue($event))"
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
@@ -150,7 +161,7 @@
           @click="rememberShift($event)"
           @model-value-changed="
             selectRow(rowFor(element.id), {
-              checked: ($event.target as HTMLInputElement).checked,
+              checked: checkboxValue($event),
               shiftKey: pendingShiftKey,
             })
           "

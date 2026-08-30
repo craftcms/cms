@@ -20,6 +20,14 @@ import {
   setJqData,
 } from './interop';
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | {[key: string]: JsonValue};
+
 export class MatrixEntry extends Base {
   /** The entry controller for a `.matrixblock` container, if one was booted. */
   static forContainer(container: Element): MatrixEntry | undefined {
@@ -38,7 +46,7 @@ export class MatrixEntry extends Base {
   uiLabel: string | null = null;
 
   isNew: boolean;
-  id: string | number | null;
+  id: string | null;
 
   collapsed = false;
 
@@ -83,18 +91,16 @@ export class MatrixEntry extends Base {
     setJqData(container, 'entry', this);
 
     this.id = container.dataset.id ?? null;
-    this.isNew =
-      !this.id || (typeof this.id === 'string' && this.id.startsWith('new'));
+    this.isNew = !this.id || this.id.startsWith('new');
 
     const actionMenuBtn = this.container.querySelector<HTMLElement>(
       ':scope > .actions > .action-btn'
     );
     if (actionMenuBtn) {
       this.actionDisclosure =
-        (jqData(actionMenuBtn, 'disclosureMenu') as LegacyDisclosureMenu) ||
+        jqData(actionMenuBtn, 'disclosureMenu') ||
         new (legacyGarnish().DisclosureMenu)(actionMenuBtn);
-      this.actionMenu =
-        (this.actionDisclosure.$container as {0?: HTMLElement})?.[0] ?? null;
+      this.actionMenu = this.actionDisclosure.$container[0] ?? null;
     }
 
     this.uiLabel = container.dataset.uiLabel ?? null;
@@ -106,9 +112,14 @@ export class MatrixEntry extends Base {
 
     for (const option of this.actionMenuOptions()) {
       this.addListener(option, 'activate', (event) => {
-        const ev = event as unknown as Event;
-        ev.preventDefault();
-        this.onActionSelect(ev.target as HTMLElement);
+        if (
+          !(event instanceof Event) ||
+          !(event.target instanceof HTMLElement)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        this.onActionSelect(event.target);
       });
     }
 
@@ -121,10 +132,15 @@ export class MatrixEntry extends Base {
       // (Legacy used the Garnish `doubletap` event; `dblclick` covers both
       // double-click and double-tap in modern browsers.)
       this.addListener(this.titlebar, 'dblclick', (event) => {
-        const ev = event as unknown as Event;
+        if (
+          !(event instanceof Event) ||
+          !(event.target instanceof HTMLElement)
+        ) {
+          return;
+        }
         // don't expand/collapse the matrix "block" if double tapping the tabs
-        if (!(ev.target as HTMLElement).closest('.tab-label')) {
-          ev.preventDefault();
+        if (!event.target.closest('.tab-label')) {
+          event.preventDefault();
           this.toggle();
         }
       });
@@ -132,13 +148,14 @@ export class MatrixEntry extends Base {
   }
 
   /** Reads a JSON-ish data attribute the way jQuery `.data()` did. */
-  private dataJson(name: string): unknown {
+  private dataJson(name: string): JsonValue {
     const raw = this.container.getAttribute(`data-${name}`);
     if (raw === null) {
       return null;
     }
     try {
-      return JSON.parse(raw);
+      // SAFETY: JSON.parse can only produce values represented by JsonValue.
+      return JSON.parse(raw) as JsonValue;
     } catch {
       return raw;
     }
@@ -182,7 +199,7 @@ export class MatrixEntry extends Base {
     }
 
     const bulk = this.bulkActionMode();
-    const labels: Record<string, string> = {
+    const labels = {
       collapse: bulk ? t('Collapse selected blocks') : t('Collapse'),
       expand: bulk ? t('Expand selected blocks') : t('Expand'),
       disable: bulk
@@ -198,13 +215,16 @@ export class MatrixEntry extends Base {
       delete: bulk
         ? t('Delete selected {type}', {type: t('blocks')})
         : t('Delete'),
-    };
+    } satisfies Record<string, string>;
     for (const button of buttons) {
       const action = button.getAttribute('data-action') ?? '';
-      if (labels[action]) {
+      const actionLabel = Object.entries(labels).find(
+        ([name]) => name === action
+      )?.[1];
+      if (actionLabel) {
         const label = button.querySelector(':scope > .menu-item-label');
         if (label) {
-          label.textContent = labels[action];
+          label.textContent = actionLabel;
         }
       }
     }
@@ -233,15 +253,15 @@ export class MatrixEntry extends Base {
 
   private previousBlock(): HTMLElement | null {
     const prev = this.container.previousElementSibling;
-    return prev?.classList.contains('matrixblock')
-      ? (prev as HTMLElement)
+    return prev instanceof HTMLElement && prev.classList.contains('matrixblock')
+      ? prev
       : null;
   }
 
   private nextBlock(): HTMLElement | null {
     const next = this.container.nextElementSibling;
-    return next?.classList.contains('matrixblock')
-      ? (next as HTMLElement)
+    return next instanceof HTMLElement && next.classList.contains('matrixblock')
+      ? next
       : null;
   }
 
@@ -350,7 +370,12 @@ export class MatrixEntry extends Base {
 
           value = input.textContent;
         } else {
-          value = craft().getText(this.inputPreviewText(input));
+          const previewText = this.inputPreviewText(input);
+          value = Array.isArray(previewText)
+            ? previewText.map((text) => craft().getText(text))
+            : previewText
+              ? craft().getText(previewText)
+              : null;
         }
 
         if (Array.isArray(value)) {
@@ -377,7 +402,7 @@ export class MatrixEntry extends Base {
     return previewHtml;
   }
 
-  private inputPreviewText(input: HTMLElement): unknown {
+  private inputPreviewText(input: HTMLElement): string | string[] | null {
     if (input instanceof HTMLSelectElement) {
       return Array.from(input.selectedOptions).map((option) => option.text);
     }
@@ -395,7 +420,15 @@ export class MatrixEntry extends Base {
       }
     }
 
-    return getInputPostVal(input as HTMLInputElement);
+    if (!(input instanceof HTMLInputElement)) {
+      return null;
+    }
+    const value = getInputPostVal(input);
+    return Array.isArray(value)
+      ? value.map(String)
+      : value == null
+        ? null
+        : String(value);
   }
 
   expand(): void {

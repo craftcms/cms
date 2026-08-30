@@ -123,8 +123,8 @@ export class QueueService extends EventTarget {
     let delayMs = 0;
     if (delay === true) {
       delayMs = this.#getAdaptiveDelay();
-    } else if (typeof delay === 'number') {
-      delayMs = delay;
+    } else if (Number.isFinite(delay)) {
+      delayMs = Number(delay);
     }
 
     if (delayMs > 0) {
@@ -163,7 +163,7 @@ export class QueueService extends EventTarget {
   // ─── Private Methods ─────────────────────────────────────────────────────────
 
   #initBroadcaster(): void {
-    if (typeof BroadcastChannel === 'undefined' || !this.#appId) {
+    if (!('BroadcastChannel' in globalThis) || !this.#appId) {
       return;
     }
 
@@ -203,7 +203,7 @@ export class QueueService extends EventTarget {
     }
   }
 
-  #broadcast(event: string, data?: object): void {
+  #broadcast(event: string, data?: {jobData: QueueJobData}): void {
     this.#broadcaster?.postMessage({
       event,
       instanceId: this.#instanceId,
@@ -248,6 +248,7 @@ export class QueueService extends EventTarget {
       }
 
       // For auth errors, stop tracking - user needs to log in
+      // SAFETY: Queue requests reject with Axios errors carrying an optional response status.
       const axiosError = error as {response?: {status: number}};
       if (
         axiosError.response?.status === 400 ||

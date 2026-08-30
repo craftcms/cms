@@ -8,6 +8,7 @@ const DEFAULTS = {
   autoUpload: false,
   sequentialUploads: true,
   // Resolved from `Craft.maxUploadSize` via the static getter (see below).
+  // SAFETY: Upload size is nullable until the runtime Craft config is available.
   maxFileSize: null as number | null,
   replaceFileInput: false,
   createAction: 'assets/upload',
@@ -112,7 +113,7 @@ export class Uploader extends BaseUploader {
       // If the validation has passed for this file up to now, check if we're not hitting any limits
       if (
         pass &&
-        typeof this.settings.canAddMoreFiles === 'function' &&
+        this.settings.canAddMoreFiles instanceof Function &&
         !this.settings.canAddMoreFiles(this._validFileCounter)
       ) {
         this._rejectedFiles.limit.push('“' + file.name + '”');

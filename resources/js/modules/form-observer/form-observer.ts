@@ -98,14 +98,17 @@ export class FormObserver extends Base {
       case 'childList':
         return (
           // was this for the text node of a <textarea>?
-          (target.nodeName === 'TEXTAREA' &&
-            (target as Element).hasAttribute('name')) ||
+          (target instanceof HTMLTextAreaElement &&
+            target.hasAttribute('name')) ||
           // maybe a `[name]` node was added/removed
           this.#hasNamedNodes(record.addedNodes) ||
           this.#hasNamedNodes(record.removedNodes)
         );
       case 'attributes': {
-        const el = target as HTMLInputElement;
+        if (!(target instanceof HTMLInputElement)) {
+          return false;
+        }
+        const el = target;
         switch (record.attributeName) {
           case 'name':
             // only matters if the element isn't disabled

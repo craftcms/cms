@@ -71,7 +71,7 @@ export interface SlideoutSettings extends GarnishBaseSettings {
   /** Tag name for the generated container element. Default `'div'`. */
   containerElement: string;
   /** Attributes applied to the container element via jQuery's `$(tag, attrs)`. */
-  containerAttributes: Record<string, unknown>;
+  containerAttributes: Record<string, string | number | boolean>;
   /** Whether {@link Slideout.open} should be called immediately from `init`. Default `true`. */
   autoOpen: boolean;
   /** Whether the Escape key should close the slideout. Default `true`. */
@@ -82,8 +82,11 @@ export interface SlideoutSettings extends GarnishBaseSettings {
    * The element that should regain focus when the slideout closes. Falls back
    * to `document.activeElement` at {@link Slideout.open} time when unset.
    */
-  triggerElement: unknown;
+  triggerElement: SlideoutTrigger;
 }
+
+type SlideoutContents = string | Node | ArrayLike<Node> | null;
+type SlideoutTrigger = string | Element | ArrayLike<Element> | null;
 
 /**
  * A slideout panel. Builds a container element around passed-in contents,
@@ -245,7 +248,10 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    *   generated container.
    * @param settings - Optional settings overrides (see {@link SlideoutSettings}).
    */
-  constructor(contents?: unknown, settings?: Partial<SlideoutSettings>) {
+  constructor(
+    contents?: SlideoutContents,
+    settings?: Partial<SlideoutSettings>
+  ) {
     super();
     if (new.target === Slideout) {
       this.init(contents, settings);
@@ -258,7 +264,10 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * `super.init()` from TypeScript, or `this.base()` from a legacy
    * `.extend()` body (see the class docblock).
    */
-  init(contents?: unknown, settings?: Partial<SlideoutSettings>): void {
+  init(
+    contents?: SlideoutContents,
+    settings?: Partial<SlideoutSettings>
+  ): void {
     this.setSettings(settings, Slideout.defaults);
 
     this.$outerContainer = $('<div/>', {
@@ -398,7 +407,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this.$outerContainer.css('width', `calc(${width}px - var(--m) * 2)`);
   }
 
-  setTriggerElement(trigger: unknown): void {
+  setTriggerElement(trigger: SlideoutTrigger): void {
     this.$triggerElement = $(trigger);
   }
 

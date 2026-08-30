@@ -238,21 +238,14 @@ export abstract class CraftAuthChallengeForm extends LitElement {
    * @param tagName      - The custom element tag name, e.g. `'craft-totp-form'`.
    * @param elementClass - The class to register.
    */
-  static register<T extends typeof CraftAuthChallengeForm>(
-    tagName: string,
-    elementClass: T
-  ): void {
+  static register<
+    T extends typeof CraftAuthChallengeForm &
+      CustomElementConstructor & {METHOD: string},
+  >(tagName: string, elementClass: T): void {
     if (!customElements.get(tagName)) {
-      // Cast required: the base class is abstract, but concrete subclasses
-      // passed here are valid custom element constructors.
-      customElements.define(
-        tagName,
-        elementClass as unknown as CustomElementConstructor
-      );
+      customElements.define(tagName, elementClass);
     }
-    // Cast required: TypeScript does not support abstract static properties,
-    // so METHOD cannot be declared abstract on the base class.
-    _registry.set((elementClass as any).METHOD, elementClass);
+    _registry.set(elementClass.METHOD, elementClass);
   }
 
   /**

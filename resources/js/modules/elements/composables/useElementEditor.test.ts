@@ -8,13 +8,16 @@ import {
 } from 'vue';
 import {router} from '@inertiajs/vue3';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {ScreenPagePropsKey} from '@/common/composables/screen';
+import {
+  ScreenPagePropsKey,
+  type ScreenPageProps,
+} from '@/common/composables/screen';
 import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import FormRenderer from '@/modules/forms/FormRenderer.vue';
 import {registerFormComponents} from '@/modules/forms/register';
 import type {FormPayload} from '@/modules/forms/types';
-import {useElementEditor} from './useElementEditor';
+import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
@@ -36,7 +39,9 @@ vi.mock('@inertiajs/vue3', async (importOriginal) => ({
 }));
 
 /** Enough of the shared payload for the composable to boot. */
-function payload(overrides: Record<string, unknown> = {}) {
+function payload(
+  overrides: Partial<ElementEditPayload> = {}
+): Partial<ElementEditPayload> {
   return {
     elementId: 12,
     canonicalId: 12,
@@ -112,7 +117,7 @@ describe('useElementEditor', () => {
    * object, which is what an Inertia visit or a panel reload does.
    */
   function mount(
-    screenProps: Record<string, unknown>,
+    screenProps: Partial<ElementEditPayload>,
     slideout: ReturnType<typeof slideoutController> | null = null
   ) {
     // Reactive, the way both real sources are: Inertia's `usePage()` exposes
@@ -141,7 +146,11 @@ describe('useElementEditor', () => {
 
     const Shell = defineComponent({
       setup() {
-        provide(ScreenPagePropsKey, () => page.props);
+        provide(ScreenPagePropsKey, () => {
+          const props: ScreenPageProps = {};
+          Object.assign(props, page.props);
+          return props;
+        });
 
         if (slideout) {
           provide(SlideoutControllerKey, slideout as any);

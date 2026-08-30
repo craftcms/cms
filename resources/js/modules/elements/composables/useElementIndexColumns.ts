@@ -1,16 +1,14 @@
 import {computed, type Ref} from 'vue';
 import {
   createIndexVisitor,
+  type IndexVisitor,
   type ElementIndexRoute,
   type IndexRestore,
 } from '@/modules/elements/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
-
-// Element index rows are dynamic attribute maps, so the column helper is typed
-// against an open record (matching the page's `Element` type).
-type Row = Record<any, any>;
+import type {ElementIndexRow} from '@/modules/elements/composables/useContentIndexData';
 
 interface ElementIndexColumnsContext {
   /** Columns available for the current source: `{label, value}` per column. */
@@ -49,9 +47,11 @@ export function useElementIndexColumns(
   props: ElementIndexColumnsContext,
   viewState: Ref<ViewState>,
   pinned: PinnedColumn,
-  route: ElementIndexRoute
+  route: ElementIndexRoute,
+  /** Supplied by indexes that aren't a page — see {@link createIndexVisitor}. */
+  indexVisitor?: IndexVisitor
 ) {
-  const visitor = createIndexVisitor(route);
+  const visitor = indexVisitor ?? createIndexVisitor(route);
 
   // Column state is stored per source; fall back to a shared bucket when there
   // is no resolved source (e.g. the implicit "all elements" view).
@@ -94,7 +94,7 @@ export function useElementIndexColumns(
         .filter((column) => column !== undefined)
   );
 
-  const columnHelper = createCraftColumnHelper<Row>();
+  const columnHelper = createCraftColumnHelper<ElementIndexRow>();
 
   const columns = computed(() => [
     columnHelper.html(pinned.key, {header: pinned.label}),

@@ -1,14 +1,25 @@
-import {ref, type Ref} from 'vue';
-import {expandFormData} from '@/common/utils/forms';
+import {shallowRef, type ShallowRef} from 'vue';
+import {
+  expandFormData,
+  type PostValue,
+  type PostValues,
+} from '@/common/utils/forms';
 
-// The config's values are arbitrary server-defined rule settings, so they
-// stay `any` (also keeps the type compatible with Inertia's FormDataType).
-export type ConditionRuleConfig = {class: string} & Record<string, any>;
+export type ConditionRuleConfig = {class: string} & PostValues;
 
 export type ConditionConfig = {
   class: string;
   conditionRules?: ConditionRuleConfig[];
-} & Record<string, any>;
+} & PostValues;
+
+function isConditionConfig(value: PostValue): value is ConditionConfig {
+  return (
+    value instanceof Object &&
+    !Array.isArray(value) &&
+    !(value instanceof File) &&
+    Object(value.class).constructor === String
+  );
+}
 
 /**
  * Owns the element index's active filter condition: the portable condition
@@ -18,7 +29,8 @@ export type ConditionConfig = {
 export function useConditionBuilder({
   initialState = null,
 }: {initialState?: ConditionConfig | null} = {}) {
-  const conditions: Ref<ConditionConfig | null> = ref(initialState);
+  const conditions: ShallowRef<ConditionConfig | null> =
+    shallowRef(initialState);
 
   return {conditions};
 }
@@ -33,18 +45,18 @@ export function conditionsFromForm(
   form: HTMLFormElement
 ): ConditionConfig | null {
   const expanded = expandFormData(new FormData(form));
-  const condition = expanded.condition as ConditionConfig | undefined;
+  const condition = expanded.condition;
 
-  if (!condition) {
+  if (!isConditionConfig(condition)) {
     return null;
   }
 
   if (Array.isArray(condition.conditionRules)) {
     // Rule inputs are 1-based (`conditionRules[1]`), which leaves a hole at
     // index 0 when expanded; compact so the config JSON-serializes cleanly.
-    condition.conditionRules = condition.conditionRules.filter(
-      Boolean
-    ) as ConditionRuleConfig[];
+    condition.conditionRules = condition.conditionRules.filter((rule) =>
+      isConditionConfig(rule)
+    );
   }
 
   if (!condition.conditionRules?.length) {

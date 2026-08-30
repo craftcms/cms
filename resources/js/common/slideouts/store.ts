@@ -1,12 +1,13 @@
-import {reactive, readonly, type DeepReadonly} from 'vue';
+import {reactive, shallowReadonly} from 'vue';
 import {t} from '@craftcms/ui/utilities/translate';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-import {fetchSlideoutPage} from './request';
+import {fetchSlideoutPage, type SlideoutPage} from './request';
 import type {
   OpenSlideoutOptions,
   SlideoutInstance,
   SlideoutSaveResult,
 } from './types';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 /**
  * The open slideout stack, outermost first.
@@ -19,8 +20,22 @@ const panels = reactive<SlideoutInstance[]>([]);
 
 let nextId = 0;
 
-export function useSlideoutStack(): DeepReadonly<SlideoutInstance[]> {
-  return readonly(panels) as DeepReadonly<SlideoutInstance[]>;
+type SlideoutPageLoader = (
+  href: string,
+  containerId: string
+) => Promise<SlideoutPage>;
+
+let loadSlideoutPage: SlideoutPageLoader = fetchSlideoutPage;
+
+/** Override the page loader for callers that own the transport lifecycle. */
+export function setSlideoutPageLoader(
+  loader: SlideoutPageLoader = fetchSlideoutPage
+): void {
+  loadSlideoutPage = loader;
+}
+
+export function useSlideoutStack(): readonly SlideoutInstance[] {
+  return shallowReadonly(panels);
 }
 
 export function slideoutPanels(): SlideoutInstance[] {
@@ -134,7 +149,7 @@ export async function openSlideout(
  */
 export function openSlideoutWith(
   component: InertiaPageComponent,
-  props: Record<string, unknown> = {},
+  props: ScreenPageProps = {},
   options: OpenSlideoutOptions = {}
 ): SlideoutInstance | null {
   const opener =
@@ -290,7 +305,7 @@ async function loadInto(panel: SlideoutInstance): Promise<void> {
   panel.error = null;
 
   try {
-    const page = await fetchSlideoutPage(panel.href, panel.containerId);
+    const page = await loadSlideoutPage(panel.href, panel.containerId);
 
     panel.component = page.component;
     panel.props = page.props;

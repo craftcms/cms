@@ -45,7 +45,10 @@ export class RecoveryCodesSetup extends LitElement {
     this.submitButton?.setAttribute('loading', 'true');
     Craft.cp.announce(t('Loading'));
 
-    const form = e.target as HTMLFormElement;
+    if (!(e.target instanceof HTMLFormElement)) {
+      throw new Error('Recovery code setup must be submitted by a form.');
+    }
+    const form = e.target;
 
     try {
       const response = await fetch(form.getAttribute('action')!, {

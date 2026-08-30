@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {onMounted} from 'vue';
+  import {computed, onMounted} from 'vue';
   import {usePost} from '@/common/composables/useFetch';
   import {install as installAction} from '@actions/InstallController';
 
@@ -25,6 +25,9 @@
       }, 1000);
     },
   });
+  const errorMessage = computed(() =>
+    error.value instanceof Error ? error.value.message : String(error.value)
+  );
 
   onMounted(async () => {
     await install(props.data);
@@ -60,7 +63,7 @@
         <div
           class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
         >
-          {{ error.message }}
+          {{ errorMessage }}
         </div>
       </div>
     </template>

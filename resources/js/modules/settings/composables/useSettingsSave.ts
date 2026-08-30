@@ -1,19 +1,20 @@
 import {useEventListener} from '@vueuse/core';
 import {type InertiaForm, router, usePage} from '@inertiajs/vue3';
-import {computed} from 'vue';
+import {computed, type Ref} from 'vue';
 import axios from 'axios';
 import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import {firstMessages} from '@/common/slideouts/errors';
+import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
 
 interface PasswordConfirmationOptions<T> {
   required: (data: T) => boolean;
   minimumRemainingSeconds?: number;
 }
 
-interface UseSettingsSaveOptions<T extends Record<string, any>> {
-  transform?: (data: T) => Record<string, any>;
+export interface UseSettingsSaveOptions<T extends object> {
+  transform?: (data: T) => object;
   onSuccess?: () => void;
   /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
   onBeforeSave?: () => void;
@@ -28,19 +29,42 @@ interface UseSettingsSaveOptions<T extends Record<string, any>> {
   elevatedFields?: Array<keyof T> | '*';
 }
 
-export function useSettingsSave<T extends Record<string, any>>(
+interface SettingsSaveSlideout {
+  instance: Pick<SlideoutInstance, 'containerId'>;
+  close(options?: {force?: boolean}): void;
+  saved(result?: SlideoutSaveResult): boolean;
+}
+
+export interface SettingsSaveDependencies {
+  request: typeof axios.request;
+  reload: typeof router.reload;
+  elevatedSession: Pick<typeof elevatedSessionManager, 'require'>;
+  slideout: SettingsSaveSlideout | null;
+  redirectUrl: Readonly<Ref<string | undefined>>;
+}
+
+function defaultDependencies(): SettingsSaveDependencies {
+  const page = usePage<{redirectUrl?: string}>();
+
+  return {
+    request: (...args) => axios.request(...args),
+    reload: (...args) => router.reload(...args),
+    elevatedSession: elevatedSessionManager,
+    slideout: useSlideout(),
+    redirectUrl: computed(() => page.props.redirectUrl),
+  };
+}
+
+export function useSettingsSave<T extends object>(
   form: InertiaForm<T>,
   action: any,
-  options: UseSettingsSaveOptions<T> = {}
+  options: UseSettingsSaveOptions<T> = {},
+  dependencies: SettingsSaveDependencies = defaultDependencies()
 ) {
-  const page = usePage<{
-    redirectUrl?: string;
-  }>();
-  const redirectUrl = computed(() => page.props.redirectUrl);
-
   // Non-null when this screen is rendering inside a slideout, in which case
   // saving must not navigate — see `submitInSlideout()`.
-  const slideout = useSlideout();
+  const {elevatedSession, redirectUrl, reload, request, slideout} =
+    dependencies;
 
   // `elevatedFields` is sugar that generates a `passwordConfirmation` config, so
   // the proactive check and the 423 retry below both flow through one path. An
@@ -86,14 +110,15 @@ export function useSettingsSave<T extends Record<string, any>>(
      */
     async function submitInSlideout(retried = false): Promise<void> {
       const route = action();
+      const routeIsString = Object(route).constructor === String;
 
       form.clearErrors();
       form.processing = true;
 
       try {
-        const response = await axios.request({
-          url: typeof route === 'string' ? route : route.url,
-          method: typeof route === 'string' ? 'post' : (route.method ?? 'post'),
+        const response = await request({
+          url: routeIsString ? String(route) : route.url,
+          method: routeIsString ? 'post' : (route.method ?? 'post'),
           // No `redirect`: a slideout closes rather than navigating anywhere.
           data: {
             ...(options.transform?.(form.data()) ?? form.data()),
@@ -127,14 +152,22 @@ export function useSettingsSave<T extends Record<string, any>>(
         // even on its JSON branch, so refreshing the page behind both surfaces
         // that message and picks up whatever was just saved. `reload()`
         // preserves scroll and state inherently.
-        router.reload();
-      } catch (error: any) {
+        reload();
+      } catch (error) {
         form.processing = false;
 
-        const status = error?.response?.status;
+        if (
+          !axios.isAxiosError<{
+            errors?: Record<string, string | string[]>;
+          }>(error)
+        ) {
+          throw error;
+        }
+
+        const status = error.response?.status;
 
         if (passwordConfirmation && status === 423 && !retried) {
-          elevatedSessionManager
+          void elevatedSession
             .require({
               force: true,
               minimumRemainingSeconds:
@@ -149,10 +182,12 @@ export function useSettingsSave<T extends Record<string, any>>(
           return;
         }
 
-        const errors = error?.response?.data?.errors;
+        const errors = error.response?.data?.errors;
 
         if (errors) {
-          form.setError(firstMessages(errors) as any);
+          const messages = firstMessages(errors);
+          Object.assign(form.errors, messages);
+          form.setError(form.errors);
 
           return;
         }
@@ -197,7 +232,7 @@ export function useSettingsSave<T extends Record<string, any>>(
               return;
             }
 
-            elevatedSessionManager
+            void elevatedSession
               .require({
                 force: true,
                 minimumRemainingSeconds:
@@ -216,7 +251,7 @@ export function useSettingsSave<T extends Record<string, any>>(
     }
 
     if (passwordConfirmation?.required(form.data())) {
-      elevatedSessionManager
+      void elevatedSession
         .require({
           minimumRemainingSeconds: passwordConfirmation.minimumRemainingSeconds,
         })
@@ -240,7 +275,7 @@ export function useSettingsSave<T extends Record<string, any>>(
  * An array snapshots each field's initial value and requires elevation when any
  * changes; `'*'` defers to Inertia's own dirty tracking.
  */
-function elevatedFieldsConfirmation<T extends Record<string, any>>(
+function elevatedFieldsConfirmation<T extends object>(
   form: InertiaForm<T>,
   fields: Array<keyof T> | '*' | undefined
 ): PasswordConfirmationOptions<T> | undefined {
@@ -266,8 +301,12 @@ function elevatedFieldsConfirmation<T extends Record<string, any>>(
  * Stringify a field value for change comparison. Arrays are sorted first so a set
  * of permissions/groups compares equal regardless of order.
  */
-function normalize(value: unknown): string {
+function normalize<T>(value: T): string {
   return Array.isArray(value)
-    ? JSON.stringify([...value].sort())
+    ? JSON.stringify(
+        [...value].sort((a, b) =>
+          JSON.stringify(a).localeCompare(JSON.stringify(b))
+        )
+      )
     : JSON.stringify(value);
 }

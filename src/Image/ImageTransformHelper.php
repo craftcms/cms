@@ -67,7 +67,6 @@ class ImageTransformHelper
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
             'upscale' => ($matches['upscale'] ?? null) !== 'ns',
-            'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
 

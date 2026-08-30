@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -14,8 +15,10 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\File;
 use GraphQL\Error\Error;
 use GraphQL\Executor\Values;
 use GraphQL\Language\Parser;
@@ -26,6 +29,7 @@ use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils\AST;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class GqlHelper
 {
@@ -247,9 +251,45 @@ class GqlHelper
      */
     public static function prepareTransformArguments(array $arguments): array|string
     {
-        unset($arguments['immediately']);
+        $handle = $arguments['handle'] ?? null;
 
-        return $arguments['handle'] ?? $arguments;
+        if ($handle === null) {
+            return $arguments;
+        }
+
+        unset($arguments['handle']);
+        $arguments['transform'] = $handle;
+
+        return $arguments;
+    }
+
+    /**
+     * @param  array<string, mixed>|string  $definition
+     */
+    public static function resolveAssetTransform(
+        Asset $asset,
+        array|string $definition,
+        string $field,
+    ): mixed {
+        $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
+
+        if ($transformer !== null && ! is_string($transformer)) {
+            throw new InvalidArgumentException('The Asset Transformer handle must be a string.');
+        }
+
+        return match ($field) {
+            'format' => File::getExtensionByMimeType($asset->transform($definition, $transformer)->mimeType),
+            'height' => $asset->transform($definition, $transformer)->height,
+            'mimeType' => $asset->transform($definition, $transformer)->mimeType,
+            'url' => $asset->transform($definition, $transformer)->url,
+            'width' => $asset->transform($definition, $transformer)->width,
+            default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
+        };
+    }
+
+    public static function isAssetTransformField(string $field): bool
+    {
+        return in_array($field, ['format', 'height', 'mimeType', 'url', 'width'], true);
     }
 
     /**

@@ -56,11 +56,7 @@
   });
 
   const hrefString = computed(() => {
-    if (typeof props.href === 'string') {
-      return props.href;
-    }
-
-    return props.href?.url;
+    return props.href instanceof Object ? props.href.url : props.href;
   });
 
   const customElement = computed(() =>

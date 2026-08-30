@@ -31,10 +31,13 @@ describe('isInteractiveClick', () => {
 
   // composedPath() is ordered deepest-first; the boundary terminates the walk.
   function event(...path: Element[]) {
-    return {
-      currentTarget: boundary,
-      composedPath: () => [...path, boundary],
-    } as unknown as Event;
+    const click = new Event('click');
+    Object.defineProperties(click, {
+      currentTarget: {value: boundary},
+      composedPath: {value: () => [...path, boundary]},
+    });
+
+    return click;
   }
 
   it('is false for a click on passive, non-focusable content', () => {
@@ -74,10 +77,11 @@ describe('isInteractiveClick', () => {
   it('accepts an explicit boundary', () => {
     const outer = document.createElement('div');
     const inner = document.createElement('button');
-    const evt = {
-      currentTarget: null,
-      composedPath: () => [inner, outer],
-    } as unknown as Event;
+    const evt = new Event('click');
+    Object.defineProperties(evt, {
+      currentTarget: {value: null},
+      composedPath: {value: () => [inner, outer]},
+    });
 
     expect(isInteractiveClick(evt, outer)).toBe(true);
   });

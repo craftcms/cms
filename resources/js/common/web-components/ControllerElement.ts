@@ -14,8 +14,19 @@
  *
  * @typeParam T - the controller instance type; must expose `destroy()`.
  */
+interface Controller {
+  destroy(): void;
+  on?(events: string, handler: (event: {type: string}) => void): void;
+}
+
+type JsonValue = string | number | boolean | null | JsonValue[] | JsonObject;
+
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+
 export abstract class ControllerElement<
-  T extends {destroy(): void},
+  T extends Controller,
 > extends HTMLElement {
   #instance: T | null = null;
 
@@ -74,10 +85,7 @@ export abstract class ControllerElement<
    * instance is destroyed on disconnect.
    */
   #bridgeEvents(instance: T): void {
-    const emitter = instance as unknown as {
-      on?(events: string, handler: (event: {type: string}) => void): void;
-    };
-    emitter.on?.('*', (event) => {
+    instance.on?.('*', (event) => {
       this.dispatchEvent(
         new CustomEvent(event.type, {bubbles: true, detail: event})
       );
@@ -92,13 +100,14 @@ export abstract class ControllerElement<
   }
 
   /** Parse a JSON object attribute, returning `{}` when absent or invalid. */
-  protected jsonAttr(name: string): Record<string, any> {
+  protected jsonAttr(name: string): JsonObject {
     const raw = this.getAttribute(name);
     if (!raw) {
       return {};
     }
     try {
-      return JSON.parse(raw);
+      const value = JSON.parse(raw);
+      return value instanceof Object && !Array.isArray(value) ? value : {};
     } catch {
       return {};
     }

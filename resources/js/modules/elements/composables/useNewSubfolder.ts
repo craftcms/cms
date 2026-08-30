@@ -1,6 +1,7 @@
 import {computed, ref} from 'vue';
 import {actionClient, getActionUrl, t} from '@craftcms/ui';
 import {useElementIndexTable} from '@/modules/elements/composables/useElementIndexTable';
+import axios from 'axios';
 
 /**
  * The "New subfolder" flow for the asset index: a name-prompt whose state drives
@@ -44,9 +45,9 @@ export function useNewSubfolder() {
       close();
       onActionPerformed();
     } catch (error) {
-      const message =
-        (error as {response?: {data?: {message?: string}}})?.response?.data
-          ?.message ?? t('Couldn’t create the folder.');
+      const message = axios.isAxiosError<{message?: string}>(error)
+        ? (error.response?.data?.message ?? t('Couldn’t create the folder.'))
+        : t('Couldn’t create the folder.');
       Craft.cp?.displayError?.(message);
     } finally {
       submitting.value = false;

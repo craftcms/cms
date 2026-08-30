@@ -193,6 +193,7 @@ export function attachChipMoveActions(container: Element): void {
     return;
   }
   chipActionsAttached.add(container);
+  // SAFETY: This named handler implements EventListener's single Event parameter contract.
   container.addEventListener(
     'define-chip-actions',
     handleDefineChipActions as EventListener
@@ -514,7 +515,10 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
    * ignored.
    */
   handleChange = (ev: Event): void => {
-    if (!(ev.target as Element | null)?.matches?.('craft-component-select')) {
+    if (
+      !(ev.target instanceof Element) ||
+      !ev.target.matches('craft-component-select')
+    ) {
       return;
     }
     this.refresh();
@@ -600,6 +604,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     // Drop stale items first (so a released select's handles are free), then
     // register newcomers; both calls are idempotent.
     const keep = new Set(wanted);
+    // SAFETY: chipSort is initialized only with HTMLElement chip items.
     for (const item of [...(this.chipSort.$items as HTMLElement[])]) {
       if (!keep.has(item)) {
         this.chipSort.removeItems(item);
@@ -609,6 +614,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
 
     // `addItems` appends newcomers, so re-sort into DOM order for the prev/next
     // walk (the sorter only re-sorts once a drag actually moves something).
+    // SAFETY: chipSort is initialized only with HTMLElement chip items.
     (this.chipSort.$items as HTMLElement[]).sort((a, b) =>
       a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
     );
@@ -642,7 +648,7 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
   async updateDefaultColumns(): Promise<void> {
     const {defaultColumnsContainer} = this.settings;
     const container =
-      typeof defaultColumnsContainer === 'function'
+      defaultColumnsContainer instanceof Function
         ? defaultColumnsContainer()
         : (defaultColumnsContainer ?? null);
     if (!container) {
@@ -780,6 +786,7 @@ export class Group extends Base {
   /** The titlebar's Rename / Remove menu, in data-driven `.actions` mode. */
   buildActionMenu(): CraftActionMenu {
     // No global tag-map entry for the cp components, hence the cast.
+    // SAFETY: The registered craft-action-menu custom element implements CraftActionMenu.
     const menu = document.createElement('craft-action-menu') as CraftActionMenu;
     const container = this.container;
 
@@ -787,9 +794,10 @@ export class Group extends Base {
     // which doesn't auto-close on click — dispatch `close-overlay` manually,
     // mirroring `Craft.addActionsToChip`.
     const close = (ev: Event): void => {
-      (ev.target as Element | null)?.dispatchEvent(
-        new Event('close-overlay', {bubbles: true})
-      );
+      if (!(ev.target instanceof Element)) {
+        return;
+      }
+      ev.target.dispatchEvent(new Event('close-overlay', {bubbles: true}));
     };
 
     menu.actions = [
@@ -821,12 +829,14 @@ export class Group extends Base {
    * `position`/`disabled` are kept current by {@link refresh}.
    */
   buildReorderButton(): CraftReorderButton {
+    // SAFETY: The registered craft-reorder-button element implements CraftReorderButton.
     const btn = document.createElement(
       'craft-reorder-button'
     ) as CraftReorderButton;
     const container = this.container;
     btn.setAttribute('orientation', 'horizontal');
     btn.addEventListener('reorder', (event: Event) => {
+      // SAFETY: craft-reorder-button emits this registered detail contract.
       const {direction} = (event as CustomEvent<{direction: ReorderDirection}>)
         .detail;
       groupData.get(container)?.move(direction);

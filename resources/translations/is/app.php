@@ -1761,7 +1761,6 @@ return [
     'The Plugin Store is not available, please try again later.' => 'Plugin Store er ekki tiltækt, vinsamlegast reyndu aftur síðar.',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Svarnetfangið Craft CMS ætti að nota þegar tölvupóstur er sendur.',
     'The URI can’t begin with the {setting} config setting.' => 'Vefslóðin getur ekki byrjað með stillingu {setting}.',
-    'The `@web` alias is not recommended.' => 'Ekki er mælt með „@web“ samnefninu.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => '`Authorization` hausinn sem ætti að senda með GraphQL API beiðnum um að nota þetta tákn.',
     'The allowed values are [{values}]' => 'Leyfilegu gildin eru [{values}]',
     'The asset you’re trying to download does not exist.' => 'Skráin sem þú ert að reyna að hlaða niður er ekki til.',

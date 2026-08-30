@@ -34,18 +34,6 @@
     readOnly: boolean;
   }>();
 
-  function deleteFs(fs: FileSystemData) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”', {
-          name: fs.name,
-        })
-      )
-    ) {
-      router.delete(destroy({handle: fs.handle}));
-    }
-  }
-
   const columnHelper = createCraftColumnHelper<FileSystemData>();
 
   const columnVisibility = computed(() => {
@@ -78,7 +66,22 @@
     }),
     columnHelper.actions(({row}) => [
       h(DeleteButton, {
-        onClick: () => deleteFs(row.original),
+        confirm: t('Are you sure you want to delete “{name}”', {
+          name: row.original.name,
+        }),
+        onClick: () =>
+          router
+            .optimistic<{filesystems: {data: Array<FileSystemData>}}>(
+              ({filesystems}) => ({
+                filesystems: {
+                  ...filesystems,
+                  data: filesystems.data.filter(
+                    ({handle}) => handle !== row.original.handle
+                  ),
+                },
+              })
+            )
+            .delete(destroy({handle: row.original.handle})),
       }),
     ]),
   ]);

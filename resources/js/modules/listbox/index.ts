@@ -24,12 +24,11 @@ class CraftListboxGlobal extends Listbox {
     defaults?: Partial<ListboxSettings>
   ): void {
     const $ = jq();
-    if ($ && settings && typeof settings.onChange === 'function') {
-      const orig = settings.onChange as (...args: any[]) => void;
+    if ($ && settings && settings.onChange instanceof Function) {
+      const original: Function = settings.onChange;
       settings = {
         ...settings,
-        onChange: ((option: any, ...rest: any[]) =>
-          orig.call(this, $(option), ...rest)) as any,
+        onChange: (option, index) => original.call(this, $(option), index),
       };
     }
     super.setSettings(settings, defaults);

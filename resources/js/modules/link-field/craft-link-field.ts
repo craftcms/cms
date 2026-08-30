@@ -1,4 +1,5 @@
-import {t} from '@craftcms/ui';
+import {t, type ElementInfo} from '@craftcms/ui';
+import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
 import '@craftcms/ui/components/disclosure/disclosure';
 import '@craftcms/ui/components/field-group/field-group';
 import {
@@ -19,7 +20,7 @@ export type LinkTypeConfig = {
   inputAttributes?: Record<string, string>;
   elementType?: string;
   refHandle?: string;
-  elementSelectConfig?: Record<string, unknown>;
+  elementSelectConfig?: import('@/modules/forms/types').FormValues;
 };
 
 export type LinkFieldValue = {
@@ -30,15 +31,6 @@ export type LinkFieldValue = {
   type: string;
   urlSuffix: string;
   value: string;
-};
-
-type ElementInfo = {
-  id: number | string;
-  label?: string;
-  siteId?: number | string;
-  $element?: {
-    data?: (key: string) => unknown;
-  };
 };
 
 type ElementSelectStartDetail = {
@@ -136,13 +128,20 @@ class CraftLinkField extends LitElement {
   }
 
   private handleTypeChange(event: Event): void {
-    this.typeId = (event.target as HTMLSelectElement).value;
+    if (!(event.target instanceof HTMLSelectElement)) {
+      return;
+    }
+    this.typeId = event.target.value;
     this.value = '';
     this.defaultLabel = '';
     this.valueError = '';
   }
 
   private handleValueChange(event: Event): void {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    // SAFETY: This handler is registered only on the craft-input value control.
     const input = event.target as HTMLElementTagNameMap['craft-input'];
     this.value = this.inputValue(input);
     this.valueError = '';
@@ -155,8 +154,18 @@ class CraftLinkField extends LitElement {
     return String(input.modelValue ?? '');
   }
 
+  private handleLabelChange(event: Event): void {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    // SAFETY: this handler is registered only on the craft-input label control.
+    this.label = this.inputValue(
+      event.target as HTMLElementTagNameMap['craft-input']
+    );
+  }
+
   private textInputValue(event: Event): string {
-    return (event.target as HTMLInputElement).value;
+    return event.target instanceof HTMLInputElement ? event.target.value : '';
   }
 
   private async chooseElement(event: Event): Promise<void> {
@@ -175,9 +184,8 @@ class CraftLinkField extends LitElement {
       event.currentTarget instanceof HTMLElement ? event.currentTarget : null
     );
 
-    const modal = Craft.createElementSelectorModal(type.elementType, {
+    const modal = await createElementSelectorModal(type.elementType, {
       ...config,
-      closeOtherModals: false,
       hideOnSelect: true,
       modalTitle: t('Choose {type}', {type: type.label}),
       multiSelect: false,
@@ -188,15 +196,17 @@ class CraftLinkField extends LitElement {
           return;
         }
 
-        const siteId = element.siteId || element.$element?.data?.('site-id');
-        this.value = `{${type.refHandle}:${element.id}@${siteId}:url}`;
+        this.value = `{${type.refHandle}:${element.id}@${element.siteId}:url}`;
         this.defaultLabel = String(element.label || '');
         this.valueError = '';
       },
     });
 
-    modal.on('fadeOut', () => {
+    // The modal lives on <body>, outside this element's shadow root, so its DOM
+    // events never reach here — the controller is the subscription point.
+    modal.on('close', () => {
       this.dispatchElementSelectEvent('element-select-end');
+      modal.destroy();
     });
   }
 
@@ -542,10 +552,7 @@ class CraftLinkField extends LitElement {
                 type="text"
                 .modelValue=${this.label}
                 .disabled=${this.disabled}
-                @model-value-changed=${(event: Event) =>
-                  (this.label = this.inputValue(
-                    event.target as HTMLElementTagNameMap['craft-input']
-                  ))}
+                @model-value-changed=${this.handleLabelChange}
               ></craft-input>
             `
           : nothing}

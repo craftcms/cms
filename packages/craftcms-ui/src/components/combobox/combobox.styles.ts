@@ -1,5 +1,9 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputStyles} from '../../styles/form.styles';
+import {
+  baseFieldStyles,
+  baseInputWrapperStyles,
+  baseComboboxStyles,
+} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -9,14 +13,7 @@ export default css`
   }
 
   ::slotted(.form-control) {
-    width: 100%;
-    height: 100%;
-    appearance: none;
-    border: 0;
-    min-height: none;
-    padding-inline: var(--c-input-spacing-inline)
-      calc(var(--c-input-spacing-inline) * 1.5 + 1em);
-    border-radius: var(--c-input-radius);
+    ${baseComboboxStyles}
   }
 
   ::slotted([slot='listbox']) {
@@ -30,10 +27,7 @@ export default css`
   }
 
   .input-group__input {
-    ${baseInputStyles}
-    padding-inline: 0;
-    position: relative;
-    min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
+    ${baseInputWrapperStyles}
   }
 
   .input-group__container {

@@ -30,7 +30,18 @@
     FormControlPayload,
     FormNodePayload,
     FormPayload,
+    FormValue,
+    FormValues,
   } from './types';
+
+  type CanonicalFormValue =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | CanonicalFormValue[]
+    | {[key: string]: CanonicalFormValue};
 
   const props = defineProps<{
     payload: FormPayload;
@@ -321,7 +332,7 @@
 
   function setValue(
     path: string[],
-    value: unknown,
+    value: FormValue,
     kind: FormChange['kind'] = 'discrete'
   ): void {
     setPathValue(values, path, value);
@@ -381,7 +392,7 @@
     source: FormPayload['values'],
     groupPath: string[],
     editablePaths: Set<string>
-  ): unknown {
+  ): FormValue {
     const value = cloneRaw(valueAt(source, groupPath));
 
     for (const [key, controlPath] of knownControlPaths) {
@@ -398,10 +409,7 @@
     return value;
   }
 
-  function mergeMissing(
-    target: Record<string, unknown>,
-    source: Record<string, unknown>
-  ): void {
+  function mergeMissing(target: FormValues, source: FormValues): void {
     for (const [key, value] of Object.entries(source)) {
       if (!(key in target)) {
         target[key] = cloneRaw(value);
@@ -415,11 +423,13 @@
     }
   }
 
-  function cloneRaw<T>(value: T): T {
+  function cloneRaw<T extends FormValue>(value: T): T {
+    // SAFETY: unwrap removes Vue proxies without changing the recursive value
+    // tree represented by T.
     return structuredClone(unwrap(value)) as T;
   }
 
-  function unwrap(value: unknown): unknown {
+  function unwrap(value: FormValue): FormValue {
     const raw = toRaw(value);
 
     if (Array.isArray(raw)) {
@@ -435,11 +445,11 @@
     return raw;
   }
 
-  function canonical(value: unknown): string {
+  function canonical(value: FormValue): string {
     return JSON.stringify(canonicalValue(value));
   }
 
-  function canonicalValue(value: unknown): unknown {
+  function canonicalValue(value: FormValue): CanonicalFormValue {
     // Nothing and empty mean the same thing to a form, so a control reporting
     // one where the server sent the other has not edited anything. Without
     // this, populating a field on load can read as a change purely because the
@@ -452,9 +462,16 @@
       return value.map(canonicalValue);
     }
 
-    if (!isRecord(value)) {
-      return value;
+    if (value instanceof File) {
+      return {
+        name: value.name,
+        size: value.size,
+        type: value.type,
+        lastModified: value.lastModified,
+      };
     }
+
+    if (!isRecord(value)) return value;
 
     return Object.fromEntries(
       Object.keys(value)

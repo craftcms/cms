@@ -36,8 +36,10 @@
   // instead would hand the shell a function for every slot, defeating the
   // `Boolean(slots.details)`-style checks the shells use to decide which
   // regions to show.
-  const slotNames = computed(
-    () => Object.keys(slots) as Array<keyof ScreenSlots>
+  const slotNames = computed(() =>
+    Object.keys(slots).filter(
+      (name): name is keyof ScreenSlots => name in slots
+    )
   );
 </script>
 

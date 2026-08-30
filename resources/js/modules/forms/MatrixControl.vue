@@ -10,6 +10,7 @@
     FormChange,
     FormControlPayload,
     FormPayload,
+    FormValues,
     NestedFormPayload,
   } from './types';
   import {inputName} from './runtime';
@@ -21,8 +22,14 @@
     minEntries?: number | null;
     maxEntries?: number | null;
   };
+  interface MatrixEntryValues extends FormValues {
+    type?: string;
+  }
+  interface MatrixEntries {
+    [key: string]: MatrixEntryValues;
+  }
   type MatrixValue = {
-    entries: Record<string, Record<string, unknown>>;
+    entries: MatrixEntries;
     sortOrder: string[];
   };
 
@@ -84,7 +91,9 @@
   function sync(event?: Event): void {
     const value = structuredClone(toRaw(props.value));
     const source =
-      (event?.currentTarget as HTMLElement | null) ?? matrixHost.value;
+      event?.currentTarget instanceof HTMLElement
+        ? event.currentTarget
+        : matrixHost.value;
     const entries = [
       ...(source?.querySelectorAll<HTMLElement>('.matrixblock') ?? []),
     ];

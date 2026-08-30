@@ -1,7 +1,7 @@
 import {router} from '@inertiajs/vue3';
 import {createApp, defineComponent, type ComputedRef} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {ActionItem, ActionItemButton} from '@/common/types';
+import type {ActionItem} from '@/common/types';
 import {
   useElementActionMenu,
   type ElementActionMenuItem,
@@ -12,7 +12,7 @@ describe('useElementActionMenu', () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    (globalThis as any).Craft = {
+    window.Craft = Object.assign(Object.create(null), {
       csrfTokenName: 'CRAFT_CSRF_TOKEN',
       csrfTokenValue: 'token-value',
       elevatedSessionManager: {
@@ -20,7 +20,7 @@ describe('useElementActionMenu', () => {
         requireElevatedSession: vi.fn((onSuccess: () => void) => onSuccess()),
       },
       cp: {displayError: vi.fn()},
-    };
+    });
   });
 
   afterEach(() => {
@@ -28,7 +28,7 @@ describe('useElementActionMenu', () => {
     container?.remove();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    delete (globalThis as any).Craft;
+    delete window.Craft;
   });
 
   function mount(
@@ -54,7 +54,11 @@ describe('useElementActionMenu', () => {
 
   /** Clicks the menu's only item. Every case here builds exactly one. */
   function activate(menu: ComputedRef<Array<ActionItem>>): void {
-    (menu.value[0] as ActionItemButton).onClick?.(new Event('click'));
+    const item = menu.value[0];
+    if (!item || !('onClick' in item)) {
+      throw new Error('Expected one button action.');
+    }
+    item.onClick?.(new Event('click'));
   }
 
   it('posts a submit behavior with its params and redirect', () => {
@@ -122,7 +126,7 @@ describe('useElementActionMenu', () => {
     activate(menu);
 
     expect(
-      (globalThis as any).Craft.elevatedSessionManager.requireElevatedSession
+      window.Craft.elevatedSessionManager.requireElevatedSession
     ).toHaveBeenCalled();
     expect(post).toHaveBeenCalledWith('/actions/users/impersonate', {
       userId: 5,

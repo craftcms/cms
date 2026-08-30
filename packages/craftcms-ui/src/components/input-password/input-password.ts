@@ -1,7 +1,7 @@
 import {css, html} from 'lit';
 import {state} from 'lit/decorators.js';
 import {LionInput} from '@lion/ui/input.js';
-import {inputStyles} from '@src/styles/form.styles';
+import {inputStyles, baseFormControlStyles} from '@src/styles/form.styles';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
@@ -24,6 +24,19 @@ export default class CraftInputPassword extends LionInput {
           inset-inline-end: var(--c-input-spacing-inline);
           inset-block-start: 50%;
           transform: translateY(calc(-50%));
+          border: none;
+        }
+
+        ::slotted(.form-control) {
+          ${baseFormControlStyles}
+          --_input-end-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
+          --_input-start-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
         }
       `,
     ];

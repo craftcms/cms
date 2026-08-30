@@ -4,6 +4,7 @@ import type {Options} from 'overtype';
 import {upload as uploadAsset} from '@actions/Assets/UploadController';
 import {useFlashMessages} from '@/common/composables/useFlashMessages';
 import {escapeMarkdownLabel} from './utilities';
+import axios from 'axios';
 
 const ASSET_REF_HANDLE = 'asset';
 
@@ -17,6 +18,10 @@ type UploadRequest = {
   'assets-upload': File;
   folderId: string;
 };
+
+interface UploadErrorEnvelope {
+  response?: {data?: string};
+}
 
 const {flash} = useFlashMessages();
 
@@ -33,8 +38,13 @@ export function fileUploadOptions(
     enabled: true,
     // OverType defaults to 10 MB when omitted; keep this high so PHP validates uploads.
     maxSize: Number.MAX_SAFE_INTEGER,
-    onInsertFile: (file) =>
-      uploadFile(file as File, uploadFolderId, uploadSiteId),
+    onInsertFile: (file) => {
+      const upload = Array.isArray(file) ? file[0] : file;
+      if (!upload) {
+        throw new Error('No file was selected for upload.');
+      }
+      return uploadFile(upload, uploadFolderId, uploadSiteId);
+    },
   };
 }
 
@@ -53,7 +63,12 @@ async function uploadFile(
 
     return uploadedAssetMarkdown(file, data, uploadSiteId);
   } catch (error) {
-    flash('error', uploadErrorMessage(error));
+    flash(
+      'error',
+      uploadErrorMessage(
+        error instanceof Object ? error : new Error(String(error))
+      )
+    );
 
     throw error;
   }
@@ -76,11 +91,13 @@ function uploadedAssetMarkdown(
     : `[${label || ref}](${ref})`;
 }
 
-function uploadErrorMessage(error: unknown): string {
-  const responseData = (error as {response?: {data?: string}}).response?.data;
+function uploadErrorMessage(error: Error | UploadErrorEnvelope): string {
+  const responseData = axios.isAxiosError<string>(error)
+    ? error.response?.data
+    : undefined;
   const responseMessage =
-    typeof responseData === 'string'
-      ? parseUploadErrorMessage(responseData)
+    Object(responseData).constructor === String
+      ? parseUploadErrorMessage(String(responseData))
       : undefined;
 
   if (responseMessage) {
@@ -92,6 +109,7 @@ function uploadErrorMessage(error: unknown): string {
 
 function parseUploadErrorMessage(responseData: string): string | undefined {
   try {
+    // SAFETY: The upload error endpoint serializes an object with an optional message string.
     const data = JSON.parse(responseData) as {message?: string};
 
     return data.message;

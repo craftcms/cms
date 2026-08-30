@@ -13,6 +13,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -21,6 +22,7 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::findOne());
+    Queue::fake();
 
     config()->set('filesystems.disks.edit-asset-test', [
         'driver' => 'local',
