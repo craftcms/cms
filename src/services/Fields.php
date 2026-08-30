@@ -19,6 +19,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\MissingComponentException;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\ConfigEvent;
@@ -35,6 +36,7 @@ use craft\fields\ButtonGroup;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\ContentBlock;
 use craft\fields\Country;
 use craft\fields\Date;
@@ -1186,6 +1188,12 @@ class Fields extends Component
             $layoutRecord = new FieldLayoutRecord();
         }
 
+        if (!$isNewLayout) {
+            // capture any replaced custom fields, and update internal conditions with the new UUIDs where possible
+            $replacedFields = $this->captureReplacedFields($layout);
+            $this->updateFieldConditionRules($layout, $replacedFields);
+        }
+
         // Save the layout
         $layoutRecord->type = $layout->type;
         $layoutRecord->config = $layout->getConfig();
@@ -1229,6 +1237,64 @@ class Fields extends Component
         }
 
         return true;
+    }
+
+    private function captureReplacedFields(FieldLayout $layout): array
+    {
+        $replacedFields = [];
+
+        foreach ($layout->getCustomFieldElements() as $layoutElement) {
+            if (
+                isset($layoutElement->oldFieldUid) &&
+                $layoutElement->oldFieldUid !== $layoutElement->getFieldUid()
+            ) {
+                $replacedFields[$layoutElement->oldFieldUid] = [$layoutElement->getFieldUid(), $layoutElement->uid];
+                $layoutElement->oldFieldUid = null;
+            }
+        }
+
+        return $replacedFields;
+    }
+
+    private function updateFieldConditionRules(FieldLayout $layout, array $replacedFields): void
+    {
+        if (empty($replacedFields)) {
+            return;
+        }
+
+        foreach ($layout->getTabs() as $tab) {
+            $this->updateElementCondition($tab->getUserCondition(), $replacedFields);
+            $this->updateElementCondition($tab->getElementCondition(), $replacedFields);
+
+            foreach ($tab->getElements() as $layoutElement) {
+                $this->updateElementCondition($layoutElement->getUserCondition(), $replacedFields);
+                $this->updateElementCondition($layoutElement->getElementCondition(), $replacedFields);
+
+                if ($layoutElement instanceof CustomField) {
+                    $this->updateElementCondition($layoutElement->getEditCondition(), $replacedFields);
+                    $this->updateElementCondition($layoutElement->getElementEditCondition(), $replacedFields);
+                }
+            }
+        }
+    }
+
+    private function updateElementCondition(?ElementConditionInterface $condition, array $replacedFields): void
+    {
+        if (!$condition) {
+            return;
+        }
+
+        foreach ($condition->getConditionRules() as $rule) {
+            if (!$rule instanceof FieldConditionRuleInterface) {
+                continue;
+            }
+
+            $fieldUid = $rule->getFieldUid();
+
+            if (isset($replacedFields[$fieldUid])) {
+                $rule->setFieldUid($replacedFields[$fieldUid][0]);
+            }
+        }
     }
 
     /**

@@ -5,8 +5,12 @@
 
 {% block fieldSettings %}
   {% if originalField %}
+    {% if field.oldFieldUid %}
+      {{ hiddenInput('oldFieldUid', field.oldFieldUid) }}
+    {% endif %}
+
     {% set fieldSelectId = "fieldselect#{random()}" %}
-    <div class="pane no-border p-m">
+    <div class="pane no-border p-m mt-0">
       {{ forms.fieldSelectField({
         id: fieldSelectId,
         name: 'fieldId',
