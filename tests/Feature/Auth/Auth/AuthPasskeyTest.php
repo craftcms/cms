@@ -16,10 +16,6 @@ use Symfony\Component\Uid\Uuid;
 use Webauthn\CredentialRecord;
 use Webauthn\TrustPath\EmptyTrustPath;
 
-beforeEach(function () {
-    app()->maintenanceMode()->deactivate();
-});
-
 test('authenticateWithPasskey enforces user status after a valid response', function (
     array $elementAttributes,
     bool $expectedResult,

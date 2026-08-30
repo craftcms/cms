@@ -6,9 +6,12 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
+use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 
@@ -24,11 +27,10 @@ beforeEach(function () {
     app()->maintenanceMode()->activate([]);
 });
 
-afterEach(function () {
-    app()->maintenanceMode()->deactivate();
-});
-
 test('control panel actions remain accessible during maintenance mode', function () {
+    actingAs(UserModel::factory()
+        ->withPermissions(['accessCp', 'accessCpWhenSystemIsOff'])
+        ->createElement(['admin' => false]));
     $cpTrigger = Cms::config()->cpTrigger;
     $actionTrigger = Cms::config()->actionTrigger;
 
@@ -60,6 +62,20 @@ test('users with maintenance mode access can log into the control panel', functi
         ->assertOk();
 });
 
+test('users with maintenance mode access can log into the site', function () {
+    $user = UserModel::factory()
+        ->withPermissions(['accessSiteWhenSystemIsOff'])
+        ->createElement();
+    Auth::logout();
+
+    post(action_url('users/login'), [
+        'loginName' => $user->username,
+        'password' => 'password',
+    ])->assertRedirect();
+
+    expect(Auth::id())->toBe($user->id);
+});
+
 test('control panel access requires the maintenance mode permission', function () {
     actingAs(UserModel::factory()
         ->withPermissions(['accessCp'])
@@ -67,15 +83,6 @@ test('control panel access requires the maintenance mode permission', function (
 
     get(cp_url('dashboard'))
         ->assertServiceUnavailable();
-});
-
-test('control panel access allows the maintenance mode permission', function () {
-    actingAs(UserModel::factory()
-        ->withPermissions(['accessCp', 'accessCpWhenSystemIsOff'])
-        ->createElement());
-
-    get(cp_url('dashboard'))
-        ->assertOk();
 });
 
 test('public GraphQL requests are blocked during maintenance mode', function () {
@@ -92,65 +99,92 @@ test('public-only actions are blocked during maintenance mode', function () {
         ->assertServiceUnavailable();
 });
 
-test('plain Laravel routes are blocked during maintenance mode', function () {
+test('valid site tokens do not bypass maintenance mode on plain Laravel routes', function () {
     auth()->logout();
-    Route::middleware('web')->get('maintenance-mode-test', fn () => 'ok');
+    Route::middleware('web')->get('maintenance-mode-token-test', fn () => 'ok');
 
-    get('/maintenance-mode-test')
+    get('/maintenance-mode-token-test?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+    ]))
         ->assertServiceUnavailable();
 });
 
-test('migrate action route is accessible during maintenance mode', function () {
-    $actionTrigger = Cms::config()->actionTrigger;
+test('valid but unvalidated site tokens do not bypass maintenance mode on Craft web routes', function () {
+    auth()->logout();
+    Route::middleware(['web', 'craft.web'])
+        ->get('maintenance-mode-unvalidated-site-token-test', fn () => 'ok');
 
-    post("/{$actionTrigger}/migrate")
-        ->assertNoContent();
+    get('/maintenance-mode-unvalidated-site-token-test?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+    ]))
+        ->assertServiceUnavailable();
 });
 
-test('updater routes with query strings are accessible during maintenance mode', function () {
-    $data = Crypt::encrypt(Json::encode([
-        'postPrecheckState' => [],
-    ]));
-
-    postJson(action([UpdaterController::class, 'precheck']).'?site=default', [
-        'data' => $data,
-    ])->assertOk();
-});
-
-test('active updater routes remain accessible to authenticated update users during maintenance mode', function () {
+test('users without maintenance access can log out of the control panel', function () {
     actingAs(UserModel::factory()
-        ->withPermissions(['accessCp', 'performUpdates'])
-        ->createElement(['admin' => false]));
+        ->withPermissions(['accessCp'])
+        ->createElement());
 
-    $response = postJson(action([UpdaterController::class, 'backup']));
+    get(cp_url(CpAuthPath::Logout->value))
+        ->assertRedirect();
 
-    expect($response->getStatusCode())->not->toBe(503);
+    expect(Auth::guest())->toBeTrue();
 });
 
-test('only updater routes required by an active update remain accessible during maintenance mode', function (string $action, bool $accessible) {
+test('account security actions require control panel maintenance access', function () {
+    actingAs(UserModel::factory()
+        ->withPermissions(['accessCp'])
+        ->createElement());
+
+    postJson(action([PasskeysController::class, 'delete']), [
+        'uid' => 'missing-passkey',
+    ])->assertServiceUnavailable();
+});
+
+test('rendered maintenance responses allow permitted administrators to reach General Settings', function () {
+    app()->maintenanceMode()->activate([
+        'template' => 'Scheduled maintenance',
+    ]);
+
+    actingAs(UserModel::factory()
+        ->withPermissions(['accessCp'])
+        ->createElement());
+
+    get(cp_url('settings/general'))
+        ->assertServiceUnavailable()
+        ->assertSeeText('Scheduled maintenance');
+
+    actingAs(User::find()->admin()->one());
+
+    get(cp_url('settings/general'))
+        ->assertOk();
+});
+
+test('updater routes required by an active update remain reachable for workflow validation', function (string $action, string $query = '') {
     auth()->logout();
 
-    $response = postJson(action([UpdaterController::class, $action]));
-
-    if ($accessible) {
-        expect($response->getStatusCode())->not->toBe(503);
-
-        return;
-    }
-
-    $response->assertServiceUnavailable();
+    postJson(action([UpdaterController::class, $action]).$query)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('data');
 })->with([
-    'index' => ['index', false],
-    'force update' => ['forceUpdate', false],
-    'backup' => ['backup', true],
-    'server check' => ['serverCheck', true],
-    'revert' => ['revert', false],
-    'migrate' => ['migrate', true],
-    'precheck' => ['precheck', true],
-    'recheck Composer' => ['recheckComposer', false],
-    'Composer install' => ['composerInstall', true],
-    'Composer remove' => ['composerRemove', false],
-    'finish' => ['finish', true],
+    'backup' => ['backup'],
+    'server check' => ['serverCheck'],
+    'migrate' => ['migrate'],
+    'precheck with query string' => ['precheck', '?site=default'],
+    'Composer install' => ['composerInstall'],
+]);
+
+test('unrelated updater routes remain blocked during maintenance mode', function (string $action) {
+    auth()->logout();
+
+    postJson(action([UpdaterController::class, $action]))
+        ->assertServiceUnavailable();
+})->with([
+    'index' => ['index'],
+    'force update' => ['forceUpdate'],
+    'revert' => ['revert'],
+    'recheck Composer' => ['recheckComposer'],
+    'Composer remove' => ['composerRemove'],
 ]);
 
 test('config sync finish route is accessible during maintenance mode', function () {

@@ -32,7 +32,6 @@ use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    app()->maintenanceMode()->deactivate();
     TemplateMode::set(TemplateMode::Site);
     Aliases::set('@templates', dirname(__DIR__, 3).'/Support/templates');
 
@@ -41,7 +40,6 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app()->maintenanceMode()->deactivate();
     Context::forgetHidden(HandleTokenRequest::HAD_TOKEN_KEY);
 });
 
@@ -121,14 +119,6 @@ it('denies anonymous matched element template routes during maintenance mode', f
         ->assertServiceUnavailable();
 });
 
-it('denies anonymous homepage requests during maintenance mode', function () {
-    app()->maintenanceMode()->activate(['retry' => 60]);
-
-    $this->get('/')
-        ->assertServiceUnavailable()
-        ->assertHeader('Retry-After', '60');
-});
-
 it('allows matched element template routes with a site token during maintenance mode', function () {
     app()->maintenanceMode()->activate([]);
 
@@ -174,21 +164,6 @@ it('denies matched element template routes for users without maintenance mode si
         ->assertServiceUnavailable();
 });
 
-it('allows matched element template routes for users with maintenance mode site access', function () {
-    app()->maintenanceMode()->activate([]);
-
-    $entry = createRoutableEntry('offline-permitted-entry', 'entries/show');
-    $user = UserModel::factory()
-        ->withPermissions(['accessSiteWhenSystemIsOff'])
-        ->createElement();
-
-    actingAs($user);
-
-    $this->get('/offline-permitted-entry')
-        ->assertOk()
-        ->assertSeeText("entry-template:{$entry->id}:offline-permitted-entry", escape: false);
-});
-
 it('allows session-authenticated users with maintenance mode site access', function () {
     $entry = createRoutableEntry('offline-session-permitted-entry', 'entries/show');
     $user = UserModel::factory()
@@ -214,6 +189,8 @@ it('allows session-authenticated users with maintenance mode site access', funct
     $this->get('/offline-session-permitted-entry')
         ->assertOk()
         ->assertSeeText("entry-template:{$entry->id}:offline-session-permitted-entry", escape: false);
+
+    expect(auth()->id())->toBe($user->id);
 });
 
 function createRoutableEntry(string $uri, string $template): Entry

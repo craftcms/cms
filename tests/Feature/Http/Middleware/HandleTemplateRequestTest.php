@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
-    app()->maintenanceMode()->deactivate();
-
     $this->tempDir = sys_get_temp_dir().'/craft-template-request-test-'.uniqid();
 
     File::ensureDirectoryExists($this->tempDir);
@@ -21,8 +19,6 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    app()->maintenanceMode()->deactivate();
-
     File::deleteDirectory($this->tempDir);
 });
 

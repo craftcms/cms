@@ -68,19 +68,31 @@ it('supports moved deprecated config settings', function(): void {
 });
 
 it('accepts the deprecated system live setting without changing maintenance mode', function(): void {
-    $config = GeneralConfig::create()->isSystemLive(false);
-    $deprecation = collect(Deprecator::getRequestLogs())
-        ->firstWhere('key', 'generalConfig.isSystemLive');
+    try {
+        $config = GeneralConfig::create()->isSystemLive(false);
 
-    expect($config->isSystemLive)->toBeFalse()
-        ->and(app()->isDownForMaintenance())->toBeFalse()
-        ->and($deprecation?->message)->toContain('Use Laravel maintenance mode instead.');
+        expect($config->isSystemLive)->toBeFalse()
+            ->and(app()->isDownForMaintenance())->toBeFalse();
+
+        app()->maintenanceMode()->activate([]);
+        $config->isSystemLive(true);
+
+        expect($config->isSystemLive)->toBeTrue()
+            ->and(app()->isDownForMaintenance())->toBeTrue()
+            ->and(collect(Deprecator::getRequestLogs())
+                ->firstWhere('key', 'generalConfig.isSystemLive')?->message)
+            ->toContain('Use Laravel maintenance mode instead.');
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
 });
 
 it('supports the deprecated application live status', function(): void {
-    app()->maintenanceMode()->activate([]);
-
     try {
+        expect(Craft::$app->getIsLive())->toBeTrue();
+
+        app()->maintenanceMode()->activate([]);
+
         expect(Craft::$app->getIsLive())->toBeFalse()
             ->and(collect(Deprecator::getRequestLogs())
                 ->firstWhere('key', 'Craft::$app->getIsLive()')?->message)

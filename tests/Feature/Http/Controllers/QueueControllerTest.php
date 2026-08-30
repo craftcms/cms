@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\QueueController;
+use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
@@ -108,13 +109,13 @@ it('does not run the queue during maintenance mode', function () {
     app()->maintenanceMode()->activate([]);
     Artisan::shouldReceive('call')->never();
 
-    $callbackCount = count(terminatingCallbacks());
-
     post(cp_url(Cms::config()->actionTrigger.'/queue/run'))
         ->assertOk()
         ->assertContent('');
 
-    expect(terminatingCallbacks())->toHaveCount($callbackCount);
+    app()->terminate();
+
+    expect(app(JobProgress::class)->getProgress('pending-job')?->status)->toBe(JobStatus::Pending);
 });
 
 it('deduplicates queue names and falls back to the default memory limit', function () {

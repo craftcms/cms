@@ -2,25 +2,28 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Route;
+
 afterEach(function(): void {
-    $this->artisan('up');
+    app()->maintenanceMode()->deactivate();
 });
 
-it('forwards the deprecated off command to Laravel maintenance mode', function(): void {
+it('forwards the deprecated maintenance commands to Laravel', function(): void {
+    Route::middleware('web')->get('legacy-maintenance-status', fn(): string => 'Application is live');
+
     $this->artisan('craft:off --retry=60')
         ->expectsOutputToContain('The `craft off` command is deprecated. Use `down` instead.')
         ->assertSuccessful();
 
-    expect(app()->isDownForMaintenance())->toBeTrue()
-        ->and(app()->maintenanceMode()->data()['retry'])->toBe(60);
-});
-
-it('forwards the deprecated on command to Laravel maintenance mode', function(): void {
-    $this->artisan('down')->assertSuccessful();
+    $this->get('/legacy-maintenance-status')
+        ->assertServiceUnavailable()
+        ->assertHeader('Retry-After', '60');
 
     $this->artisan('craft:on')
         ->expectsOutputToContain('The `craft on` command is deprecated. Use `up` instead.')
         ->assertSuccessful();
 
-    expect(app()->isDownForMaintenance())->toBeFalse();
+    $this->get('/legacy-maintenance-status')
+        ->assertOk()
+        ->assertSeeText('Application is live');
 });

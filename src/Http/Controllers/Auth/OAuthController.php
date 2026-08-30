@@ -53,6 +53,14 @@ readonly class OAuthController extends AuthenticationController
 
             if ($connectRequest = $this->pullConnectRequest($request)) {
                 try {
+                    $user = $request->craftUser()?->asElement();
+
+                    if ($user && ($authError = $this->getMaintenanceAuthError($user, $isCpRequest))) {
+                        return $this->connectFailedResponse(
+                            $this->auth->getLoginFailureInfo($authError, $user)[1],
+                        );
+                    }
+
                     return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
                 } catch (Throwable $e) {
                     return $this->connectFailedResponse(t('Authentication failed.'), $e);
@@ -84,6 +92,14 @@ readonly class OAuthController extends AuthenticationController
             $isNew = ! isset($user->id);
 
             $user = $oauthManager->populateUser($definition, $socialiteUser, $user, $identity, $isNew);
+
+            if ($authError = $this->getMaintenanceAuthError($user, $isCpRequest)) {
+                return $this->failedResponse(
+                    $isCpRequest,
+                    $this->auth->getLoginFailureInfo($authError, $user)[1],
+                    $authError,
+                );
+            }
 
             if ($isNew && $definition->activatesUsers) {
                 $user->active = true;
@@ -282,6 +298,23 @@ readonly class OAuthController extends AuthenticationController
             User::STATUS_ACTIVE => $this->getCpAuthError($user),
             default => AuthError::InvalidCredentials,
         };
+    }
+
+    private function getMaintenanceAuthError(User $user, bool $isCpRequest): ?AuthError
+    {
+        if (! app()->isDownForMaintenance()) {
+            return null;
+        }
+
+        if ($isCpRequest) {
+            return $user->can('accessCpWhenSystemIsOff')
+                ? null
+                : AuthError::NoCpOfflineAccess;
+        }
+
+        return $user->can('accessSiteWhenSystemIsOff')
+            ? null
+            : AuthError::NoSiteOfflineAccess;
     }
 
     private function getCpAuthError(User $user): ?AuthError

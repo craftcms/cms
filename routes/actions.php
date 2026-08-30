@@ -86,7 +86,6 @@ use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
-use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
@@ -158,7 +157,7 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
 /**
  * Actions that are accessible without CP can be registered here.
  */
-Route::prefix($routes->actionTriggerRoutePrefix())->middleware(PreventRequestsDuringMaintenance::class)->group(function () {
+Route::prefix($routes->actionTriggerRoutePrefix())->group(function () {
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth'])->group(function () {

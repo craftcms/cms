@@ -11,7 +11,6 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->middleware = app(AuthenticateIfLive::class);
-    app()->maintenanceMode()->deactivate();
 });
 
 it('passes through during maintenance mode', function () {

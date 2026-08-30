@@ -18,7 +18,6 @@ use function Pest\Laravel\startSession;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
-    app()->maintenanceMode()->deactivate();
     ProjectConfig::set('users.allowPublicRegistration', true);
 
     FakeOAuthProvider::reset();

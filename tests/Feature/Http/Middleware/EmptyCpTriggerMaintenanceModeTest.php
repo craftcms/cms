@@ -2,33 +2,16 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Feature\Http\Middleware;
+use function Pest\Laravel\get;
 
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Tests\TestCase;
-use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Foundation\Application;
-use Override;
+beforeAll(fn () => putenv('CRAFT_CP_TRIGGER='));
 
-class EmptyCpTriggerMaintenanceModeTest extends TestCase
-{
-    /** @param Application $app */
-    #[Override]
-    protected function defineEnvironment($app): void
-    {
-        parent::defineEnvironment($app);
+afterAll(fn () => putenv('CRAFT_CP_TRIGGER'));
 
-        $app->make(ConfigRepository::class)->set('craft.general.cpTrigger', '');
-    }
+test('public shared actions are blocked during maintenance mode', function () {
+    auth()->logout();
+    app()->maintenanceMode()->activate([]);
 
-    public function test_public_shared_actions_are_blocked_during_maintenance_mode(): void
-    {
-        $this->assertNull(Cms::config()->cpTrigger);
-
-        auth()->logout();
-        app()->maintenanceMode()->activate([]);
-
-        $this->get('/actions/graphql/api?query=%7B__typename%7D')
-            ->assertServiceUnavailable();
-    }
-}
+    get('/actions/graphql/api?query=%7B__typename%7D')
+        ->assertServiceUnavailable();
+});
