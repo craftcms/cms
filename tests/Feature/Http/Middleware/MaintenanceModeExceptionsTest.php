@@ -7,10 +7,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
@@ -141,7 +143,7 @@ test('account security actions require control panel maintenance access', functi
     ])->assertServiceUnavailable();
 });
 
-test('rendered maintenance responses allow permitted administrators to reach General Settings', function () {
+test('General Settings remains restricted to administrators during maintenance mode', function () {
     app()->maintenanceMode()->activate([
         'template' => 'Scheduled maintenance',
     ]);
@@ -151,13 +153,27 @@ test('rendered maintenance responses allow permitted administrators to reach Gen
         ->createElement());
 
     get(cp_url('settings/general'))
-        ->assertServiceUnavailable()
-        ->assertSeeText('Scheduled maintenance');
+        ->assertForbidden();
 
     actingAs(User::find()->admin()->one());
 
     get(cp_url('settings/general'))
         ->assertOk();
+});
+
+test('annotated routes are registered as maintenance exceptions', function () {
+    $routes = app(CraftRoutes::class);
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+    $exceptions = app(PreventRequestsDuringMaintenance::class)->getExcludedPaths();
+
+    expect($exceptions)
+        ->toContain(
+            $routes->joinRoutePrefix([$cpTrigger, 'updates/backup']),
+            $routes->joinRoutePrefix([$cpTrigger, 'settings/general']),
+            $routes->joinRoutePrefix([$actionTrigger, 'users/login']),
+        )
+        ->not->toContain($routes->joinRoutePrefix([$cpTrigger, 'updates/force-update']));
 });
 
 test('updater routes required by an active update remain reachable for workflow validation', function (string $action, string $query = '') {

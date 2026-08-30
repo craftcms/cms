@@ -88,18 +88,18 @@ Route::prefix('install')->group(function () {
 Route::prefix('updates')->name('updates.')->group(function () {
     Route::post('/', [UpdaterController::class, 'index'])->name('index');
     Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate'])->name('force-update');
-    Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
-    Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
+    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
+    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
     Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert'])->name('revert');
-    Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate'])->name('migrate');
-    Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck'])->name('precheck');
+    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate'])->name('migrate');
+    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck'])->name('precheck');
     Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer'])->name('recheck-composer');
-    Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall'])->name('composer-install');
+    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall'])->name('composer-install');
     Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove'])->name('composer-remove');
-    Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
+    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
 });
 
-Route::middleware('craft.web')->group(function () {
+Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
@@ -116,7 +116,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('/', [DashboardController::class, 'redirect']);
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
+    Route::allowDuringMaintenance()->any(CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
 
@@ -165,7 +165,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
-        Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
+        Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
 
     /**
@@ -259,7 +259,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
-            Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+            Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
         // Index page
@@ -293,9 +293,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // General
-        Route::get('settings/general', [GeneralSettingsController::class, 'index'])
+        Route::allowDuringMaintenance()
+            ->get('settings/general', [GeneralSettingsController::class, 'index'])
             ->name('settings.general.index');
-        Route::post('settings/general', [GeneralSettingsController::class, 'store'])
+        Route::allowDuringMaintenance()
+            ->post('settings/general', [GeneralSettingsController::class, 'store'])
             ->name('settings.general.store');
 
         // Email
