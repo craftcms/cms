@@ -28,6 +28,7 @@ use yii\web\Response;
 class NestedElementsController extends Controller
 {
     private ElementInterface $owner;
+    private string $attribute;
     private ElementQueryInterface|ElementCollection $nestedElements;
 
     /**
@@ -47,26 +48,14 @@ class NestedElementsController extends Controller
         $ownerId = $this->request->getRequiredBodyParam('ownerId');
         $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
         $owner = Craft::$app->getElements()->getElementById($ownerId, $ownerElementType, $ownerSiteId);
+
         if (!$owner) {
             throw new BadRequestHttpException('Invalid owner params');
         }
+
         $this->owner = $owner;
-
-        // Make sure they're authorized to manage it
-        $session = Craft::$app->getSession();
-        $attribute = $this->request->getRequiredBodyParam('attribute');
-        if (
-            !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
-            (
-                $owner->id === $owner->getCanonicalId() ||
-                !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
-            )
-        ) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action');
-        }
-
-        // Set the nested elements for the action
-        $this->nestedElements = $this->owner->$attribute;
+        $this->attribute = $this->request->getRequiredBodyParam('attribute');
+        $this->nestedElements = $owner->{$this->attribute};
 
         return true;
     }
@@ -78,6 +67,18 @@ class NestedElementsController extends Controller
      */
     public function actionReorder(): Response
     {
+        // Make sure they're authorized to reorder elements
+        $session = Craft::$app->getSession();
+        if (
+            !$session->checkAuthorization(sprintf('reorderNestedElements::%s::%s', $this->owner->id, $this->attribute)) &&
+            (
+                $this->owner->id === $this->owner->getCanonicalId() ||
+                !$session->checkAuthorization(sprintf('reorderNestedElements::%s::%s', $this->owner->getCanonicalId(), $this->attribute))
+            )
+        ) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
+        }
+
         $ids = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
         $offset = $this->request->getRequiredBodyParam('offset');
 

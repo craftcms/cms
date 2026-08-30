@@ -217,27 +217,45 @@ class Auth extends Component
     public function verify(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser($sessionDuration);
+        $method = $this->getMethod($methodClass, $user);
+        $mutex = null;
+        $lockName = null;
 
-        if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
-            $user?->handleInvalidLoginParam();
-            return false;
+        if ($user) {
+            $mutex = Craft::$app->getMutex();
+            $lockName = sprintf('auth-verify:%d', $user->id);
+
+            if (!$mutex->acquire($lockName, 5)) {
+                return false;
+            }
         }
 
-        // success!
-        if ($user) {
-            $this->setUser(null);
-
-            // if we're impersonating, pass the user we're impersonating to the complete the login
-            $userSession = Craft::$app->getUser();
-            if ($userSession->getImpersonator() !== null) {
-                /** @var User $user */
-                $user = Craft::$app->getUser()->getIdentity();
+        try {
+            if (!$method->verify(...$args)) {
+                $user?->handleInvalidLoginParam();
+                return false;
             }
 
-            $userSession->login($user, $sessionDuration);
-        }
+            // success!
+            if ($user) {
+                $this->setUser(null);
 
-        return true;
+                // if we're impersonating, pass the user we're impersonating to the complete the login
+                $userSession = Craft::$app->getUser();
+                if ($userSession->getImpersonator() !== null) {
+                    /** @var User $user */
+                    $user = Craft::$app->getUser()->getIdentity();
+                }
+
+                $userSession->login($user, $sessionDuration);
+            }
+
+            return true;
+        } finally {
+            if ($mutex !== null && $lockName !== null) {
+                $mutex->release($lockName);
+            }
+        }
     }
 
     /**

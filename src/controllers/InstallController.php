@@ -218,11 +218,20 @@ class InstallController extends Controller
             'language' => $this->request->getBodyParam('language'),
         ]);
 
+        $data = [
+            'model' => [
+                ...$site->toArray(),
+                'name' => $site->getName(false),
+                'baseUrl' => $site->getBaseUrl(false),
+                'language' => $site->getLanguage(false),
+            ],
+        ];
+
         if (!$site->validate(['name', 'baseUrl', 'language'])) {
-            return $this->asModelFailure($site);
+            return $this->asModelFailure($site, data: $data);
         }
 
-        return $this->asModelSuccess($site);
+        return $this->asModelSuccess($site, data: $data);
     }
 
     /**

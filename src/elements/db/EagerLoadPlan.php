@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Closure;
 use yii\base\BaseObject;
 
 /**
@@ -44,14 +45,14 @@ class EagerLoadPlan extends BaseObject
     public bool $count = false;
 
     /**
-     * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
+     * @var Closure|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
      *
      * The signature of the callable should be `function (\craft\base\ElementInterface $element): bool`, where `$element` refers to the element
      * the eager-loaded elements are about to be applied to. The callable should return a boolean value.
      *
      * @since 3.5.12
      */
-    public $when;
+    public ?Closure $when = null;
 
     /**
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.

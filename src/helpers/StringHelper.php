@@ -1133,6 +1133,18 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns whether a string appears to be an md5 hash.
+     *
+     * @param string $str
+     * @return bool
+     * @since 5.10.13
+     */
+    public static function isMd5(string $str): bool
+    {
+        return strlen($str) === 32 && ctype_xdigit($str);
+    }
+
+    /**
      * Returns the last $number characters of the string.
      *
      * @param string $str The string from which to get the substring.

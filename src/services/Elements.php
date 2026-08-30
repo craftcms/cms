@@ -2064,7 +2064,7 @@ class Elements extends Component
                     // Now propagate $mainClone to any sites the source element didn’t already exist in
                     foreach ($supportedSites as $siteId => $siteInfo) {
                         if (!isset($propagatedTo[$siteId]) && $siteInfo['propagate']) {
-                            $siteClone = $element->getIsDraft() && !$element->getIsUnpublishedDraft() ? null : false;
+                            $siteClone = $element->getIsDerivative() ? null : false;
                             if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 /** @phpstan-ignore-next-line */
                                 throw $siteClone
@@ -4229,7 +4229,7 @@ class Elements extends Component
                             $updated = false;
 
                             foreach ($generatedFields as $field) {
-                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
 
                                 // handle 'true'/'false'/'null'/int/float values
                                 $value = App::normalizeValue($value) ?? '';
@@ -4523,7 +4523,8 @@ class Elements extends Component
             (
                 $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
+                $element->resaving ||
+                ElementHelper::containsTempSlug($siteElement->uri)
             )
         ) {
             // Set a unique URI on the site clone

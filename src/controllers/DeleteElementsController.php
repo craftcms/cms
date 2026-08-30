@@ -188,6 +188,8 @@ class DeleteElementsController extends Controller
         $deleteOwnership = [];
         $elementsService = Craft::$app->getElements();
 
+        $elementsToDelete = 0;
+        $failureCount = 0;
         foreach ($this->elements as $element) {
             if (
                 $element instanceof NestedElementInterface &&
@@ -197,17 +199,37 @@ class DeleteElementsController extends Controller
                 continue;
             }
 
-            $elementsService->deleteElement($element, $this->hardDelete);
+            $elementsToDelete++;
+            $success = $elementsService->deleteElement($element, $this->hardDelete);
+            if (!$success) {
+                $failureCount++;
+            }
         }
 
         foreach ($deleteOwnership as $ownerId => $elementIds) {
+            // we're assuming this succeeds
             Db::delete(Table::ELEMENTS_OWNERS, [
                 'elementId' => $elementIds,
                 'ownerId' => $ownerId,
             ]);
         }
 
-        return $this->asJson([]);
+        $showAsFailure = false;
+        if ($failureCount !== 0 && $failureCount === $elementsToDelete) {
+            $message = Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => $elementsToDelete == 1 ? $this->elementType::lowerDisplayName() : $this->elementType::pluralLowerDisplayName(),
+            ]);
+            $showAsFailure = true;
+        } else {
+            $message = Craft::t('app', '{type} deleted.', [
+                'type' => $elementsToDelete == 1 ? $this->elementType::displayName() : $this->elementType::pluralDisplayName(),
+            ]);
+        }
+
+        return $this->asJson([
+            'message' => $message,
+            'showAsFailure' => $showAsFailure,
+        ]);
     }
 
     private function elementOwnedByPrimaryOwner(NestedElementInterface $element): bool
