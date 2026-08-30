@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateGlobals;
@@ -47,6 +48,7 @@ readonly class SessionInfoController
         Request $request,
         GeneralConfig $generalConfig,
         Impersonation $impersonation,
+        OAuth $oauth,
         HtmlStack $htmlStack,
         TemplateGlobals $templateGlobals,
         TemplateHooks $templateHooks,
@@ -90,7 +92,10 @@ readonly class SessionInfoController
             'username' => $loginName,
         ];
         $alternativeLoginMethods = $htmlStack->capture(
-            fn (): string => $templateHooks->invoke('cp.login.alternative-login-methods', $context),
+            fn (): string => implode('', [
+                ...$oauth->getLoginButtons(true),
+                $templateHooks->invoke('cp.login.alternative-login-methods', $context),
+            ]),
         );
 
         return new JsonResponse([
