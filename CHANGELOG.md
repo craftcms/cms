@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+- Added `craft\helpers\ElementHelper::containsTempSlug()`.
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
 - Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 - Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
+- Fixed a bug where asset bundles could be only partially published, if two requests attempted to publish and clear them concurrently. ([#19477](https://github.com/craftcms/cms/issues/19477))
+- Fixed a bug where propagated entries were getting URIs assigned based on their temporary slugs, if the section didn’t specify a URI format for the site the entry was initially saved in. ([#19495](https://github.com/craftcms/cms/issues/19495))
 
 ## 5.10.14 - 2026-08-18
 

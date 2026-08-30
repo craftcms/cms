@@ -4523,7 +4523,8 @@ class Elements extends Component
             (
                 $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
+                $element->resaving ||
+                ElementHelper::containsTempSlug($siteElement->uri)
             )
         ) {
             // Set a unique URI on the site clone
