@@ -27,10 +27,7 @@ use Illuminate\Foundation\Events\MaintenanceModeDisabled;
 use Illuminate\Foundation\Events\MaintenanceModeEnabled;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -85,65 +82,19 @@ readonly class GeneralSettingsController
             $systemSettings['name'] = $settings['name'];
             $systemSettings['retryDuration'] = $settings['retryDuration'] ?? null;
             $systemSettings['timeZone'] = $settings['timeZone'];
+            $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
         }
 
-        $maintenanceModeState = $this->captureMaintenanceModeState();
-
-        try {
-            $retryDuration = $systemSettings['retryDuration'] ?? null;
-            $maintenanceModeEvent = $this->setMaintenanceMode(
-                $request->boolean('maintenanceMode'),
-                $retryDuration === null ? null : (int) $retryDuration,
-            );
-
-            if ($this->generalConfig->allowAdminChanges) {
-                $this->projectConfig->set('system', $systemSettings, 'Update system settings.');
-            }
-        } catch (Throwable $exception) {
-            $this->restoreMaintenanceModeState($maintenanceModeState);
-
-            throw $exception;
-        }
-
-        if ($maintenanceModeEvent !== null) {
-            Event::dispatch($maintenanceModeEvent);
-        }
+        $retryDuration = $systemSettings['retryDuration'] ?? null;
+        $this->setMaintenanceMode(
+            $request->boolean('maintenanceMode'),
+            $retryDuration === null ? null : (int) $retryDuration,
+        );
 
         return $this->asSuccess(t('System settings saved.'));
     }
 
-    /** @return array{active: bool, data: array<string, mixed>, preRenderedFile: ?string} */
-    private function captureMaintenanceModeState(): array
-    {
-        $maintenanceFile = storage_path('framework/maintenance.php');
-        $active = $this->maintenanceMode->active();
-
-        return [
-            'active' => $active,
-            'data' => $active ? $this->maintenanceMode->data() : [],
-            'preRenderedFile' => File::isFile($maintenanceFile) ? File::get($maintenanceFile) : null,
-        ];
-    }
-
-    /** @param array{active: bool, data: array<string, mixed>, preRenderedFile: ?string} $state */
-    private function restoreMaintenanceModeState(array $state): void
-    {
-        if ($state['active']) {
-            $this->maintenanceMode->activate($state['data']);
-        } else {
-            $this->maintenanceMode->deactivate();
-        }
-
-        $maintenanceFile = storage_path('framework/maintenance.php');
-
-        if ($state['preRenderedFile'] === null) {
-            File::delete($maintenanceFile);
-        } else {
-            File::put($maintenanceFile, $state['preRenderedFile']);
-        }
-    }
-
-    private function setMaintenanceMode(bool $enabled, ?int $retryDuration): MaintenanceModeDisabled|MaintenanceModeEnabled|null
+    private function setMaintenanceMode(bool $enabled, ?int $retryDuration): void
     {
         $active = $this->maintenanceMode->active();
 
@@ -158,27 +109,24 @@ readonly class GeneralSettingsController
             }
 
             if ($active && $payload === $currentPayload) {
-                return null;
+                return;
             }
 
             $this->maintenanceMode->activate($payload);
 
-            return $active ? null : new MaintenanceModeEnabled;
+            if (! $active) {
+                Event::dispatch(new MaintenanceModeEnabled);
+            }
+
+            return;
         }
 
         if (! $active) {
-            return null;
-        }
-
-        $maintenanceFile = storage_path('framework/maintenance.php');
-
-        if (File::isFile($maintenanceFile) && ! File::delete($maintenanceFile)) {
-            throw new RuntimeException("Unable to delete the pre-rendered maintenance file: $maintenanceFile");
+            return;
         }
 
         $this->maintenanceMode->deactivate();
-
-        return new MaintenanceModeDisabled;
+        Event::dispatch(new MaintenanceModeDisabled);
     }
 
     private function systemSettingsForm(): FormPayload

@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
-use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 
@@ -26,7 +23,6 @@ afterEach(function () {
     putenv('GENERAL_SETTINGS_NAME');
     putenv('GENERAL_SETTINGS_TIMEZONE');
     putenv('GENERAL_SETTINGS_MISSING');
-    File::delete(storage_path('framework/maintenance.php'));
 });
 
 it('requires authentication', function () {
@@ -280,105 +276,6 @@ it('removes the retry header when retry duration is cleared', function () {
         ->assertServiceUnavailable()
         ->assertHeaderMissing('Retry-After');
 });
-
-it('keeps maintenance mode active when the pre-rendered file cannot be removed', function () {
-    app()->maintenanceMode()->activate([]);
-    $systemName = ProjectConfig::get('system.name');
-    $retryDuration = ProjectConfig::get('system.retryDuration');
-    $timeZone = ProjectConfig::get('system.timeZone');
-
-    $maintenanceFile = storage_path('framework/maintenance.php');
-    File::put($maintenanceFile, '<?php return;');
-    $files = app(Filesystem::class);
-    File::partialMock()
-        ->shouldReceive('delete')
-        ->once()
-        ->with($maintenanceFile)
-        ->andReturnFalse();
-
-    try {
-        $response = post(action([GeneralSettingsController::class, 'store']), [
-            'maintenanceMode' => false,
-            'name' => 'This should be rolled back',
-            'retryDuration' => 120,
-            'timeZone' => 'America/New_York',
-        ]);
-    } finally {
-        File::swap($files);
-    }
-
-    $response->assertServerError();
-
-    get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.name', $systemName)
-            ->where('form.values.retryDuration', $retryDuration)
-            ->where('form.values.timeZone', $timeZone))
-        ->assertOk();
-
-    Auth::logout();
-
-    get('/')->assertServiceUnavailable();
-});
-
-it('restores maintenance state when project config cannot be saved', function (bool $initiallyActive) {
-    Route::middleware('web')->get('maintenance-rollback-status', fn () => 'Application is live');
-    $systemName = ProjectConfig::get('system.name');
-    $retryDuration = ProjectConfig::get('system.retryDuration');
-    $timeZone = ProjectConfig::get('system.timeZone');
-
-    if ($initiallyActive) {
-        app()->maintenanceMode()->activate([
-            'retry' => 30,
-            'secret' => 'maintenance-secret',
-            'template' => 'Scheduled maintenance',
-        ]);
-    }
-
-    $projectConfig = app(ProjectConfigService::class);
-    $projectConfig->readOnly = true;
-
-    try {
-        $response = post(action([GeneralSettingsController::class, 'store']), [
-            'maintenanceMode' => ! $initiallyActive,
-            'name' => 'This cannot be saved',
-            'retryDuration' => 120,
-            'timeZone' => 'America/New_York',
-        ]);
-    } finally {
-        $projectConfig->readOnly = false;
-    }
-
-    $response->assertServerError();
-
-    get(action([GeneralSettingsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.values.name', $systemName)
-            ->where('form.values.retryDuration', $retryDuration)
-            ->where('form.values.timeZone', $timeZone))
-        ->assertOk();
-
-    Auth::logout();
-
-    if ($initiallyActive) {
-        get('/maintenance-rollback-status')
-            ->assertServiceUnavailable()
-            ->assertHeader('Retry-After', '30')
-            ->assertSeeText('Scheduled maintenance');
-
-        get('/maintenance-secret')
-            ->assertRedirect('/');
-
-        return;
-    }
-
-    get('/maintenance-rollback-status')
-        ->assertOk()
-        ->assertSeeText('Application is live');
-})->with([
-    'enable' => [false],
-    'disable' => [true],
-]);
 
 it('restricts maintenance mode changes to administrators', function (bool $initiallyActive) {
     Route::middleware('web')->get('maintenance-authorization-status', fn () => 'Application is live');
