@@ -11,6 +11,7 @@
 - Fixed a bug where password managers could attempt to submit the TOTP 2FA form before the application was ready for it, causing the login page to reload. ([#19497](https://github.com/craftcms/cms/pull/19497))
 - Fixed an exception that was thrown if `null` was passed to an asset query’s `uploader` param. ([#19484](https://github.com/craftcms/cms/issues/19484))
 - Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
+- Fixed a bug where the control panel could become non-interactive after a slideout was closed. ([#9912](https://github.com/craftcms/cms/issues/9912), [#19511](https://github.com/craftcms/cms/pull/19511))
 
 ## 5.10.14 - 2026-08-18
 
