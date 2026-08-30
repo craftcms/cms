@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
+
 ## 4.18.7 - 2026-08-18
 
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-5m2g-hhqr-84pc)
