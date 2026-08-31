@@ -51,6 +51,7 @@ export function createLinkPopoverController(
     content.slot = 'content';
     content.classList.add('p-2');
 
+    // SAFETY: craft-link-field is registered with these public configuration properties.
     const linkField = document.createElement(
       'craft-link-field'
     ) as HTMLElement & {
@@ -79,8 +80,10 @@ export function createLinkPopoverController(
     popover.appendChild(content);
     document.body.appendChild(popover);
 
+    // SAFETY: The registered apply event passes the CustomEvent payload consumed by handleApply.
     linkField.addEventListener('apply', handleApply as EventListener);
     linkField.addEventListener('cancel', handleCancel);
+    // SAFETY: The element-select-start listener ignores the event payload.
     linkField.addEventListener(
       'element-select-start',
       suspend as EventListener
@@ -178,7 +181,7 @@ export function createLinkPopoverController(
     }
 
     // `opened-changed` fires on both open and close; only react to closes.
-    if ((event as CustomEvent<{opened: boolean}>).detail?.opened) {
+    if (event instanceof CustomEvent && event.detail?.opened) {
       return;
     }
 

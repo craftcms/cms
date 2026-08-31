@@ -1,4 +1,9 @@
-export type Criteria = Record<string, any>;
+import type {
+  IndexQueryParams,
+  IndexQueryValue,
+} from '@/modules/elements/composables/useElementIndexVisits';
+
+export type Criteria = IndexQueryParams;
 
 interface BaseSource {
   key: string;
@@ -6,7 +11,7 @@ interface BaseSource {
   criteria?: Criteria;
   defaultSort?: string[];
   sites?: number[];
-  data?: Record<string, any>;
+  data?: Record<string, IndexQueryValue>;
   /** Set when the source is a structure; gates the structure view mode. */
   structureId?: number | null;
 }

@@ -17,7 +17,6 @@ interface Prompt {
 interface PromptItem {
   prompt: Prompt;
   choice?: string;
-  [key: string]: unknown;
 }
 
 type PromptBatchCallback = (returnData: PromptItem[]) => void;

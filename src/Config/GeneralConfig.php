@@ -631,6 +631,22 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
+     * @var string The Asset Transformer to use when none is selected explicitly.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultAssetTransformer('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public string $defaultAssetTransformer = 'craft';
+
+    /**
      * @var string The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -1202,22 +1218,6 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public string|false $filenameWordSeparator = '-';
-
-    /**
-     * @var bool Whether image transforms should be generated before page load.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $generateTransformsBeforePageLoad = false;
 
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
@@ -2223,38 +2223,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 year
      */
     public mixed $rememberUsernameDuration = 31536000;
-
-    /**
-     * @var string The path to the root directory that should store published control panel resources.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBasePath = '@webroot/cpresources';
-
-    /**
-     * @var string The URL to the root directory where control panel resources are published.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string $resourceBaseUrl = '@web/cpresources';
 
     /**
      * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
@@ -3710,6 +3678,24 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The Asset Transformer to use when none is selected explicitly.
+     *
+     * @group Assets
+     *
+     * @see $defaultAssetTransformer
+     */
+    public function defaultAssetTransformer(string $value): self
+    {
+        if ($value === '') {
+            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
+        }
+
+        $this->defaultAssetTransformer = $value;
+
+        return $this;
+    }
+
+    /**
      * The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -4364,24 +4350,6 @@ class GeneralConfig extends BaseConfig
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether image transforms should be generated before page load.
-     *
-     * ```php
-     * ->generateTransformsBeforePageLoad(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $generateTransformsBeforePageLoad
-     */
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
 
         return $this;
     }
@@ -5445,42 +5413,6 @@ class GeneralConfig extends BaseConfig
     public function rememberUsernameDuration(mixed $value): self
     {
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The path to the root directory that should store published control panel resources.
-     *
-     * ```php
-     * ->resourceBasePath('@webroot/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBasePath
-     */
-    public function resourceBasePath(string $value): self
-    {
-        $this->resourceBasePath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URL to the root directory where control panel resources are published.
-     *
-     * ```php
-     * ->resourceBaseUrl('@web/craft-resources')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $resourceBaseUrl
-     */
-    public function resourceBaseUrl(string $value): self
-    {
-        $this->resourceBaseUrl = $value;
 
         return $this;
     }

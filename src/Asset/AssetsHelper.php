@@ -140,10 +140,6 @@ class AssetsHelper
             $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
         }
 
-        if ($volume->transformHasUrls()) {
-            $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
-        }
-
         $baseUrls = $baseUrls
             ->filter()
             ->unique();

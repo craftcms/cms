@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -931,7 +930,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
 
     /** @return list<array<string, mixed>> */
     #[Override]
-    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
     {
         try {
             $field = $this->getField();
@@ -939,12 +938,17 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             $field = null;
         }
 
-        if ($field instanceof Actionable) {
-            $field->static = $static;
-            $items = $field->getActionMenuItems();
-        } else {
-            $items = [];
-        }
+        return [
+            ...($field?->getFieldLayoutActionMenuItems($context) ?? []),
+            ...parent::actionMenuItemsForContext($context),
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    #[Override]
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = parent::actionMenuItems($element, $static);
 
         $user = currentUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {

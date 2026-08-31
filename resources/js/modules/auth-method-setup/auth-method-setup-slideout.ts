@@ -11,76 +11,76 @@ import {Slideout} from '@/modules/slideout';
 declare const Craft: any;
 
 export interface AuthMethodSetupSlideoutData {
-    /** The auth method's display name, used in the success message. */
-    methodName: string;
-    /** The setup screen's HTML. */
-    html: string;
-    /** Container id, under which the slideout registers in `Slideout.instances`. */
-    containerId: string;
+  /** The auth method's display name, used in the success message. */
+  methodName: string;
+  /** The setup screen's HTML. */
+  html: string;
+  /** Container id, under which the slideout registers in `Slideout.instances`. */
+  containerId: string;
 }
 
 export class AuthMethodSetupSlideout extends Slideout {
-    methodName: string | null = null;
+  methodName: string | null = null;
 
-    constructor(data?: AuthMethodSetupSlideoutData) {
-        super();
-        if (new.target === AuthMethodSetupSlideout) {
-            this.init(data!);
-        }
+  constructor(data?: AuthMethodSetupSlideoutData) {
+    super();
+    if (new.target === AuthMethodSetupSlideout) {
+      this.initSetup(data!);
     }
+  }
 
-    override init(data: AuthMethodSetupSlideoutData): void {
-        this.methodName = data.methodName;
+  private initSetup(data: AuthMethodSetupSlideoutData): void {
+    this.methodName = data.methodName;
 
-        const contents = `
+    const contents = `
 <div class="slideout__body">${data.html}</div>
 <div class="slideout__footer">
   <div class="flex-grow"></div>
   <div class="flex flex-nowrap">
     <craft-button type="button" class="auth-method-close-btn">${Craft.t(
-        'app',
-        'Cancel'
+      'app',
+      'Cancel'
     )}</craft-button>
   </div>
 </div>
 `;
 
-        super.init(contents, {
-            containerAttributes: {
-                id: data.containerId,
-            },
-        });
+    super.init(contents, {
+      containerAttributes: {
+        id: data.containerId,
+      },
+    });
 
-        // Add alt text to the QR code image
-        const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+    // Add alt text to the QR code image
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
 
-        if ($qrCodeImg.length) {
-            $qrCodeImg.attr({
-                role: 'img',
-                'aria-label': Craft.t('app', 'QR Code'),
-            });
-        }
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR Code'),
+      });
     }
+  }
 
-    /**
-     * Swap the body for a "{name} added successfully." confirmation and turn
-     * the Cancel button into a Close button.
-     */
-    showSuccess(): void {
-        const message = Craft.t('app', '{name} added successfully.', {
-            name: this.methodName,
-        });
-        this.$container.find('.so-body').addClass('auth-method-setup-success')
-            .html(`
+  /**
+   * Swap the body for a "{name} added successfully." confirmation and turn
+   * the Cancel button into a Close button.
+   */
+  showSuccess(): void {
+    const message = Craft.t('app', '{name} added successfully.', {
+      name: this.methodName,
+    });
+    this.$container.find('.so-body').addClass('auth-method-setup-success')
+      .html(`
         <craft-icon name="check"></craft-icon>
         <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
       `);
 
-        this.$container.find('.auth-method-setup-success-message').focus();
-        this.$container
-            .find('.auth-method-close-btn')
-            .text(Craft.t('app', 'Close'));
-    }
+    this.$container.find('.auth-method-setup-success-message').focus();
+    this.$container
+      .find('.auth-method-close-btn')
+      .text(Craft.t('app', 'Close'));
+  }
 }
 
 export default AuthMethodSetupSlideout;

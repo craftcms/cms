@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -103,7 +104,7 @@ class Local extends Filesystem
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
-            'path' => [
+            'path' => new EnvValueRule([
                 'required',
                 'string',
                 function (string $attribute, mixed $value, Closure $fail): void {
@@ -111,7 +112,7 @@ class Local extends Filesystem
                         $fail(t('Local filesystems cannot be located within or above system directories.'));
                     }
                 },
-            ],
+            ]),
         ]);
     }
 

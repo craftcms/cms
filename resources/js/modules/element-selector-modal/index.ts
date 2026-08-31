@@ -1,33 +1,55 @@
 import {registerCraftGlobals} from '@/common/craft-global';
-import {t} from '@craftcms/ui';
-import {BaseElementSelectorModal} from './base-element-selector-modal';
-import {AssetSelectorModal} from './asset-selector-modal';
+import {
+  AssetSelectorController,
+  ElementSelectorController,
+  adoptLegacyRegistrations,
+  hasElementSelectorController,
+  registerElementSelectorController,
+} from '@craftcms/ui';
+import {createElementSelectorModal} from './create-element-selector-modal';
 import {VolumeFolderSelectorModal} from './volume-folder-selector-modal';
 
-declare const Craft: any;
+const ASSET = 'CraftCms\\Cms\\Asset\\Elements\\Asset';
 
-BaseElementSelectorModal.defaults.modalTitle ??= t('Select element');
-BaseElementSelectorModal.defaults.selectBtnLabel ??= t('Select');
+// The legacy bundle is a plain `<script>` and runs before this module, so a
+// plugin can have registered a class before there was anywhere modern to put it.
+adoptLegacyRegistrations();
 
-// Assign legacy `Craft.*` globals so PHP-emitted `new Craft.BaseElementSelectorModal(...)`
-// and plugin code that calls `Craft.registerElementSelectorModalClass(...)` keep working.
-registerCraftGlobals({
-    BaseElementSelectorModal,
-    AssetSelectorModal,
-    VolumeFolderSelectorModal,
-});
-
-if (
-    typeof Craft._elementSelectorModalClasses?.[
-        'CraftCms\\Cms\\Asset\\Elements\\Asset'
-    ] === 'undefined'
-) {
-    Craft.registerElementSelectorModalClass?.(
-        'CraftCms\\Cms\\Asset\\Elements\\Asset',
-        AssetSelectorModal
-    );
+// Assets get transform support. Skipped when something got there first, so a
+// plugin can replace the built-in behavior without the duplicate-registration
+// throw.
+if (!hasElementSelectorController(ASSET)) {
+  registerElementSelectorController(ASSET, AssetSelectorController);
 }
 
-export {BaseElementSelectorModal} from './base-element-selector-modal';
-export {AssetSelectorModal} from './asset-selector-modal';
+/**
+ * `Craft.*` stays the entry point for plugins and PHP-emitted boots
+ * (`new Craft.VolumeFolderSelectorModal(…)` in `MoveAssets.php` and the legacy
+ * `AssetIndex`).
+ *
+ * `createElementSelectorModal` is now **async** and resolves to a
+ * controller-backed handle rather than a modal object — a deliberate break, as
+ * the modal is no longer a class anyone can subclass. `registerElementSelectorController`
+ * replaces `registerElementSelectorModalClass`; plugins register a controller
+ * (business logic) and get both presentation layers for free.
+ */
+registerCraftGlobals({
+  VolumeFolderSelectorModal,
+  createElementSelectorModal,
+  registerElementSelectorController,
+  ElementSelectorController,
+  AssetSelectorController,
+});
+
+export {createElementSelectorModal} from './create-element-selector-modal';
+export type {
+  ElementSelectorModalHandle,
+  ElementSelectorModalSettings,
+} from './create-element-selector-modal';
 export {VolumeFolderSelectorModal} from './volume-folder-selector-modal';
+
+// `ElementSelectorModal.vue` and `useElementSelectorController` are deliberately
+// NOT re-exported here. `cp.ts` imports this module for its side effects, and a
+// static re-export would pull the Vue view — and with it the whole element-index
+// component tree — into every CP page, which is exactly what the factory's lazy
+// `import()` exists to avoid. Import them from their own modules.

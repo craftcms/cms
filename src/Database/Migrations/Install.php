@@ -335,6 +335,7 @@ class Install extends Migration
             $table->enum('interlace', ['none', 'line', 'plane', 'partition'])->default('none');
             $table->string('fill', 11)->nullable()->default(null);
             $table->boolean('upscale')->default(true);
+            $table->json('parameters')->nullable();
             $table->dateTime('parameterChangeTime')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1000,8 +1001,7 @@ class Install extends Migration
             $table->string('handle');
             $table->string('fs');
             $table->string('subpath')->nullable();
-            $table->string('transformFs')->nullable();
-            $table->string('transformSubpath')->nullable();
+            $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);

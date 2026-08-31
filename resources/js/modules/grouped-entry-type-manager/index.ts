@@ -5,7 +5,7 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 // Re-expose the Group sub-class on the constructor, as the legacy bundle did
 // (`Craft.GroupedEntryTypeManager.Group`).
-(GroupedEntryTypeManager as any).Group = Group;
+Object.assign(GroupedEntryTypeManager, {Group});
 
 // Assign onto the legacy `Craft` global so any remaining
 // `new Craft.GroupedEntryTypeManager(...)` boots (plugins) keep working — the

@@ -39,14 +39,12 @@ function resolveControls(input: GeneratorInput): TextControl[] {
   }
 
   let candidates: Element[];
-  if (typeof input === 'string') {
-    candidates = Array.from(document.querySelectorAll(input));
-  } else if (input instanceof Element) {
+  if (input instanceof Element) {
     candidates = [input];
-  } else if (typeof (input as ArrayLike<Element>).length === 'number') {
-    candidates = Array.from(input as ArrayLike<Element>);
+  } else if (input instanceof Object) {
+    candidates = Array.from(input);
   } else {
-    candidates = [];
+    candidates = Array.from(document.querySelectorAll(String(input)));
   }
 
   return candidates.filter(
@@ -63,12 +61,8 @@ function isVisible(el: HTMLElement): boolean {
 /** Select the whole value (the jQuery-free port of `Craft.selectFullValue`). */
 function selectFullValue(el: TextControl): void {
   const val = el.value;
-  if (typeof el.setSelectionRange !== 'undefined') {
-    // `* 2` mirrors the legacy helper — over-selecting is clamped by the browser.
-    el.setSelectionRange(0, val.length * 2);
-  } else {
-    el.value = val;
-  }
+  // `* 2` mirrors the legacy helper; over-selecting is clamped by the browser.
+  el.setSelectionRange(0, val.length * 2);
 }
 
 /**
@@ -189,7 +183,7 @@ export class BaseInputGenerator extends Base<BaseInputGeneratorSettings> {
 
     const sourceVal = this.sourceControls[0]?.value;
 
-    if (typeof sourceVal === 'undefined') {
+    if (sourceVal === undefined) {
       // The source input may not exist anymore
       return;
     }

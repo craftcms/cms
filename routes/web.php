@@ -72,4 +72,8 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-Route::fallback(SiteRouteController::class)->name('siteFallback');
+// Route::fallback() only registers GET/HEAD by default
+Route::any('{fallbackPlaceholder}', SiteRouteController::class)
+    ->where('fallbackPlaceholder', '.*')
+    ->fallback()
+    ->name('siteFallback');

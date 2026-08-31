@@ -7,36 +7,35 @@ const STORAGE_KEY = 'dismissedTips';
  * dismissed on either editor stays dismissed on both.
  */
 export function dismissedTipUids(): Array<string> {
-    try {
-        const stored = window.localStorage.getItem(STORAGE_KEY);
-        const parsed = stored ? JSON.parse(stored) : [];
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
 
-        return Array.isArray(parsed)
-            ? parsed.filter((uid) => typeof uid === 'string')
-            : [];
-    } catch {
-        // Private browsing, quota, or a malformed value — treat as nothing dismissed.
-        return [];
-    }
+    return Array.isArray(parsed)
+      ? parsed.filter(
+          (uid): uid is string => Object(uid).constructor === String
+        )
+      : [];
+  } catch {
+    // Private browsing, quota, or a malformed value — treat as nothing dismissed.
+    return [];
+  }
 }
 
 export function isTipDismissed(uid: string | null | undefined): boolean {
-    return uid ? dismissedTipUids().includes(uid) : false;
+  return uid ? dismissedTipUids().includes(uid) : false;
 }
 
 export function dismissTip(uid: string): void {
-    const uids = dismissedTipUids();
+  const uids = dismissedTipUids();
 
-    if (uids.includes(uid)) {
-        return;
-    }
+  if (uids.includes(uid)) {
+    return;
+  }
 
-    try {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify([...uids, uid])
-        );
-    } catch {
-        // Dismissal is a convenience; failing to persist it isn't worth surfacing.
-    }
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...uids, uid]));
+  } catch {
+    // Dismissal is a convenience; failing to persist it isn't worth surfacing.
+  }
 }

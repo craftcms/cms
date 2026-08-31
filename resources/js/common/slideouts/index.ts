@@ -3,16 +3,16 @@ import {closeAllSlideouts, closeSlideout, openSlideout} from './store';
 export {default as SlideoutHost} from './SlideoutHost.vue';
 export {useSlideout, useSlideoutOpener} from './useSlideout';
 export {
-    closeAllSlideouts,
-    closeSlideout,
-    openSlideout,
-    openSlideoutWith,
+  closeAllSlideouts,
+  closeSlideout,
+  openSlideout,
+  openSlideoutWith,
 } from './store';
 export type {
-    OpenSlideoutOptions,
-    SlideoutController,
-    SlideoutInstance,
-    SlideoutSaveResult,
+  OpenSlideoutOptions,
+  SlideoutController,
+  SlideoutInstance,
+  SlideoutSaveResult,
 } from './types';
 
 /**
@@ -20,13 +20,11 @@ export type {
  * the console — can open a Vue slideout without importing anything.
  */
 export function registerSlideoutGlobals(): void {
-    const craft = (window as any).Craft;
+  const craft = window.Craft;
 
-    if (!craft) {
-        return;
-    }
+  if (!craft) {
+    return;
+  }
 
-    craft.openSlideout = openSlideout;
-    craft.closeSlideout = closeSlideout;
-    craft.closeAllSlideouts = closeAllSlideouts;
+  Object.assign(craft, {openSlideout, closeSlideout, closeAllSlideouts});
 }

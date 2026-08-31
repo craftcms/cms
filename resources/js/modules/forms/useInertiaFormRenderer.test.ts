@@ -1,395 +1,364 @@
-import {useForm} from '@inertiajs/vue3';
-import {createApp, defineComponent, nextTick, ref} from 'vue';
+import {useForm, type InertiaForm} from '@inertiajs/vue3';
+import {
+  createApp,
+  defineComponent,
+  nextTick,
+  ref,
+  type ComputedRef,
+  type ShallowRef,
+} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type {FormPayload} from './types';
+import type {FormChangeKind, FormPayload, FormValue, FormValues} from './types';
 import {useInertiaFormRenderer} from './useInertiaFormRenderer';
 
 const payload: FormPayload = {
-    scope: ['settings'],
-    refreshable: false,
-    nodes: [],
-    values: {
-        settings: {
-            editable: 'original',
-            readOnly: 'preserved for host logic',
-        },
+  scope: ['settings'],
+  refreshable: false,
+  nodes: [],
+  values: {
+    settings: {
+      editable: 'original',
+      readOnly: 'preserved for host logic',
     },
-    errors: [],
-    globalErrors: [],
+  },
+  errors: [],
+  globalErrors: [],
 };
 
 const rootPayload: FormPayload = {
-    ...payload,
-    scope: [],
-    values: {
-        title: 'Original',
-        enabled: true,
-    },
+  ...payload,
+  scope: [],
+  values: {
+    title: 'Original',
+    enabled: true,
+  },
 };
 
+interface TestIntegration {
+  advanceBaseline(): void;
+  errors: ComputedRef<Array<{path: string[]; messages: string[]}>>;
+  onMutation(mutation: FormValues): boolean;
+  renderer: ShallowRef<{
+    advanceBaseline(): void;
+    currentValues(): FormValues;
+    resetValues(): void;
+    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+  } | null>;
+  values: ShallowRef<FormValues>;
+}
+
+type TestSettings = Record<string, string | boolean>;
+
+interface SharedFormValues {
+  title?: string;
+  fields?: {email: string};
+  slug?: string;
+  enabled?: boolean;
+}
+
 describe('useInertiaFormRenderer', () => {
-    let app: ReturnType<typeof createApp>;
-    let container: HTMLElement;
+  let app: ReturnType<typeof createApp>;
+  let container: HTMLElement;
 
-    afterEach(() => {
-        app?.unmount();
-        container?.remove();
+  afterEach(() => {
+    app?.unmount();
+    container?.remove();
+  });
+
+  it('keeps full values separate from the submitted mutation', async () => {
+    const currentPayload = ref(payload);
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
+    let currentValues = structuredClone(payload.values);
+
+    mount(() => {
+      form = useForm({title: 'Example', settings: {stale: true}});
+      integration = useInertiaFormRenderer(form, currentPayload, {
+        mutationKey: 'settings',
+      });
+      integration.renderer.value = {
+        advanceBaseline: vi.fn(() => integration.onMutation({})),
+        currentValues: () => structuredClone(currentValues),
+        resetValues: vi.fn(),
+        setValue: vi.fn(),
+      };
     });
 
-    it('keeps full values separate from the submitted mutation', async () => {
-        const currentPayload = ref(payload);
-        let form!: ReturnType<
-            typeof useForm<{
-                title: string;
-                settings: Record<string, any>;
-            }>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<
-                {title: string; settings: Record<string, any>},
-                'settings'
-            >
-        >;
-        let currentValues = structuredClone(payload.values);
+    expect(form.settings).toEqual({});
+    expect(form.isDirty).toBe(false);
+    expect(integration.values.value).toEqual(payload.values);
 
-        mount(() => {
-            form = useForm({title: 'Example', settings: {stale: true}});
-            integration = useInertiaFormRenderer(form, currentPayload, {
-                mutationKey: 'settings',
-            });
-            integration.renderer.value = {
-                advanceBaseline: vi.fn(() => integration.onMutation({})),
-                currentValues: () => structuredClone(currentValues),
-                resetValues: vi.fn(),
-                setValue: vi.fn(),
-            };
-        });
+    currentValues = {
+      settings: {
+        editable: 'changed',
+        readOnly: 'preserved for host logic',
+      },
+    };
+    integration.onMutation({settings: {editable: 'changed'}});
+    await nextTick();
 
-        expect(form.settings).toEqual({});
-        expect(form.isDirty).toBe(false);
-        expect(integration.values.value).toEqual(payload.values);
+    expect(form.data().settings).toEqual({editable: 'changed'});
+    expect(form.isDirty).toBe(true);
+    expect(integration.values.value).toEqual(currentValues);
 
-        currentValues = {
-            settings: {
-                editable: 'changed',
-                readOnly: 'preserved for host logic',
-            },
-        };
-        integration.onMutation({settings: {editable: 'changed'}});
-        await nextTick();
+    integration.onMutation({});
+    await nextTick();
 
-        expect(form.data().settings).toEqual({editable: 'changed'});
-        expect(form.isDirty).toBe(true);
-        expect(integration.values.value).toEqual(currentValues);
+    expect(form.data().settings).toEqual({});
+    expect(form.isDirty).toBe(false);
+  });
 
-        integration.onMutation({});
-        await nextTick();
+  it('advances the renderer and Inertia baselines together', async () => {
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
+    const advanceRendererBaseline = vi.fn(() => integration.onMutation({}));
 
-        expect(form.data().settings).toEqual({});
-        expect(form.isDirty).toBe(false);
+    mount(() => {
+      form = useForm({title: 'Original', settings: {}});
+      integration = useInertiaFormRenderer(form, payload, {
+        mutationKey: 'settings',
+      });
+      integration.renderer.value = {
+        advanceBaseline: advanceRendererBaseline,
+        currentValues: () => payload.values,
+        resetValues: vi.fn(),
+        setValue: vi.fn(),
+      };
     });
 
-    it('advances the renderer and Inertia baselines together', async () => {
-        let form!: ReturnType<
-            typeof useForm<{
-                title: string;
-                settings: Record<string, any>;
-            }>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<
-                {title: string; settings: Record<string, any>},
-                'settings'
-            >
-        >;
-        const advanceRendererBaseline = vi.fn(() => integration.onMutation({}));
+    form.title = 'Saved';
+    integration.onMutation({settings: {editable: 'changed'}});
+    await nextTick();
+    expect(form.isDirty).toBe(true);
 
-        mount(() => {
-            form = useForm({title: 'Original', settings: {}});
-            integration = useInertiaFormRenderer(form, payload, {
-                mutationKey: 'settings',
-            });
-            integration.renderer.value = {
-                advanceBaseline: advanceRendererBaseline,
-                currentValues: () => payload.values,
-                resetValues: vi.fn(),
-                setValue: vi.fn(),
-            };
-        });
+    integration.advanceBaseline();
+    await nextTick();
 
-        form.title = 'Saved';
-        integration.onMutation({settings: {editable: 'changed'}});
-        await nextTick();
-        expect(form.isDirty).toBe(true);
+    expect(advanceRendererBaseline).toHaveBeenCalledOnce();
+    expect(form.title).toBe('Saved');
+    expect(form.settings).toEqual({});
+    expect(form.isDirty).toBe(false);
 
-        integration.advanceBaseline();
-        await nextTick();
+    integration.onMutation({settings: {editable: 'changed again'}});
+    await nextTick();
+    expect(form.isDirty).toBe(true);
+  });
 
-        expect(advanceRendererBaseline).toHaveBeenCalledOnce();
-        expect(form.title).toBe('Saved');
-        expect(form.settings).toEqual({});
-        expect(form.isDirty).toBe(false);
+  it('maps only scoped Laravel errors by default', async () => {
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
-        integration.onMutation({settings: {editable: 'changed again'}});
-        await nextTick();
-        expect(form.isDirty).toBe(true);
+    mount(() => {
+      form = useForm({title: '', settings: {}});
+      integration = useInertiaFormRenderer(form, payload, {
+        mutationKey: 'settings',
+      });
     });
 
-    it('maps only scoped Laravel errors by default', async () => {
-        let form!: ReturnType<
-            typeof useForm<{
-                title: string;
-                settings: Record<string, any>;
-            }>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<
-                {title: string; settings: Record<string, any>},
-                'settings'
-            >
-        >;
+    form.setError({
+      title: 'A title is required.',
+      'settings.editable': 'The setting is invalid.',
+    });
+    await nextTick();
 
-        mount(() => {
-            form = useForm({title: '', settings: {}});
-            integration = useInertiaFormRenderer(form, payload, {
-                mutationKey: 'settings',
-            });
-        });
+    expect(integration.errors.value).toEqual([
+      {
+        path: ['settings', 'editable'],
+        messages: ['The setting is invalid.'],
+      },
+    ]);
+  });
 
-        form.setError({
-            title: 'A title is required.',
-            'settings.editable': 'The setting is invalid.',
-        });
-        await nextTick();
+  it('supports screen-specific Laravel error paths', async () => {
+    let form!: InertiaForm<{name: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
-        expect(integration.errors.value).toEqual([
-            {
-                path: ['settings', 'editable'],
-                messages: ['The setting is invalid.'],
-            },
-        ]);
+    mount(() => {
+      form = useForm({name: '', settings: {}});
+      integration = useInertiaFormRenderer(form, payload, {
+        mutationKey: 'settings',
+        mapErrorPath: (path) =>
+          path === 'name' ? null : ['settings', ...path.split('.')],
+      });
     });
 
-    it('supports screen-specific Laravel error paths', async () => {
-        let form!: ReturnType<
-            typeof useForm<{
-                name: string;
-                settings: Record<string, any>;
-            }>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<
-                {name: string; settings: Record<string, any>},
-                'settings'
-            >
-        >;
+    Object.assign(form.errors, {
+      name: 'A name is required.',
+      endpoint: 'The endpoint is invalid.',
+    });
+    await nextTick();
 
-        mount(() => {
-            form = useForm({name: '', settings: {}});
-            integration = useInertiaFormRenderer(form, payload, {
-                mutationKey: 'settings',
-                mapErrorPath: (path) =>
-                    path === 'name' ? null : ['settings', ...path.split('.')],
-            });
-        });
+    expect(integration.errors.value).toEqual([
+      {
+        path: ['settings', 'endpoint'],
+        messages: ['The endpoint is invalid.'],
+      },
+    ]);
+  });
 
-        Object.assign(form.errors, {
-            name: 'A name is required.',
-            endpoint: 'The endpoint is invalid.',
-        });
-        await nextTick();
+  it('replaces the root Inertia data with the current mutation', async () => {
+    let form!: InertiaForm<{title: string; enabled: boolean}>;
+    let integration!: TestIntegration;
 
-        expect(integration.errors.value).toEqual([
-            {
-                path: ['settings', 'endpoint'],
-                messages: ['The endpoint is invalid.'],
-            },
-        ]);
+    mount(() => {
+      form = useForm({title: 'Original', enabled: true});
+      integration = useInertiaFormRenderer(form, rootPayload);
+      integration.renderer.value = {
+        advanceBaseline: vi.fn(() => integration.onMutation({})),
+        currentValues: () => rootPayload.values,
+        resetValues: vi.fn(),
+        setValue: vi.fn(),
+      };
     });
 
-    it('replaces the root Inertia data with the current mutation', async () => {
-        let form!: ReturnType<
-            typeof useForm<{title: string; enabled: boolean}>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<{title: string; enabled: boolean}>
-        >;
+    expect('title' in form).toBe(false);
+    expect('enabled' in form).toBe(false);
+    expect(form.isDirty).toBe(false);
 
-        mount(() => {
-            form = useForm({title: 'Original', enabled: true});
-            integration = useInertiaFormRenderer(form, rootPayload);
-            integration.renderer.value = {
-                advanceBaseline: vi.fn(() => integration.onMutation({})),
-                currentValues: () => rootPayload.values,
-                resetValues: vi.fn(),
-                setValue: vi.fn(),
-            };
-        });
+    integration.onMutation({title: 'Changed'});
+    await nextTick();
 
-        expect('title' in form).toBe(false);
-        expect('enabled' in form).toBe(false);
-        expect(form.isDirty).toBe(false);
+    expect(form.title).toBe('Changed');
+    expect('enabled' in form).toBe(false);
+    expect(form.isDirty).toBe(true);
 
-        integration.onMutation({title: 'Changed'});
-        await nextTick();
+    integration.onMutation({introducedByRefresh: 'New value'});
+    await nextTick();
 
-        expect(form.title).toBe('Changed');
-        expect('enabled' in form).toBe(false);
-        expect(form.isDirty).toBe(true);
+    expect('title' in form).toBe(false);
+    expect(
+      Object.getOwnPropertyDescriptor(form, 'introducedByRefresh')?.value
+    ).toBe('New value');
+    expect(form.data()).toEqual({
+      title: undefined,
+      enabled: undefined,
+      introducedByRefresh: 'New value',
+    });
+    expect(form.isDirty).toBe(true);
 
-        integration.onMutation({introducedByRefresh: 'New value'});
-        await nextTick();
+    integration.onMutation({});
+    await nextTick();
 
-        expect('title' in form).toBe(false);
-        expect(Reflect.get(form, 'introducedByRefresh')).toBe('New value');
-        expect(form.data()).toEqual({
-            title: undefined,
-            enabled: undefined,
-            introducedByRefresh: 'New value',
-        });
-        expect(form.isDirty).toBe(true);
+    expect('title' in form).toBe(false);
+    expect('enabled' in form).toBe(false);
+    expect('introducedByRefresh' in form).toBe(false);
+    expect(form.isDirty).toBe(false);
+  });
 
-        integration.onMutation({});
-        await nextTick();
+  it('maps all Laravel errors for a root form', async () => {
+    let form!: InertiaForm<{title: string; enabled: boolean}>;
+    let integration!: TestIntegration;
 
-        expect('title' in form).toBe(false);
-        expect('enabled' in form).toBe(false);
-        expect('introducedByRefresh' in form).toBe(false);
-        expect(form.isDirty).toBe(false);
+    mount(() => {
+      form = useForm({title: 'Original', enabled: true});
+      integration = useInertiaFormRenderer(form, rootPayload);
     });
 
-    it('maps all Laravel errors for a root form', async () => {
-        let form!: ReturnType<
-            typeof useForm<{title: string; enabled: boolean}>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<{title: string; enabled: boolean}>
-        >;
+    form.setError({
+      title: 'The title is invalid.',
+      enabled: 'The status is invalid.',
+    });
+    await nextTick();
 
-        mount(() => {
-            form = useForm({title: 'Original', enabled: true});
-            integration = useInertiaFormRenderer(form, rootPayload);
-        });
+    expect(integration.errors.value).toEqual([
+      {path: ['title'], messages: ['The title is invalid.']},
+      {path: ['enabled'], messages: ['The status is invalid.']},
+    ]);
+  });
 
-        form.setError({
-            title: 'The title is invalid.',
-            enabled: 'The status is invalid.',
-        });
-        await nextTick();
+  it('advances the Inertia baseline without a mounted renderer', async () => {
+    let form!: InertiaForm<{title: string; settings: TestSettings}>;
+    let integration!: TestIntegration;
 
-        expect(integration.errors.value).toEqual([
-            {path: ['title'], messages: ['The title is invalid.']},
-            {path: ['enabled'], messages: ['The status is invalid.']},
-        ]);
+    mount(() => {
+      form = useForm({title: 'Original', settings: {}});
+      integration = useInertiaFormRenderer(form, payload, {
+        mutationKey: 'settings',
+      });
     });
 
-    it('advances the Inertia baseline without a mounted renderer', async () => {
-        let form!: ReturnType<
-            typeof useForm<{
-                title: string;
-                settings: Record<string, any>;
-            }>
-        >;
-        let integration!: ReturnType<
-            typeof useInertiaFormRenderer<
-                {title: string; settings: Record<string, any>},
-                'settings'
-            >
-        >;
+    form.title = 'Saved';
+    await nextTick();
+    expect(form.isDirty).toBe(true);
 
-        mount(() => {
-            form = useForm({title: 'Original', settings: {}});
-            integration = useInertiaFormRenderer(form, payload, {
-                mutationKey: 'settings',
-            });
-        });
+    integration.advanceBaseline();
+    await nextTick();
 
-        form.title = 'Saved';
-        await nextTick();
-        expect(form.isDirty).toBe(true);
+    expect(form.isDirty).toBe(false);
+  });
 
-        integration.advanceBaseline();
-        await nextTick();
+  it('lets two root-scoped bridges share one form without clobbering each other', async () => {
+    const layoutPayload: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [],
+      values: {title: 'Original', fields: {email: ''}},
+      errors: [],
+      globalErrors: [],
+    };
+    const sidebarPayload: FormPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [],
+      values: {slug: 'original-slug', enabled: true},
+      errors: [],
+      globalErrors: [],
+    };
 
-        expect(form.isDirty).toBe(false);
+    let form!: InertiaForm<SharedFormValues>;
+    let layout!: TestIntegration;
+    let sidebar!: TestIntegration;
+
+    mount(() => {
+      form = useForm<SharedFormValues>({});
+      layout = useInertiaFormRenderer(form, layoutPayload);
+      sidebar = useInertiaFormRenderer(form, sidebarPayload);
     });
 
-    it('lets two root-scoped bridges share one form without clobbering each other', async () => {
-        const layoutPayload: FormPayload = {
-            scope: [],
-            refreshable: false,
-            nodes: [],
-            values: {title: 'Original', fields: {email: ''}},
-            errors: [],
-            globalErrors: [],
-        };
-        const sidebarPayload: FormPayload = {
-            scope: [],
-            refreshable: false,
-            nodes: [],
-            values: {slug: 'original-slug', enabled: true},
-            errors: [],
-            globalErrors: [],
-        };
+    layout.onMutation({title: 'Changed', fields: {email: 'a@b.c'}});
+    sidebar.onMutation({slug: 'changed-slug', enabled: false});
+    await nextTick();
 
-        let form!: ReturnType<typeof useForm<Record<string, any>>>;
-        let layout!: ReturnType<
-            typeof useInertiaFormRenderer<Record<string, any>>
-        >;
-        let sidebar!: ReturnType<
-            typeof useInertiaFormRenderer<Record<string, any>>
-        >;
-
-        mount(() => {
-            form = useForm<Record<string, any>>({});
-            layout = useInertiaFormRenderer(form, layoutPayload);
-            sidebar = useInertiaFormRenderer(form, sidebarPayload);
-        });
-
-        layout.onMutation({title: 'Changed', fields: {email: 'a@b.c'}});
-        sidebar.onMutation({slug: 'changed-slug', enabled: false});
-        await nextTick();
-
-        expect(form.data()).toEqual({
-            title: 'Changed',
-            fields: {email: 'a@b.c'},
-            slug: 'changed-slug',
-            enabled: false,
-        });
-
-        layout.onMutation({title: 'Changed again', fields: {email: 'a@b.c'}});
-        await nextTick();
-
-        expect(form.data()).toEqual({
-            title: 'Changed again',
-            fields: {email: 'a@b.c'},
-            slug: 'changed-slug',
-            enabled: false,
-        });
-
-        sidebar.onMutation({slug: 'final-slug', enabled: true});
-        await nextTick();
-
-        expect(form.data()).toEqual({
-            title: 'Changed again',
-            fields: {email: 'a@b.c'},
-            slug: 'final-slug',
-            enabled: true,
-        });
+    expect(form.data()).toEqual({
+      title: 'Changed',
+      fields: {email: 'a@b.c'},
+      slug: 'changed-slug',
+      enabled: false,
     });
 
-    function mount(setup: () => void): void {
-        container = document.createElement('div');
-        document.body.append(container);
-        app = createApp(
-            defineComponent({
-                setup() {
-                    setup();
+    layout.onMutation({title: 'Changed again', fields: {email: 'a@b.c'}});
+    await nextTick();
 
-                    return () => null;
-                },
-            })
-        );
-        app.mount(container);
-    }
+    expect(form.data()).toEqual({
+      title: 'Changed again',
+      fields: {email: 'a@b.c'},
+      slug: 'changed-slug',
+      enabled: false,
+    });
+
+    sidebar.onMutation({slug: 'final-slug', enabled: true});
+    await nextTick();
+
+    expect(form.data()).toEqual({
+      title: 'Changed again',
+      fields: {email: 'a@b.c'},
+      slug: 'final-slug',
+      enabled: true,
+    });
+  });
+
+  function mount(setup: () => void): void {
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(
+      defineComponent({
+        setup() {
+          setup();
+
+          return () => null;
+        },
+      })
+    );
+    app.mount(container);
+  }
 });

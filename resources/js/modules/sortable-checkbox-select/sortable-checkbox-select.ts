@@ -297,8 +297,11 @@ export class Item extends Base {
     // Always-present drag handle + Move up/down menu, before the checkbox.
     this.reorderBtn = document.createElement('craft-reorder-button');
     this.reorderBtn.addEventListener('reorder', (event: Event) => {
-      const {direction} = (event as CustomEvent<{direction: ReorderDirection}>)
-        .detail;
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+      // SAFETY: The reorder control emits a detail object with this registered direction contract.
+      const {direction} = event.detail as {direction: ReorderDirection};
       if (direction === 'down') {
         this.moveDown();
       } else {

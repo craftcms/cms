@@ -2,12 +2,12 @@ import {isCtrlKeyPressed} from '@craftcms/garnish';
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout, type SlideoutSettings} from './slideout';
 import {
-    CpScreenSlideout,
-    type CpScreenSlideoutSettings,
+  CpScreenSlideout,
+  type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
 import {
-    ElementEditorSlideout,
-    type ElementEditorSlideoutSettings,
+  ElementEditorSlideout,
+  type ElementEditorSlideoutSettings,
 } from './element-editor-slideout';
 import {containerSlideouts} from './support';
 import {registerCraftGlobals} from '@/common/craft-global';
@@ -30,14 +30,14 @@ const CompatSlideout = compatify(Slideout);
 // them in place rather than reassigning. The static methods close over
 // `Slideout` (the modern class), not `this`, so no `.bind()` is needed.
 Object.assign(CompatSlideout, {
-    defaults: Slideout.defaults,
-    instances: Slideout.instances,
-    openPanels: Slideout.openPanels,
-    positionProp: Slideout.positionProp,
-    totalPanels: Slideout.totalPanels,
-    addPanel: Slideout.addPanel,
-    removePanel: Slideout.removePanel,
-    updateStyles: Slideout.updateStyles,
+  defaults: Slideout.defaults,
+  instances: Slideout.instances,
+  openPanels: Slideout.openPanels,
+  positionProp: Slideout.positionProp,
+  totalPanels: Slideout.totalPanels,
+  addPanel: Slideout.addPanel,
+  removePanel: Slideout.removePanel,
+  updateStyles: Slideout.updateStyles,
 });
 
 registerCraftGlobals({Slideout: CompatSlideout});
@@ -49,7 +49,7 @@ const CompatCpScreenSlideout = compatify(CpScreenSlideout);
 // `Craft.ElementEditorSlideout.defaults` is a separate object built by that
 // file's own `.extend()` call; only this one needs mirroring here.
 Object.assign(CompatCpScreenSlideout, {
-    defaults: CpScreenSlideout.defaults,
+  defaults: CpScreenSlideout.defaults,
 });
 
 registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
@@ -59,7 +59,7 @@ registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
 const CompatElementEditorSlideout = compatify(ElementEditorSlideout);
 
 Object.assign(CompatElementEditorSlideout, {
-    defaults: ElementEditorSlideout.defaults,
+  defaults: ElementEditorSlideout.defaults,
 });
 
 registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
@@ -70,42 +70,45 @@ registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
 // ctrl-click. Contexts that need richer editor wiring (e.g. the nested
 // element manager's draft handling) strip the button's `action` and attach
 // their own behavior instead.
+// SAFETY: craft:edit-element is a registered CustomEvent with the editor detail payload.
 window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
-    const {elementType, settings, cpEditUrl, trigger, sourceEvent} =
-        ev.detail ?? {};
+  const {elementType, settings, cpEditUrl, trigger, sourceEvent} =
+    ev.detail ?? {};
 
-    if (cpEditUrl && sourceEvent && isCtrlKeyPressed(sourceEvent)) {
-        window.open(cpEditUrl);
-        return;
-    }
+  if (cpEditUrl && sourceEvent && isCtrlKeyPressed(sourceEvent)) {
+    window.open(cpEditUrl);
+    return;
+  }
 
-    // Focus the trigger so that when the slideout is closed, focus is
-    // returned to it.
-    (trigger as HTMLElement | undefined)?.focus();
+  // Focus the trigger so that when the slideout is closed, focus is
+  // returned to it.
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
+  }
 
-    const editorSettings = {...settings, elementType};
-    // If the settings have a draftId but the (possibly since-replaced) card no
-    // longer has a `data-draft-id` attribute, drop it so the editor retrieves
-    // the current element.
-    if (
-        editorSettings.draftId &&
-        trigger instanceof Element &&
-        !trigger.closest('[data-draft-id]')
-    ) {
-        delete editorSettings.draftId;
-    }
+  const editorSettings = {...settings, elementType};
+  // If the settings have a draftId but the (possibly since-replaced) card no
+  // longer has a `data-draft-id` attribute, drop it so the editor retrieves
+  // the current element.
+  if (
+    editorSettings.draftId &&
+    trigger instanceof Element &&
+    !trigger.closest('[data-draft-id]')
+  ) {
+    delete editorSettings.draftId;
+  }
 
-    const slideout = new ElementEditorSlideout(null, editorSettings);
+  const slideout = new ElementEditorSlideout(null, editorSettings);
 
-    // Re-announce saves as a window event, so hosts that render element data
-    // themselves (e.g. Inertia pages) can refresh it.
-    slideout.on('submit', (submitEv: any) => {
-        window.dispatchEvent(
-            new CustomEvent('craft:element-saved', {
-                detail: {element: submitEv?.response?.data?.element ?? null},
-            })
-        );
-    });
+  // Re-announce saves as a window event, so hosts that render element data
+  // themselves (e.g. Inertia pages) can refresh it.
+  slideout.on('submit', (submitEv: any) => {
+    window.dispatchEvent(
+      new CustomEvent('craft:element-saved', {
+        detail: {element: submitEv?.response?.data?.element ?? null},
+      })
+    );
+  });
 }) as EventListener);
 
 // Repositioning open HUDs when a slideout opens or closes used to be hooked
@@ -113,11 +116,11 @@ window.addEventListener('craft:edit-element', ((ev: CustomEvent) => {
 // shared panel stack, so Vue slideouts trigger it too.
 
 export {
-    Slideout,
-    type SlideoutSettings,
-    CpScreenSlideout,
-    type CpScreenSlideoutSettings,
-    ElementEditorSlideout,
-    type ElementEditorSlideoutSettings,
-    containerSlideouts,
+  Slideout,
+  type SlideoutSettings,
+  CpScreenSlideout,
+  type CpScreenSlideoutSettings,
+  ElementEditorSlideout,
+  type ElementEditorSlideoutSettings,
+  containerSlideouts,
 };

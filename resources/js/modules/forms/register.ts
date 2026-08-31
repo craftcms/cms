@@ -1,5 +1,7 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import ActionNode from './ActionNode.vue';
+import ActionMenuNode from './ActionMenuNode.vue';
+import CopyAttributeNode from './CopyAttributeNode.vue';
 import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
@@ -39,54 +41,56 @@ import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
 
 export function registerFormComponents(
-    components: Pick<CpComponentRegistry, 'register'>
+  components: Pick<CpComponentRegistry, 'register'>
 ): void {
-    components.register('craft:form', FormRenderer);
-    components.register('craft:field', FieldNode);
-    components.register('craft:action', ActionNode);
-    components.register('craft:group', GroupNode);
-    components.register('craft:tab', TabNode);
-    components.register('craft:template-content', TemplateContentNode);
-    components.register('craft:markdown-content', MarkdownContentNode);
-    components.register('craft:missing-node', MissingProvider);
-    components.register('craft:missing-control', MissingProvider);
-    components.register('craft:callout', CalloutNode);
-    components.register('craft:heading', HeadingNode);
-    components.register('craft:line-break', LineBreakNode);
-    components.register('craft:separator', SeparatorNode);
-    components.register('craft:handle', HandleControl);
-    components.register('craft:hidden-field', HiddenFieldNode);
-    components.register('craft:text', TextControl);
-    components.register('craft:combobox', ComboboxControl);
-    components.register('craft:textarea', TextareaControl);
-    components.register('craft:lightswitch', LightswitchControl);
-    components.register('craft:checkbox', CheckboxControl);
-    components.register('craft:choice', ChoiceControl);
-    components.register('craft:condition-builder', ConditionBuilderControl);
-    components.register('craft:number', TextControl);
-    components.register('craft:range', TextControl);
-    components.register('craft:date', TextControl);
-    components.register('craft:date-time', DateTimeControl);
-    components.register('craft:time', TextControl);
-    components.register('craft:color', ColorControl);
-    components.register('craft:money', MoneyControl);
-    components.register('craft:permission-tree', PermissionTreeControl);
-    components.register('craft:markdown', MarkdownControl);
-    components.register('craft:table', TableControl);
-    components.register('craft:link', LinkControl);
-    components.register('craft:address', AddressControl);
-    components.register('craft:icon-picker', IconPickerControl);
-    components.register('craft:element-select', ElementSelectControl);
-    components.register('craft:field-select', FieldSelectControl);
-    components.register('craft:filesystem-select', FilesystemSelectControl);
-    components.register(
-        'craft:grouped-entry-type-manager',
-        GroupedEntryTypeManagerControl
-    );
-    components.register(
-        'craft:field-layout-designer',
-        FieldLayoutDesignerControl
-    );
-    components.register('craft:matrix', MatrixControl);
-    components.register('craft:content-block', ContentBlockControl);
+  components.register('craft:form', FormRenderer);
+  components.register('craft:field', FieldNode);
+  components.register('craft:action', ActionNode);
+  components.register('craft:action-menu', ActionMenuNode);
+  components.register('craft:copy-attribute', CopyAttributeNode);
+  components.register('craft:group', GroupNode);
+  components.register('craft:tab', TabNode);
+  components.register('craft:template-content', TemplateContentNode);
+  components.register('craft:markdown-content', MarkdownContentNode);
+  components.register('craft:missing-node', MissingProvider);
+  components.register('craft:missing-control', MissingProvider);
+  components.register('craft:callout', CalloutNode);
+  components.register('craft:heading', HeadingNode);
+  components.register('craft:line-break', LineBreakNode);
+  components.register('craft:separator', SeparatorNode);
+  components.register('craft:handle', HandleControl);
+  components.register('craft:hidden-field', HiddenFieldNode);
+  components.register('craft:text', TextControl);
+  components.register('craft:combobox', ComboboxControl);
+  components.register('craft:textarea', TextareaControl);
+  components.register('craft:lightswitch', LightswitchControl);
+  components.register('craft:checkbox', CheckboxControl);
+  components.register('craft:choice', ChoiceControl);
+  components.register('craft:condition-builder', ConditionBuilderControl);
+  components.register('craft:number', TextControl);
+  components.register('craft:range', TextControl);
+  components.register('craft:date', TextControl);
+  components.register('craft:date-time', DateTimeControl);
+  components.register('craft:time', TextControl);
+  components.register('craft:color', ColorControl);
+  components.register('craft:money', MoneyControl);
+  components.register('craft:permission-tree', PermissionTreeControl);
+  components.register('craft:markdown', MarkdownControl);
+  components.register('craft:table', TableControl);
+  components.register('craft:link', LinkControl);
+  components.register('craft:address', AddressControl);
+  components.register('craft:icon-picker', IconPickerControl);
+  components.register('craft:element-select', ElementSelectControl);
+  components.register('craft:field-select', FieldSelectControl);
+  components.register('craft:filesystem-select', FilesystemSelectControl);
+  components.register(
+    'craft:grouped-entry-type-manager',
+    GroupedEntryTypeManagerControl
+  );
+  components.register(
+    'craft:field-layout-designer',
+    FieldLayoutDesignerControl
+  );
+  components.register('craft:matrix', MatrixControl);
+  components.register('craft:content-block', ContentBlockControl);
 }

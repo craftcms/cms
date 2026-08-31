@@ -11,6 +11,7 @@
     --c-color-focus-outline: var(--color-blue-500);
     --c-focus-outline-offset: 2px;
     --c-focus-outline-width: 2px;
+    --c-focus-outline-style: solid;
 
     /* Surface tokens (replaces --c-bg-*) */
     --c-surface-default: var(--color-base-100);
@@ -26,6 +27,13 @@
     --c-text-default: var(--color-slate-900);
     --c-text-quiet: var(--color-slate-600);
     --c-text-link: var(--color-blue-600);
+
+    /* Transparent tokens */
+    --c-color-border-translucent: color-mix(
+        in srgb,
+        var(--color-slate-900),
+        transparent 39%
+    );
 
     /* Shadows */
     --c-shadow-sunken: var(--inset-shadow-sm);

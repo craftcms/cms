@@ -1,16 +1,17 @@
 import {actionClient} from '@craftcms/ui';
 import {firstMessages} from './errors';
+import type {ScreenPageProps} from '@/common/composables/screen';
 
 export interface ScreenFormResult {
-    ok: boolean;
-    /** Flattened per-field errors, when the save failed validation. */
-    errors?: Record<string, string>;
-    /** The server's message, shown when there are no per-field errors. */
-    message?: string;
-    /** Set when the failure wasn't something the panel can present inline. */
-    fatal?: unknown;
-    /** The controller's response body, on success. */
-    data?: Record<string, unknown>;
+  ok: boolean;
+  /** Flattened per-field errors, when the save failed validation. */
+  errors?: Record<string, string>;
+  /** The server's message, shown when there are no per-field errors. */
+  message?: string;
+  /** Set when the failure wasn't something the panel can present inline. */
+  fatal?: unknown;
+  /** The controller's response body, on success. */
+  data?: ScreenPageProps;
 }
 
 /**
@@ -24,42 +25,43 @@ export interface ScreenFormResult {
  * Failures come back as **400** (`asJsonFailure()`), not Laravel's usual 422.
  */
 export async function submitScreenForm(
-    formEl: HTMLFormElement,
-    {
-        action,
-        namespace,
-        containerId,
-    }: {action: string; namespace?: string | null; containerId?: string | null}
+  formEl: HTMLFormElement,
+  {
+    action,
+    namespace,
+    containerId,
+  }: {action: string; namespace?: string | null; containerId?: string | null},
+  client: Pick<typeof actionClient, 'post'> = actionClient
 ): Promise<ScreenFormResult> {
-    const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {};
 
-    if (namespace) {
-        headers['X-Craft-Namespace'] = namespace;
+  if (namespace) {
+    headers['X-Craft-Namespace'] = namespace;
+  }
+
+  if (containerId) {
+    headers['X-Craft-Container-Id'] = containerId;
+  }
+
+  try {
+    // `actionClient` resolves a bare action path against the CP action URL and
+    // adds CSRF + registered-asset headers.
+    const response = await client.post(action, new FormData(formEl), {
+      headers,
+    });
+
+    return {ok: true, data: response.data};
+  } catch (error: any) {
+    const data = error?.response?.data;
+
+    if (data?.errors) {
+      return {ok: false, errors: firstMessages(data.errors)};
     }
 
-    if (containerId) {
-        headers['X-Craft-Container-Id'] = containerId;
+    if (data?.message) {
+      return {ok: false, message: String(data.message)};
     }
 
-    try {
-        // `actionClient` resolves a bare action path against the CP action URL and
-        // adds CSRF + registered-asset headers.
-        const response = await actionClient.post(action, new FormData(formEl), {
-            headers,
-        });
-
-        return {ok: true, data: response.data};
-    } catch (error: any) {
-        const data = error?.response?.data;
-
-        if (data?.errors) {
-            return {ok: false, errors: firstMessages(data.errors)};
-        }
-
-        if (data?.message) {
-            return {ok: false, message: String(data.message)};
-        }
-
-        return {ok: false, fatal: error};
-    }
+    return {ok: false, fatal: error};
+  }
 }

@@ -42,10 +42,13 @@ export default class CraftEntryTypeManager extends ControllerElement<GroupedEntr
   }
 
   protected create(root: HTMLElement): GroupedEntryTypeManager {
+    if (!(root instanceof HTMLTemplateElement)) {
+      throw new Error('Entry type manager root must be a template.');
+    }
     return new GroupedEntryTypeManager(this, {
       namespace: this.getAttribute('namespace'),
       allowOverrides: this.hasAttribute('allow-overrides'),
-      entryTypeSelectHtml: (root as HTMLTemplateElement).innerHTML,
+      entryTypeSelectHtml: root.innerHTML,
       defaultColumnsContainer: () => {
         const id = this.getAttribute('default-columns-id');
         return id ? document.getElementById(id) : null;

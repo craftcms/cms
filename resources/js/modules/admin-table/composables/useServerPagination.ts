@@ -1,4 +1,5 @@
 import {ref} from 'vue';
+import type {IndexQueryParams} from '@/modules/elements/composables/useElementIndexVisits';
 import type {PaginationState, Updater} from '@tanstack/vue-table';
 import type {PaginationData} from '@/common/types';
 
@@ -10,11 +11,21 @@ interface OnChangeArgs {
 interface UseServerPaginationParams {
   initialState: PaginationData;
   onChange: (args: OnChangeArgs) => void;
+  /**
+   * The query the new page is applied on top of.
+   *
+   * Defaults to the page's own URL, which is right for a table that *is* the
+   * page. An index that isn't one — the element selector modal — has no URL to
+   * read, and taking the host page's would both lose its own state (the chosen
+   * source) and drag in params that aren't its.
+   */
+  currentQuery?: () => IndexQueryParams;
 }
 
 export function useServerPagination({
   initialState,
   onChange,
+  currentQuery,
 }: UseServerPaginationParams) {
   const pageParam = Craft.pageTrigger ?? 'page';
   const paginationState = ref<PaginationState>({
@@ -24,12 +35,16 @@ export function useServerPagination({
 
   function getNextPaginationParams(updater: Updater<PaginationState>) {
     const next =
-      typeof updater === 'function' ? updater(paginationState.value) : updater;
-
-    const currentQuery = new URLSearchParams(window.location.search);
+      updater instanceof Function ? updater(paginationState.value) : updater;
 
     return {
-      ...Object.fromEntries(currentQuery),
+      // Cast because the caller's query is its own shape — a non-page index
+      // carries structured values (a `sort` object) a URLSearchParams never
+      // could. This composable only passes it through.
+      ...((currentQuery?.() ??
+        Object.fromEntries(
+          new URLSearchParams(window.location.search)
+        )) as Record<string, string>),
       [pageParam]: next.pageIndex + 1,
       per_page: next.pageSize,
     };

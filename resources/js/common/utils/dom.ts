@@ -4,11 +4,11 @@
  * `@craftcms/garnish` `Base` ports accept where the legacy code took `$(...)`.
  */
 export type ElementArg =
-    | string
-    | Element
-    | ArrayLike<Element>
-    | null
-    | undefined;
+  | string
+  | Element
+  | ArrayLike<Element>
+  | null
+  | undefined;
 
 /**
  * Resolves a selector / element / array-like (incl. a jQuery object) to a single
@@ -16,19 +16,19 @@ export type ElementArg =
  * that the ported CP classes lean on for their container/toggle arguments.
  */
 export function resolveElement(input: ElementArg): HTMLElement | null {
-    if (input == null) {
-        return null;
-    }
-    if (typeof input === 'string') {
-        return document.querySelector<HTMLElement>(input);
-    }
-    if (input instanceof Element) {
-        return input as HTMLElement;
-    }
-    if (typeof (input as ArrayLike<Element>).length === 'number') {
-        return ((input as ArrayLike<Element>)[0] as HTMLElement) ?? null;
-    }
+  if (input == null) {
     return null;
+  }
+  if (input instanceof HTMLElement) {
+    return input;
+  }
+  if (input instanceof Element) {
+    return null;
+  }
+  if (!(input instanceof Object)) {
+    return document.querySelector<HTMLElement>(input);
+  }
+  return input[0] instanceof HTMLElement ? input[0] : null;
 }
 
 /**
@@ -36,9 +36,9 @@ export function resolveElement(input: ElementArg): HTMLElement | null {
  * selector — the document-scoped companion to {@link resolveElement}.
  */
 export function queryAll(selector: string | null | undefined): HTMLElement[] {
-    return selector
-        ? Array.from(document.querySelectorAll<HTMLElement>(selector))
-        : [];
+  return selector
+    ? Array.from(document.querySelectorAll<HTMLElement>(selector))
+    : [];
 }
 
 /**
@@ -52,7 +52,7 @@ export function queryAll(selector: string | null | undefined): HTMLElement[] {
  * interactive tag/web-component.
  */
 export function isInteractiveElement(node: EventTarget | null): boolean {
-    return node instanceof HTMLElement && node.tabIndex >= 0;
+  return node instanceof HTMLElement && node.tabIndex >= 0;
 }
 
 /**
@@ -68,12 +68,12 @@ export function isInteractiveElement(node: EventTarget | null): boolean {
  * host — stopping at `boundary` (whose own focusability is never counted).
  */
 export function isInteractiveClick(
-    event: Event,
-    boundary: EventTarget | null = event.currentTarget
+  event: Event,
+  boundary: EventTarget | null = event.currentTarget
 ): boolean {
-    for (const node of event.composedPath()) {
-        if (node === boundary) break;
-        if (isInteractiveElement(node)) return true;
-    }
-    return false;
+  for (const node of event.composedPath()) {
+    if (node === boundary) break;
+    if (isInteractiveElement(node)) return true;
+  }
+  return false;
 }

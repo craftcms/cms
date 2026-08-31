@@ -23,15 +23,22 @@ export interface BulkActionItem {
   /** `false` if only performable on a single selected element (mirrors the legacy `bulk: false` trigger setting). Omitted when bulk-capable. */
   bulk?: boolean;
   /** The primitive action descriptor. Absent for disabled/placeholder items. */
-  action?: {
-    type: 'http' | 'download' | 'clipboard' | 'event';
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-    url?: string;
-    body?: Record<string, unknown>;
-    /** For `event` actions: the window event name to dispatch. */
-    name?: string;
-    /** For `event` actions: the event detail; the live selection is merged in. */
-    detail?: Record<string, unknown>;
-    confirm?: string;
-  };
+  action?:
+    | {
+        type: 'event';
+        name: string;
+        detail?: FormValues;
+      }
+    | {
+        type: 'http' | 'download';
+        method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+        url: string;
+        body?: FormValues;
+        confirm?: string;
+      }
+    | {
+        type: 'clipboard';
+        value: string;
+      };
 }
+import type {FormValues} from '@/modules/forms/types';

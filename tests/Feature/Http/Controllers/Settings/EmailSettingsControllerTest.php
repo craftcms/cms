@@ -24,6 +24,7 @@ beforeEach(function () {
 
 afterEach(function () {
     putenv('EMAIL_SETTINGS_FROM_EMAIL');
+    putenv('EMAIL_SETTINGS_FROM_NAME');
     putenv('EMAIL_SETTINGS_MAILER');
     putenv('EMAIL_SETTINGS_MISSING');
     putenv('EMAIL_SETTINGS_SITE_EMAIL');
@@ -141,6 +142,13 @@ it('fails required validation for missing from email environment variables', fun
         'fromEmail' => '$EMAIL_SETTINGS_MISSING',
         'fromName' => 'Test Sender',
     ])->assertSessionHasErrors('fromEmail');
+});
+
+it('fails required validation for missing sender name environment variables', function () {
+    post(action([EmailSettingsController::class, 'store']), [
+        'fromEmail' => 'test@example.com',
+        'fromName' => '$EMAIL_SETTINGS_FROM_NAME',
+    ])->assertSessionHasErrors('fromName');
 });
 
 it('can save email settings with an environment variable mailer', function () {

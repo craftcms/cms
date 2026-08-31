@@ -1,9 +1,9 @@
 import {
-    createButton,
-    createPasteButton,
-    createSubmitButton,
-    type CraftButton,
-    type CreateButtonConfig,
+  createButton,
+  createPasteButton,
+  createSubmitButton,
+  type CraftButton,
+  type CreateButtonConfig,
 } from '@craftcms/ui';
 import {createTextInput} from '@craftcms/ui/factory';
 
@@ -45,88 +45,89 @@ declare const $: any;
  * component. One-way: class list → properties.
  */
 const CLASS_SYNCS: Array<(button: CraftButton, classes: DOMTokenList) => void> =
-    [
-        (button, classes) => {
-            button.disabled = classes.contains('disabled');
-        },
-        (button, classes) => {
-            button.loading = classes.contains('loading');
-        },
-        (button, classes) => {
-            if (classes.contains('submit')) {
-                button.variant = 'primary';
-            }
-        },
-        (button, classes) => {
-            if (classes.contains('secondary')) {
-                button.variant = 'solid';
-            }
-        },
-        (button, classes) => {
-            if (classes.contains('small')) {
-                button.size = 'small';
-            } else if (classes.contains('big')) {
-                button.size = 'large';
-            }
-        },
-    ];
+  [
+    (button, classes) => {
+      button.disabled = classes.contains('disabled');
+    },
+    (button, classes) => {
+      button.loading = classes.contains('loading');
+    },
+    (button, classes) => {
+      if (classes.contains('submit')) {
+        button.variant = 'primary';
+      }
+    },
+    (button, classes) => {
+      if (classes.contains('secondary')) {
+        button.variant = 'solid';
+      }
+    },
+    (button, classes) => {
+      if (classes.contains('small')) {
+        button.size = 'small';
+      } else if (classes.contains('big')) {
+        button.size = 'large';
+      }
+    },
+  ];
 
 function bridgeLegacyClasses(button: CraftButton): CraftButton {
-    const sync = () => {
-        for (const apply of CLASS_SYNCS) {
-            apply(button, button.classList);
-        }
-    };
+  const sync = () => {
+    for (const apply of CLASS_SYNCS) {
+      apply(button, button.classList);
+    }
+  };
 
-    sync();
-    new MutationObserver(sync).observe(button, {
-        attributes: true,
-        attributeFilter: ['class'],
-    });
+  sync();
+  new MutationObserver(sync).observe(button, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
 
-    return button;
+  return button;
 }
 
 type LegacyCreator = (config?: CreateButtonConfig) => any;
 
-function patchUi(
-    ui: Record<string, unknown> & {
-        createButton?: LegacyCreator;
-        createSubmitButton?: LegacyCreator;
-        createPasteButton?: LegacyCreator;
-    }
-): void {
-    ui.createButton = (config = {}) =>
-        $(bridgeLegacyClasses(createButton(config)));
-    ui.createSubmitButton = (config = {}) =>
-        $(bridgeLegacyClasses(createSubmitButton(config)));
-    ui.createPasteButton = (config = {}) =>
-        $(bridgeLegacyClasses(createPasteButton(config)));
-    (ui as any).createTextInput = (config = {}) => $(createTextInput(config));
+interface LegacyUi {
+  createButton?: LegacyCreator;
+  createSubmitButton?: LegacyCreator;
+  createPasteButton?: LegacyCreator;
+  createTextInput?: (config?: Parameters<typeof createTextInput>[0]) => any;
+}
+
+function patchUi(ui: LegacyUi): void {
+  ui.createButton = (config = {}) =>
+    $(bridgeLegacyClasses(createButton(config)));
+  ui.createSubmitButton = (config = {}) =>
+    $(bridgeLegacyClasses(createSubmitButton(config)));
+  ui.createPasteButton = (config = {}) =>
+    $(bridgeLegacyClasses(createPasteButton(config)));
+  ui.createTextInput = (config = {}) => $(createTextInput(config));
 }
 
 declare global {
-    interface Window {
-        Craft: any;
-    }
+  interface Window {
+    Craft: any;
+  }
 }
 
 window.Craft = window.Craft || {};
 
 if (window.Craft.ui) {
-    patchUi(window.Craft.ui);
+  patchUi(window.Craft.ui);
 } else {
-    // The legacy bundle hasn't assigned `Craft.ui` yet — patch it on arrival.
-    let currentUi: any;
-    Object.defineProperty(window.Craft, 'ui', {
-        configurable: true,
-        enumerable: true,
-        get: () => currentUi,
-        set: (value) => {
-            currentUi = value;
-            if (value) {
-                patchUi(value);
-            }
-        },
-    });
+  // The legacy bundle hasn't assigned `Craft.ui` yet — patch it on arrival.
+  let currentUi: any;
+  Object.defineProperty(window.Craft, 'ui', {
+    configurable: true,
+    enumerable: true,
+    get: () => currentUi,
+    set: (value) => {
+      currentUi = value;
+      if (value) {
+        patchUi(value);
+      }
+    },
+  });
 }

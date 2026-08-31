@@ -1,11 +1,13 @@
 import {
-    inject,
-    provide,
-    reactive,
-    type Component,
-    type InjectionKey,
+  inject,
+  provide,
+  reactive,
+  type Component,
+  type InjectionKey,
 } from 'vue';
 import {usePage} from '@inertiajs/vue3';
+import type {FormSaveOptions} from '@/common/types';
+import type {UseAppLayoutOptions} from './useAppLayout';
 
 /**
  * A CP screen renders in one of two contexts. The page component is the same
@@ -15,11 +17,11 @@ import {usePage} from '@inertiajs/vue3';
 export type ScreenMode = 'page' | 'slideout';
 
 export interface ScreenContext {
-    mode: ScreenMode;
+  mode: ScreenMode;
 }
 
 export const ScreenContextKey: InjectionKey<ScreenContext> =
-    Symbol('screenContext');
+  Symbol('screenContext');
 
 /**
  * The component `AppLayout` renders. Defaults to the full-page shell; a
@@ -36,50 +38,63 @@ export const ScreenShellKey: InjectionKey<Component> = Symbol('screenShell');
  * `setLayoutProps`, which only addresses the one layout Inertia rendered and
  * would clobber the base page if a slideout wrote to it.
  */
-export type ScreenSaveHandler = (options?: unknown) => void;
+export type ScreenSaveHandler = (options?: FormSaveOptions) => void;
+
+export type ScreenPageProp =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ScreenPageProp[]
+  | ScreenPageProps;
+
+export interface ScreenPageProps {
+  [key: string]: ScreenPageProp;
+}
 
 export interface ScreenPropsStore {
-    props: Record<string, unknown>;
-    set(props: Record<string, unknown>): void;
-    /**
-     * Register a save handler, returning an unregister function.
-     *
-     * The shell's save button sits *above* the page in the tree, so a `save`
-     * event can't reach a page listening on an inline `<AppLayout>` below it.
-     * Handlers registered here bridge that gap.
-     */
-    onSave(handler: ScreenSaveHandler): () => void;
-    save(options?: unknown): void;
+  props: UseAppLayoutOptions;
+  set(props: UseAppLayoutOptions): void;
+  /**
+   * Register a save handler, returning an unregister function.
+   *
+   * The shell's save button sits *above* the page in the tree, so a `save`
+   * event can't reach a page listening on an inline `<AppLayout>` below it.
+   * Handlers registered here bridge that gap.
+   */
+  onSave(handler: ScreenSaveHandler): () => void;
+  save(options?: FormSaveOptions): void;
 }
 
 export const ScreenPropsStoreKey: InjectionKey<ScreenPropsStore> =
-    Symbol('screenPropsStore');
+  Symbol('screenPropsStore');
 
 export function createScreenPropsStore(): ScreenPropsStore {
-    const props = reactive<Record<string, unknown>>({});
-    const handlers = new Set<ScreenSaveHandler>();
+  const props = reactive<UseAppLayoutOptions>({});
+  const handlers = new Set<ScreenSaveHandler>();
 
-    return {
-        props,
+  return {
+    props,
 
-        set(next) {
-            Object.assign(props, next);
-        },
+    set(next) {
+      Object.assign(props, next);
+    },
 
-        onSave(handler) {
-            handlers.add(handler);
+    onSave(handler) {
+      handlers.add(handler);
 
-            return () => handlers.delete(handler);
-        },
+      return () => handlers.delete(handler);
+    },
 
-        save(options) {
-            // `useAppLayout({onSave})` arrives as a prop, since Vue treats `onX` as
-            // a listener for `x`.
-            (props.onSave as ScreenSaveHandler | undefined)?.(options);
+    save(options) {
+      // `useAppLayout({onSave})` arrives as a prop, since Vue treats `onX` as
+      // a listener for `x`.
+      props.onSave?.(options);
 
-            handlers.forEach((handler) => handler(options));
-        },
-    };
+      handlers.forEach((handler) => handler(options));
+    },
+  };
 }
 
 /**
@@ -91,8 +106,8 @@ export function createScreenPropsStore(): ScreenPropsStore {
  * slideout panel provides its own props here; a full page has none and falls
  * back to `usePage()`.
  */
-export const ScreenPagePropsKey: InjectionKey<() => Record<string, unknown>> =
-    Symbol('screenPageProps');
+export const ScreenPagePropsKey: InjectionKey<() => ScreenPageProps> =
+  Symbol('screenPageProps');
 
 /**
  * Called by a page once its server-rendered content is actually in the
@@ -104,42 +119,42 @@ export const ScreenPagePropsKey: InjectionKey<() => Record<string, unknown>> =
  * `onMounted`, which fires while the content is still empty.
  */
 export const ScreenContentReadyKey: InjectionKey<() => void> =
-    Symbol('screenContentReady');
+  Symbol('screenContentReady');
 
 /** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */
 export function useScreenContentReady(): () => void {
-    return inject(ScreenContentReadyKey, () => {});
+  return inject(ScreenContentReadyKey, () => {});
 }
 
 export function provideScreenContext(mode: ScreenMode): void {
-    provide(ScreenContextKey, reactive({mode}));
+  provide(ScreenContextKey, reactive({mode}));
 }
 
 export function useScreenContext(): ScreenContext {
-    return inject(ScreenContextKey, {mode: 'page'});
+  return inject(ScreenContextKey, {mode: 'page'});
 }
 
 export function useScreenPropsStore(): ScreenPropsStore | null {
-    return inject(ScreenPropsStoreKey, null);
+  return inject(ScreenPropsStoreKey, null);
 }
 
 /** True when the calling component is rendering inside a slideout. */
 export function useIsSlideout(): boolean {
-    return useScreenContext().mode === 'slideout';
+  return useScreenContext().mode === 'slideout';
 }
 
 /**
  * Screen-specific page props for the current context — the slideout's own when
  * inside one, the base page's otherwise. See {@link ScreenPagePropsKey}.
  */
-export function useScreenPageProps(): () => Record<string, unknown> {
-    const scoped = inject(ScreenPagePropsKey, null);
+export function useScreenPageProps(): () => ScreenPageProps {
+  const scoped = inject(ScreenPagePropsKey, null);
 
-    if (scoped) {
-        return scoped;
-    }
+  if (scoped) {
+    return scoped;
+  }
 
-    const page = usePage();
+  const page = usePage<ScreenPageProps>();
 
-    return () => page.props as Record<string, unknown>;
+  return () => page.props;
 }

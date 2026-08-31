@@ -3,19 +3,19 @@ import {setLayoutProps} from '@inertiajs/vue3';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {useScreenPropsStore} from '@/common/composables/screen';
 import type {
-    ActionItem,
-    ActionItemButton,
-    FormSaveOptions,
+  ActionItem,
+  ActionItemButton,
+  FormSaveOptions,
 } from '@/common/types';
 
 export interface UseAppLayoutOptions {
-    title?: string;
-    form?: InertiaForm<any> | null;
-    defaultFormActions?: Array<'saveAndContinueEditing'>;
-    formActions?: Array<ActionItem>;
-    formAdditionalActions?: Array<ActionItem>;
-    formAdditionalButtons?: Array<ActionItemButton>;
-    onSave?: (options?: FormSaveOptions) => void;
+  title?: string;
+  form?: InertiaForm<any> | null;
+  defaultFormActions?: Array<'saveAndContinueEditing'>;
+  formActions?: Array<ActionItem>;
+  formAdditionalActions?: Array<ActionItem>;
+  formAdditionalButtons?: Array<ActionItemButton>;
+  onSave?: (options?: FormSaveOptions) => void;
 }
 
 /**
@@ -37,19 +37,20 @@ export interface UseAppLayoutOptions {
  * snapshot.
  */
 export function useAppLayout(
-    options: UseAppLayoutOptions | (() => UseAppLayoutOptions)
+  options: UseAppLayoutOptions | (() => UseAppLayoutOptions)
 ): void {
-    const resolve = typeof options === 'function' ? options : () => options;
-    const screenProps = useScreenPropsStore();
+  const resolve = options instanceof Function ? options : () => options;
+  const screenProps = useScreenPropsStore();
 
-    // `setLayoutProps` types its `props` argument as `Partial<LayoutProps>`,
-    // which defaults to `Record<string, unknown>` (an index signature) unless
-    // the app augments Inertia's `LayoutProps` config type. Cast through
-    // `Record<string, unknown>` since `UseAppLayoutOptions` is structurally
-    // compatible but doesn't declare an index signature.
-    const apply = screenProps
-        ? (props: Record<string, unknown>) => screenProps.set(props)
-        : setLayoutProps;
+  // `setLayoutProps` types its `props` argument as `Partial<LayoutProps>`,
+  // which defaults to `Record<string, unknown>` (an index signature) unless
+  // the app augments Inertia's `LayoutProps` config type. Cast through
+  // `Record<string, unknown>` since `UseAppLayoutOptions` is structurally
+  // compatible but doesn't declare an index signature.
+  const apply = screenProps
+    ? (props: UseAppLayoutOptions) => screenProps.set(props)
+    : (props: UseAppLayoutOptions) =>
+        setLayoutProps<UseAppLayoutOptions>(props);
 
-    watchEffect(() => apply(resolve() as Record<string, unknown>));
+  watchEffect(() => apply(resolve()));
 }
