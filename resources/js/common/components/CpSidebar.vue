@@ -3,16 +3,25 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
+  import CpLink from '@/common/components/CpLink.vue';
   import DevModeIndicator from '@/common/components/DevModeIndicator.vue';
   import {computed, nextTick, watch} from 'vue';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+  import {type CraftData} from '@/common/composables/useCraftData';
+  import {index as generalSettings} from '@/routes/craft/cp/settings/general';
+  import {usePage} from '@inertiajs/vue3';
 
   // Mode and visibility come from the shared store rather than from props: this
   // component renders the toggle that changes them, so taking them as props too
   // would give the same state two sources of truth.
   const {sidebar, collapsed, toggle, icon} = useGlobalSidebar();
+  const page = usePage<{craft: CraftData}>();
 
   const shouldManageFocus = computed(() => sidebar.mode === 'floating');
+  const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
+  const generalSettingsUrl = computed(() =>
+    generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
+  );
 
   watch(
     () => sidebar.visibility,
@@ -75,6 +84,11 @@
       </div>
       <EditionInfo v-if="!collapsed" />
       <DevModeIndicator v-if="!collapsed" />
+      <DevModeIndicator v-if="!collapsed && maintenanceMode">
+        <CpLink :href="generalSettingsUrl">
+          {{ t('Maintenance mode enabled') }}
+        </CpLink>
+      </DevModeIndicator>
     </div>
   </nav>
 </template>

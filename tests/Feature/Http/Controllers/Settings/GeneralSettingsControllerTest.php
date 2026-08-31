@@ -39,6 +39,7 @@ it('can show the settings screen', function () {
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Form')
+            ->where('craft.maintenanceMode', false)
             ->where('form.values.name', ProjectConfig::get('system.name'))
             ->where('form.values.maintenanceMode', false)
             ->where('form.values.retryDuration', ProjectConfig::get('system.retryDuration'))
@@ -113,6 +114,7 @@ it('can save settings', function () {
 
     get(action([GeneralSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.maintenanceMode', true)
             ->where('form.values.name', 'A new app name')
             ->where('form.values.retryDuration', 60)
             ->where('form.values.timeZone', 'America/New_York'))

@@ -138,12 +138,6 @@ readonly class GeneralSettingsController
             : ControlMode::ReadOnly;
 
         $form = Form::make([
-            Field::make(t('Maintenance Mode'), Lightswitch::make('maintenanceMode'))
-                ->instructions(t('When enabled, site requests will return a service unavailable response and queued jobs will pause.')),
-            Field::make(t('Retry Duration'), Number::make('retryDuration')
-                ->mode($settingsMode)
-                ->size(4))
-                ->instructions(t('The number of seconds that the Retry-After HTTP header should be set to for maintenance mode responses.')),
             Field::make(t('System Name'), Text::make('name')
                 ->mode($settingsMode)
                 ->textExpanderTriggers(SelectOptions::getEnvTextExpanderTriggers()))
@@ -154,6 +148,12 @@ readonly class GeneralSettingsController
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
+            Field::make(t('Maintenance Mode'), Lightswitch::make('maintenanceMode'))
+                ->instructions(t('When enabled, site requests will return a service unavailable response and queued jobs will pause.')),
+            Field::make(t('Retry Duration'), Number::make('retryDuration')
+                ->mode($settingsMode)
+                ->size(4))
+                ->instructions(t('The number of seconds that the Retry-After HTTP header should be set to for maintenance mode responses.')),
             Field::make(t('Time Zone'), Combobox::make('timeZone')
                 ->mode($settingsMode)
                 ->options($timezoneOptions)
