@@ -1,10 +1,16 @@
 import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup} from 'lit';
-import {html, LitElement} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import styles from './avatar.styles.js';
 
 /**
- * @summary Container to represent a user or object
+ * @summary Stands in for a user or object with their initials on a gradient
+ * disc. Draws initials rather than loading a picture, so it works where there
+ * may not be one — use `craft-thumbnail` when there is.
+ *
+ * Without a `label` there are no initials to draw and nothing to announce, so
+ * the disc falls back to a question mark and is hidden from assistive
+ * technology rather than exposed as an unnamed image.
  *
  * @cssproperty [--color-start=red] - Start color of the gradient
  * @cssproperty [--color-end=blue] - End color of the gradient
@@ -44,9 +50,10 @@ export default class CraftAvatar extends LitElement {
         <svg
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
-          role="img"
+          role="${this.label ? 'img' : nothing}"
+          aria-hidden="${this.label ? nothing : 'true'}"
         >
-          ${this.label ? html`<title>${this.label}</title>` : ''}
+          ${this.label ? html`<title>${this.label}</title>` : nothing}
           <defs>
             <linearGradient
               id="${this._gradientId}"

@@ -1,62 +1,56 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
-import type CraftAvatar from './avatar.js';
+
 import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
-const {events, args, argTypes, template} = getStorybookHelpers('craft-avatar');
-import './avatar.js';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
-const meta: Meta<CraftAvatar> = {
+import './avatar.js';
+import type CraftAvatar from './avatar.js';
+
+/**
+ * `args` and `argTypes` are derived from the custom elements manifest, so the
+ * controls and the API tables follow the component's JSDoc.
+ */
+const {args, argTypes, template} =
+  getStorybookHelpers<CraftAvatar>('craft-avatar');
+
+type AvatarArgs = CraftAvatar & typeof args;
+
+const meta = {
   title: 'Components/Avatar',
   component: 'craft-avatar',
-  args,
+  args: {...args, label: 'Brad Bell'},
   argTypes,
+  parameters: {layout: 'centered'},
   render: (args) => template(args),
-  parameters: {
-    actions: {
-      handles: events,
-    },
-  },
-};
+} satisfies Meta<AvatarArgs>;
 
 export default meta;
-type Story = StoryObj<CraftAvatar & typeof args>;
+type Story = StoryObj<AvatarArgs>;
 
-// More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Default: Story = {
-  args: {},
-  parameters: {
-    a11y: {
-      config: {
-        rules: [
-          {
-            id: 'svg-img-alt', // TODO: figure out best way of handling alt text for avatars
-            enabled: false,
-          },
-        ],
-      },
-    },
-  },
+/** Initials are derived from the label — one letter per word. */
+export const Default: Story = {};
+
+/** A single-word label gives a single initial. */
+export const SingleName: Story = {
+  args: {label: 'Craft'},
 };
 
-export const CustomColors: Story = {
-  args: {
-    colorStart: 'green',
-    colorEnd: 'black',
-  },
-  render: (args) => html`
-    <craft-avatar
-      style="--color-start: ${args.colorStart}; --color-end: ${args.colorEnd}"
-      label="Brian Hanson"
-    ></craft-avatar>
-  `,
+/** Without a label the avatar falls back to a question mark. */
+export const NoLabel: Story = {
+  args: {label: null},
 };
 
-export const CustomSize: Story = {
-  args: {},
-  render: (args) => html`
-    <craft-avatar label="Brian Hanson">BH</craft-avatar>
-    <craft-avatar style="--size: 60px;" label="M">MD</craft-avatar>
-    <craft-avatar style="--size: 100px;" label="LG">LG</craft-avatar>
+/** Size and colours are custom properties, so a set can be themed at once. */
+export const Themed: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: flex; gap: 0.75rem; align-items: center">
+      <craft-avatar label="Brad Bell"></craft-avatar>
+      <craft-avatar label="Ryan Irelan" style="--size: 3rem"></craft-avatar>
+      <craft-avatar
+        label="Sara Fisher"
+        style="--size: 3rem; --color-start: #7ab55c; --color-end: #2e7d5b"
+      ></craft-avatar>
+    </div>
   `,
 };
