@@ -29,7 +29,7 @@ export default css`
       --c-color-border-quiet,
       var(--c-color-neutral-border-quiet)
     );
-    background-color: var(--c-surface-raised);
+    background-color: var(--_fill);
     overflow: clip;
   }
 
