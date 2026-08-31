@@ -61,10 +61,17 @@ contentStyles?.replaceSync(`
 `);
 
 /**
- * craft-dialog is a modal dialog. Set the `open` attribute to show it;
+ * @summary A modal dialog. Set the `open` attribute to show it;
  * default-slot children render as the body, `slot="footer"` children render
  * in a footer, and any descendant with `data-dialog="close"` closes the
  * dialog when clicked.
+ *
+ * Being modal, it takes focus and blocks the page behind it — so reach for it
+ * when a person genuinely has to deal with something before continuing, and
+ * for anything less use a `craft-popover` or an inline `craft-callout`.
+ *
+ * @slot - The dialog's body content.
+ * @slot footer - Actions, rendered right-aligned below the body.
  *
  * Note: Lion's overlay system already defines an `open()` *method*, so there
  * is no `open` boolean property — use the `open` attribute or the `opened`
