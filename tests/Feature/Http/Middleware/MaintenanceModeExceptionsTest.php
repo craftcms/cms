@@ -101,6 +101,14 @@ test('public-only actions are blocked during maintenance mode', function () {
         ->assertServiceUnavailable();
 });
 
+test('route exceptions do not expose non-Craft routes using another method', function () {
+    auth()->logout();
+    Route::get(Cms::config()->actionTrigger.'/users/login', fn () => 'host route');
+
+    get(action_url('users/login'))
+        ->assertServiceUnavailable();
+});
+
 test('valid site tokens do not bypass maintenance mode on plain Laravel routes', function () {
     auth()->logout();
     Route::middleware('web')->get('maintenance-mode-token-test', fn () => 'ok');

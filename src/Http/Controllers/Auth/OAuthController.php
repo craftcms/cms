@@ -55,7 +55,7 @@ readonly class OAuthController extends AuthenticationController
                 try {
                     $user = $request->craftUser()?->asElement();
 
-                    if ($user && ($authError = $this->getMaintenanceAuthError($user, $isCpRequest))) {
+                    if ($user && ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest))) {
                         return $this->connectFailedResponse(
                             $this->auth->getLoginFailureInfo($authError, $user)[1],
                         );
@@ -93,7 +93,7 @@ readonly class OAuthController extends AuthenticationController
 
             $user = $oauthManager->populateUser($definition, $socialiteUser, $user, $identity, $isNew);
 
-            if ($authError = $this->getMaintenanceAuthError($user, $isCpRequest)) {
+            if ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest)) {
                 return $this->failedResponse(
                     $isCpRequest,
                     $this->auth->getLoginFailureInfo($authError, $user)[1],
@@ -300,23 +300,6 @@ readonly class OAuthController extends AuthenticationController
         };
     }
 
-    private function getMaintenanceAuthError(User $user, bool $isCpRequest): ?AuthError
-    {
-        if (! app()->isDownForMaintenance()) {
-            return null;
-        }
-
-        if ($isCpRequest) {
-            return $user->can('accessCpWhenSystemIsOff')
-                ? null
-                : AuthError::NoCpOfflineAccess;
-        }
-
-        return $user->can('accessSiteWhenSystemIsOff')
-            ? null
-            : AuthError::NoSiteOfflineAccess;
-    }
-
     private function getCpAuthError(User $user): ?AuthError
     {
         if ($user->locked) {
@@ -333,13 +316,6 @@ readonly class OAuthController extends AuthenticationController
             return AuthError::NoCpAccess;
         }
 
-        if (
-            app()->isDownForMaintenance() &&
-            $user->can('accessCpWhenSystemIsOff') === false
-        ) {
-            return AuthError::NoCpOfflineAccess;
-        }
-
-        return null;
+        return $this->auth->getMaintenanceAuthError($user, true);
     }
 }

@@ -21,6 +21,9 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
 {
     private const string ALLOW_DURING_MAINTENANCE_METADATA = 'craft.allowDuringMaintenance';
 
+    /** @var array<int, string> */
+    private static array $routeExceptions = [];
+
     public function __construct(
         Application $app,
         private readonly Router $router,
@@ -50,6 +53,10 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
             return parent::handle($request, $next);
         }
 
+        if ($route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true) {
+            return $next($request);
+        }
+
         if (
             $request->getHadToken()
             || Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
@@ -77,14 +84,30 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
 
     public static function registerRouteExceptions(): void
     {
-        $exceptions = collect(app(Router::class)->getRoutes()->getRoutes())
+        self::$routeExceptions = collect(app(Router::class)->getRoutes()->getRoutes())
             ->filter(fn (Route $route) => $route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true)
             ->map(fn (Route $route) => self::exceptionPath($route))
             ->unique()
             ->values()
             ->all();
 
-        self::except($exceptions);
+        self::except(self::$routeExceptions);
+    }
+
+    #[Override]
+    protected function inExceptArray($request): bool
+    {
+        foreach (array_diff($this->getExcludedPaths(), self::$routeExceptions) as $except) {
+            if ($except !== '/') {
+                $except = trim($except, '/');
+            }
+
+            if ($request->fullUrlIs($except) || $request->is($except)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function matchesCraftRoute(Request $request): bool

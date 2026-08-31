@@ -452,25 +452,30 @@ class AuthMethods
                         return AuthError::NoCpAccess;
                     }
 
-                    if (
-                        app()->isDownForMaintenance() &&
-                        $user->can('accessCpWhenSystemIsOff') === false
-                    ) {
-                        return AuthError::NoCpOfflineAccess;
-                    }
-
-                    return null;
+                    return $this->getMaintenanceAuthError($user, true);
                 }
 
-                if (
-                    app()->isDownForMaintenance() &&
-                    $user->can('accessSiteWhenSystemIsOff') === false
-                ) {
-                    return AuthError::NoSiteOfflineAccess;
-                }
-
-                return null;
+                return $this->getMaintenanceAuthError($user, false);
         }
+    }
+
+    public function getMaintenanceAuthError(CraftUser $user, bool $isCpRequest): ?AuthError
+    {
+        $user = $user->asElement();
+
+        if (! app()->isDownForMaintenance()) {
+            return null;
+        }
+
+        if ($isCpRequest) {
+            return $user->can('accessCpWhenSystemIsOff')
+                ? null
+                : AuthError::NoCpOfflineAccess;
+        }
+
+        return $user->can('accessSiteWhenSystemIsOff')
+            ? null
+            : AuthError::NoSiteOfflineAccess;
     }
 
     public function getAuthMethodErrorMessage(?string $defaultMessage = null): string
