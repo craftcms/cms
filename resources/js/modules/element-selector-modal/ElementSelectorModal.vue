@@ -3,7 +3,9 @@
   import {t, type ElementSelectorController} from '@craftcms/ui';
   import '@craftcms/ui/components/element-selector-modal/element-selector-modal';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import ModalElementIndex from './ModalElementIndex.vue';
+  import type {SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
 
@@ -64,6 +66,34 @@
 
   const index = ref<InstanceType<typeof ModalElementIndex> | null>(null);
 
+  /**
+   * The source the index is showing, which is what an upload targets.
+   *
+   * Asset sources are folders — one per volume and per subfolder — so the
+   * selected source *is* the current folder, and its data bag carries what the
+   * uploader needs. No element type is special-cased here: a source that can't
+   * be uploaded into simply never carries these keys, which is what keeps the
+   * button off entry and category indexes.
+   */
+  const source = ref<SourceItem | null>(null);
+
+  const uploadTarget = computed(() => {
+    const data = source.value?.data as
+      | Record<string, boolean | number | string>
+      | undefined;
+
+    if (data?.['can-upload'] !== true) {
+      return null;
+    }
+
+    const folderId = data['folder-id'];
+    const fsType = data['fs-type'];
+
+    return typeof folderId === 'number' && typeof fsType === 'string'
+      ? {folderId, fsType}
+      : null;
+  });
+
   onMounted(() => {
     props.controller.attachIndex({
       clearSelection: () => index.value?.clearSelection(),
@@ -92,7 +122,27 @@
         (elements: SelectedElement[]) => controller.setSelection(elements)
       "
       @choose="() => controller.submit()"
+      @source-change="(next: SourceItem | null) => (source = next)"
     />
+
+    <!--
+      Uploads land in the folder on screen and show up in it, so the index is
+      re-requested rather than the page reloaded — there is no page behind a
+      modal, and an Inertia visit would replace the one that opened it.
+
+      Wrapped because the button component has two roots — a hidden file input
+      alongside the button — and a `slot` attribute on it would carry only to
+      the button, leaving the input behind in the index.
+    -->
+    <div v-if="uploadTarget" slot="secondary-actions">
+      <AssetUploadButton
+        :can-upload="true"
+        :folder-id="uploadTarget.folderId"
+        :fs-type="uploadTarget.fsType"
+        :reload-on-complete="false"
+        @uploaded="() => index?.refresh()"
+      />
+    </div>
 
     <!--
       Assets only: pick a transform instead of plain Select. The controller

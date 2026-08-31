@@ -148,7 +148,9 @@ function waitForScript(script: HTMLScriptElement, url: string): Promise<void> {
     script.addEventListener(
       'error',
       () => reject(new Error(`Failed to load asset [${url}].`)),
-      {once: true}
+      {
+        once: true,
+      }
     );
   });
 }

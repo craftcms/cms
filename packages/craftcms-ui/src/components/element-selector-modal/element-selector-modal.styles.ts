@@ -82,6 +82,23 @@ export default css`
   }
 
   /*
+    The footer holds two groups. The base dialog packs its footer to the end, so
+    an auto margin on the first group is what splits them: it absorbs the free
+    space, holding secondary actions at the start and leaving the primary
+    buttons flush right. It works the same when the secondary group is empty,
+    which is the common case.
+  */
+  .footer__group {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+
+  .footer__group--secondary {
+    margin-inline-end: auto;
+  }
+
+  /*
     While a selection is being saved, the index and the secondary actions stop
     responding. The interaction block itself is the inert attribute set in
     renderBody/renderFooter, which reaches slotted content this component does

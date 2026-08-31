@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -1379,8 +1380,9 @@ XML;
      * @return list<array<string, mixed>>
      */
     #[Override]
-    protected function extraActionMenuDescriptors(): array
-    {
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         $currentUser = currentUser();
 
         if (

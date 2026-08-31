@@ -708,6 +708,11 @@ abstract class ContentIndexViewModel extends ViewModel
      * Elements with no edit URL (e.g. asset folders, which navigate via their
      * own row handler) render the bare chip, so no stray anchor intercepts the
      * row's click.
+     *
+     * Nothing links in a selector modal, where a click on a row is a selection
+     * and navigating away would drop it — the same rule, keyed off the same
+     * context, that {@see ElementHtml} applies to a chip's or card's own
+     * hyperlink.
      */
     private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
     {
@@ -716,7 +721,9 @@ abstract class ContentIndexViewModel extends ViewModel
             'appearance' => 'plain',
         ]);
 
-        $editUrl = $element->getCpEditUrl();
+        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+            ? $element->getCpEditUrl()
+            : null;
 
         if ($editUrl === null) {
             return $chip;
@@ -782,7 +789,9 @@ abstract class ContentIndexViewModel extends ViewModel
             'id' => $this->rowId($element),
             ...$this->extraRowData($element),
             'label' => $element->getUiLabel(),
-            'url' => $element->getCpEditUrl(),
+            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+                ? $element->getCpEditUrl()
+                : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE),
         ], $elements);
     }

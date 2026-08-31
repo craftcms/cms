@@ -150,8 +150,7 @@ export default class CraftBreadcrumbs extends LitElement {
   }
 
   private adjustOverflow() {
-    const availableSpace = this.getBoundingClientRect().width;
-    console.log({availableSpace});
+    // @TODO
   }
 
   override disconnectedCallback() {

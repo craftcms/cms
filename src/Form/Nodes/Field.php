@@ -9,9 +9,11 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Enums\ControlMode;
+use CraftCms\Cms\Form\Enums\FieldWidth;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\NodePayload;
+use CraftCms\Cms\Form\Nodes\Concerns\HasVisibility;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Arr;
@@ -20,6 +22,8 @@ use InvalidArgumentException;
 
 class Field implements Node
 {
+    use HasVisibility;
+
     private ?string $label = null;
 
     private ?string $instructions = null;
@@ -88,6 +92,7 @@ class Field implements Node
                 'data-layout-element' => $node->props['layoutUid'] ?? null,
                 'data-mode' => $control->mode->value,
             ])
+            ->attributes(self::visibilityAttributes($node->props))
             ->toHtml();
     }
 
@@ -149,9 +154,16 @@ class Field implements Node
         return $this;
     }
 
-    public function width(?int $width): static
+    /**
+     * Sets how wide the field should be within its container.
+     *
+     * Rendered as a `width-{n}` class and resolved by `<craft-field-group>`'s
+     * twelve-column grid. Ints are accepted for layout elements, whose width
+     * comes from project config; prefer {@see FieldWidth} in PHP.
+     */
+    public function width(FieldWidth|int|null $width): static
     {
-        $this->width = $width;
+        $this->width = $width instanceof FieldWidth ? $width->value : $width;
 
         return $this;
     }
@@ -221,6 +233,7 @@ class Field implements Node
                 'statusLabel' => $this->status !== null ? $this->statusLabel : null,
                 'hasActions' => $this->actions === [] ? null : true,
             ]),
+            ...$this->visibilityProps(),
         ];
     }
 
