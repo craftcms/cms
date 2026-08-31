@@ -1,0 +1,84 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TabsStories from './tabs.stories';
+
+<Meta of={TabsStories} name="Docs" />
+
+# Tabs
+
+`<craft-tabs>` is a strip of triggers over a set of panels, one visible at a time.
+
+<Canvas of={TabsStories.Default} sourceState="shown" />
+
+Use tabs for alternative views of the same subject — an entry's content, its settings, its metadata. Not for steps in a sequence, which is a wizard, and not for content a person needs to compare, which they cannot do when only one panel is visible.
+
+## Pairing
+
+Tabs and panels are slotted as **siblings**, paired by document order: the first `slot="tab"` owns the first `slot="panel"`.
+
+```html
+<craft-tabs>
+  <craft-tab slot="tab">Content</craft-tab>
+  <div slot="panel">…</div>
+  <craft-tab slot="tab">Settings</craft-tab>
+  <div slot="panel">…</div>
+</craft-tabs>
+```
+
+That looks unusual next to a nested API, and it is deliberate: because a panel is not wrapped in anything this component defines, it can be a `<div>`, a [Pane](?path=/docs/components-pane--docs), or a form section, with no wrapper in the way.
+
+A mismatched count logs a warning and leaves the extras inert.
+
+## Selection
+
+Selection is a **property**, not slotted state. Read or set `selectedIndex` (`selected-index`):
+
+<Canvas of={TabsStories.SelectedIndex} sourceState="shown" />
+
+Do not toggle `selected` on a tab — Lion owns that attribute and will overwrite it.
+
+## Layout
+
+<Canvas of={TabsStories.Placements} sourceState="shown" />
+
+<Canvas of={TabsStories.Sizes} sourceState="shown" />
+
+`size` works by font size, and the tabs are padded in `em`, so the whole strip scales without the tabs being touched individually.
+
+<Canvas of={TabsStories.RightToLeft} sourceState="shown" />
+
+## Overflow
+
+A strip too narrow for its tabs collapses the excess into a menu rather than wrapping or scrolling silently:
+
+<Canvas of={TabsStories.Overflow} sourceState="shown" />
+
+<Canvas of={TabsStories.NoOverflow} sourceState="shown" />
+
+## External Panels
+
+Some strips cannot slot their panels — a server-rendered field layout puts the tab bar in the page header and the sections inside a pane, so the two halves live in different parts of the document.
+
+<Canvas of={TabsStories.ExternalPanels} sourceState="shown" />
+
+For that case, a [Tab](?path=/docs/components-tab--docs) names its panel by id with `controls`, and the strip wires the two together across the document instead of by position.
+
+## States
+
+<Canvas of={TabsStories.Disabled} sourceState="shown" />
+
+Disabled tabs are skipped by arrow-key navigation, rather than being focusable and inert.
+
+<Canvas of={TabsStories.IconToolbar} sourceState="shown" />
+
+## Accessibility
+
+Lion supplies the whole tab contract: the `role`, `aria-controls`, and `aria-labelledby` wiring, the roving tabindex, and arrow/Home/End navigation.
+
+Two things stay with you:
+
+- **Keep labels short.** They sit in a strip, and a long label is what pushes a tab into the overflow menu.
+- **Do not use tabs to hide required form fields.** A validation error in a panel nobody has opened is an error nobody can find.
+
+## Properties
+
+<ArgTypes of={TabsStories} />
