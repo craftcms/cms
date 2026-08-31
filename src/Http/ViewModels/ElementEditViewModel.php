@@ -328,7 +328,7 @@ abstract class ElementEditViewModel extends ViewModel
         );
 
         $previewToken = Str::random(32, extendedChars: true);
-        $siteToken = (! app()->isLive() || ! $element->getSite()->getEnabled())
+        $siteToken = (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled())
             ? Crypt::encrypt((string) $element->siteId)
             : null;
 

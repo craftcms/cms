@@ -6,7 +6,6 @@ use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Session;
 
@@ -82,35 +81,6 @@ test('getAuthError for no CP access', function () {
     $result = $this->auth->getAuthError($user);
 
     expect($result)->toBe(AuthError::NoCpAccess);
-});
-
-test('getAuthError for no CP offline access', function () {
-    Edition::set(Edition::Pro);
-
-    $user = UserModel::factory()->createElement(['admin' => false]);
-    UserPermissions::saveUserPermissions($user->id, [
-        'accessCp',
-    ]);
-
-    // Fake so ->isCpRequest() returns true
-    Cms::config()->cpTrigger = '/';
-    Cms::config()->isSystemLive = false;
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::NoCpOfflineAccess);
-});
-
-test('getAuthError for no site offline access', function () {
-    Edition::set(Edition::Pro);
-
-    $user = UserModel::factory()->createElement(['admin' => false]);
-
-    Cms::config()->isSystemLive = false;
-
-    $result = $this->auth->getAuthError($user);
-
-    expect($result)->toBe(AuthError::NoSiteOfflineAccess);
 });
 
 test('getAuthError returns null for valid user', function () {

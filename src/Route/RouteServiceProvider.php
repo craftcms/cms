@@ -7,11 +7,6 @@ namespace CraftCms\Cms\Route;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Controllers\ConfigSyncController;
-use CraftCms\Cms\Http\Controllers\MigrateController;
-use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
-use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController as PluginStoreRemoveController;
-use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
@@ -24,6 +19,7 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
@@ -39,7 +35,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -48,7 +44,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Uri;
 use Override;
 
 class RouteServiceProvider extends ServiceProvider
@@ -56,21 +51,29 @@ class RouteServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        CraftMaintenanceMiddleware::registerRouteMacro();
+
         /**
          * These middleware must run before all others
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $globalMiddleware = array_map(
+            fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
+                ? CraftMaintenanceMiddleware::class
+                : $middleware,
+            $kernel->getGlobalMiddleware(),
+        );
         $kernel->setGlobalMiddleware(array_merge([
             ExtractNamespace::class,
             HandleTokenRequest::class,
             HandleActionRequest::class,
-        ], $kernel->getGlobalMiddleware()));
+        ], $globalMiddleware));
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             require $this->app->getCachedRoutesPath();
 
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         });
     }
@@ -88,7 +91,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
 
         if (! $this->app->routesAreCached()) {
-            $this->bootMaintenanceModeExceptions();
+            CraftMaintenanceMiddleware::registerRouteExceptions();
             $this->bootRequestForgeryExceptions();
         }
 
@@ -99,7 +102,9 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router->view($route->getUri(), $route->template),
+                fn (Route $route) => $router
+                    ->view($route->getUri(), $route->template)
+                    ->middleware(['craft', 'craft.web']),
             );
         });
 
@@ -149,25 +154,6 @@ class RouteServiceProvider extends ServiceProvider
         ])->all());
     }
 
-    /**
-     * Register routes that should remain accessible during maintenance mode.
-     */
-    private function bootMaintenanceModeExceptions(): void
-    {
-        PreventRequestsDuringMaintenance::except(collect([
-            [UpdaterController::class, 'precheck'],
-            [UpdaterController::class, 'composerInstall'],
-            [UpdaterController::class, 'finish'],
-            [UpdaterController::class, 'backup'],
-            [UpdaterController::class, 'serverCheck'],
-            [UpdaterController::class, 'migrate'],
-            [ConfigSyncController::class, 'finish'],
-            [PluginStoreInstallController::class, 'finish'],
-            [PluginStoreRemoveController::class, 'finish'],
-            MigrateController::class,
-        ])->map(fn (array|string $action) => Uri::action($action)->path())->all());
-    }
-
     private function bootMiddleware(Router $router): void
     {
         $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
@@ -183,6 +169,7 @@ class RouteServiceProvider extends ServiceProvider
             Enforce2fa::class,
             SetHeaders::class,
             ShowBrokenImage::class,
+            CraftMaintenanceMiddleware::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

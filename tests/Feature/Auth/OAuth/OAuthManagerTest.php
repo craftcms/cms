@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -19,7 +18,6 @@ use function Pest\Laravel\startSession;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
-    Cms::config()->isSystemLive = true;
     ProjectConfig::set('users.allowPublicRegistration', true);
 
     FakeOAuthProvider::reset();
