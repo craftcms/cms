@@ -1,0 +1,48 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as StatusStories from './status.stories';
+
+<Meta of={StatusStories} name="Docs" />
+
+# Status
+
+`<craft-status>` is a coloured dot standing for an object's state.
+
+<Canvas of={StatusStories.Default} sourceState="shown" />
+
+It carries no text of its own and is meant to sit beside the thing it describes — an index row, a [Chip](?path=/docs/components-chip--docs), a page header — where the name is already present.
+
+<Canvas of={StatusStories.InContext} sourceState="shown" />
+
+## States
+
+`status` takes a fixed vocabulary, each with its own colour:
+
+<Canvas of={StatusStories.AllStatuses} sourceState="shown" />
+
+Leaving it unset renders the neutral dot:
+
+<Canvas of={StatusStories.NoStatus} sourceState="shown" />
+
+## Status, Indicator, or Badge?
+
+Three components draw a small coloured mark, and they are not interchangeable:
+
+- **Status** — a fixed set of object states (`live`, `pending`, `expired`, `disabled`, `enabled`). Reach for it when the meaning is one of those.
+- **[Indicator](?path=/docs/components-indicator--docs)** — any palette colour, and appearance options. Reach for it when the dot means something the status vocabulary does not cover.
+- **[Badge](?path=/docs/components-badge--docs)** — a dot _and_ a label in a pill. Reach for it when the state needs naming in place rather than in the row beside it.
+
+## Accessibility
+
+The dot is a coloured shape, so on its own it conveys nothing to a screen reader. It is exposed as `role="img"` with an accessible name, which is what makes the state perceivable.
+
+Without a `label`, the name is a translated "Status: live" derived from the state. Set `label` when that is not what a person needs to hear:
+
+<Canvas of={StatusStories.CustomLabel} sourceState="shown" />
+
+Where the state is already spelled out in adjacent text, the dot is decoration and repeating it is noise. A status with neither `status` nor `label` has no name and is not exposed as an image at all, which is the correct handling of a purely decorative dot.
+
+**Colour is the only visual signal here.** In a dense list, that puts the whole meaning on hue — so the surrounding row should carry the state in text too, rather than relying on the dot alone.
+
+## Properties
+
+<ArgTypes of={StatusStories} />

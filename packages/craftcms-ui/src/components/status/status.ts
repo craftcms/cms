@@ -3,18 +3,18 @@ import {html, LitElement, nothing} from 'lit';
 import styles from './status.styles.js';
 import type {CSSResultGroup} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
+import {t} from '@src/utilities/translate';
 
 /**
- * @summary Short summary of the component's intended use.
+ * @summary A coloured dot standing for an object's state — an entry that is
+ * live, a user that is disabled, a draft that is pending.
  *
- * @event craft-event-name - Emitted as an example.
+ * The dot carries no text. It is meant to sit beside the thing it describes,
+ * in an index row or a chip, where the name is already present.
  *
- * @slot - The default slot.
- * @slot example - An example slot.
- *
- * @csspart base - The component's base wrapper.
- *
- * @cssproperty --example - An example CSS custom property.
+ * Reach for `craft-indicator` instead when the dot means something the status
+ * vocabulary does not cover: indicator takes any palette colour, where this
+ * takes a fixed set of states.
  */
 export default class CraftStatus extends LitElement {
   static override styles: CSSResultGroup = [styles];
@@ -22,7 +22,10 @@ export default class CraftStatus extends LitElement {
   /** Accessible label for the status. */
   @property() label: string | null = null;
 
-  /** The status of the indicator. */
+  /**
+   * The state the dot stands for. Each renders in its own colour; leaving it
+   * unset renders the neutral dot.
+   */
   @property() status:
     | 'live'
     | 'pending'
@@ -33,7 +36,7 @@ export default class CraftStatus extends LitElement {
 
   getLabel() {
     if (!this.label && this.status) {
-      return `Status: ${this.status}`;
+      return t('Status: {status}', {status: this.status});
     }
 
     return this.label;
@@ -50,8 +53,8 @@ export default class CraftStatus extends LitElement {
           'status--expired': this.status === 'expired',
           'status--disabled': this.status === 'disabled',
         })}"
-        role="img"
-        aria-label="${this.getLabel()}"
+        role="${this.getLabel() ? 'img' : nothing}"
+        aria-label="${this.getLabel() ?? nothing}"
       ></span>
     `;
   }
