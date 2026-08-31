@@ -9,6 +9,7 @@
   import ElementIndexToolbar from '@/modules/elements/components/ElementIndexToolbar.vue';
   import {TableSpacing} from '@/common/types';
   import type {ContentIndexData} from '@/modules/elements/composables/useContentIndexData';
+  import type {SourceItem} from '@/modules/elements/types/sources';
   import {
     useModalElementIndex,
     type SelectedElement,
@@ -25,6 +26,8 @@
   const emit = defineEmits<{
     (event: 'selection-change', elements: SelectedElement[]): void;
     (event: 'choose', elements: SelectedElement[]): void;
+    /** The source being viewed, so the chrome can act on the current folder. */
+    (event: 'source-change', source: SourceItem | null): void;
   }>();
 
   const index = useModalElementIndex({
@@ -66,7 +69,23 @@
     () => clearSelection()
   );
 
-  defineExpose({selectedElements, hasSelection, clearSelection});
+  // Published rather than read, for the same reason the selection is: what the
+  // footer can offer depends on where the index is — uploading needs the folder
+  // currently on screen. `immediate` because the first source arrives with the
+  // payload, before anything switches.
+  watch(
+    () => elementIndex.source,
+    (source) => emit('source-change', source ?? null),
+    {immediate: true}
+  );
+
+  defineExpose({
+    selectedElements,
+    hasSelection,
+    clearSelection,
+    /** Re-requests the current query — what an upload leaves stale. */
+    refresh: () => index.load(index.query.value),
+  });
 
   const showSidebar = computed(() => elementIndex.sources.length > 1);
 </script>
