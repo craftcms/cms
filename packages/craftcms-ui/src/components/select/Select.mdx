@@ -1,0 +1,32 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SelectStories from './select.stories';
+
+<Meta of={SelectStories} name="Docs" />
+
+# Select
+
+`<craft-select>` is a dropdown built on the native `<select>`.
+
+<Canvas of={SelectStories.Default} sourceState="shown" />
+
+The options are real `<option>` elements, so the browser draws the dropdown itself.
+
+## Why the Native Control
+
+On a phone or tablet, the native picker is a full-screen wheel or list the person already knows how to use — better than anything a component can draw, and it comes with keyboard support, type-ahead, and screen reader behaviour for free.
+
+That is the trade this component makes: you get the platform's dropdown, and in exchange the options can only be text.
+
+## Choosing Between the Three
+
+- **Select** — plain text options. The default choice.
+- **[Select Rich](?path=/docs/form-controls-select-controls-select-rich--docs)** — an option needs more than text: an icon, a status, a hint.
+- **[Combobox](?path=/docs/form-controls-select-controls-combobox--docs)** — the list is long enough that a person needs to filter it.
+
+Reach for the plainest one that fits. Each step up trades platform behaviour for presentation.
+
+## Accessibility
+
+The native select brings its own semantics, keyboard handling, and mobile affordances, and Lion wires the label and validation feedback around it.
+
+Label it with the thing being chosen. A select is announced with its current value, so an unlabelled one reads as a value with no question attached.
