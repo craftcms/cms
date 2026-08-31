@@ -6,9 +6,26 @@ import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
 
 import '../visually-hidden/visually-hidden';
 
+/**
+ * @summary An indeterminate loading indicator, for work whose progress cannot
+ * be measured. Use `craft-progress` or `craft-progress-bar` when it can.
+ *
+ * The spinner is presentational on its own. Slot text to say what is loading,
+ * which is announced but not shown.
+ *
+ * @slot - A description of what is loading, visually hidden.
+ *
+ * @fires show - Emitted when the spinner is shown via `show()`.
+ * @fires hide - Emitted when the spinner is hidden via `hide()`.
+ */
 export default class CraftSpinner extends LitElement {
   static override styles = [visuallyHiddenStyles, componentStyles];
 
+  /**
+   * Whether the spinner is shown. Hiding keeps it in the layout rather than
+   * removing it, so surrounding content does not jump as work starts and
+   * stops.
+   */
   @property({reflect: true, type: Boolean})
   visible: boolean = true;
 
