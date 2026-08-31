@@ -11,7 +11,7 @@ import '../input/input.js';
  * render the element themselves and read the args they need.
  */
 const meta = {
-  title: 'Controls/Input Handle',
+  title: 'Form Controls/Text Controls/Input Handle',
   component: 'craft-input-handle',
   args: {
     label: 'Handle',

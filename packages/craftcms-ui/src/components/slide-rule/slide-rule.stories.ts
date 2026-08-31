@@ -7,7 +7,7 @@ const {events, args, argTypes, template} =
   getStorybookHelpers('craft-slide-rule');
 
 const meta: Meta<CraftSlideRule> = {
-  title: 'Controls/Slide Rule',
+  title: 'Form Controls/Slide Rule',
   component: 'craft-slide-rule',
   args,
   argTypes,

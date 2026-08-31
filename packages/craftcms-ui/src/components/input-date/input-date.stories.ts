@@ -17,7 +17,7 @@ const {args, argTypes, template} =
 type InputDateArgs = CraftInputDate & typeof args;
 
 const meta = {
-  title: 'Controls/Input Date',
+  title: 'Form Controls/Text Controls/Input Date',
   component: 'craft-input-date',
   args: {...args, 'label-slot': 'Post Date'},
   argTypes,
@@ -62,8 +62,8 @@ export const Readonly: Story = {
 
 /**
  * To edit a date and a time as one value, use
- * [Input Date Time](?path=/docs/controls-input-date-time--docs), which pairs
- * this with an [Input Time](?path=/docs/controls-input-time--docs) and submits
+ * [Input Date Time](?path=/docs/form-controls-text-controls-input-date-time--docs), which pairs
+ * this with an [Input Time](?path=/docs/form-controls-text-controls-input-time--docs) and submits
  * them together.
  */
 export const Sizes: Story = {

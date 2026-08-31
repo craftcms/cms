@@ -7,7 +7,7 @@ import './field.js';
 import '../input/input.js';
 
 const meta = {
-  title: 'Controls/Field',
+  title: 'Form Controls/Field',
   component: 'craft-field',
   args: {
     label: 'Field label',

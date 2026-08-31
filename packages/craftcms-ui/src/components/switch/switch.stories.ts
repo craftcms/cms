@@ -6,7 +6,7 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import './switch.js';
 
 const meta = {
-  title: 'Controls/Switch',
+  title: 'Form Controls/Choice Controls/Switch',
   component: 'craft-switch',
   args: {
     label: 'Enable feature',

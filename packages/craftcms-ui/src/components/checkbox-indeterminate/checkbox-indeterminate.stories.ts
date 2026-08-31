@@ -7,7 +7,7 @@ import '../checkbox/checkbox.js';
 import '../checkbox-group/checkbox-group.js';
 
 const meta = {
-  title: 'Controls/Checkbox Indeterminate',
+  title: 'Form Controls/Choice Controls/Checkbox Indeterminate',
   component: 'craft-checkbox-indeterminate',
   args: {
     label: 'Select All',

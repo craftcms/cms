@@ -5,7 +5,7 @@ import {html} from 'lit';
 import './input-copy.js';
 
 const meta = {
-  title: 'Controls/Input Copy',
+  title: 'Form Controls/Text Controls/Input Copy',
   component: 'craft-input-copy',
   render: () => html`
     <craft-input-copy

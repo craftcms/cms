@@ -49,7 +49,7 @@ const inField: Decorator = (story, context) => html`
 const showFlagArgType = {control: {disable: true}} as const;
 
 const meta = {
-  title: 'Controls/Input Date Time',
+  title: 'Form Controls/Text Controls/Input Date Time',
   component: 'craft-input-date-time',
   args: {
     ...args,

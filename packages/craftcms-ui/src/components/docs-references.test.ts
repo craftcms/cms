@@ -1,4 +1,4 @@
-import {readFileSync, readdirSync} from 'node:fs';
+import {globSync, readFileSync, readdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
 
@@ -12,6 +12,10 @@ import {describe, expect, it} from 'vite-plus/test';
  */
 
 const COMPONENTS = join(import.meta.dirname, '.');
+const SRC = join(import.meta.dirname, '..');
+
+/** `?path=/docs/<id>--docs` — how the pages link to each other. */
+const CROSS_LINK = /\?path=\/docs\/([a-z0-9-]+)--docs/g;
 
 /** `<name>Stories.Foo` — how the MDX pages address their stories. */
 const REFERENCE = /\b[A-Za-z]+Stories\.([A-Za-z][A-Za-z0-9]*)/g;
@@ -49,6 +53,38 @@ function docPages(): Array<{component: string; mdx: string; stories: string}> {
 
 const pages = docPages();
 
+/**
+ * Storybook's own id derivation: lowercase, non-alphanumerics collapsed to
+ * dashes. Renaming a story group changes every id under it, so a cross-link
+ * written before the move silently points at nothing.
+ */
+function docsId(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
+ * Every docs id the package declares — from story titles anywhere under `src`,
+ * plus MDX pages that stand alone with their own `<Meta title>`.
+ */
+const knownIds = new Set(
+  [
+    ...globSync(join(SRC, '**/*.stories.ts')).flatMap((file) => {
+      const title = /title:\s*'([^']+)'/.exec(readFileSync(file, 'utf8'))?.[1];
+      return title ? [docsId(title)] : [];
+    }),
+    ...globSync(join(SRC, '**/*.mdx')).flatMap((file) => {
+      const title = /<Meta\s+title="([^"]+)"/.exec(
+        readFileSync(file, 'utf8')
+      )?.[1];
+      return title ? [docsId(title)] : [];
+    }),
+  ].filter(Boolean)
+);
+
 describe('docs pages reference stories that exist', () => {
   /** A guard that silently matches nothing would be worse than none at all. */
   it('finds the documented components', () => {
@@ -62,5 +98,14 @@ describe('docs pages reference stories that exist', () => {
     const missing = [...referenced].filter((name) => !exported.has(name));
 
     expect(missing).toEqual([]);
+  });
+});
+
+describe('docs pages link to pages that exist', () => {
+  it.each(pages)('$component', ({mdx}) => {
+    const linked = matchAll(readFileSync(mdx, 'utf8'), CROSS_LINK);
+    const dead = linked.filter((id) => !knownIds.has(id));
+
+    expect(dead).toEqual([]);
   });
 });

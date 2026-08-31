@@ -6,7 +6,7 @@ import './textarea.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Textarea',
+  title: 'Form Controls/Text Controls/Textarea',
   component: 'craft-textarea',
   args: {},
   render: function () {

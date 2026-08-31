@@ -6,7 +6,7 @@ import './select.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Select',
+  title: 'Form Controls/Select Controls/Select',
   component: 'craft-select',
   args: {},
   render: function () {

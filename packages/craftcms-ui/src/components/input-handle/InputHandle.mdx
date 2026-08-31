@@ -9,7 +9,7 @@ import * as InputHandleStories from './input-handle.stories';
 
 <Canvas of={InputHandleStories.Default} sourceState="shown" />
 
-It is [Input](?path=/docs/controls-input--docs) with two changes: the value renders in a monospace face, and the browser's text conveniences are turned off.
+It is [Input](?path=/docs/form-controls-text-controls-input--docs) with two changes: the value renders in a monospace face, and the browser's text conveniences are turned off.
 
 ## Why It Differs
 
@@ -22,7 +22,7 @@ The monospace face is the other half: it makes `l`, `1`, and `I` — and `0` aga
 
 ## Autocorrection
 
-`autocorrect` and `autocapitalize` are off here, where [Input](?path=/docs/controls-input--docs) leaves them on.
+`autocorrect` and `autocapitalize` are off here, where [Input](?path=/docs/form-controls-text-controls-input--docs) leaves them on.
 Both can be turned back on if a field wants them:
 
 <Canvas of={InputHandleStories.AutocorrectOn} sourceState="shown" />
@@ -31,7 +31,7 @@ They serialise as `on`/`off` rather than as bare boolean attributes, matching th
 
 ## Everything Else
 
-The rest comes from [Input](?path=/docs/controls-input--docs) unchanged, including the width inference around `maxlength`:
+The rest comes from [Input](?path=/docs/form-controls-text-controls-input--docs) unchanged, including the width inference around `maxlength`:
 
 <Canvas of={InputHandleStories.WithMaxLength} sourceState="shown" />
 
@@ -39,7 +39,7 @@ The rest comes from [Input](?path=/docs/controls-input--docs) unchanged, includi
 
 ## Accessibility
 
-Nothing here changes how the control is announced; see [Input](?path=/docs/controls-input--docs).
+Nothing here changes how the control is announced; see [Input](?path=/docs/form-controls-text-controls-input--docs).
 
 Because the field is monospace and the value is machine-readable, it is worth saying in the help text what a valid handle looks like rather than leaving someone to discover the rules through validation.
 

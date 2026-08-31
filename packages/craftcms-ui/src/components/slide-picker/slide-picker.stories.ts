@@ -7,7 +7,7 @@ const {events, args, argTypes, template} =
   getStorybookHelpers('craft-slide-picker');
 
 const meta: Meta<CraftSlidePicker> = {
-  title: 'Controls/Slide Picker',
+  title: 'Form Controls/Slide Picker',
   component: 'craft-slide-picker',
   args,
   argTypes,

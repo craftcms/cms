@@ -5,7 +5,7 @@ import {html} from 'lit';
 import './input-color.js';
 
 const meta = {
-  title: 'Controls/Input Color',
+  title: 'Form Controls/Text Controls/Input Color',
   component: 'craft-input-color',
   args: {
     label: 'Fill Color',

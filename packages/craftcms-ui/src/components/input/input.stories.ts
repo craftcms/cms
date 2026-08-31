@@ -18,7 +18,7 @@ const {args, argTypes, template} =
 type InputArgs = CraftInput & typeof args;
 
 const meta = {
-  title: 'Controls/Input',
+  title: 'Form Controls/Text Controls/Input',
   component: 'craft-input',
   args: {
     ...args,
@@ -102,8 +102,8 @@ export const Sizes: Story = {
 
 /**
  * `type` accepts any native input type. The date and time types have their own
- * components — [Input Date](?path=/docs/controls-input-date--docs) and
- * [Input Time](?path=/docs/controls-input-time--docs) — which add behaviour on
+ * components — [Input Date](?path=/docs/form-controls-text-controls-input-date--docs) and
+ * [Input Time](?path=/docs/form-controls-text-controls-input-time--docs) — which add behaviour on
  * top.
  */
 export const Types: Story = {

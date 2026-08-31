@@ -7,7 +7,7 @@ import '../checkbox/checkbox.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Checkbox Group',
+  title: 'Form Controls/Choice Controls/Checkbox Group',
   component: 'craft-checkbox-group',
   args: {},
   render: function () {

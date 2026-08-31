@@ -7,7 +7,7 @@ import '../field/field.js';
 import '../input/input.js';
 
 const meta = {
-  title: 'Controls/Field Group',
+  title: 'Form Controls/Field Group',
   component: 'craft-field-group',
 } satisfies Meta<any>;
 

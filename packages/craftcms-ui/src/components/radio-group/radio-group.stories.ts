@@ -7,7 +7,7 @@ import '../radio/radio.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Radio Group',
+  title: 'Form Controls/Choice Controls/Radio Group',
   component: 'craft-radio-group',
   args: {},
   render: function () {

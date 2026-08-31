@@ -50,7 +50,7 @@ export default css`
     font-size: var(--c-text-sm);
     gap: 0 var(--c-spacing-xs);
   }
-  
+
   .callout__title,
   .callout__description {
     padding-inline: var(--c-spacing-sm);

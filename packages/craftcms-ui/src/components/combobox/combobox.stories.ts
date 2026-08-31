@@ -46,7 +46,7 @@ const manyOptions: ComboboxItem[] = Array.from({length: 400}, (_, i) => ({
 }));
 
 const meta = {
-  title: 'Controls/Combobox',
+  title: 'Form Controls/Select Controls/Combobox',
   component: 'craft-combobox',
 } satisfies Meta;
 

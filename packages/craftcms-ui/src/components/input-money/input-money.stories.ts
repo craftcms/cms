@@ -5,7 +5,7 @@ import {html} from 'lit';
 import './input-money.js';
 
 const meta = {
-  title: 'Controls/Input Money',
+  title: 'Form Controls/Text Controls/Input Money',
   component: 'craft-input-money',
   args: {
     label: 'Price',

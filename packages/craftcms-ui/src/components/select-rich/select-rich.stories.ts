@@ -5,7 +5,7 @@ import '../option/option.js';
 import '../indicator/indicator.js';
 
 const meta = {
-  title: 'Controls/Select Rich',
+  title: 'Form Controls/Select Controls/Select Rich',
   component: 'craft-select-rich',
   args: {},
   render: function () {

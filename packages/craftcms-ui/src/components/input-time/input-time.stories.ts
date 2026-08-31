@@ -17,7 +17,7 @@ const {args, argTypes, template} =
 type InputTimeArgs = CraftInputTime & typeof args;
 
 const meta = {
-  title: 'Controls/Input Time',
+  title: 'Form Controls/Text Controls/Input Time',
   component: 'craft-input-time',
   args: {...args, 'label-slot': 'Start Time'},
   argTypes,

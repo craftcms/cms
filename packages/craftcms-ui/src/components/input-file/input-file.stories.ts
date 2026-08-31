@@ -6,7 +6,7 @@ import './input-file.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Input File',
+  title: 'Form Controls/Input File',
   component: 'craft-input-file',
   args: {},
   render: function () {

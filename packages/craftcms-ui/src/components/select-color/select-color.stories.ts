@@ -3,7 +3,7 @@ import {html} from 'lit';
 import './select-color.js';
 
 const meta = {
-  title: 'Controls/Select Color',
+  title: 'Form Controls/Select Controls/Select Color',
   component: 'craft-select-color',
   args: {
     label: 'Color',

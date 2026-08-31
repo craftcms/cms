@@ -6,7 +6,7 @@ import * as InputDateStories from './input-date.stories';
 # Input Date
 
 `<craft-input-date>` is a date input.
-It is [Input](?path=/docs/controls-input--docs) with its `type` fixed to `date`, so it carries the same label, help text, validation, and slots, and renders the browser's own date picker.
+It is [Input](?path=/docs/form-controls-text-controls-input--docs) with its `type` fixed to `date`, so it carries the same label, help text, validation, and slots, and renders the browser's own date picker.
 
 <Canvas of={InputDateStories.Default} sourceState="shown" />
 
@@ -38,14 +38,14 @@ Both are **properties rather than attributes** — they are declared with `attri
 
 ## Pairing With a Time
 
-To edit a date and a time as a single value, use [Input Date Time](?path=/docs/controls-input-date-time--docs).
-It owns one of these and one [Input Time](?path=/docs/controls-input-time--docs), keeps them in step, and submits them together under one name — which is what you want whenever the two halves describe the same moment.
+To edit a date and a time as a single value, use [Input Date Time](?path=/docs/form-controls-text-controls-input-date-time--docs).
+It owns one of these and one [Input Time](?path=/docs/form-controls-text-controls-input-time--docs), keeps them in step, and submits them together under one name — which is what you want whenever the two halves describe the same moment.
 
 ## Accessibility
 
 The native date input brings its own keyboard support and its own picker, both of which are better understood by assistive technology than anything a custom widget would replace them with.
 
-As with any [Input](?path=/docs/controls-input--docs), the one thing to get right is the label: set `label`, slot one, or wrap the control in `craft-field`.
+As with any [Input](?path=/docs/form-controls-text-controls-input--docs), the one thing to get right is the label: set `label`, slot one, or wrap the control in `craft-field`.
 
 ## Properties
 

@@ -6,7 +6,7 @@ import './input-password.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Controls/Input Password',
+  title: 'Form Controls/Text Controls/Input Password',
   component: 'craft-input-password',
   args: {},
   render: function () {
