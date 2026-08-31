@@ -53,6 +53,18 @@ class ElementHelper
     }
 
     /**
+     * Returns whether a string contains a temporary slug.
+     */
+    public static function containsTempSlug(?string $str): bool
+    {
+        if ($str === null) {
+            return false;
+        }
+
+        return (bool) preg_match('/\b__temp_[a-z]{36}\b/', $str);
+    }
+
+    /**
      * Generates a new slug based on a given string.
      *
      * This is different from `normalizeSlug()` in two ways:
