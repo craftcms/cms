@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Validation\Rules\Password;
 
 class UserPasswordViewModel extends ViewModel
 {
@@ -18,6 +19,11 @@ class UserPasswordViewModel extends ViewModel
     public function userId(): int
     {
         return $this->user->id;
+    }
+
+    public function passwordRules(): string
+    {
+        return Password::defaults()->toPasswordRulesString();
     }
 
     /**

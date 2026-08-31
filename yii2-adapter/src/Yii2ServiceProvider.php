@@ -338,7 +338,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
-        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+        $this->app->terminating(function(): void {
+            $this->triggerAfterRequestForLaravelRequest();
+            Craft::getLogger()->flush(true);
+        });
 
         if (!$this->app->runningInConsole()) {
             return;

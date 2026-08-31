@@ -15,6 +15,7 @@
 
   const page = usePage<{
     authMethods: AuthMethod[];
+    passwordRules: string;
   }>();
 
   interface PasswordForm {
@@ -54,6 +55,7 @@
               id="newPassword"
               name="newPassword"
               autocomplete="new-password"
+              :password-rules="page.props.passwordRules"
               :error="form.errors.newPassword"
             />
           </craft-field-group>

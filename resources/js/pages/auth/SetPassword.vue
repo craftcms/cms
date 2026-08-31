@@ -10,6 +10,7 @@
     code: string;
     newUser: boolean;
     action: string;
+    passwordRules: string;
   }>();
 
   const page = usePage<{
@@ -29,6 +30,7 @@
       :code="code"
       :initial-error="page.props.errors?.newPassword"
       :new-user="newUser ? '' : null"
+      :password-rules="passwordRules"
     ></craft-set-password-form>
   </AuthBase>
 </template>

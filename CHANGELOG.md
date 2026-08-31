@@ -11,6 +11,7 @@
 - Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
 - Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
+- Improved new password fields to provide the configured password rules to supported password managers. ([#19516](https://github.com/craftcms/cms/pull/19516))
 - Element edit screens now autosave at the pace of the change — a keystroke waits, a discrete change saves almost immediately.
 - Submitting an element edit screen now cancels any in-flight autosave, and a failed autosave reports its HTTP status.
 - Element edit screens now indicate which fields a draft has unapplied changes to.
@@ -20,6 +21,7 @@
 - Fixed a bug where POST requests to legacy action URLs weren’t getting routed properly. ([#19478](https://github.com/craftcms/cms/issues/19478))
 - Fixed a JavaScript error that occurred when creating a new Dashboard widget. ([#19479](https://github.com/craftcms/cms/issues/19479))
 - Fixed a bug where users without a local password could not start an elevated session using OAuth. ([#19512](https://github.com/craftcms/cms/pull/19512))
+- Fixed a bug where Yii log targets configured via `config/craft/app.php` did not receive messages logged with `Craft::info()` and related methods. ([#19517](https://github.com/craftcms/cms/pull/19517))
 
 ## 6.0.0-alpha.17 - 2026-08-18
 

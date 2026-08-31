@@ -25,14 +25,10 @@ export default css`
     display: none;
   }
 
-  .form-field {
-    padding-inline: var(--c-spacing-lg);
-  }
-
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-start: 0;
+    inset-inline-start: calc(var(--c-spacing-lg) * -1);
     width: 2px;
     height: 100%;
     cursor: help;

@@ -41,6 +41,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
+use Illuminate\Validation\Rules\Password;
 use InvalidArgumentException;
 use Stringable;
 
@@ -1028,12 +1029,18 @@ readonly class FormFields
     public static function passwordFromConfig(array $config): InputPassword
     {
         $config['type'] = 'password';
+        if (($config['autocomplete'] ?? null) === 'new-password') {
+            $config['inputAttributes']['passwordrules'] ??= Password::defaults()->toPasswordRulesString();
+        }
         $classes = Html::explodeClass($config['class'] ?? []);
         $classes[] = 'password';
         $config['class'] = $classes;
 
         $input = InputPassword::make();
         self::textFromConfig($config, $input);
+        $input->passwordRules(isset($config['inputAttributes']['passwordrules'])
+            ? (string) $config['inputAttributes']['passwordrules']
+            : null);
 
         return $input;
     }

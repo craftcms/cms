@@ -391,6 +391,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
         class="field-notice"
         variant=${isTip ? 'info' : 'warning'}
         appearance="plain"
+        padding="none"
       >
         <craft-visually-hidden>
           ${isTip ? t('Tip:') : t('Warning:')}
