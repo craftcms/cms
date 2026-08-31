@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\MessageBag;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -54,10 +55,12 @@ test('fallback template renders set-password web component', function () {
         'uid' => 'user-uid',
         'code' => 'token-code',
         'newUser' => false,
+        'passwordRules' => Password::defaults()->toPasswordRulesString(),
         'errors' => new MessageBag,
     ])->render());
 
-    expect($html)->toContain('craft-set-password-form');
+    expect($html)->toContain('craft-set-password-form')
+        ->and($html)->toContain('password-rules=');
 });
 
 test('store validates required fields', function () {
