@@ -7,6 +7,7 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
+  import {computed} from 'vue';
   import type {FormControlPayload, FormValue} from './types';
   import type {Slots} from 'vue';
   import {inputName, serverErrorValidators} from './runtime';
@@ -51,6 +52,34 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string | string[]): void;
   }>();
+
+  /**
+   * A single select needs somewhere to represent "nothing chosen".
+   *
+   * A `<select>` with no selected option shows its first one, so an optional
+   * setting that has never been set looks set — and because nothing changed,
+   * saving posts nothing and it stays unset. A leading blank option makes the
+   * empty state visible, and re-selectable once something has been chosen.
+   *
+   * Multi-selects show an empty list when empty, so they don't need it, and a
+   * required control has no valid empty state to offer. Options that already
+   * carry an empty value supply their own.
+   *
+   * `Form\Controls\Choice::selectOptions()` mirrors this for the HTML fallback.
+   */
+  const selectOptions = computed<ChoiceOption[]>(() => {
+    const options = props.control.props.options;
+
+    if (
+      props.control.props.multiple ||
+      props.required ||
+      options.some((option) => inputValue(option.value) === '')
+    ) {
+      return options;
+    }
+
+    return [{label: '', value: ''}, ...options];
+  });
 
   function inputValue(value: FormValue): string {
     return value === true ? '1' : value === false ? '' : String(value);
@@ -195,7 +224,7 @@
       @change="onSelect"
     >
       <option
-        v-for="option in control.props.options"
+        v-for="option in selectOptions"
         :key="inputValue(option.value)"
         :value="inputValue(option.value)"
         :selected="selected(option.value)"

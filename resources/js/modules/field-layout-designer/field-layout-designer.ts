@@ -141,10 +141,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
+    // `typeof` rather than a bare `$`: until the legacy bundle loads there is no
+    // global to reference at all, and an undeclared identifier throws a
+    // ReferenceError instead of evaluating falsy — which `deferUntil` would
+    // surface as a rejected promise that never polls again.
     void deferUntil(
       () =>
         !!Craft?.Grid &&
-        $ instanceof Function &&
+        typeof $ === 'function' &&
         !!this.$fieldLibrary.querySelector('input[type="search"]')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(

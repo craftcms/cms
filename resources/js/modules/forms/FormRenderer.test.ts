@@ -9,6 +9,26 @@ import {
   type Ref,
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+
+// `ElementSelectControl` opens the selector itself, through this factory. The
+// real one mounts a second Vue app and pulls in the element index, so tests
+// drive it through the seam instead.
+const selectorModal = vi.hoisted(() => ({
+  createElementSelectorModal: vi.fn(
+    async (_elementType: string, _settings: Record<string, any>) => ({
+      show: vi.fn(async () => {}),
+      destroy: vi.fn(),
+      on: vi.fn(),
+    })
+  ),
+}));
+
+vi.mock(
+  '@/modules/element-selector-modal/create-element-selector-modal',
+  () => ({
+    createElementSelectorModal: selectorModal.createElementSelectorModal,
+  })
+);
 import payload from '../../../../tests/Fixtures/Form/plain-text-settings.json';
 import {registerTestPluginFormComponents} from '../../../../tests/TestClasses/TestPlugin/resources/js/register-form-components';
 import {
@@ -1853,18 +1873,24 @@ describe('FormRenderer', () => {
 
   it('selects and removes ordered element relationships as changed-only values', async () => {
     let mutation: FormPayload['values'] = {};
-    let selectElements: (elements: SelectedElement[]) => void;
-    const createElementSelectorModal = vi.fn(
-      (_elementType: string, settings: {onSelect: typeof selectElements}) => {
-        selectElements = settings.onSelect;
-
-        return {};
+    selectorModal.createElementSelectorModal.mockClear();
+    const selectElements = async (
+      elements: SelectedElement[]
+    ): Promise<void> => {
+      // `openSelector` reaches the factory through a dynamic `import()`, so the
+      // call lands a few microtasks after the click.
+      for (let i = 0; i < 20; i++) {
+        if (selectorModal.createElementSelectorModal.mock.calls.length > 0) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
-    );
-    vi.stubGlobal('Craft', {
-      createElementSelectorModal,
-      initUiElements: vi.fn(),
-    });
+
+      const [, settings] =
+        selectorModal.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect(elements);
+    };
+    vi.stubGlobal('Craft', {initUiElements: vi.fn()});
     const relational = clonePayload();
     relational.nodes = [
       required(relational.nodes[0], 'Expected the first field node.'),
@@ -1913,17 +1939,27 @@ describe('FormRenderer', () => {
     ).toEqual(['Second entry', 'First entry']);
     expect(container.textContent).toContain('Choose valid entries.');
     container.querySelector<HTMLElement>('[data-element-select-add]')!.click();
-    selectElements!([{id: 3, label: 'Third entry', siteId: 1}]);
+    await selectElements([{id: 3, label: 'Third entry', siteId: 1}]);
     await nextTick();
 
-    expect(createElementSelectorModal).toHaveBeenCalledWith(
+    expect(selectorModal.createElementSelectorModal).toHaveBeenCalledWith(
       'CraftCms\\Cms\\Entry\\Elements\\Entry',
       expect.objectContaining({disabledElementIds: [2, 1]})
     );
-    expect(elementSelectMocks.entry).toHaveBeenCalled();
     expect(mutation).toEqual({settings: {related: [2, 1, 3]}});
 
-    elementSelectMocks.removeElement(2);
+    // Removal goes through the chip's own action menu now, rather than the
+    // legacy controller.
+    const chipFor = (id: number) =>
+      required(
+        container.querySelector<HTMLElement & {actions: any[]}>(
+          `craft-chip[data-id="${id}"] [slot="suffix"] craft-action-menu`
+        ),
+        `Expected an action menu on chip ${id}.`
+      );
+    chipFor(2)
+      .actions.find((action) => action.label === 'Remove')
+      .onClick();
     await nextTick();
 
     expect(renderer.currentValues()).toEqual({settings: {related: [1, 3]}});

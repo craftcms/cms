@@ -3,7 +3,7 @@ import {css} from 'lit';
 export default css`
   :host {
     /* Overall size of the thumbnail box. */
-    --c-thumbnail-size: calc(34rem / 16);
+    --c-thumbnail-size: calc(30rem / 16);
     /* Corner radius applied when [rounded] is set. Defaults to a full circle. */
     --c-thumbnail-radius: var(--c-radius-full);
     /* Size of a single checker square. */
@@ -13,7 +13,7 @@ export default css`
 
     --_checker-half: calc(var(--c-thumbnail-checker-size) / 2);
 
-    display: inline-flex;
+    display: contents;
   }
 
   .thumbnail {
@@ -39,8 +39,7 @@ export default css`
   }
 
   /* h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
-  .thumbnail--checkered .thumbnail__image,
-  .thumbnail--checkered ::slotted(img) {
+  .thumbnail--checkered {
     background-image:
       linear-gradient(
         45deg,
