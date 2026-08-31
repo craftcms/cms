@@ -1,0 +1,22 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as NavListStories from './nav-list.stories';
+
+<Meta of={NavListStories} name="Docs" />
+
+# Nav List
+
+`<craft-nav-list>` wraps a set of [Nav Item](?path=/docs/components-nav-item--docs)s in a real list.
+
+<Canvas of={NavListStories.Default} sourceState="shown" />
+
+It contributes two things and nothing else: the `<ul>` semantics, and the spacing between items. The items carry their own appearance.
+
+## Why the List Matters
+
+A run of links in a `<div>` is announced one at a time, with no sense of how many there are or where you are among them. Inside a list, a screen reader says "list, 5 items" and numbers them as you move.
+
+That is the whole reason this component exists rather than a wrapper `<div>` — and it is why nav items belong inside one even when the visual result looks identical.
+
+## Properties
+
+This component takes no attributes. Its only slot is the default one, holding the nav items.
