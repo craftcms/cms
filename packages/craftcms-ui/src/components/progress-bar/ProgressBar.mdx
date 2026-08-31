@@ -1,0 +1,60 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ProgressBarStories from './progress-bar.stories';
+
+<Meta of={ProgressBarStories} name="Docs" />
+
+# Progress Bar
+
+`<craft-progress-bar>` shows progress as a horizontal bar, with an optional status line.
+
+<Canvas of={ProgressBarStories.ProgressStates} sourceState="shown" />
+
+Use it where there is room to spread out and progress is worth watching — an upload, a queue job, a long save. For a small fixed space, use [Progress](?path=/docs/components-progress--docs); where progress cannot be measured, use [Spinner](?path=/docs/components-spinner--docs).
+
+## Two Ways to Set It
+
+Either a percentage:
+
+```html
+<craft-progress-bar progress="50"></craft-progress-bar>
+```
+
+Or a count of items, which the bar turns into a percentage itself:
+
+<Canvas of={ProgressBarStories.ItemCountMode} sourceState="shown" />
+
+Prefer the count when you have one. It is what the status line can report, and "25 of 100" tells a person more than "25%" — including how much work a single item represents.
+
+## Status
+
+<Canvas of={ProgressBarStories.WithStatus} sourceState="shown" />
+
+`show-status` renders the progress as text alongside the bar. This is the part that makes the component readable without seeing it, so turn it on whenever there is room.
+
+## Pending and Completion
+
+<Canvas of={ProgressBarStories.Pending} sourceState="shown" />
+
+<Canvas of={ProgressBarStories.CompleteEvent} sourceState="shown" />
+
+<Canvas of={ProgressBarStories.ResetMethod} sourceState="shown" />
+
+`reset()` returns the bar to zero, for reusing one across several runs rather than replacing the element.
+
+## Styling
+
+<Canvas of={ProgressBarStories.CustomStyles} sourceState="shown" />
+
+Three CSS parts and five custom properties cover the track, the fill, and the status text. Both are listed under [Properties](#properties).
+
+<Canvas of={ProgressBarStories.Playground} sourceState="shown" />
+
+## Accessibility
+
+The bar itself is a visual fill. **`show-status` is what makes it perceivable as text**, which is why it is worth turning on rather than treating as decoration.
+
+Where the status is hidden, the surrounding interface has to say the same thing another way — a caption, a count, a live region. A bar with no text is a progress indicator only for people who can see it.
+
+## Properties
+
+<ArgTypes of={ProgressBarStories} />
