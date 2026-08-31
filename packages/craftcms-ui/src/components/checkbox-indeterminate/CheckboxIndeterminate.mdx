@@ -1,0 +1,24 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CheckboxIndeterminateStories from './checkbox-indeterminate.stories';
+
+<Meta of={CheckboxIndeterminateStories} name="Docs" />
+
+# Checkbox Indeterminate
+
+`<craft-checkbox-indeterminate>` is a parent checkbox that summarises the ones nested under it.
+
+<Canvas of={CheckboxIndeterminateStories.Default} sourceState="shown" />
+
+It is checked when every child is, unchecked when none are, and indeterminate when only some are. Toggling it sets every child to match — which is what makes it a "select all".
+
+## The Third State
+
+Indeterminate is a summary, not a value. The parent never posts an indeterminate value; only the children it summarises post anything at all.
+
+That is why this is a different component from a [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs) with `indeterminate` set. The plain checkbox exposes the state so you can drive it yourself; this one derives it, so the parent cannot fall out of step with its children.
+
+## Accessibility
+
+The mixed state is exposed as `aria-checked="mixed"`, which is announced as such — so a person hears that some of the set is selected rather than being told it is simply off.
+
+Label the parent with what the set contains rather than with "Select all". "All entry types" says what is being selected; "Select all" says only what the control does, which the checkbox shape already conveys.
