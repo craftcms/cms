@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `craft\helpers\ElementHelper::containsTempSlug()`.
+- Added `craft\services\Config::doesEnvVarExist()`.
 - Fixed a bug where `craft\web\Controller::asModelSuccess()` and `asModelFailure()` could include more data than expected. ([#19469](https://github.com/craftcms/cms/issues/19469))
 - Fixed a bug where eager-loading users’ addresses would also eager-load any addresses defined by custom Addresses fields.
 - Fixed a bug where the primary site’s content wasn’t preferred when propagating a Single section’s entry to new sites. ([#19473](https://github.com/craftcms/cms/issues/19473))
@@ -12,6 +13,7 @@
 - Fixed an exception that was thrown if `null` was passed to an asset query’s `uploader` param. ([#19484](https://github.com/craftcms/cms/issues/19484))
 - Fixed a bug where cached GraphQL queries weren’t registering the original queries’ cache tags or cache expiration date. ([#19508](https://github.com/craftcms/cms/pull/19508)) 
 - Fixed a bug where the control panel could become non-interactive after a slideout was closed. ([#9912](https://github.com/craftcms/cms/issues/9912), [#19511](https://github.com/craftcms/cms/pull/19511))
+- Fixed a bug where typing an environment variable name into a plugin’s license key input could result in multiple additions to the `.env` file, and cause the license key input to disappear. ([#19518](https://github.com/craftcms/cms/issues/19518))
 
 ## 5.10.14 - 2026-08-18
 
