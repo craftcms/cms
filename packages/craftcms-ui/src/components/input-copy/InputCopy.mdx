@@ -1,0 +1,48 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputCopyStories from './input-copy.stories';
+
+<Meta of={InputCopyStories} name="Docs" />
+
+# Input Copy
+
+`<craft-input-copy>` shows a value and gives it a copy-to-clipboard button.
+
+<Canvas of={InputCopyStories.Default} sourceState="shown" />
+
+It is [Input](?path=/docs/controls-input--docs) held permanently read-only, with a `craft-copy-button` in its suffix.
+
+## Read-Only by Design
+
+The control forces `readOnly` on every update, not just at startup, so removing the attribute at runtime does not make the field editable.
+That is deliberate: the value is something to take away, not something to change, and a field that looks editable but is not would be worse than one that plainly is not.
+
+## Copying Something Else
+
+`copy-value` sets what reaches the clipboard, independently of what is displayed.
+Reach for it when the readable form and the useful form differ — showing a truncated token while copying the whole one, say:
+
+<Canvas of={InputCopyStories.WithSeparateCopyValue} sourceState="shown" />
+
+With `copy-value` unset, the displayed value is copied.
+
+## Events
+
+The control re-emits the copy button's outcome, so a page can react to it:
+
+- `craft-copy` — the value reached the clipboard.
+- `craft-error` — it did not.
+
+## States
+
+<Canvas of={InputCopyStories.Disabled} sourceState="shown" />
+
+## Accessibility
+
+The copy button carries its own tooltip and label, so it is announced as a button rather than as unnamed chrome.
+
+A copy that succeeds silently is a copy a screen reader user cannot confirm.
+If the surrounding page does not already announce the result, listen for `craft-copy` and say so.
+
+## Properties
+
+<ArgTypes of={InputCopyStories} />

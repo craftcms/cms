@@ -1,0 +1,55 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputMoneyStories from './input-money.stories';
+
+<Meta of={InputMoneyStories} name="Docs" />
+
+# Input Money
+
+`<craft-input-money>` is a field for an amount of money, formatted for a currency and a locale.
+
+<Canvas of={InputMoneyStories.Default} sourceState="shown" />
+
+It is [Input](?path=/docs/controls-input--docs) with a mask over the top, so it carries the same label, help text, validation, and slots.
+
+## Why Not `type="number"`
+
+A native number field has no notion of thousands separators, shows spinner arrows that make no sense for money, and formats nothing.
+
+This is a masked text field instead.
+The mask is derived from `locale` and `currency` through `Intl.NumberFormat`, so the grouping character, the decimal character, and the number of decimal places are the ones that combination actually uses — rather than a guess baked into the component.
+
+<Canvas of={InputMoneyStories.LocalizedEuro} sourceState="shown" />
+
+That also means the decimal places follow the currency, not a fixed two:
+
+<Canvas of={InputMoneyStories.JapaneseYen} sourceState="shown" />
+
+Set `decimals`, `decimal-separator`, or `group-separator` to depart from the locale's own conventions.
+
+## Affordances
+
+Two pieces of chrome are on by default: the currency symbol beside the field, and a button that clears the amount once there is one.
+
+<Canvas of={InputMoneyStories.WithoutAffordances} sourceState="shown" />
+
+Both are **default-on string flags**: only the exact value `"false"` turns them off.
+A boolean binding cannot express that — `?show-currency="${false}"` removes the attribute, and an absent attribute reads as on.
+
+```html
+<craft-input-money show-currency="false" clearable="false"></craft-input-money>
+```
+
+## States
+
+<Canvas of={InputMoneyStories.Disabled} sourceState="shown" />
+
+## Accessibility
+
+The mask changes what a person sees as they type.
+Keep the help text explicit about the expected form when the locale's conventions are not the ones a reader would assume — a field that silently reformats input is harder to trust than one that says what it will do.
+
+The clear button is a real button with its own label. Everything else is announced as on [Input](?path=/docs/controls-input--docs).
+
+## Properties
+
+<ArgTypes of={InputMoneyStories} />

@@ -1,0 +1,48 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputHandleStories from './input-handle.stories';
+
+<Meta of={InputHandleStories} name="Docs" />
+
+# Input Handle
+
+`<craft-input-handle>` is a field for handles — the short machine-readable names that identify entry types, fields, sections, and volumes.
+
+<Canvas of={InputHandleStories.Default} sourceState="shown" />
+
+It is [Input](?path=/docs/controls-input--docs) with two changes: the value renders in a monospace face, and the browser's text conveniences are turned off.
+
+## Why It Differs
+
+A handle is typed exactly and read character by character, so the two things a browser does to help with prose actively get in the way.
+Autocorrection rewrites a deliberate spelling, and auto-capitalisation puts a capital where the handle needs none.
+
+The monospace face is the other half: it makes `l`, `1`, and `I` — and `0` against `O` — distinguishable at a glance.
+
+<Canvas of={InputHandleStories.ComparedToInput} sourceState="shown" />
+
+## Autocorrection
+
+`autocorrect` and `autocapitalize` are off here, where [Input](?path=/docs/controls-input--docs) leaves them on.
+Both can be turned back on if a field wants them:
+
+<Canvas of={InputHandleStories.AutocorrectOn} sourceState="shown" />
+
+They serialise as `on`/`off` rather than as bare boolean attributes, matching the native attributes they drive — so `autocorrect="off"` is the way to disable it, not removing the attribute.
+
+## Everything Else
+
+The rest comes from [Input](?path=/docs/controls-input--docs) unchanged, including the width inference around `maxlength`:
+
+<Canvas of={InputHandleStories.WithMaxLength} sourceState="shown" />
+
+<Canvas of={InputHandleStories.Disabled} sourceState="shown" />
+
+## Accessibility
+
+Nothing here changes how the control is announced; see [Input](?path=/docs/controls-input--docs).
+
+Because the field is monospace and the value is machine-readable, it is worth saying in the help text what a valid handle looks like rather than leaving someone to discover the rules through validation.
+
+## Properties
+
+<ArgTypes of={InputHandleStories} />

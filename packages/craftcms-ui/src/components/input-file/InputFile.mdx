@@ -1,0 +1,43 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputFileStories from './input-file.stories';
+
+<Meta of={InputFileStories} name="Docs" />
+
+# Input File
+
+`<craft-input-file>` is a file field: a button that opens the file dialog, and a list of what has been chosen.
+
+<Canvas of={InputFileStories.Default} sourceState="shown" />
+
+It is built on Lion's file input rather than [Input](?path=/docs/controls-input--docs), because it manages a list of files rather than a text value — so the base control's `maxlength`, `size`, `width`, and friends do not apply here.
+
+## Choosing Files
+
+`multiple` allows more than one file, and the list grows as they are added:
+
+<Canvas of={InputFileStories.Multiple} sourceState="shown" />
+
+`accept` limits what the dialog offers, using the same syntax as the native attribute:
+
+<Canvas of={InputFileStories.WithAccept} sourceState="shown" />
+
+`accept` filters the dialog; it is not a guarantee. A file can still arrive by other routes, so validate on the server too.
+
+## Validation
+
+Lion supplies file-type and file-size validators, and their messages render in the `feedback` slot alongside any of your own.
+
+## Slots
+
+The dialog button comes from the component, as a `craft-button` in the `file-select-button` slot.
+Slotting your own replaces it — useful when the button needs different wording or a different variant, though the default already carries the label Lion computes.
+
+## Accessibility
+
+The button is a real button and the file list is real content, so both are reachable and announced without help.
+
+The selection is the part worth attention: after choosing files, what changed is the list, not the button. If a page needs that announced, it should say so itself.
+
+## Properties
+
+<ArgTypes of={InputFileStories} />

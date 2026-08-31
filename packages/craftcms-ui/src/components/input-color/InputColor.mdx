@@ -1,0 +1,54 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputColorStories from './input-color.stories';
+
+<Meta of={InputColorStories} name="Docs" />
+
+# Input Color
+
+`<craft-input-color>` pairs a hex text field with the browser's own colour swatch.
+
+<Canvas of={InputColorStories.Default} sourceState="shown" />
+
+Two ways of choosing a colour suit two different tasks: the picker for browsing to something that looks right, the text field for entering a value you already have.
+Either one updates the other.
+
+## Values
+
+Values are bare hex — the leading `#` is stripped, and three-digit shorthand is expanded to six for the picker.
+The field shows a `#` prefix so the format is obvious without it being part of the value.
+
+<Canvas of={InputColorStories.Shorthand} sourceState="shown" />
+
+Anything that is not a valid hex colour leaves the swatch alone rather than snapping it to an arbitrary colour:
+
+<Canvas of={InputColorStories.Invalid} sourceState="shown" />
+
+## Presets
+
+`presets` takes a JSON array of hex values, offered through a native datalist:
+
+<Canvas of={InputColorStories.WithPresets} sourceState="shown" />
+
+The list is a shortcut, not a constraint — any value can still be typed.
+
+## States
+
+<Canvas of={InputColorStories.WithError} sourceState="shown" />
+
+<Canvas of={InputColorStories.Disabled} sourceState="shown" />
+
+## What It Does Not Inherit
+
+Like the password field, this extends Lion's input directly rather than [Input](?path=/docs/controls-input--docs), so `maxlength`, `size`, `width`, `monospace`, `center`, and `hidden-input` are not available here.
+
+## Accessibility
+
+Colour is the one thing this control cannot convey on its own.
+The text field is what makes the value readable and typable without seeing the swatch, which is why it is the primary control rather than a secondary one.
+
+Presets are offered by value, not by name.
+If a preset means something — a brand colour, a status — say so in the help text, because the swatch alone does not.
+
+## Properties
+
+<ArgTypes of={InputColorStories} />

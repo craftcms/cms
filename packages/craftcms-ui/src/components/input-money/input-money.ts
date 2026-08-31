@@ -14,6 +14,12 @@ type MaskedInput = HTMLInputElement & {
   };
 };
 
+/**
+ * Default-on boolean: only the exact string `"false"` turns it off, so
+ * `show-currency` behaves like a config flag rather than a bare HTML boolean
+ * attribute (where mere presence would mean true). A boolean binding cannot
+ * express it — write the literal string.
+ */
 const defaultTrueBooleanConverter = {
   fromAttribute(value: string | null): boolean {
     return value !== 'false';
@@ -25,6 +31,13 @@ const defaultTrueBooleanConverter = {
 
 /**
  * @summary A locale-aware money input with a currency label and clear button.
+ * Extends `craft-input`, so it carries the same label, help text, validation,
+ * and slots.
+ *
+ * The field is a masked text input rather than `type="number"`: the mask is
+ * built from `locale` and `currency` via `Intl.NumberFormat`, so the grouping
+ * and decimal characters are the ones that locale actually uses. Override
+ * either separator to depart from that.
  *
  * @dependency craft-button
  * @dependency craft-icon
@@ -55,22 +68,38 @@ export default class CraftInputMoney extends CraftInput {
     ];
   }
 
+  /** ISO 4217 currency code, which sets the symbol and the decimal places. */
   @property() currency = 'USD';
 
+  /** Locale the amount is formatted for. Accepts `en-US` or `en_US`. */
   @property() locale = 'en-US';
 
+  /**
+   * Number of decimal places. Defaults to whatever the currency uses in this
+   * locale — two for most, none for yen.
+   */
   @property({type: Number}) decimals?: number;
 
+  /** Character separating the decimals. Defaults to the locale's own. */
   @property({attribute: 'decimal-separator'}) decimalSeparator?: string;
 
+  /** Character grouping the thousands. Defaults to the locale's own. */
   @property({attribute: 'group-separator'}) groupSeparator?: string;
 
+  /**
+   * Whether the currency symbol is shown beside the field. On by default —
+   * set `show-currency="false"` to hide it.
+   */
   @property({
     converter: defaultTrueBooleanConverter,
     attribute: 'show-currency',
   })
   showCurrency = true;
 
+  /**
+   * Whether a button to clear the amount is shown once there is one. On by
+   * default — set `clearable="false"` to remove it.
+   */
   @property({converter: defaultTrueBooleanConverter}) clearable = true;
 
   constructor() {

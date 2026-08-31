@@ -6,6 +6,22 @@ import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
 
+/**
+ * @summary A password input with a button to reveal the value. The button
+ * toggles the field between `password` and `text`, and names itself "Show" or
+ * "Hide" as it goes.
+ *
+ * Note that this extends Lion's input directly rather than `craft-input`, so
+ * the base control's `maxlength`, `size`, `width`, `monospace`, `center`, and
+ * `hidden-input` are not available here.
+ *
+ * @slot label - The control's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages.
+ * @slot suffix - Supplied by the component: the reveal button. Slotting your
+ *   own replaces it.
+ */
 export default class CraftInputPassword extends LionInput {
   @state()
   protected _visible = false;
