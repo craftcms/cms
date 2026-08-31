@@ -1,0 +1,84 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as PaneStories from './pane.stories';
+
+<Meta of={PaneStories} name="Docs" />
+
+# Pane
+
+`<craft-pane>` is the control panel's primary content surface — a padded, rounded container with optional header and footer regions.
+
+<Canvas of={PaneStories.Default} sourceState="shown" />
+
+Panes wrap page sections, forms, tables, and modal bodies. It is the most-used component in the library, and the one that gives a page its structure.
+
+For a block that represents a _thing_ rather than a section of a page — an entry, an asset, a user — use [Card](?path=/docs/components-card--docs).
+
+## Appearance and Variant
+
+The two are orthogonal and combine freely. `appearance` picks the surface treatment:
+
+<Canvas of={PaneStories.Appearance} sourceState="shown" />
+
+`variant` layers a semantic treatment on top:
+
+<Canvas of={PaneStories.Variant} sourceState="shown" />
+
+## Regions
+
+Header and footer each render only when there is something in them, so a pane holding only body content is a plain padded surface.
+
+<Canvas of={PaneStories.WithHeader} sourceState="shown" />
+
+<Canvas of={PaneStories.WithHeaderActions} sourceState="shown" />
+
+<Canvas of={PaneStories.WithFooter} sourceState="shown" />
+
+The footer is built for form actions, with dedicated slots for a primary action, a secondary action, and feedback:
+
+<Canvas of={PaneStories.WithFooterActions} sourceState="shown" />
+
+<Canvas of={PaneStories.FullComposition} sourceState="shown" />
+
+Slotting `header` or `footer` replaces that whole region, padding included — for when the default layout is not what you want:
+
+<Canvas of={PaneStories.CustomRegions} sourceState="shown" />
+
+<Canvas of={PaneStories.CustomTitle} sourceState="shown" />
+
+## Scrolling
+
+A pane that clamps its height scrolls its content — either through `variant="code"` or by setting `--c-pane-max-block-size`:
+
+<Canvas of={PaneStories.ScrollableCode} sourceState="shown" />
+
+**A scrolling region has to be reachable by keyboard.** Someone using a keyboard or a switch with no pointer otherwise cannot read past the clamp, which fails WCAG 2.1.1.
+
+So when — and only when — the content actually overflows, the pane makes its own scroll container a labelled tab stop. It is conditional because a tab stop that cannot scroll anywhere is a focus trap with nothing to do.
+
+Do not put `tabindex` on the host yourself. The host is not the scroller, and browsers only scroll the focused element or a scrollable _ancestor_ of it — never a descendant.
+
+## Padding
+
+`padding` takes the shared spacing scale, defaulting to `lg`:
+
+<Canvas of={PaneStories.Padding} sourceState="shown" />
+
+Values off that scale are ignored; set `--c-pane-padding` for anything else. This is the same `Paddable` behaviour [Callout](?path=/docs/components-callout--docs) uses.
+
+## Styling
+
+<Canvas of={PaneStories.CustomProperties} sourceState="shown" />
+
+The pane exposes seven CSS parts — `base`, `header`, `title`, `header-actions`, `body`, `footer`, and `footer-actions` — and thirteen custom properties. Both are listed under [Properties](#properties).
+
+`base` is the outermost element and the scroll container, so it is the one carrying the surface treatment and, when content overflows, the focus ring.
+
+## Accessibility
+
+The `label` renders as an `<h1>` in the header by default, which puts the pane in the document outline.
+
+That is worth being deliberate about: a page of panes is a page of `<h1>`s unless you slot a different heading level into `title`. Use `label` for the pane that _is_ the page, and slot an appropriate heading for the rest.
+
+## Properties
+
+<ArgTypes of={PaneStories} />
