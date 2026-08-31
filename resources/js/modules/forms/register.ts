@@ -1,5 +1,7 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import ActionNode from './ActionNode.vue';
+import ActionMenuNode from './ActionMenuNode.vue';
+import CopyAttributeNode from './CopyAttributeNode.vue';
 import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
@@ -44,6 +46,8 @@ export function registerFormComponents(
   components.register('craft:form', FormRenderer);
   components.register('craft:field', FieldNode);
   components.register('craft:action', ActionNode);
+  components.register('craft:action-menu', ActionMenuNode);
+  components.register('craft:copy-attribute', CopyAttributeNode);
   components.register('craft:group', GroupNode);
   components.register('craft:tab', TabNode);
   components.register('craft:template-content', TemplateContentNode);

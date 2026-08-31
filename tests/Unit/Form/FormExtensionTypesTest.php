@@ -43,8 +43,10 @@ use CraftCms\Cms\Form\FormPayload;
 use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Form\Nodes\Callout;
 use CraftCms\Cms\Form\Nodes\Container;
+use CraftCms\Cms\Form\Nodes\CopyAttribute;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
@@ -64,7 +66,7 @@ it('registers core and plugin Node and Control types separately', function () {
     $nodeTypes = app(FormNodeTypes::class);
     $controlTypes = app(FormControlTypes::class);
 
-    expect($nodeTypes->types()->all())->toBe([Action::class, Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
+    expect($nodeTypes->types()->all())->toBe([Action::class, ActionMenu::class, Callout::class, CopyAttribute::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class])
         ->and($controlTypes->types()->all())->toBe([
             Address::class,
             Checkbox::class,
@@ -100,7 +102,7 @@ it('registers core and plugin Node and Control types separately', function () {
 
     new TestPlugin(app())->registerFormTypes($nodeTypes, $controlTypes);
 
-    expect($nodeTypes->types()->all())->toBe([Action::class, Callout::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
+    expect($nodeTypes->types()->all())->toBe([Action::class, ActionMenu::class, Callout::class, CopyAttribute::class, Field::class, Group::class, Heading::class, HiddenField::class, LineBreak::class, MarkdownContent::class, MissingNode::class, Separator::class, Tab::class, TemplateContent::class, Notice::class])
         ->and($controlTypes->types()->last())->toBe(Slug::class)
         ->and(fn () => $nodeTypes->register(Slug::class))->toThrow(InvalidArgumentException::class, Node::class)
         ->and(fn () => $controlTypes->register(Notice::class))->toThrow(InvalidArgumentException::class, Control::class);

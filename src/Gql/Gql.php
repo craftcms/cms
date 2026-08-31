@@ -375,7 +375,21 @@ class Gql
     /** @return array<string, mixed>|null */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return DependencyCache::get($cacheKey) ?: null;
+        $data = DependencyCache::get($cacheKey);
+
+        if (! isset($data['result'], $data['cacheInfo']['tags'])) {
+            return null;
+        }
+
+        // If we're actively collecting cache info, register this cache's tags and duration
+        if ($this->elementCaches->isCollectingCacheInfo()) {
+            $this->elementCaches->collectCacheTags($data['cacheInfo']['tags']);
+            if (isset($data['cacheInfo']['expiryDate'])) {
+                $this->elementCaches->setCacheExpiryDate($data['cacheInfo']['expiryDate']);
+            }
+        }
+
+        return $data['result'];
     }
 
     /** @param array<array-key, mixed> $result */
@@ -412,7 +426,18 @@ class Gql
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        DependencyCache::put($cacheKey, $result, $duration, $dependency);
+        $cacheInfo = [
+            'tags' => $dependency->tags,
+        ];
+
+        if ($duration) {
+            $cacheInfo['expiryDate'] = now()->addSeconds($duration);
+        }
+
+        DependencyCache::put($cacheKey, [
+            'result' => $result,
+            'cacheInfo' => $cacheInfo,
+        ], $duration, $dependency);
     }
 
     /**
