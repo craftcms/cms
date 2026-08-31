@@ -54,7 +54,7 @@ describe('attributes', function () {
 
     it('renders the accessible name for icon-only buttons', function () {
         expect(Button::make()->icon('plus')->accessibleName('Add row')->toHtml())
-            ->toContain('accessible-name="Add row"');
+            ->toContain('aria-label="Add row"');
     });
 });
 

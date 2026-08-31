@@ -1,3 +1,26 @@
+import {getTsProgram, typeParserPlugin} from '@wc-toolkit/type-parser';
+
+/**
+ * The type parser warns once for every type it declines to expand: DOM
+ * interfaces reached through a property (`Element`, `HTMLCanvasElement`), the
+ * component classes themselves, and anything past its depth or property
+ * limits. Expanding those was never the point — only the union aliases behind
+ * `size`, `variant`, and `appearance` reach the Storybook controls — so the
+ * bail-out notices are dropped here.
+ *
+ * The filter is deliberately narrow. Real parser warnings, such as a bad
+ * `tsconfig.json`, use a different prefix and still print. The parser calls
+ * `console.warn(colorFormat, message)`, so the message is the second argument.
+ */
+const SKIPPED_TYPE_NOTICE = '[type-parser] - Skipped parsing type';
+const consoleWarn = console.warn;
+console.warn = (...args) => {
+  if (args.some((arg) => typeof arg === 'string' && arg.includes(SKIPPED_TYPE_NOTICE))) {
+    return;
+  }
+  consoleWarn(...args);
+};
+
 /**
  * A leaked TypeScript AST node (e.g. a `SourceFile`, which holds a circular
  * `parent` pointer) is a TS node, not a manifest value. The CEM manifest schema
@@ -47,7 +70,21 @@ export default {
   globs: ['src/components/**/*.ts'],
   exclude: ['**/*.stories.ts', '**/*.styles.ts', '**/*.test.ts'],
   outdir: 'dist',
+  // The type parser needs a real TypeScript program so it can resolve type
+  // aliases (`SizeValue`) back to their union members ('small' | 'medium' |
+  // 'large'). Without this the manifest only records the alias name, and
+  // Storybook renders a text box instead of a select.
+  overrideModuleCreation: ({ts, globs}) => {
+    const program = getTsProgram(ts, globs, 'tsconfig.json');
+    return program
+      .getSourceFiles()
+      .filter((sf) => globs.find((glob) => sf.fileName.includes(glob)));
+  },
   plugins: [
+    // Expand type aliases into `parsedTypes`, which `.storybook/preview.ts`
+    // reads via `setStorybookHelpersConfig({typeRef: 'parsedTypes'})`.
+    typeParserPlugin({propertyName: 'parsedTypes'}),
+
     // Add a plugin to prevent inheritance tree analysis errors
     {
       name: 'skip-external-inheritance',

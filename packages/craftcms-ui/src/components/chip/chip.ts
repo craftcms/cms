@@ -7,28 +7,48 @@ import {Appearance, type AppearanceValue} from '@src/constants/appearances';
 import {Variant, type VariantValue} from '@src/constants/variants';
 import type {SizeValue} from '@src/constants/size';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
+import {t} from '@src/utilities/translate';
+import variantsStyles from '@src/styles/variants.styles.js';
 
 /**
- * @summary A compact, inline element that pairs a label with an optional
- * prefix (icon, status indicator, thumbnail, …) and suffix (e.g. an action
- * button). Used for element chips, status chips, and similar UI.
+ * @summary A container that pairs a label with an optional
+ * leading prefix — a thumbnail, an icon, or a status dot — and a trailing
+ * suffix, usually an action button. Chips represent a single entity in a
+ * list: an entry, an asset, a user, a category, etc.
  *
- * The prefix is only rendered when the `prefix` or `icon` slot is filled or the
- * `icon` attribute is set; the suffix is only rendered when the `suffix` slot is
- * filled.
+ * The prefix and suffix regions are only rendered when there is content for
+ * them, so a chip with nothing but a label renders neither. The suffix is
+ * rendered when the `suffix` slot is filled. The prefix is rendered when the
+ * `prefix`, `icon`, `thumbnail`, or `status` slot is filled, or when the
+ * `icon` attribute or `show-status` is set.
  *
- * @slot - The chip's body/label content.
- * @slot prefix - Content shown before the body, e.g. a status indicator or
- *   thumbnail. Takes precedence over the `icon` slot/attribute.
- * @slot icon - Custom icon content shown in the prefix, as an alternative to the
- *   `icon` attribute.
- * @slot suffix - Content shown after the body, e.g. an action button.
+ * Filling the `prefix` slot replaces the entire prefix region. Use it to
+ * supply your own leading content; the built-in `thumbnail`, `icon`, and
+ * `status` slots are ignored when it is present.
+ *
+ * On connect the chip stamps `data-color="white"` on itself so it reads as a
+ * raised surface by default. Set `data-color` yourself to override it. Because
+ * the attribute lands on the chip, an ancestor's `data-color` no longer
+ * reaches it — colour the chip directly instead.
+ *
+ * @slot - The chip's label.
+ * @slot prefix - Leading content. Replaces the built-in prefix region, so the
+ *   `thumbnail`, `icon`, and `status` slots are ignored when this is filled.
+ * @slot thumbnail - A thumbnail image for the prefix. Requires `show-thumb`.
+ *   Without it, the slot is not rendered and its content does not appear.
+ * @slot icon - Icon content for the prefix, as an alternative to the `icon`
+ *   attribute. Only rendered when `icon` is set.
+ * @slot status - A status indicator for the prefix. Rendered whenever this
+ *   slot is filled, or when `show-status` is set.
+ * @slot suffix - Trailing content, shown after the label. Typically an action
+ *   button or menu.
  *
  * @csspart chip - The outer chip wrapper.
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  *
- * @cssproperty --c-chip-height - Minimum height of the chip. Defaults to `--c-size-control-sm`.
+ * @cssproperty --c-chip-height - Minimum height of the chip's regions. Unset
+ *   by default, so the chip is sized by its padding and content.
  * @cssproperty --c-chip-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-chip-spacing-inline - Inline (horizontal) padding. Defaults to `0`.
  * @cssproperty --c-chip-spacing-block - Block (vertical) padding. Defaults to `--c-spacing-sm`.
@@ -37,28 +57,58 @@ import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
  * @cssproperty --c-chip-border-style - Border style. Defaults to `solid`.
  */
 export default class CraftChip extends LitElement {
-  static override styles: CSSResultGroup = [styles];
+  static override styles: CSSResultGroup = [variantsStyles, styles];
 
-  /** Size of the chip. */
-  @property() size: SizeValue | '' = '';
+  /**
+   * How much vertical space the chip takes. `small` adds a small amount of
+   * block padding, and `medium` applies a minimum height. `large` is accepted,
+   * but has no styles of its own and renders the same as an unset `size`.
+   * Leave it unset to size the chip from its content.
+   */
+  @property() size: SizeValue = 'small';
 
-  /** Variant of the chip. `plain` will render with no border or padding */
-  @property({reflect: true}) variant: VariantValue = Variant.Neutral;
+  /**
+   * The semantic color group the chip draws its tokens from. It is combined
+   * with `appearance`, which determines how those tokens are applied.
+   */
+  @property({reflect: true}) variant: VariantValue | null = null;
 
-  /** Appearance of the chip. Defaults to `outline-fill`. */
+  /**
+   * How prominently the variant color is applied. `plain` removes the chip's
+   * border, background, padding, and shadow, leaving the label and prefix
+   * inline with the surrounding content.
+   */
   @property({reflect: true}) appearance: AppearanceValue =
     Appearance.OutlineFill;
 
-  /** Shortcut for adding an icon as the prefix */
+  /**
+   * The name of an icon to render in the prefix. This is a shorthand for
+   * filling the `icon` slot, and setting it is what causes that slot to be
+   * rendered.
+   */
   @property() icon: string | null = null;
 
-  @property({attribute: 'show-indicators', type: Boolean})
-  showIndicators: boolean = false;
+  /** Renders the `status` slot within the prefix. */
   @property({attribute: 'show-status', type: Boolean})
   showStatus: boolean = false;
+
+  /** Renders the `thumbnail` slot within the prefix. */
   @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean =
     false;
+
+  /**
+   * Renders a checkbox before the prefix, for chips within a multi-select
+   * list. The checkbox is named by `select-label`, falling back to a generic
+   * "Select".
+   */
   @property({type: Boolean}) selectable: boolean = false;
+
+  /**
+   * Accessible name for the `selectable` checkbox. Set it to name the entity
+   * the chip stands for, so a list of chips does not read as a run of
+   * identically labelled checkboxes.
+   */
+  @property({attribute: 'select-label'}) selectLabel: string | null = null;
 
   #thumbLoader = new ThumbnailLoader();
 
@@ -78,6 +128,11 @@ export default class CraftChip extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+
+    if (!this.getAttribute('data-color')) {
+      this.setAttribute('data-color', 'white');
+    }
+
     // Attributes included: content moves between slots by having its `slot`
     // attribute set, not only by being added or removed.
     this.#observer.observe(this, {
@@ -94,6 +149,9 @@ export default class CraftChip extends LitElement {
   }
 
   renderPrefix() {
+    const showStatus =
+      this.showStatus || !!this.querySelector('[slot="status"]');
+
     return html`<div class="cp-chip__prefix" part="prefix">
       <slot name="prefix">
         ${this.showThumb
@@ -104,7 +162,7 @@ export default class CraftChip extends LitElement {
               ><craft-icon name="${this.icon}"></craft-icon
             ></slot>`
           : nothing}
-        ${this.showStatus
+        ${showStatus
           ? html`<slot class="cp-chip__status" name="status"></slot>`
           : nothing}
       </slot>
@@ -124,8 +182,9 @@ export default class CraftChip extends LitElement {
     const renderPrefix =
       !!this.querySelector('[slot="prefix"]') ||
       !!this.querySelector('[slot="icon"]') ||
+      !!this.querySelector('[slot="status"]') ||
       !!this.querySelector('[slot="thumbnail"]') ||
-      !!this.querySelector('[slot="indicator"]') ||
+      this.showStatus ||
       this.icon;
     const renderSuffix = !!this.querySelector('[slot="suffix"]');
 
@@ -140,11 +199,15 @@ export default class CraftChip extends LitElement {
           'cp-chip--plain': this.appearance === Appearance.Plain,
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,
-          'cp-chip--show-indicators': this.showIndicators,
           'cp-chip--show-status': this.showStatus,
         })}"
       >
-        ${this.selectable ? html` <input type="checkbox" />` : nothing}
+        ${this.selectable
+          ? html` <input
+              type="checkbox"
+              aria-label="${this.selectLabel ?? t('Select')}"
+            />`
+          : nothing}
         ${renderPrefix ? this.renderPrefix() : nothing}
         <slot class="cp-chip__body"></slot>
         ${renderSuffix

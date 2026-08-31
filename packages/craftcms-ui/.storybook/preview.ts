@@ -50,6 +50,13 @@ const preview: Preview = {
       },
     },
 
+    docs: {
+      // Show each story's source in a "Code" panel alongside Controls, so the
+      // markup is available from the story view and not only from the docs
+      // page. Stories that pin `docs.source.code` supply that value here too.
+      codePanel: true,
+    },
+
     options: {
       storySort: {
         method: 'alphabetical',

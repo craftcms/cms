@@ -1,0 +1,108 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputDateTimeStories from './input-date-time.stories';
+
+<Meta of={InputDateTimeStories} name="Docs" />
+
+# Input Date Time
+
+`<craft-input-date-time>` is a paired date and time field.
+It owns a [Input Date](?path=/docs/controls-input-date--docs) and a [Input Time](?path=/docs/controls-input-time--docs), creating them as its own children and keeping their values in step.
+
+<Canvas of={InputDateTimeStories.Default} sourceState="shown" />
+
+Reach for it whenever a single moment in time is being edited — a post date, an expiry, a scheduled action — so the two halves submit and validate together rather than as unrelated fields.
+
+The component has no label or field chrome of its own, so every example on this page is wrapped in a `craft-field`.
+
+## Submitting
+
+Give the component a `name` and it posts each part under it:
+
+| Field            | Value                                |
+| ---------------- | ------------------------------------ |
+| `name[date]`     | the date, as `YYYY-MM-DD`            |
+| `name[time]`     | the time, as `HH:MM`                 |
+| `name[timezone]` | the timezone the value belongs to    |
+| `name[locale]`   | the locale the parts were entered in |
+
+The server therefore receives one coherent value rather than two loose inputs.
+The locale always travels with it, and the timezone is carried by a hidden input whenever it is not shown as a control.
+
+Without a `name`, nothing is submitted — the component is then a pair of inputs you read from `date-value` and `time-value` yourself.
+
+<Canvas of={InputDateTimeStories.WithValues} sourceState="shown" />
+
+## Showing One Half
+
+`show-date` and `show-time` are both on by default, and each drops its input when set to the string `"false"`:
+
+<Canvas of={InputDateTimeStories.DateOnly} sourceState="shown" />
+
+<Canvas of={InputDateTimeStories.TimeOnly} sourceState="shown" />
+
+These two are deliberately default-on, so **only the exact value `"false"` turns them off**.
+Any other value — including `"0"` — leaves the input in place, and so does removing the attribute.
+
+That makes them string flags rather than boolean attributes, which matters when you are not writing the markup by hand.
+A boolean binding cannot express them: `?show-time="${false}"` in a Lit template removes the attribute, and an absent attribute reads as on.
+Write the literal string instead.
+
+```html
+<craft-input-date-time show-time="false"></craft-input-date-time>
+```
+
+`show-timezone` is the opposite: an ordinary boolean attribute that is absent by default, and on when present.
+
+<Canvas of={InputDateTimeStories.WithTimezone} sourceState="shown" />
+
+Hiding the timezone does not discard it.
+It keeps travelling in a hidden input, so a value entered in one zone is not silently reinterpreted in another.
+
+## Constraining the Value
+
+`min` and `max` bound the date; `min-time` and `max-time` bound the time:
+
+<Canvas of={InputDateTimeStories.Bounded} sourceState="shown" />
+
+`minute-increment` sets the spacing between the time input's suggestions, and `force-round-time` snaps a typed time onto the nearest step:
+
+<Canvas of={InputDateTimeStories.MinuteIncrement} sourceState="shown" />
+
+`disabled-time-ranges` takes a JSON array of `[start, end]` pairs of `HH:MM` times that cannot be chosen.
+It is forwarded straight to the time input — see [Input Time](?path=/docs/controls-input-time--docs) for how the ranges are enforced.
+
+## States
+
+<Canvas of={InputDateTimeStories.Disabled} sourceState="shown" />
+
+<Canvas of={InputDateTimeStories.Readonly} sourceState="shown" />
+
+`required` marks the date and time inputs as required.
+All three apply to every input the component owns, including the timezone.
+
+## Adding Your Own Content
+
+The default slot takes content placed after the inputs — a button that clears them, say.
+The component's own inputs always lead, so slotted controls stay after the inputs they act on in both reading and tab order:
+
+<Canvas of={InputDateTimeStories.WithSlottedContent} sourceState="shown" />
+
+## In a Field
+
+Wrapping in `craft-field` is what supplies the label, help text, and error handling:
+
+<Canvas of={InputDateTimeStories.InAField} sourceState="shown" />
+
+`craft-field` sets `described-by` for you, which the component applies to each input it owns.
+
+## Accessibility
+
+**The date and time inputs do not currently carry names of their own.**
+Each is a field whose label slot is empty, and a wrapping `craft-field` names the pair rather than the parts — so a screen reader reaches two unlabelled controls inside a labelled group.
+The stories on this page surface that finding rather than failing on it, and it is worth fixing before this field is relied on.
+
+Until then, keep the field's label specific enough that the two inputs read sensibly beneath it, and prefer showing both halves over a date-only field whose label says "time".
+
+## Properties
+
+<ArgTypes of={InputDateTimeStories} />

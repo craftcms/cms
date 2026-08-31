@@ -119,16 +119,26 @@ describe('craft-callout padding', () => {
     expect(spacing(element, 'inline')).toBe('0');
   });
 
-  it.each([
-    ['0', '0'],
-    ['24', 'calc(24rem / 16)'],
-    ['2rem', '2rem'],
-    ['var(--my-spacing)', 'var(--my-spacing)'],
-  ])('resolves %s to %s', async (padding, expected) => {
-    const element = await createCallout({padding});
+  it('resolves 0 to zero', async () => {
+    const element = await createCallout({padding: '0'});
 
-    expect(spacing(element, 'block')).toBe(expected);
+    expect(spacing(element, 'block')).toBe('0');
   });
+
+  /**
+   * The attribute is closed to the spacing scale. An off-scale value writes
+   * nothing, so the callout's asymmetric default still applies — the custom
+   * properties are the escape hatch for arbitrary spacing.
+   */
+  it.each(['24', '2rem', 'var(--my-spacing)'])(
+    'ignores %s, which is off the spacing scale',
+    async (padding) => {
+      const element = await createCallout({padding});
+
+      expect(spacing(element, 'block')).toBe('');
+      expect(spacing(element, 'inline')).toBe('');
+    }
+  );
 
   it('re-renders when the padding property changes', async () => {
     const element = await createCallout();

@@ -1,0 +1,109 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ActionItemStories from './action-item.stories';
+
+<Meta of={ActionItemStories} name="Docs" />
+
+# Action Item
+
+`<craft-action-item>` is a single entry in a menu.
+It renders as a button, or as a link when `href` is set, and carries an optional leading icon, a label, and an optional trailing shortcut or suffix.
+
+<Canvas of={ActionItemStories.Default} sourceState="shown" />
+
+Action items are usually supplied to [Action Menu](?path=/docs/components-action-menu--docs) rather than placed by hand — in data-driven mode it builds them from an `actions` array.
+Reach for the element directly when you are slotting your own menu content.
+
+An item has no width of its own; it fills whatever menu contains it.
+The examples below sit in a menu-sized container so the layout reads correctly.
+
+## Content
+
+`icon` renders artwork before the label, and the `icon` slot replaces it when you need something the icon set does not cover:
+
+<Canvas of={ActionItemStories.WithIcon} sourceState="shown" />
+
+The `suffix` slot holds trailing content, before any shortcut:
+
+<Canvas of={ActionItemStories.WithSuffix} sourceState="shown" />
+
+A `shortcut` is shown at the end of the item.
+It is display only — the item renders the keys but does not bind them, so the shortcut has to be wired up separately:
+
+<Canvas of={ActionItemStories.WithShortcut} sourceState="shown" />
+
+Pass an object to name the modifiers:
+
+<Canvas of={ActionItemStories.WithComplexShortcut} sourceState="shown" />
+
+## States
+
+`active` marks the entry a menu opens onto, or the option already in effect.
+It is reflected, so it can be styled from outside the component:
+
+<Canvas of={ActionItemStories.Active} sourceState="shown" />
+
+`disabled` dims the item and stops it being activated:
+
+<Canvas of={ActionItemStories.Disabled} sourceState="shown" />
+
+`variant` colors the item.
+Reach for `danger` on a destructive entry, so it reads as one before it is clicked:
+
+<Canvas of={ActionItemStories.Variants} sourceState="shown" />
+
+## Buttons, Links, and Checkboxes
+
+By default an item is a `<button>`.
+Setting `href` makes it an `<a>` instead, which is what you want for anything that navigates — it gets the browser's own link affordances, including opening in a new tab:
+
+<Canvas of={ActionItemStories.Link} sourceState="shown" />
+
+`type="checkbox"` reserves room for a checkmark before the icon, so a list of options stays aligned whether or not each one is checked.
+The `checkmark` slot replaces the default check:
+
+<Canvas of={ActionItemStories.Checkable} sourceState="shown" />
+
+## Running an Action
+
+Set `action` to an action descriptor, or a URL string, and the item runs it when activated.
+It reports progress in place: a spinner while an HTTP action is in flight, then a check or a cross, before returning to its label.
+
+```html
+<craft-action-item icon="trash" variant="danger"> Delete </craft-action-item>
+```
+
+```js
+item.action = {
+  type: 'http',
+  method: 'POST',
+  url: '/actions/entries/delete',
+  // Prompts before the request goes out.
+  confirm: 'Delete this entry?',
+};
+item.feedback = {success: {message: 'Deleted'}, error: {message: 'Failed'}};
+```
+
+Confirmation belongs to the action descriptor, not the item.
+`feedback` supplies the messages shown in place of the label, and `feedback-duration` controls how long they stay.
+
+Each transition emits `action:change-state`, whose `detail` carries the new `state`, the action's `actionType`, and any feedback data — useful when a menu needs to react to an item's progress.
+
+## Theming
+
+An item inherits the palette of any `data-color` ancestor, so a menu can tint its entries without overriding tokens:
+
+<Canvas of={ActionItemStories.Colors} sourceState="shown" />
+
+## Accessibility
+
+The item renders a real `<button>` or `<a>`, so it is focusable and activates on Enter and Space without any help.
+Focus is delegated into the shadow root, which means `item.focus()` lands on the control rather than the host — that is how the parent menu's arrow-key navigation works.
+
+Two things are on you:
+
+- **Give an icon-only item a label.** The default slot is the accessible name. An item with nothing but an `icon` is nameless.
+- **Do not put controls in the `suffix` slot.** The slot sits inside the item's own button, so an interactive suffix nests a control inside a control, which assistive technology cannot present sensibly.
+
+## Properties
+
+<ArgTypes of={ActionItemStories} />

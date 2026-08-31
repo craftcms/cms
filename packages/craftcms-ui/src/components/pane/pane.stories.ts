@@ -7,6 +7,18 @@ const {events, args, argTypes, template} = getStorybookHelpers('craft-pane');
 import './pane.js';
 import '../button/button.js';
 import '../icon/icon.js';
+import {SPACING_STEPS} from '@src/mixins/Paddable.js';
+
+/**
+ * `padding` is supplied by the `Paddable` mixin, so the analyzer records no
+ * resolvable type for it and the helpers cannot derive a control. Build one
+ * from the same constant the mixin resolves against, rather than restating
+ * the values by hand.
+ */
+const paddingArgType = {
+  control: {type: 'select'},
+  options: [...SPACING_STEPS, 'none', '0'],
+} as const;
 
 const bodyCopy = html`
   Panes are the primary CP content surface — a padded, rounded container with
@@ -27,7 +39,7 @@ const meta: Meta<CraftPane> = {
     ...args,
     label: '',
   },
-  argTypes,
+  argTypes: {...argTypes, padding: paddingArgType},
   render: (args) => template(args, bodyCopy),
   parameters: {
     actions: {
@@ -140,8 +152,8 @@ export const ScrollableCode: Story = {
 };
 
 /**
- * `padding` takes the `sm`/`md`/`lg`/`xl` steps, `0`, a unitless number
- * (pixels), or any CSS length.
+ * `padding` takes the `sm`/`md`/`lg`/`xl` steps, or `0`/`none`. For a value
+ * off that scale, set `--c-pane-padding` instead.
  */
 export const Padding: Story = {
   render: () => html`
@@ -150,7 +162,6 @@ export const Padding: Story = {
       <craft-pane padding="md">padding="md"</craft-pane>
       <craft-pane padding="lg">padding="lg" (default)</craft-pane>
       <craft-pane padding="xl">padding="xl"</craft-pane>
-      <craft-pane padding="24">padding="24" (24px)</craft-pane>
       <craft-pane padding="0">
         <div
           style="padding: 0.5rem; background: var(--c-color-neutral-fill-quiet);"
@@ -158,6 +169,9 @@ export const Padding: Story = {
           padding="0" — edge-to-edge content, e.g. a table
         </div>
       </craft-pane>
+      <craft-pane style="--c-pane-padding: 2.5rem"
+        >--c-pane-padding: 2.5rem — a value off the scale</craft-pane
+      >
     </div>
   `,
 };

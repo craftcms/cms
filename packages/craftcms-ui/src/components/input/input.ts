@@ -4,6 +4,32 @@ import styles from './input.styles.js';
 import type {PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 
+/**
+ * @summary A single-line text input, and the base every other `craft-input-*`
+ * control extends. Built on Lion's input, so it brings a label, help text,
+ * validation, and a `modelValue` alongside the native field.
+ *
+ * Set `label` and `help-text` as attributes for plain text, or slot them when
+ * they need markup. Change `type` to get any of the native input types —
+ * `craft-input-date` and `craft-input-time` are exactly that, with the type
+ * fixed and a little behaviour added.
+ *
+ * A bare input is unlabelled; either give it a `label`, or wrap it in
+ * `craft-field`, which supplies the label and error handling for you.
+ *
+ * @slot input - The native input. Supplied by the component; you rarely touch
+ *   this.
+ * @slot label - The control's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label, as an alternative to the
+ *   `help-text` attribute.
+ * @slot feedback - Validation messages. Lion fills this from the control's
+ *   validators.
+ * @slot prefix - Content inside the control, before the input.
+ * @slot suffix - Content inside the control, after the input.
+ * @slot before - Content outside the control, before it.
+ * @slot after - Content outside the control, after it.
+ */
 export default class CraftInput extends LionInput {
   static override get styles() {
     return [...super.styles, inputStyles, styles];

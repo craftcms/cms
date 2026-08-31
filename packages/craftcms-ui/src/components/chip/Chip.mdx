@@ -1,0 +1,98 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ChipStories from './chip.stories';
+
+<Meta of={ChipStories} name="Docs" />
+
+# Chip
+
+`<craft-chip>` is a container that represents a single entity. That could be an entry, an asset, a user, a category, etc.
+It pairs a label with an optional leading prefix and an optional trailing suffix.
+
+<Canvas of={ChipStories.Default} sourceState="shown" />
+
+Use a chip to represent an entity that can be acted on.
+To represent a piece of state instead — a status, a count, or a label — use [Badge](?path=/docs/components-badge--docs).
+
+## Composition
+
+A chip has three regions: an optional prefix, the label, and an optional suffix.
+The prefix and suffix are only rendered when there is content for them, so a chip with nothing but a label renders neither.
+
+<Canvas of={ChipStories.PrefixAndSuffix} sourceState="shown" />
+
+The label is the chip's default slot.
+The suffix is rendered as soon as the `suffix` slot is filled, and is where per-chip actions belong:
+
+<Canvas of={ChipStories.SuffixOnly} sourceState="shown" />
+
+Chips are frequently populated after they have been added to the page, such as when an action menu is attached once the entity's available actions are known.
+A chip watches its own light DOM for changes, so content added to a slot after the initial render is picked up automatically.
+
+<Canvas of={ChipStories.DeferredActions} sourceState="shown" />
+
+## The Prefix
+
+There are two ways to fill the prefix, and they are mutually exclusive.
+
+Fill the `prefix` slot to supply your own leading content.
+This replaces the entire prefix region, and the built-in slots described below are ignored:
+
+<Canvas of={ChipStories.CustomPrefix} sourceState="shown" />
+
+Otherwise, use one of the built-in prefix slots:
+
+- `thumbnail` – Requires `show-thumb`. Without it the slot is not rendered, and its content does not appear.
+- `icon` – Rendered when the `icon` attribute is set.
+- `status` – Rendered whenever the slot is filled, or when `show-status` is set.
+
+<Canvas of={ChipStories.Thumbnail} sourceState="shown" />
+
+The `icon` attribute is a shorthand for the `icon` slot, and does not require a slot of its own:
+
+<Canvas of={ChipStories.Icon} sourceState="shown" />
+
+## Variant and Appearance
+
+`variant` sets the semantic color group the chip draws its tokens from, and `appearance` determines how those tokens are applied.
+The two are independent, and they behave the same way here as on every other component that accepts them.
+See [Variants & Appearances](?path=/docs/tokens-variants-appearances--docs) for the underlying token mapping.
+
+<Canvas of={ChipStories.Appearances} />
+
+`plain` removes the chip's border, background, padding, and shadow, leaving the label and prefix inline with the surrounding content.
+Use it when a chip appears within running text or a dense table, rather than as a standalone object.
+
+A chip stamps `data-color="white"` on itself when it connects, so it reads as a raised surface by default.
+Set `data-color` on the chip to override that. Because the attribute lands on the chip itself, an ancestor's `data-color` does not reach it — colour each chip directly:
+
+<Canvas of={ChipStories.Colors} />
+
+## Styling
+
+The chip exposes three CSS parts — `chip`, `prefix`, and `suffix` — and a set of `--c-chip-*` custom properties for its height, radius, padding, shadow, and border.
+Both are listed in full under [Properties](#properties).
+
+Prefer the custom properties over styling the parts directly.
+A chip is sized by its padding and content, so scaling one is usually a single declaration:
+
+```css
+craft-chip {
+  --c-chip-height: var(--c-size-control-md);
+}
+```
+
+## Accessibility
+
+A chip is a container, not a control.
+It has no implicit role and does not receive focus.
+The content you place in it carries its own semantics, which makes two things your responsibility:
+
+- **Interactive content must provide its own accessible name.** An action button in the `suffix` slot requires a label, and an icon-only button requires one on the icon. The chip's label does not name it.
+- **Decorative prefixes must remain decorative.** A thumbnail that only repeats the label takes `alt=""`. A status indicator that conveys meaning the label does not should be given a `label` of its own.
+
+Setting `selectable` renders a checkbox before the prefix, for chips within a multi-select list.
+Name it with `select-label` so a list of chips does not read as a run of identically labelled checkboxes; it falls back to a generic "Select".
+
+## Properties
+
+<ArgTypes of={ChipStories} />

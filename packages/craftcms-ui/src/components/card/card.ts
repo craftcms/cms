@@ -15,12 +15,9 @@ import {classMap} from 'lit/directives/class-map.js';
  * (with the `label` attribute as the default label content). The footer region
  * is only rendered when the `footer` slot is filled.
  *
- * Host attributes are applied directly to the element, so the server-rendered
- * wrapper attributes that accompany an element's card HTML (its `id`, `style`
- * custom properties, and `data-*` metadata) can be spread onto it with the
- * `attrs()` utility — e.g. `v-bind="attrs(element.cardAttributes)"`. `class` is
- * usually excluded from that bind (`{exclude: ['class']}`), since the component
- * renders its own card chrome rather than the server's `.card` classes.
+ * The card renders its own chrome, so attributes set on the host are left
+ * alone — an `id`, `style` custom properties, and `data-*` metadata can all be
+ * spread onto it without the component interfering.
  *
  * @slot - The card's body content.
  * @slot header - The full header region. Replaces the default
@@ -30,6 +27,9 @@ import {classMap} from 'lit/directives/class-map.js';
  * @slot actions - Action content shown at the end of the header, e.g. buttons.
  * @slot footer - Footer content. The footer is only rendered when this slot is
  *   filled.
+ * @slot thumbnail - Artwork shown in a fixed column beside the body. Rendered
+ *   only while `show-thumb` is set; `thumb-alignment` puts the column at the
+ *   start or the end of the body.
  *
  * @csspart label - The label slot within the header.
  *
@@ -42,6 +42,9 @@ import {classMap} from 'lit/directives/class-map.js';
  *   `--c-spacing-md` for the body.
  */
 export default class CraftCard extends LitElement {
+  // In the CP, an element's server-rendered card attributes are spread onto
+  // the host with `attrs(element.cardAttributes)`, excluding `class` — the
+  // component draws its own chrome rather than the server's `.card` classes.
   static override styles: CSSResultGroup = [styles];
 
   /** Label shown in the header when the `label` slot is not filled. */
@@ -57,6 +60,10 @@ export default class CraftCard extends LitElement {
   /** Whether the thumbnail region renders at all, even with slotted content. */
   @property({attribute: 'show-thumb', type: Boolean}) showThumb: boolean = true;
 
+  /**
+   * Which side of the body the thumbnail column sits on. Has no effect unless
+   * the `thumbnail` slot is filled and `show-thumb` is set.
+   */
   @property({attribute: 'thumb-alignment'}) thumbAlignment: 'start' | 'end' =
     'start';
 

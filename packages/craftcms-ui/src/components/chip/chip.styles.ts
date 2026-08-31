@@ -10,26 +10,18 @@ export default css`
   }
 
   .cp-chip {
-    --_min-height: var(--c-chip-height, none);
-    --_thumb-size: calc(24rem / 16);
-    --_radius: var(--c-chip-radius, var(--c-radius-md));
-    --_fill: var(--c-color-fill-quiet, var(--c-surface-raised));
+    --_chip-spacing: 0.25em;
+    --_thumb-size: calc(30rem / 16);
+    --_radius: var(--c-radius-md);
     padding: 0;
     display: inline-flex;
-    min-width: auto;
     border-radius: var(--_radius);
     align-items: center;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
+    background-color: white;
 
-    /* colorable styles */
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     border-width: var(--c-chip-border-width, 1px);
     border-style: var(--c-chip-border-style, solid);
-    border-color: var(
-      --c-color-border-quiet,
-      var(--c-color-neutral-border-quiet)
-    );
-    background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
     overflow: clip;
   }
 
@@ -39,25 +31,60 @@ export default css`
     display: flex;
   }
 
-  .cp-chip[appearance='plain'],
+  /*
+   * Appearance tiers, mirroring craft-callout so the two read at the same
+   * intensity for a given variant. The variant remaps the generic
+   * --c-color-* tokens; each tier below picks which loudness of them to use.
+   */
+  :host([appearance~='solid']) .cp-chip {
+    background-color: var(--c-color-fill-loud);
+    border-color: var(--c-color-border-loud);
+    color: var(--c-color-on-loud);
+  }
+
+  :host([appearance~='fill']) .cp-chip {
+    background-color: var(--c-color-fill-normal);
+    border-color: transparent;
+    color: var(--c-color-on-normal);
+  }
+
+  :host([appearance~='outline-fill']) .cp-chip {
+    background-color: var(--c-color-fill-normal);
+    border-color: var(--c-color-border-normal);
+    color: var(--c-color-on-normal);
+  }
+
+  :host([appearance~='outline']) .cp-chip {
+    background-color: transparent;
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance~='plain']) .cp-chip {
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--c-color-on-quiet);
+  }
+
+  /* Layout side of plain: no chrome, so no padding or shadow either. */
   .cp-chip--plain {
-    --_min-height: none;
     padding-block: 0;
     padding-inline: 0;
-    border-color: transparent;
-    background-color: transparent;
     box-shadow: none;
   }
 
-  .cp-chip[size='small'],
   .cp-chip--small {
-    padding-block: calc(var(--c-spacing-xs) / 2);
+    --_chip-spacing: 0.25em;
   }
 
-  .cp-chip[size='medium'],
   .cp-chip--medium {
-    padding-block: 0;
-    min-height: var(--c-size-control-md);
+    --_chip-spacing: 0.5em;
+    --_thumb-size: calc(34rem / 16);
+  }
+
+  .cp-chip--large {
+    --_chip-spacing: 1em;
+    --_thumb-size: calc(40rem / 16);
   }
 
   .cp-chip__prefix,
@@ -65,10 +92,10 @@ export default css`
   .cp-chip__suffix {
     display: inline-flex;
     flex-direction: column;
-    min-height: var(--_min-height);
   }
 
   .cp-chip__body {
+    padding: calc(var(--_chip-spacing) / 2) var(--_chip-spacing);
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: center;
@@ -80,9 +107,9 @@ export default css`
     text-overflow: ellipsis;
   }
 
+  /* Prefix gets no padding on its own because each prefix item has different spacing needs */
   .cp-chip__prefix {
     position: relative;
-    padding-inline-end: var(--c-spacing-sm);
     display: flex;
     align-items: center;
     flex-direction: row;
@@ -90,18 +117,22 @@ export default css`
   }
 
   .cp-chip__suffix {
+    padding: calc(var(--_chip-spacing) / 2);
+    padding-inline-start: var(--_chip-spacing);
     display: flex;
-    padding-inline-start: var(--c-spacing-md);
   }
 
-  .cp-chip__status {
+  .cp-chip__status,
+  .cp-chip__icon {
     display: inline-flex;
-    padding-inline: var(--c-spacing-xs);
+    padding-inline: var(--_chip-spacing);
   }
 
   .cp-chip__thumbnail {
+    display: flex;
     position: relative;
-    padding: var(--c-spacing-sm);
-    /*border-radius: calc(var(--_radius) - var(--c-spacing-xs));*/
+    width: var(--_thumb-size);
+    aspect-ratio: 1;
+    padding-inline-end: var(--_chip-spacing);
   }
 `;

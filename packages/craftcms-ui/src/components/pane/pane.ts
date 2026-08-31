@@ -87,10 +87,11 @@ const OVERFLOW_TOLERANCE = 1;
  * @slot secondary-action - The footer's secondary action, e.g. a cancel button.
  * @slot primary-action - The footer's primary action, e.g. a submit button.
  *
- * @attr padding - Spacing applied to the header, body, and footer regions.
- *   Accepts `sm`/`md`/`lg`/`xl` (mapped to `--c-spacing-*`), `0` or `none`, a
- *   unitless number (treated as pixels), or any CSS length. Defaults to `lg`.
- *   Supplied by the `Paddable` mixin, which writes it to `--_pane-spacing`.
+ * @attr {'sm'|'md'|'lg'|'xl'|'none'|'0'} padding - Spacing applied to the header, body, and footer regions.
+ *   Accepts `sm`, `md`, `lg`, and `xl` (mapped to `--c-spacing-*`), or
+ *   `0`/`none`. Defaults to `lg`. Values off that scale are ignored; set
+ *   `--c-pane-padding` for anything else. Supplied by the `Paddable` mixin,
+ *   which writes it to `--_pane-spacing`.
  *
  * @csspart base - The pane's outermost element, which carries the surface
  *   treatment. Style it to override border/shadow/fill for a single pane. It's
