@@ -1,13 +1,25 @@
 import {t} from '@src/utilities/translate';
 import {css, html, LitElement} from 'lit';
-import {property, query, queryAssignedElements, state} from 'lit/decorators.js';
+import {property, query} from 'lit/decorators.js';
 
 import '../button/button';
 import '../icon/icon';
 import '../tooltip/tooltip';
 import type CraftTooltip from '../tooltip/tooltip';
-import '../visually-hidden/visually-hidden';
 
+/**
+ * @summary A small "more info" button that reveals explanatory text in a
+ * tooltip. Use it for a detail that helps but should not take up room beside
+ * the thing it explains.
+ *
+ * Only one info icon is open at a time — opening one closes any other, so the
+ * page never accumulates tooltips.
+ *
+ * The tooltip opens on click rather than hover, so the text is reachable
+ * without a pointer and stays put long enough to read.
+ *
+ * @slot - The explanatory text shown in the tooltip.
+ */
 export default class CraftInfoIcon extends LitElement {
   static override styles = css`
     :host {
@@ -17,15 +29,20 @@ export default class CraftInfoIcon extends LitElement {
 
   static #openInstance: CraftInfoIcon | null = null;
 
+  /** Accessible name for the button that opens the tooltip. */
   @property() label = t('More Info');
 
+  /** Name of the icon shown on the button. */
   @property() icon = 'circle-info';
 
+  /** Prevents the tooltip from being opened. */
   @property({type: Boolean, reflect: true}) disabled = false;
 
+  /**
+   * Id of the host, used to tie the tooltip to its button. Generated when not
+   * supplied, so a page can hold many info icons without collisions.
+   */
   @property() override id: string;
-
-  @state() status = '';
 
   @query('craft-tooltip') tooltip!: HTMLElement;
 
@@ -64,23 +81,11 @@ export default class CraftInfoIcon extends LitElement {
     );
 
     this.addEventListener(
-      'craft-after-show',
-      () => {
-        this.status = '';
-        setTimeout(() => {
-          this.status = 'Some new status';
-        }, 200);
-      },
-      {signal}
-    );
-
-    this.addEventListener(
       'craft-after-hide',
       () => {
         if (CraftInfoIcon.#openInstance === this) {
           CraftInfoIcon.#openInstance = null;
         }
-        this.status = '';
       },
       {signal}
     );
@@ -97,10 +102,6 @@ export default class CraftInfoIcon extends LitElement {
   override render() {
     return html`
       <div class="cp-info-icon">
-        <craft-visually-hidden role="status">
-          ${this.status}
-        </craft-visually-hidden>
-
         <craft-button
           type="button"
           icon
