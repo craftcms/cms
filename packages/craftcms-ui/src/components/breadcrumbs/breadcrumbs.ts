@@ -13,6 +13,15 @@ type BreadcrumbItem = {
   isVisible: boolean; // false if displayed in menu overlay
 };
 
+/**
+ * @summary A trail of `craft-breadcrumb-item`s showing where the current page
+ * sits, and giving a route back up.
+ *
+ * The trail collapses when it runs out of room rather than wrapping or
+ * overflowing, so a deep path stays on one line in a narrow window.
+ *
+ * @slot - The `craft-breadcrumb-item`s making up the trail.
+ */
 export default class CraftBreadcrumbs extends LitElement {
   static override styles = [styles];
   @query('slot') defaultSlot: HTMLSlotElement;
@@ -24,6 +33,11 @@ export default class CraftBreadcrumbs extends LitElement {
   /**
    * The label to use for the breadcrumb control. This will not be shown on the screen, but it will be announced by
    * screen readers and other assistive devices to provide more context for users.
+   */
+  /**
+   * Accessible name for the navigation landmark. A page with more than one
+   * set of breadcrumbs should name each, so they are distinguishable in a
+   * list of landmarks.
    */
   @property() label = t('Breadcrumbs');
 
