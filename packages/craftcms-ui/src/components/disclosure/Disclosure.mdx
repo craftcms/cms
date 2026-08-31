@@ -1,0 +1,42 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as DisclosureStories from './disclosure.stories';
+
+<Meta of={DisclosureStories} name="Docs" />
+
+# Disclosure
+
+`<craft-disclosure>` shows and hides a section of content.
+
+<Canvas of={DisclosureStories.Collapsed} sourceState="shown" />
+
+<Canvas of={DisclosureStories.Expanded} sourceState="shown" />
+
+## Two Modes
+
+**Slotted mode** is the usual one: a `slot="invoker"` trigger and `slot="content"` content, following Lion's collapsible convention. Without a slotted invoker it renders a default one from `label`:
+
+<Canvas of={DisclosureStories.DefaultInvoker} sourceState="shown" />
+
+**External-target mode** wraps a bare `button` whose `aria-controls` names an element elsewhere in the document. Toggling flips that target's `data-state` between `expanded` and `collapsed`, and the consumer supplies the CSS.
+
+That second mode exists for server-rendered markup, where the trigger and the thing it reveals are rendered in different places and cannot be nested. It can also persist the state to a cookie via `cookie-name`, so a section stays as a person left it.
+
+## Accordions
+
+<Canvas of={DisclosureStories.Accordion} sourceState="shown" />
+
+Several disclosures side by side make an accordion. Nothing enforces one-open-at-a-time — if you want that, close the others yourself.
+
+Consider whether you want it at all. Collapsing a section a person just opened, because they opened another, is a common source of frustration.
+
+## Accessibility
+
+The invoker carries `aria-expanded` and `aria-controls`, so the state and the relationship are both announced.
+
+In external-target mode the component mirrors `aria-expanded` onto the button it wraps — which is why that mode expects a real `button`, not a div dressed as one.
+
+Label the invoker with what it reveals rather than with the action. "Advanced settings" says what is behind it; "Show more" says only that there is more.
+
+## Properties
+
+<ArgTypes of={DisclosureStories} />

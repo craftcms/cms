@@ -5,7 +5,7 @@ import type {WindowWithCraft} from '@src/types/globals';
 import '../button/button.js';
 
 /**
- * A disclosure trigger supporting two modes:
+ * @summary A trigger that shows and hides content, in either of two modes:
  *
  * **Slotted (collapsible) mode** — Lion's collapsible convention: a
  * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
