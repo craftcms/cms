@@ -1,0 +1,37 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Form Controls/Select Controls/Option" />
+
+# Option
+
+`<craft-option>` is one entry inside a [Select Rich](?path=/docs/form-controls-select-controls-select-rich--docs) or a [Combobox](?path=/docs/form-controls-select-controls-combobox--docs).
+
+There are no stories on this page because an option outside a listbox has nothing to belong to. See either parent's page for working examples.
+
+```html
+<craft-select-rich label="Entry type">
+  <craft-option .choiceValue="${'article'}" hint="article">
+    <craft-icon name="newspaper"></craft-icon>
+    Article
+  </craft-option>
+</craft-select-rich>
+```
+
+## What It Adds
+
+Over a native `<option>`, two things:
+
+- **Arbitrary markup.** An icon, a status, a thumbnail — anything that helps a person recognise the entry.
+- **A hint.** Secondary text after the label, rendered quieter: a handle, a count, a short qualifier.
+
+## Responsive Layout
+
+Options widen their layout once they have room, measured against the option itself rather than the viewport.
+
+That means the same list reads sensibly in a narrow slideout and on a wide page without the parent configuring anything. The threshold is `--c-option-wide-threshold`, defaulting to 640 pixels.
+
+## Accessibility
+
+Lion supplies the option semantics and selection state.
+
+Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it.
