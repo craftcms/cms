@@ -277,11 +277,13 @@ it('invalidates Asset Transforms once for each source lifecycle operation', func
     $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
+        'name' => 'source',
         'parentId' => $rootFolder->id,
         'path' => 'source/',
     ]);
     $destination = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
+        'name' => 'destination',
         'parentId' => $rootFolder->id,
         'path' => 'destination/',
     ]);
