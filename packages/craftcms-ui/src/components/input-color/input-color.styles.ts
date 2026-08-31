@@ -1,5 +1,9 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputWrapperStyles, baseFormControlStyles} from '../../styles/form.styles';
+import {
+  baseFieldStyles,
+  baseInputWrapperStyles,
+  baseFormControlStyles,
+} from '../../styles/form.styles';
 
 export default css`
   ${baseFieldStyles}
@@ -61,7 +65,8 @@ export default css`
   }
 
   .input-color__swatch:focus-within {
-    outline: var(--c-focus-outline-width) var(--c-focus-outline-style) var(--c-color-focus-outline);
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
@@ -109,12 +114,12 @@ export default css`
     font: inherit;
     font-family: var(--c-font-mono);
     padding-block: 0;
-    
+
     border: 0;
     appearance: none;
     background-color: transparent;
   }
-  
+
   ::slotted(.form-control) {
     ${baseFormControlStyles}
   }
