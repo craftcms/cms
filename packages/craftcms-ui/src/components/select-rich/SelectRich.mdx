@@ -1,0 +1,30 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SelectRichStories from './select-rich.stories';
+
+<Meta of={SelectRichStories} name="Docs" />
+
+# Select Rich
+
+`<craft-select-rich>` is a dropdown whose options can hold arbitrary markup.
+
+<Canvas of={SelectRichStories.Default} sourceState="shown" />
+
+Options are [Option](?path=/docs/form-controls-select-controls-option--docs) elements rather than native `<option>`s, so each one can carry an icon, a status dot, a hint, or a thumbnail. The selected option is cloned into the invoker, so whatever an option looks like in the list is what the closed control shows.
+
+## What It Costs
+
+Replacing the native dropdown means replacing everything the platform gave you with it — the mobile picker, the built-in type-ahead, the keyboard model. Lion reimplements the keyboard and ARIA behaviour, but a person on a phone gets a custom list where they expected the system one.
+
+So use [Select](?path=/docs/form-controls-select-controls-select--docs) unless an option genuinely needs to be more than text. "It looks nicer" is not that reason.
+
+## Sizing
+
+The invoker sizes itself to its content rather than to a fixed width, so a control holding short values does not stretch across the row.
+
+`small` renders it at the smaller size.
+
+## Accessibility
+
+Lion supplies the listbox semantics, roving focus, and the wiring between label, invoker, and options.
+
+The thing to watch is what an option _announces_. Rich markup is read out too, so an option carrying an icon, a label, and a hint is announced as all three. Keep the visible label first and the decoration after it, and mark purely decorative artwork as such — otherwise every option in the list starts with the same noise.
