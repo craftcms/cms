@@ -146,7 +146,7 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
  */
 .cp-checkbox-select__item craft-reorder-button {
   position: relative;
-  z-index: 1;
+  z-index: var(--c-z-raised);
 }
 
 /**

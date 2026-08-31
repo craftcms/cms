@@ -108,7 +108,7 @@ describe('Drag settings + defaults', () => {
     expect(d.settings!.minMouseDist).toBe(7);
     // Drag default survives.
     expect(d.settings!.hideDraggee).toBe(true);
-    expect(d.settings!.helperBaseZindex).toBe(1000);
+    expect(d.settings!.helperBaseZindex).toBe(3000);
     // BaseDrag default survives.
     expect(d.settings!.ignoreHandleSelector).toBe(
       'input, textarea, button, select, .btn'
@@ -332,8 +332,8 @@ describe('Drag._createHelper', () => {
     expect(helper.style.boxSizing).toBe('border-box');
     expect(helper.style.display).toBe('block');
     expect(helper.style.pointerEvents).toBe('none');
-    // zIndex = base(1000) + draggeeLength(1) - index(0) = 1001
-    expect(helper.style.zIndex).toBe('1001');
+    // zIndex = base(3000) + draggeeLength(1) - index(0) = 3001
+    expect(helper.style.zIndex).toBe('3001');
     // real=true target: mouseX - mouseOffsetX = 90, mouseY - mouseOffsetY = 45
     expect(helper.style.left).toBe('90px');
     expect(helper.style.top).toBe('45px');

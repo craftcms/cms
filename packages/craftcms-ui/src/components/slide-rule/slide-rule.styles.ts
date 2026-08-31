@@ -24,7 +24,7 @@ export default css`
     margin-inline-start: calc(-4 / 16 * 1rem);
     margin-block-start: 4px;
     inset-inline-start: 50%;
-    z-index: 1;
+    z-index: var(--c-z-raised, 1);
     width: 0;
     height: 0;
     border-inline-start: calc(5 / 16 * 1rem) solid transparent;
@@ -43,7 +43,7 @@ export default css`
   }
 
   .overlay {
-    z-index: 2;
+    z-index: var(--c-z-floating, 2);
     position: absolute;
     inset-block: 0 1px;
     inset-inline: 0;

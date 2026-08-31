@@ -388,7 +388,7 @@
     border-block-end: 1px solid var(--color-neutral-border-quiet);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: var(--c-z-page-header);
     background-color: white;
   }
 

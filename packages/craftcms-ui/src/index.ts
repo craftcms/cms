@@ -150,3 +150,4 @@ export {default as visuallyHiddenStyles} from './styles/visually-hidden.styles.j
 export * from './constants/variants';
 export * from './constants/appearances';
 export * from './constants/colors';
+export * from './constants/z-layers';

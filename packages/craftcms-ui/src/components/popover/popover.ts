@@ -1,6 +1,7 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
+import {ZLayer} from '@src/constants/z-layers.js';
 import type {VirtualElement} from '@popperjs/core';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
@@ -73,6 +74,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),
+      // Lion renders the overlay into a non-modal `<dialog>` appended to
+      // `<body>` and writes this inline, defaulting to 9999 — high enough to
+      // clear anything, which is how it ended up above the CP's modals by
+      // accident. Put it on the ladder instead.
+      zIndex: ZLayer.Overlay,
       inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
       popperConfig: {
         // Position relative to the viewport so the overlay escapes any

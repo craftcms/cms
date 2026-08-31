@@ -36,7 +36,7 @@ export default css`
     width: 2px;
     height: 100%;
     cursor: help;
-    z-index: 1;
+    z-index: var(--c-z-raised, 1);
     border-radius: 1px;
   }
 

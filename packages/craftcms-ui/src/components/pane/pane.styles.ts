@@ -148,7 +148,7 @@ export default css`
     padding-block: var(--_pane-spacing) 0;
     position: sticky;
     inset-block-start: 0;
-    z-index: 10;
+    z-index: var(--c-z-sticky, 10);
     background-color: var(--_pane-background);
   }
 
@@ -179,7 +179,7 @@ export default css`
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-end: 0;
-    z-index: 10;
+    z-index: var(--c-z-sticky, 10);
   }
 
   .cp-pane__spacer {

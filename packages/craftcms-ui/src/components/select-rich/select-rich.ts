@@ -1,4 +1,5 @@
 import {LionSelectRich} from '@lion/ui/select-rich.js';
+import {ZLayer} from '@src/constants/z-layers.js';
 import {html} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './select-rich.styles.js';
@@ -33,6 +34,12 @@ export default class CraftSelectRich extends LionSelectRich {
       ...super.scopedElements,
       'lion-select-invoker': CraftSelectInvoker,
     };
+  }
+
+  /** Puts the listbox on the CP's stacking ladder instead of Lion's 9999. */
+  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
+  override _defineOverlayConfig() {
+    return {...super._defineOverlayConfig(), zIndex: ZLayer.Overlay};
   }
 
   /** Renders the invoker at a smaller size. */

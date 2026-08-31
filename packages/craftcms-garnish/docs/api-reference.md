@@ -398,7 +398,7 @@ also `new Drag(settings)` (param shift when the first arg is a plain object).
 | `helperOpacity` | `1` | Helper opacity (`1` → no override). |
 | `moveHelperToCursor` | `false` | Put the helper's top-left at the cursor instead of the grab offset. |
 | `helper` | `null` | Helper wrapper: `(helper, index) => wrapped`, an element/markup to wrap into, or `null` (bare clone). |
-| `helperBaseZindex` | `1000` | Base z-index for helpers. |
+| `helperBaseZindex` | `3000` | Base z-index for helpers — the `--c-z-drag` rung of the CP's stacking ladder. |
 | `helperLagBase` | `3` | Base follow-lag divisor. |
 | `helperLagIncrementDividend` | `1.5` | Per-helper lag increment dividend. |
 | `helperSpacingX` / `helperSpacingY` | `5` / `5` | Per-index helper offset (px). |

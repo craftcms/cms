@@ -79,6 +79,12 @@ export interface DragSettings extends BaseDragSettings {
    * element/markup the clone is appended into. `null` → use the bare clone.
    */
   helper: DragHelper;
+  /**
+   * Base z-index for drag helpers, which are appended to `<body>` and follow
+   * the pointer over the CP's chrome. Defaults to the `--c-z-drag` rung of the
+   * CP's stacking ladder (see `docs/z-layers.md`) — Garnish is standalone and
+   * can't import `@craftcms/ui`, so the number is repeated here.
+   */
   helperBaseZindex: number;
   helperLagBase: number;
   helperLagIncrementDividend: number;
@@ -110,7 +116,7 @@ export class Drag<S extends DragSettings = DragSettings> extends BaseDrag<S> {
     helperOpacity: 1,
     moveHelperToCursor: false,
     helper: null,
-    helperBaseZindex: 1000,
+    helperBaseZindex: 3000,
     helperLagBase: 3,
     helperLagIncrementDividend: 1.5,
     helperSpacingX: 5,

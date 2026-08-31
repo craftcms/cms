@@ -76,7 +76,7 @@ export default css`
     /* Above the tabs, so the invoker's own click-target pseudo-element can't
        be covered by the tab beside it. */
     position: relative;
-    z-index: 1;
+    z-index: var(--c-z-raised, 1);
   }
 
   .tabs__overflow[hidden] {

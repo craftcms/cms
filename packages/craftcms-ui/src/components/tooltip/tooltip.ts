@@ -4,6 +4,7 @@ import {LionTooltip} from '@lion/ui/tooltip.js';
 import {withTooltipConfig} from '@lion/ui/overlays.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
+import {ZLayer} from '../../constants/z-layers.js';
 
 /**
  * craft-tooltip shows contextual text for an external trigger element
@@ -114,7 +115,7 @@ export default class CraftTooltip extends LionTooltip {
 
   // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
   override _defineOverlayConfig() {
-    const config = {...super._defineOverlayConfig()};
+    const config = {...super._defineOverlayConfig(), zIndex: ZLayer.Tooltip};
 
     if (this.#isClickTriggered || this.#isManual) {
       // Disable Lion's hover/focus interaction.

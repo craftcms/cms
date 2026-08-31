@@ -119,7 +119,7 @@
 .markdown-field .overtype-stats {
   padding-block: var(--c-spacing-md) !important;
   padding-inline: var(--c-input-spacing-inline) !important;
-  z-index: 0 !important;
+  z-index: var(--c-z-base) !important;
 }
 
 .markdown-field .overtype-link-tooltip,
@@ -137,7 +137,7 @@
   position: absolute !important;
   inset-block-end: var(--c-spacing-md) !important;
   inset-inline-end: var(--c-input-spacing-inline) !important;
-  z-index: 2 !important;
+  z-index: var(--c-z-floating) !important;
   display: flex !important;
   gap: var(--c-spacing-sm) !important;
   align-items: center !important;
@@ -250,10 +250,6 @@
 
 .markdown-link-popover {
   --max-width: min(360px, calc(100vw - var(--c-spacing-xl)));
-}
-
-.markdown-link-popover::part(dialog) {
-  z-index: 10001;
 }
 
 .markdown-link-popover::part(body) {

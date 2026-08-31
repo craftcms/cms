@@ -54,7 +54,7 @@ export default css`
     outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
     position: relative;
-    z-index: 1;
+    z-index: var(--c-z-raised, 1);
   }
 
   :host([read-only]) .slide-picker__segment {
