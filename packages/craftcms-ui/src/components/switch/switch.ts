@@ -20,11 +20,27 @@ const SYNTHETIC_CHANGE = Symbol.for('craft-switch-synthetic-change');
 
 type SyntheticChangeEvent = Event & {[SYNTHETIC_CHANGE]?: boolean};
 
+/**
+ * @summary A switch, for a setting that takes effect as soon as it is
+ * toggled — the modern replacement for the legacy lightswitch.
+ *
+ * Use a switch when the change is immediate and needs no confirmation, and a
+ * `craft-checkbox` when the value is part of a form that has to be submitted.
+ * The control tells a person which they are dealing with.
+ *
+ * A hidden input carries the value, so a switch posts like any other field.
+ *
+ * @slot label - The switch's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages.
+ */
 export default class CraftSwitch extends LionSwitch {
   static override get styles() {
     return [...super.styles, baseFieldStyles, styles];
   }
 
+  /** Size of the control. */
   @property({type: String, reflect: true}) size: 'small' | 'medium' = 'medium';
 
   /**

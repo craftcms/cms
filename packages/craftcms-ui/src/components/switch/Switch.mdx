@@ -1,0 +1,43 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SwitchStories from './switch.stories';
+
+<Meta of={SwitchStories} name="Docs" />
+
+# Switch
+
+`<craft-switch>` toggles a setting that takes effect immediately.
+
+<Canvas of={SwitchStories.Default} sourceState="shown" />
+
+It is the modern replacement for the legacy lightswitch, and posts through a hidden input so it behaves like any other form field.
+
+## Switch or Checkbox?
+
+The two look different because they mean different things:
+
+- **Switch** — the change happens now. Turning it on _is_ the action.
+- **[Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs)** — the value is part of a form, and nothing happens until it is submitted.
+
+A switch that only takes effect after a Save button is a switch that lied about what it does.
+
+## State Labels
+
+`on-label` and `off-label` render text either side of the control describing the two states, matching the legacy lightswitch. Clicking either label sets that state.
+
+They are announced as a single description rather than as two loose strings — the visible labels are hidden from assistive technology and replaced with one linked description, so a screen reader hears what the switch does rather than the words "on" and "off" floating beside it.
+
+## The Mixed State
+
+`indeterminate` renders the third state, again matching the legacy lightswitch, and posts `indeterminate-value` rather than the on value.
+
+It is only meaningful while the switch is off, and is cleared as soon as the switch is turned on — a switch cannot be both on and undecided.
+
+## Values
+
+`value` is what the hidden input posts when the switch is on, defaulting to `1`. It is named `checkedValue` on the element itself, because Lion already defines a `value` accessor that proxies the input node.
+
+## Accessibility
+
+The control is exposed as a switch with its checked state, and the mixed state as `aria-checked="mixed"`.
+
+Label it with the thing being switched, not with the states. "Enable comments" tells a person what the control governs; "On/Off" tells them only what a switch already looks like.
