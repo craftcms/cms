@@ -1,0 +1,76 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ActionMenuStories from './action-menu.stories';
+
+<Meta of={ActionMenuStories} name="Docs" />
+
+# Action Menu
+
+`<craft-action-menu>` is a menu of actions, built on [Popover](?path=/docs/functional-popover--docs).
+
+<Canvas of={ActionMenuStories.Default} sourceState="shown" />
+
+It is where per-object actions live throughout the control panel — the ellipsis button on a chip, a card, or an index row.
+
+## Two Modes
+
+**Slot-based**, where you author the items yourself:
+
+<Canvas of={ActionMenuStories.Default} sourceState="shown" />
+
+**Data-driven**, where you set the `actions` property and the component builds the menu:
+
+<Canvas of={ActionMenuStories.DataDriven} sourceState="shown" />
+
+Prefer data-driven where the actions come from data, which is most of the time — it handles the sorting, the dividers, and the item rendering. Note that `danger` items sort to the bottom automatically, so a destructive action is never adjacent to a routine one.
+
+`actions` is a property rather than an attribute, so bind it with `.actions`.
+
+<Canvas of={ActionMenuStories.DataDrivenWithDisplay} sourceState="shown" />
+
+## The Invoker
+
+A default invoker is generated, and a slotted one replaces it:
+
+<Canvas
+  of={ActionMenuStories.DataDrivenWithCustomInvoker}
+  sourceState="shown"
+/>
+
+<Canvas of={ActionMenuStories.DataDrivenDisabled} sourceState="shown" />
+
+<Canvas of={ActionMenuStories.SlotBasedDisabled} sourceState="shown" />
+
+## Searching
+
+<Canvas of={ActionMenuStories.Searchable} sourceState="shown" />
+
+<Canvas of={ActionMenuStories.SearchableDataDriven} sourceState="shown" />
+
+`searchable` adds a filter, for menus long enough that scanning is work.
+
+<Canvas of={ActionMenuStories.SearchableWithHiddenItems} sourceState="shown" />
+
+Items can carry extra search terms — a handle, an alias — so a person can find an entry by something other than its visible label.
+
+## Keyboard
+
+The menu follows the WAI-ARIA menu-button pattern, adapted:
+
+- Opening moves focus to the search input when `searchable`, or to the first item otherwise
+- Arrow keys move through the items, wrapping
+- From the search input, Down and Up jump to the first and last item
+- Home and End jump to the ends
+- Typing while an item is focused returns to the search input
+- Escape clears the filter first, then closes
+
+That last one is deliberate: a filtered menu has two states to leave, and closing outright would discard the filter and the menu together.
+
+## Accessibility
+
+The `change` event carries the chosen item in `detail.item` — the descriptor in data-driven mode, the element in slot-based mode.
+
+Give the invoker a real name. The generated one is labelled, but a custom invoker is yours to name, and an unnamed ellipsis button is announced as nothing at all.
+
+## Properties
+
+<ArgTypes of={ActionMenuStories} />
