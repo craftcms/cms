@@ -3,6 +3,17 @@ import {property} from 'lit/decorators.js';
 
 import '../icon/icon';
 
+/**
+ * @summary An empty state: a centred message, an optional graphic, and room
+ * for whatever the person should do next.
+ *
+ * Shown where a list, an index, or a panel has nothing in it — a place that
+ * would otherwise be blank, which reads as broken rather than as empty.
+ *
+ * @slot - Content shown after the message, usually the action to take.
+ * @slot graphic - Artwork shown above the message, replacing the `icon`.
+ * @slot content - The message region, replacing the `label`.
+ */
 export default class CraftEmpty extends LitElement {
   static override styles = [
     css`
@@ -31,7 +42,10 @@ export default class CraftEmpty extends LitElement {
     `,
   ];
 
+  /** The message. Say what is missing, not that something is missing. */
   @property() label: string = '';
+
+  /** Name of an icon shown above the message. */
   @property() icon: string = '';
 
   protected override render() {
