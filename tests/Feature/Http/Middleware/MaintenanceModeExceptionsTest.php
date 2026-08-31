@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
+use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController as PluginStoreRemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -178,11 +186,39 @@ test('annotated routes are registered as maintenance exceptions', function () {
     expect($exceptions)
         ->toContain(
             $routes->joinRoutePrefix([$cpTrigger, 'updates/backup']),
+            $routes->joinRoutePrefix([$cpTrigger, 'updates/force-update']),
             $routes->joinRoutePrefix([$cpTrigger, 'settings/general']),
             $routes->joinRoutePrefix([$actionTrigger, 'users/login']),
-        )
-        ->not->toContain($routes->joinRoutePrefix([$cpTrigger, 'updates/force-update']));
+            trim((string) parse_url(action([InstallController::class, 'index']), PHP_URL_PATH), '/'),
+            trim((string) parse_url(action([PluginStoreInstallController::class, 'migrate']), PHP_URL_PATH), '/'),
+            trim((string) parse_url(action([PluginStoreRemoveController::class, 'composerRemove']), PHP_URL_PATH), '/'),
+        );
 });
+
+test('pending-update actions remain reachable during Laravel maintenance', function (string $method, string|array $controller, int $status, ?string $validationError = null, bool $guest = true) {
+    $this->mock(Updates::class)
+        ->shouldReceive('isCraftSchemaVersionCompatible')->andReturnTrue()->byDefault()
+        ->shouldReceive('isCraftUpdatePending')->andReturnTrue()->byDefault()
+        ->shouldReceive('pendingMigrationHandles')->andReturn([])->byDefault();
+
+    if ($guest) {
+        auth()->logout();
+    }
+
+    $response = $method === 'GET'
+        ? get(action($controller))
+        : postJson(action($controller));
+
+    $response->assertStatus($status);
+
+    if ($validationError !== null) {
+        $response->assertJsonValidationErrors($validationError);
+    }
+})->with([
+    'health check' => ['GET', HealthCheckController::class, 200],
+    'migrate' => ['POST', MigrateController::class, 204],
+    'Plugin Store migrate' => ['POST', [PluginStoreInstallController::class, 'migrate'], 422, 'data', false],
+]);
 
 test('updater routes required by an active update remain reachable for workflow validation', function (string $action, string $query = '') {
     auth()->logout();
@@ -192,24 +228,53 @@ test('updater routes required by an active update remain reachable for workflow 
         ->assertJsonValidationErrors('data');
 })->with([
     'backup' => ['backup'],
+    'force update' => ['forceUpdate'],
     'server check' => ['serverCheck'],
+    'revert' => ['revert'],
     'migrate' => ['migrate'],
     'precheck with query string' => ['precheck', '?site=default'],
+    'recheck Composer' => ['recheckComposer'],
     'Composer install' => ['composerInstall'],
+    'Composer remove' => ['composerRemove'],
+    'finish' => ['finish'],
 ]);
 
-test('unrelated updater routes remain blocked during maintenance mode', function (string $action) {
+test('updater index remains reachable during maintenance mode', function () {
     auth()->logout();
 
-    postJson(action([UpdaterController::class, $action]))
-        ->assertServiceUnavailable();
-})->with([
-    'index' => ['index'],
-    'force update' => ['forceUpdate'],
-    'revert' => ['revert'],
-    'recheck Composer' => ['recheckComposer'],
-    'Composer remove' => ['composerRemove'],
-]);
+    post(action([UpdaterController::class, 'index']))
+        ->assertOk();
+});
+
+test('a failed backup can reach its emitted revert action during maintenance', function () {
+    $this->mock(Updates::class)
+        ->shouldReceive('isCraftSchemaVersionCompatible')->andReturnTrue()->byDefault()
+        ->shouldReceive('isCraftUpdatePending')->andReturnTrue()->byDefault()
+        ->shouldReceive('areMigrationsPending')->andReturnTrue();
+
+    $this->mock(Backups::class)
+        ->shouldReceive('backup')->andThrow(new RuntimeException('Backup failed'));
+
+    $this->mock(Composer::class)
+        ->shouldReceive('install')->andReturnNull();
+
+    $data = Crypt::encrypt(Json::encode([
+        'install' => ['craft' => '6.0.0'],
+        'current' => ['craftcms/cms' => '5.0.0'],
+        'reverted' => false,
+    ]));
+
+    $backup = postJson(action([UpdaterController::class, 'backup']), compact('data'))
+        ->assertOk()
+        ->assertJsonPath('options.0.nextUrl', action([UpdaterController::class, 'revert']));
+
+    auth()->logout();
+
+    postJson($backup->json('options.0.nextUrl'), [
+        'data' => $backup->json('data'),
+    ])->assertOk()
+        ->assertJsonPath('nextUrl', action([UpdaterController::class, 'finish']));
+});
 
 test('config sync finish route is accessible during maintenance mode', function () {
     postJson(action([ConfigSyncController::class, 'finish']), [

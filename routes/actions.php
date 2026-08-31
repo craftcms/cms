@@ -111,7 +111,7 @@ $sharedActionRouteGroups = $routes->actionTriggerRoutePrefix() === $routes->cpAc
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::prefix($prefix)->middleware($middleware)->group(function () use ($middleware) {
         // App
-        Route::get('app/health-check', HealthCheckController::class);
+        Route::allowDuringMaintenance()->get('app/health-check', HealthCheckController::class);
 
         // Auth
         Route::allowDuringMaintenance()->group(function () use ($middleware) {
@@ -404,7 +404,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
         });
 
-        Route::prefix('pluginstore/install')->middleware([
+        Route::allowDuringMaintenance()->prefix('pluginstore/install')->middleware([
             RequireAdminChanges::class,
         ])->group(function () {
             Route::post('/', [PluginStoreInstallController::class, 'index']);
@@ -415,7 +415,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [PluginStoreInstallController::class, 'recheckComposer']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [PluginStoreInstallController::class, 'composerInstall']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [PluginStoreInstallController::class, 'composerRemove']);
-            Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [PluginStoreInstallController::class, 'finish']);
+            Route::post(BaseUpdaterController::ACTION_FINISH, [PluginStoreInstallController::class, 'finish']);
         });
 
     });

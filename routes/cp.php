@@ -77,7 +77,7 @@ use function CraftCms\Cms\cp_url;
 /**
  * Admin requests that do not require a login
  */
-Route::prefix('install')->group(function () {
+Route::allowDuringMaintenance()->prefix('install')->group(function () {
     Route::get('/', [InstallController::class, 'index']);
     Route::post('/', [InstallController::class, 'install']);
     Route::post('validate-db', [InstallController::class, 'validateDb']);
@@ -85,18 +85,18 @@ Route::prefix('install')->group(function () {
     Route::post('validate-site', [InstallController::class, 'validateSite']);
 });
 
-Route::prefix('updates')->name('updates.')->group(function () {
+Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(function () {
     Route::post('/', [UpdaterController::class, 'index'])->name('index');
     Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate'])->name('force-update');
-    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
-    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
+    Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup'])->name('backup');
+    Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck'])->name('server-check');
     Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert'])->name('revert');
-    Route::allowDuringMaintenance()->post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate'])->name('migrate');
-    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck'])->name('precheck');
+    Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate'])->name('migrate');
+    Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck'])->name('precheck');
     Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer'])->name('recheck-composer');
-    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall'])->name('composer-install');
+    Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall'])->name('composer-install');
     Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove'])->name('composer-remove');
-    Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
+    Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
 });
 
 Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
@@ -159,13 +159,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/addresses', [AddressSettingsController::class, 'store']);
     });
 
-    Route::prefix('pluginstore/remove')->middleware(RequireAdminChanges::class)->group(function () {
+    Route::allowDuringMaintenance()->prefix('pluginstore/remove')->middleware(RequireAdminChanges::class)->group(function () {
         Route::post('/', [RemoveController::class, 'index']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
-        Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
 
     /**
