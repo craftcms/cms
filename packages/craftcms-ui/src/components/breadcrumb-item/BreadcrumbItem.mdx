@@ -1,0 +1,25 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Breadcrumb Item" />
+
+# Breadcrumb Item
+
+`<craft-breadcrumb-item>` is one step in a [Breadcrumbs](?path=/docs/components-breadcrumbs--docs) trail.
+
+There are no stories here because a single crumb has no trail to sit in. See the [Breadcrumbs](?path=/docs/components-breadcrumbs--docs) page for working examples.
+
+```html
+<craft-breadcrumbs>
+  <craft-breadcrumb-item href="/admin">Control Panel</craft-breadcrumb-item>
+  <craft-breadcrumb-item href="/admin/entries">Entries</craft-breadcrumb-item>
+  <craft-breadcrumb-item>Homepage</craft-breadcrumb-item>
+</craft-breadcrumbs>
+```
+
+## Links and the Current Page
+
+A crumb with `href` renders as a link; one without renders as plain text.
+
+**Leave `href` off the last crumb.** It is the page the person is already on, so a link there goes nowhere — and announcing it as a link suggests otherwise.
+
+`target` and `rel` behave as they do on a native anchor. `rel` defaults to `noreferrer noopener`, which is what a crumb opening in a new tab should carry.
