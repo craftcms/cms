@@ -309,6 +309,19 @@ class Config extends Component
     }
 
     /**
+     * Returns whether an environment variable exists in the project’s `.env` file.
+     *
+     * @param string $name The environment variable name
+     * @return bool
+     * @since 5.10.15
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::variableExists()` instead.
+     */
+    public function doesEnvVarExist(string $name): bool
+    {
+        return Env::variableExists($name, app()->environmentFilePath());
+    }
+
+    /**
      * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name
