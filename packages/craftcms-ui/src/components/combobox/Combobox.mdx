@@ -1,0 +1,52 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ComboboxStories from './combobox.stories';
+
+<Meta of={ComboboxStories} name="Docs" />
+
+# Combobox
+
+`<craft-combobox>` is a single-select dropdown with type-ahead filtering.
+
+<Canvas of={ComboboxStories.Default} sourceState="shown" />
+
+Reach for it when a list is long enough that scanning it is work — sections, fields, users, anything running to dozens of entries. For a short list, [Select](?path=/docs/form-controls-select-controls-select--docs) is less machinery and gets the native picker on touch devices.
+
+## Options as Data
+
+Unlike Lion's combobox, which expects every option authored as a slotted child, this takes an `options` array and renders only the matching subset as [Option](?path=/docs/form-controls-select-controls-option--docs) children.
+
+<Canvas of={ComboboxStories.LargeList} sourceState="shown" />
+
+That is what makes a long list workable: the DOM holds the matches, not the source. `limit` caps how many are rendered at once, so a search matching hundreds of entries still produces a bounded list.
+
+Selection, keyboard navigation, and the ARIA wiring are still Lion's, over whatever subset is currently rendered.
+
+## Rich Options
+
+Options can carry markup rather than only text:
+
+<Canvas of={ComboboxStories.RichOptions} sourceState="shown" />
+
+And they can be grouped:
+
+<Canvas of={ComboboxStories.Grouped} sourceState="shown" />
+
+## Clearing
+
+`clearable` adds a control to empty the field:
+
+<Canvas of={ComboboxStories.Clearable} sourceState="shown" />
+
+Offer it whenever no selection is a valid answer. Without it, a person who picks something by accident has no way back to nothing.
+
+`show-selected-hint` keeps the selected option's hint visible in the closed field, for when the hint is what distinguishes two similarly named entries.
+
+## Accessibility
+
+Lion supplies the combobox pattern — the ARIA roles, the active-descendant handling, and the keyboard model.
+
+The filtering is the part worth thinking about. A list that renders only matches means the number of options changes as a person types, which is announced. Keep `limit` high enough that a search feels complete and low enough that the announcement is not overwhelming.
+
+## Properties
+
+The `options` array is a property rather than an attribute, so bind it with `.options`.
