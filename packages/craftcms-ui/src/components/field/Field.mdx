@@ -1,0 +1,80 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as FieldStories from './field.stories';
+
+<Meta of={FieldStories} name="Docs" />
+
+# Field
+
+`<craft-field>` is the shell that puts Craft's standard field chrome around a control.
+
+<Canvas of={FieldStories.Default} sourceState="shown" />
+
+Label, instructions, tips, warnings, errors, and the status badge all come from the field. The control it wraps supplies only itself.
+
+## What It Does Not Do
+
+The shell never touches the slotted control's value, validation, or events. It provides the chrome and the label/description ARIA wiring, and nothing else.
+
+That is what makes it general: any control can go in the `input` slot — a Craft component, a Lion control, or a plain `<input>` — and get the same field treatment without the field knowing anything about it.
+
+<Canvas of={FieldStories.WithCraftInput} sourceState="shown" />
+
+## Instructions, Tips, and Warnings
+
+Three different things, rendered differently on purpose:
+
+- **`help-text`** — how to fill the field in. Always visible, below the label.
+- **`tip`** — supplementary advice, in an info callout.
+- **`warning`** — a consequence worth knowing before changing the value, in a warning callout.
+
+<Canvas of={FieldStories.RequiredWithInstructions} sourceState="shown" />
+
+<Canvas of={FieldStories.TipAndWarning} sourceState="shown" />
+
+Reach for the plainest one that fits. A page where every field carries a warning has no warnings.
+
+## Errors
+
+<Canvas of={FieldStories.Errors} sourceState="shown" />
+
+Errors render in the `feedback` slot and are wired to the control with `aria-describedby`, so they are announced when the control takes focus rather than only being visible beside it.
+
+## Status and Translation
+
+<Canvas of={FieldStories.StatusBadge} sourceState="shown" />
+
+<Canvas of={FieldStories.Translatable} sourceState="shown" />
+
+The status badge marks a field whose value is outdated or overridden. The translation indicator marks a field whose value is per-site, with `translation-description` explaining the scope.
+
+## Fieldsets
+
+<Canvas of={FieldStories.FieldsetMode} sourceState="shown" />
+
+`fieldset` renders the shell as a `<fieldset>` with a `<legend>` instead of a label bound to one control.
+
+Use it when the field holds several controls that share one question — a group of checkboxes, a date and time pair. A `<label>` can only point at one control, so a group needs a legend.
+
+## Actions
+
+<Canvas of={FieldStories.Actions} sourceState="shown" />
+
+The `actions` slot holds field-level controls: a hide-label toggle, a copy-value button, a settings menu.
+
+`label-extra` does something similar and is **deprecated** — use `actions`.
+
+## Accessibility
+
+The field is where a control's accessible name and description come from, which makes it the single most load-bearing component in a form.
+
+- **Every control in a form belongs in one.** A bare input has no name; wrapping it is the cheapest way to fix that.
+- **Use `fieldset` for groups.** A label pointing at the first of five checkboxes names that checkbox, not the group.
+- **`required` is announced,** not just marked with a symbol — so a person hears the requirement rather than needing to see the asterisk.
+
+<Canvas of={FieldStories.ReadOnly} sourceState="shown" />
+
+<Canvas of={FieldStories.Rtl} sourceState="shown" />
+
+## Properties
+
+See the API table for the full attribute surface — the shell takes ten, covering the label, the notices, the status, and the layout.

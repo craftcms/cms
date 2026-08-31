@@ -22,7 +22,7 @@ type FormControlTarget = HTMLElement & {
 };
 
 /**
- * A generic form-field shell that renders the standard CP field chrome
+ * @summary A generic form-field shell that renders the standard CP field chrome
  * (label, instructions, tip/warning notices, errors and status badge) around
  * any slotted control, mirroring the server-side field wrapper
  * (`FormFields::fieldHtml()` / `forms/field.blade.php`).
