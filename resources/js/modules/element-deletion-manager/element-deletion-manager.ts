@@ -168,7 +168,7 @@ export class ElementDeletionManager extends Base {
     const $body = $('<div/>', {class: 'body'}).appendTo($container);
 
     $('<h1/>', {
-      class: 'cp:flex flex-inline cp:items-center cp:gap-sm',
+      class: 'flex flex-inline items-center gap-sm',
       html: Craft.t(
         'app',
         'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
@@ -181,9 +181,9 @@ export class ElementDeletionManager extends Base {
     );
 
     const $footer = $('<div/>', {
-      class: 'footer cp:flex flex-justify',
+      class: 'footer flex flex-justify',
     }).appendTo($container);
-    $('<div/>', {class: 'cp:flex-grow'}).appendTo($footer);
+    $('<div/>', {class: 'flex-grow'}).appendTo($footer);
     const $closeBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
@@ -268,13 +268,13 @@ class Blocker extends Base {
     }).appendTo(this.manager.$blockersContainer);
 
     const $headingContainer = $('<div/>', {
-      class: 'cp:flex cp:flex-nowrap cp:gap-0 mb-s',
+      class: 'flex flex-nowrap gap-0 mb-s',
     }).appendTo(this.$container);
 
     if (this.data.details) {
       $('<button/>', {
         type: 'button',
-        class: 'fieldtoggle cp:my-0',
+        class: 'fieldtoggle my-0',
         'data-target': `${this.id}-details`,
         title: `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
         'aria-label': `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
@@ -283,7 +283,7 @@ class Blocker extends Base {
     }
 
     $('<h2/>', {
-      class: 'h3 cp:mt-0',
+      class: 'h3 mt-0',
       text: this.data.summary,
     }).appendTo($headingContainer);
 
@@ -297,7 +297,7 @@ class Blocker extends Base {
 
     if (this.data.actions) {
       const $actions = $('<div/>', {
-        class: 'cp:flex cp:flex-nowrap',
+        class: 'flex flex-nowrap',
       }).appendTo(this.$container);
 
       for (const action of this.data.actions) {
@@ -393,14 +393,13 @@ class Blocker extends Base {
       $button.addClass('disabled');
     }
     const $messageContainer = $('<div/>', {
-      class:
-        'edm-blocker-resolved-message cp:flex cp:flex-nowrap cp:items-center',
+      class: 'edm-blocker-resolved-message flex flex-nowrap items-center',
     }).appendTo(this.$container);
     $('<div/>', {class: 'cp-icon teal'})
       .append(await Craft.ui.icon('check'))
       .appendTo($messageContainer);
     $('<p/>', {
-      class: 'cp:mt-0',
+      class: 'mt-0',
       text: message ?? Craft.t('app', 'Resolved'),
     }).appendTo($messageContainer);
     this.manager.resolveBlocker(this);

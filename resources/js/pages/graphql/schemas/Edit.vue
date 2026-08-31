@@ -66,7 +66,7 @@
 
 <template>
   <craft-pane appearance="raised">
-    <div class="cp:grid cp:gap-3">
+    <div class="grid gap-3">
       <CraftInput
         v-if="!schema.isPublic"
         :label="t('Name')"
@@ -82,8 +82,8 @@
 
       <hr v-if="!schema.isPublic" />
 
-      <section class="cp:grid cp:gap-3">
-        <h2 class="cp:text-base">
+      <section class="grid gap-3">
+        <h2 class="text-base">
           {{ t('Choose the available content for querying with this schema:') }}
         </h2>
 

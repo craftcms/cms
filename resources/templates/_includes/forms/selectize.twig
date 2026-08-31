@@ -124,7 +124,7 @@
             const langAttr = hintLang ? ` lang="${hintLang}"` : '';
             label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(getData(data, 'hint'))}</span>`;
         }
-        return `<div class="cp:flex cp:flex-nowrap">${label}</div>`;
+        return `<div class="flex flex-nowrap">${label}</div>`;
     };
 
     const $select = $(`#${id}`);

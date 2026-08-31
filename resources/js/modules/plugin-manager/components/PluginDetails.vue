@@ -32,7 +32,7 @@
       <component
         :is="plugin.pluginStoreUrl ? 'a' : 'div'"
         :href="plugin.pluginStoreUrl"
-        class="cp:relative"
+        class="relative"
         target="_blank"
       >
         <template v-if="plugin.iconUrl">
@@ -52,7 +52,7 @@
       </component>
     </div>
     <div>
-      <div class="cp:flex cp:gap-2 cp:items-baseline cp:mb-1">
+      <div class="flex gap-2 items-baseline mb-1">
         <h2>{{ plugin.name }}</h2>
 
         <template v-if="plugin.hasMultipleEditions || plugin.isTrial">
@@ -60,17 +60,17 @@
             :url="plugin.upgradeAvailable ? plugin.pluginStoreUrl : null"
             :edition="plugin.hasMultipleEditions ? plugin.edition : null"
             :is-trial="plugin.isTrial"
-            class="cp:self-center"
+            class="self-center"
           />
         </template>
 
-        <div class="cp:font-mono cp:text-xs">
+        <div class="font-mono text-xs">
           {{ plugin.version }}
         </div>
       </div>
 
       <template v-if="plugin.description">
-        <div class="cp:mb-1">
+        <div class="mb-1">
           <p>{{ plugin.description }}</p>
         </div>
       </template>
@@ -79,7 +79,7 @@
         <PluginLinks :plugin="plugin" />
       </div>
 
-      <div class="cp:my-4" v-if="showLicenseKey">
+      <div class="my-4" v-if="showLicenseKey">
         <PluginLicenseInput :plugin="plugin" />
 
         <PluginLicenseIssues
@@ -91,7 +91,7 @@
           <craft-callout
             variant="warning"
             appearance="plain"
-            class="cp:p-0"
+            class="p-0"
             v-html="renewalHtml"
           />
         </template>

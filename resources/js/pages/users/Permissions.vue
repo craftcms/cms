@@ -79,11 +79,8 @@
       :value="form.permissions.join(',')"
     />
 
-    <craft-field-group
-      v-if="props.can.assignUserGroups"
-      class="cp:grid cp:gap-3"
-    >
-      <h2 class="cp:text-lg cp:m-0!">{{ t('User Groups') }}</h2>
+    <craft-field-group v-if="props.can.assignUserGroups" class="grid gap-3">
+      <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
 
       <UserGroupSelect
         :groups="props.groups"
@@ -94,12 +91,12 @@
     </craft-field-group>
 
     <hr
-      class="cp:my-3"
+      class="my-3"
       v-if="props.can.assignUserGroups && props.can.assignUserPermissions"
     />
 
     <craft-field-group v-if="props.can.assignUserPermissions">
-      <h2 class="cp:text-lg cp:m-0!">{{ t('Permissions') }}</h2>
+      <h2 class="text-lg m-0!">{{ t('Permissions') }}</h2>
 
       <CraftSwitch
         v-if="props.showAdminSwitch"

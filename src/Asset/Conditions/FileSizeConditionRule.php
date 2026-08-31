@@ -60,7 +60,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 'value' => $this->unit,
             ]),
             [
-                'class' => ['cp:flex', 'cp:flex-nowrap'],
+                'class' => ['flex', 'flex-nowrap'],
             ]
         );
     }

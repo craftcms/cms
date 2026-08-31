@@ -150,8 +150,8 @@
 <template>
   <UserScreen>
     <craft-pane appearance="raised">
-      <div ref="cardsContainer" class="cp:grid cp:gap-3">
-        <h2 v-if="!props.showIndex" class="cp:text-lg cp:m-0!">
+      <div ref="cardsContainer" class="grid gap-3">
+        <h2 v-if="!props.showIndex" class="text-lg m-0!">
           {{ t('Addresses') }}
         </h2>
 
@@ -181,7 +181,7 @@
           </template>
         </div>
 
-        <div v-if="cardsData?.canCreate" class="cp:flex">
+        <div v-if="cardsData?.canCreate" class="flex">
           <craft-button
             ref="createBtn"
             class="add-btn"

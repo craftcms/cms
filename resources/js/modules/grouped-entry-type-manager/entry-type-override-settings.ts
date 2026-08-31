@@ -62,7 +62,7 @@ async function createSlideout(data: any): Promise<any> {
   $('<div/>', {class: 'fields', html: data.settingsHtml}).appendTo($body);
 
   const $footer = $('<div/>', {class: 'entry-type-override-settings-footer'});
-  $('<div/>', {class: 'cp:flex-grow'}).appendTo($footer);
+  $('<div/>', {class: 'flex-grow'}).appendTo($footer);
   const $cancelBtn = Craft.ui
     .createButton({label: Craft.t('app', 'Close'), spinner: true})
     .appendTo($footer);

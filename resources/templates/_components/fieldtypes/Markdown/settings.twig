@@ -88,7 +88,7 @@
   } %}
     {% import "_includes/forms" as forms %}
     {% block input %}
-      <div class="cp:flex">
+      <div class="flex">
         {{ forms.text({
           id: 'fieldLimit',
           name: 'fieldLimit',
@@ -114,7 +114,7 @@
 
   <craft-disclosure
     label="{{ 'Links'|t('app') }}"
-    class="cp:justify-self-start"
+    class="justify-self-start"
   >
     <div slot="content">
       {% include '_components/fieldtypes/Link/link-settings' with linkSettings only %}
@@ -123,7 +123,7 @@
 
   <hr>
 
-  <craft-disclosure label="{{ 'Assets'|t('app') }}" class="cp:justify-self-start">
+  <craft-disclosure label="{{ 'Assets'|t('app') }}" class="justify-self-start">
     <craft-field-group slot="content">
       {% if volumeOptions|length %}
         {{ forms.checkboxSelectField({
@@ -186,7 +186,7 @@
     <craft-button
       type="button"
       variant="plain"
-      class="cp:justify-self-start"
+      class="justify-self-start"
       icon="chevron-down"
       slot="invoker"
     >{{ 'Advanced'|t('app') }}</craft-button>

@@ -155,13 +155,13 @@
   -->
   <LayoutSlot v-if="autosaveMessage" name="toolbar">
     <span
-      class="cp:text-sm cp:text-on-neutral-quiet"
+      class="text-sm text-on-neutral-quiet"
       role="status"
       aria-live="polite"
-      :class="{'cp:text-on-danger-normal': autosave.status.value === 'failed'}"
+      :class="{'text-on-danger-normal': autosave.status.value === 'failed'}"
     >
       {{ autosaveMessage }}
-      <code v-if="autosaveErrorCode" class="cp:text-xs">{{
+      <code v-if="autosaveErrorCode" class="text-xs">{{
         autosaveErrorCode
       }}</code>
     </span>
@@ -182,7 +182,7 @@
     <div
       role="region"
       :aria-label="t('Recent Activity')"
-      class="cp:flex cp:items-center cp:gap-1"
+      class="flex items-center gap-1"
     >
       <span
         v-for="entry in activity.activity.value"
@@ -199,7 +199,7 @@
     v-if="activity.isStale.value"
     variant="warning"
     icon="triangle-exclamation"
-    class="cp:mb-4"
+    class="mb-4"
     appearance="fill"
     rounded="none"
   >
@@ -225,7 +225,7 @@
     v-if="payload.notice"
     variant="neutral"
     icon="edit"
-    class="cp:mb-4"
+    class="mb-4"
   >
     {{ payload.notice }}
 
@@ -245,7 +245,7 @@
     v-if="payload.mergeNotice"
     variant="warning"
     icon="triangle-exclamation"
-    class="cp:mb-4"
+    class="mb-4"
   >
     {{ payload.mergeNotice }}
   </craft-callout>

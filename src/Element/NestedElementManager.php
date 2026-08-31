@@ -371,7 +371,7 @@ class NestedElementManager extends Component
 
                 $html = Html::beginTag('div', options: [
                     'id' => $id,
-                    'class' => 'nested-element-cards cp:grid cp:gap-2',
+                    'class' => 'nested-element-cards grid gap-2',
                 ]);
 
                 $elements = $this->cardElements($owner);

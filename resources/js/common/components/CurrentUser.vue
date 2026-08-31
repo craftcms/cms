@@ -27,11 +27,11 @@
   <craft-action-item
     :href="UsersController.edit['/{cpTrigger?}/myaccount']().url"
   >
-    <div class="cp:flex cp:items-center cp:gap-3">
+    <div class="flex items-center gap-3">
       <UserThumbnail size="md" />
       <div>
-        <div class="cp:font-bold">{{ primaryText }}</div>
-        <div v-if="secondaryText !== primaryText" class="cp:text-xs">
+        <div class="font-bold">{{ primaryText }}</div>
+        <div v-if="secondaryText !== primaryText" class="text-xs">
           {{ secondaryText }}
         </div>
       </div>

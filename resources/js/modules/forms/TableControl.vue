@@ -234,12 +234,12 @@
 
 <template>
   <div ref="host" slot="input" :inert="!editable">
-    <span role="status" class="cp:sr-only" data-status-message />
+    <span role="status" class="sr-only" data-status-message />
     <input v-if="editable" type="hidden" :name="inputName(control.path)" />
     <table
       :id="id"
       ref="table"
-      class="editable cp-table cp-table--editable cp:w-full"
+      class="editable cp-table cp-table--editable w-full"
     >
       <thead>
         <tr>

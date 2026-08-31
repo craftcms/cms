@@ -50,46 +50,46 @@
         slotted children.
       -->
       <craft-pane :label="title">
-        <div v-if="$slots.header" slot="header" class="cp:contents">
+        <div v-if="$slots.header" slot="header" class="contents">
           <slot name="header"></slot>
         </div>
-        <div v-if="$slots.title" slot="title" class="cp:contents">
+        <div v-if="$slots.title" slot="title" class="contents">
           <slot name="title"></slot>
         </div>
         <div
           v-if="$slots['header-actions']"
           slot="header-actions"
-          class="cp:contents"
+          class="contents"
         >
           <slot name="header-actions"></slot>
         </div>
-        <div v-if="$slots.body" slot="body" class="cp:contents">
+        <div v-if="$slots.body" slot="body" class="contents">
           <slot name="body"></slot>
         </div>
 
         <slot></slot>
 
-        <div v-if="$slots.footer" slot="footer" class="cp:contents">
+        <div v-if="$slots.footer" slot="footer" class="contents">
           <slot name="footer"></slot>
         </div>
         <div
           v-if="$slots['footer-content']"
           slot="footer-content"
-          class="cp:contents"
+          class="contents"
         >
           <slot name="footer-content"></slot>
         </div>
-        <div v-if="$slots.feedback" slot="feedback" class="cp:contents">
+        <div v-if="$slots.feedback" slot="feedback" class="contents">
           <slot name="feedback"></slot>
         </div>
-        <div v-if="$slots.actions" slot="actions" class="cp:contents">
+        <div v-if="$slots.actions" slot="actions" class="contents">
           <slot name="actions"></slot>
         </div>
 
         <div
           v-if="$slots['secondary-action']"
           slot="secondary-action"
-          class="cp:contents"
+          class="contents"
         >
           <slot name="secondary-action"></slot>
         </div>
@@ -106,7 +106,7 @@
         <div
           v-if="$slots['primary-action']"
           slot="primary-action"
-          class="cp:contents"
+          class="contents"
         >
           <slot name="primary-action"></slot>
         </div>

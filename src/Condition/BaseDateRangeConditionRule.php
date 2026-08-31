@@ -194,7 +194,7 @@ JS,
         if ($this->rangeType === DateRangeType::Range->value) {
             $html .= Html::tag(
                 'div',
-                attributes: ['class' => ['cp:flex', 'cp:flex-nowrap']],
+                attributes: ['class' => ['flex', 'flex-nowrap']],
                 content: Html::label(t('From'), 'start-date-date').
                 Html::tag('div',
                     FormFields::dateHtml([
@@ -206,7 +206,7 @@ JS,
             ).
                 Html::tag(
                     'div',
-                    attributes: ['class' => ['cp:flex', 'cp:flex-nowrap']],
+                    attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: Html::label(t('To'), 'end-date-date').
                     Html::tag('div',
                         FormFields::dateHtml([
@@ -223,7 +223,7 @@ JS,
             $html .= Html::hiddenLabel(t('Period Value'), $periodValueId).
                 Html::tag(
                     'div',
-                    attributes: ['class' => ['cp:flex', 'cp:flex-nowrap']],
+                    attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: FormFields::textHtml([
                         'id' => $periodValueId,
                         'name' => 'periodValue',
@@ -240,7 +240,7 @@ JS,
                 );
         }
 
-        return Html::tag('div', $html, ['class' => ['cp:flex']]);
+        return Html::tag('div', $html, ['class' => ['flex']]);
     }
 
     /**

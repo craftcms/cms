@@ -15,9 +15,9 @@
     } %}
         {% block tablecell %}
             {% if colId == 'type' %}
-                <div class="cp:flex cp:flex-nowrap">
+                <div class="flex flex-nowrap">
                     {{ parent() }}
-                    <button class="settings light{% if value != 'select' %} cp:invisible{% endif %}" type="button" data-icon="settings"></button>
+                    <button class="settings light{% if value != 'select' %} invisible{% endif %}" type="button" data-icon="settings"></button>
                 </div>
             {% else %}
                 {{ parent() }}

@@ -21,8 +21,8 @@
   <Head :title="props.title"></Head>
   <main class="cp-login">
     <LiveRegion />
-    <div class="cp-login__wrapper cp:grid cp:gap-3 cp:justify-items-center">
-      <h1 class="cp:flex cp:justify-center">
+    <div class="cp-login__wrapper grid gap-3 justify-items-center">
+      <h1 class="flex justify-center">
         <img
           v-if="general.cpLogoUrl"
           :src="general.cpLogoUrl"

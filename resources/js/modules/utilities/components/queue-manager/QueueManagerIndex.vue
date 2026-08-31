@@ -78,7 +78,7 @@
     columnHelper.display({
       id: 'actions',
       cell: ({row}) => {
-        return h('div', {class: 'cp:flex cp:justify-end cp:gap-2'}, [
+        return h('div', {class: 'flex justify-end gap-2'}, [
           isRetryable(row.original)
             ? h(RetryJobButton, {job: row.original})
             : null,
@@ -107,7 +107,7 @@
       <AdminTable :table="jobsTable" :reorderable="false" layout="fixed" />
       <div
         slot="footer"
-        class="cp:flex cp:p-2 cp:bg-slate-100"
+        class="flex p-2 bg-slate-100"
         v-text="
           t('{totalJobs, plural, =0{No jobs} =1{# job} other{# jobs}}', {
             totalJobs,

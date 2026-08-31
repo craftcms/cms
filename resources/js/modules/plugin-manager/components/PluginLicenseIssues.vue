@@ -23,12 +23,9 @@
     :key="issue"
     variant="danger"
     appearance="plain"
-    class="cp:p-0"
+    class="p-0"
   >
-    <div
-      v-if="issue === 'wrong_edition'"
-      class="cp:flex cp:items-center cp:gap-1"
-    >
+    <div v-if="issue === 'wrong_edition'" class="flex items-center gap-1">
       <Text
         template="This license is for the {name} edition."
         :params="{name: editionName}"

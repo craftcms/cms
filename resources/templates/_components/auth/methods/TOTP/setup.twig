@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-<div class="cp:grid cp:gap-6">
+<div class="grid gap-6">
   <div class="prose">
     {% apply md %}
       ## {{ 'Step {number}:'|t('app', {number: 1}) }} {{ 'Install an authenticator app.'|t('app') }}
@@ -22,7 +22,7 @@
 
   <craft-pane>
     {% if (qrCode is defined and qrCode is not empty) or (secret is defined and secret is not empty) %}
-      <div class="cp:grid cp:gap-4">
+      <div class="grid gap-4">
 
         {% if qrCode is defined and qrCode is not empty %}
           <craft-field label="{{ 'QR Code' | t('app') }}">

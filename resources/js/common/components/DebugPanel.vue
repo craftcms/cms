@@ -13,12 +13,8 @@
 </script>
 
 <template>
-  <div
-    class="cp:fixed cp:bottom-2 cp:right-2 cp:flex cp:gap-2 cp:justify-end cp:items-center cp:p-2"
-  >
-    <div
-      class="cp:bg-blue-50 cp:border cp:border-blue-500 cp:py-1 cp:px-4 cp:rounded"
-    >
+  <div class="fixed bottom-2 right-2 flex gap-2 justify-end items-center p-2">
+    <div class="bg-blue-50 border border-blue-500 py-1 px-4 rounded">
       {{ announcement ?? 'No announcement' }}
     </div>
 
@@ -26,7 +22,7 @@
       <VarDump
         v-if="open"
         :data="data"
-        class="max-h-[50vh] max-w-[600px] cp:overflow-scroll cp:absolute cp:transform cp:-translate-full"
+        class="max-h-[50vh] max-w-[600px] overflow-scroll absolute transform -translate-full"
       />
       <craft-button v-if="open" icon type="button" @click="open = false">
         <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>

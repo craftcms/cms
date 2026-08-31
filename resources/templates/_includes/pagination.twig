@@ -3,7 +3,7 @@
 {% set itemLabel = itemLabel ?? null %}
 {% set itemsLabel = itemsLabel ?? null %}
 
-<div class="cp:flex pagination">
+<div class="flex pagination">
     <div class="page-info">
         {% if pageInfo.total %}
             {% if itemLabel and itemsLabel %}
@@ -26,7 +26,7 @@
         {% endif %}
     </div>
 
-    <nav class="cp:flex" aria-label="{{ 'Pagination'|t('app') }}">
+    <nav class="flex" aria-label="{{ 'Pagination'|t('app') }}">
         {% if pageInfo.prevUrl %}
             <a class="page-link prev-page" href="{{ pageInfo.prevUrl }}" title="{{ prevLabel }}" aria-label="{{ prevLabel }}"></a>
         {% else %}

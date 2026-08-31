@@ -96,12 +96,9 @@
 </script>
 
 <template>
-  <div
-    class="cp:absolute cp:w-full cp:z-10"
-    style="inset-block-start: calc(100% + 4px)"
-  >
+  <div class="absolute w-full z-10" style="inset-block-start: calc(100% + 4px)">
     <div
-      class="cp:bg-white cp:p-4 cp:border-neutral-quiet cp:shadow-lg cp:rounded cp:w-full cp:min-h-20"
+      class="bg-white p-4 border-neutral-quiet shadow-lg rounded w-full min-h-20"
     >
       <!-- .stop keeps the submit from bubbling to the toolbar's own form,
         which would trigger a second index submit alongside @apply -->
@@ -109,7 +106,7 @@
         <craft-spinner v-if="http.processing"></craft-spinner>
         <template v-else-if="hudHtml">
           <div v-html="hudHtml" />
-          <div class="cp:mt-4 cp:flex cp:justify-end cp:gap-2">
+          <div class="mt-4 flex justify-end gap-2">
             <craft-button
               type="button"
               :variant="ButtonVariant.Fill"

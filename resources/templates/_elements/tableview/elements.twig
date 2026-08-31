@@ -39,7 +39,7 @@
             {% set checkboxLabelId = "checkbox-label-#{random()}" %}
             <td class="checkbox-cell">
               <craft-checkbox aria-labelledby="{{ checkboxLabelId }}"></craft-checkbox>
-              <span id="{{ checkboxLabelId }}" class="cp:sr-only" aria-hidden="true">{{ element.getUiLabel() }}</span>
+              <span id="{{ checkboxLabelId }}" class="sr-only" aria-hidden="true">{{ element.getUiLabel() }}</span>
             </td>
         {% endif %}
         {% for attribute in attributes %}
@@ -52,7 +52,7 @@
                     scope: 'row',
                 } %}
                     {% tag 'div' with {
-                        class: 'cp:flex',
+                        class: 'flex',
                         style: {
                             ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
                         }|filter,

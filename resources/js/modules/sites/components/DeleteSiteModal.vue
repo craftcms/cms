@@ -65,7 +65,7 @@
     :loading="form.processing"
     :submit-label="t('Delete')"
   >
-    <div class="cp:grid cp:gap-3">
+    <div class="grid gap-3">
       <craft-radio-group
         name="contentDestination"
         :label="t('Content Destination')"

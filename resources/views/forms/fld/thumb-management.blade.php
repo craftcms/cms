@@ -24,9 +24,9 @@
      */
 @endphp
 <div class="thumb-management">
-    <h2 class="cp:sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
+    <h2 class="sr-only">{{ \CraftCms\Cms\t('Manage element thumbnails') }}</h2>
 
-    <div class="cp:flex cp:flex-nowrap cp:items-start">
+    <div class="flex flex-nowrap items-start">
         {{-- dropdown field that contains all thumbable fields + the None/Default option --}}
         {!! \CraftCms\Cms\Cp\FormFields::selectFieldHtml([
             'label' => \CraftCms\Cms\t('Thumbnail Source'),

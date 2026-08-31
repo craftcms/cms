@@ -88,9 +88,9 @@
       {{ t('View') }}
     </craft-button>
 
-    <div slot="content-body" class="cp:gap-4">
+    <div slot="content-body" class="gap-4">
       <div>
-        <div class="cp:flex cp:items-end cp:gap-2">
+        <div class="flex items-end gap-2">
           <Select
             :label="t('Sort by')"
             v-model="sortField"

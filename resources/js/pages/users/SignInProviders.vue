@@ -82,7 +82,7 @@
           id: 'name',
           header: t('Provider'),
           cell: ({row}) =>
-            h('div', {class: 'cp:flex cp:items-center cp:gap-1'}, [
+            h('div', {class: 'flex items-center gap-1'}, [
               row.original.icon &&
                 h('craft-icon', {
                   name: row.original.icon,

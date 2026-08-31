@@ -134,21 +134,21 @@
         tab in the details column is that list now. -->
 
         <form method="post" @submit.prevent="save()">
-          <div class="cp:sticky cp:top-0 cp:z-1000 cp:pb-2">
+          <div class="sticky top-0 z-1000 pb-2">
             <header
-              class="cp:pt-3 cp:pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
+              class="pt-3 pb-1 bg-(--c-color-neutral-fill-quiet) px-(--c-spacing-lg)"
             >
               <div>
-                <h1 class="cp:text-xl/7">
+                <h1 class="text-xl/7">
                   {{ payload.title }}
                 </h1>
               </div>
-              <div class="cp:flex cp:justify-between">
-                <div class="cp:flex cp:gap-1 cp:items-center">
+              <div class="flex justify-between">
+                <div class="flex gap-1 items-center">
                   <craft-badge
                     fill="info"
                     v-if="payload.isProvisionalDraft"
-                    class="cp:relative cp:text-sm cp:font-normal inline-flex"
+                    class="relative text-sm font-normal inline-flex"
                   >
                     <craft-icon name="pen-circle" slot="prefix"></craft-icon>
                     {{ t('Edited') }}
@@ -167,7 +167,7 @@
                     v-if="activity.activity.value.length"
                     role="region"
                     :aria-label="t('Recent Activity')"
-                    class="cp:flex cp:items-center cp:gap-1"
+                    class="flex items-center gap-1"
                   >
                     <span
                       v-for="entry in activity.activity.value"
@@ -195,7 +195,7 @@
                 v-if="payload.notice"
                 variant="info"
                 icon="edit"
-                class="cp:mb-4"
+                class="mb-4"
                 rounded="none"
                 appearance="fill"
               >
@@ -251,7 +251,7 @@
             </div>
           </div>
 
-          <div v-if="form.hasErrors" class="cp:px-4">
+          <div v-if="form.hasErrors" class="px-4">
             <ErrorSummary v-if="form.hasErrors" :errors="form.errors" />
           </div>
 
@@ -261,7 +261,7 @@
           >
             <div class="element-editor__content">
               <craft-pane padding="none" appearance="plain">
-                <div class="cp:py-1">
+                <div class="py-1">
                   <!-- Tabs are rendered by `FormNodeList` inside the form itself. -->
                   <div class="element-form">
                     <FormRenderer
@@ -293,12 +293,12 @@
                   <craft-pane appearance="plain" padding="none">
                     <div
                       slot="header"
-                      class="cp:px-2 cp:py-1 cp:border-b border-b-(--c-color-neutral-border-quiet)"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
                     >
-                      <h3 slot="title" class="cp:text-xs/4">{{ t('Info') }}</h3>
+                      <h3 slot="title" class="text-xs/4">{{ t('Info') }}</h3>
                     </div>
-                    <div class="cp:py-4">
-                      <div class="cp:grid cp:gap-4">
+                    <div class="py-4">
+                      <div class="grid gap-4">
                         <slot name="details-header" :payload="payload" />
 
                         <craft-field-group>
@@ -312,7 +312,7 @@
                         </craft-field-group>
 
                         <hr />
-                        <div class="cp:px-4">
+                        <div class="px-4">
                           <DynamicHtmlRenderer
                             v-if="payload.metadataHtml"
                             :html="payload.metadataHtml"
@@ -333,9 +333,9 @@
                   <craft-pane appearance="plain">
                     <div
                       slot="header"
-                      class="cp:px-2 cp:py-1 cp:border-b border-b-(--c-color-neutral-border-quiet)"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
                     >
-                      <h3 slot="title" class="cp:text-xs/4">
+                      <h3 slot="title" class="text-xs/4">
                         {{ t('Activity') }}
                       </h3>
                     </div>
@@ -353,9 +353,9 @@
                   <craft-pane appearance="plain">
                     <div
                       slot="header"
-                      class="cp:px-2 cp:py-1 cp:border-b border-b-(--c-color-neutral-border-quiet)"
+                      class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
                     >
-                      <h3 slot="title" class="cp:text-xs/4">
+                      <h3 slot="title" class="text-xs/4">
                         {{ t('Revisions') }}
                       </h3>
                     </div>

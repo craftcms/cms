@@ -31,7 +31,7 @@
 </script>
 
 <template>
-  <div class="cp:p-4">
+  <div class="p-4">
     <form
       :action="dbBackupController().url"
       ref="formRef"
@@ -52,7 +52,7 @@
         value="on"
       />
 
-      <div class="cp:mt-4">
+      <div class="mt-4">
         <craft-button type="submit" variant="accent" :loading="form.processing">
           {{ t('Backup') }}
         </craft-button>

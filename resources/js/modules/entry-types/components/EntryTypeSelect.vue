@@ -123,7 +123,7 @@
           ${innerHtml}
         </div>
       </div>
-      <div class="entry-type-override-settings-footer cp:justify-end cp:gap-2">
+      <div class="entry-type-override-settings-footer justify-end gap-2">
         <craft-button type="button" data-action="close">
           ${t('Close')}
         </craft-button>
@@ -328,7 +328,7 @@
     </template>
   </div>
 
-  <div class="cp:flex cp:gap-2 cp:mt-3 cp:items-center">
+  <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="entryTypes?.length">
       <craft-button
         type="button"
@@ -341,7 +341,7 @@
       </craft-button>
 
       <div slot="content">
-        <div class="cp:p-2">
+        <div class="p-2">
           <CraftInput
             :label="t('Search')"
             v-model="entryTypeQuery"
@@ -350,9 +350,9 @@
             <craft-icon name="search" slot="prefix"></craft-icon>
           </CraftInput>
         </div>
-        <hr class="cp:m-0" />
+        <hr class="m-0" />
         <template v-if="selectableTypes.length < 1">
-          <div class="cp:p-2">
+          <div class="p-2">
             <Text
               template="No entry types match “{query}”"
               :params="{query: entryTypeQuery}"

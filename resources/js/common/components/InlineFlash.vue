@@ -20,7 +20,7 @@
         appearance="plain"
         icon="circle-check"
         inline
-        class="cp:p-0"
+        class="p-0"
         >{{ successFlash }}</craft-callout
       >
     </template>
@@ -30,7 +30,7 @@
         appearance="plain"
         icon="triangle-exclamation"
         inline
-        class="cp:p-0"
+        class="p-0"
       >
         {{ errorFlash }}
       </craft-callout>

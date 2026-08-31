@@ -19,7 +19,7 @@
      */
 @endphp
 <div id="{{ $id }}-container" class="card-view-designer">
-    <h2 class="cp:sr-only">{{ \CraftCms\Cms\t('Card Layout Editor') }}</h2>
+    <h2 class="sr-only">{{ \CraftCms\Cms\t('Card Layout Editor') }}</h2>
 
     <div class="cvd-container">
         <div class="cvd-library">
@@ -35,8 +35,8 @@
 
         <div>
 
-            <h3 class="cp:sr-only">{{ \CraftCms\Cms\t('Card Layout Preview') }}</h3>
-            <p class="cp:sr-only">{{ \CraftCms\Cms\t('The following content is for preview only.') }}</p>
+            <h3 class="sr-only">{{ \CraftCms\Cms\t('Card Layout Preview') }}</h3>
+            <p class="sr-only">{{ \CraftCms\Cms\t('The following content is for preview only.') }}</p>
             <div class="cvd-preview-container cp-workspace">
                 <div class="cvd-preview" data-color="white">
                     {!! $previewHtml !!}

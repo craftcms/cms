@@ -415,7 +415,7 @@ readonly class ElementHtml
         $title = $element->getCardTitle();
 
         return Html::beginTag('div', [
-            'class' => ['cp:flex', 'cp:flex-nowrap', 'cp:gap-1', 'cp:grow-1', 'cp:items-center'],
+            'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
         ]).
             ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
             ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
@@ -530,7 +530,7 @@ readonly class ElementHtml
         if (! empty($labels)) {
             $bodyContent .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
-                ->class('cp:flex cp:gap-sm')
+                ->class('flex gap-sm')
                 ->render();
         }
 
@@ -1229,7 +1229,7 @@ readonly class ElementHtml
         }
 
         return Html::tag('span', $labelHtml.$secondaryHtml, [
-            'class' => ['inline-flex', 'cp:flex-col', 'cp:items-start', 'cp:gap-xs'],
+            'class' => ['inline-flex', 'flex-col', 'items-start', 'gap-xs'],
         ]);
     }
 

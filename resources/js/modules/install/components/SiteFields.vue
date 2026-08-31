@@ -61,7 +61,7 @@
       slot="after"
       variant="info"
       appearance="plain"
-      class="cp:p-0"
+      class="p-0"
       icon="lightbulb"
     >
       {{

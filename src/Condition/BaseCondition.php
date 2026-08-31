@@ -344,7 +344,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                             Html::endTag('div').
                             // Rule HTML
                             Html::tag('div', $rule->getHtml(), [
-                                'class' => ['rule-body', 'cp:flex cp:items-center cp:gap-1 cp:flex-grow'],
+                                'class' => ['rule-body', 'flex items-center gap-1 flex-grow'],
                             ]).
                             // Remove button
                             Html::beginTag('div', [
@@ -364,7 +364,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                             Html::endTag('div');
 
                         return Html::tag('fieldset', $ruleHtml, [
-                            'class' => ['condition-rule', 'cp:flex', 'flex-start', 'draggable'],
+                            'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
                         ]);
                     }, 'conditionRules['.$ruleNum.']');
                 } catch (Throwable) {
@@ -395,7 +395,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
             $html .=
                 Html::beginTag('div', [
-                    'class' => ['condition-footer', 'cp:flex', 'cp:flex-nowrap'],
+                    'class' => ['condition-footer', 'flex', 'flex-nowrap'],
                 ]).
                 $this->_ruleTypeMenu($selectableRules, buttonAttributes: [
                     'class' => array_filter([

@@ -86,9 +86,9 @@
     <!-- YAML Changes Section -->
     <section class="config-section">
       <h2>{{ sectionTitle }}</h2>
-      <p v-html="sectionDescription" class="cp:mb-3"></p>
+      <p v-html="sectionDescription" class="mb-3"></p>
 
-      <div class="cp:mt-3">
+      <div class="mt-3">
         <!-- YAML exists -->
         <template v-if="yamlExists">
           <!-- Changes pending -->
@@ -100,7 +100,7 @@
             <craft-callout
               variant="info"
               v-html="noteMessage"
-              class="cp:my-2"
+              class="my-2"
             ></craft-callout>
 
             <!-- Action buttons for invert mode (Update YAML) -->
@@ -137,11 +137,7 @@
 
           <!-- No changes pending -->
           <template v-else>
-            <craft-callout
-              variant="success"
-              icon="circle-check"
-              class="cp:my-3"
-            >
+            <craft-callout variant="success" icon="circle-check" class="my-3">
               {{
                 t("There aren't any pending project config changes to apply.")
               }}
@@ -190,7 +186,7 @@
             method="post"
             v-slot="{processing, recentlySuccessful}"
           >
-            <div class="cp:flex cp:gap-2 cp:items-center">
+            <div class="flex gap-2 items-center">
               <craft-button
                 type="submit"
                 variant="neutral"
@@ -205,7 +201,7 @@
                     variant="success"
                     icon="circle-check"
                     appearance="plain"
-                    class="cp:p-0"
+                    class="p-0"
                   >
                     {{ t('Config rebuilt.') }}
                   </craft-callout>
@@ -224,7 +220,7 @@
       <!-- craft-pane makes its own scroll container the tab stop -->
       <craft-pane
         variant="code"
-        class="cp:my-3"
+        class="my-3"
         :aria-label="t('Loaded Project Config Data')"
       >
         <pre><code>{{ entireConfig }}</code></pre>

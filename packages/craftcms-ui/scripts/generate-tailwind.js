@@ -8,14 +8,10 @@ const ROOT = resolve(__dirname, '..');
 const OUT_FILE = resolve(ROOT, 'tailwind.css');
 
 /**
- * Utility names are written bare here. The CP's CSS entry sets Tailwind's
- * `prefix(cp)`, which stamps `cp:` onto every class it generates — Craft's
- * and Tailwind's alike — so `bg-loud` below is typed as `cp:bg-loud`.
- *
- * The prefix deliberately isn't `c`: under `prefix(c)` Tailwind renames its
- * own theme variables into `--c-*`, which is Craft's token namespace, and
- * eight of them (`--c-text-sm`, `--c-radius-sm`, …) would land on Craft
- * tokens of the same name carrying different values.
+ * Utility names are unprefixed. CP code only ever runs in the CP, where this
+ * is the only Tailwind there is, so there is nothing to disambiguate a Craft
+ * utility from at the point of use — `bg-loud` reads no differently than
+ * `flex`, and both are equally the CP's.
  */
 
 /** The three intensities every colorable token group exposes. */
@@ -127,37 +123,38 @@ function generateUtilities(semanticColors) {
 /**
  * Craft CMS Control Panel — Tailwind v4 utilities.
  *
- * Craft's design tokens as utility classes. The names are written bare; the
- * CP's CSS entry sets Tailwind's \`prefix(cp)\`, so every class here is typed
- * with a \`cp:\` prefix — \`cp:bg-loud\`, \`cp:p-md\` — alongside stock
- * Tailwind, which the same prefix covers (\`cp:flex\`, \`cp:gap-2\`).
+ * Craft's design tokens as utility classes, unprefixed and sitting alongside
+ * stock Tailwind: \`bg-loud\` next to \`flex\`, \`p-md\` next to \`p-4\`.
+ * CP code only ever runs in the CP, so there is no raw-Tailwind context to
+ * tell these apart from.
  *
  * Colors read as \`<property>-[group-]<strength>\`. The token's *role* is
  * implied by the property rather than repeated in the class name:
  *
- *     cp:bg-loud                background-color: --c-color-fill-loud
- *     cp:bg-danger-normal       background-color: --c-color-danger-fill-normal
- *     cp:border-accent-quiet    border-color:     --c-color-accent-border-quiet
- *     cp:text-loud              color:            --c-color-fill-loud
- *     cp:text-on-loud           color:            --c-color-on-loud
- *     cp:text-on-neutral-loud   color:            --c-color-neutral-on-loud
+ *     bg-loud                background-color: --c-color-fill-loud
+ *     bg-danger-normal       background-color: --c-color-danger-fill-normal
+ *     border-accent-quiet    border-color:     --c-color-accent-border-quiet
+ *     text-loud              color:            --c-color-fill-loud
+ *     text-on-loud           color:            --c-color-on-loud
+ *     text-on-neutral-loud   color:            --c-color-neutral-on-loud
  *
  * Text is the one property that takes two roles: \`text-*\` inks with the
  * fill color, \`text-on-*\` with the color meant to stay legible on top of
  * that fill.
  *
  * Omitting the group targets the generic tokens, which hold whatever the
- * nearest palette or \`variant\` resolved to — so \`cp:bg-quiet\` paints
- * with the current context's quiet fill instead of naming a color.
+ * nearest palette or \`variant\` resolved to — so \`bg-quiet\` paints with
+ * the current context's quiet fill instead of naming a color.
  *
  * Spacing reads as \`<stem>-<step>\` across padding, margin, and gap:
- * \`cp:p-md\`, \`cp:gap-lg\`, \`cp:mt-2xl\`. Stems match Tailwind's own,
- * so \`px-*\` is logical (\`padding-inline\`) and \`pl-*\` is physical.
+ * \`p-md\`, \`gap-lg\`, \`mt-2xl\`. Stems match Tailwind's own, so
+ * \`px-*\` is logical (\`padding-inline\`) and \`pl-*\` is physical, and
+ * the numeric scale (\`p-4\`) is untouched alongside them.
  *
  * This file is imported by \`resources/css/utilities.css\`, which is where
- * the prefix and the token values it resolves against are set up. It has to
- * be imported *outside* a layer: \`@utility\` may not be nested, and
- * Tailwind places what it generates into the \`utilities\` layer regardless.
+ * the token values it resolves against are set up. It has to be imported
+ * *outside* a layer: \`@utility\` may not be nested, and Tailwind places
+ * what it generates into the \`utilities\` layer regardless.
  */
 
 ${sections.join('\n\n')}

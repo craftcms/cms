@@ -89,20 +89,20 @@
 </script>
 
 <template>
-  <p v-if="isEmpty" class="cp:text-sm cp:text-on-neutral-quiet">
+  <p v-if="isEmpty" class="text-sm text-on-neutral-quiet">
     {{ t('No drafts or revisions.') }}
   </p>
 
-  <div v-else class="cp:grid cp:gap-3">
+  <div v-else class="grid gap-3">
     <div
       v-for="group in sections.groups"
       :key="group.id"
       class="revision-group"
     >
-      <h3 v-if="group.label" class="cp:mb-1 cp:text-xs cp:font-bold">
+      <h3 v-if="group.label" class="mb-1 text-xs font-bold">
         {{ group.label }}
       </h3>
-      <ul class="cp:grid cp:gap-2">
+      <ul class="grid gap-2">
         <li
           class="revision-item"
           v-for="item in group.items"
@@ -130,7 +130,7 @@
     </div>
   </div>
 
-  <div v-for="item in sections.footer" :key="item.id" class="cp:ml-6 cp:mt-4">
+  <div v-for="item in sections.footer" :key="item.id" class="ml-6 mt-4">
     <CpLink :href="item.href!">
       {{ item.label }}
       <craft-icon name="circle-arrow-right"></craft-icon>

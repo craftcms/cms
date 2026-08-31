@@ -161,7 +161,7 @@
     @submit="handleSubmit"
   >
     <template #header-actions>
-      <div class="cp:flex cp:items-center cp:gap-2">
+      <div class="flex items-center gap-2">
         <craft-spinner :visible="messageForm.processing" style="--size: 1rem" />
         <Select
           v-model="messageForm.language"
@@ -170,12 +170,12 @@
         />
       </div>
     </template>
-    <div class="cp:grid cp:gap-3 cp:w-4xl">
+    <div class="grid gap-3 w-4xl">
       <CraftInput
         :label="t('Subject')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.subject"
-        class="cp:w-full"
+        class="w-full"
         maxlength="1000"
         required
         :disabled="isLoadingMessage"
@@ -184,7 +184,7 @@
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
         v-model="form.body"
-        class="cp:w-full"
+        class="w-full"
         monospace
         required
         :disabled="messageForm.processing"
@@ -198,7 +198,7 @@
         :icon="feedback.icon"
         appearance="plain"
         inline
-        class="cp:p-0"
+        class="p-0"
         >{{ feedback.message }}</craft-callout
       >
     </template>

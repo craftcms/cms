@@ -163,8 +163,7 @@
         columnHelper.display({
           id: 'name',
           header: t('Name'),
-          cell: ({row}) =>
-            h('span', {class: 'cp:font-bold'}, row.original.name),
+          cell: ({row}) => h('span', {class: 'font-bold'}, row.original.name),
         }),
         columnHelper.display({
           id: 'dateLastUsed',
@@ -198,7 +197,7 @@
 <template>
   <UserScreen>
     <craft-pane>
-      <div class="cp:grid cp:gap-4">
+      <div class="grid gap-4">
         <div>
           <h2>{{ t('Passkeys') }}</h2>
           <p>

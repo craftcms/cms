@@ -783,7 +783,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     if (allowReorder) {
       const $td = $('<td/>', {class: 'thin action'}).appendTo($tr);
       const $div = $('<div/>', {
-        class: 'cp:flex cp:gap-2 cp:items-center cp:justify-end cp:self-end',
+        class: 'flex gap-2 items-center justify-end self-end',
       });
 
       if (Craft.hasMousePointerEvents()) {

@@ -9,7 +9,7 @@
 </script>
 
 <template>
-  <div class="cp:sr-only" role="status">
+  <div class="sr-only" role="status">
     {{ announcement }}
   </div>
 </template>

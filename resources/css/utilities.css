@@ -4,22 +4,27 @@ Craft CP utilities
 The design tokens, Tailwind, and Craft's token utilities — with no reset and
 no component styles. Both CP shells load this: the Inertia shell pulls it in
 through `cp.css`, and the legacy Twig shell loads it on its own (registered by
-`CpAsset`), so a `cp:` class means the same thing on either side and the
+`CpAsset`), so a utility class means the same thing on either side and the
 `--c-*` tokens the legacy stylesheet aliases against are actually defined.
 
-Everything Tailwind generates is prefixed `cp:` — Craft's utilities and stock
-Tailwind alike, so `cp:bg-loud` and `cp:flex` read as one system, and anything
-unprefixed is a legacy class from the old SCSS bundle.
+Utilities are unprefixed. CP code only ever runs in the CP, where this is the
+only Tailwind there is, so there is nothing to disambiguate a Craft utility
+from — `bg-loud` and `flex` are equally "ours" at the point of use.
 
-The prefix is `cp` rather than `c` on purpose: `prefix(c)` renames Tailwind's
-own theme variables into `--c-*`, which is Craft's token namespace, and eight
-of them (`--c-text-sm`, `--c-radius-sm`, `--c-font-mono`, …) would collide with
-Craft tokens of the same name holding different values.
+Tailwind's default theme is left in place underneath Craft's. Where the two
+name the same thing, Craft's wins: the token imports below come after
+Tailwind's in the same layer, so `--color-red-500` and friends resolve to the
+Craft palette.
+
+Nothing here resets anything, which is what makes it safe to drop onto a
+legacy page. Tailwind's utilities land in the `utilities` layer while the
+legacy stylesheet is unlayered, so on the rare name they share — `hidden`,
+`truncate`, `inline-flex` — the legacy rule still wins, exactly as before.
  */
 
 @layer theme, utilities;
 
-@import 'tailwindcss/theme.css' layer(theme) prefix(cp);
+@import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 /* Token values — the `var()`s the utilities resolve against at render time. */

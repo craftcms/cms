@@ -206,7 +206,7 @@
         </li>
       </ul>
 
-      <div v-if="editable" class="cp:flex">
+      <div v-if="editable" class="flex">
         <button
           type="button"
           class="btn add icon dashed wrap"

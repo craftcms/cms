@@ -32,7 +32,7 @@ Craft.ui = {
     }
     let $iconContainer;
     if (config.icon || config.label || config.html) {
-      const $labelContainer = $('<div class="inline-flex cp:gap-sm"/>').appendTo(
+      const $labelContainer = $('<div class="inline-flex gap-sm"/>').appendTo(
         $btn
       );
       if (config.icon) {

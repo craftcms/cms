@@ -67,8 +67,8 @@
       aria-labelledby="elevated-session-title"
       aria-describedby="elevated-session-description"
     >
-      <div class="cp:grid cp:gap-2 cp:mb-3">
-        <h1 id="elevated-session-title" class="cp:m-0!">
+      <div class="grid gap-2 mb-3">
+        <h1 id="elevated-session-title" class="m-0!">
           {{ t('Confirm your identity.') }}
         </h1>
         <div id="elevated-session-description" class="text-md">

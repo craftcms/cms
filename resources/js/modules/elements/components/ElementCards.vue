@@ -132,7 +132,7 @@
 </script>
 
 <template>
-  <div class="cp:grid cp:place-items-center cp:min-h-50" v-if="loading">
+  <div class="grid place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -167,7 +167,7 @@
           :active="rowFor(element.id)?.getIsSelected()"
         >
           <div slot="header">
-            <div class="cp:flex cp:gap-2 cp:items-center">
+            <div class="flex gap-2 items-center">
               <craft-checkbox
                 v-if="selectable"
                 label-sr-only

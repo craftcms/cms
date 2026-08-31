@@ -132,7 +132,7 @@
       />
       <div
         v-show="!(showBulkActions && hasSelection)"
-        class="cp:flex cp:justify-between cp:items-center cp:w-full"
+        class="flex justify-between items-center w-full"
       >
         <div>
           <Text
@@ -141,7 +141,7 @@
             :params="{from: from ?? 0, to: to ?? 0, total: total ?? 0}"
           />
         </div>
-        <div class="cp:flex cp:gap-1">
+        <div class="flex gap-1">
           <template v-if="showPagination && !bulkActionsActive">
             <craft-button
               type="button"
@@ -156,7 +156,7 @@
                 :label="t('Previous page')"
               ></craft-icon>
             </craft-button>
-            <div class="cp:flex cp:items-center cp:gap-1 cp:mx-2">
+            <div class="flex items-center gap-1 mx-2">
               {{ t('Page') }}
               <craft-input
                 type="text"
@@ -186,21 +186,21 @@
             </craft-button>
           </template>
         </div>
-        <div class="cp:flex cp:gap-2 cp:items-center">
+        <div class="flex gap-2 items-center">
           <template v-if="showPageSize && !bulkActionsActive">
             {{ t('Items per page:') }}
             <Select
               small
               :options="pageSizeOptions!"
               v-model="pageSizeProxy"
-              class="cp:w-auto"
+              class="w-auto"
             />
           </template>
         </div>
       </div>
     </div>
 
-    <span class="cp:sr-only" role="status" aria-live="polite">{{
+    <span class="sr-only" role="status" aria-live="polite">{{
       liveMessage
     }}</span>
   </div>

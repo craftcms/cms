@@ -155,7 +155,7 @@ export class LinkInput extends Base<LinkInputSettings> {
     link.href = value.replace(/ /g, '+');
     link.rel = 'noopener';
     link.target = '_blank';
-    link.className = 'cp:truncate';
+    link.className = 'truncate';
     link.textContent = label;
     content.append(link);
 

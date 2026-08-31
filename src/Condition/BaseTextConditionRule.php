@@ -108,7 +108,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         $defaults = [
             'id' => 'value'.mt_rand(),
             'name' => 'value',
-            'class' => 'cp:flex-grow cp:flex-shrink',
+            'class' => 'flex-grow flex-shrink',
         ];
 
         if (in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {

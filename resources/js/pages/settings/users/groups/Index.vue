@@ -68,7 +68,7 @@
     >
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="cp:@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty icon="users" :label="t('No groups exist yet.')">

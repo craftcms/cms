@@ -412,7 +412,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   <div class="fld-tabcontent">
     <craft-button 
       type="button" 
-      class="cp:w-full fld-add-btn" 
+      class="w-full fld-add-btn" 
       command="--add-field"
       variant="outline"
       size="small"
@@ -624,7 +624,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     const $footer = document.createElement('div');
     $footer.className = 'fld-element-settings-footer';
     const $flexGrow = document.createElement('div');
-    $flexGrow.className = 'cp:flex-grow';
+    $flexGrow.className = 'flex-grow';
     $footer.appendChild($flexGrow);
 
     const cancelBtn = document.createElement('craft-button');

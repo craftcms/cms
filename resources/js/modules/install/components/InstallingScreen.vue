@@ -35,7 +35,7 @@
 </script>
 
 <template>
-  <craft-pane class="max-w-[80ch] cp:mx-auto">
+  <craft-pane class="max-w-[80ch] mx-auto">
     <template v-if="isLoading">
       <div class="content">
         <h2>{{ t('Installing Craft CMS…') }}</h2>
@@ -46,7 +46,7 @@
     <template v-else-if="isSuccess">
       <div class="content">
         <h2>{{ t('Craft is installed! 🎉') }}</h2>
-        <div class="cp:flex cp:justify-center cp:items-center">
+        <div class="flex justify-center items-center">
           <craft-icon
             name="circle-check"
             variant="regular"
@@ -61,7 +61,7 @@
         <h2>{{ t('Install failed 😞') }}</h2>
 
         <div
-          class="cp:text-left cp:border cp:border-red-500 cp:rounded cp:p-4 cp:text-red-800 cp:bg-red-50 cp:font-mono cp:text-xs"
+          class="text-left border border-red-500 rounded p-4 text-red-800 bg-red-50 font-mono text-xs"
         >
           {{ errorMessage }}
         </div>

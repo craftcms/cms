@@ -37,7 +37,7 @@
     <!-- The file preview sits above the meta fields, as in the legacy
       editor's sidebar. -->
     <template v-if="previewFragment" #details-header>
-      <HtmlFragmentRenderer :fragment="previewFragment" class="cp:mb-4" />
+      <HtmlFragmentRenderer :fragment="previewFragment" class="mb-4" />
     </template>
   </component>
 </template>

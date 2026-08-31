@@ -102,7 +102,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )).
                 Html::tag('craft-info-icon', t('The values are matched inclusively.')),
-                ['class' => 'cp:flex flex-center']
+                ['class' => 'flex flex-center']
             );
         }
 

@@ -135,10 +135,10 @@
     <Modal :is-active="modalActive" :overlay="false" width="2xl">
       <!-- License screen -->
       <template v-if="isCurrent('license')">
-        <craft-pane class="max-w-[80ch] cp:mx-auto">
+        <craft-pane class="max-w-[80ch] mx-auto">
           <Deferred data="licenseHtml">
             <template #fallback>
-              <div class="cp:flex cp:justify-center">
+              <div class="flex justify-center">
                 <craft-spinner></craft-spinner>
               </div>
             </template>
@@ -146,7 +146,7 @@
             <div class="license" v-html="licenseHtml"></div>
           </Deferred>
 
-          <div slot="actions" class="cp:flex cp:justify-center cp:w-full">
+          <div slot="actions" class="flex justify-center w-full">
             <craft-button
               type="button"
               variant="accent"
@@ -225,18 +225,18 @@
 
             <div
               slot="footer-content"
-              class="cp:grid cp:grid-cols-3 cp:items-center cp:gap-2 cp:w-full"
+              class="grid grid-cols-3 items-center gap-2 w-full"
             >
               <craft-button
                 type="button"
                 @click="goToPrevious"
                 variant="plain"
-                class="cp:justify-self-start"
+                class="justify-self-start"
               >
                 {{ t('Back') }}
                 <craft-icon name="arrow-left" slot="prefix"></craft-icon>
               </craft-button>
-              <ul class="cp:flex cp:gap-2 cp:justify-center">
+              <ul class="flex gap-2 justify-center">
                 <li v-for="(step, id) in dotSteps" :key="id">
                   <span
                     class="dot"
@@ -244,14 +244,14 @@
                       'dot--active': isCurrent(id),
                     }"
                   >
-                    <span class="cp:sr-only">
+                    <span class="sr-only">
                       {{ step.label }}
                     </span>
                   </span>
                 </li>
               </ul>
               <craft-button
-                class="cp:justify-self-end"
+                class="justify-self-end"
                 type="submit"
                 variant="accent"
                 :loading="formData.processing"

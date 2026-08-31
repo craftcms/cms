@@ -105,9 +105,9 @@
 <template>
   <UserScreen>
     <craft-pane appearance="raised" padding="0">
-      <div class="cp:grid cp:gap-6 cp:p-4">
-        <section class="cp:grid cp:gap-3">
-          <h2 class="cp:text-base">{{ t('General') }}</h2>
+      <div class="grid gap-6 p-4">
+        <section class="grid gap-3">
+          <h2 class="text-base">{{ t('General') }}</h2>
 
           <craft-field-group>
             <CraftCombobox
@@ -162,8 +162,8 @@
 
         <hr />
 
-        <section class="cp:grid cp:gap-3">
-          <h2 class="cp:text-base">{{ t('Accessibility') }}</h2>
+        <section class="grid gap-3">
+          <h2 class="text-base">{{ t('Accessibility') }}</h2>
 
           <craft-field-group>
             <CheckboxGroup
@@ -193,7 +193,7 @@
             />
 
             <craft-field-group>
-              <h3 class="cp:text-sm">{{ t('Notification Position') }}</h3>
+              <h3 class="text-sm">{{ t('Notification Position') }}</h3>
               <craft-button-group role="group">
                 <craft-button
                   v-for="option in props.notificationPositionOptions"
@@ -216,7 +216,7 @@
             </craft-field-group>
 
             <craft-field-group>
-              <h3 class="cp:text-sm">{{ t('Slideout Position') }}</h3>
+              <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
               <craft-button-group role="group">
                 <craft-button
                   v-for="option in props.slideoutPositionOptions"
@@ -243,8 +243,8 @@
         <template v-if="props.isAdmin">
           <hr />
 
-          <section class="cp:grid cp:gap-3">
-            <h2 class="cp:text-base">{{ t('Development') }}</h2>
+          <section class="grid gap-3">
+            <h2 class="text-base">{{ t('Development') }}</h2>
 
             <craft-field-group>
               <CheckboxGroup

@@ -92,9 +92,11 @@ readonly class Cp
      *
      * The legacy Twig shell renders its own document and never calls
      * {@see static::viteScripts()}, so it would otherwise have neither the
-     * `cp:` utilities nor the `--c-*` tokens that the legacy stylesheet's
+     * utility classes nor the `--c-*` tokens that the legacy stylesheet's
      * compatibility aliases resolve against. This is the subset that is safe
-     * to drop onto a legacy page: no preflight, so nothing gets re-reset.
+     * to drop onto a legacy page: no preflight, so nothing gets re-reset, and
+     * Tailwind's utilities are layered so the unlayered legacy rules still win
+     * wherever the two share a class name.
      */
     public static function viteUtilities(): Vite
     {

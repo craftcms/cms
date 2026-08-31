@@ -235,58 +235,50 @@ appearance: AppearanceKey = Appearance.Fill;
 
 ## Using tokens from Tailwind
 
-The CP's stylesheet turns Craft's design tokens into utility classes, and sets
-Tailwind's `prefix(cp)` so that **everything Tailwind generates is prefixed
-`cp:`** — Craft's token utilities and stock Tailwind alike:
+The CP's stylesheet turns Craft's design tokens into Tailwind utility classes.
+They are unprefixed, and they sit alongside stock Tailwind:
 
 ```html
-<div
-  class="cp:flex cp:gap-2 cp:bg-danger-normal cp:text-on-danger-normal"
-></div>
+<div class="flex gap-2 bg-danger-normal text-on-danger-normal"></div>
 ```
 
-That gives one namespace for the whole utility system, and makes anything
-unprefixed recognisable as a legacy class from the old SCSS bundle.
-
-The prefix is `cp` rather than `c` on purpose. Under `prefix(c)` Tailwind
-renames its own theme variables into `--c-*`, which is Craft's token namespace,
-and eight of them — `--c-text-sm`, `--c-radius-sm`, `--c-font-mono` and
-friends — would land on Craft tokens of the same name holding different values.
-With `cp`, Tailwind's variables sit at `--cp-*` and nothing overlaps.
+CP code only ever runs in the CP, where this is the only Tailwind there is, so
+there is nothing to disambiguate a Craft utility from at the point of use —
+`bg-loud` is no less "ours" than `flex`.
 
 ### Colors
 
-Color utilities read as `cp:<property>-[group-]<strength>`. A token's _role_
-is implied by the property rather than repeated in the class name — `fill`
-paints backgrounds, `border` paints borders, and `on` paints the text that sits
-_on_ a fill:
+Color utilities read as `<property>-[group-]<strength>`. A token's _role_ is
+implied by the property rather than repeated in the class name — `fill` paints
+backgrounds, `border` paints borders, and `on` paints the text that sits _on_ a
+fill:
 
-| Utility                   | Token                           |
-| ------------------------- | ------------------------------- |
-| `cp:bg-danger-normal`     | `--c-color-danger-fill-normal`  |
-| `cp:border-accent-quiet`  | `--c-color-accent-border-quiet` |
-| `cp:text-on-neutral-loud` | `--c-color-neutral-on-loud`     |
-| `cp:text-neutral-loud`    | `--c-color-neutral-fill-loud`   |
+| Utility                | Token                           |
+| ---------------------- | ------------------------------- |
+| `bg-danger-normal`     | `--c-color-danger-fill-normal`  |
+| `border-accent-quiet`  | `--c-color-accent-border-quiet` |
+| `text-on-neutral-loud` | `--c-color-neutral-on-loud`     |
+| `text-neutral-loud`    | `--c-color-neutral-fill-loud`   |
 
-Text is the one property that takes two roles. `cp:text-*` inks with the fill
-color, for text that carries the color itself; `cp:text-on-*` inks with the
-color meant to stay legible _against_ that fill, for text sitting on top of it:
+Text is the one property that takes two roles. `text-*` inks with the fill
+color, for text that carries the color itself; `text-on-*` inks with the color
+meant to stay legible _against_ that fill, for text sitting on top of it:
 
 ```html
 <!-- danger-colored text on the page background -->
-<p class="cp:text-danger-loud">Something went wrong</p>
+<p class="text-danger-loud">Something went wrong</p>
 
 <!-- text on a danger-colored fill -->
-<div class="cp:bg-danger-loud cp:text-on-danger-loud">Something went wrong</div>
+<div class="bg-danger-loud text-on-danger-loud">Something went wrong</div>
 ```
 
 Omit the group and you get the generic tokens, which is usually what you want
-inside a component: `cp:bg-quiet`, `cp:border-normal`, and `cp:text-on-loud`
-paint with whatever the nearest palette or `variant` resolved to, rather than
-naming a color up front.
+inside a component: `bg-quiet`, `border-normal`, and `text-on-loud` paint with
+whatever the nearest palette or `variant` resolved to, rather than naming a
+color up front.
 
-`cp:border-*` sets `border-color` only, exactly as Tailwind's own color
-utilities do — pair it with `cp:border` for a width.
+`border-*` sets `border-color` only, exactly as Tailwind's own color utilities
+do — pair it with `border` for a width.
 
 Scope is deliberately narrow: the six semantic groups plus the generic tokens.
 The raw palette (`--c-color-red-*` and friends) is still reachable from CSS and
@@ -299,17 +291,17 @@ remapping the generic tokens to that group's:
 
 ```html
 <div class="cp-palette-danger">
-  <!-- cp:bg-quiet is now danger's quiet fill -->
-  <span class="cp:bg-quiet cp:text-on-quiet">…</span>
+  <!-- bg-quiet is now danger's quiet fill -->
+  <span class="bg-quiet text-on-quiet">…</span>
 </div>
 ```
 
-Note the single dash: this is a plain stylesheet rule, not something Tailwind
-generates, so it carries no `cp:` prefix and works in the legacy shell and
-inside shadow roots too. `[data-palette='danger']` does the same thing from an
-attribute, for markup that is easier to set programmatically. The Craft 5
-spellings `.cp-color-*` and `[data-color]` still work and resolve to the same
-rule.
+This one keeps the CP's `.cp-*` class prefix because it isn't a utility — it's
+a plain stylesheet rule that sets context, and it works in the legacy shell and
+inside shadow roots where Tailwind's output doesn't reach.
+`[data-palette='danger']` does the same thing from an attribute, for markup
+that is easier to set programmatically. The Craft 5 spellings `.cp-color-*` and
+`[data-color]` still work and resolve to the same rule.
 
 This is a different axis from `[data-theme='dark']`, which selects the
 light/dark color scheme — which is why the palette attribute isn't called
@@ -317,33 +309,34 @@ light/dark color scheme — which is why the palette attribute isn't called
 
 ### Spacing
 
-Spacing reads as `cp:<stem>-<step>` across padding, margin, and gap. The stems
-match Tailwind's own, so `cp:px-*` is logical (`padding-inline`) and `cp:pl-*`
-is physical:
+Spacing reads as `<stem>-<step>` across padding, margin, and gap. The stems
+match Tailwind's own, so `px-*` is logical (`padding-inline`) and `pl-*` is
+physical:
 
-| Token             | Utilities                             |
-| ----------------- | ------------------------------------- |
-| `--c-spacing-sm`  | `cp:p-sm`, `cp:gap-sm`, `cp:mx-sm`, … |
-| `--c-spacing-2xl` | `cp:p-2xl`, `cp:mt-2xl`, …            |
-| `--c-spacing-1px` | `cp:p-1px`, `cp:gap-1px`, …           |
+| Token             | Utilities                    |
+| ----------------- | ---------------------------- |
+| `--c-spacing-sm`  | `p-sm`, `gap-sm`, `mx-sm`, … |
+| `--c-spacing-2xl` | `p-2xl`, `mt-2xl`, …         |
+| `--c-spacing-1px` | `p-1px`, `gap-1px`, …        |
 
-The numeric scale is untouched — `cp:p-4` still resolves through Tailwind's own
-spacing base. The scale's `--c-spacing` base gets no utilities of its own: it's
-the unit the named steps multiply, not a step you'd reach for on an element.
+The numeric scale is untouched and sits right alongside — `p-4` still resolves
+through Tailwind's own spacing base. The scale's `--c-spacing` base gets no
+utilities of its own: it's the unit the named steps multiply, not a step you'd
+reach for on an element.
 
 ### How it's wired up
 
-`resources/css/utilities.css` is the entry that sets the prefix and pulls in
-the token values, Tailwind, and Craft's utilities. **Both CP shells load it** —
-the Inertia shell through `cp.css`, and the legacy Twig shell on its own via
-`CpAsset` — so a `cp:` class means the same thing on either side, and the
-`--c-*` tokens that the legacy stylesheet's compatibility aliases resolve
-against are actually defined there.
+`resources/css/utilities.css` is the entry that pulls in the token values,
+Tailwind, and Craft's utilities. **Both CP shells load it** — the Inertia shell
+through `cp.css`, and the legacy Twig shell on its own via `CpAsset` — so a
+utility class means the same thing on either side, and the `--c-*` tokens that
+the legacy stylesheet's compatibility aliases resolve against are actually
+defined there.
 
 ```css
 @layer theme, utilities;
 
-@import 'tailwindcss/theme.css' layer(theme) prefix(cp);
+@import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 @import '@craftcms/ui/styles/shared/variables.css' layer(theme);
@@ -357,6 +350,10 @@ That last import takes no `layer()`: `@utility` may not be nested, and a
 layered import would nest it. Tailwind places what it generates into the
 `utilities` layer regardless.
 
+Tailwind's default theme stays in place underneath Craft's. Where the two name
+the same thing, Craft's wins — the token imports come after Tailwind's in the
+same layer, so `--color-red-500` and friends resolve to the Craft palette.
+
 The utilities reference the `--c-*` custom properties rather than snapshotting
 their values, so `[data-theme='dark']` overrides and palette context both flow
 through them untouched.
@@ -366,16 +363,18 @@ from `src/constants/colors.data.ts`, the same source as `shared/colorable.css`),
 so adding a semantic color there gives you its utilities for free. Don't edit
 it by hand.
 
-### Legacy classes
+### Where the legacy bundle still wins
 
-The old SCSS bundle ships utility classes of its own, and two of them share a
-name with a Tailwind utility while meaning something different:
+The old SCSS bundle is unlayered, and unlayered rules outrank anything in a
+cascade layer — so wherever it defines a class Tailwind also generates, the
+legacy rule wins. Three names overlap today:
 
 | Class         | Legacy definition                                            |
 | ------------- | ------------------------------------------------------------ |
 | `hidden`      | `display: none !important` — Tailwind's has no `!important`  |
 | `inline-flex` | also sets `align-items`, `align-content` and `gap: var(--s)` |
+| `truncate`    | the same declarations as Tailwind's — no visible difference  |
 
-These stay unprefixed on purpose, so they keep resolving to the legacy rule.
-Reach for `cp:hidden` / `cp:inline-flex` only when you specifically want
-Tailwind's plainer version.
+This is the pre-existing behaviour, not something the utility entry introduced,
+and it goes away as the legacy bundle is dismantled. Until then, `hidden` and
+`inline-flex` do more than their Tailwind namesakes.

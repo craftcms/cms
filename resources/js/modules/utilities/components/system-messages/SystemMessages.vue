@@ -45,11 +45,11 @@
 </script>
 
 <template>
-  <div id="messages" class="cp:p-4">
-    <div v-for="message in localMessages" :key="message.key" class="cp:mb-6">
-      <h2 class="cp:text-lg cp:mb-2">{{ message.heading }}</h2>
+  <div id="messages" class="p-4">
+    <div v-for="message in localMessages" :key="message.key" class="mb-6">
+      <h2 class="text-lg mb-2">{{ message.heading }}</h2>
       <craft-pane appearance="outline">
-        <div slot="title" class="cp:font-medium">
+        <div slot="title" class="font-medium">
           {{ message.subject }}
         </div>
 
@@ -63,10 +63,7 @@
           <craft-icon name="pencil" :label="t('Edit message')"></craft-icon>
         </craft-button>
 
-        <div
-          class="cp:font-mono cp:text-xs"
-          v-html="formatBody(message.body)"
-        ></div>
+        <div class="font-mono text-xs" v-html="formatBody(message.body)"></div>
       </craft-pane>
     </div>
   </div>

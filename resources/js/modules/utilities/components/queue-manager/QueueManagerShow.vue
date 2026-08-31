@@ -80,26 +80,26 @@
 </script>
 
 <template>
-  <div class="cp:p-4">
-    <h2 class="cp:mb-3">{{ job.description }}</h2>
+  <div class="p-4">
+    <h2 class="mb-3">{{ job.description }}</h2>
 
-    <table class="cp:table-fixed cp:border-collapse cp:w-full">
+    <table class="table-fixed border-collapse w-full">
       <tbody>
         <tr v-for="(value, name) in jobRecord" :key="name">
           <template v-if="!hiddenProperties.includes(name)">
             <th
               :class="{
-                'cp:text-left': true,
-                'cp:py-2': true,
-                'cp:text-red-600': name === 'error',
+                'text-left': true,
+                'py-2': true,
+                'text-red-600': name === 'error',
               }"
             >
               {{ jobAttributeName(name) }}
             </th>
             <td
               :class="{
-                'cp:py-2': true,
-                'cp:text-red-600': name === 'error',
+                'py-2': true,
+                'text-red-600': name === 'error',
               }"
             >
               <template v-if="name == 'status'">
@@ -146,9 +146,9 @@
       </tbody>
     </table>
 
-    <div class="cp:mt-6">
-      <h4 class="cp:text-lg">{{ t('Job Data') }}</h4>
-      <div class="cp:my-2">
+    <div class="mt-6">
+      <h4 class="text-lg">{{ t('Job Data') }}</h4>
+      <div class="my-2">
         <VarDump :data="job" style="font-size: 0.8rem" />
       </div>
     </div>

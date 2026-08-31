@@ -47,7 +47,7 @@
         h(
           'a',
           {
-            class: 'cp:font-bold',
+            class: 'font-bold',
             href: edit({section: row.original.id}).url,
           },
           getValue()

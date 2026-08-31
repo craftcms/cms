@@ -113,7 +113,7 @@
             h(
               'div',
               {
-                class: 'cp:flex cp:gap-2',
+                class: 'flex gap-2',
               },
               [
                 h('craft-indicator', {
@@ -164,7 +164,7 @@
       h(DeleteSiteButton, {
         site: row.original,
         disabled: row.original.primary,
-        class: 'cp:whitespace-normal',
+        class: 'whitespace-normal',
       }),
     ]),
   ]);
@@ -209,8 +209,8 @@
 
 <template>
   <LayoutSlot name="title">
-    <div class="cp:flex cp:gap-2 cp:items-center">
-      <h1 class="title cp:text-xl">
+    <div class="flex gap-2 items-center">
+      <h1 class="title text-xl">
         {{ title }}
       </h1>
 
@@ -248,7 +248,7 @@
   </LayoutSlot>
 
   <LayoutSlot name="subnav-actions">
-    <div class="cp:mt-4 cp:flex cp:gap-2" v-if="!readOnly">
+    <div class="mt-4 flex gap-2" v-if="!readOnly">
       <craft-button type="button" @click="openModal('create')" size="small">
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New Group') }}
@@ -256,7 +256,7 @@
     </div>
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="cp:@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
@@ -310,7 +310,7 @@
             <craft-callout
               variant="info"
               appearance="plain"
-              class="cp:p-0"
+              class="p-0"
               icon="lightbulb"
             >
               {{ t('Type `$` to choose an environment variable.') }}
@@ -336,7 +336,7 @@
           slot="after"
           variant="info"
           appearance="plain"
-          class="cp:p-0"
+          class="p-0"
           icon="lightbulb"
         >
           {{ t('Type `$` to choose an environment variable.') }}

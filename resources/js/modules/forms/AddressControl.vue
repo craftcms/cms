@@ -217,10 +217,7 @@
       :status="field.status?.[0]"
       :status-label="field.status?.[1]"
     >
-      <div
-        slot="input"
-        :class="field.spinner ? 'cp:flex cp:flex-nowrap' : undefined"
-      >
+      <div slot="input" :class="field.spinner ? 'flex flex-nowrap' : undefined">
         <craft-select
           v-if="field.type === 'select'"
           :name="editable ? inputName([...control.path, field.name]) : ''"

@@ -92,7 +92,7 @@
       prefetch="click"
     >
       <slot v-if="customElement"></slot>
-      <div v-else class="cp:flex cp:gap-1 cp:items-center">
+      <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
       </div>
@@ -106,7 +106,7 @@
       :class="customElement ? undefined : classes"
     >
       <slot v-if="customElement"></slot>
-      <div v-else class="cp:flex cp:gap-1 cp:items-center">
+      <div v-else class="flex gap-1 items-center">
         <template v-if="icon"><craft-icon :name="icon"></craft-icon></template>
         <slot></slot>
       </div>

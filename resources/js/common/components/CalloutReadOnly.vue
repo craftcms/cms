@@ -6,7 +6,7 @@
   <craft-callout
     appearance="fill"
     rounded="start"
-    class="cp:border border-b-neutral-border-quiet"
+    class="border border-b-neutral-border-quiet"
   >
     <craft-icon slot="icon" name="custom-icons/gear-slash"></craft-icon>
     <slot>{{

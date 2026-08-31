@@ -90,7 +90,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                 ]).
                 parent::inputHtml(),
                 [
-                    'class' => ['cp:flex', 'flex-start'],
+                    'class' => ['flex', 'flex-start'],
                 ]
             );
     }

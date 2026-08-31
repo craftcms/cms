@@ -3,7 +3,7 @@ CP Styles
  */
 @layer theme, base, components, cp, utilities;
 
-/* Tokens + Tailwind + Craft's `cp:` utilities, shared with the legacy shell. */
+/* Tokens + Tailwind + Craft's token utilities, shared with the legacy shell. */
 @import './utilities.css';
 
 @import '@craftcms/ui/styles/cp.css' layer(cp);

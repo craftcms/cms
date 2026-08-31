@@ -1094,7 +1094,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     option.setAttribute('hidden', '');
 
     const labelWrap = document.createElement('span');
-    labelWrap.className = 'inline-flex cp:flex-col cp:items-start cp:gap-xs';
+    labelWrap.className = 'inline-flex flex-col items-start gap-xs';
 
     const labelEl = document.createElement('span');
     labelEl.textContent = label;

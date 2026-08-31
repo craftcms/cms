@@ -125,7 +125,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
             {% include '_layouts/components/alerts' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
-                <div class="cp:flex cp:flex-nowrap cp:gap-sm">
+                <div class="flex flex-nowrap gap-sm">
                     {% include '_layouts/components/crumbs' %}
                     {% if contextMenu %}
                         <div id="context-menu-container" class="context-menu-container">
@@ -163,11 +163,11 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                     >
                         <ul>
                             <li>
-                                <a href="{{ url('myaccount') }}" class="cp:flex cp:flex-nowrap">
+                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
                                     {% if currentUser.photoId %}
                                         {{ userPhoto|raw }}
                                     {% endif %}
-                                    <div class="cp:flex-grow">
+                                    <div class="flex-grow">
                                         <div>{{ currentUser.username }}</div>
                                         {% if not config('craft.general.useEmailAsUsername') %}
                                             <div class="smalltext">{{ currentUser.email }}</div>
@@ -211,12 +211,12 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                             {% endblock %}
                                         </div>
                                         {% if toolbar %}
-                                            <div id="toolbar" class="cp:flex">
+                                            <div id="toolbar" class="flex">
                                                 {{ toolbar|raw }}
                                             </div>
                                         {% endif %}
                                         {% if actionButton or additionalButtons or actionMenu or details %}
-                                            <div id="action-buttons" class="cp:flex">
+                                            <div id="action-buttons" class="flex">
                                                 {{ additionalButtons|raw }}
                                                 {{ actionButton|raw }}
                                                 {{ actionMenu|raw }}
@@ -282,7 +282,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
 
                                                 {# footer #}
                                                 {% if footer %}
-                                                    <div id="footer" class="cp:flex flex-justify">
+                                                    <div id="footer" class="flex flex-justify">
                                                         {{ footer|raw }}
                                                     </div>
                                                 {% endif %}
@@ -349,8 +349,8 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                 {% endif %}
                 <div id="app-info">
                     {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) %}
-                    <span class="cp:flex cp:items-center">
-                        <span lang="en" class="cp:flex cp:items-center">
+                    <span class="flex items-center">
+                        <span lang="en" class="flex items-center">
                             Craft CMS
                             <span id="edition-logo" title="{{ fullEditionName }}">
                                 <span aria-hidden="true">{{ editionName }}</span>

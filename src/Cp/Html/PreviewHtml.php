@@ -83,7 +83,7 @@ readonly class PreviewHtml
         }
 
         $first = array_shift($components);
-        $html = Html::beginTag('div', ['class' => 'cp:flex cp:flex-wrap cp:items-center cp:gap-1']).
+        $html = Html::beginTag('div', ['class' => 'flex flex-wrap items-center gap-1']).
             $this->elementHtml->chipHtml($first, $chipConfig);
 
         if (! empty($components)) {

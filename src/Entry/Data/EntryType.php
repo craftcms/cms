@@ -216,7 +216,7 @@ JS, [
                         : $usage->getIcon();
                     $label = $labels[] = $usage->getUiLabel();
                     $labelHtml = Html::beginTag('span', [
-                        'class' => ['cp:flex', 'cp:flex-nowrap', 'cp:items-center', 'cp:gap-1'],
+                        'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
                     ]).
                         Html::tag('craft-icon', '', Icons::resolveIconData($icon)).
                         Html::tag('span', Html::encode($label)).

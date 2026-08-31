@@ -36,7 +36,7 @@ export const KnownStatuses: Story = {
   render: () => ({
     components: {ElementStatus},
     template: `
-      <div class="cp:flex cp:gap-4 cp:flex-wrap">
+      <div class="flex gap-4 flex-wrap">
         <ElementStatus value="live" />
         <ElementStatus value="enabled" />
         <ElementStatus value="pending" />
@@ -54,7 +54,7 @@ export const Badge: Story = {
   render: () => ({
     components: {ElementStatus},
     template: `
-      <div class="cp:flex cp:gap-4 cp:flex-wrap">
+      <div class="flex gap-4 flex-wrap">
         <ElementStatus value="live" mode="badge" />
         <ElementStatus value="pending" mode="badge" />
         <ElementStatus value="disabled" mode="badge" />

@@ -19,16 +19,16 @@
 </script>
 
 <template>
-  <div class="cp:py-3">
+  <div class="py-3">
     <template v-if="readOnly">
       <CalloutReadOnly />
     </template>
 
-    <div class="cp:grid cp:gap-6">
+    <div class="grid gap-6">
       <div v-for="(items, category, index) in settings" :key="category">
         <h2
           :id="`category-heading-${index}`"
-          class="cp:mb-2 cp:text-lg cp:leading-tight"
+          class="mb-2 text-lg leading-tight"
         >
           {{ category }}
         </h2>
@@ -51,11 +51,11 @@
                       <div
                         v-else-if="item.icon"
                         v-html="item.icon"
-                        class="w-[40px] h-[40px] cp:inline-block align-self-center"
+                        class="w-[40px] h-[40px] inline-block align-self-center"
                       ></div>
                     </div>
                     {{ item.label
-                    }}<span class="cp:sr-only"> - {{ t('Settings') }}</span>
+                    }}<span class="sr-only"> - {{ t('Settings') }}</span>
                   </div>
                 </CpLink>
               </li>

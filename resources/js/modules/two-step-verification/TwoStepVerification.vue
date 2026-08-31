@@ -133,11 +133,11 @@
           id: 'method',
           header: t('Method'),
           cell: ({row}) =>
-            h('div', {class: 'cp:grid cp:py-2'}, [
-              h('div', {class: 'cp:font-bold'}, row.original.name),
+            h('div', {class: 'grid py-2'}, [
+              h('div', {class: 'font-bold'}, row.original.name),
               h(
                 'div',
-                {class: 'cp:text-sm', style: 'opacity: 0.75'},
+                {class: 'text-sm', style: 'opacity: 0.75'},
                 row.original.description
               ),
             ]),

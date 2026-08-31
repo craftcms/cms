@@ -101,8 +101,7 @@ export function createCraftColumnHelper<T extends object>() {
           h(
             'div',
             {
-              class:
-                'cp:flex cp:gap-2 cp:items-center cp:justify-end cp:self-end',
+              class: 'flex gap-2 items-center justify-end self-end',
             },
             actions(cellContext)
           ),
@@ -119,7 +118,7 @@ export function createCraftColumnHelper<T extends object>() {
             h(
               CpLink,
               {
-                class: 'cp:font-bold',
+                class: 'font-bold',
                 inertia: false,
                 ...props(cellContext),
               },

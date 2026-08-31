@@ -445,7 +445,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     if (this.settings.mode === 'cards') {
       if (!this.$btnContainer) {
         this.$btnContainer = $('<div/>', {
-          class: 'cp:flex flex-inline',
+          class: 'flex flex-inline',
         }).appendTo(this.container);
       }
       $button.appendTo(this.$btnContainer);

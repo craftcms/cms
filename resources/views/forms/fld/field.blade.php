@@ -21,7 +21,7 @@
      */
 @endphp
 <div class="fld-cvd">
-    <h2 class="cp:sr-only">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
+    <h2 class="sr-only">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
 
     <craft-field-group style="--gap: var(--c-spacing-xl)">
         {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(

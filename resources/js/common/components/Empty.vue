@@ -6,9 +6,9 @@
 </script>
 
 <template>
-  <div class="cp:py-20 cp:w-full">
+  <div class="py-20 w-full">
     <div
-      class="w-[60ch] cp:mx-auto cp:text-center cp:grid cp:gap-3 cp:justify-items-center cp:text-gray-500"
+      class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
     >
       <slot name="graphic">
         <craft-icon
@@ -18,7 +18,7 @@
         ></craft-icon>
       </slot>
       <slot name="content">
-        <p class="cp:text-lg">{{ label }}</p>
+        <p class="text-lg">{{ label }}</p>
       </slot>
 
       <slot></slot>

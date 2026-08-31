@@ -148,7 +148,7 @@
     </CpLink>
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="cp:@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable
       :table="table"
       :reorderable="true"

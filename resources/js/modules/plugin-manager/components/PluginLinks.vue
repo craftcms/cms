@@ -51,13 +51,13 @@
 </script>
 
 <template>
-  <ul v-if="links?.length > 0" class="cp:flex cp:gap-3 items-base">
+  <ul v-if="links?.length > 0" class="flex gap-3 items-base">
     <li v-for="link in links" :key="link.href">
       <CpLink
         v-if="link.internal"
         :href="link.href"
         :icon="link.icon"
-        class="cp:flex cp:gap-1 cp:items-center"
+        class="flex gap-1 items-center"
       >
         {{ link.text }}
       </CpLink>
@@ -66,7 +66,7 @@
         :href="link.href"
         target="_blank"
         rel="noopener"
-        class="cp:flex cp:gap-1 cp:items-center"
+        class="flex gap-1 items-center"
       >
         <craft-icon v-if="link.icon" :name="link.icon"></craft-icon>
         {{ link.text }}

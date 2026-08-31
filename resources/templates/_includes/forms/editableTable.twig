@@ -61,7 +61,7 @@
 {% endfor %}
 
 <div slot="input">
-  <span role="status" class="cp:sr-only" data-status-message></span>
+  <span role="status" class="sr-only" data-status-message></span>
   {% if not static %}
     {{ hiddenInput(name, '') }}
   {% endif %}
@@ -100,7 +100,7 @@
           {% endfor %}
           {% if (allowDelete or allowReorder) %}
             <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup">
-              <span class="cp:sr-only">{{ 'Row actions'|t('app') }}</span></th>
+              <span class="sr-only">{{ 'Row actions'|t('app') }}</span></th>
           {% endif %}
           {% if includeRowId %}
             <th class="hidden">Row ID</th>
@@ -259,7 +259,7 @@
           {% endfor %}
           {% if allowReorder -%}
             <td class="thin action">
-              <div class="cp:flex cp:flex-nowrap">
+              <div class="flex flex-nowrap">
                 <craft-reorder-button aria-label="{{ 'Reorder'|t('app') }}"></craft-reorder-button>
               </div>
             </td>
@@ -293,9 +293,9 @@
   {% if allowAdd %}
     {% set buttonText = addRowLabel ?? "Add a row"|t('app') %}
     <div
-      class="cp:border cp:border-dashed border-neutral-border-quiet cp:rounded-bl-md cp:rounded-br-md cp:border-t-0 cp:p-1 cp:pt-2 cp:-mt-1"
+      class="border border-dashed border-neutral-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
     >
-      <craft-button type="button" variant="plain" size="small" class="cp:w-full" command="--add-row">
+      <craft-button type="button" variant="plain" size="small" class="w-full" command="--add-row">
         <craft-icon name="plus"></craft-icon>
         {{ buttonText }}
       </craft-button>

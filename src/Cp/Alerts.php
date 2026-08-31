@@ -75,7 +75,7 @@ readonly class Alerts
                         ->items(...array_map(Html::li(...), $resolvableLicenseAlerts))
                         ->class('errors').
                     Html::beginTag('p', [
-                        'class' => ['cp:flex', 'cp:flex-nowrap', 'resolvable-alert-buttons'],
+                        'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
                     ]).
                     sprintf('<a class="go" href="%s" target="_blank">%s</a>', $cartUrl, t('Resolve now')).
                     Html::endTag('p'),

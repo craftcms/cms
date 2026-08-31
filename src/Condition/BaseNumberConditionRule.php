@@ -94,7 +94,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                 'name' => 'value',
                 'value' => $this->value,
                 'autocomplete' => false,
-                'class' => 'cp:flex-grow cp:flex-shrink',
+                'class' => 'flex-grow flex-shrink',
             ]).
             Html::tag('span', t('and')).
             Html::hiddenLabel(t('Max Value'), 'max').
@@ -104,10 +104,10 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                 'name' => 'maxValue',
                 'value' => $this->maxValue,
                 'autocomplete' => false,
-                'class' => 'cp:flex-grow cp:flex-shrink',
+                'class' => 'flex-grow flex-shrink',
             ]).
             Html::tag('craft-info-icon', t('The values are matched inclusively.')),
-            ['class' => 'cp:flex flex-center']
+            ['class' => 'flex flex-center']
         );
     }
 

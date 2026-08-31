@@ -116,7 +116,7 @@
     >
   </LayoutSlot>
 
-  <craft-pane appearance="raised" padding="0" class="cp:@container">
+  <craft-pane appearance="raised" padding="0" class="@container">
     <AdminTable :table="table">
       <template #empty-row>
         <Empty :label="t('No image transforms exist yet.')" icon="image">

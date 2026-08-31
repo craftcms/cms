@@ -5,7 +5,7 @@
   {% embed '_includes/forms/field.twig' with config %}
     {% block input %}
       {% import '_includes/forms.twig' as forms %}
-      <div class="cp:flex cp:flex-nowrap cp:items-center cp:gap-2">
+      <div class="flex flex-nowrap items-center gap-2">
         <div>
           {{ forms.selectField({
             id: "#{config.id}-source",
@@ -17,7 +17,7 @@
             disabled: config.disabled ?? false,
           }) }}
         </div>
-        <div class="cp:flex-grow">
+        <div class="flex-grow">
           {{ forms.textField({
             class: 'ltr',
             label: 'Subpath'|t,
@@ -151,7 +151,7 @@
       id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}
       data-error-key="allowedKinds"
     >
-      <legend class="cp:font-bold">{{ 'Allowed Kinds'|t }}</legend>
+      <legend class="font-bold">{{ 'Allowed Kinds'|t }}</legend>
       {% for option in field.getFileKindOptions() %}
         {{ forms.checkboxField({
           label: option.label,

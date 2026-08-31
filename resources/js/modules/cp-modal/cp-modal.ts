@@ -105,9 +105,9 @@ export class CpModal extends Modal {
 
     // Footer
     this.#$footer = $('<div/>', {class: 'cpmodal-footer hidden'});
-    $('<div/>', {class: 'cp:flex-grow'}).appendTo(this.#$footer);
+    $('<div/>', {class: 'flex-grow'}).appendTo(this.#$footer);
     const $btnContainer = $('<div/>', {
-      class: 'cp:flex cp:flex-nowrap',
+      class: 'flex flex-nowrap',
     }).appendTo(this.#$footer);
 
     this.#$loadSpinner = $('<div/>', {

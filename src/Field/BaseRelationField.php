@@ -1506,14 +1506,14 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             self::VIEW_MODE_CARDS,
             self::VIEW_MODE_CARDS_GRID,
         ]))) {
-            $html = Html::beginTag('div', ['class' => ['cp:flex', 'cp:items-start', 'cp:gap-lg']]);
+            $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-lg']]);
             app(InternalAssetRegistry::class)->register(CpAsset::class);
             $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']).
                     Html::img("$baseIconsUrl/$key.svg", '', [
-                        'class' => 'cp:mb-xs',
+                        'class' => 'mb-xs',
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
                     ]).

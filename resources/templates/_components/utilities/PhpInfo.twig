@@ -1,7 +1,7 @@
-<div class="cp:p-4 cp:grid cp:gap-8">
+<div class="p-4 grid gap-8">
   {% for section, values in phpInfo %}
     <div id="{{ section | id }}">
-      <h2 class="cp:mb-2">{{ section }}</h2>
+      <h2 class="mb-2">{{ section }}</h2>
       <table class="cp-table cp-table--fixed">
         <tbody>
           {% for key, value in values %}

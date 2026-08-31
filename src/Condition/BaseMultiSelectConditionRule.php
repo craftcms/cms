@@ -118,7 +118,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
             FormFields::selectizeHtml([
                 'id' => $multiSelectId,
-                'class' => 'cp:flex-grow',
+                'class' => 'flex-grow',
                 'name' => 'values',
                 'values' => $this->_values,
                 'options' => $this->options(),

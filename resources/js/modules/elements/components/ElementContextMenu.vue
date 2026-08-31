@@ -27,8 +27,7 @@
             h(
               'h2',
               {
-                class:
-                  'cp:px-2 cp:pt-2 cp:pb-1 cp:text-xs cp:font-bold cp:text-on-neutral-quiet',
+                class: 'px-2 pt-2 pb-1 text-xs font-bold text-on-neutral-quiet',
               },
               item.label
             ),

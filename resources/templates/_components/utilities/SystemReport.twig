@@ -1,6 +1,6 @@
-<div class="cp:p-4 cp:grid cp:gap-8">
+<div class="p-4 grid gap-8">
   <div id="application-info">
-    <h2 class="cp:mb-3">{{ "Application Info"|t('app') }}</h2>
+    <h2 class="mb-3">{{ "Application Info"|t('app') }}</h2>
 
     <table class="cp-table" dir="ltr">
       <tbody>
@@ -16,7 +16,7 @@
 
   <div id="plugins">
 
-    <h2 class="cp:mb-3">{{ "Plugins"|t('app') }}</h2>
+    <h2 class="mb-3">{{ "Plugins"|t('app') }}</h2>
 
     {% if plugins|length %}
       <table class="cp-table" dir="ltr">
@@ -36,8 +36,8 @@
 
   <div id="aliases">
 
-    <h2 class="cp:mb-3">{{ 'Aliases'|t('app') }}</h2>
-    <p class="cp:mb-2">
+    <h2 class="mb-3">{{ 'Aliases'|t('app') }}</h2>
+    <p class="mb-2">
       {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
         url: 'https://craftcms.com/docs/5.x/configure.html#aliases',
       })|raw }}
@@ -57,17 +57,17 @@
 
   <div id="requirements">
 
-    <h2 class="cp:mb-3">{{ "Requirements"|t('app') }}</h2>
+    <h2 class="mb-3">{{ "Requirements"|t('app') }}</h2>
 
     <table class="cp-table" dir="ltr">
       <tbody>
         {% for requirement in requirements %}
           <tr>
             <td>
-              <div class="cp:flex cp:gap-2 cp:items-center">
+              <div class="flex gap-2 items-center">
                 {% if requirement.error %}
                   <craft-callout
-                    class="cp:p-0"
+                    class="p-0"
                     appearance="plain"
                     variant="danger"
                   >
@@ -76,7 +76,7 @@
                   </craft-callout>
                 {% elseif requirement.warning %}
                   <craft-callout
-                    class="cp:p-0"
+                    class="p-0"
                     appearance="plain"
                     variant="warning"
                   >
@@ -90,7 +90,7 @@
                   <craft-icon name="alert" label="{{ 'Passed with warning'|t('app') }}"></craft-icon>
                 {% else %}
                   <craft-callout
-                    class="cp:p-0"
+                    class="p-0"
                     appearance="plain"
                     variant="success"
                   >

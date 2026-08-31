@@ -22,14 +22,14 @@
     <template v-for="session in sessionsArray" :key="session.id">
       <div class="session">
         <div class="session__label">
-          <div class="cp:mb-1">
+          <div class="mb-1">
             <strong>{{ t('Volumes being indexed') }}</strong>
           </div>
           <SessionVolumes :value="session.indexedVolumes" />
         </div>
 
         <div class="session__status">
-          <div class="cp:mb-1">
+          <div class="mb-1">
             <strong>{{ t('Status') }}</strong>
           </div>
           <template v-if="session.actionRequired">
@@ -44,14 +44,14 @@
         </div>
 
         <div class="session__last-update">
-          <div class="cp:mb-1">
+          <div class="mb-1">
             <strong>{{ t('Last update') }}</strong>
           </div>
           <Date :value="session.dateUpdated.date" />
         </div>
 
         <div class="session__progress">
-          <div class="cp:mb-1">
+          <div class="mb-1">
             <strong>{{ t('Progress') }}</strong>
           </div>
           <SessionProgress

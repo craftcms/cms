@@ -78,7 +78,7 @@
       cell: ({row, getValue}) =>
         h(
           CpLink,
-          {href: row.original.url, inertia: false, class: 'cp:font-bold'},
+          {href: row.original.url, inertia: false, class: 'font-bold'},
           getValue
         ),
     }),
@@ -129,7 +129,7 @@
           return t('Missing');
         }
 
-        return h('div', {class: 'cp:flex cp:items-center cp:gap-2'}, [
+        return h('div', {class: 'flex items-center gap-2'}, [
           h('craft-icon', row.original.type.icon),
           h('span', row.original.type.label),
         ]);
@@ -144,7 +144,7 @@
         trackSize: '60px',
       },
       cell: ({row}) =>
-        h('div', {class: 'cp:self-end cp:flex cp:justify-end'}, [
+        h('div', {class: 'self-end flex justify-end'}, [
           h(DeleteButton, {
             onClick: () => deleteField(row.original),
           }),

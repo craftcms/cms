@@ -58,7 +58,7 @@
       <MainNav :icon-only="collapsed" />
     </div>
     <div class="cp-sidebar__footer">
-      <div class="cp:grid cp:place-items-center cp:py-2" v-if="collapsed">
+      <div class="grid place-items-center py-2" v-if="collapsed">
         <craft-tooltip for="sidebar-toggle" placement="right-start">{{
           t('Toggle sidebar')
         }}</craft-tooltip>

@@ -27,7 +27,7 @@
                 <craft-action-item data-value="{{ $option['value'] }}">
                     {!! e($option['label']) !!}
                     @if ($option['showHint'] && $option['hint'] !== null)
-                        <span class="cp:text-on-quiet">– {!! e($option['hint']) !!}</span>
+                        <span class="text-on-quiet">– {!! e($option['hint']) !!}</span>
                     @endif
                 </craft-action-item>
             @endforeach

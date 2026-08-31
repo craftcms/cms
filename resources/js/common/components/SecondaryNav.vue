@@ -41,7 +41,7 @@
       :aria-expanded="navState === 'expanded'"
       @click="toggleNav"
       align="start"
-      class="cp:text-sm cp:py-0 cp:min-h-0"
+      class="text-sm py-0 min-h-0"
     >
       <craft-icon
         slot="suffix"
@@ -67,7 +67,7 @@
                 flush
                 :group="item.group"
               >
-                <span class="cp:text-xs cp:font-bold">{{ item.label }}</span>
+                <span class="text-xs font-bold">{{ item.label }}</span>
 
                 <craft-nav-list slot="subnav">
                   <CpLink
