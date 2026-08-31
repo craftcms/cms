@@ -51,13 +51,9 @@ class InputColor extends Input
     {
         $attributes = parent::hostAttributes();
 
-        // craft-input-color extends LionInput directly (see InputPassword for the
-        // same rationale): keep only the Lion-pushed control props on the host,
-        // drop `type` and the craft-input-only styling attributes. The slotted
-        // native input still carries the functional ones via Input::inputHtml().
-        foreach (['type', 'maxlength', 'size', 'small', 'width', 'center', 'monospace', 'hidden-input'] as $key) {
-            unset($attributes[$key]);
-        }
+        // Drop `type`: the component pairs its own text field with a native
+        // colour swatch. The slotted native input still carries it via
+        // Input::inputHtml().
 
         $presets = array_values(array_filter($this->presets));
         $attributes['presets'] = $presets !== [] ? Json::encode($presets) : null;

@@ -1,7 +1,6 @@
 import {css, html} from 'lit';
 import {state} from 'lit/decorators.js';
-import {LionInput} from '@lion/ui/input.js';
-import {inputStyles} from '@src/styles/form.styles';
+import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
 import '../button/button.js';
@@ -11,9 +10,7 @@ import '../button/button.js';
  * toggles the field between `password` and `text`, and names itself "Show" or
  * "Hide" as it goes.
  *
- * Note that this extends Lion's input directly rather than `craft-input`, so
- * the base control's `maxlength`, `size`, `width`, `monospace`, `center`, and
- * `hidden-input` are not available here.
+ * It extends `craft-input`, so everything on that control applies here too.
  *
  * @slot label - The control's label, as an alternative to the `label`
  *   attribute.
@@ -22,14 +19,13 @@ import '../button/button.js';
  * @slot suffix - Supplied by the component: the reveal button. Slotting your
  *   own replaces it.
  */
-export default class CraftInputPassword extends LionInput {
+export default class CraftInputPassword extends CraftInput {
   @state()
   protected _visible = false;
 
   static override get styles() {
     return [
       ...super.styles,
-      inputStyles,
       css`
         .input-group__container {
           position: relative;

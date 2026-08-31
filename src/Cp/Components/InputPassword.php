@@ -35,16 +35,10 @@ class InputPassword extends Input
     {
         $attributes = parent::hostAttributes();
 
-        // craft-input-password extends LionInput directly, so it only honors the
-        // control properties Lion pushes onto the slotted input on upgrade
-        // (placeholder/name/disabled/readonly). Drop `type` — the component owns
-        // it (password ⇄ text via the reveal toggle) — and the craft-input-only
-        // styling host attributes it doesn't implement. The slotted native input
-        // still carries the functional ones (type, maxlength) via
-        // Input::inputHtml().
-        foreach (['type', 'maxlength', 'size', 'small', 'width', 'center', 'monospace', 'hidden-input'] as $key) {
-            unset($attributes[$key]);
-        }
+        // Drop `type`: the component owns it, toggling password ⇄ text via the
+        // reveal button. The slotted native input still carries it via
+        // Input::inputHtml() for pre-upgrade masking and form posting.
+        unset($attributes['type']);
 
         return $attributes;
     }

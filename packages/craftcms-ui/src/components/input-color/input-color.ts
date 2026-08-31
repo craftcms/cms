@@ -1,7 +1,6 @@
-import {LionInput} from '@lion/ui/input.js';
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
-import {inputStyles} from '@src/styles/form.styles';
+import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import styles from './input-color.styles.js';
 
@@ -52,7 +51,7 @@ function expandedHexValue(value: unknown): string | null {
 }
 
 /**
- * @summary A color input built on top of Lion's text input. Pairs a free
+ * @summary A color input built on top of `craft-input`. Pairs a free
  * text field (prefixed with `#`) with a native `<input type="color">` swatch and
  * an optional datalist of preset colors.
  *
@@ -69,9 +68,9 @@ function expandedHexValue(value: unknown): string | null {
  *
  * @since 1.0
  */
-export default class CraftInputColor extends LionInput {
+export default class CraftInputColor extends CraftInput {
   static override get styles() {
-    return [...super.styles, inputStyles, styles];
+    return [...super.styles, styles];
   }
 
   /**
