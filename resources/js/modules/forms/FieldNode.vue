@@ -35,6 +35,8 @@
     status?: string;
     statusLabel?: string;
     hasActions?: boolean;
+    /** Hidden from view; the control still resolves and still holds its value. */
+    hidden?: boolean;
   };
 
   const props = defineProps<{
@@ -135,7 +137,11 @@
     :status-label="
       modified ? t('This field has been modified.') : node.props.statusLabel
     "
-    :class="node.props.width ? `width-${node.props.width}` : undefined"
+    :class="{
+      [`width-${node.props.width}`]: Boolean(node.props.width),
+      hidden: Boolean(node.props.hidden),
+    }"
+    :hidden="node.props.hidden || undefined"
     :data-layout-element="node.props.layoutUid"
   >
     <div v-if="actions.length" slot="actions">

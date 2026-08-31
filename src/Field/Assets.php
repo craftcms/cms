@@ -29,9 +29,12 @@ use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
+use CraftCms\Cms\Form\Enums\FieldWidth;
 use CraftCms\Cms\Form\Form;
 use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Form\Nodes\Field as FormField;
+use CraftCms\Cms\Form\Nodes\Group;
+use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
@@ -229,11 +232,6 @@ class Assets extends BaseRelationField
     #[Override]
     public function settingsForm(FormContext $context = new FormContext): Form
     {
-        $sourceOptions = array_map(fn (array $option): array => [
-            'label' => (string) $option['label'],
-            'value' => $option['value'],
-        ], $this->getSourceOptions());
-        $form = parent::settingsForm($context);
         $objectTemplateTriggers = SelectOptions::getObjectTemplateTextExpanderTriggers(additionalProperties: [
             'author.username' => t('Author Username'),
             'owner.slug' => t('Owner Slug'),
@@ -242,34 +240,65 @@ class Assets extends BaseRelationField
             'owner.site.handle' => t('Owner Site Handle'),
         ]);
         $objectTemplateTip = SelectOptions::getObjectTemplateTip();
+        $sourceOptions = array_map(fn (array $option): array => [
+            'label' => (string) $option['label'],
+            'value' => $option['value'],
+        ], $this->getSourceOptions());
 
-        return $form->add(
+        $subpath = fn (string $name, ?string $value): Text => Text::make($name)
+            ->placeholder(t('path/to/subfolder'))
+            ->textExpanderTriggers($objectTemplateTriggers)
+            ->value($value);
+
+        // Ordered to match Craft 5’s `Assets/settings.twig`, which overrode the
+        // shared `fieldSettings` block wholesale. “Maintain hierarchy” is absent
+        // because assets can’t relate to a structure (Craft 5 never rendered the
+        // block), and “Branch Limit” with it — it only ever showed alongside
+        // “Maintain hierarchy”, so it was permanently hidden here.
+        return Form::make(array_values(array_filter([
             FormField::make(t('Restrict assets to a single location'))
                 ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
-            FormField::make(t('Restricted Location Source'))
-                ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource)),
-            FormField::make(t('Restricted Location Subpath'))
-                ->control(Text::make('restrictedLocationSubpath')
-                    ->placeholder(t('path/to/subfolder'))
-                    ->textExpanderTriggers($objectTemplateTriggers)
-                    ->value($this->restrictedLocationSubpath))
-                ->tip($objectTemplateTip),
+            Group::make('restricted-location', [
+                FormField::make()
+                    ->label(t('Source'))
+                    ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->label(t('Subpath'))
+                    ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Asset Location'))
+                ->instructions(t('The location where assets can be selected from.'))
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation),
             FormField::make(t('Allow subfolders'))
-                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders)),
-            FormField::make(t('Restricted Default Upload Subpath'))
-                ->control(Text::make('restrictedDefaultUploadSubpath')
-                    ->placeholder(t('path/to/subfolder'))
-                    ->textExpanderTriggers($objectTemplateTriggers)
-                    ->value($this->restrictedDefaultUploadSubpath))
-                ->tip($objectTemplateTip),
-            FormField::make(t('Default Upload Location Source'))
-                ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource)),
-            FormField::make(t('Default Upload Location Subpath'))
-                ->control(Text::make('defaultUploadLocationSubpath')
-                    ->placeholder(t('path/to/subfolder'))
-                    ->textExpanderTriggers($objectTemplateTriggers)
-                    ->value($this->defaultUploadLocationSubpath))
-                ->tip($objectTemplateTip),
+                ->control(Lightswitch::make('allowSubfolders')->value($this->allowSubfolders))
+                ->visible($this->restrictLocation),
+            FormField::make(t('Default Upload Subpath'))
+                ->control($subpath('restrictedDefaultUploadSubpath', $this->restrictedDefaultUploadSubpath))
+                ->tip($objectTemplateTip)
+                ->visible($this->restrictLocation && $this->allowSubfolders),
+            $this->sourcesField()->visible(! $this->restrictLocation),
+
+            Group::make('default-upload-location', [
+                FormField::make()
+                    ->label(t('Source'))
+                    ->control(Choice::make('defaultUploadLocationSource')->options($sourceOptions)->value($this->defaultUploadLocationSource))
+                    ->width(FieldWidth::Third),
+                FormField::make()
+                    ->label(t('Subpath'))
+                    ->control($subpath('defaultUploadLocationSubpath', $this->defaultUploadLocationSubpath))
+                    ->tip($objectTemplateTip)
+                    ->width(FieldWidth::TwoThirds),
+            ])
+                ->asField()
+                ->label(t('Default Upload Location'))
+                ->instructions(t('Where assets should be stored when they are uploaded directly to the field.'))
+                ->visible(! $this->restrictLocation),
+            Separator::make('asset-location-separator'),
+            $this->selectionConditionField(),
             FormField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
@@ -282,10 +311,18 @@ class Assets extends BaseRelationField
                 ->control(Choice::make('allowedKinds')
                     ->multiple()
                     ->options($this->getFileKindOptions())
-                    ->value($this->allowedKinds ?? [])),
+                    ->value($this->allowedKinds ?? []))
+                ->visible($this->restrictFiles),
             FormField::make(t('Allow uploading directly to the field'))
                 ->instructions(t('Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'))
                 ->control(Lightswitch::make('allowUploads')->value($this->allowUploads)),
+            ...$this->limitFields(),
+            $this->defaultPlacementField(),
+            $this->viewModeField(),
+            $this->selectionLabelField(),
+            $this->showSearchInputField()->visible($this->canSearchWithinSources()),
+            $this->validateRelatedElementsField(),
+            Separator::make('preview-mode-separator'),
             FormField::make(t('Preview Mode'))
                 ->instructions(t('How the related {type} should be displayed within element indexes.', [
                     'type' => Asset::pluralLowerDisplayName(),
@@ -294,7 +331,30 @@ class Assets extends BaseRelationField
                     ['label' => t('Show thumbnails and titles'), 'value' => self::PREVIEW_MODE_FULL],
                     ['label' => t('Show thumbnails only'), 'value' => self::PREVIEW_MODE_THUMBS],
                 ])->value($this->previewMode)),
-        );
+            $this->advancedSettingsGroup(),
+        ])));
+    }
+
+    /**
+     * Returns whether the “Show the search input” setting applies.
+     *
+     * The search input only makes sense when the field draws from one specific
+     * place: a single selected source, or a restricted location. Craft 5 drove
+     * this from JS in `elementfieldsettings.twig` and `AssetsFieldSettings.js`.
+     */
+    private function canSearchWithinSources(): bool
+    {
+        if ($this->restrictLocation) {
+            return true;
+        }
+
+        if (! $this->allowMultipleSources) {
+            return $this->source !== null;
+        }
+
+        return is_array($this->sources)
+            && count($this->sources) === 1
+            && $this->sources[0] !== '*';
     }
 
     /** @return list<array{label:string, value:string, data:array{'structure-id':int|null}}> */
