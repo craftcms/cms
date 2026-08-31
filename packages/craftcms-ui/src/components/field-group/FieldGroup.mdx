@@ -1,0 +1,36 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as FieldGroupStories from './field-group.stories';
+
+<Meta of={FieldGroupStories} name="Docs" />
+
+# Field Group
+
+`<craft-field-group>` lays [Field](?path=/docs/controls-field--docs)s out on a twelve-column grid.
+
+<Canvas of={FieldGroupStories.Default} sourceState="shown" />
+
+Children take a full row by default, which is the right default for a form: full-width fields are the easiest to scan down.
+
+## Widths
+
+A `width-*` class on a child gives it a fraction of the row:
+
+<Canvas of={FieldGroupStories.Widths} sourceState="shown" />
+
+The available fractions are `width-25`, `width-33`, `width-50`, `width-66`, and `width-75` — quarters, thirds, and halves of the twelve columns.
+
+## Container Queries, Not Media Queries
+
+The breakpoints respond to the width of the group itself, not the viewport.
+
+That means a group inside a narrow pane stacks even on a wide screen:
+
+<Canvas of={FieldGroupStories.NarrowContainer} sourceState="shown" />
+
+This is what you want for a component that has no idea where it will be placed — a form in a slideout, a modal, or a narrow sidebar gets a sensible layout without anyone configuring it.
+
+Between roughly 25rem and 50rem, `width-25` widens to a half rather than collapsing straight to full, so a row of four short fields becomes two rows of two.
+
+## Properties
+
+This component takes no attributes. Its only slot is the default one, holding the fields.
