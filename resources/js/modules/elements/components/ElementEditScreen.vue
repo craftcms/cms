@@ -260,7 +260,7 @@
             :class="{'element-editor__body--details': hasDetails}"
           >
             <div class="element-editor__content">
-              <craft-pane padding="none" appearance="plain">
+              <craft-pane appearance="plain">
                 <div class="py-1">
                   <!-- Tabs are rendered by `FormNodeList` inside the form itself. -->
                   <div class="element-form">
@@ -290,7 +290,7 @@
                   ></craft-icon>
                 </craft-tab>
                 <div slot="panel">
-                  <craft-pane appearance="plain" padding="none">
+                  <craft-pane appearance="plain">
                     <div
                       slot="header"
                       class="px-2 py-1 border-b border-b-(--c-color-neutral-border-quiet)"
@@ -312,7 +312,7 @@
                         </craft-field-group>
 
                         <hr />
-                        <div class="px-4">
+                        <div>
                           <DynamicHtmlRenderer
                             v-if="payload.metadataHtml"
                             :html="payload.metadataHtml"
