@@ -1,0 +1,28 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SelectColorStories from './select-color.stories';
+
+<Meta of={SelectColorStories} name="Docs" />
+
+# Select Color
+
+`<craft-select-color>` offers the Craft palette as a dropdown, each option showing its swatch.
+
+<Canvas of={SelectColorStories.Default} sourceState="shown" />
+
+It is built on [Select Rich](?path=/docs/form-controls-select-controls-select-rich--docs), which is what lets each option carry a swatch beside its name.
+
+## Palette, Not Arbitrary Colour
+
+Use this where the colour has to come from the design system — a label colour, a status colour, anything that will sit alongside other Craft UI and needs to match it.
+
+For an arbitrary colour, use [Input Color](?path=/docs/form-controls-text-controls-input-color--docs), which takes any hex value. The two are not interchangeable: this one guarantees the result is a palette colour, and that guarantee is the reason to choose it.
+
+## The Transparent Option
+
+An optional "transparent" entry sits alongside the colours, for a value meaning _no colour_ rather than a colour that happens to be pale.
+
+## Accessibility
+
+Each option is named by its colour, so the list is usable without seeing the swatches.
+
+Colour names are not meanings, though. If a colour carries significance in your interface — red for a problem, green for a healthy state — say so in the label or help text, because "Red" alone does not tell a person what choosing red will do.

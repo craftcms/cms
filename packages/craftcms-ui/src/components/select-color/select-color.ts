@@ -14,8 +14,13 @@ function titleCase(value: string): string {
 }
 
 /**
- * @summary A color picker built on top of the rich select. Renders one option
- * per color from `constants/colors`, with an optional "transparent" option.
+ * @summary A colour picker offering the Craft palette, built on the rich
+ * select. Renders one option per colour from `constants/colors`, each with its
+ * swatch, plus an optional "transparent" option.
+ *
+ * Use it where a colour has to come from the design system — a label colour, a
+ * status colour — so the choice stays inside the palette. For an arbitrary
+ * colour, use `craft-input-color`, which takes any hex value.
  *
  * @since 1.0
  */
