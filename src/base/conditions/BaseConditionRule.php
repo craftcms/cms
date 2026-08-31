@@ -29,8 +29,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     protected const OPERATOR_GT = '>';
     protected const OPERATOR_GTE = '>=';
     protected const OPERATOR_BEGINS_WITH = 'bw';
+    protected const OPERATOR_NOT_BEGINS_WITH = '!bw';
     protected const OPERATOR_ENDS_WITH = 'ew';
+    protected const OPERATOR_NOT_ENDS_WITH = '!ew';
     protected const OPERATOR_CONTAINS = '**';
+    protected const OPERATOR_NOT_CONTAINS = '!**';
     protected const OPERATOR_IN = 'in';
     protected const OPERATOR_NOT_IN = 'ni';
     protected const OPERATOR_EMPTY = 'empty';
@@ -176,8 +179,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             self::OPERATOR_GT => Craft::t('app', 'is greater than'),
             self::OPERATOR_GTE => Craft::t('app', 'is greater than or equals'),
             self::OPERATOR_BEGINS_WITH => Craft::t('app', 'begins with'),
+            self::OPERATOR_NOT_BEGINS_WITH => Craft::t('app', 'does not begin with'),
             self::OPERATOR_ENDS_WITH => Craft::t('app', 'ends with'),
+            self::OPERATOR_NOT_ENDS_WITH => Craft::t('app', 'does not end with'),
             self::OPERATOR_CONTAINS => Craft::t('app', 'contains'),
+            self::OPERATOR_NOT_CONTAINS => Craft::t('app', 'does not contain'),
             self::OPERATOR_IN => Craft::t('app', 'is one of'),
             self::OPERATOR_NOT_IN => Craft::t('app', 'is not one of'),
             self::OPERATOR_EMPTY => Craft::t('app', 'is empty'),
