@@ -2,6 +2,13 @@ import {LionSwitchButton} from '@lion/ui/switch.js';
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 
+/**
+ * @summary The toggle itself — the track and thumb a `craft-switch` renders.
+ *
+ * It is the switch's internal control rather than something to use directly:
+ * on its own it has no label, no hidden input, and nothing posts. Reach for
+ * `craft-switch`, which supplies all three and drives this.
+ */
 export default class CraftSwitchButton extends LionSwitchButton {
   /**
    * Display-only mixed state (thumb centered, `aria-checked="mixed"`).

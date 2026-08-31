@@ -1,0 +1,17 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Form Controls/Choice Controls/Switch Button" />
+
+# Switch Button
+
+`<craft-switch-button>` is the track and thumb that [Switch](?path=/docs/form-controls-choice-controls-switch--docs) renders inside itself.
+
+It is documented here because it is a registered custom element you will see in the DOM — not because it is one to reach for. On its own it has no label, no hidden input, and nothing it posts.
+
+**Use [Switch](?path=/docs/form-controls-choice-controls-switch--docs) instead.** It supplies the label, the hidden input, the state labels, and the value handling, and drives this control to match.
+
+## What It Contributes
+
+The visual toggle, and the `aria-checked` state that goes with it — `true`, `false`, or `mixed`.
+
+The mixed state here is display-only: transitions between the three states are managed by the switch, which owns the rule that indeterminate is cleared as soon as the switch is turned on.
