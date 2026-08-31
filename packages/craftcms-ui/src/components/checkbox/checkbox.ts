@@ -3,6 +3,21 @@ import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
+/**
+ * @summary A single checkbox, for a choice that stands on its own or one of
+ * several in a `craft-checkbox-group`.
+ *
+ * Built on Lion's checkbox, so it carries a label, validation, and a
+ * `modelValue` alongside the native input. It also understands
+ * server-rendered markup: a checkbox that arrives from the server with its
+ * input already in place keeps that input's `checked`, `disabled`, and `name`
+ * rather than having them reset on upgrade.
+ *
+ * @slot label - The checkbox's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages.
+ */
 export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
   private __inputPatched = false;
 

@@ -1,0 +1,32 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CheckboxStories from './checkbox.stories';
+
+<Meta of={CheckboxStories} name="Docs" />
+
+# Checkbox
+
+`<craft-checkbox>` is a single checkbox — a choice that is on or off.
+
+<Canvas of={CheckboxStories.Default} sourceState="shown" />
+
+Use one on its own for a standalone setting, or several inside a [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs) when they share a name and post together.
+
+For a choice where exactly one of several options may be picked, use a [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs) instead. The shape of the control tells a person how many answers are allowed, so picking the right one matters before styling it.
+
+## Indeterminate
+
+`indeterminate` renders the third state — neither checked nor unchecked — for a "select all" that reflects a partial selection.
+
+It is presentational: an indeterminate checkbox still posts as unchecked. When you want that state managed for you across a set of children, use [Checkbox Indeterminate](?path=/docs/form-controls-choice-controls-checkbox-indeterminate--docs) rather than driving this property by hand.
+
+## Server-Rendered Markup
+
+A checkbox that arrives from the server with its `<input>` already in place keeps that input's `checked`, `disabled`, and `name` when the component upgrades.
+
+Without that, upgrading would reset the control to the component's own defaults and quietly discard state the server had set — so a page rendered checked would arrive unchecked.
+
+## Accessibility
+
+Lion wires the label and any validation feedback to the input, so a labelled checkbox is announced with its state and its name.
+
+Label every checkbox. An unlabelled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does.
