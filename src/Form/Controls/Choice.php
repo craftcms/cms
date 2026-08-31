@@ -8,13 +8,17 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\ButtonGroup;
 use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
+use CraftCms\Cms\Cp\Components\CheckboxIndeterminate;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
 use CraftCms\Cms\Form\ControlPayload;
+use CraftCms\Cms\Form\Enums\AllOptionMode;
 use CraftCms\Cms\Form\Enums\ChoicePresentation;
 use CraftCms\Cms\Form\FormHtmlRenderer;
 use Illuminate\Support\HtmlString;
+
+use function CraftCms\Cms\t;
 
 class Choice extends Control
 {
@@ -24,6 +28,12 @@ class Choice extends Control
     private bool $multiple = false;
 
     private ChoicePresentation $presentation = ChoicePresentation::Select;
+
+    private ?string $allLabel = null;
+
+    private string $allValue = '*';
+
+    private AllOptionMode $allMode = AllOptionMode::SingleValue;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, FormHtmlRenderer $renderer): string
     {
@@ -79,6 +89,27 @@ class Choice extends Control
         return $this;
     }
 
+    /**
+     * Adds an “All” checkbox above the options, showing an indeterminate state
+     * while only some are on. Checkboxes presentation only.
+     *
+     * By default it posts `$value` alone and the options post nothing, so the
+     * stored setting stays “all of them” rather than freezing today's list —
+     * see {@see AllOptionMode}. Pass {@see AllOptionMode::EachValue} for a
+     * plain select-all instead.
+     */
+    public function allOption(
+        ?string $label = null,
+        string $value = '*',
+        AllOptionMode $mode = AllOptionMode::SingleValue,
+    ): static {
+        $this->allLabel = $label ?? t('All');
+        $this->allValue = $value;
+        $this->allMode = $mode;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -86,6 +117,11 @@ class Choice extends Control
             'options' => $this->options,
             'multiple' => $this->multiple,
             'presentation' => $this->presentation->value,
+            ...($this->allLabel !== null ? [
+                'allLabel' => $this->allLabel,
+                'allValue' => $this->allValue,
+                'allMode' => $this->allMode->value,
+            ] : []),
         ];
     }
 
@@ -130,14 +166,23 @@ class Choice extends Control
     ): string {
         $values = self::values($value);
         $name = self::multipleName($attributes['name']);
-        $checkboxes = array_map(function (array $option, int $index) use ($attributes, $name, $values): Checkbox {
+        $allLabel = $control->props['allLabel'] ?? null;
+        $allValue = (string) ($control->props['allValue'] ?? '*');
+        $singleValue = $allLabel !== null
+            && ($control->props['allMode'] ?? null) === AllOptionMode::SingleValue->value;
+        // In single-value mode “All” speaks for the options: they render checked
+        // so the group reads as fully selected, but drop their name so only the
+        // token posts. Not disabled — Lion skips disabled children when “All”
+        // propagates, which would leave it unable to clear them again.
+        $allChecked = $singleValue && in_array($allValue, $values, true);
+        $checkboxes = array_map(function (array $option, int $index) use ($attributes, $name, $values, $allChecked): Checkbox {
             $optionValue = (string) $option['value'];
 
             return Checkbox::make()
                 ->id("{$attributes['id']}-{$index}")
-                ->name($name)
+                ->name($allChecked ? null : $name)
                 ->value($optionValue)
-                ->checked(in_array($optionValue, $values, true))
+                ->checked($allChecked || in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label(self::optionLabel($option))
                 ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -149,9 +194,41 @@ class Choice extends Control
         return CheckboxGroup::make()
             ->id($attributes['id'])
             ->name($attributes['name'])
-            ->options($checkboxes)
+            // “All” owns the boxes it governs, so when it's in play the group
+            // holds it alone rather than the checkboxes directly.
+            ->options($allLabel !== null
+                ? [self::allCheckbox($attributes, $name, $allLabel, $allValue, $singleValue, $allChecked, $checkboxes)]
+                : $checkboxes)
             ->attributes(self::groupAttributes($attributes, 'group'))
             ->toHtml();
+    }
+
+    /**
+     * The “All” checkbox wrapping the options it governs.
+     *
+     * It only carries a name and value in single-value mode; as a select-all it
+     * posts nothing of its own.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  list<Checkbox>  $checkboxes
+     */
+    private static function allCheckbox(
+        array $attributes,
+        ?string $name,
+        string $label,
+        string $value,
+        bool $singleValue,
+        bool $checked,
+        array $checkboxes,
+    ): CheckboxIndeterminate {
+        return CheckboxIndeterminate::make()
+            ->id("{$attributes['id']}-all")
+            ->label($label)
+            ->name($singleValue ? $name : null)
+            ->value($value)
+            ->checked($checked)
+            ->disabled($attributes['name'] === null)
+            ->children($checkboxes);
     }
 
     /** @param array<string, mixed> $attributes */

@@ -3,10 +3,12 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
+  import '@craftcms/ui/components/checkbox-indeterminate/checkbox-indeterminate';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import type {FormControlPayload, FormValue} from './types';
+  import type {Slots} from 'vue';
   import {inputName, serverErrorValidators} from './runtime';
 
   type ChoiceValue = boolean | number | string;
@@ -31,6 +33,11 @@
     options: ChoiceOption[];
     multiple: boolean;
     presentation: ChoicePresentation;
+    /** Label for the “All” checkbox; absent when there isn't one. */
+    allLabel?: string;
+    /** What “All” posts in `singleValue` mode. */
+    allValue?: string;
+    allMode?: 'singleValue' | 'eachValue';
   };
 
   const props = defineProps<{
@@ -116,6 +123,45 @@
 
   function optionId(index: number): string {
     return `form-${props.control.path.join('-')}-${index}`;
+  }
+
+  /**
+   * Renders its children with no element of its own, so the option loop can be
+   * written once whether or not a `craft-checkbox-indeterminate` wraps it.
+   */
+  const Passthrough = (_props: unknown, {slots}: {slots: Slots}) =>
+    slots.default?.();
+
+  /**
+   * Whether “All” speaks for the options rather than merely toggling them: it
+   * posts its own token and they post nothing.
+   */
+  function allIsSingleValue(): boolean {
+    return (
+      props.control.props.allLabel !== undefined &&
+      props.control.props.allMode !== 'eachValue'
+    );
+  }
+
+  function allValue(): string {
+    return props.control.props.allValue ?? '*';
+  }
+
+  function allChecked(): boolean {
+    return allIsSingleValue() && selected(allValue());
+  }
+
+  /**
+   * “All” owns the value while it's checked, so toggling it swaps the whole
+   * selection rather than adding to it. Unchecking falls back to nothing
+   * selected, which is what the options themselves then build on.
+   */
+  function onAllChanged(event: Event): void {
+    if (!(event.target instanceof HTMLInputElement)) {
+      throw new TypeError('Expected a choice input event target.');
+    }
+
+    emit('update:value', event.target.checked ? [allValue()] : []);
   }
 
   function hasThumbnails(): boolean {
@@ -214,54 +260,74 @@
       :name="inputName(control.path)"
       value=""
     />
-    <div
-      v-for="(option, index) in control.props.options"
-      :key="inputValue(option.value)"
+    <component
+      :is="
+        control.props.allLabel ? 'craft-checkbox-indeterminate' : Passthrough
+      "
+      :label="control.props.allLabel"
+      :all-mode="allIsSingleValue() ? 'single-value' : 'each-value'"
+      .choiceValue="allValue()"
+      .checked="allChecked()"
     >
-      <label
-        v-if="option.thumbnail"
-        class="radio-thumbnail"
-        :for="optionId(index)"
+      <input
+        v-if="control.props.allLabel && allIsSingleValue() && editable"
+        slot="input"
+        :id="`${optionId(0)}-all`"
+        type="checkbox"
+        :name="`${inputName(control.path)}[]`"
+        :value="allValue()"
+        :checked="allChecked()"
+        @change="onAllChanged"
+      />
+      <div
+        v-for="(option, index) in control.props.options"
+        :key="inputValue(option.value)"
       >
-        <img
-          :src="option.thumbnail.src"
-          :width="option.thumbnail.width"
-          :height="option.thumbnail.height"
-          :style="
-            option.thumbnail.aspectRatio
-              ? {aspectRatio: option.thumbnail.aspectRatio}
-              : undefined
-          "
-          alt=""
-        />
-      </label>
-      <component
-        :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
-        :disabled="!editable || option.disabled"
-        .choiceValue="inputValue(option.value)"
-        .checked="selected(option.value)"
-      >
-        <input
-          slot="input"
-          :id="optionId(index)"
-          :type="control.props.multiple ? 'checkbox' : 'radio'"
-          :name="
-            editable
-              ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-              : ''
-          "
-          :value="inputValue(option.value)"
-          :checked="selected(option.value)"
-          :disabled="!editable || option.disabled"
-          :required="editable && required && !control.props.multiple"
-          :aria-invalid="invalid ? 'true' : undefined"
-          @change="onOptionChanged"
-        />
-        <label slot="label" :for="optionId(index)">
-          <span v-if="option.labelHtml" v-html="option.labelHtml" />
-          <template v-else>{{ option.label }}</template>
+        <label
+          v-if="option.thumbnail"
+          class="radio-thumbnail"
+          :for="optionId(index)"
+        >
+          <img
+            :src="option.thumbnail.src"
+            :width="option.thumbnail.width"
+            :height="option.thumbnail.height"
+            :style="
+              option.thumbnail.aspectRatio
+                ? {aspectRatio: option.thumbnail.aspectRatio}
+                : undefined
+            "
+            alt=""
+          />
         </label>
-      </component>
-    </div>
+        <component
+          :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+          :disabled="!editable || option.disabled"
+          .choiceValue="inputValue(option.value)"
+          .checked="allChecked() || selected(option.value)"
+        >
+          <input
+            slot="input"
+            :id="optionId(index)"
+            :type="control.props.multiple ? 'checkbox' : 'radio'"
+            :name="
+              editable && !allChecked()
+                ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+                : ''
+            "
+            :value="inputValue(option.value)"
+            :checked="allChecked() || selected(option.value)"
+            :disabled="!editable || option.disabled"
+            :required="editable && required && !control.props.multiple"
+            :aria-invalid="invalid ? 'true' : undefined"
+            @change="onOptionChanged"
+          />
+          <label slot="label" :for="optionId(index)">
+            <span v-if="option.labelHtml" v-html="option.labelHtml" />
+            <template v-else>{{ option.label }}</template>
+          </label>
+        </component>
+      </div>
+    </component>
   </component>
 </template>

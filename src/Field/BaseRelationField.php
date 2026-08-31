@@ -88,6 +88,9 @@ use function CraftCms\Cms\template;
  */
 abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
+    /** The source key meaning “every source, including ones added later”. */
+    public const string ALL_SOURCES = '*';
+
     public const string VIEW_MODE_LIST = 'list';
 
     public const string VIEW_MODE_LIST_INLINE = 'list-inline';
@@ -522,18 +525,43 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             'label' => (string) $option['label'],
             'value' => $option['value'],
         ], $this->getSourceOptions());
+        $instructions = t('Which sources do you want to select {type} from?', [
+            'type' => $elementType::pluralLowerDisplayName(),
+        ]);
 
-        return FormField::make($this->allowMultipleSources ? t('Sources') : t('Source'))
-            ->instructions(t('Which sources do you want to select {type} from?', [
-                'type' => $elementType::pluralLowerDisplayName(),
-            ]))
-            ->control($this->allowMultipleSources
-                ? Choice::make('sources')
-                    ->multiple()
-                    ->presentation(ChoicePresentation::Checkboxes)
-                    ->options($sourceOptions)
-                    ->value($this->sources === '*' ? ['*'] : $this->sources)
-                : Choice::make('source')->options($sourceOptions)->value($this->source));
+        if (! $this->allowMultipleSources) {
+            return FormField::make(t('Source'))
+                ->instructions($instructions)
+                ->control(Choice::make('source')->options($sourceOptions)->value($this->source));
+        }
+
+        // Some element types expose an “All …” source of their own (entries,
+        // users); it becomes the group's All checkbox rather than rendering
+        // beside it. Others (assets) have none, and fall back to “All”.
+        $allLabel = null;
+        $sourceOptions = array_values(array_filter(
+            $sourceOptions,
+            function (array $option) use (&$allLabel): bool {
+                if ($option['value'] !== self::ALL_SOURCES) {
+                    return true;
+                }
+
+                $allLabel = $option['label'];
+
+                return false;
+            },
+        ));
+
+        return FormField::make(t('Sources'))
+            ->instructions($instructions)
+            ->control(Choice::make('sources')
+                ->multiple()
+                ->presentation(ChoicePresentation::Checkboxes)
+                ->options($sourceOptions)
+                // Storing “all” as a token rather than today's source list is
+                // what lets the field pick up sources added later.
+                ->allOption($allLabel, self::ALL_SOURCES)
+                ->value($this->sources === self::ALL_SOURCES ? [self::ALL_SOURCES] : $this->sources));
     }
 
     /**

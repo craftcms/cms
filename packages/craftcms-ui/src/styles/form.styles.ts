@@ -107,3 +107,30 @@ export const inputStyles = css`
     width: 100%;
   }
 `;
+
+/**
+ * The native input a choice control (checkbox, indeterminate "all" checkbox)
+ * slots into its light DOM. Shared so every choice renders the same box —
+ * without it a control falls back to the browser's default checkbox, which is
+ * a visibly different size from its siblings.
+ */
+export const choiceInputStyles = css`
+  ::slotted([slot='input']) {
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    border-width: var(
+      --c-input-border-width,
+      var(--c-form-control-border-width)
+    );
+    border-style: var(
+      --c-input-border-style,
+      var(--c-form-control-border-style)
+    );
+    border-color: var(
+      --c-input-border-color,
+      var(--c-form-control-border-color)
+    );
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
+    width: var(--c-checkbox-size);
+    height: var(--c-checkbox-size);
+  }
+`;
