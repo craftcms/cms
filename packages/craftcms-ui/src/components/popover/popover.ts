@@ -7,7 +7,7 @@ import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import styles from './popover.styles.js';
 
 /**
- * A non-modal popover component built on Lion's overlay system.
+ * @summary A non-modal popover built on Lion's overlay system.
  *
  * Overlays content on top of the page without affecting document flow.
  * The trigger can be a slotted `invoker` child, an external element

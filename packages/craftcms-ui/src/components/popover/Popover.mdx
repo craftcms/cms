@@ -1,0 +1,46 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as PopoverStories from './popover.stories';
+
+<Meta of={PopoverStories} name="Docs" />
+
+# Popover
+
+`<craft-popover>` overlays content on top of the page without affecting layout.
+
+<Canvas of={PopoverStories.Basic} sourceState="shown" />
+
+It is non-modal: the page behind stays live, and the popover dismisses on Escape or an outside click. That makes it the right choice for something supplementary — where a [Dialog](?path=/docs/components-dialog--docs) would be an interruption.
+
+## Three Ways to Trigger It
+
+- **A slotted `invoker`** — the usual case, where the trigger sits inside the popover.
+- **`for`** — names an element elsewhere by id, for a trigger the popover cannot contain.
+- **`anchor`** — the element passed directly, for triggers built in script.
+
+The last two exist because a popover often has to be positioned by something it does not own — a toolbar button, a table cell, a server-rendered control.
+
+## Placement
+
+<Canvas of={PopoverStories.BottomEnd} sourceState="shown" />
+
+Placement follows Popper's vocabulary, so `bottom-end`, `right-start`, and the rest behave as they do elsewhere.
+
+<Canvas of={PopoverStories.MatchInvokerWidth} sourceState="shown" />
+
+Matching the invoker's width is what makes a popover read as an extension of its trigger rather than as a floating panel — which is why select-style menus use it.
+
+## Events
+
+Four events cover the transitions: `craft-show` and `craft-hide` fire as the change begins, `craft-after-show` and `craft-after-hide` once it has finished.
+
+Use the `after` pair when you need the popover to have actually settled — moving focus into it, or measuring it.
+
+## Accessibility
+
+Lion supplies the overlay behaviour, including dismissal and the wiring between invoker and content.
+
+Because it is non-modal, focus is not trapped. That is the point, but it means a popover holding interactive content should place focus deliberately when it opens and return it to the invoker when it closes — otherwise a keyboard user is left where they were, with the popover open somewhere else.
+
+## Properties
+
+<ArgTypes of={PopoverStories} />
