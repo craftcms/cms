@@ -260,9 +260,11 @@ class Assets extends BaseRelationField
                 ->control(Lightswitch::make('restrictLocation')->value($this->restrictLocation)),
             Group::make('restricted-location', [
                 FormField::make()
+                    ->label(t('Source'))
                     ->control(Choice::make('restrictedLocationSource')->options($sourceOptions)->value($this->restrictedLocationSource))
                     ->width(FieldWidth::Third),
                 FormField::make()
+                    ->label(t('Subpath'))
                     ->control($subpath('restrictedLocationSubpath', $this->restrictedLocationSubpath))
                     ->width(FieldWidth::TwoThirds),
             ])
