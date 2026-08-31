@@ -11,7 +11,18 @@ import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
 
 /**
+ * @summary One entry in the control panel's navigation — a link with an
+ * optional icon, an indicator, and a nested subnav.
  *
+ * Items live inside a `craft-nav-list`, which supplies the list semantics that
+ * make the group announce as a list rather than as loose links.
+ *
+ * When the navigation is collapsed to icons, an item with a subnav shows it in
+ * a flyout instead of inline, so the children stay reachable at any width.
+ *
+ * @slot - The item's label.
+ * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
+ *   flyout when collapsed.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = styles;
@@ -36,9 +47,17 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean})
   indicator: boolean = false;
 
+  /**
+   * Id of the item, used to tie a subnav to the item that owns it. Generated
+   * when not supplied.
+   */
   @property()
   override id: string;
 
+  /**
+   * Collapses the item to its icon, hiding the label. The label is still
+   * announced, and a subnav moves into a flyout rather than disappearing.
+   */
   @property({reflect: true, type: Boolean, attribute: 'icon-only'})
   iconOnly: boolean = false;
 
