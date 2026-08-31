@@ -50,6 +50,13 @@ it('shows the install page', function () {
         ->assertOk();
 });
 
+it('shows the install page during Laravel maintenance', function () {
+    app()->maintenanceMode()->activate([]);
+
+    get(action([InstallController::class, 'index']))
+        ->assertOk();
+});
+
 it('provides driver-specific db defaults to the install page', function () {
     get(action([InstallController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page

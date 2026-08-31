@@ -1,5 +1,9 @@
 import {css} from 'lit';
-import {baseFieldStyles, baseInputWrapperStyles, baseComboboxStyles} from '@src/styles/form.styles';
+import {
+  baseFieldStyles,
+  baseInputWrapperStyles,
+  baseComboboxStyles,
+} from '@src/styles/form.styles';
 
 export default css`
   ${baseFieldStyles}

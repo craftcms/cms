@@ -1430,7 +1430,6 @@ class Install extends Migration
             'system' => [
                 'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
-                'live' => true,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
                 'timeZone' => $this->timezone ?? 'America/Los_Angeles',
             ],

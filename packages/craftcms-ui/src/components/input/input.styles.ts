@@ -5,7 +5,7 @@ export default css`
   ::slotted(.form-control) {
     ${baseFormControlStyles}
   }
-  
+
   craft-input input[type='checkbox'],
   craft-input input[type='radio'] {
     background-color: var(--c-input-fill, var(--c-form-control-fill));

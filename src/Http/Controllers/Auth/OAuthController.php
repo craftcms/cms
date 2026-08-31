@@ -53,6 +53,14 @@ readonly class OAuthController extends AuthenticationController
 
             if ($connectRequest = $this->pullConnectRequest($request)) {
                 try {
+                    $user = $request->craftUser()?->asElement();
+
+                    if ($user && ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest))) {
+                        return $this->connectFailedResponse(
+                            $this->auth->getLoginFailureInfo($authError, $user)[1],
+                        );
+                    }
+
                     return $this->connectResponse($request, $connectRequest, $definition, $identity, $oauthManager);
                 } catch (Throwable $e) {
                     return $this->connectFailedResponse(t('Authentication failed.'), $e);
@@ -84,6 +92,14 @@ readonly class OAuthController extends AuthenticationController
             $isNew = ! isset($user->id);
 
             $user = $oauthManager->populateUser($definition, $socialiteUser, $user, $identity, $isNew);
+
+            if ($authError = $this->auth->getMaintenanceAuthError($user, $isCpRequest)) {
+                return $this->failedResponse(
+                    $isCpRequest,
+                    $this->auth->getLoginFailureInfo($authError, $user)[1],
+                    $authError,
+                );
+            }
 
             if ($isNew && $definition->activatesUsers) {
                 $user->active = true;
@@ -300,13 +316,6 @@ readonly class OAuthController extends AuthenticationController
             return AuthError::NoCpAccess;
         }
 
-        if (
-            app()->isLive() === false &&
-            $user->can('accessCpWhenSystemIsOff') === false
-        ) {
-            return AuthError::NoCpOfflineAccess;
-        }
-
-        return null;
+        return $this->auth->getMaintenanceAuthError($user, true);
     }
 }

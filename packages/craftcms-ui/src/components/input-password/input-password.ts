@@ -26,11 +26,17 @@ export default class CraftInputPassword extends LionInput {
           transform: translateY(calc(-50%));
           border: none;
         }
-        
+
         ::slotted(.form-control) {
           ${baseFormControlStyles}
-          --_input-end-end-radius: var(--c-input-radius, var(--c-radius-sm)) !important;
-          --_input-start-end-radius: var(--c-input-radius, var(--c-radius-sm)) !important;
+          --_input-end-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
+          --_input-start-end-radius: var(
+            --c-input-radius,
+            var(--c-radius-sm)
+          ) !important;
         }
       `,
     ];

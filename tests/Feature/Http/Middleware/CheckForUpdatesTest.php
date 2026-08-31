@@ -167,7 +167,7 @@ it('allows migrate action when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/actions/app/migrate');
+    $request = Request::create('/'.Cms::config()->actionTrigger.'/migrate');
 
     $result = $middleware->handle($request, fn () => 'passed');
 
