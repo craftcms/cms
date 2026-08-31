@@ -16,10 +16,16 @@
     labelHtml?: string;
     value: ChoiceValue;
     disabled?: boolean;
-    /** Illustration of the choice, rendered above the radio. */
-    thumbSrc?: string;
-    thumbWidth?: number;
-    thumbHeight?: number;
+    /**
+     * Illustration of the choice, rendered above the radio. `aspectRatio` maps
+     * to the CSS property of the same name.
+     */
+    thumbnail?: {
+      src: string;
+      width?: number;
+      height?: number;
+      aspectRatio?: string;
+    };
   };
   type ChoiceControlProps = {
     options: ChoiceOption[];
@@ -113,7 +119,7 @@
   }
 
   function hasThumbnails(): boolean {
-    return props.control.props.options.some((option) => option.thumbSrc);
+    return props.control.props.options.some((option) => option.thumbnail);
   }
 </script>
 
@@ -213,14 +219,19 @@
       :key="inputValue(option.value)"
     >
       <label
-        v-if="option.thumbSrc"
+        v-if="option.thumbnail"
         class="radio-thumbnail"
         :for="optionId(index)"
       >
         <img
-          :src="option.thumbSrc"
-          :width="option.thumbWidth"
-          :height="option.thumbHeight"
+          :src="option.thumbnail.src"
+          :width="option.thumbnail.width"
+          :height="option.thumbnail.height"
+          :style="
+            option.thumbnail.aspectRatio
+              ? {aspectRatio: option.thumbnail.aspectRatio}
+              : undefined
+          "
           alt=""
         />
       </label>

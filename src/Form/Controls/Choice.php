@@ -18,7 +18,7 @@ use Illuminate\Support\HtmlString;
 
 class Choice extends Control
 {
-    /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbSrc?: string, thumbWidth?: int, thumbHeight?: int}> */
+    /** @var list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -48,10 +48,11 @@ class Choice extends Control
     }
 
     /**
-     * An option may carry a `thumbSrc` illustrating the choice, rendered above
-     * the radio in the Radios presentation.
+     * An option may carry a `thumbnail` illustrating the choice, rendered above
+     * the radio in the Radios presentation. Its `aspectRatio` maps to the CSS
+     * property of the same name.
      *
-     * @param  list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbSrc?: string, thumbWidth?: int, thumbHeight?: int}>  $options
+     * @param  list<array{label: string, labelHtml?: string, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {
@@ -167,11 +168,7 @@ class Choice extends Control
                 ->checked(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
                 ->label(self::optionLabel($option))
-                ->thumbnail(
-                    $option['thumbSrc'] ?? null,
-                    $option['thumbWidth'] ?? null,
-                    $option['thumbHeight'] ?? null,
-                )
+                ->thumbnail($option['thumbnail'] ?? null)
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
                     'required' => $attributes['required'],

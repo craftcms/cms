@@ -77,10 +77,13 @@ class RadioGroup extends ChoiceGroup
             return '';
         }
 
+        $aspectRatio = $thumbnail['aspectRatio'] ?? null;
+
         return Html::tag('label', Html::tag('img', '', [
             'src' => $thumbnail['src'],
-            'width' => $thumbnail['width'],
-            'height' => $thumbnail['height'],
+            'width' => $thumbnail['width'] ?? null,
+            'height' => $thumbnail['height'] ?? null,
+            'style' => $aspectRatio !== null ? ['aspect-ratio' => $aspectRatio] : null,
             'alt' => '',
         ]), [
             'class' => 'radio-thumbnail',

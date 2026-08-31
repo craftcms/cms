@@ -26,8 +26,17 @@ function thumbnailChoiceHtml(array $options): Crawler
 
 it('renders an option thumbnail above its radio, bound to the same input', function () {
     $crawler = thumbnailChoiceHtml([
-        ['label' => 'List', 'value' => 'list', 'thumbSrc' => '/build/images/view-modes/list.svg', 'thumbWidth' => 48, 'thumbHeight' => 60],
-        ['label' => 'Cards', 'value' => 'cards', 'thumbSrc' => '/build/images/view-modes/cards.svg', 'thumbWidth' => 80, 'thumbHeight' => 60],
+        ['label' => 'List', 'value' => 'list', 'thumbnail' => [
+            'src' => '/build/images/view-modes/list.svg',
+            'width' => 48,
+            'height' => 60,
+            'aspectRatio' => '48 / 60',
+        ]],
+        ['label' => 'Cards', 'value' => 'cards', 'thumbnail' => [
+            'src' => '/build/images/view-modes/cards.svg',
+            'width' => 80,
+            'height' => 60,
+        ]],
     ]);
     $thumbnails = $crawler->filter('label.radio-thumbnail');
 
@@ -44,9 +53,26 @@ it('renders an option thumbnail above its radio, bound to the same input', funct
         ->and($crawler->filter("input#$for")->attr('value'))->toBe('list');
 });
 
+it('renders an aspect ratio only when the thumbnail asks for one', function () {
+    $crawler = thumbnailChoiceHtml([
+        ['label' => 'List', 'value' => 'list', 'thumbnail' => [
+            'src' => '/build/list.svg',
+            'aspectRatio' => '4 / 5',
+        ]],
+        ['label' => 'Cards', 'value' => 'cards', 'thumbnail' => ['src' => '/build/cards.svg']],
+    ]);
+    $images = $crawler->filter('label.radio-thumbnail img');
+
+    expect($images->first()->attr('style'))->toContain('aspect-ratio: 4 / 5')
+        ->and($images->eq(1)->attr('style'))->toBeNull()
+        // A thumbnail needs nothing but a src.
+        ->and($images->eq(1)->attr('src'))->toBe('/build/cards.svg')
+        ->and($images->eq(1)->attr('width'))->toBeNull();
+});
+
 it('marks the group so the options lay out as a row', function () {
     $withThumbs = thumbnailChoiceHtml([
-        ['label' => 'List', 'value' => 'list', 'thumbSrc' => '/build/list.svg'],
+        ['label' => 'List', 'value' => 'list', 'thumbnail' => ['src' => '/build/list.svg']],
     ]);
     $without = thumbnailChoiceHtml([
         ['label' => 'List', 'value' => 'list'],
