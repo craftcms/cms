@@ -1,0 +1,35 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Thumbnail Loader" />
+
+# Thumbnail Loader
+
+`<craft-thumbnail-loader>` lazy-loads the server-rendered thumbnail placeholders inside it.
+
+It is a controller element rather than a visual one: it has no shadow root and renders nothing of its own. Wrap markup containing `[data-sizes]` thumb placeholders in it, and each one is loaded as it becomes visible.
+
+```html
+<craft-thumbnail-loader>
+  <div class="thumb" data-sizes="…" data-srcset="…" data-src="…"></div>
+</craft-thumbnail-loader>
+```
+
+There are no stories on this page because there is nothing to look at — the element's whole behaviour is loading images into markup it did not render.
+
+## Why It Exists
+
+Craft's element markup is generated on the server, and its thumbnails are placeholders until something fills them in.
+
+Historically that was an imperative call — `Craft.cp.elementThumbLoader.load(…)` — which meant every code path that injected element markup had to remember to make it. Wrapping the markup instead makes it declarative: a fragment that arrives over XHR loads its own thumbnails because the wrapper came with it.
+
+## Behaviour
+
+Booting waits for the wrapped markup to parse, retrying an animation frame at a time, because the element can upgrade before its children exist — during the initial HTML parse, or when an injected fragment is still being built.
+
+Loading runs through a small worker pool and defers anything off screen until it scrolls into view. Disconnecting destroys the loader, its workers, and its visibility listeners.
+
+## When to Use It
+
+Only with server-rendered thumb placeholders. For a single image in a component you control, use [Thumbnail](?path=/docs/components-thumbnail--docs) — it renders a real `<img>` with native lazy loading and needs no wrapper.
+
+The underlying `ThumbnailLoader` class is also exported from `@craftcms/ui` for imperative use, and `craft-chip` instantiates one directly.
