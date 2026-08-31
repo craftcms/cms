@@ -13,8 +13,8 @@ import {css} from 'lit';
  */
 export const baseFormControlStyles = css`
   --_input-border-width: var(
-      --c-input-border-width,
-      var(--c-form-control-border-width)
+    --c-input-border-width,
+    var(--c-form-control-border-width)
   );
   --_input-start-start-radius: var(--c-input-radius, var(--c-radius-sm));
   --_input-start-end-radius: var(--c-input-radius, var(--c-radius-sm));
@@ -23,11 +23,13 @@ export const baseFormControlStyles = css`
   border-width: var(--_input-border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
-  border-radius: var(--_input-start-start-radius) var(--_input-start-end-radius) var(--_input-end-end-radius) var(--_input-end-start-radius);
+  border-radius: var(--_input-start-start-radius) var(--_input-start-end-radius)
+    var(--_input-end-end-radius) var(--_input-end-start-radius);
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
   min-height: calc(
-      var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_input-border-width)
+    var(--c-input-height, var(--c-size-control-md)) - 2 *
+      var(--_input-border-width)
   );
 `;
 
@@ -141,16 +143,17 @@ export const inputStyles = css`
     padding-inline: var(--c-input-spacing-inline);
     display: grid;
     place-items: center;
-    border: var(--c-input-border-width) var(--c-input-border-style) var(--c-input-border-color);
+    border: var(--c-input-border-width) var(--c-input-border-style)
+      var(--c-input-border-color);
     border-radius: var(--c-input-radius, var(--c-radius-sm));
   }
-  
+
   .input-group__prefix {
     border-inline-end: 0;
     border-end-end-radius: 0;
     border-start-end-radius: 0;
   }
-  
+
   .input-group__suffix {
     border-inline-start: 0;
     border-start-start-radius: 0;
