@@ -1,0 +1,28 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as RadioGroupStories from './radio-group.stories';
+
+<Meta of={RadioGroupStories} name="Docs" />
+
+# Radio Group
+
+`<craft-radio-group>` collects [Radio](?path=/docs/form-controls-choice-controls-radio--docs)s that share a name, for a choice where exactly one option may be selected.
+
+<Canvas of={RadioGroupStories.Default} sourceState="shown" />
+
+The group owns the name and the value: its `modelValue` is the value of whichever radio is checked.
+
+Use a [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs) when more than one option may be chosen.
+
+## Choosing Between Them
+
+The control tells a person how many answers are allowed before they read a word of the labels — radios mean one, checkboxes mean any number. Picking the wrong one is a usability problem no amount of help text fixes.
+
+A radio group also cannot be cleared once an option is chosen. When "none of these" is a valid answer, either offer it as an explicit option or use checkboxes.
+
+## Labelling the Group
+
+The group takes its own `label`, `help-text`, and `feedback`. The radios name the options; only the group can name the question.
+
+## Server-Rendered Markup
+
+A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
