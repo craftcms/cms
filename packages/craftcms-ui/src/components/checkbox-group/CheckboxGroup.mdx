@@ -1,0 +1,26 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CheckboxGroupStories from './checkbox-group.stories';
+
+<Meta of={CheckboxGroupStories} name="Docs" />
+
+# Checkbox Group
+
+`<craft-checkbox-group>` collects [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs)es that share a name, for a choice where any number of options can be selected.
+
+<Canvas of={CheckboxGroupStories.Default} sourceState="shown" />
+
+The group owns the name and the value: its `modelValue` is the array of what is checked, rather than each checkbox carrying its own.
+
+Use a [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs) when exactly one option may be chosen.
+
+## Labelling the Group
+
+The group takes its own `label`, `help-text`, and `feedback` — and it should. The individual checkboxes name the options; only the group can name the question they answer.
+
+Validation belongs at the group level too, since a rule like "choose at least one" is about the set rather than any single box.
+
+## Server-Rendered Markup
+
+A group rendered by the server adopts the name already present on its inputs.
+
+That is load-bearing rather than a convenience: Lion syncs every registered child's name to the group's, so a group that upgraded without a name would strip the server's names off the inputs and break native posting.
