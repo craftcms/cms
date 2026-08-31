@@ -10,6 +10,7 @@ import {dirname, join, relative, resolve} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
 import createColors from './generate-colors.js';
+import createTailwindTheme from './generate-tailwind.js';
 
 const spinner = ora({text: '@craftcms/ui', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
@@ -250,6 +251,13 @@ async function generateColors() {
   return Promise.resolve();
 }
 
+async function generateTailwindTheme() {
+  spinner.start('Generating Tailwind Theme');
+  await createTailwindTheme();
+  spinner.succeed();
+  return Promise.resolve();
+}
+
 async function buildAll() {
   try {
     const steps = [
@@ -258,6 +266,7 @@ async function buildAll() {
       generateStyles,
       generateVueWrappers,
       generateColors,
+      generateTailwindTheme,
       generateBundle,
       pruneOrphanedChunks,
       assertDeclarationsResolved,

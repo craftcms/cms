@@ -1,28 +1,12 @@
-import {writeFileSync, readFileSync} from 'fs';
+import {writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
-import {transformSync} from 'esbuild';
+import {loadColorData} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUT_FILE = resolve(ROOT, 'src/styles/shared/colorable.css');
 const OUT_LIT_FILE = resolve(ROOT, 'src/styles/colorable.styles.ts');
-const DATA_FILE = resolve(ROOT, 'src/constants/colors.data.ts');
-
-/*
-The canonical color data lives in src/constants/colors.data.ts (shared with
-constants/colors.ts). This script can't import TypeScript directly, so we
-transpile it with esbuild and import the result.
- */
-async function loadColorData() {
-  const {code} = transformSync(readFileSync(DATA_FILE, 'utf8'), {
-    loader: 'ts',
-    format: 'esm',
-  });
-  return import(
-    `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`
-  );
-}
 
 const colorIncrements = {
   fill: {
