@@ -1038,6 +1038,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         throw new Exception("Property [{$name}] does not exist on the Element query instance.");
     }
 
+    #[Override]
+    public function canSetProperty(string $name): bool
+    {
+        return parent::canSetProperty($name)
+            || $this->isCustomFieldHandle($name)
+            || method_exists($this, $name)
+            || in_array($name, $this->propertyPassthru);
+    }
+
     /**
      * Dynamically handle calls into the query instance.
      *

@@ -146,6 +146,7 @@ trait LegacyConstants
                 $yiiEvent = new DefineAssetUrlEvent([
                     'transform' => $event->transform,
                     'asset' => $event->asset,
+                    'url' => $event->url,
                     'sender' => $event->asset,
                 ]);
 

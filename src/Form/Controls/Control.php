@@ -53,6 +53,19 @@ abstract class Control implements ControlContract
         return $this->path;
     }
 
+    /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
+    final public function withPath(string|array $path): static
+    {
+        $control = clone $this;
+        $control->path = $path;
+
+        return $control;
+    }
+
     /** @param string|list<string> $path */
     final public function deltaGroup(string|array $path): static
     {

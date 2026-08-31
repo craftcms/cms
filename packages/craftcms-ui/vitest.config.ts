@@ -30,6 +30,18 @@ export default defineConfig({
           tsconfigPaths: true,
         },
         test: {
+          name: 'core',
+          root: './src/core',
+          // `node`, not happy-dom: the core must not touch the DOM, and running
+          // it without one is what keeps that true.
+          environment: 'node',
+        },
+      },
+      {
+        resolve: {
+          tsconfigPaths: true,
+        },
+        test: {
           name: 'services',
           root: './src/services',
           environment: 'happy-dom',

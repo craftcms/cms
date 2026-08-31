@@ -44,18 +44,6 @@
     isMultiSite: boolean;
   }>();
 
-  function deleteField(field: FieldRow) {
-    if (
-      confirm(
-        t('Are you sure you want to delete “{name}”?', {
-          name: field.title,
-        })
-      )
-    ) {
-      router.delete(destroy({fieldId: field.id}));
-    }
-  }
-
   const searchTerm = ref(props.searchTerm ?? '');
   const columnHelper = createColumnHelper<FieldRow>();
   const columnVisibility = computed(() => {
@@ -146,7 +134,10 @@
       cell: ({row}) =>
         h('div', {class: 'self-end flex justify-end'}, [
           h(DeleteButton, {
-            onClick: () => deleteField(row.original),
+            confirm: t('Are you sure you want to delete “{name}”?', {
+              name: row.original.title,
+            }),
+            onClick: () => router.delete(destroy({fieldId: row.original.id})),
           }),
         ]),
     }),

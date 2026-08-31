@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\QueueController;
+use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -99,6 +101,21 @@ it('runs one queued job after the response terminates', function () {
         ->assertContent('');
 
     expect(terminatingCallbacks())->toHaveCount($callbackCount + 1);
+});
+
+it('does not run the queue during maintenance mode', function () {
+    Cms::config()->runQueueAutomatically(true);
+    app(JobProgress::class)->queued('pending-job', 'Pending Job');
+    app()->maintenanceMode()->activate([]);
+    Artisan::shouldReceive('call')->never();
+
+    post(cp_url(Cms::config()->actionTrigger.'/queue/run'))
+        ->assertOk()
+        ->assertContent('');
+
+    app()->terminate();
+
+    expect(app(JobProgress::class)->getProgress('pending-job')?->status)->toBe(JobStatus::Pending);
 });
 
 it('deduplicates queue names and falls back to the default memory limit', function () {

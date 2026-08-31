@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Support\Env;
 use yii\base\InvalidConfigException;
 
 /**
@@ -50,5 +52,27 @@ trait RequestTrait
     public function getIsWebRequest(): bool
     {
         return !app()->runningInConsole();
+    }
+
+    protected function setWebAlias(string $fallback): void
+    {
+        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
+            Aliases::set('@web', (string) $webUrl);
+
+            return;
+        }
+
+        if (Aliases::get('@web', false) !== false) {
+            return;
+        }
+
+        if ($webUrl = (string) config('app.url')) {
+            Aliases::set('@web', $webUrl);
+
+            return;
+        }
+
+        Aliases::set('@web', $fallback);
+        $this->isWebAliasSetDynamically = true;
     }
 }

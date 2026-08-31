@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
@@ -20,7 +21,7 @@ test('show validates required uid and code parameters', function () {
 });
 
 test('show returns invalid token response for invalid user uid', function () {
-    get(action([SetPasswordController::class, 'show'], [
+    get(cp_url(CpAuthPath::SetPassword->value, [
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
     ]))->assertRedirect();
@@ -29,7 +30,7 @@ test('show returns invalid token response for invalid user uid', function () {
 test('show returns invalid token response for invalid code', function () {
     $user = User::findOne();
 
-    get(action([SetPasswordController::class, 'show'], [
+    get(cp_url(CpAuthPath::SetPassword->value, [
         'uid' => $user->uid,
         'code' => 'invalid-code',
     ]))->assertRedirect();

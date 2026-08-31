@@ -16,7 +16,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 test('show redirects for invalid user uid', function () {
-    get(action([VerifyEmailController::class, 'show'], [
+    get(cp_url(CpAuthPath::VerifyEmail->value, [
         'uid' => 'invalid-uuid',
         'code' => 'some-code',
     ]))->assertRedirect(CpAuthPath::Login->value);
@@ -25,7 +25,7 @@ test('show redirects for invalid user uid', function () {
 test('show redirects for invalid code', function () {
     $user = User::findOne();
 
-    get(action([VerifyEmailController::class, 'show'], [
+    get(cp_url(CpAuthPath::VerifyEmail->value, [
         'uid' => $user->uid,
         'code' => 'invalid-code',
     ]))->assertRedirect(CpAuthPath::Login->value);

@@ -58,6 +58,19 @@ class ElementHelper
     }
 
     /**
+     * Returns whether a string contains a temporary slug.
+     *
+     * @param string|null $str
+     * @return bool
+     * @since 5.10.15
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\ElementHelper::containsTempSlug()} instead.
+     */
+    public static function containsTempSlug(?string $str): bool
+    {
+        return LaravelElementHelper::containsTempSlug($str);
+    }
+
+    /**
      * Generates a new slug based on a given string.
      *
      * This is different from [[normalizeSlug()]] in two ways:

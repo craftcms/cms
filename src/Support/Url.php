@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\RouteToken\RouteTokens;
@@ -452,8 +451,7 @@ class Url extends \Illuminate\Support\Facades\URL
             }
         }
 
-        // Use @web as a fallback
-        return Aliases::get('@web');
+        return url('/');
     }
 
     /**
@@ -472,11 +470,9 @@ class Url extends \Illuminate\Support\Facades\URL
 
     private static function fallbackBaseUrl(): string
     {
-        // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
-        // in which case it's totally unreliable so go with the base site URL
         return app()->runningInConsole()
             ? static::baseSiteUrl()
-            : Aliases::get('@web');
+            : url('/');
     }
 
     /**

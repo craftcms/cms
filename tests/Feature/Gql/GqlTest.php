@@ -27,12 +27,14 @@ use CraftCms\Cms\Gql\Queries\Query as BaseQuery;
 use CraftCms\Cms\Gql\TypeLoader;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -312,6 +314,27 @@ it('invalidates cached results when schemas change', function () {
     expect($gql->getCachedResult($cacheKey))->toBeNull();
 
     $gql->deleteSchemaById($schema->id);
+});
+
+it('preserves cache dependencies when a result is served from cache', function () {
+    $gql = app(Gql::class);
+    $cacheKey = 'testCachedResultCollectsCacheInfo';
+    $cacheValue = ['testValue'];
+
+    $gql->setCachedResult($cacheKey, $cacheValue, new TagDependency(['testTag']), 60);
+
+    ElementCaches::startCollectingCacheInfo();
+    $cachedResult = $gql->getCachedResult($cacheKey);
+    /** @var TagDependency $dependency */
+    [$dependency, $duration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($cachedResult)->toBe($cacheValue)
+        ->and($dependency)->toBeInstanceOf(TagDependency::class)
+        ->and($dependency->tags)->toContain('testTag')
+        ->and($dependency->tags)->toContain(Gql::CACHE_TAG)
+        ->and($duration)->not->toBeNull()
+        ->and($duration)->toBeGreaterThan(0)
+        ->and($duration)->toBeLessThanOrEqual(60);
 });
 
 it('supports token operations through the new service', function () {

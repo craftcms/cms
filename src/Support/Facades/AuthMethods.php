@@ -23,6 +23,7 @@ use Override;
  * @method static bool authenticateWithPasskey(\CraftCms\Cms\User\Contracts\CraftUser $user, string $requestOptions, string $response)
  * @method static bool verifyMethod(string $methodClass, mixed ...$args)
  * @method static \CraftCms\Cms\Auth\Enums\AuthError|null getAuthError(\CraftCms\Cms\User\Contracts\CraftUser $user)
+ * @method static \CraftCms\Cms\Auth\Enums\AuthError|null getMaintenanceAuthError(\CraftCms\Cms\User\Contracts\CraftUser $user, bool $isCpRequest)
  * @method static string getAuthMethodErrorMessage(string|null $defaultMessage = null)
  * @method static array getLoginFailureInfo(\CraftCms\Cms\Auth\Enums\AuthError|null $authError, \CraftCms\Cms\User\Contracts\CraftUser|null $user)
  * @method static void handleInvalidLogin(\CraftCms\Cms\User\Contracts\CraftUser $user)
