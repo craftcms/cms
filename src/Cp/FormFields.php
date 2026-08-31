@@ -1038,6 +1038,9 @@ readonly class FormFields
 
         $input = InputPassword::make();
         self::textFromConfig($config, $input);
+        $input->passwordRules(isset($config['inputAttributes']['passwordrules'])
+            ? (string) $config['inputAttributes']['passwordrules']
+            : null);
 
         return $input;
     }
