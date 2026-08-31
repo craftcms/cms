@@ -1,0 +1,31 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Form Controls/Choice Controls/Radio" />
+
+# Radio
+
+`<craft-radio>` is one option within a [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs).
+
+There are no stories on this page because a radio on its own has nothing to be exclusive against — its whole behaviour is defined by the group it belongs to. See the [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs) page for working examples.
+
+```html
+<craft-radio-group label="Propagation method">
+  <craft-radio
+    label="Only save to the site it was edited in"
+    value="none"
+  ></craft-radio>
+  <craft-radio label="Save to all sites in the group" value="all"></craft-radio>
+</craft-radio-group>
+```
+
+## What It Contributes
+
+The radio carries the option's `label` and `value`. The group carries the name, the current value, and any validation.
+
+Like [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs), it keeps the `checked`, `disabled`, and `name` of a server-rendered input rather than resetting them when the component upgrades.
+
+## Accessibility
+
+Lion wires the label to the input, and the group provides the radio-group semantics that make arrow-key navigation between options work.
+
+That is one more reason not to use a radio outside a group: alone, it is a control a person can select but never deselect, with no siblings to move between.
