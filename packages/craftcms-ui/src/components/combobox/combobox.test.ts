@@ -156,8 +156,8 @@ describe('craft-combobox', () => {
   it('shows the selected option’s icon in the textbox', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
-        {label: 'Plain Text', value: 'plain-text', icon: 'i-cursor'},
-        {label: 'Money', value: 'money', icon: 'euro-sign'},
+        {label: 'Plain Text', value: 'plain-text', data: {icon: 'i-cursor'}},
+        {label: 'Money', value: 'money', data: {icon: 'euro-sign'}},
       ];
       c.modelValue = 'money';
     });
@@ -170,8 +170,8 @@ describe('craft-combobox', () => {
   it('swaps the textbox icon when another option is chosen', async () => {
     const combobox = await createFixture((c) => {
       c.options = [
-        {label: 'Plain Text', value: 'plain-text', icon: 'i-cursor'},
-        {label: 'Money', value: 'money', icon: 'euro-sign'},
+        {label: 'Plain Text', value: 'plain-text', data: {icon: 'i-cursor'}},
+        {label: 'Money', value: 'money', data: {icon: 'euro-sign'}},
       ];
       c.modelValue = 'plain-text';
     });
@@ -193,7 +193,7 @@ describe('craft-combobox', () => {
   it('drops the textbox icon while the value is free text', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
-      c.options = [{label: 'Money', value: 'money', icon: 'euro-sign'}];
+      c.options = [{label: 'Money', value: 'money', data: {icon: 'euro-sign'}}];
       c.modelValue = 'money';
     });
 
