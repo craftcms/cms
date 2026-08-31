@@ -1,0 +1,56 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as ThumbnailStories from './thumbnail.stories';
+
+<Meta of={ThumbnailStories} name="Docs" />
+
+# Thumbnail
+
+`<craft-thumbnail>` shows a small preview image in a fixed box, with optional rounding and a checkered backing.
+
+<Canvas of={ThumbnailStories.Default} sourceState="shown" />
+
+It is the image counterpart to [Avatar](?path=/docs/components-avatar--docs): a thumbnail where there is a picture to show, an avatar where there is not.
+
+## The Image
+
+`src`, `srcset`, `sizes`, `alt`, `width`, and `height` are passed through to a real `<img>`, so responsive images and intrinsic sizing work exactly as they do natively.
+
+`loading` defaults to lazy, which is what you want in an index view where most thumbnails start off screen:
+
+<Canvas of={ThumbnailStories.Lazy} sourceState="shown" />
+
+## Transparency
+
+`checkered` draws a chequerboard behind the image, so a transparent PNG reads as transparent rather than as whatever the surface behind it happens to be:
+
+<Canvas of={ThumbnailStories.Checkered} sourceState="shown" />
+
+`rounded` applies the corner radius:
+
+<Canvas of={ThumbnailStories.Rounded} sourceState="shown" />
+
+Both are **default-true string booleans**: they respond to `checkered="false"`, not to the attribute's absence, so server-rendered markup can switch them off explicitly.
+
+## Sizing
+
+The box is sized by `--c-thumbnail-size` rather than by the image, so a column of thumbnails lines up regardless of what each picture's dimensions are:
+
+<Canvas of={ThumbnailStories.CustomSize} sourceState="shown" />
+
+## Your Own Content
+
+With no `src`, the default slot renders instead — and still gets the box, the rounding, and the checkered backing:
+
+<Canvas of={ThumbnailStories.SlottedContent} sourceState="shown" />
+
+That is the route for an inline `<svg>`, or for a placeholder that is not an image at all.
+
+## Accessibility
+
+`alt` is passed straight to the `<img>`, and the usual rule applies: describe the image when it carries meaning, and use `alt=""` when it repeats a label beside it.
+
+A thumbnail in a [Chip](?path=/docs/components-chip--docs) or [Card](?path=/docs/components-card--docs) is nearly always the second kind — the entity's name is already there in text.
+
+## Properties
+
+<ArgTypes of={ThumbnailStories} />
