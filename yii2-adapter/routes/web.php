@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
@@ -34,8 +37,22 @@ Route::middleware([
     ->prefix($routes->cpActionTriggerRoutePrefix())
     ->post('plugins/save-plugin-settings', SavePluginSettingsController::class);
 
+foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
+    Route::middleware([
+        'craft',
+        ExcludeCsrfValidationForLegacyController::class,
+        ...$middleware,
+        LegacyMiddleware::class,
+    ])
+        ->name(in_array('craft.cp', $middleware, true) ? 'craft.cp.legacy.action' : 'craft.legacy.action')
+        ->prefix($prefix)
+        ->any('{any}', fn() => abort(404))
+        ->withoutMiddleware(PreventRequestsDuringMaintenance::class)
+        ->where('any', '.*');
+}
+
 /**
- * Register the remaining legacy CP and action routes after the CMS package's
+ * Register the remaining legacy CP routes after the CMS package's
  * fixed routes. Site URL rules are resolved by the adapter's site fallback
  * middleware.
  *
@@ -55,11 +72,5 @@ Route::middleware([
 ])
     ->name('craft.cp.legacy')
     ->prefix(Cms::config()->cpTrigger)
-    ->any('{any}', fn() => abort(404))
-    ->where('any', '.*');
-
-Route::middleware(['craft', ExcludeCsrfValidationForLegacyController::class, 'craft.web', LegacyMiddleware::class])
-    ->name('craft.legacy.action')
-    ->prefix($routes->actionTriggerRoutePrefix())
     ->any('{any}', fn() => abort(404))
     ->where('any', '.*');

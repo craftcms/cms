@@ -584,11 +584,13 @@ trait ApplicationTrait
      * Returns whether the system is currently live.
      *
      * @since 3.1.0
-     * @deprecated 6.0.0 use `app()->isLive()` instead.
+     * @deprecated 6.0.0 use `! app()->isDownForMaintenance()` instead.
      */
     public function getIsLive(): bool
     {
-        return app()->isLive();
+        DeprecatorFacade::log('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
+
+        return !app()->isDownForMaintenance();
     }
 
     /**

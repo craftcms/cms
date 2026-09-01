@@ -6,6 +6,7 @@ use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -13,6 +14,10 @@ use function Pest\Laravel\artisan;
 
 afterEach(function () {
     MigrateCommand::flushState();
+});
+
+afterAll(function () {
+    RefreshDatabaseState::$migrated = false;
 });
 
 it('runs migrations', function () {

@@ -47,6 +47,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -1275,8 +1276,9 @@ class Asset extends Element
      * @return list<array<string, mixed>>
      */
     #[Override]
-    protected function extraActionMenuDescriptors(): array
-    {
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
         $user = currentUserElement();
         $items = [];
 
@@ -1320,6 +1322,7 @@ class Asset extends Element
             $items[] = [
                 'label' => t('Replace file'),
                 'icon' => 'upload',
+                'showInChips' => false,
                 'behavior' => [
                     'type' => 'replaceFile',
                     'assetId' => $this->id,
@@ -1329,6 +1332,8 @@ class Asset extends Element
         }
 
         if ($this->getSupportsImageEditor() && $user?->can('editImage', $this)) {
+            $items[] = ['type' => MenuItemType::HR->value];
+
             $items[] = [
                 'label' => t('Open in Image Editor'),
                 'icon' => 'edit',
@@ -1339,7 +1344,7 @@ class Asset extends Element
             ];
         }
 
-        if ($user?->isAdmin() && Cms::config()->allowAdminChanges) {
+        if ($context->isEditor() && $user?->isAdmin() && Cms::config()->allowAdminChanges) {
             $items[] = [
                 'label' => t('Volume settings'),
                 'icon' => 'gear',

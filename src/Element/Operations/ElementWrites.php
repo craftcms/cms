@@ -806,7 +806,8 @@ readonly class ElementWrites
             (
                 $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
+                $element->resaving ||
+                ElementHelper::containsTempSlug($siteElement->uri)
             )
         ) {
             try {

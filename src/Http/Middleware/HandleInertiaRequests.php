@@ -170,6 +170,7 @@ class HandleInertiaRequests extends Middleware
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                 ] : null,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
+                'maintenanceMode' => app()->isDownForMaintenance(),
                 'allowAdminChanges' => $generalConfig->allowAdminChanges,
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),

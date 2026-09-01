@@ -222,7 +222,7 @@ it('serializes and validates combobox behavior', function () {
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
 });
 
-it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {
+it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option, int $expectedOptions = 2) {
     $choice = Choice::make('choice')
         ->options([
             ['label' => 'One', 'value' => 'one'],
@@ -237,9 +237,11 @@ it('renders choice presentations through CP components', function (ChoicePresent
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter($group))->toHaveCount(1)
-        ->and($crawler->filter($option))->toHaveCount(2);
+        ->and($crawler->filter($option))->toHaveCount($expectedOptions);
 })->with([
-    'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option'],
+    // Three: an optional single select also gets a blank, so "unset" is
+    // representable rather than showing the first option by default.
+    'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option', 3],
     'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
     'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
     'buttons' => [ChoicePresentation::Buttons, false, 'craft-button-group', 'craft-button'],

@@ -34,7 +34,12 @@ it('resolves and renders ordered element relationships', function () {
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($control->component)->toBe('craft:element-select')
-        ->and($control->props['elements'])->toMatchArray([
+        // Identity only; the payload also carries what the chip's own action
+        // menu needs (`url`, `canEdit`, `canCopy`, …), covered separately.
+        ->and(array_map(
+            fn (array $element) => array_intersect_key($element, array_flip(['id', 'label', 'siteId'])),
+            $control->props['elements'],
+        ))->toBe([
             ['id' => $second->id, 'label' => 'Second entry', 'siteId' => 1],
             ['id' => $first->id, 'label' => 'First entry', 'siteId' => 1],
         ])
@@ -99,7 +104,34 @@ it('resolves non-empty modern relationship values', function (Closure $createEle
 
     expect($payload->nodes[0]->control->props['elements'][0]['id'])->toBe($element->getId());
 })->with([
-    'assets' => fn () => AssetModel::factory()->createElement(),
+    'assets' => fn () => AssetModel::factory()->createElement(['filename' => 'document.pdf', 'kind' => 'pdf']),
+    'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
+    'users' => fn () => UserModel::factory()->createElement(),
+]);
+
+/**
+ * The control's props are serialized to the client, so the resolver rejects
+ * anything that isn't a JSON-safe scalar or array. The action descriptors are
+ * the easiest place to trip that: an enum case reads naturally in PHP but is an
+ * object by the time it gets here.
+ */
+it('resolves JSON-safe props for every element type', function (Closure $createElement) {
+    $this->actingAs(UserModel::first());
+    $element = $createElement();
+    $form = Form::make([
+        Field::make()->control(
+            ElementSelect::make('related')->elementType($element::class),
+        ),
+    ]);
+
+    $payload = app(FormResolver::class)->resolve($form, new FormContext(
+        namespace: 'settings',
+        values: ['settings' => ['related' => [$element->getId()]]],
+    ));
+
+    expect(json_encode($payload->nodes[0]->control->props, JSON_THROW_ON_ERROR))->toBeString();
+})->with([
+    'assets' => fn () => AssetModel::factory()->createElement(['filename' => 'document.pdf', 'kind' => 'pdf']),
     'entries' => fn () => EntryElement::find()->id(Entry::factory()->create()->id)->one(),
     'users' => fn () => UserModel::factory()->createElement(),
 ]);

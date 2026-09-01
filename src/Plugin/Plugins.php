@@ -1144,18 +1144,23 @@ class Plugins
      * Returns the license key stored for a given plugin, if it was purchased through the Store.
      *
      * @param  string  $handle  The plugin’s handle
-     * @return string|null The plugin’s license key, or null if it isn’t known
+     * @return string|false|null The plugin’s license key, `false` if it’s set to a non-existent environment variable, or `null` if it isn’t known
      *
      * @throws InvalidLicenseKeyException
      */
-    public function getPluginLicenseKey(string $handle): ?string
+    public function getPluginLicenseKey(string $handle): string|false|null
     {
-        $licenseKey = Env::parse($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+        $storedLicenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        $licenseKey = Env::parse($storedLicenseKey);
 
         // also check if pc has the license key
         if ($licenseKey === null) {
             $pcPlugins = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS);
             $licenseKey = Env::parse($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
+        if ($licenseKey === null && is_string($storedLicenseKey) && str_starts_with($storedLicenseKey, '$')) {
+            return false;
         }
 
         return $this->normalizePluginLicenseKey($licenseKey);
@@ -1184,7 +1189,7 @@ class Plugins
         if (
             preg_match('/^\$(\w+)$/', (string) $oldLicenseKey, $matches) &&
             in_array(Env::get($matches[1]), ['', null], true) &&
-            file_exists(app()->environmentFilePath())
+            Env::variableExists($matches[1], app()->environmentFilePath())
         ) {
             Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {

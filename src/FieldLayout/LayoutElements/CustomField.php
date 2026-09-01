@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -420,6 +419,22 @@ class CustomField extends BaseField
      * @throws RuntimeException
      * @throws FieldNotFoundException
      */
+    /**
+     * The layout author's warning, plus anything the field itself needs to
+     * flag — a misconfigured volume, say, which the author can't see from the
+     * layout. Both are shown when both apply.
+     */
+    #[Override]
+    protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        $warnings = array_filter([
+            parent::warningText($element, $static),
+            $this->getField()->formWarning($element),
+        ]);
+
+        return $warnings !== [] ? implode(' ', $warnings) : null;
+    }
+
     public function getField(): FieldInterface
     {
         if (isset($this->_field)) {
@@ -932,7 +947,7 @@ class CustomField extends BaseField
 
     /** @return list<array<string, mixed>> */
     #[Override]
-    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
     {
         try {
             $field = $this->getField();
@@ -940,12 +955,17 @@ class CustomField extends BaseField
             $field = null;
         }
 
-        if ($field instanceof Actionable) {
-            $field->static = $static;
-            $items = $field->getActionMenuItems();
-        } else {
-            $items = [];
-        }
+        return [
+            ...($field?->getFieldLayoutActionMenuItems($context) ?? []),
+            ...parent::actionMenuItemsForContext($context),
+        ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    #[Override]
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = parent::actionMenuItems($element, $static);
 
         $user = currentUser();
         if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {

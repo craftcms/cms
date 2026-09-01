@@ -50,7 +50,7 @@ function renderChipWithActionItems(array $items): string
 it('renders a craft-action-menu instead of the legacy disclosure markup', function () {
     $html = renderChipWithActionItems([]);
 
-    expect($html)->toContain('<craft-action-menu>')
+    expect($html)->toContain('<craft-action-menu icon="ellipsis">')
         ->and($html)->toContain('slot="invoker"')
         ->and($html)->toContain('slot="content"')
         ->and($html)->toContain('craft-icon')
@@ -62,7 +62,7 @@ it('renders a craft-action-menu instead of the legacy disclosure markup', functi
 it('always renders the menu, even with zero items, so JS can inject into it later', function () {
     $html = renderChipWithActionItems([]);
 
-    expect($html)->toContain('<craft-action-menu>')
+    expect($html)->toContain('<craft-action-menu icon="ellipsis">')
         ->and($html)->toContain('<div slot="content"></div>');
 });
 
