@@ -1473,7 +1473,7 @@ class ProjectConfig
             }
         }
 
-        file_put_contents($basePath, Yaml::dump($configData, 20, 2));
+        file_put_contents($basePath, Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING));
     }
 
     /**
@@ -1528,7 +1528,7 @@ class ProjectConfig
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = join_paths($basePath, $relativeFile);
-                $yamlContent = Yaml::dump($configData, 20, 2);
+                $yamlContent = Yaml::dump($configData, 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }

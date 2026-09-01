@@ -70,7 +70,7 @@ readonly class ProjectConfigController
         }
 
         foreach ($splitConfig as $path => $pathConfig) {
-            $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($pathConfig), 20, 2);
+            $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($pathConfig), 20, 2, Yaml::DUMP_COMPACT_NESTED_MAPPING);
             $zip->addFromString($path, $content);
         }
 

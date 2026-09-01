@@ -639,8 +639,6 @@ class Users
             $userModel->pending = false;
             $userModel->locked = false;
             $userModel->suspended = false;
-            $userModel->verificationCode = null;
-            $userModel->verificationCodeIssuedDate = null;
             $userModel->invalidLoginWindowStart = null;
             $userModel->invalidLoginCount = null;
             $userModel->lastInvalidLoginDate = null;
@@ -739,10 +737,6 @@ class Users
                 $userModel->username = $user->unverifiedEmail;
             }
         }
-
-        // Clear out the verification code
-        $userModel->verificationCode = null;
-        $userModel->verificationCodeIssuedDate = null;
 
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
