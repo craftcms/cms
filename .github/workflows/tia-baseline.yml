@@ -26,7 +26,9 @@ jobs:
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
           coverage: 'pcov'
- 
+        env:
+          SKIP_ARCH: true
+      
       - name: Resolve TIA baseline path
         id: baseline
         run: echo "path=$(./vendor/bin/pest --baseline)" >> "$GITHUB_OUTPUT"
