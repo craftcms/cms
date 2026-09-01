@@ -59,10 +59,13 @@ class AssetQuery extends ElementQuery
      */
     public ?bool $savable = null;
 
-    /** @param array<string, mixed> $config */
-    public function __construct(array $config = [])
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  class-string<Asset>  $elementClass
+     */
+    public function __construct(array $config = [], string $elementClass = Asset::class)
     {
-        parent::__construct(Asset::class, $config);
+        parent::__construct($elementClass, $config);
 
         $this->query->addSelect([
             'assets.volumeId as volumeId',

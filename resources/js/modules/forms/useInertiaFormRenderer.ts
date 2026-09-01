@@ -7,7 +7,13 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue';
-import type {FormChangeKind, FormPayload, FormValue} from './types';
+import type {
+  FormChangeKind,
+  FormNodePayload,
+  FormPayload,
+  FormValue,
+} from './types';
+import {pathsMatch} from './runtime';
 
 interface FormRendererInstance {
   advanceBaseline(): void;
@@ -50,7 +56,7 @@ export function useInertiaFormRenderer<
     Object.entries(form.errors).flatMap(([path, message]) => {
       const mappedPath = mapErrorPath
         ? mapErrorPath(path)
-        : defaultErrorPath(path, toValue(payload)?.scope ?? []);
+        : defaultErrorPath(path, toValue(payload));
 
       return mappedPath
         ? [{path: mappedPath, messages: [String(message)]}]
@@ -122,12 +128,64 @@ export function useInertiaFormRenderer<
   return {advanceBaseline, errors, onMutation, renderer, resetValues, values};
 }
 
-function defaultErrorPath(path: string, scope: string[]): string[] | null {
+/**
+ * Resolves a server error key onto the control that owns it.
+ *
+ * The key is whatever the validator used — a field handle, say — while a
+ * control's path is where it actually sits in the form, which can be deeper: a
+ * field layout nests its custom fields under `fields`. The server resolves this
+ * when it renders (walking up from the error path to the owning control), but
+ * errors that come back from a save arrive as raw validator keys and need the
+ * same treatment, or they match no control and read as global.
+ *
+ * Resolved against the payload's real control paths rather than by assuming a
+ * prefix, so nesting the runtime doesn't know about still lands.
+ */
+function defaultErrorPath(
+  path: string,
+  payload: FormPayload | null | undefined
+): string[] | null {
   const segments = path.split('.');
+  const scope = payload?.scope ?? [];
+  const withinScope = scope.every(
+    (segment, index) => segments[index] === segment
+  );
+  const paths = controlPaths(payload?.nodes);
 
-  return scope.every((segment, index) => segments[index] === segment)
-    ? segments
-    : null;
+  if (
+    withinScope &&
+    paths.some((candidate) => pathsMatch(candidate, segments))
+  ) {
+    return segments;
+  }
+
+  // Nothing owns the key as sent, so look for the control it names — the
+  // shortest path ending in those segments, to avoid reaching past a nearer
+  // owner into something nested.
+  const owners = paths
+    .filter(
+      (candidate) =>
+        candidate.length > segments.length &&
+        scope.every((segment, index) => candidate[index] === segment) &&
+        pathsMatch(candidate.slice(-segments.length), segments)
+    )
+    .sort((a, b) => a.length - b.length);
+
+  if (owners.length > 0) {
+    return owners[0]!;
+  }
+
+  // Unowned keys stay as they are, so they surface as global errors rather
+  // than being dropped.
+  return withinScope ? segments : null;
+}
+
+/** Every control path in a payload, nested ones included. */
+function controlPaths(nodes: FormNodePayload[] | undefined): string[][] {
+  return (nodes ?? []).flatMap((node) => [
+    ...(node.control ? [node.control.path] : []),
+    ...controlPaths(node.children),
+  ]);
 }
 
 function clone<T>(value: T): T {

@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\ModalIndexViewModel;
 use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
@@ -52,6 +53,8 @@ readonly class ElementSelectorModalController
             }
         }
 
+        $sources = $request->input('sources');
+
         return new JsonResponse([
             'html' => $elementIndexHtml->html($elementType, [
                 'class' => 'content',
@@ -60,9 +63,18 @@ readonly class ElementSelectorModalController
                 'showSiteMenu' => $request->input('showSiteMenu', 'auto'),
                 'siteIds' => $request->input('siteIds'),
                 'showStatusMenu' => $hasStatuses,
-                'sources' => $request->input('sources'),
+                'sources' => $sources,
                 'statuses' => $statuses ?? null,
             ]),
+            // The same payload the index screens render from. Served alongside
+            // the HTML rather than instead of it: the modal still boots the
+            // legacy index off `html`, and will keep doing so until it mounts
+            // the Vue index.
+            'props' => new ModalIndexViewModel(
+                $elementType,
+                $request,
+                restrictToSources: is_array($sources) ? array_values($sources) : null,
+            )->toArray(),
         ]);
     }
 }

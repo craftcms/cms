@@ -1,6 +1,11 @@
 import {Validator} from '@lion/ui/form-core.js';
 import type {InjectionKey, Ref, Slots} from 'vue';
-import type {FormChange, FormValue, FormValues} from './types';
+import type {
+  CanonicalFormValue,
+  FormChange,
+  FormValue,
+  FormValues,
+} from './types';
 
 export const FormFailure: InjectionKey<(message: string) => void> =
   Symbol('FormFailure');
@@ -129,6 +134,49 @@ export function pathsMatch(left: string[], right: string[]): boolean {
   return (
     left.length === right.length &&
     left.every((segment, index) => segment === right[index])
+  );
+}
+
+/**
+ * A stable string for a form value, for equality checks.
+ *
+ * `JSON.stringify` on its own is key-order sensitive, so two values a form
+ * would treat as identical can serialize differently purely because a server
+ * renderer emitted the keys in another order. Anything asking "did this
+ * change?" wants this rather than raw `JSON.stringify`.
+ */
+export function canonical(value: FormValue): string {
+  return JSON.stringify(canonicalValue(value));
+}
+
+export function canonicalValue(value: FormValue): CanonicalFormValue {
+  // Nothing and empty mean the same thing to a form, so a control reporting
+  // one where the server sent the other has not edited anything. Without
+  // this, populating a field on load can read as a change purely because the
+  // control's idea of empty differs from the server's.
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(canonicalValue);
+  }
+
+  if (value instanceof File) {
+    return {
+      name: value.name,
+      size: value.size,
+      type: value.type,
+      lastModified: value.lastModified,
+    };
+  }
+
+  if (!isRecord(value)) return value;
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, canonicalValue(value[key])])
   );
 }
 

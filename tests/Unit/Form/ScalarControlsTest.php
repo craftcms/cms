@@ -244,7 +244,7 @@ it('renders an icon-only choice button with an accessible name and no label', fu
         ->and($buttons->eq(1)->attr('aria-label'))->toBe('Display as cards');
 });
 
-it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option) {
+it('renders choice presentations through CP components', function (ChoicePresentation $presentation, bool $multiple, string $group, string $option, int $expectedOptions = 2) {
     $choice = Choice::make('choice')
         ->options([
             ['label' => 'One', 'value' => 'one'],
@@ -259,9 +259,11 @@ it('renders choice presentations through CP components', function (ChoicePresent
     $crawler = new Crawler(app(FormHtmlRenderer::class)->render($payload));
 
     expect($crawler->filter($group))->toHaveCount(1)
-        ->and($crawler->filter($option))->toHaveCount(2);
+        ->and($crawler->filter($option))->toHaveCount($expectedOptions);
 })->with([
-    'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option'],
+    // Three: an optional single select also gets a blank, so "unset" is
+    // representable rather than showing the first option by default.
+    'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option', 3],
     'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
     'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
     'buttons' => [ChoicePresentation::Buttons, false, 'craft-button-group', 'craft-button'],
@@ -278,40 +280,31 @@ function renderChoice(Choice $choice, mixed $value): Crawler
     return new Crawler(app(FormHtmlRenderer::class)->render($payload));
 }
 
-it('only serializes sortable and allowAll when set', function () {
+it('only serializes sortable when set', function () {
     expect(Choice::make('choice')->multiple()->props())
-        ->not->toHaveKeys(['sortable', 'allowAll'])
+        ->not->toHaveKey('sortable')
         ->and(Choice::make('choice')->sortable()->props())->toMatchArray([
             'sortable' => true,
-            'multiple' => true,
-            'presentation' => 'checkboxes',
-        ])
-        ->and(Choice::make('choice')->allowAll()->props())->toMatchArray([
-            'allowAll' => true,
             'multiple' => true,
             'presentation' => 'checkboxes',
         ]);
 });
 
-it('renders an All checkbox that checks and disables every option', function () {
-    $choice = Choice::make('choice')
-        ->options([
-            ['label' => 'One', 'value' => 'one'],
-            ['label' => 'Two', 'value' => 'two'],
-        ])
-        ->allowAll();
+it('implies a multi-select checkbox list for an All option', function () {
+    expect(Choice::make('choice')->allOption()->props())->toMatchArray([
+        'multiple' => true,
+        'presentation' => 'checkboxes',
+        'allValue' => Choice::ALL_VALUE,
+    ]);
+});
 
-    $all = renderChoice($choice, Choice::ALL_VALUE);
-    $some = renderChoice($choice, ['two']);
-
-    expect($all->filter('input.all[name="settings[choice]"][value="*"][checked]'))->toHaveCount(1)
-        ->and($all->filter('input[name="settings[choice][]"][checked][disabled]'))->toHaveCount(2)
-        // Exactly one always-post hidden input, from the All checkbox itself —
-        // the group must not add a second for the same name.
-        ->and($all->filter('input[type="hidden"][name="settings[choice]"]'))->toHaveCount(1)
-        ->and($some->filter('input.all[checked]'))->toHaveCount(0)
-        ->and($some->filter('input[name="settings[choice][]"][checked]'))->toHaveCount(1)
-        ->and($some->filter('input[name="settings[choice][]"][disabled]'))->toHaveCount(0);
+it('rejects combining reordering with an All option', function () {
+    // Reordering renders a flat cp-checkbox-select; All nests the options
+    // inside the checkbox that governs them. No markup is both.
+    expect(fn () => Choice::make('choice')->allOption()->sortable())
+        ->toThrow(InvalidArgumentException::class)
+        ->and(fn () => Choice::make('choice')->sortable()->allOption())
+        ->toThrow(InvalidArgumentException::class);
 });
 
 it('renders sortable choices selected-first inside the sortable wrapper', function () {

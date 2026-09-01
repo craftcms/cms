@@ -155,11 +155,11 @@ readonly class ElementSourceForm
             $this->tableAttributesField($elementType, $source, $isNew),
             $this->viewModeField($elementType, $source),
             count($siteOptions) > 1
-                ? Field::make(t('Sites'), Choice::make('sites')->options($siteOptions)->allowAll())
+                ? Field::make(t('Sites'), Choice::make('sites')->options($siteOptions)->allOption())
                     ->instructions(t('Choose which sites this source should be visible for.'))
                 : null,
             $groupOptions !== []
-                ? Field::make(t('User Groups'), Choice::make('userGroups')->options($groupOptions)->allowAll())
+                ? Field::make(t('User Groups'), Choice::make('userGroups')->options($groupOptions)->allOption())
                     ->instructions(t('Choose which user groups should have access to this source.'))
                 : null,
         ];

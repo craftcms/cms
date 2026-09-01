@@ -47,6 +47,13 @@ interface Control
     public function path(): string|array;
 
     /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
+    public function withPath(string|array $path): static;
+
+    /**
      * Returns an optional ancestor path whose complete value must mutate atomically.
      *
      * @return string|list<string>|null

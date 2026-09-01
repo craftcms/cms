@@ -114,21 +114,21 @@
         />
       </template>
       <template #navbar><slot name="navbar"></slot></template>
-      <template #body>
+      <template #body="{selection}">
         <!-- Delegated so every view mode gets double-click-to-edit without
           any of them knowing about it, matching Craft 5's element container
           listener. -->
         <div @dblclick="quickEdit.onDblClick">
           <ElementCards
             v-if="mode === 'cards'"
-            :table="elementTable"
+            :selection="selection"
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"
           />
           <ElementThumbs
             v-else-if="mode === 'thumbs'"
-            :table="elementTable"
+            :selection="selection"
             :data="elementIndex.data"
             :selectable="true"
             :loading="loading"

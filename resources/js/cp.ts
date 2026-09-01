@@ -24,6 +24,7 @@ import './modules/field-toggle';
 import './modules/grouped-entry-type-manager';
 import './modules/queue';
 import './modules/slideout';
+import './modules/fields';
 import './modules/auth-method-setup';
 import './modules/proxy-scrollbar';
 import './modules/element-label';

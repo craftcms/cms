@@ -15,6 +15,22 @@ use RuntimeException;
 class Env extends \Illuminate\Support\Env
 {
     /**
+     * Returns whether an environment variable is defined within a given environment file.
+     */
+    public static function variableExists(string $key, string $pathToFile): bool
+    {
+        $filesystem = new Filesystem;
+
+        if ($filesystem->missing($pathToFile)) {
+            return false;
+        }
+
+        $qKey = preg_quote($key, '/');
+
+        return (bool) preg_match("/^\s*$qKey=/m", $filesystem->get($pathToFile));
+    }
+
+    /**
      * Remove a single key from the environment file.
      *
      *

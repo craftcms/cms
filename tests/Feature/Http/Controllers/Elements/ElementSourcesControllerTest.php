@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutRecord;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Models\Site;
@@ -621,6 +622,37 @@ class TestSinglePageElementSourcesElement extends TestElementSourcesElement
         return false;
     }
 }
+
+it('records an “all” source scope by omitting the key', function () {
+    $projectConfig = app(ProjectConfig::class);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => ['custom:everywhere'],
+        'sourcePages' => ['custom:everywhere' => 'Content'],
+        'pageSettings' => ['Content' => ['label' => 'Content']],
+        'sources' => [
+            'custom:everywhere' => [
+                'label' => 'Everywhere',
+                'condition' => [
+                    'class' => ElementCondition::class,
+                    'elementType' => TestElementSourcesElement::class,
+                    'conditionRules' => [],
+                ],
+                // The “All” checkbox posts the token as the control's whole
+                // array; an untouched scope posts back the bare token it was
+                // seeded with. Both mean “all”.
+                'sites' => [Choice::ALL_VALUE],
+                'userGroups' => Choice::ALL_VALUE,
+            ],
+        ],
+    ])->assertOk();
+
+    $config = collect($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class)))
+        ->keyBy('key');
+
+    expect($config['custom:everywhere'])->not->toHaveKeys(['sites', 'userGroups']);
+});
 
 it('normalizes the Form defaultSort shape and an empty source scope', function () {
     $projectConfig = app(ProjectConfig::class);

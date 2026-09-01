@@ -17,6 +17,7 @@
   import {useFolderNavigation} from '@/modules/elements/composables/useFolderNavigation';
   import {useAssetMoveDrag} from '@/modules/elements/composables/useAssetMoveDrag';
   import {useNewSubfolder} from '@/modules/elements/composables/useNewSubfolder';
+  import AssetUploadButton from './AssetUploadButton.vue';
 
   const page = usePage<CraftCms.Cms.Http.ViewModels.AssetIndexViewModel>();
 
@@ -40,6 +41,18 @@
   const breadcrumbs = computed<BreadcrumbItem[]>(
     () => page.props.breadcrumbs ?? []
   );
+
+  const uploadSource = computed(() => {
+    const data = page.props.source?.data as
+      | Record<string, boolean | number | string>
+      | undefined;
+
+    return {
+      canUpload: data?.['can-upload'] === true,
+      folderId: data?.['folder-id'] as number | undefined,
+      fsType: data?.['fs-type'] as string | undefined,
+    };
+  });
 
   // "New subfolder" prompt for the current folder. Its breadcrumb menu item is a
   // server-driven `event` action (AssetIndexViewModel::NEW_SUBFOLDER_EVENT); we
@@ -74,11 +87,7 @@
       <Breadcrumbs :items="breadcrumbs" @navigate="navigateToFolder" />
     </template>
     <template #actions>
-      <form action="">
-        <craft-button icon="upload">
-          {{ t('Upload files') }}
-        </craft-button>
-      </form>
+      <AssetUploadButton v-bind="uploadSource" />
     </template>
   </ElementIndexPage>
 

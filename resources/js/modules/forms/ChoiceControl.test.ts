@@ -115,40 +115,58 @@ describe('ChoiceControl', () => {
     expect(buttons.every((b) => b.textContent?.trim() === '')).toBe(true);
   });
 
-  it('renders All checked and disables every other option', async () => {
-    await mount({allowAll: true}, '*');
+  const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
-    const [all, ...items] = checkboxes();
+  function allInput(): HTMLInputElement {
+    return container!.querySelector<HTMLInputElement>(
+      'craft-checkbox-indeterminate > input[slot="input"]'
+    )!;
+  }
 
-    expect((all as any).choiceValue).toBe('*');
-    expect((all as any).disabled).toBe(false);
-    expect(items.map((item) => (item as any).choiceValue)).toEqual([
-      'one',
-      'two',
-      'three',
-    ]);
-    expect(items.every((item) => (item as any).disabled === true)).toBe(true);
+  it('nests the options inside the All checkbox that governs them', async () => {
+    await mount(allOption, ['two']);
+
+    const all = container!.querySelector('craft-checkbox-indeterminate')!;
+
+    // Nesting is how the component finds the boxes it governs.
+    expect(all.querySelectorAll('craft-checkbox')).toHaveLength(3);
+    expect(allInput().value).toBe('*');
+    expect(allInput().checked).toBe(false);
   });
 
-  it('emits the All sentinel when All is checked', async () => {
-    await mount({allowAll: true}, ['two']);
+  it('renders the governed options checked while All is on', async () => {
+    await mount(allOption, ['*']);
 
-    reportChecked(['*', 'two']);
+    expect(allInput().checked).toBe(true);
 
-    expect(emitted).toEqual(['*']);
+    // Checked, so the group still reads as fully selected. Not disabled: Lion
+    // skips disabled children when All propagates, which would leave it unable
+    // to clear them again — `craft-checkbox-indeterminate` parks their `name`
+    // instead, which ChoiceAllOptionTest covers on the rendered markup.
+    const items = checkboxes();
+
+    expect(items.every((item) => (item as any).checked === true)).toBe(true);
+    expect(items.every((item) => (item as any).disabled === false)).toBe(true);
   });
 
-  it('clears the selection when All is unchecked', async () => {
-    await mount({allowAll: true}, '*');
+  it('emits the All token when All is checked, and nothing when unchecked', async () => {
+    await mount(allOption, ['two']);
 
-    // The options still report checked at this point — only All changed.
-    reportChecked(['one', 'two', 'three']);
+    allInput().checked = true;
+    allInput().dispatchEvent(new Event('change', {bubbles: true}));
+
+    expect(emitted).toEqual([['*']]);
+
+    await mount(allOption, ['*']);
+
+    allInput().checked = false;
+    allInput().dispatchEvent(new Event('change', {bubbles: true}));
 
     expect(emitted).toEqual([[]]);
   });
 
   it('emits the selection in display order', async () => {
-    await mount({allowAll: true}, []);
+    await mount({sortable: true}, []);
 
     reportChecked(['three', 'one']);
 

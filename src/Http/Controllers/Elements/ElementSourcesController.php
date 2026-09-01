@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSourceForm;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Form\Controls\Choice;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -171,11 +172,11 @@ readonly class ElementSourcesController
                         'condition' => Conditions::createCondition($postedSettings['condition'])->getConfig(),
                     ];
 
-                    if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
+                    if (isset($postedSettings['sites']) && ! self::isAllScope($postedSettings['sites'])) {
                         $sourceConfig['sites'] = $this->sourceScope($postedSettings['sites']);
                     }
 
-                    if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                    if (isset($postedSettings['userGroups']) && ! self::isAllScope($postedSettings['userGroups'])) {
                         $sourceConfig['userGroups'] = $this->sourceScope($postedSettings['userGroups']);
                     }
                 } elseif ($type === ElementSources::TYPE_HEADING) {
@@ -235,6 +236,19 @@ readonly class ElementSourcesController
         }
 
         return $defaultSort;
+    }
+
+    /**
+     * Whether a posted `sites`/`userGroups` scope means “all”, which project
+     * config records by omitting the key.
+     *
+     * The “All” checkbox posts {@see Choice::ALL_VALUE} as the sole member of
+     * the control's array. A scope that has never been narrowed is seeded as
+     * the bare token instead, and posts back unchanged.
+     */
+    private static function isAllScope(mixed $scope): bool
+    {
+        return $scope === Choice::ALL_VALUE || $scope === [Choice::ALL_VALUE];
     }
 
     /**

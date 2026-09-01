@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Form;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Form\Contracts\Node;
 use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Form\Nodes\ActionMenu;
 use CraftCms\Cms\Form\Nodes\Callout;
+use CraftCms\Cms\Form\Nodes\CopyAttribute;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Form\Nodes\Heading;
@@ -32,7 +34,9 @@ class FormNodeTypes extends TypeRegistry
 
     protected const array DEFAULT_TYPES = [
         Action::class,
+        ActionMenu::class,
         Callout::class,
+        CopyAttribute::class,
         Field::class,
         Group::class,
         Heading::class,
