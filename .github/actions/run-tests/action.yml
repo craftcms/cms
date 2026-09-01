@@ -39,7 +39,7 @@ runs:
         php-version: ${{ inputs.php-version }}
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi
         tools: composer:v2
-        ini-values: display_errors=On, memory_limit=2G
+        ini-values: display_errors=On, memory_limit=4G
         coverage: ${{ inputs.coverage }}
         # Pass an empty token so setup-php doesn't write GITHUB_TOKEN into
         # Composer's auth config. Composer 2.9.7's regex rejects the new
