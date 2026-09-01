@@ -1,0 +1,26 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TextareaStories from './textarea.stories';
+
+<Meta of={TextareaStories} name="Docs" />
+
+# Textarea
+
+`<craft-textarea>` is a multi-line text input.
+
+<Canvas of={TextareaStories.Default} sourceState="shown" />
+
+It carries the same label, help text, validation, and slots as [Input](?path=/docs/form-controls-text-controls-input--docs) — everything on that page applies here.
+
+## When to Use It
+
+Where the value is genuinely prose: a description, a note, a summary.
+
+The size of a field is a promise about the length of the answer. A textarea for something short trains people to write more than the value needs, and a single-line input for something long makes them fight the field.
+
+`monospace` renders the value in a monospace font, for code or structured text where character alignment matters.
+
+## Accessibility
+
+As with any control, the label is what matters — set it, slot it, or wrap the textarea in a [Field](?path=/docs/form-controls-field--docs).
+
+Do not remove the resize handle. It is one of the few pieces of interface a person can adjust to suit themselves, and taking it away helps nobody.
