@@ -88,8 +88,8 @@ it('records normalized entry content changes', function () {
         ->firstOrFail();
 
     expect($event->changes)->toEqualCanonicalizing([
-        new ActivityChange('attribute', 'title', 'Title', 'Old title', 'New title'),
-        new ActivityChange('field', $field->layoutElement->uid, $field->name, 'Old body', 'New body'),
+        new ActivityChange('Title', 'Old title', 'New title'),
+        new ActivityChange($field->name, 'Old body', 'New body'),
     ]);
 });
 
@@ -113,7 +113,7 @@ it('records a status change instead of a generic update', function () {
         ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
         ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled.')
         ->and($events->first()->changes)->toContainEqual(
-            new ActivityChange('field', $field->layoutElement->uid, $field->name, 'Old body', 'New body'),
+            new ActivityChange($field->name, 'Old body', 'New body'),
         );
 });
 
@@ -216,7 +216,7 @@ it('records applying a provisional draft as an entry update', function () {
     expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->snapshots['subject']['label'])->toBe('Updated title')
         ->and($event->changes)->toContainEqual(
-            new ActivityChange('attribute', 'title', 'Title', 'Original title', 'Updated title'),
+            new ActivityChange('Title', 'Original title', 'Updated title'),
         );
 });
 

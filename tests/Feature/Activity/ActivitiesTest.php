@@ -54,7 +54,7 @@ it('records durable actor subject site and payload snapshots', function () {
         reason: 'Published',
         subject: $draft,
         site: $site,
-        changes: [new ActivityChange('field', 'summary', 'Summary', null, 'Ready')],
+        changes: [new ActivityChange('Summary', null, 'Ready')],
     ));
 
     expect($event->id)->toBeString()
@@ -73,7 +73,7 @@ it('records durable actor subject site and payload snapshots', function () {
             'event' => ['label' => 'Entry updated'],
         ])
         ->and($event->changes)->toEqual([
-            new ActivityChange('field', 'summary', 'Summary', null, 'Ready'),
+            new ActivityChange('Summary', null, 'Ready'),
         ])
         ->and($event->data)->toBe(['reason' => 'Published']);
 });
@@ -122,7 +122,7 @@ it('attributes unauthenticated HTTP activity to an anonymous actor', function ()
 });
 
 it('rejects invalid changes', function () {
-    expect(fn () => new ActivityChange('field', 'summary', '', null, 'Ready'))
+    expect(fn () => new ActivityChange('', null, 'Ready'))
         ->toThrow(InvalidArgumentException::class);
 });
 

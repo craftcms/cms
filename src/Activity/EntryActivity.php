@@ -105,7 +105,7 @@ class EntryActivity
 
             $old = self::attributeValue($original, $attribute);
             $new = self::attributeValue($entry, $attribute);
-            self::appendChange($changes, $contentChanged, 'attribute', $attribute, t($label), $old, $new);
+            self::appendChange($changes, $contentChanged, t($label), $old, $new);
         }
 
         foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
@@ -118,8 +118,6 @@ class EntryActivity
             self::appendChange(
                 $changes,
                 $contentChanged,
-                'field',
-                $field->layoutElement->uid,
                 t($field->name, category: 'site'),
                 $old,
                 $new,
@@ -133,8 +131,6 @@ class EntryActivity
     private static function appendChange(
         array &$changes,
         bool &$contentChanged,
-        string $type,
-        string $id,
         string $label,
         mixed $old,
         mixed $new,
@@ -156,7 +152,7 @@ class EntryActivity
             return;
         }
 
-        $changes[] = new ActivityChange($type, $id, $label, $old, $new);
+        $changes[] = new ActivityChange($label, $old, $new);
     }
 
     private static function attributeValue(Entry $entry, string $attribute): mixed

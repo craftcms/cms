@@ -109,15 +109,13 @@ Use `ActivityChange` when consumers need a consistent old-versus-new representat
 use CraftCms\Cms\Activity\Data\ActivityChange;
 
 new ActivityChange(
-    type: 'field',
-    id: $field->layoutElement->uid,
     label: $field->name,
     old: 'Draft',
     new: 'Approved',
 );
 ```
 
-The change type groups similar values. The change ID must be stable, and the label is captured for display. Old and new values must be JSON-encodable. Laravel throws while applying the payload cast if encoding fails. Avoid secrets, access tokens, full request bodies, and other data that should not remain in an audit history.
+The label is captured for display. Old and new values must be JSON-encodable. Laravel throws while applying the payload cast if encoding fails. Avoid secrets, access tokens, full request bodies, and other data that should not remain in an audit history.
 
 ## Logging activity from a plugin
 
