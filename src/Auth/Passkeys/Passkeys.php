@@ -228,13 +228,18 @@ class Passkeys
             return false;
         }
 
+        // if we're re-checking against the old (pre-webauthn-5) user handle format, $credentialRecord->userHandle
+        // was just set to the decoded (raw) user handle by CredentialRepository::findOneByCredentialId(), so the
+        // user handle we compare it with here needs to be decoded as well, rather than the (encoded) $userEntity->id
+        $userHandle = $checkOldUserHandle ? $this->userElement($user)->uid : $userEntity->id;
+
         try {
             return $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
-                $userEntity->id,
+                $userHandle,
             );
         } catch (InvalidUserHandleException $exception) {
             throw $exception;
