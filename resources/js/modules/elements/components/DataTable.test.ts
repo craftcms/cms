@@ -36,10 +36,7 @@ describe('DataTable', () => {
     sortButton.click();
     expect(document.activeElement).toBe(sortButton);
 
-    // The reload starts: `loading` swaps the whole table out for a spinner,
-    // tearing the pressed button down with it. Focus should land on the
-    // spinner (craft-spinner forwards `.focus()` to its own internal
-    // tabindex="-1" wrapper) rather than falling back to <body>.
+    // Simulates the reload cycle a real server-side sort causes.
     loading.value = true;
     await nextTick();
     await nextTick();
