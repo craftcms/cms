@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.11.0 - 2026-09-01
 
 > [!WARNING]  
 > GraphQL fields that return user data (`author`, `authorId`, `authors`, `authorIds`, `draftCreator`, `revisionCreator`, `uploader`, and `uploaderId`) are no longer available to schemas that don’t have “Query for users” enabled.
