@@ -49,12 +49,16 @@ export default class CraftCopyButton extends LitElement {
   /** Value to copy on click */
   @property({type: String}) value = '';
 
+  /** Prevents copying, and dims the button. */
   @property({type: Boolean}) disabled = false;
 
   /** The length of time to show feedback before restoring the default trigger. */
   @property({attribute: 'feedback-duration', type: Number}) feedbackDuration =
     1000;
 
+  /**
+   * Text shown in the button's tooltip, naming what will be copied.
+   */
   @property({attribute: 'tooltip-label'})
   tooltipLabel: string | null = null;
 
