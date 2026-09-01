@@ -156,11 +156,60 @@ class UrlHelper
      */
     public static function removeParam(string $url, string $param): string
     {
+        return static::removeParams($url, [$param]);
+    }
+
+    /**
+     * Removes query string params from a URL.
+     *
+     * @param string $url
+     * @param string[] $params
+     * @return string
+     * @since 5.11.0
+     */
+    public static function removeParams(string $url, array $params): string
+    {
+        // Extract any params/fragment from the base URL
+        [$url, $urlParams, $fragment] = self::_extractParams($url);
+
+        // Remove the params
+        foreach ($params as $param) {
+            unset($urlParams[$param]);
+        }
+
+        // Rebuild
+        if (($query = static::buildQuery($urlParams)) !== '') {
+            $url .= '?' . $query;
+        }
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
+        }
+        return $url;
+    }
+
+    /**
+     * Removes all query string params from a URL.
+     *
+     * @param string $url
+     * @param string[] $except Any params that should be left alone
+     * @return string
+     * @since 5.11.0
+     */
+    public static function removeAllParams(string $url, array $except = []): string
+    {
         // Extract any params/fragment from the base URL
         [$url, $params, $fragment] = self::_extractParams($url);
 
-        // Remove the param
-        unset($params[$param]);
+        // Remove the params
+        if (!empty($except)) {
+            foreach (array_keys($params) as $param) {
+                if (!in_array($param, $except)) {
+                    unset($params[$param]);
+                }
+            }
+        } else {
+            $params = [];
+        }
 
         // Rebuild
         if (($query = static::buildQuery($params)) !== '') {
@@ -275,18 +324,20 @@ class UrlHelper
      * Returns either a control panel or a site URL, depending on the request type.
      *
      * @param string $path
-     * @param array|string|null $params
+     * @param array|string|false|null $params The query params to add to the URL. If `false`, any existing params will be removed.
      * @param string|null $scheme
      * @param bool|null $showScriptName Whether the script name (index.php) should be included in the URL.
      * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function url(string $path = '', array|string|false|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
                 $path = static::urlWithParams($path, $params);
+            } elseif ($params === false) {
+                $path = static::removeAllParams($path);
             }
 
             if ($scheme !== null) {
@@ -312,7 +363,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, showScriptName: $showScriptName);
+        return self::_createUrl($path, $params ?: null, $scheme, $cpUrl, showScriptName: $showScriptName);
     }
 
     /**
@@ -596,12 +647,12 @@ class UrlHelper
         }
 
         // Make sure the CP referred it
-        if (!str_starts_with($referrer, self::baseCpUrl())) {
+        if (!str_starts_with($referrer, static::baseCpUrl())) {
             return null;
         }
 
         // to ensure we're comparing uris strip base cp url and query string from the referrer first
-        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, self::baseCpUrl()), '/');
+        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, static::baseCpUrl()), '/');
         $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
 
         // Make sure it didn't refer itself

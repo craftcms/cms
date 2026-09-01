@@ -270,6 +270,18 @@ class Gql
     }
 
     /**
+     * Return true if active schema can query all users.
+     *
+     * @param GqlSchema|null $schema The GraphQL schema. If none is provided, the active schema will be used.
+     * @return bool
+     * @since 5.11.0
+     */
+    public static function canQueryAllUsers(?GqlSchema $schema = null): bool
+    {
+        return self::canSchema('usergroups.everyone', schema: $schema);
+    }
+
+    /**
      * Get (and create if needed) a union type by name, included types and a resolver function.
      *
      * @param string $typeName The union type name.

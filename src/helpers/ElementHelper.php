@@ -72,7 +72,7 @@ class ElementHelper
      *
      * @param string|null $str
      * @return bool
-     * @since 5.10.15
+     * @since 5.11.0
      */
     public static function containsTempSlug(?string $str): bool
     {

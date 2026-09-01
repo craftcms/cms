@@ -30,6 +30,7 @@ use craft\events\CancelableEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
+use craft\helpers\Component;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json as JsonHelper;
@@ -233,7 +234,7 @@ class ContentBlock extends Field implements
     public function setFieldLayout(FieldLayout|array|string $layout): void
     {
         if (is_string($layout)) {
-            $layout = JsonHelper::decode($layout);
+            $layout = Component::cleanseConfig(JsonHelper::decode($layout));
         }
 
         if (is_array($layout)) {

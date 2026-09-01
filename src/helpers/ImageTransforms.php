@@ -301,6 +301,8 @@ class ImageTransforms
         }
 
         if (is_array($transform)) {
+            $transform = Component::cleanseConfig($transform);
+
             if (isset($transform['class'])) {
                 throw new InvalidArgumentException('Invalid transform config.');
             }

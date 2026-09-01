@@ -835,6 +835,7 @@ class AppController extends Controller
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
+                        $component = clone $component;
                         Craft::configure($component, Component::cleanseConfig($config['overrides']));
                     }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);

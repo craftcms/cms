@@ -888,7 +888,9 @@ class Users extends Component
             $userRecord->save();
 
             // If they have an unverified email address, now is the time to set it to their primary email address
-            $this->verifyEmailForUser($user);
+            if ($user->unverifiedEmail) {
+                $this->verifyEmailForUser($user);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -981,18 +983,21 @@ class Users extends Component
      */
     public function verifyEmailForUser(User $user): void
     {
-        // Bail if they don't have an unverified email to begin with
-        if (!$user->unverifiedEmail) {
-            return;
-        }
-
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->email = $user->unverifiedEmail;
-        $userRecord->unverifiedEmail = null;
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $userRecord->username = $user->unverifiedEmail;
+        if ($user->unverifiedEmail) {
+            $userRecord->email = $user->unverifiedEmail;
+            $userRecord->unverifiedEmail = null;
+
+            if ($generalConfig->useEmailAsUsername) {
+                $userRecord->username = $user->unverifiedEmail;
+            }
         }
+
+        // Clear out the verification code
+        $userRecord->verificationCode = null;
+        $userRecord->verificationCodeIssuedDate = null;
 
         $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
 
@@ -1000,6 +1005,18 @@ class Users extends Component
             $user->addErrors($userRecord->getErrors());
             throw new InvalidElementException($user);
         }
+
+        if ($user->unverifiedEmail) {
+            $user->email = $user->unverifiedEmail;
+            $user->unverifiedEmail = null;
+
+            if ($generalConfig->useEmailAsUsername) {
+                $user->username = $user->email;
+            }
+        }
+
+        $user->verificationCode = null;
+        $user->verificationCodeIssuedDate = null;
 
         // If the user status is pending, let's activate them.
         if ($userRecord->pending) {
