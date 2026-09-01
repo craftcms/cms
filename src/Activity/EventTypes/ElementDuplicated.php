@@ -39,16 +39,6 @@ class ElementDuplicated extends ActivityEventType
         ]];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'source' => ['required', 'array:type,id,label'],
-            'source.type' => ['required', 'string'],
-            'source.id' => ['required', 'string'],
-            'source.label' => ['required', 'string'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(

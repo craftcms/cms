@@ -39,24 +39,6 @@ class ElementMoved extends ActivityEventType
         ];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'origin' => ['required', 'array:structure,parent,previousSibling'],
-            'origin.structure' => ['required', 'uuid'],
-            'origin.parent' => ['nullable', 'array:type,id,label'],
-            'origin.previousSibling' => ['nullable', 'array:type,id,label'],
-            'origin.parent.*' => ['string'],
-            'origin.previousSibling.*' => ['string'],
-            'destination' => ['required', 'array:structure,parent,previousSibling'],
-            'destination.structure' => ['required', 'uuid'],
-            'destination.parent' => ['nullable', 'array:type,id,label'],
-            'destination.previousSibling' => ['nullable', 'array:type,id,label'],
-            'destination.parent.*' => ['string'],
-            'destination.previousSibling.*' => ['string'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(

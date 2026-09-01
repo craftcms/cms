@@ -32,8 +32,5 @@ interface ActivityEventTypeInterface
 
     public static function icon(): string;
 
-    /** @return array<string, mixed> */
-    public static function rules(): array;
-
     public static function format(ActivityEvent $event): string|Htmlable|null;
 }

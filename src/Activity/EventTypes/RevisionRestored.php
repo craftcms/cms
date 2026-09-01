@@ -30,11 +30,6 @@ class RevisionRestored extends ActivityEventType
         return ['revisionNum' => $this->revisionNum];
     }
 
-    public static function rules(): array
-    {
-        return ['revisionNum' => ['required', 'integer']];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(

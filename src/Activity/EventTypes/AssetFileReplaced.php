@@ -42,18 +42,6 @@ class AssetFileReplaced extends ActivityEventType
         ];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'oldFilename' => ['required', 'string'],
-            'newFilename' => ['required', 'string'],
-            'oldMimeType' => ['nullable', 'string'],
-            'newMimeType' => ['nullable', 'string'],
-            'oldSize' => ['nullable', 'integer'],
-            'newSize' => ['nullable', 'integer'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(

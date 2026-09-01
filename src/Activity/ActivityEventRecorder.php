@@ -12,7 +12,6 @@ use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Scoped;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use JsonException;
 
@@ -34,7 +33,7 @@ class ActivityEventRecorder
             $event->changes(),
         );
 
-        $this->validatePayload($data, $changes, $event::rules());
+        $this->validatePayload($data, $changes);
 
         $subject = $event->subject();
         $actor = $this->resolveActor($event->actor());
@@ -98,9 +97,8 @@ class ActivityEventRecorder
     /**
      * @param  array<string, mixed>  $data
      * @param  list<array<string, mixed>>  $changes
-     * @param  array<string, mixed>  $rules
      */
-    private function validatePayload(array $data, array $changes, array $rules): void
+    private function validatePayload(array $data, array $changes): void
     {
         $validJson = static function (string $attribute, mixed $value, Closure $fail): void {
             try {
@@ -121,7 +119,6 @@ class ActivityEventRecorder
                 $validJson,
             ],
             'changes' => ['list', $validJson],
-            ...Arr::prependKeysWith($rules, 'data.'),
         ])->validate();
     }
 }

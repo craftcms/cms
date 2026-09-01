@@ -37,17 +37,6 @@ class ElementMerged extends ActivityEventType
         ];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'role' => ['required', 'in:merged,prevailing'],
-            'other' => ['required', 'array:type,id,label'],
-            'other.type' => ['required', 'string'],
-            'other.id' => ['required', 'string'],
-            'other.label' => ['required', 'string'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         $other = $event->data['other']['label'];

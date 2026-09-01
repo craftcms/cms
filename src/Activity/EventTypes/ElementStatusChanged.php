@@ -40,14 +40,6 @@ class ElementStatusChanged extends ActivityEventType
         ];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'oldStatus' => ['required', 'string'],
-            'newStatus' => ['required', 'string'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(

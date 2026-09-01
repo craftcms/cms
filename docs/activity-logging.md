@@ -19,7 +19,7 @@ sequenceDiagram
     Action->>Type: Construct after the action succeeds
     Action->>Activities: record($event)
     Activities->>Recorder: record($event)
-    Recorder->>Recorder: Validate data and changes
+    Recorder->>Recorder: Check payload shape and JSON encoding
     Recorder->>Recorder: Resolve actor, subject, site, and labels
     Recorder->>DB: Insert event and snapshots
     DB-->>Action: ActivityEvent model
@@ -28,7 +28,7 @@ sequenceDiagram
 The recorder performs these steps:
 
 1. Reads the event type's source, subject, actor, site, data, and changes.
-2. Validates event data with the event type's rules and checks that the payload can be encoded as JSON.
+2. Checks that event data is a JSON object and that the payload can be encoded as JSON.
 3. Resolves the actor when the event type did not supply one.
 4. Captures labels for the source, event, actor, subject, and site.
 5. Inserts an `ActivityEvent` with the current time.
@@ -103,7 +103,7 @@ Do not use a translated label, mutable handle, or array index as the subject ID.
 
 ### Data and changes
 
-`data()` returns event-specific values used to describe or inspect the action. It must return a JSON object represented by an associative PHP array. Add Laravel validation rules for every value the event relies on.
+`data()` returns event-specific values used to describe or inspect the action. It must return a JSON object represented by an associative PHP array. Event type constructors should use specific parameter types; validate untrusted values before constructing the event.
 
 Use `ActivityChange` when consumers need a consistent old-versus-new representation:
 
@@ -196,15 +196,6 @@ class CampaignSent extends CampaignActivityEventType
         ];
     }
 
-    public static function rules(): array
-    {
-        return [
-            'provider' => ['required', 'string'],
-            'deliveryId' => ['required', 'string'],
-            'recipientCount' => ['required', 'integer', 'min:0'],
-        ];
-    }
-
     public static function format(ActivityEvent $event): string
     {
         return t(
@@ -220,8 +211,6 @@ class CampaignSent extends CampaignActivityEventType
 ```
 
 `LABEL` is the short fallback description. Craft translates it using the source's translation category. `format()` may return a string, an `Htmlable`, or `null`. Returning `null` tells Craft to use the translated label. Craft sanitizes strings and HTML before returning them from `Activities::format()`.
-
-Use `rules()` for the event's `data()` keys. The recorder prefixes them with `data.`, so rules must use keys such as `provider` rather than `data.provider`.
 
 ### Record the event at the action boundary
 

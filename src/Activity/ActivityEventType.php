@@ -79,11 +79,6 @@ abstract class ActivityEventType implements ActivityEventTypeInterface
         return static::ICON;
     }
 
-    public static function rules(): array
-    {
-        return [];
-    }
-
     public static function format(ActivityEvent $event): string|Htmlable|null
     {
         return null;

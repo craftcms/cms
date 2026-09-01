@@ -337,11 +337,6 @@ class TestPluginEntryUpdated extends TestPluginActivityEventType
     {
         return ['reason' => $this->reason];
     }
-
-    public static function rules(): array
-    {
-        return ['reason' => ['required', 'string']];
-    }
 }
 
 class TestPluginEntryPublished extends TestPluginEntryUpdated
@@ -349,11 +344,6 @@ class TestPluginEntryPublished extends TestPluginEntryUpdated
     protected const string LABEL = 'Entry published';
 
     protected const string ICON = 'bullhorn';
-
-    public static function rules(): array
-    {
-        return ['reason' => ['required', 'string']];
-    }
 
     public static function format(ActivityEvent $event): string
     {
