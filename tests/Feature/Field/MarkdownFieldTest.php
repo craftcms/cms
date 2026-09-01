@@ -446,7 +446,7 @@ it('normalizes values without trimming markdown-significant whitespace', functio
 it('serializes and searches raw markdown', function () {
     $field = new MarkdownField(['flavor' => MarkdownService::FLAVOR_GFM]);
     $value = new MarkdownData('**raw**', MarkdownService::FLAVOR_GFM);
-    $searchKeywords = ($this->searchKeywords(...))->call($field, $value, new Entry);
+    $searchKeywords = (fn (mixed $value, Entry $element): string => $this->searchKeywords($value, $element))->call($field, $value, new Entry);
 
     expect($field->serializeValue($value, null))->toBe('**raw**')
         ->and($field->serializeValue(null, null))->toBeNull()

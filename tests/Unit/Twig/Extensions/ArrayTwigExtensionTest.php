@@ -83,7 +83,7 @@ describe('ArrayTwigExtension', function () {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
             // a first-class callable (`...`) is itself a Closure, so use an array callable to get a genuinely non-Closure callable
-            $extension->groupFilter(true, [1, 2], $extension->indexOfFilter(...));
+            $extension->groupFilter(true, [1, 2], [$extension, 'indexOfFilter']);
         })->throws(RuntimeError::class);
     });
 
