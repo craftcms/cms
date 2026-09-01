@@ -6,6 +6,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\User\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -20,6 +22,11 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    if (! User::query()->exists()) {
+        Cms::setIsInstalled(true);
+        RefreshDatabaseState::$migrated = false;
+    }
+
     putenv('INSTALL_TIMEZONE');
     putenv('INSTALL_BASE_URL');
 });
