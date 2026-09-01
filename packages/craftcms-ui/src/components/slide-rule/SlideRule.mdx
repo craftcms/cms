@@ -1,0 +1,26 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SlideRuleStories from './slide-rule.stories';
+
+<Meta of={SlideRuleStories} name="Docs" />
+
+# Slide Rule
+
+`<craft-slide-rule>` picks an angle from a scrolling ruler.
+
+<Canvas of={SlideRuleStories.Default} sourceState="shown" />
+
+It is built for rotation — image cropping, focal points — where a person adjusts by feel and watches the result rather than reading a number.
+
+<Canvas of={SlideRuleStories.StartingAngle} sourceState="shown" />
+
+For a short set of discrete steps, use [Slide Picker](?path=/docs/form-controls-slide-picker--docs).
+
+## Accessibility
+
+A drag-to-rotate ruler is a pointer-first control, which makes the keyboard path the one to check rather than assume.
+
+Whatever it adjusts should also be settable another way — a numeric field beside it, or a set of preset angles — so the interface does not depend on a gesture. Fine rotation by keyboard alone is slow at best.
+
+## Properties
+
+<ArgTypes of={SlideRuleStories} />
