@@ -20,6 +20,7 @@
 - Added support for `.well-known/passkey-endpoints` requests. ([#19364](https://github.com/craftcms/cms/pull/19364))
 - The front-end login page no longer returns a redirect response for logged-in users, if it’s a preview request. ([#19360](https://github.com/craftcms/cms/discussions/19360))
 - Improved queue job reservation performance when queues contain many large jobs. ([#19097](https://github.com/craftcms/cms/issues/19097))
+- Updated svg-sanitizer to 1.0.
 - Updated Twig to 3.28.
 - Updated yii2-debug to 2.1.28.
 - Fixed an error that could occur when editing an element. ([#17268](https://github.com/craftcms/cms/issues/17268))
