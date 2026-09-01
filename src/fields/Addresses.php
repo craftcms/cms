@@ -690,7 +690,7 @@ class Addresses extends Field implements
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getAddresses().length);
+      btn.toggleClass('disabled', !getAddresses().length);
     });
   }, 1);
 })();

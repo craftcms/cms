@@ -217,27 +217,45 @@ class Auth extends Component
     public function verify(string $methodClass, mixed ...$args): bool
     {
         $user = $this->getUser($sessionDuration);
+        $method = $this->getMethod($methodClass, $user);
+        $mutex = null;
+        $lockName = null;
 
-        if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
-            $user?->handleInvalidLoginParam();
-            return false;
+        if ($user) {
+            $mutex = Craft::$app->getMutex();
+            $lockName = sprintf('auth-verify:%d', $user->id);
+
+            if (!$mutex->acquire($lockName, 5)) {
+                return false;
+            }
         }
 
-        // success!
-        if ($user) {
-            $this->setUser(null);
-
-            // if we're impersonating, pass the user we're impersonating to the complete the login
-            $userSession = Craft::$app->getUser();
-            if ($userSession->getImpersonator() !== null) {
-                /** @var User $user */
-                $user = Craft::$app->getUser()->getIdentity();
+        try {
+            if (!$method->verify(...$args)) {
+                $user?->handleInvalidLoginParam();
+                return false;
             }
 
-            $userSession->login($user, $sessionDuration);
-        }
+            // success!
+            if ($user) {
+                $this->setUser(null);
 
-        return true;
+                // if we're impersonating, pass the user we're impersonating to the complete the login
+                $userSession = Craft::$app->getUser();
+                if ($userSession->getImpersonator() !== null) {
+                    /** @var User $user */
+                    $user = Craft::$app->getUser()->getIdentity();
+                }
+
+                $userSession->login($user, $sessionDuration);
+            }
+
+            return true;
+        } finally {
+            if ($mutex !== null && $lockName !== null) {
+                $mutex->release($lockName);
+            }
+        }
     }
 
     /**
@@ -615,13 +633,18 @@ class Auth extends Component
             return false;
         }
 
+        // if we're re-checking against the old (pre-webauthn-5) user handle format, $credentialRecord->userHandle
+        // was just set to the decoded (raw) user handle by CredentialRepository::findOneByCredentialId(), so the
+        // user handle we compare it with here needs to be decoded as well, rather than the (encoded) $userEntity->id
+        $userHandle = $checkOldUserHandle ? $user->uid : $userEntity->id;
+
         try {
             $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $publicKeyCredentialRequestOptions,
                 Craft::$app->getRequest()->getHostName(),
-                $userEntity->id,
+                $userHandle,
             );
 
             // we can't save the updated credential record to db here as in User::authenticateWithPasskey()

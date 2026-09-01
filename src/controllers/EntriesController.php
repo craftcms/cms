@@ -424,7 +424,7 @@ class EntriesController extends BaseEntriesController
 
                 $sectionEntryTypes = array_map(fn($et) => $et->id, $section->entryTypes);
 
-                return !empty(array_intersect($entryTypes, $sectionEntryTypes));
+                return !empty($entryTypes) && empty(array_diff($entryTypes, $sectionEntryTypes));
             })
             ->sortBy(fn(Section $section) => $section->getUiLabel())
             ->all();
@@ -489,6 +489,13 @@ class EntriesController extends BaseEntriesController
             if (!$entry->canMove()) {
                 throw new ForbiddenHttpException('User is not authorized to perform this action.');
             }
+        }
+
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+        $entryTypeIds = array_unique(array_map(fn(Entry $entry) => $entry->typeId, $entries));
+
+        if (!empty(array_diff($entryTypeIds, $sectionEntryTypeIds))) {
+            throw new BadRequestHttpException('Not all entries have a type supported by the target section.');
         }
 
         $errors = [];

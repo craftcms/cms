@@ -395,6 +395,7 @@ abstract class Controller extends \yii\web\Controller
     ): ?YiiResponse {
         $modelName ??= 'model';
         $routeParams += [$modelName => $model];
+
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
@@ -434,11 +435,11 @@ abstract class Controller extends \yii\web\Controller
             unset($modelData['cpEditUrl']);
         }
 
-        $data += array_filter([
+        $data += [
             'modelName' => $modelName,
             'modelClass' => get_class($model),
             ($modelName ?? 'model') => $modelData,
-        ]);
+        ];
 
         if ($model instanceof Identifiable) {
             $data['modelId'] = $model->getId();

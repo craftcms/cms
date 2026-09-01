@@ -28,7 +28,9 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Number;
 use craft\helpers\Search;
+use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -187,11 +189,12 @@ class AppController extends Controller
      */
     public function actionCacheUpdates(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
+        $updates = $updatesService->cacheUpdates(Component::cleanseConfig($updateData));
         $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
@@ -455,14 +458,24 @@ class AppController extends Controller
      */
     public function actionSetLicenseShunCookie(): Response
     {
+        $hash = $this->request->getRequiredBodyParam('hash');
+
+        if (!StringHelper::isMd5($hash)) {
+            throw new BadRequestHttpException('Invalid hash');
+        }
+
         $cookieName = App::licenseShunCookieName();
         $oldCookie = $this->request->getCookies()->get($cookieName);
         $data = $oldCookie ? Json::decode($oldCookie->value) : [];
 
+        if (isset($data['count']) && !Number::isInt($data['count'])) {
+            throw new BadRequestHttpException('Invalid count');
+        }
+
         $newCookie = new Cookie(Craft::cookieConfig([
             'name' => $cookieName,
             'value' => Json::encode([
-                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'hash' => $hash,
                 'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
                 'count' => ($data['count'] ?? 0) + 1,
             ]),
@@ -504,27 +517,6 @@ class AppController extends Controller
         }
 
         return $this->asSuccess();
-    }
-
-    /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Craft::$app->getHasWrongEdition()) {
-            $licensedEdition = Craft::$app->getLicensedEdition();
-            $success = Craft::$app->setEdition($licensedEdition);
-        } else {
-            // Just fake it
-            $success = true;
-        }
-
-        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**

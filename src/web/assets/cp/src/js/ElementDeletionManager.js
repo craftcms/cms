@@ -85,10 +85,16 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       }
 
       this.$submitBtn?.addClass('loading');
+      let data = null;
       try {
-        await Craft.sendActionRequest('POST', 'delete-elements/delete', {
-          data: this.getParams(),
-        });
+        const response = await Craft.sendActionRequest(
+          'POST',
+          'delete-elements/delete',
+          {
+            data: this.getParams(),
+          }
+        );
+        data = response.data;
       } catch (e) {
         return;
       } finally {
@@ -98,6 +104,14 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       this.succeeded = true;
       this.settings.onSuccess();
       this.modal?.hide();
+
+      if (data) {
+        if (data.showAsFailure) {
+          Craft.cp.displayError(data.message);
+        } else {
+          Craft.cp.displaySuccess(data.message);
+        }
+      }
     },
 
     getConfirmationMessage: function (totalElements) {

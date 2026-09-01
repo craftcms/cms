@@ -336,6 +336,27 @@ class Config extends Component
     }
 
     /**
+     * Returns whether an environment variable exists in the project’s `.env` file.
+     *
+     * @param string $name The environment variable name
+     * @return bool
+     * @since 5.10.15
+     */
+    public function doesEnvVarExist(string $name): bool
+    {
+        $path = $this->getDotEnvPath();
+
+        if (!file_exists($path)) {
+            return false;
+        }
+
+        $contents = file_get_contents($path);
+        $qName = preg_quote($name, '/');
+
+        return (bool)preg_match("/\s*^\s*$qName=.*/m", $contents);
+    }
+
+    /**
      * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name

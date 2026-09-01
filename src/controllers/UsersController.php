@@ -233,10 +233,13 @@ class UsersController extends Controller
         }
 
         if ($this->request->getIsGet()) {
-            // see if they're already logged in
-            $user = static::currentUser();
-            if ($user) {
-                return $this->_handleSuccessfulLogin($user);
+            // see if they're already logged in, unless this is a preview request
+            // (see https://github.com/craftcms/cms/discussions/19360)
+            if (!$this->request->getIsPreview()) {
+                $user = static::currentUser();
+                if ($user) {
+                    return $this->_handleSuccessfulLogin($user);
+                }
             }
 
             // should we be showing the 2FA form?
@@ -774,6 +777,11 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
+        // Even if they have administrateUsers permissions, only and admin should be able to activate another admin
+        if ($user->admin) {
+            $this->requireAdmin(false);
+        }
+
         try {
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
@@ -1084,6 +1092,11 @@ class UsersController extends Controller
 
         if (!$user) {
             $this->_noUserExists();
+        }
+
+        // Even if they have administrateUsers permissions, only and admin should be able to activate another admin
+        if ($user->admin) {
+            $this->requireAdmin(false);
         }
 
         try {
@@ -2200,7 +2213,7 @@ JS);
         if (!$user->getIsCurrent()) {
             $this->requirePermission('administrateUsers');
 
-            // Even if you have administrateUsers permissions, only and admin should be able to deactivate another admin.
+            // Even if they have administrateUsers permissions, only and admin should be able to deactivate another admin
             if ($user->admin) {
                 $this->requireAdmin(false);
             }
@@ -2547,6 +2560,14 @@ JS);
         }
 
         $returnUrl = $this->request->getQueryParam('returnUrl');
+
+        if ($returnUrl) {
+            $returnUrl = preg_replace('/[\t\r\n]/', '', trim($returnUrl));
+            if (StringHelper::startsWith($returnUrl, 'javascript:', false)) {
+                $returnUrl = null;
+            }
+        }
+
         if (!$returnUrl) {
             if ($this->request->getIsCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false

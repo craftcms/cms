@@ -1719,7 +1719,7 @@ JS, [
 
         // If the original element is a provisional draft,
         // delete the draft as the changes are likely no longer wanted.
-        if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft) {
+        if ($this->_deleteProvisionalDraft && $element->isProvisionalDraft && $element->canDelete($user)) {
             Craft::$app->getElements()->deleteElement($element);
         }
 

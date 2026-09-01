@@ -54,13 +54,33 @@ class ElementHelper
     /**
      * Returns whether the given slug is temporary.
      *
-     * @param string $slug
+     * @param string|null $slug
      * @return bool
      * @since 3.2.2
      */
-    public static function isTempSlug(string $slug): bool
+    public static function isTempSlug(?string $slug): bool
     {
+        if ($slug === null) {
+            return false;
+        }
+
         return str_starts_with($slug, '__temp_');
+    }
+
+    /**
+     * Returns whether a string contains a temporary slug.
+     *
+     * @param string|null $str
+     * @return bool
+     * @since 5.10.15
+     */
+    public static function containsTempSlug(?string $str): bool
+    {
+        if ($str === null) {
+            return false;
+        }
+
+        return (bool)preg_match('/\b__temp_[a-z]{36}\b/', $str);
     }
 
     /**
@@ -1206,18 +1226,19 @@ class ElementHelper
     public static function cleanseQueryCriteria(array $criteria): array
     {
         unset(
-            $criteria['where'],
-            $criteria['orderBy'],
-            $criteria['indexBy'],
-            $criteria['select'],
-            $criteria['selectOption'],
             $criteria['from'],
             $criteria['groupBy'],
-            $criteria['join'],
             $criteria['having'],
-            $criteria['union'],
-            $criteria['withQueries'],
+            $criteria['indexBy'],
+            $criteria['join'],
+            $criteria['orderBy'],
             $criteria['params'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['union'],
+            $criteria['where'],
+            $criteria['with'],
+            $criteria['withQueries'],
         );
         return $criteria;
     }

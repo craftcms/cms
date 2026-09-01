@@ -1455,8 +1455,13 @@ class User extends Element implements IdentityInterface
         // Validate the security key
         try {
             $keyValid = $authService->verifyPasskey($this, $requestOptions, $response);
-        } catch (InvalidUserHandleException $e) {
-            $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
+        } catch (InvalidUserHandleException) {
+            // the user handle may have been stored in the old (pre-webauthn-5) format; try again, accounting for that
+            try {
+                $keyValid = $authService->verifyPasskey($this, $requestOptions, $response, true);
+            } catch (InvalidUserHandleException) {
+                $keyValid = false;
+            }
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }
@@ -2056,7 +2061,7 @@ XML;
                                 ],
                             ];
                         }
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (!$this->admin || $currentUser->admin)) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$this->password) {
                                 $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
@@ -2114,7 +2119,7 @@ XML;
                                 'userId' => $this->id,
                             ],
                         ];
-                        if ($canAdministrateUsers) {
+                        if ($canAdministrateUsers && (!$this->admin || $currentUser->admin)) {
                             $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy password reset URL…'), $view);
                         }
                     }
@@ -2375,13 +2380,19 @@ JS, [
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'photo') {
-            /** @var Asset|null $photo */
-            $photo = $elements[0] ?? null;
-            $this->setPhoto($photo);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'photo':
+                /** @var Asset|null $photo */
+                $photo = $elements[0] ?? null;
+                $this->setPhoto($photo);
+                break;
+            case 'addresses':
+                /** @var Address[] $elements */
+                $this->_addresses = ElementCollection::make($elements);
+                break;
         }
+
+        parent::setEagerLoadedElements($handle, $elements, $plan);
     }
 
     /**

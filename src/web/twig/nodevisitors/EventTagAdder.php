@@ -80,6 +80,17 @@ class EventTagAdder extends BaseEventTagVisitor
     }
 
     /**
+     * Resets the node visitor state
+     *
+     * @since 5.10.13.1
+     */
+    public function reset(): void
+    {
+        $this->_bodyTag = null;
+        $this->_bodyAttrOffset = null;
+    }
+
+    /**
      * Processes a text node.
      *
      * @param TextNode $node

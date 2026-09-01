@@ -1032,7 +1032,7 @@ JS, [
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getEntries().length);
+      btn.toggleClass('disabled', !getEntries().length);
     });
   }, 1);
 })();

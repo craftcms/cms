@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\NestedElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -28,6 +27,7 @@ use yii\web\Response;
 class NestedElementsController extends Controller
 {
     private ElementInterface $owner;
+    private string $attribute;
     private ElementQueryInterface|ElementCollection $nestedElements;
 
     /**
@@ -47,26 +47,14 @@ class NestedElementsController extends Controller
         $ownerId = $this->request->getRequiredBodyParam('ownerId');
         $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
         $owner = Craft::$app->getElements()->getElementById($ownerId, $ownerElementType, $ownerSiteId);
+
         if (!$owner) {
             throw new BadRequestHttpException('Invalid owner params');
         }
+
         $this->owner = $owner;
-
-        // Make sure they're authorized to manage it
-        $session = Craft::$app->getSession();
-        $attribute = $this->request->getRequiredBodyParam('attribute');
-        if (
-            !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->id, $attribute)) &&
-            (
-                $owner->id === $owner->getCanonicalId() ||
-                !$session->checkAuthorization(sprintf('manageNestedElements::%s::%s', $owner->getCanonicalId(), $attribute))
-            )
-        ) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action');
-        }
-
-        // Set the nested elements for the action
-        $this->nestedElements = $this->owner->$attribute;
+        $this->attribute = $this->request->getRequiredBodyParam('attribute');
+        $this->nestedElements = $owner->{$this->attribute};
 
         return true;
     }
@@ -78,41 +66,22 @@ class NestedElementsController extends Controller
      */
     public function actionReorder(): Response
     {
+        // Make sure they're authorized to reorder elements
+        $session = Craft::$app->getSession();
+        if (
+            !$session->checkAuthorization(sprintf('reorderNestedElements::%s::%s', $this->owner->id, $this->attribute)) &&
+            (
+                $this->owner->id === $this->owner->getCanonicalId() ||
+                !$session->checkAuthorization(sprintf('reorderNestedElements::%s::%s', $this->owner->getCanonicalId(), $this->attribute))
+            )
+        ) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
+        }
+
         $ids = array_map(fn($id) => (int)$id, $this->request->getRequiredBodyParam('elementIds'));
         $offset = $this->request->getRequiredBodyParam('offset');
 
-        if ($this->nestedElements instanceof ElementQueryInterface) {
-            $oldSortOrders = (clone $this->nestedElements)
-                ->status(null)
-                ->asArray()
-                ->select(['id', 'sortOrder'])
-                ->pairs();
-        } else {
-            $oldSortOrders = $this->nestedElements
-                ->keyBy(fn(ElementInterface $element) => $element->id)
-                /** @phpstan-ignore-next-line */
-                ->map(fn(NestedElementInterface $element) => $element->getSortOrder())
-                ->all();
-        }
-
-        // Build the full list of IDs in the new sort order
-        $allIds = array_diff(array_keys($oldSortOrders), $ids);
-        array_splice($allIds, $offset, 0, $ids);
-
-        // Update all the incorrect sort orders
-        foreach ($allIds as $i => $id) {
-            $sortOrder = $i + 1;
-            if (!isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
-                Db::update(Table::ELEMENTS_OWNERS, [
-                    'sortOrder' => $sortOrder,
-                ], [
-                    'ownerId' => $this->owner->id,
-                    'elementId' => $id,
-                ]);
-            }
-        }
-
-        Craft::$app->getElements()->invalidateCachesForElement($this->owner);
+        Craft::$app->getElements()->reorderNestedElements($this->owner, $this->nestedElements, $ids, $offset);
 
         return $this->asSuccess(Craft::t('app', 'New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($ids),

@@ -6146,7 +6146,7 @@ JS,
                     return '';
                 }
 
-                return Html::encode($this->slug);
+                return Html::encode($this->slug ?? '');
 
             case 'revisionNotes':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
@@ -6483,7 +6483,7 @@ JS,
      */
     protected function slugFieldHtml(bool $static): string
     {
-        $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
+        $slug = !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
@@ -7294,7 +7294,7 @@ JS,
         if ($providerHandle !== null) {
             $templates[] = [
                 'template' => sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle),
-                'priority' => 1,
+                'priority' => 2,
             ];
         }
 

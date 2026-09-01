@@ -70,6 +70,16 @@ class ElementHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider isTempSlugDataProvider
+     * @param bool $expected
+     * @param string|null $slug
+     */
+    public function testIsTempSlug(bool $expected, ?string $slug): void
+    {
+        self::assertSame($expected, ElementHelper::isTempSlug($slug));
+    }
+
+    /**
      * @dataProvider doesUriHaveSlugTagDataProvider
      * @param bool $expected
      * @param string $uriFormat
@@ -206,6 +216,23 @@ class ElementHelperTest extends TestCase
             ['Audi[separator-here]S8[separator-here]4E[separator-here]2006-2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
             ['こんにちは', 'こんにちは'], // https://github.com/craftcms/cms/issues/4628
             ['Сертификация', 'Сертификация'], // https://github.com/craftcms/cms/issues/1535
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isTempSlugDataProvider(): array
+    {
+        return [
+            [false, null],
+            [false, ''],
+            [false, 'foo'],
+            [false, '_temp_foo'],
+            [false, 'foo__temp_bar'],
+            [true, '__temp_'],
+            [true, '__temp_foo'],
+            [true, ElementHelper::tempSlug()],
         ];
     }
 
