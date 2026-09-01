@@ -50,6 +50,8 @@ use CraftCms\Yii2Adapter\Console\DropTagsSupportCommand;
 use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
+use CraftCms\Yii2Adapter\Console\OffCommand;
+use CraftCms\Yii2Adapter\Console\OnCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
@@ -299,6 +301,8 @@ class Yii2ServiceProvider extends ServiceProvider
             DropTagsSupportCommand::class,
             MigrateMigrationTableCommand::class,
             MigrateSessionsTableCommand::class,
+            OffCommand::class,
+            OnCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
 
@@ -334,7 +338,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->ensureNewSessionsTable();
         });
 
-        $this->app->terminating(fn() => $this->triggerAfterRequestForLaravelRequest());
+        $this->app->terminating(function(): void {
+            $this->triggerAfterRequestForLaravelRequest();
+            Craft::getLogger()->flush(true);
+        });
 
         if (!$this->app->runningInConsole()) {
             return;

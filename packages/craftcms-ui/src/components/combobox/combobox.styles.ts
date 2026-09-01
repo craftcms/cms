@@ -50,6 +50,18 @@ export default css`
     transform: translateY(-50%);
   }
 
+  .prefix {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: var(--c-input-spacing-inline);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  :host([has-prefix-icon]) ::slotted(.form-control) {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
+  }
+
   .combobox__option {
     display: inline-flex;
     align-items: center;

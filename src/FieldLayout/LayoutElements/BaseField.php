@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Field\Icon;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Form\Contracts\Control;
@@ -18,10 +19,12 @@ use CraftCms\Cms\Form\Controls\Text;
 use CraftCms\Cms\Form\Controls\Textarea;
 use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Form\FormContext;
+use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Form\Nodes\Action;
+use CraftCms\Cms\Form\Nodes\ActionMenu;
+use CraftCms\Cms\Form\Nodes\CopyAttribute;
 use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -30,6 +33,7 @@ use CraftCms\Cms\Support\Str;
 use InvalidArgumentException;
 use Override;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 abstract class BaseField extends FieldLayoutElement
@@ -435,7 +439,86 @@ abstract class BaseField extends FieldLayoutElement
                     : null,
             )
             ->layoutUid($this->uid)
-            ->width($this->width);
+            ->width($this->width)
+            ->actions(...$this->formActionNodes($context, $control));
+    }
+
+    /**
+     * The nodes rendered into the field heading's `actions` slot: the field's
+     * “⋮” action menu, and — for admins with the “Show field handles in edit
+     * forms” preference — the copyable handle chip.
+     *
+     * @return list<Node>
+     */
+    protected function formActionNodes(FieldLayoutElementContext $context, Control $control): array
+    {
+        $nodes = [];
+        $uidPrefix = $this->formActionsUid($control);
+
+        $items = $this->resolveActionMenuItems($context);
+        if ($items !== []) {
+            $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
+                ->label(t('Field actions'));
+        }
+
+        if ($this->showAttribute() && $this->showFieldHandles()) {
+            $nodes[] = CopyAttribute::make("$uidPrefix:handle", $this->attribute());
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * Collects the field's action menu items, giving plugins a chance to amend
+     * them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function resolveActionMenuItems(FieldLayoutElementContext $context): array
+    {
+        event($event = new FieldLayoutComponentActionMenuItemsResolving(
+            fieldLayoutComponent: $this,
+            items: $this->actionMenuItemsForContext($context),
+            element: $context->element,
+            mode: $context->mode,
+        ));
+
+        return $event->items;
+    }
+
+    /** @return list<array<string, mixed>> */
+    protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
+    {
+        return $this->actionMenuItems(
+            $context->element,
+            $context->mode !== ControlMode::Editable,
+        );
+    }
+
+    /**
+     * A stable, form-unique key for a field's action nodes.
+     *
+     * Derived from the control's path rather than the layout element's UID:
+     * the UID is nullable (fluently-built layouts and the card view designer
+     * produce UID-less elements), and one layout element can emit several
+     * Fields (see {@see Addresses\LatLongField::formNode()}). Control paths are
+     * already unique within a form namespace — {@see FormResolver}
+     * rejects duplicates — and control-less nodes are scoped by that same
+     * namespace.
+     */
+    protected function formActionsUid(Control $control): string
+    {
+        $path = $control->path();
+
+        return 'field-actions:'.(is_array($path) ? implode('.', $path) : $path);
+    }
+
+    /** Whether the current user has opted into seeing field handles on edit forms. */
+    protected function showFieldHandles(): bool
+    {
+        $user = currentUser();
+
+        return $user?->isAdmin() && $user->getPreference('showFieldHandles');
     }
 
     protected function formControl(FieldLayoutElementContext $context): ?Control
@@ -869,25 +952,24 @@ abstract class BaseField extends FieldLayoutElement
             'attribute' => $this->attribute(),
         ];
 
-        HtmlStack::jsWithVars(fn ($id, $promptLabel, $attribute) => <<<JS
-(() => {
-  $('#' + $id).on('activate', () => {
-    Craft.ui.createCopyTextPrompt({
-      label: $promptLabel,
-      value: $attribute,
-    })
-  });
-})();
-JS, [
-            InputNamespace::namespaceId($config['id']),
-            $config['promptLabel'],
-            $config['attribute'],
-        ]);
-
         return [
+            // The `action-copy-` prefix is load-bearing: `ElementHtml` marks it
+            // `data-copy-action` when the menu is shown on a chip.
             'id' => $config['id'],
             'icon' => $config['icon'],
             'label' => $config['label'],
+            // Declarative rather than registered JS, which would never reach an
+            // Inertia-rendered page. `craft:copy-text-prompt` is handled by the
+            // slideout module's window listener, which shows the same
+            // copy-to-clipboard dialog the legacy handler did.
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-text-prompt',
+                'detail' => [
+                    'label' => $config['promptLabel'],
+                    'value' => $config['attribute'],
+                ],
+            ],
         ];
     }
 

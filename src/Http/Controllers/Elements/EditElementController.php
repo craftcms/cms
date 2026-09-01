@@ -255,7 +255,7 @@ class EditElementController
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => (! app()->isLive() || ! $element->getSite()->getEnabled()) ? Crypt::encrypt((string) $element->siteId) : null,
+                        'siteToken' => (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled()) ? Crypt::encrypt((string) $element->siteId) : null,
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
                         'isStatic' => $isRevision || ! $canSave,

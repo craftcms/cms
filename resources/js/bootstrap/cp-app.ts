@@ -30,7 +30,6 @@ export function installCpApp(app: App): void {
   app.provide(Queue, queue);
   app.provide(Axios, axios);
   app.provide(Config, config);
-  app.provide(Craft, config);
 
   app.component('QueueManager', QueueManager);
   app.component('QueueManagerToolbar', QueueManagerToolbar);

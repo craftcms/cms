@@ -20,7 +20,7 @@ $routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->getLoginPath() !== false) {
-        Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+        Route::allowDuringMaintenance()->get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
     /*
@@ -30,29 +30,29 @@ if (Edition::get()->registersFrontendUserRoutes()) {
      */
     if (Cms::isInstalled()) {
         foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
-            Route::get($path, [LoginController::class, 'showLogin']);
-            Route::post($path, [LoginController::class, 'attemptLogin'])
+            Route::allowDuringMaintenance()->get($path, [LoginController::class, 'showLogin']);
+            Route::allowDuringMaintenance()->post($path, [LoginController::class, 'attemptLogin'])
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
         foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
-            Route::get($path, [VerifyEmailController::class, 'show']);
-            Route::post($path, [VerifyEmailController::class, 'store']);
+            Route::allowDuringMaintenance()->get($path, [VerifyEmailController::class, 'show']);
+            Route::allowDuringMaintenance()->post($path, [VerifyEmailController::class, 'store']);
         }
 
         foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
-            Route::get($path, [SetPasswordController::class, 'show']);
-            Route::post($path, [SetPasswordController::class, 'store']);
+            Route::allowDuringMaintenance()->get($path, [SetPasswordController::class, 'show']);
+            Route::allowDuringMaintenance()->post($path, [SetPasswordController::class, 'store']);
         }
 
         foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
-            Route::any($path, [LoginController::class, 'logout'])->middleware('auth');
+            Route::allowDuringMaintenance()->any($path, [LoginController::class, 'logout'])->middleware('auth');
         }
     }
 }
 
 if (OAuth::isAvailable()) {
-    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
+    Route::allowDuringMaintenance()->middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () use ($routes) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
@@ -63,7 +63,7 @@ if (OAuth::isAvailable()) {
 }
 
 if (! is_null(Cms::config()->setPasswordRequestPath)) {
-    Route::get('.well-known/change-password', function (Sites $sites) {
+    Route::allowDuringMaintenance()->get('.well-known/change-password', function (Sites $sites) {
         $uri = Cms::config()->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
 
         abort_if(is_null($uri), 404);
@@ -72,9 +72,7 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
     });
 }
 
-// Route::fallback() only registers GET/HEAD, which would prevent POST (and other verb) action
-// requests to plugin controllers from ever reaching SiteRouteController/the legacy Yii action
-// dispatch, so this replicates it with all verbs allowed instead.
+// Route::fallback() only registers GET/HEAD by default
 Route::any('{fallbackPlaceholder}', SiteRouteController::class)
     ->where('fallbackPlaceholder', '.*')
     ->fallback()

@@ -1,8 +1,15 @@
 import {LionRadioGroup} from '@lion/ui/radio-group.js';
 import {inputStyles} from '@src/styles/form.styles';
 import {css, type PropertyValues} from 'lit';
+import {property} from 'lit/decorators.js';
 
 export default class CraftRadioGroup extends LionRadioGroup {
+  /**
+   * Lays the options out as a row of tiles rather than a stacked list, for
+   * groups whose options carry a thumbnail.
+   */
+  @property({type: Boolean, reflect: true}) thumbnails = false;
+
   private __ssrNameAdopted = false;
 
   /**
@@ -50,6 +57,17 @@ export default class CraftRadioGroup extends LionRadioGroup {
         .input-group {
           display: grid;
           gap: var(--c-spacing-xs);
+        }
+
+        /*
+         * Options illustrated with a thumbnail read as a row of tiles rather
+         * than a stacked list — the layout Craft 5 hand-rolled for View Mode.
+         */
+        :host([thumbnails]) .input-group {
+          grid-auto-flow: column;
+          justify-content: start;
+          align-items: start;
+          gap: var(--c-spacing-lg);
         }
       `,
     ];

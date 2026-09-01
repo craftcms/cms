@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Form\Controls\Choice;
+use CraftCms\Cms\Form\Controls\Combobox;
 use CraftCms\Cms\Form\Controls\Handle;
 use CraftCms\Cms\Form\Controls\Lightswitch;
 use CraftCms\Cms\Form\Controls\Text;
@@ -70,7 +71,8 @@ class FieldEditViewModel extends ViewModel
                 ->instructions(t('Helper text to guide the author.')),
             FormField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
-        $typeField = FormField::make(t('Field Type'), Choice::make('type')->options($this->fieldTypeOptions()))
+        $typeField = FormField::make(t('Field Type'), Combobox::make('type')
+            ->options($this->fieldTypeOptions()))
             ->instructions(t('What type of field is this?'))
             ->required();
 
@@ -207,6 +209,11 @@ class FieldEditViewModel extends ViewModel
                 $name = $class::displayName();
 
                 return [
+                    'data' => [
+                        'icon' => $class === $currentType && ! $this->field instanceof MissingField
+                            ? $this->field->getIcon()
+                            : $class::icon(),
+                    ],
                     'value' => $class,
                     'label' => $class === $currentType || $compatibleFieldTypes->contains($class)
                         ? $name

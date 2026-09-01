@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -254,9 +255,25 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function useFieldset(): bool;
 
     /**
+     * Returns the action menu items contributed by the field when it is used by a custom field layout component.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getFieldLayoutActionMenuItems(FieldLayoutElementContext $context): array;
+
+    /**
      * Returns the renderer-neutral Control used to edit the field's value.
      */
     public function formControl(FieldContext $context): Control;
+
+    /**
+     * Returns a warning the field itself needs to show, on top of any the
+     * field layout author wrote, or `null` when it has nothing to say.
+     *
+     * For misconfiguration the author can't see from the layout — an Assets
+     * field pointed at a volume that no longer exists, say.
+     */
+    public function formWarning(?ElementInterface $element = null): ?string;
 
     /**
      * Prepare the field value for validation.
