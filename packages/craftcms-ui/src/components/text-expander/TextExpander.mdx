@@ -1,0 +1,41 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TextExpanderStories from './text-expander.stories';
+
+<Meta of={TextExpanderStories} name="Docs" />
+
+# Text Expander
+
+`<craft-text-expander>` offers suggestions as a person types a trigger character.
+
+<Canvas of={TextExpanderStories.TextInput} sourceState="shown" />
+
+It wraps an input or textarea and watches for triggers — `@` for a user, `#` for an entry — then offers matches inline, without the person leaving the field.
+
+## Multiple Triggers
+
+<Canvas
+  of={TextExpanderStories.TextareaWithMultipleTriggers}
+  sourceState="shown"
+/>
+
+Each trigger can have its own source, so one field can reference several kinds of thing.
+
+<Canvas of={TextExpanderStories.MarkdownInput} sourceState="shown" />
+
+## Rich Suggestions
+
+<Canvas of={TextExpanderStories.RichOptions} sourceState="shown" />
+
+Suggestions can carry markup — an avatar, a status, a hint — which is what makes two similarly named entries distinguishable at a glance.
+
+## Accessibility
+
+This is a combobox pattern layered onto a free-text field, and the announcement is the part that carries it.
+
+The suggestion list is wired to the input, so arrowing through options announces each one, and the field reports how many matched. That is what makes the feature usable without seeing the list appear.
+
+Because suggestions arrive as a person types, keep the option text short and put the distinguishing part first. A list where every entry starts with the same words is a list nobody can navigate by ear.
+
+## Properties
+
+<ArgTypes of={TextExpanderStories} />
