@@ -518,11 +518,11 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        if (str_starts_with(ltrim($class, '\\'), 'Spl')) {
+        if (str_starts_with(Str::lower(ltrim($class, '\\')), 'spl')) {
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
-        if (str_ends_with(rtrim($class, '\\'), 'Iterator')) {
+        if (str_ends_with(Str::lower(rtrim($class, '\\')), 'iterator')) {
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
