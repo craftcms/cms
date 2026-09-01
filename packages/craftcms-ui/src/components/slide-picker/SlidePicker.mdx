@@ -1,0 +1,38 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SlidePickerStories from './slide-picker.stories';
+
+<Meta of={SlidePickerStories} name="Docs" />
+
+# Slide Picker
+
+`<craft-slide-picker>` picks a number from a small set of steps.
+
+<Canvas of={SlidePickerStories.Default} sourceState="shown" />
+
+Use it where the range is short and every step is meaningful — a column count, a level, a size. For a continuous range use [Slide Rule](?path=/docs/form-controls-slide-rule--docs); for an exact number a person already knows, a number input is faster than dragging.
+
+<Canvas of={SlidePickerStories.FiveSteps} sourceState="shown" />
+
+<Canvas of={SlidePickerStories.ReadOnly} sourceState="shown" />
+
+## Announcing the Value
+
+A slider's value is a number, and a number on its own rarely means anything.
+
+`value-unit` supplies the units, so the control announces "3 columns" rather than "3":
+
+```html
+<craft-slide-picker value-unit="columns"></craft-slide-picker>
+```
+
+When a unit is not enough, `valueLabel` formats the announced value however you like. It is a property rather than an attribute, so bind it with `.valueLabel`.
+
+## Accessibility
+
+The control is a slider with a name from `label` and a described-by from `described-by`, which [Field](?path=/docs/form-controls-field--docs) supplies when it wraps one.
+
+Sliders are hard to operate precisely with a pointer and easy with a keyboard, so the arrow-key behaviour is not a fallback — it is how many people will use it. Keep the step count low enough that arrowing to a value is quick.
+
+## Properties
+
+<ArgTypes of={SlidePickerStories} />

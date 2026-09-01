@@ -15,14 +15,32 @@ import styles from './slide-picker.styles.js';
 export default class CraftSlidePicker extends LitElement {
   static override styles = [styles];
 
+  /** Lowest selectable value. */
   @property({type: Number}) min = 0;
+  /** Highest selectable value. */
   @property({type: Number}) max = 100;
+  /** Spacing between selectable values. */
   @property({type: Number}) step = 10;
+  /** The currently selected value. */
   @property({type: Number}) value = 0;
+  /** Accessible name for the slider. */
   @property() label = t('Number of columns');
+  /**
+   * Id of the element describing the control, applied as `aria-describedby`.
+   * `craft-field` supplies this for you.
+   */
   @property({attribute: 'described-by'}) describedBy?: string;
+  /**
+   * Unit appended to the announced value — `columns`, `px`. Without one a
+   * bare number is all a screen reader gets.
+   */
   @property({attribute: 'value-unit'}) valueUnit = '';
+  /**
+   * Formats the announced value, for when a number and a unit are not enough.
+   * A property rather than an attribute, so bind it with `.valueLabel`.
+   */
   @property({attribute: false}) valueLabel?: (value: number) => string;
+  /** Renders the current value without allowing it to be changed. */
   @property({type: Boolean, reflect: true, attribute: 'read-only'})
   readOnly = false;
 
