@@ -45,7 +45,7 @@
     "craftcms/server-check": "~6.0.0",
     "craftcms/url-validator": "^1.0",
     "elvanto/litemoji": "^5.2.0",
-    "enshrined/svg-sanitize": "~0.22.0",
+    "enshrined/svg-sanitize": "^1.0.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
     "intervention/image": "^4.2",
