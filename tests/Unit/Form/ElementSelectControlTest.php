@@ -164,7 +164,7 @@ it('renders card parts only for the card view modes', function (string $viewMode
     'cards-grid' => [ElementSelect::VIEW_MODE_CARDS_GRID, true],
 ]);
 
-it('renders thumbnails for list and thumbs view modes', function (string $viewMode, bool $expected) {
+it('renders a thumbnail for chip view modes', function (string $viewMode, bool $expected) {
     fakeElementHtml();
     $method = new ReflectionMethod(ElementSelect::class, 'viewPayload');
     $keys = array_keys($method->invoke(null, new Entry, $viewMode));
