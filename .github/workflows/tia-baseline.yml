@@ -1,6 +1,6 @@
 name: 'ci / Pest'
 on:
-  push: { branches: [6.x, "feature/pest-tia"] }
+  push: { branches: [6.x] }
   workflow_dispatch:
 
 concurrency:
