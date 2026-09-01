@@ -111,16 +111,19 @@ trait LegacyConstants
 
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
+     * @deprecated 6.0.0 Use {@see AssetFileHandling} instead.
      */
     public const string EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     /**
      * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
+     * @deprecated 6.0.0 Use {@see TransformGenerating} or {@see \CraftCms\Cms\Image\Events\ImageTransforming} instead.
      */
     public const string EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
 
     /**
      * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
+     * @deprecated 6.0.0 Use {@see AfterGenerateTransform} instead.
      */
     public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
