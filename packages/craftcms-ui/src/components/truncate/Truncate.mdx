@@ -1,0 +1,32 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TruncateStories from './truncate.stories';
+
+<Meta of={TruncateStories} name="Docs" />
+
+# Truncate
+
+`<craft-truncate>` shortens text that does not fit, and shows the whole of it in a tooltip.
+
+<Canvas of={TruncateStories.Playground} sourceState="shown" />
+
+The tooltip only appears when the text is actually clipped:
+
+<Canvas of={TruncateStories.FitsWithoutTooltip} sourceState="shown" />
+
+That conditional behaviour is the point. A tooltip repeating text already fully visible is noise, and one that never appears leaves clipped text unreadable.
+
+## When to Reach for It
+
+Where a value's length is outside your control and the space is not — a filename in a column, an entry title in a narrow sidebar.
+
+Where you control the text, write it shorter. Truncation is a fallback for unpredictable content, not a substitute for editing.
+
+## Accessibility
+
+The full text remains available to assistive technology, so a screen reader announces the whole value rather than the clipped version.
+
+The tooltip is reachable by keyboard as well as pointer — which matters, because clipped text a person cannot expand is text they cannot read.
+
+## Properties
+
+<ArgTypes of={TruncateStories} />
